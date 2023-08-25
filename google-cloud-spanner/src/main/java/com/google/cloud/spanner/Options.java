@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.util.DirectedReadsUtil;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -336,7 +337,7 @@ public final class Options implements Serializable {
 
     DirectedReadOption(DirectedReadOptions directedReadOptions) {
       Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
-      SpannerUtil.verifyDirectedReadOptions(directedReadOptions);
+      DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions);
       this.directedReadOptions = directedReadOptions;
     }
 

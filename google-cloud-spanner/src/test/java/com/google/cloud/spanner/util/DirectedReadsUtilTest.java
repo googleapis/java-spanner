@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner;
+package com.google.cloud.spanner.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerException;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
@@ -26,19 +28,20 @@ import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerUtil}. */
+/** Unit tests for {@link com.google.cloud.spanner.util.DirectedReadsUtil}. */
 @RunWith(JUnit4.class)
-public class SpannerUtilTest {
+public class DirectedReadsUtilTest {
   private DirectedReadOptions
       getDirectedReadOptions_IncludeReplica_ReplicaSelectionCountGreaterThanMax() {
     List<ReplicaSelection> replicaSelectionList =
         new ArrayList<>(
             Collections.nCopies(
-                SpannerUtil.MAX_REPLICA_SELECTIONS_COUNT + 1,
+                DirectedReadsUtil.MAX_REPLICA_SELECTIONS_COUNT + 1,
                 ReplicaSelection.newBuilder().setLocation("us-west1").build()));
     return DirectedReadOptions.newBuilder()
         .setIncludeReplicas(
@@ -51,7 +54,7 @@ public class SpannerUtilTest {
     List<ReplicaSelection> replicaSelectionList =
         new ArrayList<>(
             Collections.nCopies(
-                SpannerUtil.MAX_REPLICA_SELECTIONS_COUNT + 1,
+                DirectedReadsUtil.MAX_REPLICA_SELECTIONS_COUNT + 1,
                 ReplicaSelection.newBuilder().setLocation("us-east1").build()));
     return DirectedReadOptions.newBuilder()
         .setExcludeReplicas(
@@ -66,8 +69,8 @@ public class SpannerUtilTest {
     SpannerException e =
         assertThrows(
             SpannerException.class,
-            () -> SpannerUtil.verifyDirectedReadOptions(directedReadOptions));
-    assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
+            () -> DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions));
+    Assert.assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
   }
 
   @Test
@@ -77,7 +80,7 @@ public class SpannerUtilTest {
     SpannerException e =
         assertThrows(
             SpannerException.class,
-            () -> SpannerUtil.verifyDirectedReadOptions(directedReadOptions));
+            () -> DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions));
     assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
   }
 
@@ -94,7 +97,7 @@ public class SpannerUtilTest {
         assertThrows(
             SpannerException.class,
             () -> {
-              SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+              DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
                   null, directedReadOptions, false);
             });
     assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
@@ -103,7 +106,7 @@ public class SpannerUtilTest {
         assertThrows(
             SpannerException.class,
             () -> {
-              SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+              DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
                   directedReadOptions, null, false);
             });
     assertEquals(e.getErrorCode(), ErrorCode.FAILED_PRECONDITION);
@@ -127,15 +130,15 @@ public class SpannerUtilTest {
             .build();
 
     assertEquals(
-        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
             directedReadOptionsForClient, directedReadOptionsForRequest, true),
         directedReadOptionsForRequest);
     assertEquals(
-        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
             directedReadOptionsForClient, null, true),
         directedReadOptionsForClient);
     assertEquals(
-        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
             null, directedReadOptionsForRequest, true),
         directedReadOptionsForRequest);
   }

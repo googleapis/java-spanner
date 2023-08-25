@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner;
+package com.google.cloud.spanner.util;
 
+import com.google.api.core.InternalApi;
+import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.spanner.v1.DirectedReadOptions;
 
-/** Utility methods for Spanner. */
-public class SpannerUtil {
+/** Utility methods for DirectedReads feature. */
+@InternalApi
+public class DirectedReadsUtil {
   static final int MAX_REPLICA_SELECTIONS_COUNT = 10;
 
   public static void verifyDirectedReadOptions(DirectedReadOptions directedReadOptions) {

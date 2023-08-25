@@ -68,7 +68,6 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.CallCredentialsProvider;
-import com.google.cloud.spanner.SpannerUtil;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminCallableFactory;
@@ -77,6 +76,7 @@ import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.encryption.EncryptionConfigProtoMapper;
+import com.google.cloud.spanner.util.DirectedReadsUtil;
 import com.google.cloud.spanner.v1.stub.GrpcSpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -1624,7 +1624,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader,
       boolean readOnly) {
     DirectedReadOptions preferredDirectedReadOptions =
-        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
             directedReadOptions,
             request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
             readOnly);
@@ -1665,7 +1665,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader,
       boolean readOnly) {
     DirectedReadOptions preferredDirectedReadOptions =
-        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
             directedReadOptions,
             request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
             readOnly);
@@ -1685,7 +1685,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ResultSet executePartitionedDml(
       ExecuteSqlRequest request, @Nullable Map<Option, ?> options) {
-    SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+    DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
         directedReadOptions,
         request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
         false);
@@ -1703,7 +1703,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public ServerStream<PartialResultSet> executeStreamingPartitionedDml(
       ExecuteSqlRequest request, Map<Option, ?> options, Duration timeout) {
-    SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+    DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
         directedReadOptions,
         request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
         false);
@@ -1727,7 +1727,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader,
       boolean readOnly) {
     DirectedReadOptions preferredDirectedReadOptions =
-        SpannerUtil.validateAndGetPreferredDirectedReadOptions(
+        DirectedReadsUtil.validateAndGetPreferredDirectedReadOptions(
             directedReadOptions,
             request.hasDirectedReadOptions() ? request.getDirectedReadOptions() : null,
             readOnly);

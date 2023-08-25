@@ -40,6 +40,7 @@ import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings
 import com.google.cloud.spanner.spi.SpannerRpcFactory;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.util.DirectedReadsUtil;
 import com.google.cloud.spanner.v1.SpannerSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
@@ -1101,17 +1102,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * Sets the {@link DirectedReadOptions} that specify which replicas or regions should be used
      * for non-transactional reads or queries.
      *
-     * <p>Note that DirectedReadOptions can only be set for ReadOnlyTransaction and
-     * SingleUseTransaction; it cannot be set for ReadWriteTransaction and
-     * PartitionedDmlTransaction.
-     *
      * <p>DirectedReadOptions set at the request level will take precedence over the options set
-     * using this method. If DirectedReadOptions are set at the request level, they will override
-     * the options set here when the RPC call is made.
+     * using this method.
      */
     public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
       Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
-      SpannerUtil.verifyDirectedReadOptions(directedReadOptions);
+      DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions);
       this.directedReadOptions = directedReadOptions;
       return this;
     }
