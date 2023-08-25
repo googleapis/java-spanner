@@ -200,11 +200,12 @@ public interface DatabaseClient {
    * successfully, while some may have failed. The results of individual batches are streamed into
    * the response as and when the batches are applied.
    *
-   * <p>Since this method does not feature replay protection, it may attempt to apply {@code
-   * mutation groups} more than once; if the mutation groups are not idempotent, this may lead to a
-   * failure being reported when the mutation group was applied once. For example, an insert may
-   * fail with {@link ErrorCode#ALREADY_EXISTS} even though the row did not exist before this method
-   * was called. For this reason, most users of the library will prefer to use {@link
+   * <p>One BatchWriteResponse can contain the results for multiple MutationGroups. Inspect the
+   * indexes field to determine the MutationGroups that the BatchWriteResponse is for.
+   *
+   * <p>The mutation groups may be applied more than once. This can lead to failures if the mutation
+   * groups are non-idempotent. For example, an insert that is replayed can return an {@link
+   * ErrorCode#ALREADY_EXISTS} error. For this reason, users of the library may prefer to use {@link
    * #write(Iterable)} instead. However, {@code batchWriteAtLeastOnce()} method may be appropriate
    * for non-atomically committing multiple mutation groups in a single RPC with low latency.
    *
