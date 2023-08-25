@@ -1106,9 +1106,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * using this method.
      */
     public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
-      Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
-      DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions);
-      this.directedReadOptions = directedReadOptions;
+      this.directedReadOptions =
+          Preconditions.checkNotNull(
+              DirectedReadsUtil.validateDirectedReadOptions(directedReadOptions),
+              "DirectedReadOptions cannot be null");
       return this;
     }
 

@@ -26,7 +26,8 @@ import com.google.spanner.v1.DirectedReadOptions;
 public class DirectedReadsUtil {
   static final int MAX_REPLICA_SELECTIONS_COUNT = 10;
 
-  public static void verifyDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+  public static DirectedReadOptions validateDirectedReadOptions(
+      DirectedReadOptions directedReadOptions) {
     if (directedReadOptions.hasIncludeReplicas() && directedReadOptions.hasExcludeReplicas()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
@@ -44,6 +45,7 @@ public class DirectedReadsUtil {
               "Maximum length of replica selection allowed in IncludeReplicas/ExcludeReplicas is %d",
               MAX_REPLICA_SELECTIONS_COUNT));
     }
+    return directedReadOptions;
   }
 
   public static DirectedReadOptions validateAndGetPreferredDirectedReadOptions(
@@ -51,7 +53,7 @@ public class DirectedReadsUtil {
       DirectedReadOptions directedReadOptionsForRequest,
       boolean readOnly) {
     if (!readOnly) {
-      if ((directedReadOptionsForRequest != null) || (directedReadOptionsForClient != null)) {
+      if (directedReadOptionsForRequest != null || directedReadOptionsForClient != null) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION,
             "DirectedReadOptions can't be set for Read-Write or Partitioned DML transactions");
@@ -61,9 +63,9 @@ public class DirectedReadsUtil {
     // having DirectedReadOptions field set. Though, if DirectedReadOptions is set at client-level
     // (through SpannerOptions), we must modify the request object to set the DirectedReadOptions
     // proto field to this value.
-    if ((directedReadOptionsForRequest == null) && (directedReadOptionsForClient != null)) {
-      return directedReadOptionsForClient;
+    if (directedReadOptionsForRequest != null) {
+      return directedReadOptionsForRequest;
     }
-    return directedReadOptionsForRequest;
+    return directedReadOptionsForClient;
   }
 }

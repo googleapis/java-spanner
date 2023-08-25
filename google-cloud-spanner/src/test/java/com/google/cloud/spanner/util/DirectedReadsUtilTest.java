@@ -69,7 +69,7 @@ public class DirectedReadsUtilTest {
     SpannerException e =
         assertThrows(
             SpannerException.class,
-            () -> DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions));
+            () -> DirectedReadsUtil.validateDirectedReadOptions(directedReadOptions));
     Assert.assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
   }
 
@@ -80,7 +80,7 @@ public class DirectedReadsUtilTest {
     SpannerException e =
         assertThrows(
             SpannerException.class,
-            () -> DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions));
+            () -> DirectedReadsUtil.validateDirectedReadOptions(directedReadOptions));
     assertEquals(e.getErrorCode(), ErrorCode.INVALID_ARGUMENT);
   }
 

@@ -336,9 +336,11 @@ public final class Options implements Serializable {
     private final DirectedReadOptions directedReadOptions;
 
     DirectedReadOption(DirectedReadOptions directedReadOptions) {
-      Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
-      DirectedReadsUtil.verifyDirectedReadOptions(directedReadOptions);
-      this.directedReadOptions = directedReadOptions;
+      this.directedReadOptions =
+          Preconditions.checkNotNull(
+              DirectedReadsUtil.validateDirectedReadOptions(directedReadOptions),
+              "DirectedReadOptions cannot be null");
+      ;
     }
 
     @Override
