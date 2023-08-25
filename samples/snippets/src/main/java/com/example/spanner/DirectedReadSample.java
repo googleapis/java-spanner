@@ -75,7 +75,7 @@ public class DirectedReadSample {
       final DatabaseClient dbClient =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
 
-      // DirectedReadOptions at Request level will override the options set at
+      // DirectedReadOptions at request level will override the options set at
       // Client level (through SpannerOptions).
       final DirectedReadOptions directedReadOptionsForRequest =
           DirectedReadOptions.newBuilder()
