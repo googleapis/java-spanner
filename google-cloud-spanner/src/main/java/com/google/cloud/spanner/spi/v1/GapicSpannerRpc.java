@@ -337,6 +337,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
+              .setAllowNonDefaultServiceAccount(true)
               // Attempts direct access to spanner service over gRPC to improve throughput,
               // whether the attempt is allowed is totally controlled by service owner.
               .setAttemptDirectPath(true);
