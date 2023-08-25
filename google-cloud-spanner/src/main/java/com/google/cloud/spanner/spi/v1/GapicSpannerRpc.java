@@ -1651,13 +1651,19 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   @Override
   public ResultSet executeQuery(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader, boolean readOnly) {
+      ExecuteSqlRequest request,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader,
+      boolean readOnly) {
     return get(executeQueryAsync(request, options, routeToLeader, readOnly));
   }
 
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader, boolean readOnly) {
+      ExecuteSqlRequest request,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader,
+      boolean readOnly) {
     DirectedReadOptions preferredDirectedReadOptions =
         SpannerUtil.validateAndGetPreferredDirectedReadOptions(
             directedReadOptions,

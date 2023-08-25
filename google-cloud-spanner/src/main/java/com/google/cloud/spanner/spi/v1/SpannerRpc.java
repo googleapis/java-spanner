@@ -384,7 +384,10 @@ public interface SpannerRpc extends ServiceRpc {
    *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
    */
   ResultSet executeQuery(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader, boolean readOnly);
+      ExecuteSqlRequest request,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader,
+      boolean readOnly);
 
   /**
    * Executes a query asynchronously.
@@ -395,7 +398,10 @@ public interface SpannerRpc extends ServiceRpc {
    *     PartitionRead/PartitionQuery) are preferred to be routed to any region for optimal latency.
    */
   ApiFuture<ResultSet> executeQueryAsync(
-      ExecuteSqlRequest request, @Nullable Map<Option, ?> options, boolean routeToLeader, boolean readOnly);
+      ExecuteSqlRequest request,
+      @Nullable Map<Option, ?> options,
+      boolean routeToLeader,
+      boolean readOnly);
 
   ResultSet executePartitionedDml(ExecuteSqlRequest request, @Nullable Map<Option, ?> options);
 
