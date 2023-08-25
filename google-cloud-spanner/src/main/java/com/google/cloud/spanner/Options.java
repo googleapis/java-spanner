@@ -228,8 +228,8 @@ public final class Options implements Serializable {
 
   /**
    * Option to request DirectedRead for ReadOnlyTransaction and SingleUseTransaction.
-   * <p>
-   * The DirectedReadOptions can be used to indicate which replicas or regions should be used for
+   *
+   * <p>The DirectedReadOptions can be used to indicate which replicas or regions should be used for
    * non-transactional reads or queries. Not all requests can be sent to non-leader replicas. In
    * particular, some requests such as reads within read-write transactions must be sent to a
    * designated leader replica. These requests ignore DirectedReadOptions.
