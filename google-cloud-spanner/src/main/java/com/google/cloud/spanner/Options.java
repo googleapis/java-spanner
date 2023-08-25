@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.BetaApi;
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
@@ -157,12 +156,10 @@ public final class Options implements Serializable {
   }
 
   /**
-   * If this is for a partitioned read & query and this field is set to `true`, the request will be
-   * executed via Spanner independent compute resources. The method is available in Beta mode (and
-   * is not generally available now).
+   * If this is for PartitionedRead or PartitionedQuery and this field is set to `true`, the request
+   * will be executed via Spanner independent compute resources.
    */
-  @BetaApi
-  public static ReadAndQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
+  public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
     return new DataBoostQueryOption(dataBoostEnabled);
   }
 

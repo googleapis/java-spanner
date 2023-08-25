@@ -100,6 +100,11 @@ public class ConnectionOptions {
           name, description, String.valueOf(defaultValue), BOOLEAN_VALUES);
     }
 
+    private static ConnectionProperty createIntProperty(
+        String name, String description, int defaultValue) {
+      return new ConnectionProperty(name, description, String.valueOf(defaultValue), null);
+    }
+
     private static ConnectionProperty createEmptyProperty(String name) {
       return new ConnectionProperty(name, "", "", null);
     }
@@ -172,6 +177,14 @@ public class ConnectionOptions {
   private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
+  private static final boolean DEFAULT_ROUTE_TO_LEADER = true;
+  private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
+  private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
+  private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
+  private static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
+  private static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
+  private static final int DEFAULT_MAX_PARTITIONS = 0;
+  private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -183,6 +196,8 @@ public class ConnectionOptions {
   public static final String AUTOCOMMIT_PROPERTY_NAME = "autocommit";
   /** Name of the 'readonly' connection property. */
   public static final String READONLY_PROPERTY_NAME = "readonly";
+  /** Name of the 'routeToLeader' connection property. */
+  public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
   /** Name of the 'credentials' connection property. */
@@ -218,6 +233,20 @@ public class ConnectionOptions {
   private static final String DIALECT_PROPERTY_NAME = "dialect";
   /** Name of the 'databaseRole' connection property. */
   public static final String DATABASE_ROLE_PROPERTY_NAME = "databaseRole";
+  /** Name of the 'delay transaction start until first write' property. */
+  public static final String DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME =
+      "delayTransactionStartUntilFirstWrite";
+  /** Name of the 'trackStackTraceOfSessionCheckout' connection property. */
+  public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
+  /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
+  public static final String TRACK_CONNECTION_LEAKS_PROPERTY_NAME = "trackConnectionLeaks";
+
+  public static final String DATA_BOOST_ENABLED_PROPERTY_NAME = "dataBoostEnabled";
+  public static final String AUTO_PARTITION_MODE_PROPERTY_NAME = "autoPartitionMode";
+  public static final String MAX_PARTITIONS_PROPERTY_NAME = "maxPartitions";
+  public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
+      "maxPartitionedParallelism";
+
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
       Collections.unmodifiableSet(
@@ -231,6 +260,10 @@ public class ConnectionOptions {
                       READONLY_PROPERTY_NAME,
                       "Should the connection start in read-only mode (true/false)",
                       DEFAULT_READONLY),
+                  ConnectionProperty.createBooleanProperty(
+                      ROUTE_TO_LEADER_PROPERTY_NAME,
+                      "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
+                      DEFAULT_ROUTE_TO_LEADER),
                   ConnectionProperty.createBooleanProperty(
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
@@ -287,7 +320,55 @@ public class ConnectionOptions {
                       DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
                   ConnectionProperty.createStringProperty(
                       DATABASE_ROLE_PROPERTY_NAME,
-                      "Sets the database role to use for this connection. The default is privileges assigned to IAM role"))));
+                      "Sets the database role to use for this connection. The default is privileges assigned to IAM role"),
+                  ConnectionProperty.createBooleanProperty(
+                      DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME,
+                      "Enabling this option will delay the actual start of a read/write transaction until the first write operation is seen in that transaction. "
+                          + "All reads that happen before the first write in a transaction will instead be executed as if the connection was in auto-commit mode. "
+                          + "Enabling this option will make read/write transactions lose their SERIALIZABLE isolation level. Read operations that are executed after "
+                          + "the first write operation in a read/write transaction will be executed using the read/write transaction. Enabling this mode can reduce locking "
+                          + "and improve performance for applications that can handle the lower transaction isolation semantics.",
+                      DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE),
+                  ConnectionProperty.createBooleanProperty(
+                      TRACK_SESSION_LEAKS_PROPERTY_NAME,
+                      "Capture the call stack of the thread that checked out a session of the session pool. This will "
+                          + "pre-create a LeakedSessionException already when a session is checked out. This can be disabled, "
+                          + "for example if a monitoring system logs the pre-created exception. "
+                          + "If disabled, the LeakedSessionException will only be created when an "
+                          + "actual session leak is detected. The stack trace of the exception will "
+                          + "in that case not contain the call stack of when the session was checked out.",
+                      DEFAULT_TRACK_SESSION_LEAKS),
+                  ConnectionProperty.createBooleanProperty(
+                      TRACK_CONNECTION_LEAKS_PROPERTY_NAME,
+                      "Capture the call stack of the thread that created a connection. This will "
+                          + "pre-create a LeakedConnectionException already when a connection is created. "
+                          + "This can be disabled, for example if a monitoring system logs the pre-created exception. "
+                          + "If disabled, the LeakedConnectionException will only be created when an "
+                          + "actual connection leak is detected. The stack trace of the exception will "
+                          + "in that case not contain the call stack of when the connection was created.",
+                      DEFAULT_TRACK_CONNECTION_LEAKS),
+                  ConnectionProperty.createBooleanProperty(
+                      DATA_BOOST_ENABLED_PROPERTY_NAME,
+                      "Enable data boost for all partitioned queries that are executed by this connection. "
+                          + "This setting is only used for partitioned queries and is ignored by all other statements.",
+                      DEFAULT_DATA_BOOST_ENABLED),
+                  ConnectionProperty.createBooleanProperty(
+                      AUTO_PARTITION_MODE_PROPERTY_NAME,
+                      "Execute all queries on this connection as partitioned queries. "
+                          + "Executing a query that cannot be partitioned will fail. "
+                          + "Executing a query in a read/write transaction will also fail.",
+                      DEFAULT_AUTO_PARTITION_MODE),
+                  ConnectionProperty.createIntProperty(
+                      MAX_PARTITIONS_PROPERTY_NAME,
+                      "The max partitions hint value to use for partitioned queries. "
+                          + "Use 0 if you do not want to specify a hint.",
+                      DEFAULT_MAX_PARTITIONS),
+                  ConnectionProperty.createIntProperty(
+                      MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME,
+                      "The maximum number of partitions that will be executed in parallel "
+                          + "for partitioned queries on this connection. Set this value to 0 to "
+                          + "dynamically use the number of processors available in the runtime.",
+                      DEFAULT_MAX_PARTITIONED_PARALLELISM))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -426,6 +507,8 @@ public class ConnectionOptions {
      *       created on the emulator if any of them do not yet exist. Any existing instance or
      *       database on the emulator will remain untouched. No other configuration is needed in
      *       order to connect to the emulator than setting this property.
+     *   <li>routeToLeader (boolean): Sets the routeToLeader flag to route requests to leader (true)
+     *       or any region (false) in read/write transactions and Partitioned DML. Default is true.
      * </ul>
      *
      * @param uri The URI of the Spanner database to connect to.
@@ -544,9 +627,18 @@ public class ConnectionOptions {
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
   private final RpcPriority rpcPriority;
+  private final boolean delayTransactionStartUntilFirstWrite;
+  private final boolean trackSessionLeaks;
+  private final boolean trackConnectionLeaks;
+
+  private final boolean dataBoostEnabled;
+  private final boolean autoPartitionMode;
+  private final int maxPartitions;
+  private final int maxPartitionedParallelism;
 
   private final boolean autocommit;
   private final boolean readOnly;
+  private final boolean routeToLeader;
   private final boolean retryAbortsInternally;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
@@ -588,6 +680,14 @@ public class ConnectionOptions {
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
     this.rpcPriority = parseRPCPriority(this.uri);
+    this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
+    this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
+    this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
+
+    this.dataBoostEnabled = parseDataBoostEnabled(this.uri);
+    this.autoPartitionMode = parseAutoPartitionMode(this.uri);
+    this.maxPartitions = parseMaxPartitions(this.uri);
+    this.maxPartitionedParallelism = parseMaxPartitionedParallelism(this.uri);
 
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
@@ -636,16 +736,18 @@ public class ConnectionOptions {
 
     this.autocommit = parseAutocommit(this.uri);
     this.readOnly = parseReadOnly(this.uri);
+    this.routeToLeader = parseRouteToLeader(this.uri);
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
 
-    if (this.minSessions != null || this.maxSessions != null) {
+    if (this.minSessions != null || this.maxSessions != null || !this.trackSessionLeaks) {
       SessionPoolOptions.Builder sessionPoolOptionsBuilder =
           builder.sessionPoolOptions == null
               ? SessionPoolOptions.newBuilder()
               : builder.sessionPoolOptions.toBuilder();
+      sessionPoolOptionsBuilder.setTrackStackTraceOfSessionCheckout(this.trackSessionLeaks);
       sessionPoolOptionsBuilder.setAutoDetectDialect(true);
       if (this.minSessions != null) {
         sessionPoolOptionsBuilder.setMinSessions(this.minSessions);
@@ -717,6 +819,11 @@ public class ConnectionOptions {
   static boolean parseReadOnly(String uri) {
     String value = parseUriProperty(uri, READONLY_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
+  }
+
+  static boolean parseRouteToLeader(String uri) {
+    String value = parseUriProperty(uri, ROUTE_TO_LEADER_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_ROUTE_TO_LEADER;
   }
 
   @VisibleForTesting
@@ -836,6 +943,77 @@ public class ConnectionOptions {
   static boolean parseLenient(String uri) {
     String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
+  }
+
+  @VisibleForTesting
+  static boolean parseDelayTransactionStartUntilFirstWrite(String uri) {
+    String value = parseUriProperty(uri, DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME);
+    return value != null
+        ? Boolean.parseBoolean(value)
+        : DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+  }
+
+  @VisibleForTesting
+  static boolean parseTrackSessionLeaks(String uri) {
+    String value = parseUriProperty(uri, TRACK_SESSION_LEAKS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_SESSION_LEAKS;
+  }
+
+  @VisibleForTesting
+  static boolean parseTrackConnectionLeaks(String uri) {
+    String value = parseUriProperty(uri, TRACK_CONNECTION_LEAKS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_CONNECTION_LEAKS;
+  }
+
+  @VisibleForTesting
+  static boolean parseDataBoostEnabled(String uri) {
+    String value = parseUriProperty(uri, DATA_BOOST_ENABLED_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_DATA_BOOST_ENABLED;
+  }
+
+  @VisibleForTesting
+  static boolean parseAutoPartitionMode(String uri) {
+    String value = parseUriProperty(uri, AUTO_PARTITION_MODE_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTO_PARTITION_MODE;
+  }
+
+  @VisibleForTesting
+  static int parseMaxPartitions(String uri) {
+    String stringValue = parseUriProperty(uri, MAX_PARTITIONS_PROPERTY_NAME);
+    if (stringValue == null) {
+      return DEFAULT_MAX_PARTITIONS;
+    }
+    try {
+      int value = Integer.parseInt(stringValue);
+      if (value < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxPartitions must be >=0");
+      }
+      return value;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, "Invalid value for maxPartitions: " + stringValue);
+    }
+  }
+
+  @VisibleForTesting
+  static int parseMaxPartitionedParallelism(String uri) {
+    String stringValue = parseUriProperty(uri, MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME);
+    if (stringValue == null) {
+      return DEFAULT_MAX_PARTITIONED_PARALLELISM;
+    }
+    try {
+      int value = Integer.parseInt(stringValue);
+      if (value < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxPartitionedParallelism must be >=0");
+      }
+      return value;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Invalid value for maxPartitionedParallelism: " + stringValue);
+    }
   }
 
   @VisibleForTesting
@@ -1027,6 +1205,14 @@ public class ConnectionOptions {
   }
 
   /**
+   * Whether read/write transactions and partitioned DML are preferred to be routed to the leader
+   * region.
+   */
+  public boolean isRouteToLeader() {
+    return routeToLeader;
+  }
+
+  /**
    * The initial retryAbortsInternally value for connections created by this {@link
    * ConnectionOptions}
    */
@@ -1076,6 +1262,34 @@ public class ConnectionOptions {
   /** The {@link RpcPriority} to use for the connection. */
   RpcPriority getRPCPriority() {
     return rpcPriority;
+  }
+
+  /**
+   * Whether connections created by this {@link ConnectionOptions} should delay the actual start of
+   * a read/write transaction until the first write operation.
+   */
+  boolean isDelayTransactionStartUntilFirstWrite() {
+    return delayTransactionStartUntilFirstWrite;
+  }
+
+  boolean isTrackConnectionLeaks() {
+    return this.trackConnectionLeaks;
+  }
+
+  boolean isDataBoostEnabled() {
+    return this.dataBoostEnabled;
+  }
+
+  boolean isAutoPartitionMode() {
+    return this.autoPartitionMode;
+  }
+
+  int getMaxPartitions() {
+    return this.maxPartitions;
+  }
+
+  int getMaxPartitionedParallelism() {
+    return this.maxPartitionedParallelism;
   }
 
   /** Interceptors that should be executed after each statement */

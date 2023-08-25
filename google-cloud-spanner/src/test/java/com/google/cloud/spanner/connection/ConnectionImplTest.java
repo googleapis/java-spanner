@@ -42,6 +42,9 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
@@ -68,6 +71,7 @@ import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -364,7 +368,13 @@ public class ConnectionImplTest {
                 };
               }
             });
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
+    BatchClient batchClient = mock(BatchClient.class);
+    BatchReadOnlyTransaction batchReadOnlyTransaction = mock(BatchReadOnlyTransaction.class);
+    when(batchClient.batchReadOnlyTransaction(any(TimestampBound.class)))
+        .thenReturn(batchReadOnlyTransaction);
+    when(batchClient.batchReadOnlyTransaction(any(BatchTransactionId.class)))
+        .thenReturn(batchReadOnlyTransaction);
+    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, batchClient);
   }
 
   @Test
@@ -1373,12 +1383,13 @@ public class ConnectionImplTest {
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl impl =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1388,6 +1399,7 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1405,6 +1417,7 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"));
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1425,6 +1438,7 @@ public class ConnectionImplTest {
       impl.executeQuery(Statement.of("SELECT FOO FROM BAR"), prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1453,6 +1467,7 @@ public class ConnectionImplTest {
           prefetchOption);
       verify(unitOfWork)
           .executeQueryAsync(
+              CallType.SYNC,
               AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                   .parse(
                       Statement.newBuilder("SELECT FOO FROM BAR")
@@ -1477,12 +1492,13 @@ public class ConnectionImplTest {
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1519,7 +1535,8 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
       assertFalse(connection.isAutocommit());
 
       assertNull(connection.getTransactionTag());
@@ -1560,7 +1577,8 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
       assertTrue(connection.isAutocommit());
 
       try {
@@ -1584,13 +1602,14 @@ public class ConnectionImplTest {
     // Indicate that a transaction has been started.
     when(unitOfWork.getState()).thenReturn(UnitOfWorkState.STARTED);
     when(unitOfWork.executeQueryAsync(
-            any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
-    when(unitOfWork.rollbackAsync()).thenReturn(ApiFutures.immediateFuture(null));
+    when(unitOfWork.rollbackAsync(any())).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork createNewUnitOfWork() {
+          UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {

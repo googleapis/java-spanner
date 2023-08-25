@@ -199,6 +199,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.readOnly = false;
     }
 
+    @Override
+    protected boolean isRouteToLeader() {
+      return true;
+    }
+
     private void increaseAsyncOperations() {
       synchronized (lock) {
         if (runningAsyncOperations == 0) {
@@ -256,7 +261,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options);
+      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options, isRouteToLeader());
       fut.addListener(
           () -> {
             try {
@@ -718,7 +723,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), session.getOptions(), readOnly);
+            rpc.executeQuery(builder.build(), session.getOptions(), isRouteToLeader(), readOnly);
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
               resultSet.getMetadata().getTransaction(), builder.getTransaction().hasBegin());
@@ -748,7 +753,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
         increaseAsyncOperations();
-        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), readOnly);
+        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), isRouteToLeader(), readOnly);
       } catch (Throwable t) {
         decreaseAsyncOperations();
         throw t;

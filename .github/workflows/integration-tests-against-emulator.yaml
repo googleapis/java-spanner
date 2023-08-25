@@ -24,21 +24,16 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         java-version: 11
-        distribution: zulu
-    - run: echo "JAVA11_HOME=${JAVA_HOME}" >> $GITHUB_ENV
-      shell: bash
+        distribution: temurin
+    - name: Compiling main library
+      run: .kokoro/build.sh
     - uses: actions/setup-java@v3
       with:
         java-version: 8
-        distribution: zulu
-    - run: echo "JAVA8_HOME=${JAVA_HOME}" >> $GITHUB_ENV
-      shell: bash
-    - run: java -version
-    - name: Compiling main library
-      run: .kokoro/build.sh
+        distribution: temurin
     - name: Running tests
       run: |
-        mvn -B -Dspanner.testenv.instance="" -Penable-integration-tests \
+        mvn -V -B -Dspanner.testenv.instance="" -Penable-integration-tests \
             -DtrimStackTrace=false -Dclirr.skip=true -Denforcer.skip=true \
             -Dmaven.main.skip=true -fae verify
       env:

@@ -32,6 +32,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -134,11 +135,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
   private final DirectedReadOptions directedReadOptions;
+  private final boolean leaderAwareRoutingEnabled;
 
-  /**
-   * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
-   * {@link SpannerOptions}.
-   */
+  /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
@@ -603,6 +602,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
     directedReadOptions = builder.directedReadOptions;
+    leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
   }
 
   /**
@@ -704,6 +704,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private DirectedReadOptions directedReadOptions;
+    private boolean leaderAwareRoutingEnabled = true;
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -971,7 +972,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets a timeout specifically for Partitioned DML statements executed through {@link
-     * DatabaseClient#executePartitionedUpdate(Statement)}. The default is 2 hours.
+     * DatabaseClient#executePartitionedUpdate(Statement, UpdateOption...)}. The default is 2 hours.
      */
     public Builder setPartitionedDmlTimeout(Duration timeout) {
       this.partitionedDmlTimeout = timeout;
@@ -995,12 +996,25 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Disables automatic retries of administrative requests that fail if the <a
+     * href="https://cloud.google.com/spanner/quotas#administrative_limits">https://cloud.google.com/spanner/quotas#administrative_limits</a>
+     * have been exceeded. You should disable these retries if you intend to handle these errors in
+     * your application.
+     */
+    public Builder disableAdministrativeRequestRetries() {
+      this.retryAdministrativeRequestsSettings =
+          this.retryAdministrativeRequestsSettings.toBuilder().setMaxAttempts(1).build();
+      return this;
+    }
+
+    /**
      * Sets the retry settings for retrying administrative requests when the quote of administrative
      * requests per minute has been exceeded.
      */
     Builder setRetryAdministrativeRequestsSettings(
         RetrySettings retryAdministrativeRequestsSettings) {
-      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      this.retryAdministrativeRequestsSettings =
+          Preconditions.checkNotNull(retryAdministrativeRequestsSettings);
       return this;
     }
 
@@ -1053,9 +1067,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets a {@link CallCredentialsProvider} that can deliver {@link CallCredentials} to use on a
-     * per-gRPC basis. Any credentials returned by this {@link CallCredentialsProvider} will have
-     * preference above any {@link Credentials} that may have been set on the {@link SpannerOptions}
-     * instance.
+     * per-gRPC basis.
      */
     public Builder setCallCredentialsProvider(CallCredentialsProvider callCredentialsProvider) {
       this.callCredentialsProvider = callCredentialsProvider;
@@ -1175,6 +1187,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setEmulatorHost(String emulatorHost) {
       this.emulatorHost = emulatorHost;
+      return this;
+    }
+
+    /**
+     * Enable leader aware routing. Leader aware routing would route all requests in RW/PDML
+     * transactions to the leader region.
+     */
+    public Builder enableLeaderAwareRouting() {
+      this.leaderAwareRoutingEnabled = true;
+      return this;
+    }
+
+    /**
+     * Disable leader aware routing. Disabling leader aware routing would route all requests in
+     * RW/PDML transactions to any region.
+     */
+    public Builder disableLeaderAwareRouting() {
+      this.leaderAwareRoutingEnabled = false;
       return this;
     }
 
@@ -1316,6 +1346,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public DirectedReadOptions getDirectedReadOptions() {
     return directedReadOptions;
+  }
+  public boolean isLeaderAwareRoutingEnabled() {
+    return leaderAwareRoutingEnabled;
   }
 
   /** Returns the default query options to use for the specific database. */

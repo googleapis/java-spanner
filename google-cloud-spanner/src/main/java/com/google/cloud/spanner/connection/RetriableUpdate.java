@@ -56,11 +56,12 @@ final class RetriableUpdate implements RetriableStatement {
           .getStatementExecutor()
           .invokeInterceptors(statement, StatementExecutionStep.RETRY_STATEMENT, transaction);
       if (analyzeMode == AnalyzeMode.NONE) {
-        newCount = transaction.getReadContext().executeUpdate(statement.getStatement(), options);
+        newCount =
+            transaction.getTransactionContext().executeUpdate(statement.getStatement(), options);
       } else {
         newCount =
             transaction
-                .getReadContext()
+                .getTransactionContext()
                 .analyzeUpdate(statement.getStatement(), analyzeMode.getQueryAnalyzeMode())
                 .getRowCountExact();
       }

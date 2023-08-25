@@ -163,6 +163,11 @@ abstract class AbstractReadContext
       this.bound = builder.bound;
     }
 
+    @Override
+    protected boolean isRouteToLeader() {
+      return false;
+    }
+
     @GuardedBy("lock")
     @Override
     void beforeReadOrQueryLocked() {
@@ -294,6 +299,11 @@ abstract class AbstractReadContext
     }
 
     @Override
+    protected boolean isRouteToLeader() {
+      return false;
+    }
+
+    @Override
     void beforeReadOrQuery() {
       super.beforeReadOrQuery();
       initTransaction();
@@ -347,7 +357,8 @@ abstract class AbstractReadContext
                   .setSession(session.getName())
                   .setOptions(options)
                   .build();
-          Transaction transaction = rpc.beginTransaction(request, session.getOptions());
+          Transaction transaction =
+              rpc.beginTransaction(request, session.getOptions(), isRouteToLeader());
           if (!transaction.hasReadTimestamp()) {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
@@ -417,6 +428,10 @@ abstract class AbstractReadContext
 
   long getSeqNo() {
     return seqNo.incrementAndGet();
+  }
+
+  protected boolean isRouteToLeader() {
+    return false;
   }
 
   @Override
@@ -655,7 +670,12 @@ abstract class AbstractReadContext
         getExecuteSqlRequestBuilder(
             statement, queryMode, options, /* withTransactionSelector = */ false);
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.QUERY,
+            span,
+            rpc.getExecuteQueryRetrySettings(),
+            rpc.getExecuteQueryRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
@@ -674,7 +694,7 @@ abstract class AbstractReadContext
             }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
-                    request.build(), stream.consumer(), session.getOptions(), readOnly);
+                    request.build(), stream.consumer(), session.getOptions(), isRouteToLeader(), readOnly);
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
@@ -792,7 +812,12 @@ abstract class AbstractReadContext
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.READ, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.READ,
+            span,
+            rpc.getReadRetrySettings(),
+            rpc.getReadRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
@@ -808,7 +833,8 @@ abstract class AbstractReadContext
             }
             builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
-                rpc.read(builder.build(), stream.consumer(), session.getOptions(), readOnly);
+                rpc.read(
+                    builder.build(), stream.consumer(), session.getOptions(), isRouteToLeader(), readOnly);
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;

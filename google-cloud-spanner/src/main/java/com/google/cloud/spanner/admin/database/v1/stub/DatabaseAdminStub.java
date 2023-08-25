@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import javax.annotation.Generated;
 
 // AUTO-GENERATED DOCUMENTATION AND CLASS.
@@ -101,6 +103,15 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
 
   public UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     throw new UnsupportedOperationException("Not implemented: getDatabaseCallable()");
+  }
+
+  public OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateDatabaseOperationCallable()");
+  }
+
+  public UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateDatabaseCallable()");
   }
 
   public OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>

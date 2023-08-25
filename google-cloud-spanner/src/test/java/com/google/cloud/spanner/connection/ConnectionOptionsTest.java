@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -48,6 +49,9 @@ public class ConnectionOptionsTest {
   private static final String FILE_TEST_PATH =
       ConnectionOptionsTest.class.getResource("test-key.json").getFile();
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String TEST_PROJECT = "test-project-123";
+  private static final String TEST_INSTANCE = "test-instance-123";
+  private static final String TEST_DATABASE = "test-database-123";
 
   @Test
   public void testBuildWithURIWithDots() {
@@ -146,6 +150,27 @@ public class ConnectionOptionsTest {
     assertEquals("test-database-123", options.getDatabaseName());
     assertEquals(NoCredentials.getInstance(), options.getCredentials());
     assertTrue(options.isUsePlainText());
+  }
+
+  @Test
+  public void testBuildWithRouteToLeader() {
+    final String BASE_URI =
+        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123";
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(BASE_URI + "?routeToLeader=false");
+    builder.setCredentialsUrl(FILE_TEST_PATH);
+    ConnectionOptions options = builder.build();
+    assertEquals(options.getHost(), DEFAULT_HOST);
+    assertEquals(options.getProjectId(), TEST_PROJECT);
+    assertEquals(options.getInstanceId(), TEST_INSTANCE);
+    assertEquals(options.getDatabaseName(), TEST_DATABASE);
+    assertFalse(options.isRouteToLeader());
+
+    // Test for default behavior for routeToLeader property.
+    builder = ConnectionOptions.newBuilder().setUri(BASE_URI);
+    builder.setCredentialsUrl(FILE_TEST_PATH);
+    options = builder.build();
+    assertTrue(options.isRouteToLeader());
   }
 
   @Test
@@ -487,6 +512,186 @@ public class ConnectionOptionsTest {
             .build();
     assertThat(options.getMaxSessions()).isEqualTo(4000);
     assertThat(options.getSessionPoolOptions().getMaxSessions()).isEqualTo(4000);
+  }
+
+  @Test
+  public void testTrackSessionLeaks() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?trackSessionLeaks=false")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.getSessionPoolOptions().isTrackStackTraceOfSessionCheckout());
+  }
+
+  @Test
+  public void testTrackSessionLeaksDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.getSessionPoolOptions().isTrackStackTraceOfSessionCheckout());
+  }
+
+  @Test
+  public void testTrackConnectionLeaks() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?trackConnectionLeaks=false")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.isTrackConnectionLeaks());
+  }
+
+  @Test
+  public void testTrackConnectionLeaksDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.isTrackConnectionLeaks());
+  }
+
+  @Test
+  public void testDataBoostEnabled() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?dataBoostEnabled=true")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.isDataBoostEnabled());
+  }
+
+  @Test
+  public void testDataBoostEnabledDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.isDataBoostEnabled());
+  }
+
+  @Test
+  public void testAutoPartitionMode() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?autoPartitionMode=true")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertTrue(options.isAutoPartitionMode());
+  }
+
+  @Test
+  public void testAutoPartitionModeDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertFalse(options.isAutoPartitionMode());
+  }
+
+  @Test
+  public void testMaxPartitions() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitions=4")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(4, options.getMaxPartitions());
+  }
+
+  @Test
+  public void testMaxPartitionsDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(0, options.getMaxPartitions());
+  }
+
+  @Test
+  public void testMaxPartitionsInvalidValue() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitions=-1")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
+  }
+
+  @Test
+  public void testMaxPartitionsNonNumeric() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitions=four")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelism() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitionedParallelism=4")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(4, options.getMaxPartitionedParallelism());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelismDefault() {
+    ConnectionOptions options =
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentialsUrl(FILE_TEST_PATH)
+            .build();
+    assertEquals(1, options.getMaxPartitionedParallelism());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelismInvalidValue() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitionedParallelism=-1")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
+  }
+
+  @Test
+  public void testMaxPartitionedParallelismNonNumeric() {
+    assertThrows(
+        SpannerException.class,
+        () ->
+            ConnectionOptions.newBuilder()
+                .setUri(
+                    "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxPartitionedParallelism=four")
+                .setCredentialsUrl(FILE_TEST_PATH)
+                .build());
   }
 
   @Test

@@ -50,11 +50,6 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     return new ListInstancesRequest();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
         .internal_static_google_spanner_admin_instance_v1_ListInstancesRequest_descriptor;
@@ -213,10 +208,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
+   *
    *   * `name`
    *   * `display_name`
    *   * `labels.key` where key is the name of a label
+   *
    * Some examples of using filters are:
+   *
    *   * `name:*` --&gt; The instance has a name.
    *   * `name:Howl` --&gt; The instance's name contains the string "howl".
    *   * `name:HOWL` --&gt; Equivalent to above.
@@ -251,10 +249,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
+   *
    *   * `name`
    *   * `display_name`
    *   * `labels.key` where key is the name of a label
+   *
    * Some examples of using filters are:
+   *
    *   * `name:*` --&gt; The instance has a name.
    *   * `name:Howl` --&gt; The instance's name contains the string "howl".
    *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1003,10 +1004,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1040,10 +1044,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1077,10 +1084,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1113,10 +1123,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1145,10 +1158,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.

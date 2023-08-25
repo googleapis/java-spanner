@@ -222,4 +222,225 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.cloud.spanner.ResultSet analyzeUpdateStatement(com.google.cloud.spanner.Statement, com.google.cloud.spanner.ReadContext$QueryAnalyzeMode, com.google.cloud.spanner.Options$UpdateOption[])</method>
   </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.spanner.v1.Transaction beginTransaction(com.google.spanner.v1.BeginTransactionRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.api.core.ApiFuture beginTransactionAsync(com.google.spanner.v1.BeginTransactionRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.api.core.ApiFuture beginTransactionAsync(com.google.spanner.v1.BeginTransactionRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.spanner.v1.ResultSet executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map)</method>
+    <to>com.google.spanner.v1.ResultSet executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, boolean)</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
+    <to>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map, boolean)</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.api.core.ApiFuture executeQueryAsync(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall read(com.google.spanner.v1.ReadRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
+    <to>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, boolean)</to>
+  </difference>
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
+    <to>com.google.spanner.v1.ResultSet</to>
+  </difference>
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>com.google.spanner.v1.ResultSet executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map)</method>
+    <to>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall</to>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.spanner.v1.Transaction beginTransaction(com.google.spanner.v1.BeginTransactionRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.core.ApiFuture beginTransactionAsync(com.google.spanner.v1.BeginTransactionRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.spanner.v1.ResultSet executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.core.ApiFuture executeQueryAsync(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall read(com.google.spanner.v1.ReadRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
+  </difference>
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
+    <to>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, boolean)</to>
+  </difference>
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
+    <to>com.google.spanner.v1.ResultSet</to>
+  </difference>
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.spanner.v1.ResultSet executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map)</method>
+    <to>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall</to>
+  </difference>
+
+  <!-- Savepoints -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setSavepointSupport(com.google.cloud.spanner.connection.SavepointSupport)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.SavepointSupport getSavepointSupport()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void savepoint(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void releaseSavepoint(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void rollbackToSavepoint(java.lang.String)</method>
+  </difference>
+  
+  <!-- Delay start transaction -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDelayTransactionStartUntilFirstWrite(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isDelayTransactionStartUntilFirstWrite()</method>
+  </difference>
+
+  <!-- Partitioned queries in Connection API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>int getMaxPartitionedParallelism()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>int getMaxPartitions()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isAutoPartitionMode()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isDataBoostEnabled()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.ResultSet partitionQuery(com.google.cloud.spanner.Statement, com.google.cloud.spanner.PartitionOptions, com.google.cloud.spanner.Options$QueryOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.ResultSet runPartition(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.PartitionedQueryResultSet runPartitionedQuery(com.google.cloud.spanner.Statement, com.google.cloud.spanner.PartitionOptions, com.google.cloud.spanner.Options$QueryOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setAutoPartitionMode(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDataBoostEnabled(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxPartitionedParallelism(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxPartitions(int)</method>
+  </difference>
+  <!-- (Internal change, use stream timeout) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall</className>
+    <method>com.google.api.gax.rpc.ApiCallContext getCallContext()</method>
+  </difference>
+  <!-- (Internal change, propagate streaming retry settings) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getReadRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getExecuteQueryRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getReadRetryableCodes()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getExecuteQueryRetryableCodes()</method>
+  </difference>
 </differences>

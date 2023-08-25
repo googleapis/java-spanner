@@ -30,6 +30,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
@@ -564,6 +565,29 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets whether this connection should delay the actual start of a read/write transaction until
+   * the first write operation is observed on that transaction. All read operations that are
+   * executed before the first write operation in the transaction will be executed as if the
+   * connection was in auto-commit mode. This can reduce locking, especially for transactions that
+   * execute a large number of reads before any writes, at the expense of a lower transaction
+   * isolation.
+   *
+   * <p>NOTE: This will make read/write transactions non-serializable.
+   */
+  default void setDelayTransactionStartUntilFirstWrite(
+      boolean delayTransactionStartUntilFirstWrite) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * @return true if this connection delays the actual start of a read/write transaction until the
+   *     first write operation on that transaction.
+   */
+  default boolean isDelayTransactionStartUntilFirstWrite() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Commits the current transaction of this connection. All mutations that have been buffered
    * during the current transaction will be written to the database.
    *
@@ -712,6 +736,61 @@ public interface Connection extends AutoCloseable {
    * </ul>
    */
   ApiFuture<Void> rollbackAsync();
+
+  /** Returns the current savepoint support for this connection. */
+  SavepointSupport getSavepointSupport();
+
+  /** Sets how savepoints should be supported on this connection. */
+  void setSavepointSupport(SavepointSupport savepointSupport);
+
+  /**
+   * Creates a savepoint with the given name.
+   *
+   * <p>The uniqueness constraints on a savepoint name depends on the database dialect that is used:
+   *
+   * <ul>
+   *   <li>{@link Dialect#GOOGLE_STANDARD_SQL} requires that savepoint names are unique within a
+   *       transaction. The name of a savepoint that has been released or destroyed because the
+   *       transaction has rolled back to a savepoint that was defined before that savepoint can be
+   *       re-used within the transaction.
+   *   <li>{@link Dialect#POSTGRESQL} follows the rules for savepoint names in PostgreSQL. This
+   *       means that multiple savepoints in one transaction can have the same name, but only the
+   *       last savepoint with a given name is visible. See <a
+   *       href="https://www.postgresql.org/docs/current/sql-savepoint.html">PostgreSQL savepoint
+   *       documentation</a> for more information.
+   * </ul>
+   *
+   * @param name the name of the savepoint to create
+   * @throws SpannerException if a savepoint with the same name already exists and the dialect that
+   *     is used is {@link Dialect#GOOGLE_STANDARD_SQL}
+   * @throws SpannerException if there is no transaction on this connection
+   * @throws SpannerException if internal retries have been disabled for this connection
+   */
+  void savepoint(String name);
+
+  /**
+   * Releases the savepoint with the given name. The savepoint and all later savepoints will be
+   * removed from the current transaction and can no longer be used.
+   *
+   * @param name the name of the savepoint to release
+   * @throws SpannerException if no savepoint with the given name exists
+   */
+  void releaseSavepoint(String name);
+
+  /**
+   * Rolls back to the given savepoint. Rolling back to a savepoint undoes all changes and releases
+   * all internal locks that have been taken by the transaction after the savepoint. Rolling back to
+   * a savepoint does not remove the savepoint from the transaction, and it is possible to roll back
+   * to the same savepoint multiple times. All savepoints that have been defined after the given
+   * savepoint are removed from the transaction.
+   *
+   * @param name the name of the savepoint to roll back to.
+   * @throws SpannerException if no savepoint with the given name exists.
+   * @throws AbortedDueToConcurrentModificationException if rolling back to the savepoint failed
+   *     because another transaction has modified the data that has been read or modified by this
+   *     transaction
+   */
+  void rollbackToSavepoint(String name);
 
   /**
    * @return <code>true</code> if this connection has a transaction (that has not necessarily
@@ -952,6 +1031,89 @@ public interface Connection extends AutoCloseable {
    * @param queryMode the mode in which to execute the query
    */
   ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode);
+
+  /**
+   * Enable data boost for partitioned queries. See also {@link #partitionQuery(Statement,
+   * PartitionOptions, QueryOption...)}
+   */
+  void setDataBoostEnabled(boolean dataBoostEnabled);
+
+  /**
+   * Returns whether data boost is enabled for partitioned queries. See also {@link
+   * #partitionQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  boolean isDataBoostEnabled();
+
+  /**
+   * Sets whether this connection should always use partitioned queries when a query is executed on
+   * this connection. Setting this flag to <code>true</code> and then executing a query that cannot
+   * be partitioned, or executing a query in a read/write transaction, will cause an error. Use this
+   * flag in combination with {@link #setDataBoostEnabled(boolean)} to force all queries on this
+   * connection to use data boost.
+   */
+  void setAutoPartitionMode(boolean autoPartitionMode);
+
+  /** Returns whether this connection will execute all queries as partitioned queries. */
+  boolean isAutoPartitionMode();
+
+  /**
+   * Sets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
+  void setMaxPartitions(int maxPartitions);
+
+  /**
+   * Gets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
+  int getMaxPartitions();
+
+  /**
+   * Partitions the given query, so it can be executed in parallel. This method returns a {@link
+   * ResultSet} with a string-representation of the partitions that were created. These strings can
+   * be used to execute a partition either on this connection or an any other connection (on this
+   * host or an any other host) by calling the method {@link #runPartition(String)}. This method
+   * will automatically enable data boost for the query if {@link #isDataBoostEnabled()} returns
+   * true.
+   */
+  ResultSet partitionQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
+
+  /**
+   * Executes the given partition of a query. The encodedPartitionId should be a string that was
+   * returned by {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)}.
+   */
+  ResultSet runPartition(String encodedPartitionId);
+
+  /**
+   * Sets the maximum degree of parallelism that is used when executing a partitioned query using
+   * {@link #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}. The method will use
+   * up to <code>maxThreads</code> to execute and retrieve the results from Cloud Spanner. Set this
+   * value to <code>0</code>> to use the number of available processors as returned by {@link
+   * Runtime#availableProcessors()}.
+   */
+  void setMaxPartitionedParallelism(int maxThreads);
+
+  /**
+   * Returns the maximum degree of parallelism that is used for {@link
+   * #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  int getMaxPartitionedParallelism();
+
+  /**
+   * Executes the given query as a partitioned query. The query will first be partitioned using the
+   * {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)} method. Each of the
+   * partitions will then be executed in the background, and the results will be merged into a
+   * single result set.
+   *
+   * <p>This method will use <code>maxPartitionedParallelism</code> threads to execute the
+   * partitioned query. Set this variable to a higher/lower value to increase/decrease the degree of
+   * parallelism used for execution.
+   */
+  PartitionedQueryResultSet runPartitionedQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
 
   /**
    * Executes the given statement as a simple DML statement. If the statement does not contain a

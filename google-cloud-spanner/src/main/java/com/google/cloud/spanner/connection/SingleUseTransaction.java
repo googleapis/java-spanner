@@ -25,6 +25,8 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.Tuple;
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -32,6 +34,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerApiFutures;
@@ -40,6 +43,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
@@ -70,9 +74,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final boolean readOnly;
   private final DdlClient ddlClient;
   private final DatabaseClient dbClient;
+  private final BatchClient batchClient;
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
   private final boolean returnCommitStats;
+  private final boolean internalMetdataQuery;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
   private boolean used = false;
@@ -81,10 +87,12 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, SingleUseTransaction> {
     private DdlClient ddlClient;
     private DatabaseClient dbClient;
+    private BatchClient batchClient;
     private boolean readOnly;
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
     private boolean returnCommitStats;
+    private boolean internalMetadataQuery;
 
     private Builder() {}
 
@@ -97,6 +105,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     Builder setDatabaseClient(DatabaseClient client) {
       Preconditions.checkNotNull(client);
       this.dbClient = client;
+      return this;
+    }
+
+    Builder setBatchClient(BatchClient batchClient) {
+      this.batchClient = Preconditions.checkNotNull(batchClient);
       return this;
     }
 
@@ -122,10 +135,16 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setInternalMetadataQuery(boolean internalMetadataQuery) {
+      this.internalMetadataQuery = internalMetadataQuery;
+      return this;
+    }
+
     @Override
     SingleUseTransaction build() {
       Preconditions.checkState(ddlClient != null, "No DDL client specified");
       Preconditions.checkState(dbClient != null, "No DatabaseClient client specified");
+      Preconditions.checkState(batchClient != null, "No BatchClient client specified");
       Preconditions.checkState(readOnlyStaleness != null, "No read-only staleness specified");
       Preconditions.checkState(autocommitDmlMode != null, "No autocommit dml mode specified");
       return new SingleUseTransaction(this);
@@ -140,10 +159,12 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     super(builder);
     this.ddlClient = builder.ddlClient;
     this.dbClient = builder.dbClient;
+    this.batchClient = builder.batchClient;
     this.readOnly = builder.readOnly;
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
     this.returnCommitStats = builder.returnCommitStats;
+    this.internalMetdataQuery = builder.internalMetadataQuery;
   }
 
   @Override
@@ -174,6 +195,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
+      final CallType callType,
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
@@ -187,14 +209,17 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
     if (statement.isUpdate()) {
       if (analyzeMode != AnalyzeMode.NONE) {
-        return analyzeTransactionalUpdateAsync(statement, analyzeMode);
+        return analyzeTransactionalUpdateAsync(callType, statement, analyzeMode);
       }
       // DML with returning clause.
-      return executeDmlReturningAsync(statement, options);
+      return executeDmlReturningAsync(callType, statement, options);
     }
 
+    // Do not use a read-only staleness for internal metadata queries.
     final ReadOnlyTransaction currentTransaction =
-        dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
+        internalMetdataQuery
+            ? dbClient.singleUseReadOnlyTransaction()
+            : dbClient.singleUseReadOnlyTransaction(readOnlyStaleness);
     Callable<ResultSet> callable =
         () -> {
           try {
@@ -220,11 +245,12 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           }
         };
     readTimestamp = SettableApiFuture.create();
-    return executeStatementAsync(statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+    return executeStatementAsync(
+        callType, statement, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
   }
 
   private ApiFuture<ResultSet> executeDmlReturningAsync(
-      final ParsedStatement update, QueryOption... options) {
+      CallType callType, final ParsedStatement update, QueryOption... options) {
     Callable<ResultSet> callable =
         () -> {
           try {
@@ -242,7 +268,36 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           }
         };
     return executeStatementAsync(
+        callType,
         update,
+        callable,
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+  }
+
+  @Override
+  public ApiFuture<ResultSet> partitionQueryAsync(
+      CallType callType,
+      ParsedStatement query,
+      PartitionOptions partitionOptions,
+      QueryOption... options) {
+    Callable<ResultSet> callable =
+        () -> {
+          try (BatchReadOnlyTransaction transaction =
+              batchClient.batchReadOnlyTransaction(readOnlyStaleness)) {
+            ResultSet resultSet = partitionQuery(transaction, partitionOptions, query, options);
+            readTimestamp.set(transaction.getReadTimestamp());
+            state = UnitOfWorkState.COMMITTED;
+            return resultSet;
+          } catch (Throwable throwable) {
+            state = UnitOfWorkState.COMMIT_FAILED;
+            readTimestamp.set(null);
+            throw throwable;
+          }
+        };
+    readTimestamp = SettableApiFuture.create();
+    return executeStatementAsync(
+        callType,
+        query,
         callable,
         ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
@@ -297,7 +352,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Void> executeDdlAsync(final ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(CallType callType, final ParsedStatement ddl) {
     Preconditions.checkNotNull(ddl);
     Preconditions.checkArgument(
         ddl.getType() == StatementType.DDL, "Statement is not a ddl statement");
@@ -324,11 +379,13 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(ddl, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+    return executeStatementAsync(
+        callType, ddl, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
+  public ApiFuture<Long> executeUpdateAsync(
+      CallType callType, ParsedStatement update, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "Statement is not an update statement");
     ConnectionPreconditions.checkState(
@@ -340,12 +397,12 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       case TRANSACTIONAL:
         res =
             ApiFutures.transform(
-                executeTransactionalUpdateAsync(update, AnalyzeMode.NONE, options),
+                executeTransactionalUpdateAsync(callType, update, AnalyzeMode.NONE, options),
                 Tuple::x,
                 MoreExecutors.directExecutor());
         break;
       case PARTITIONED_NON_ATOMIC:
-        res = executePartitionedUpdateAsync(update, options);
+        res = executePartitionedUpdateAsync(callType, update, options);
         break;
       default:
         throw SpannerExceptionFactory.newSpannerException(
@@ -356,7 +413,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "Statement is not an update statement");
     ConnectionPreconditions.checkState(
@@ -367,14 +424,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     checkAndMarkUsed();
 
     return ApiFutures.transform(
-        executeTransactionalUpdateAsync(update, analyzeMode, options),
+        executeTransactionalUpdateAsync(callType, update, analyzeMode, options),
         Tuple::y,
         MoreExecutors.directExecutor());
   }
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, UpdateOption... options) {
+      CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options) {
     Preconditions.checkNotNull(updates);
     for (ParsedStatement update : updates) {
       Preconditions.checkArgument(
@@ -387,7 +444,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
     switch (autocommitDmlMode) {
       case TRANSACTIONAL:
-        return executeTransactionalBatchUpdateAsync(updates, options);
+        return executeTransactionalBatchUpdateAsync(callType, updates, options);
       case PARTITIONED_NON_ATOMIC:
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed in " + autocommitDmlMode);
@@ -420,7 +477,10 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   private ApiFuture<Tuple<Long, ResultSet>> executeTransactionalUpdateAsync(
-      final ParsedStatement update, AnalyzeMode analyzeMode, final UpdateOption... options) {
+      CallType callType,
+      final ParsedStatement update,
+      AnalyzeMode analyzeMode,
+      final UpdateOption... options) {
     Callable<Tuple<Long, ResultSet>> callable =
         () -> {
           try {
@@ -445,13 +505,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           }
         };
     return executeStatementAsync(
+        callType,
         update,
         callable,
         ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   private ApiFuture<ResultSet> analyzeTransactionalUpdateAsync(
-      final ParsedStatement update, AnalyzeMode analyzeMode) {
+      CallType callType, final ParsedStatement update, AnalyzeMode analyzeMode) {
     Callable<ResultSet> callable =
         () -> {
           try {
@@ -470,13 +531,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
           }
         };
     return executeStatementAsync(
+        callType,
         update,
         callable,
         ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
   }
 
   private ApiFuture<Long> executePartitionedUpdateAsync(
-      final ParsedStatement update, final UpdateOption... options) {
+      CallType callType, final ParsedStatement update, final UpdateOption... options) {
     Callable<Long> callable =
         () -> {
           try {
@@ -488,11 +550,14 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(update, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
+    return executeStatementAsync(
+        callType, update, callable, SpannerGrpc.getExecuteStreamingSqlMethod());
   }
 
   private ApiFuture<long[]> executeTransactionalBatchUpdateAsync(
-      final Iterable<ParsedStatement> updates, final UpdateOption... options) {
+      final CallType callType,
+      final Iterable<ParsedStatement> updates,
+      final UpdateOption... options) {
     Callable<long[]> callable =
         () -> {
           writeTransaction = createWriteTransaction();
@@ -516,11 +581,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
               });
         };
     return executeStatementAsync(
-        RUN_BATCH_STATEMENT, callable, SpannerGrpc.getExecuteBatchDmlMethod());
+        callType, RUN_BATCH_STATEMENT, callable, SpannerGrpc.getExecuteBatchDmlMethod());
   }
 
   @Override
-  public ApiFuture<Void> writeAsync(final Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(CallType callType, final Iterable<Mutation> mutations) {
     Preconditions.checkNotNull(mutations);
     ConnectionPreconditions.checkState(
         !isReadOnly(), "Update statements are not allowed in read-only mode");
@@ -543,23 +608,29 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             throw t;
           }
         };
-    return executeStatementAsync(COMMIT_STATEMENT, callable, SpannerGrpc.getCommitMethod());
+    return executeStatementAsync(
+        callType, COMMIT_STATEMENT, callable, SpannerGrpc.getCommitMethod());
   }
 
   @Override
-  public ApiFuture<Void> commitAsync() {
+  public ApiFuture<Void> commitAsync(CallType callType) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not supported for single-use transactions");
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync() {
+  public ApiFuture<Void> rollbackAsync(CallType callType) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not supported for single-use transactions");
   }
 
   @Override
-  public ApiFuture<long[]> runBatchAsync() {
+  String getUnitOfWorkName() {
+    return "single-use transaction";
+  }
+
+  @Override
+  public ApiFuture<long[]> runBatchAsync(CallType callType) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Run batch is not supported for single-use transactions");
   }

@@ -40,7 +40,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   private CreateDatabaseRequest() {
     parent_ = "";
     createStatement_ = "";
-    extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    extraStatements_ = com.google.protobuf.LazyStringArrayList.emptyList();
     databaseDialect_ = 0;
   }
 
@@ -48,11 +48,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new CreateDatabaseRequest();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -189,7 +184,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   public static final int EXTRA_STATEMENTS_FIELD_NUMBER = 3;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringList extraStatements_;
+  private com.google.protobuf.LazyStringArrayList extraStatements_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -618,8 +614,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       bitField0_ = 0;
       parent_ = "";
       createStatement_ = "";
-      extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000004);
+      extraStatements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       encryptionConfig_ = null;
       if (encryptionConfigBuilder_ != null) {
         encryptionConfigBuilder_.dispose();
@@ -653,21 +648,11 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public com.google.spanner.admin.database.v1.CreateDatabaseRequest buildPartial() {
       com.google.spanner.admin.database.v1.CreateDatabaseRequest result =
           new com.google.spanner.admin.database.v1.CreateDatabaseRequest(this);
-      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
       onBuilt();
       return result;
-    }
-
-    private void buildPartialRepeatedFields(
-        com.google.spanner.admin.database.v1.CreateDatabaseRequest result) {
-      if (((bitField0_ & 0x00000004) != 0)) {
-        extraStatements_ = extraStatements_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000004);
-      }
-      result.extraStatements_ = extraStatements_;
     }
 
     private void buildPartial0(com.google.spanner.admin.database.v1.CreateDatabaseRequest result) {
@@ -677,6 +662,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.createStatement_ = createStatement_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        extraStatements_.makeImmutable();
+        result.extraStatements_ = extraStatements_;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.encryptionConfig_ =
@@ -746,7 +735,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       if (!other.extraStatements_.isEmpty()) {
         if (extraStatements_.isEmpty()) {
           extraStatements_ = other.extraStatements_;
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ |= 0x00000004;
         } else {
           ensureExtraStatementsIsMutable();
           extraStatements_.addAll(other.extraStatements_);
@@ -1083,14 +1072,14 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       return this;
     }
 
-    private com.google.protobuf.LazyStringList extraStatements_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList extraStatements_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureExtraStatementsIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
+      if (!extraStatements_.isModifiable()) {
         extraStatements_ = new com.google.protobuf.LazyStringArrayList(extraStatements_);
-        bitField0_ |= 0x00000004;
       }
+      bitField0_ |= 0x00000004;
     }
     /**
      *
@@ -1107,7 +1096,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return A list containing the extraStatements.
      */
     public com.google.protobuf.ProtocolStringList getExtraStatementsList() {
-      return extraStatements_.getUnmodifiableView();
+      extraStatements_.makeImmutable();
+      return extraStatements_;
     }
     /**
      *
@@ -1184,6 +1174,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       ensureExtraStatementsIsMutable();
       extraStatements_.set(index, value);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1208,6 +1199,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       ensureExtraStatementsIsMutable();
       extraStatements_.add(value);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1229,6 +1221,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public Builder addAllExtraStatements(java.lang.Iterable<java.lang.String> values) {
       ensureExtraStatementsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, extraStatements_);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1247,8 +1240,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearExtraStatements() {
-      extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      extraStatements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000004);
+      ;
       onChanged();
       return this;
     }
@@ -1274,6 +1268,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       checkByteStringIsUtf8(value);
       ensureExtraStatementsIsMutable();
       extraStatements_.add(value);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }

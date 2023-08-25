@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.38.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.45.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,12 +11,12 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.38.3-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.45.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
-    <graalvm.version>22.3.1</graalvm.version>
+    <graalvm.version>22.3.3</graalvm.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
     <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
     <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
@@ -29,7 +29,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.8</version>
+        <version>0.8.10</version>
         <executions>
           <execution>
             <goals>
@@ -122,6 +122,9 @@
         <configuration>
           <buildArgs combine.children="append">
             <buildArg>-Dspanner.testenv.config.class=${spanner.testenv.config.class}</buildArg>
+            <buildArg>-Dspanner.testenv.instance=${spanner.testenv.instance}</buildArg>
+            <buildArg>-Dspanner.gce.config.project_id=${spanner.gce.config.project_id}</buildArg>
+            <buildArg>-Dspanner.testenv.kms_key.name=${spanner.testenv.kms_key.name}</buildArg>
           </buildArgs>
         </configuration>
       </plugin>
@@ -191,6 +194,14 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
+      <!--   Temp exclusion. Remove next protobuf upgrade (to 3.23.3 or higher)
+         context: https://github.com/googleapis/sdk-platform-java/pull/1791#issuecomment-1601587713-->
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.j2objc</groupId>
+          <artifactId>j2objc-annotations</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
@@ -359,7 +370,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20230227</version>
+      <version>20230618</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -378,13 +389,13 @@
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-core</artifactId>
-      <version>1.36</version>
+      <version>1.37</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-generator-annprocess</artifactId>
-      <version>1.36</version>
+      <version>1.37</version>
       <scope>test</scope>
     </dependency>
 
