@@ -47,7 +47,7 @@ import org.threeten.bp.Duration;
  * reasonable estimates and are primarily intended to keep the benchmarks comparable with each other
  * before and after changes have been made to the pool. The benchmarks are bound to the Maven
  * profile `benchmark` and can be executed like this: <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionBenchmark
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSharedSessionsBenchmark
  * </code>
  */
 @BenchmarkMode(Mode.AverageTime)
@@ -55,7 +55,7 @@ import org.threeten.bp.Duration;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Warmup(batchSize = 0, iterations = 1)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnonymousSessionsWithSingleSessionBenchmark {
+public class AnonymousSessionsWithSharedSessionsBenchmark {
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
   private static final int WAIT_TIME_BETWEEN_REQUESTS = 2;
@@ -78,7 +78,7 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
     @Param({"400"})
     int maxSessions;
 
-    @Param({"1"})
+    @Param({"200", "400"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
@@ -108,18 +108,23 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
   }
 
   /**
-   * Measures the time needed to execute a burst of read requests.
+   * Measures the time needed to execute a burst of read and write requests.
    *
    * <p>Some read requests will be long-running and will cause session leaks. Such sessions will be
    * removed by the session maintenance background task if SessionPool Option
    * ActionOnInactiveTransaction is set as WARN_AND_CLOSE.
    *
+   * <p>Some write requests will be long-running. The test asserts that no sessions are removed by
+   * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
+   * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
+   *
    * @param server
    * @throws Exception
    */
   @Benchmark
-  public void burstRead(final BenchmarkState server) throws Exception {
-    int totalQueries = server.maxSessions * 8;
+  public void burstReadAndWrite(final BenchmarkState server) throws Exception {
+    int totalWrites = server.maxSessions * 4;
+    int totalReads = server.maxSessions * 4;
     int parallelThreads = server.maxSessions * 2;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
@@ -128,21 +133,84 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
-    List<ListenableFuture<?>> futures = new ArrayList<>(totalQueries);
-    for (int i = 0; i < totalQueries; i++) {
+    List<ListenableFuture<?>> futures = new ArrayList<>(totalReads + totalWrites);
+    for (int i = 0; i < totalWrites; i++) {
+      futures.add(
+          service.submit(
+              () -> {
+                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
+                TransactionRunner runner = server.client.readWriteTransaction();
+                return runner.run(
+                    transaction ->
+                        transaction.executeUpdate(UPDATE_QUERY));
+              }));
+    }
+    for (int i = 0; i < totalReads; i++) {
       futures.add(
           service.submit(
               () -> {
                 Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
                 try (ResultSet rs =
-                    client.singleUseWithSharedSession()
-                        .executeQuery(SELECT_QUERY)) {
+                    client.singleUse().executeQuery(SELECT_QUERY)) {
                   while (rs.next()) {}
                   return null;
                 }
               }));
     }
+    Futures.allAsList(futures).get();
+    service.shutdown();
+  }
 
+  /**
+   * Measures the time needed to execute a burst of read and write requests.
+   *
+   * <p>Some read requests will be long-running and will cause session leaks. Such sessions will be
+   * removed by the session maintenance background task if SessionPool Option
+   * ActionOnInactiveTransaction is set as WARN_AND_CLOSE.
+   *
+   * <p>Some write requests will be long-running. The test asserts that no sessions are removed by
+   * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
+   * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
+   *
+   * @param server
+   * @throws Exception
+   */
+  @Benchmark
+  public void burstReadAndWrite_withSharedROSessions(final BenchmarkState server) throws Exception {
+    int totalWrites = server.maxSessions * 4;
+    int totalReads = server.maxSessions * 4;
+    int parallelThreads = server.maxSessions * 2;
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions()).isEqualTo(
+        server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+
+    ListeningScheduledExecutorService service =
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
+    List<ListenableFuture<?>> futures = new ArrayList<>(totalReads + totalWrites);
+    for (int i = 0; i < totalWrites; i++) {
+      futures.add(
+          service.submit(
+              () -> {
+                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
+                TransactionRunner runner = server.client.readWriteTransaction();
+                return runner.run(
+                    transaction ->
+                        transaction.executeUpdate(UPDATE_QUERY));
+              }));
+    }
+    for (int i = 0; i < totalReads; i++) {
+      futures.add(
+          service.submit(
+              () -> {
+                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
+                try (ResultSet rs =
+                    client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
+                  while (rs.next()) {}
+                  return null;
+                }
+              }));
+    }
     Futures.allAsList(futures).get();
     service.shutdown();
   }
