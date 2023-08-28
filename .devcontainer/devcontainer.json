@@ -1,40 +1,45 @@
 {
-  "id": "java",
-  "version": "2.0.0",
-  "name": "Java",
-  "description": "Develop Java applications. Includes the JDK and Java extensions.",
-  "documentationURL": "https://github.com/devcontainers/templates/tree/main/src/java",
-  "publisher": "Dev Container Spec Maintainers",
-  "licenseURL": "https://github.com/devcontainers/templates/blob/main/LICENSE",
-  "options": {
-    "imageVariant": {
-      "type": "string",
-      "description": "Java version (use -bookworm, or -bullseye variants on local arm64/Apple Silicon):",
-      "proposals": [
-        "8-bookworm",
-        "11-bookworm",
-        "17-bookworm",
-        "8-bullseye",
-        "11-bullseye",
-        "17-bullseye",
-        "8-buster",
-        "11-buster",
-        "17-buster"
-      ],
-      "default": "8-buster"
-    },
-    "installMaven": {
-      "type": "boolean",
-      "description": "Install Maven, a management tool for Java",
-      "default": "false"
-    },
-    "installGradle": {
-      "type": "boolean",
-      "description": "Install Gradle, a build automation tool for multi-language software development",
-      "default": "false"
+  "name": "Java 8",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      // Use the VARIANT arg to pick a Debian OS version: buster, bullseye
+      // Use bullseye when running on local arm64/Apple Silicon.
+      "VARIANT": "buster",
+      // Options
+      "INSTALL_MAVEN": "false",
+      "INSTALL_GRADLE": "false",
+      "NODE_VERSION": "lts/*"
     }
   },
-  "platforms": [
-    "Java"
-  ]
+
+  // Configure tool-specific properties.
+  "customizations": {
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        "java.import.gradle.java.home": "/usr/local/sdkman/candidates/java/current",
+        "java.configuration.runtimes": [{
+          "default": true,
+          "name": "JavaSE-1.8",
+          "path": "/usr/local/sdkman/candidates/java/current"
+        }]
+      },
+
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "vscjava.vscode-java-pack"
+      ]
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "vscode"
 }
