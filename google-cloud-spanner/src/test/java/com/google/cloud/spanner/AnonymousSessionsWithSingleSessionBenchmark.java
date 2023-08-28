@@ -78,7 +78,9 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
     @Param({"400"})
     int maxSessions;
 
-    @Param({"1"})
+    // We are adding this configuration to see if having single session has any noticeable differences
+    // as compared to having multiple sessions.
+    @Param({"1", "2", "4", "50", "100", "400"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
