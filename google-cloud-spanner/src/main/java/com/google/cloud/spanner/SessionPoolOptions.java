@@ -198,17 +198,17 @@ public class SessionPoolOptions {
     return inactiveTransactionRemovalOptions;
   }
 
-  boolean useSingleSessionForRO() {
+  boolean isUseSingleSessionForRO() {
     return anonymousSessionOptions.actionForNumberOfAnonymousSessions
         == ActionForNumberOfAnonymousSessions.SINGLE_SESSION;
   }
 
-  boolean useSingleChannelForRO() {
+  boolean isUseSingleChannelForRO() {
     return anonymousSessionOptions.actionForAnonymousSessionsChannelHints
         == ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL;
   }
 
-  boolean useMultipleChannelForRO() {
+  boolean isUseMultipleChannelForRO() {
     return anonymousSessionOptions.actionForAnonymousSessionsChannelHints
         == ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL;
   }

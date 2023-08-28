@@ -89,7 +89,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
                       .setAnonymousSessionsWithSingleSession()
-                      .setAnonymousSessionsWithSingleChannel()
+                      .setAnonymousSessionsWithMultipleChannel()
                       .setWaitForMinSessions(Duration.ofSeconds(20)).build())
               .build();
       spanner = options.getService();
