@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
@@ -176,6 +177,7 @@ public class ReadOnlyTransactionTest {
         .thenReturn(new SimpleReadOnlyTransaction(staleness));
     return ReadOnlyTransaction.newBuilder()
         .setDatabaseClient(client)
+        .setBatchClient(mock(BatchClient.class))
         .setReadOnlyStaleness(staleness)
         .withStatementExecutor(new StatementExecutor())
         .build();
@@ -315,6 +317,7 @@ public class ReadOnlyTransactionTest {
     ReadOnlyTransaction transaction =
         ReadOnlyTransaction.newBuilder()
             .setDatabaseClient(client)
+            .setBatchClient(mock(BatchClient.class))
             .setReadOnlyStaleness(TimestampBound.strong())
             .withStatementExecutor(new StatementExecutor())
             .build();

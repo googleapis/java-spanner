@@ -88,6 +88,8 @@ integration)
       -Dclirr.skip=true \
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
+      -Dspanner.gce.config.project_id=gcloud-devel \
+      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests \
       -fae \
       verify
     RETURN_CODE=$?
@@ -126,12 +128,12 @@ integration-cloud-staging)
     ;;
 graalvm)
     # Run Unit and Integration Tests with Native Image
-    mvn test -Pnative -Penable-integration-tests
+    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests
     RETURN_CODE=$?
     ;;
 graalvm17)
     # Run Unit and Integration Tests with Native Image
-    mvn test -Pnative -Penable-integration-tests
+    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests
     RETURN_CODE=$?
     ;;
 slowtests)

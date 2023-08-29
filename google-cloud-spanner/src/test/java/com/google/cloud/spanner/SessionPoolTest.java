@@ -59,6 +59,7 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -96,6 +97,8 @@ import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.threeten.bp.Duration;
+import org.threeten.bp.Instant;
+import org.threeten.bp.temporal.ChronoUnit;
 
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
@@ -570,6 +573,359 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
+  public void longRunningTransactionsCleanup_whenActionSetToClose_verifyInactiveSessionsClosed()
+      throws Exception {
+    setupForLongRunningTransactionsCleanup();
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setCloseIfInactiveTransactions() // set option to close inactive transactions
+            .build();
+
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get().setEligibleForLongRunning(false);
+    readSession2.get().setEligibleForLongRunning(false);
+    readSession3.get().setEligibleForLongRunning(true);
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+
+    // ensure that the sessions are in use for > 60 minutes
+    pool.poolMaintainer.lastExecutionTime = Instant.now();
+    when(clock.instant()).thenReturn(Instant.now().plus(61, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.maintainPool();
+
+    // the two session that were un-expectedly long-running were removed from the pool.
+    // verify that only 1 session that is unexpected to be long-running remains in the pool.
+    assertEquals(1, pool.totalSessions());
+    assertEquals(2, pool.numLeakedSessionsRemoved());
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void longRunningTransactionsCleanup_whenActionSetToWarn_verifyInactiveSessionsOpen()
+      throws Exception {
+    setupForLongRunningTransactionsCleanup();
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setWarnIfInactiveTransactions() // set option to warn (via logs) inactive transactions
+            .build();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get().setEligibleForLongRunning(false);
+    readSession2.get().setEligibleForLongRunning(false);
+    readSession3.get().setEligibleForLongRunning(true);
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+
+    // ensure that the sessions are in use for > 60 minutes
+    pool.poolMaintainer.lastExecutionTime = Instant.now();
+    when(clock.instant()).thenReturn(Instant.now().plus(61, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.maintainPool();
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void
+      longRunningTransactionsCleanup_whenUtilisationBelowThreshold_verifyInactiveSessionsOpen()
+          throws Exception {
+    setupForLongRunningTransactionsCleanup();
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setCloseIfInactiveTransactions() // set option to close inactive transactions
+            .build();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+
+    pool = createPool(clock);
+    pool.getSession().close();
+
+    // 2/3 sessions are used. Hence utilisation < 95%
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+
+    // complete the async tasks and mark sessions as checked out
+    readSession1.get().setEligibleForLongRunning(false);
+    readSession2.get().setEligibleForLongRunning(false);
+
+    assertEquals(2, pool.totalSessions());
+    assertEquals(2, pool.checkedOutSessions.size());
+
+    // ensure that the sessions are in use for > 60 minutes
+    pool.poolMaintainer.lastExecutionTime = Instant.now();
+    when(clock.instant()).thenReturn(Instant.now().plus(61, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.maintainPool();
+
+    assertEquals(2, pool.totalSessions());
+    assertEquals(2, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void
+      longRunningTransactionsCleanup_whenAllAreExpectedlyLongRunning_verifyInactiveSessionsOpen()
+          throws Exception {
+    SessionImpl session1 = mockSession();
+    SessionImpl session2 = mockSession();
+    SessionImpl session3 = mockSession();
+
+    final LinkedList<SessionImpl> sessions =
+        new LinkedList<>(Arrays.asList(session1, session2, session3));
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(sessions.pop());
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+
+    for (SessionImpl session : sessions) {
+      mockKeepAlive(session);
+    }
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setCloseIfInactiveTransactions() // set option to close inactive transactions
+            .build();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get().setEligibleForLongRunning(true);
+    readSession2.get().setEligibleForLongRunning(true);
+    readSession3.get().setEligibleForLongRunning(true);
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+
+    // ensure that the sessions are in use for > 60 minutes
+    pool.poolMaintainer.lastExecutionTime = Instant.now();
+    when(clock.instant()).thenReturn(Instant.now().plus(61, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.maintainPool();
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void longRunningTransactionsCleanup_whenBelowDurationThreshold_verifyInactiveSessionsOpen()
+      throws Exception {
+    setupForLongRunningTransactionsCleanup();
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setCloseIfInactiveTransactions() // set option to close inactive transactions
+            .build();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get().setEligibleForLongRunning(false);
+    readSession2.get().setEligibleForLongRunning(false);
+    readSession3.get().setEligibleForLongRunning(true);
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+
+    // ensure that the sessions are in use for < 60 minutes
+    pool.poolMaintainer.lastExecutionTime = Instant.now();
+    when(clock.instant()).thenReturn(Instant.now().plus(50, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.maintainPool();
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void longRunningTransactionsCleanup_whenException_doNothing() throws Exception {
+    setupForLongRunningTransactionsCleanup();
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setCloseIfInactiveTransactions() // set option to close inactive transactions
+            .build();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get().setEligibleForLongRunning(false);
+    readSession2.get().setEligibleForLongRunning(false);
+    readSession3.get().setEligibleForLongRunning(true);
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+
+    when(clock.instant()).thenReturn(Instant.now().plus(50, ChronoUnit.MINUTES));
+
+    pool.poolMaintainer.lastExecutionTime = null; // setting null to throw exception
+    pool.poolMaintainer.maintainPool();
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void
+      longRunningTransactionsCleanup_whenTaskRecurrenceBelowThreshold_verifyInactiveSessionsOpen()
+          throws Exception {
+    setupForLongRunningTransactionsCleanup();
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(3)
+            .setIncStep(1)
+            .setMaxIdleSessions(0)
+            .setCloseIfInactiveTransactions() // set option to close inactive transactions
+            .build();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
+
+    pool = createPool(clock);
+    // Make sure pool has been initialized
+    pool.getSession().close();
+
+    // All 3 sessions used. 100% of pool utilised.
+    PooledSessionFuture readSession1 = pool.getSession();
+    PooledSessionFuture readSession2 = pool.getSession();
+    PooledSessionFuture readSession3 = pool.getSession();
+
+    // complete the async tasks
+    readSession1.get();
+    readSession2.get();
+    readSession3.get();
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+
+    pool.poolMaintainer.lastExecutionTime = Instant.now();
+    when(clock.instant()).thenReturn(Instant.now().plus(10, ChronoUnit.SECONDS));
+
+    pool.poolMaintainer.maintainPool();
+
+    assertEquals(3, pool.totalSessions());
+    assertEquals(3, pool.checkedOutSessions.size());
+    assertEquals(0, pool.numLeakedSessionsRemoved());
+    pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
+  }
+
+  private void setupForLongRunningTransactionsCleanup() {
+    SessionImpl session1 = mockSession();
+    SessionImpl session2 = mockSession();
+    SessionImpl session3 = mockSession();
+
+    final LinkedList<SessionImpl> sessions =
+        new LinkedList<>(Arrays.asList(session1, session2, session3));
+    doAnswer(
+            invocation -> {
+              executor.submit(
+                  () -> {
+                    SessionConsumerImpl consumer =
+                        invocation.getArgument(2, SessionConsumerImpl.class);
+                    consumer.onSessionReady(sessions.pop());
+                  });
+              return null;
+            })
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+
+    for (SessionImpl session : sessions) {
+      mockKeepAlive(session);
+    }
+  }
+
+  @Test
   public void keepAlive() throws Exception {
     options = SessionPoolOptions.newBuilder().setMinSessions(2).setMaxSessions(3).build();
     final SessionImpl session = mockSession();
@@ -793,6 +1149,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
       when(rpc.rollbackAsync(any(RollbackRequest.class), any(Map.class)))
           .thenReturn(ApiFutures.<Empty>immediateFailedFuture(sessionNotFound));
+      when(rpc.getReadRetrySettings())
+          .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetrySettings());
+      when(rpc.getReadRetryableCodes())
+          .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetryableCodes());
+      when(rpc.getExecuteQueryRetrySettings())
+          .thenReturn(
+              SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings());
+      when(rpc.getExecuteQueryRetryableCodes())
+          .thenReturn(
+              SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
       final SessionImpl closedSession = mock(SessionImpl.class);
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");

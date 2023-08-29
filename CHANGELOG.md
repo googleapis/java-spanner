@@ -1,5 +1,48 @@
 # Changelog
 
+## [6.45.3](https://github.com/googleapis/java-spanner/compare/v6.45.2...v6.45.3) (2023-08-17)
+
+
+### Bug Fixes
+
+* Use streaming read/query settings for stream retry ([#2579](https://github.com/googleapis/java-spanner/issues/2579)) ([f78b838](https://github.com/googleapis/java-spanner/commit/f78b838e294f9c29bfc34a5d964933657b70417f))
+
+## [6.45.2](https://github.com/googleapis/java-spanner/compare/v6.45.1...v6.45.2) (2023-08-14)
+
+
+### Bug Fixes
+
+* GetColumnCount would fail for empty partititioned result sets ([#2588](https://github.com/googleapis/java-spanner/issues/2588)) ([9a2f3fc](https://github.com/googleapis/java-spanner/commit/9a2f3fc01748224fc8084fbf2b4a0223426b1603))
+
+## [6.45.1](https://github.com/googleapis/java-spanner/compare/v6.45.0...v6.45.1) (2023-08-11)
+
+
+### Bug Fixes
+
+* Always allow metadata queries ([#2580](https://github.com/googleapis/java-spanner/issues/2580)) ([ebb17fc](https://github.com/googleapis/java-spanner/commit/ebb17fc8aeac5fc75e4f135f33dba970f2480585))
+
+## [6.45.0](https://github.com/googleapis/java-spanner/compare/v6.44.0...v6.45.0) (2023-08-04)
+
+
+### Features
+
+* Enable leader aware routing by default in Connection API. This enables its use in the JDBC driver and PGAdapter. The update contains performance optimisations that will reduce the latency of read/write transactions that originate from a region other than the default leader region. ([2a85446](https://github.com/googleapis/java-spanner/commit/2a85446b162b006ce84a86285af1767c879b27ed))
+* Enable leader aware routing by default. This update contains performance optimisations that will reduce the latency of read/write transactions that originate from a region other than the default leader region. ([441c1b0](https://github.com/googleapis/java-spanner/commit/441c1b03c3e976c6304a99fefd93b5c4291e5364))
+* Long running transaction clean up background task. Adding configuration options for closing inactive transactions. ([#2419](https://github.com/googleapis/java-spanner/issues/2419)) ([423e1a4](https://github.com/googleapis/java-spanner/commit/423e1a4b483798d9683ff9bd232b53d76e09beb0))
+* Support partitioned queries + data boost in Connection API ([#2540](https://github.com/googleapis/java-spanner/issues/2540)) ([4e31d04](https://github.com/googleapis/java-spanner/commit/4e31d046f5d80abe8876a729ddba045c70f3261d))
+
+
+### Bug Fixes
+
+* Apply stream wait timeout ([#2544](https://github.com/googleapis/java-spanner/issues/2544)) ([5a12cd2](https://github.com/googleapis/java-spanner/commit/5a12cd29601253423c5738be5471a036fd0334be))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.14.0 ([#2562](https://github.com/googleapis/java-spanner/issues/2562)) ([dbd5c75](https://github.com/googleapis/java-spanner/commit/dbd5c75be39262003092ff4a925ed470cc45f8be))
+* Update dependency org.openjdk.jmh:jmh-core to v1.37 ([#2565](https://github.com/googleapis/java-spanner/issues/2565)) ([d5c36bf](https://github.com/googleapis/java-spanner/commit/d5c36bfbb67ecb14854944779da6e4dbd93f3559))
+* Update dependency org.openjdk.jmh:jmh-generator-annprocess to v1.37 ([#2566](https://github.com/googleapis/java-spanner/issues/2566)) ([73e92d4](https://github.com/googleapis/java-spanner/commit/73e92d42fe6d334b6efa6485246dc67858adb0a9))
+
 ## [6.44.0](https://github.com/googleapis/java-spanner/compare/v6.43.2...v6.44.0) (2023-07-27)
 
 
