@@ -1379,7 +1379,7 @@ class SessionPool {
      */
     @GuardedBy("lock")
     private Position releaseToPosition = initialReleasePosition;
-    
+
     /**
      * Property to mark if the session is eligible to be long-running. This can only be true if the
      * session is executing certain types of transactions (for ex - Partitioned DML) which can be
