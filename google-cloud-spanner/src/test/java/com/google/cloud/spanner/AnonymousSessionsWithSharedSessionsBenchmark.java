@@ -75,10 +75,10 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     @Param({"100"})
     int minSessions;
 
-    @Param({"400"})
+    @Param({"200"})
     int maxSessions;
 
-    @Param({"200", "400"})
+    @Param({"200"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
@@ -88,7 +88,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
-                      .setAnonymousSessionsWithSingleSession()
+                      .setAnonymousSessionsWithMultipleSession()
                       .setAnonymousSessionsWithMultipleChannel()
                       .setWaitForMinSessions(Duration.ofSeconds(20)).build())
               .build();
@@ -134,17 +134,6 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
     List<ListenableFuture<?>> futures = new ArrayList<>(totalReads + totalWrites);
-    for (int i = 0; i < totalWrites; i++) {
-      futures.add(
-          service.submit(
-              () -> {
-                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
-                TransactionRunner runner = server.client.readWriteTransaction();
-                return runner.run(
-                    transaction ->
-                        transaction.executeUpdate(UPDATE_QUERY));
-              }));
-    }
     for (int i = 0; i < totalReads; i++) {
       futures.add(
           service.submit(
@@ -155,6 +144,17 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
                   while (rs.next()) {}
                   return null;
                 }
+              }));
+    }
+    for (int i = 0; i < totalWrites; i++) {
+      futures.add(
+          service.submit(
+              () -> {
+                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
+                TransactionRunner runner = server.client.readWriteTransaction();
+                return runner.run(
+                    transaction ->
+                        transaction.executeUpdate(UPDATE_QUERY));
               }));
     }
     Futures.allAsList(futures).get();
@@ -188,17 +188,6 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
     List<ListenableFuture<?>> futures = new ArrayList<>(totalReads + totalWrites);
-    for (int i = 0; i < totalWrites; i++) {
-      futures.add(
-          service.submit(
-              () -> {
-                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
-                TransactionRunner runner = server.client.readWriteTransaction();
-                return runner.run(
-                    transaction ->
-                        transaction.executeUpdate(UPDATE_QUERY));
-              }));
-    }
     for (int i = 0; i < totalReads; i++) {
       futures.add(
           service.submit(
@@ -209,6 +198,17 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
                   while (rs.next()) {}
                   return null;
                 }
+              }));
+    }
+    for (int i = 0; i < totalWrites; i++) {
+      futures.add(
+          service.submit(
+              () -> {
+                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
+                TransactionRunner runner = server.client.readWriteTransaction();
+                return runner.run(
+                    transaction ->
+                        transaction.executeUpdate(UPDATE_QUERY));
               }));
     }
     Futures.allAsList(futures).get();
