@@ -49,8 +49,8 @@ import org.threeten.bp.Duration;
  * Benchmarks for long-running sessions scenarios. The simulated execution times are based on
  * reasonable estimates and are primarily intended to keep the benchmarks comparable with each other
  * before and after changes have been made to the pool. The benchmarks are bound to the Maven
- * profile `benchmark` and can be executed like this: <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSharedSessionsBenchmark
+ * profile `benchmark` and can be executed like this: <code> mvn clean test -DskipTests -Pbenchmark
+ * -Dbenchmark.name=AnonymousSessionsBaselineBenchmark
  * </code>
  */
 @BenchmarkMode(Mode.AverageTime)
@@ -58,7 +58,8 @@ import org.threeten.bp.Duration;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Warmup(batchSize = 0, iterations = 1)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnonymousSessionsWithSharedSessionsBenchmark {
+public class AnonymousSessionsBaselineBenchmark {
+
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
   private static final int WAIT_TIME_BETWEEN_REQUESTS = 2;
@@ -75,31 +76,25 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     private Spanner spanner;
     private DatabaseClientImpl client;
 
-    @Param({"5"})
+    @Param({"100"})
     int minSessions;
 
-    @Param({"5"})
+    @Param({"400"})
     int maxSessions;
 
-    @Param({"5"})
+    // We are adding this configuration to see if having single session has any noticeable differences
+    // as compared to having multiple sessions.
+    @Param({"1", "2", "4", "50", "100", "400"})
     int numSessions;
+
     @Setup(Level.Invocation)
     public void setup() throws Exception {
-      // TODO : this has a bug since SINGLE_SESSION option will make it share sessions even for
-      // base case. Refactor the base tests to a separate benchmark test.
-      AnonymousSessionOptions anonymousSessionOptions =
-          AnonymousSessionOptions.newBuilder()
-              .setActionForAnonymousSessionsChannelHints(
-                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
-              .setActionForNumberOfAnonymousSessions(
-                  ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
-                      .setAnonymousSessionOptions(anonymousSessionOptions)
                       .setWaitForMinSessions(Duration.ofSeconds(20)).build())
               .build();
       spanner = options.getService();
@@ -118,6 +113,44 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
   }
 
   /**
+   * Measures the time needed to execute a burst of read requests.
+   *
+   * <p>Some read requests will be long-running and will cause session leaks. Such sessions will be
+   * removed by the session maintenance background task if SessionPool Option
+   * ActionOnInactiveTransaction is set as WARN_AND_CLOSE.
+   */
+  @Benchmark
+  public void burstRead(final BenchmarkState server) throws Exception {
+    int totalQueries = server.maxSessions * 8;
+    int parallelThreads = server.maxSessions * 2;
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions()).isEqualTo(
+        server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+
+    ListeningScheduledExecutorService service =
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
+    List<ListenableFuture<?>> futures = new ArrayList<>(totalQueries);
+    for (int i = 0; i < totalQueries; i++) {
+      futures.add(
+          service.submit(
+              () -> {
+                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
+                try (ResultSet rs =
+                    client.singleUseWithSharedSession()
+                        .executeQuery(SELECT_QUERY)) {
+                  while (rs.next()) {
+                  }
+                  return null;
+                }
+              }));
+    }
+
+    Futures.allAsList(futures).get();
+    service.shutdown();
+  }
+
+  /**
    * Measures the time needed to execute a burst of read and write requests.
    *
    * <p>Some read requests will be long-running and will cause session leaks. Such sessions will be
@@ -127,12 +160,9 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
    * <p>Some write requests will be long-running. The test asserts that no sessions are removed by
    * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
    * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
-   *
-   * @param server
-   * @throws Exception
    */
   @Benchmark
-  public void burstReadAndWrite_withSharedROSessions(final BenchmarkState server) throws Exception {
+  public void burstReadAndWrite(final BenchmarkState server) throws Exception {
     int totalWrites = server.maxSessions * 4;
     int totalReads = server.maxSessions * 4;
     int parallelThreads = server.maxSessions * 2;
@@ -140,6 +170,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
     List<ListenableFuture<?>> futures = new ArrayList<>(totalReads + totalWrites);
@@ -149,8 +180,9 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
               () -> {
                 Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
                 try (ResultSet rs =
-                    client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
-                  while (rs.next()) {}
+                    client.singleUse().executeQuery(SELECT_QUERY)) {
+                  while (rs.next()) {
+                  }
                   return null;
                 }
               }));
