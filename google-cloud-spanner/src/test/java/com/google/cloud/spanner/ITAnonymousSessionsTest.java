@@ -94,10 +94,21 @@ public class ITAnonymousSessionsTest {
   }
   @Test
   public void testAnonymousSessions() {
+    AnonymousSessionOptions anonymousSessionOptions =
+        AnonymousSessionOptions.newBuilder()
+            .setActionForAnonymousSessionsChannelHints(
+                ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
+            .setActionForNumberOfAnonymousSessions(
+                ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
+
     Session session1 = pool.getSession().get();
     Session session2 = pool.getSession().get();
 
-    SpannerOptions options = env.getTestHelper().getOptions();
+    SpannerOptions options = env.getTestHelper().getOptions()
+        .toBuilder()
+        .setSessionPoolOption(SessionPoolOptions.newBuilder()
+            .setAnonymousSessionOptions(anonymousSessionOptions).build()).build();
+
     try (Spanner spanner = options.getService()) {
       DatabaseClientImpl client = (DatabaseClientImpl) spanner.getDatabaseClient(db.getId());
       try (ResultSet rs =

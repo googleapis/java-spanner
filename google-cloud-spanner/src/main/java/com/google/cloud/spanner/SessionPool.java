@@ -2385,9 +2385,11 @@ class SessionPool {
             resourceNotFoundException);
       }
 
-      int randomIndex = random.nextInt(sessions.size());
-      sess = sessions.get(randomIndex);
-      // sess = sessions.peek();
+      // Choose a session at random without removing from the queue
+      if(!sessions.isEmpty()) {
+        int randomIndex = random.nextInt(sessions.size());
+        sess = sessions.get(randomIndex);
+      }
       if (sess == null) {
         span.addAnnotation("No session available");
         maybeCreateSession();
