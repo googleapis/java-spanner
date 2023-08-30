@@ -1,7 +1,8 @@
 # Reference - https://github.com/microsoft/vscode-dev-containers/tree/main/containers/java-8/.devcontainer
 # [Choice] Debian OS version (use bullseye on local arm64/Apple Silicon): buster, bullseye
-ARG VARIANT="buster"
-FROM mcr.microsoft.com/vscode/devcontainers/java:1-8-${VARIANT}
+# [Choice] Java version (use -bullseye variants on local arm64/Apple Silicon): 11, 17, 11-bullseye, 17-bullseye, 11-buster, 17-buster
+ARG VARIANT="bullseye"
+FROM mcr.microsoft.com/vscode/devcontainers/java:11-${VARIANT}
 
 # [Option] Install Maven
 ARG INSTALL_MAVEN="true"

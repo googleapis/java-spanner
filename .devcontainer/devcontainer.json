@@ -1,13 +1,13 @@
 {
-  "name": "Java 8",
+  "name": "Java 11",
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
       // Use the VARIANT arg to pick a Debian OS version: buster, bullseye
       // Use bullseye when running on local arm64/Apple Silicon.
-      "VARIANT": "buster",
+      "VARIANT": "bullseye",
       // Options
-      "INSTALL_MAVEN": "false",
+      "INSTALL_MAVEN": "true",
       "INSTALL_GRADLE": "false",
       "NODE_VERSION": "lts/*"
     }
@@ -22,14 +22,15 @@
         "java.import.gradle.java.home": "/usr/local/sdkman/candidates/java/current",
         "java.configuration.runtimes": [{
           "default": true,
-          "name": "JavaSE-1.8",
+          "name": "JavaSE-11",
           "path": "/usr/local/sdkman/candidates/java/current"
         }]
       },
 
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
-        "vscjava.vscode-java-pack"
+        "vscjava.vscode-java-pack",
+        "ms-azuretools.vscode-docker"
       ]
     }
   },
