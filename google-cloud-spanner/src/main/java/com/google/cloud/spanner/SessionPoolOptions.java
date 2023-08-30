@@ -709,46 +709,6 @@ public class SessionPoolOptions {
     }
 
     @VisibleForTesting
-    Builder setAnonymousSessionsWithSingleSession() {
-      this.anonymousSessionOptions =
-          AnonymousSessionOptions.newBuilder()
-              .setActionForNumberOfAnonymousSessions(
-                  ActionForNumberOfAnonymousSessions.SINGLE_SESSION)
-              .build();
-      return this;
-    }
-
-    @VisibleForTesting
-    Builder setAnonymousSessionsWithMultipleSession() {
-      this.anonymousSessionOptions =
-          AnonymousSessionOptions.newBuilder()
-              .setActionForNumberOfAnonymousSessions(
-                  ActionForNumberOfAnonymousSessions.MULTI_SESSION)
-              .build();
-      return this;
-    }
-
-    @VisibleForTesting
-    Builder setAnonymousSessionsWithSingleChannel() {
-      this.anonymousSessionOptions =
-          AnonymousSessionOptions.newBuilder()
-              .setActionForAnonymousSessionsChannelHints(
-                  ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL)
-              .build();
-      return this;
-    }
-
-    @VisibleForTesting
-    Builder setAnonymousSessionsWithMultipleChannel() {
-      this.anonymousSessionOptions =
-          AnonymousSessionOptions.newBuilder()
-              .setActionForAnonymousSessionsChannelHints(
-                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
-              .build();
-      return this;
-    }
-
-    @VisibleForTesting
     Builder setPoolMaintainerClock(Clock poolMaintainerClock) {
       this.poolMaintainerClock = poolMaintainerClock;
       return this;

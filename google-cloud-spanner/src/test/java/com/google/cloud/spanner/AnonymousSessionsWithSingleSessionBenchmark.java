@@ -18,6 +18,9 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.SessionPoolOptions.ActionForAnonymousSessionsChannelHints;
+import com.google.cloud.spanner.SessionPoolOptions.ActionForNumberOfAnonymousSessions;
+import com.google.cloud.spanner.SessionPoolOptions.AnonymousSessionOptions;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -84,14 +87,19 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
+      AnonymousSessionOptions anonymousSessionOptions =
+          AnonymousSessionOptions.newBuilder()
+              .setActionForAnonymousSessionsChannelHints(
+                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
+              .setActionForNumberOfAnonymousSessions(
+                  ActionForNumberOfAnonymousSessions.SINGLE_SESSION).build();
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
-                      .setAnonymousSessionsWithSingleSession()
-                      .setAnonymousSessionsWithMultipleChannel()
+                      .setAnonymousSessionOptions(anonymousSessionOptions)
                       .setWaitForMinSessions(Duration.ofSeconds(20)).build())
               .build();
       spanner = options.getService();
