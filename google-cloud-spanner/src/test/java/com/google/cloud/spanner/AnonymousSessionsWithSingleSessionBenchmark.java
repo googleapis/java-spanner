@@ -92,7 +92,7 @@ public class AnonymousSessionsWithSingleSessionBenchmark {
               .setActionForAnonymousSessionsChannelHints(
                   ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
               .setActionForNumberOfAnonymousSessions(
-                  ActionForNumberOfAnonymousSessions.SINGLE_SESSION).build();
+                  ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(

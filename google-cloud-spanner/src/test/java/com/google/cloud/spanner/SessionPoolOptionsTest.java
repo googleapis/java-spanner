@@ -198,10 +198,10 @@ public class SessionPoolOptionsTest {
             .setActionForAnonymousSessionsChannelHints(
                 ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL)
             .setActionForNumberOfAnonymousSessions(
-                ActionForNumberOfAnonymousSessions.MULTI_SESSION).build();
+                ActionForNumberOfAnonymousSessions.DEFAULT).build();
 
     assertTrue(sessionPoolOptions.isUseSingleChannelForRO());
-    assertTrue(sessionPoolOptions.isUseMultipleSessionsForRO());
+    assertTrue(sessionPoolOptions.isDefaultSessionsForRO());
   }
 
   @Test
@@ -211,13 +211,13 @@ public class SessionPoolOptionsTest {
             .setActionForAnonymousSessionsChannelHints(
                 ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
             .setActionForNumberOfAnonymousSessions(
-                ActionForNumberOfAnonymousSessions.SINGLE_SESSION).build();
+                ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
     SessionPoolOptions sessionPoolOptions =
         SessionPoolOptions.newBuilder().setMaxSessions(100).setMinSessions(1)
             .setAnonymousSessionOptions(anonymousSessionOptions).build();
     assertFalse(sessionPoolOptions.isUseSingleChannelForRO());
-    assertFalse(sessionPoolOptions.isUseMultipleSessionsForRO());
+    assertFalse(sessionPoolOptions.isDefaultSessionsForRO());
     assertTrue(sessionPoolOptions.isUseMultipleChannelForRO());
-    assertTrue(sessionPoolOptions.isUseSingleSessionForRO());
+    assertTrue(sessionPoolOptions.isSharedSessionsForRO());
   }
 }

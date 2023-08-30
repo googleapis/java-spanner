@@ -198,14 +198,14 @@ public class SessionPoolOptions {
     return inactiveTransactionRemovalOptions;
   }
 
-  boolean isUseSingleSessionForRO() {
+  boolean isSharedSessionsForRO() {
     return anonymousSessionOptions.actionForNumberOfAnonymousSessions
-        == ActionForNumberOfAnonymousSessions.SINGLE_SESSION;
+        == ActionForNumberOfAnonymousSessions.SHARED_SESSION;
   }
 
-  boolean isUseMultipleSessionsForRO() {
+  boolean isDefaultSessionsForRO() {
     return anonymousSessionOptions.actionForNumberOfAnonymousSessions
-        == ActionForNumberOfAnonymousSessions.MULTI_SESSION;
+        == ActionForNumberOfAnonymousSessions.DEFAULT;
   }
 
   boolean isUseSingleChannelForRO() {
@@ -289,8 +289,8 @@ public class SessionPoolOptions {
 
   @VisibleForTesting
   enum ActionForNumberOfAnonymousSessions {
-    SINGLE_SESSION,
-    MULTI_SESSION
+    SHARED_SESSION,
+    DEFAULT
   }
 
   @VisibleForTesting
@@ -335,7 +335,7 @@ public class SessionPoolOptions {
 
     static class Builder {
       private ActionForNumberOfAnonymousSessions actionForNumberOfAnonymousSessions
-          = ActionForNumberOfAnonymousSessions.MULTI_SESSION;
+          = ActionForNumberOfAnonymousSessions.DEFAULT;
 
       private ActionForAnonymousSessionsChannelHints actionForAnonymousSessionsChannelHints
           = ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL;

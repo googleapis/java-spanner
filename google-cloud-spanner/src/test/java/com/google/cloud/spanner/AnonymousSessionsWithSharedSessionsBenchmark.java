@@ -75,22 +75,24 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     private Spanner spanner;
     private DatabaseClientImpl client;
 
-    @Param({"100"})
+    @Param({"5"})
     int minSessions;
 
-    @Param({"100"})
+    @Param({"5"})
     int maxSessions;
 
-    @Param({"100"})
+    @Param({"5"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
+      // TODO : this has a bug since SINGLE_SESSION option will make it share sessions even for
+      // base case. Refactor the base tests to a separate benchmark test.
       AnonymousSessionOptions anonymousSessionOptions =
           AnonymousSessionOptions.newBuilder()
               .setActionForAnonymousSessionsChannelHints(
                   ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
               .setActionForNumberOfAnonymousSessions(
-                  ActionForNumberOfAnonymousSessions.SINGLE_SESSION).build();
+                  ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
@@ -129,6 +131,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
    * @param server
    * @throws Exception
    */
+  /**
   @Benchmark
   public void burstReadAndWrite(final BenchmarkState server) throws Exception {
     int totalWrites = server.maxSessions * 4;
@@ -168,6 +171,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     Futures.allAsList(futures).get();
     service.shutdown();
   }
+  */
 
   /**
    * Measures the time needed to execute a burst of read and write requests.
@@ -192,7 +196,6 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
-
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
     List<ListenableFuture<?>> futures = new ArrayList<>(totalReads + totalWrites);
