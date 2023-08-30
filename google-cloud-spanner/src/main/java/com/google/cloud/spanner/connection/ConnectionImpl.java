@@ -249,7 +249,8 @@ class ConnectionImpl implements Connection {
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
     if (options.isAutoConfigEmulator()) {
-      EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
+      EmulatorUtil.maybeCreateInstanceAndDatabase(
+          spanner, options.getDatabaseId(), options.getDialect());
     }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
