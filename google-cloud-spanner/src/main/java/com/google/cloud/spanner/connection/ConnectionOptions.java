@@ -26,6 +26,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -307,7 +308,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
-                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). The instance and database in the connection string will automatically be created if these do not yet exist on the emulator.",
+                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
+                          + "The instance and database in the connection string will automatically be created if these do not yet exist on the emulator. "
+                          + "Add dialect=postgresql to the connection string to make sure that the database that is created uses the PostgreSQL dialect.",
                       false),
                   ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
@@ -317,7 +320,8 @@ public class ConnectionOptions {
                       RPC_PRIORITY_NAME,
                       "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."),
                   ConnectionProperty.createStringProperty(
-                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
+                      DIALECT_PROPERTY_NAME,
+                      "Sets the dialect to use for new databases that are created by this connection."),
                   ConnectionProperty.createStringProperty(
                       DATABASE_ROLE_PROPERTY_NAME,
                       "Sets the database role to use for this connection. The default is privileges assigned to IAM role"),
@@ -626,6 +630,7 @@ public class ConnectionOptions {
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
+  private final Dialect dialect;
   private final RpcPriority rpcPriority;
   private final boolean delayTransactionStartUntilFirstWrite;
   private final boolean trackSessionLeaks;
@@ -677,6 +682,7 @@ public class ConnectionOptions {
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
+    this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
     this.rpcPriority = parseRPCPriority(this.uri);
@@ -937,6 +943,12 @@ public class ConnectionOptions {
   static boolean parseAutoConfigEmulator(String uri) {
     String value = parseUriProperty(uri, "autoConfigEmulator");
     return Boolean.parseBoolean(value);
+  }
+
+  @VisibleForTesting
+  static Dialect parseDialect(String uri) {
+    String value = parseUriProperty(uri, DIALECT_PROPERTY_NAME);
+    return value != null ? Dialect.valueOf(value.toUpperCase()) : Dialect.GOOGLE_STANDARD_SQL;
   }
 
   @VisibleForTesting
@@ -1257,6 +1269,10 @@ public class ConnectionOptions {
    */
   public boolean isAutoConfigEmulator() {
     return autoConfigEmulator;
+  }
+
+  public Dialect getDialect() {
+    return dialect;
   }
 
   /** The {@link RpcPriority} to use for the connection. */
