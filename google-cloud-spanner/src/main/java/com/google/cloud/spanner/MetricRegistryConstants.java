@@ -73,6 +73,17 @@ class MetricRegistryConstants {
   static final String NUM_RELEASED_SESSIONS = "cloud.google.com/java/spanner/num_released_sessions";
   static final String NUM_SESSIONS_IN_POOL = "cloud.google.com/java/spanner/num_sessions_in_pool";
 
+  static final String MAX_IN_USE_SESSIONS_NAME = "max_in_use_sessions";
+  static final String MAX_ALLOWED_SESSIONS_NAME = "max_allowed_sessions";
+  static final String GET_SESSION_TIMEOUTS_NAME = "get_session_timeouts";
+  static final String NUM_ACQUIRED_SESSIONS_NAME = "num_acquired_sessions";
+  static final String NUM_RELEASED_SESSIONS_NAME = "num_released_sessions";
+  static final String NUM_SESSIONS_IN_POOL_NAME = "num_sessions_in_pool";
+
+  static final String NUM_SESSIONS_IN_USE_NAME = "num_in_use_sessions";
+  static final String NUM_SESSIONS_AVAILABLE_NAME = "num_available_sessions";
+  static final String SESSIONS_TYPE = "session_type";
+
   static final String MAX_IN_USE_SESSIONS_DESCRIPTION =
       "The maximum number of sessions in use during the last 10 minute interval.";
   static final String MAX_ALLOWED_SESSIONS_DESCRIPTION =
@@ -84,4 +95,6 @@ class MetricRegistryConstants {
   static final String NUM_RELEASED_SESSIONS_DESCRIPTION =
       "The number of sessions released by the user and pool maintainer.";
   static final String NUM_SESSIONS_IN_POOL_DESCRIPTION = "The number of sessions in the pool.";
+
+  static final String Scope = "cloud.google.com/java/spanner";
 }
