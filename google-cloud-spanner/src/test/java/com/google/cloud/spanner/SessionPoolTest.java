@@ -23,7 +23,10 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESS
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_NAME;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_AVAILABLE_NAME;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL_NAME;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_USE_NAME;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
@@ -80,6 +83,7 @@ import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Span;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -157,7 +161,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool(
-      Clock clock, MetricRegistry metricRegistry, List<LabelValue> labelValues, OpenTelemetry openTelemetry, Attributes attributes) {
+      Clock clock,
+      MetricRegistry metricRegistry,
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
     return SessionPool.createPool(
         options,
         TEST_DATABASE_ROLE,
@@ -1594,8 +1602,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     clock.currentTimeMillis = System.currentTimeMillis();
 
     setupMockSessionCreation();
-    pool = createPool(clock, Metrics.getMetricRegistry(),
-        SPANNER_DEFAULT_LABEL_VALUES, null, mock(Attributes.class));
+    pool =
+        createPool(
+            clock,
+            Metrics.getMetricRegistry(),
+            SPANNER_DEFAULT_LABEL_VALUES,
+            null,
+            mock(Attributes.class));
   }
 
   @Test
@@ -1613,23 +1626,33 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
 
-    SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder()
-        .registerMetricReader(inMemoryMetricReader)
-        .build();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
 
-    OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-        .setMeterProvider(sdkMeterProvider)
-        .build();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
 
     setupMockSessionCreation();
-    pool = createPool(clock, Metrics.getMetricRegistry(),
-        SPANNER_DEFAULT_LABEL_VALUES, openTelemetry, mock(Attributes.class));
+
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    attributesBuilder.put("client_id", "testClient");
+    attributesBuilder.put("database", "testDb");
+    attributesBuilder.put("instance_id", "test_instance");
+    attributesBuilder.put("library_version", "test_version");
+
+    pool =
+        createPool(
+            clock,
+            Metrics.getMetricRegistry(),
+            SPANNER_DEFAULT_LABEL_VALUES,
+            openTelemetry,
+            attributesBuilder.build());
     PooledSessionFuture session1 = pool.getSession();
     PooledSessionFuture session2 = pool.getSession();
     session1.get();
     session2.get();
 
-    Collection<MetricData>  metricDataCollection = inMemoryMetricReader.collectAllMetrics();
+    Collection<MetricData> metricDataCollection = inMemoryMetricReader.collectAllMetrics();
 
     // Acquired sessions are 2.
     verifyMetricData(metricDataCollection, NUM_ACQUIRED_SESSIONS_NAME, 1, 2L);
@@ -1642,6 +1665,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     // Released sessions should be 0
     verifyMetricData(metricDataCollection, NUM_RELEASED_SESSIONS_NAME, 1, 0L);
+
+    // Num sessions in pool
+    verifyMetricData(
+        metricDataCollection, NUM_SESSIONS_IN_POOL_NAME, 1, NUM_SESSIONS_IN_USE_NAME, 2);
+    verifyMetricData(
+        metricDataCollection, NUM_SESSIONS_IN_POOL_NAME, 1, NUM_SESSIONS_AVAILABLE_NAME, 1);
 
     PooledSessionFuture session3 = pool.getSession();
     session3.get();
@@ -1687,24 +1716,64 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     // Acquired sessions are 4.
     verifyMetricData(metricDataCollection, NUM_ACQUIRED_SESSIONS_NAME, 1, 4L);
+
+    // Num sessions in pool
+    verifyMetricData(
+        metricDataCollection, NUM_SESSIONS_IN_POOL_NAME, 1, NUM_SESSIONS_IN_USE_NAME, 2);
+    verifyMetricData(
+        metricDataCollection, NUM_SESSIONS_IN_POOL_NAME, 1, NUM_SESSIONS_AVAILABLE_NAME, 1);
   }
 
-  private static void verifyMetricData(Collection<MetricData>  metricDataCollection, String metricName, int size, long value) {
-    Collection<MetricData> metricDataFiltered = metricDataCollection.stream().filter(x -> x.getName().equals(metricName)).collect(
-        Collectors.toList());;
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection, String metricName, int size, long value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+    ;
     assertThat(metricDataFiltered.size()).isEqualTo(size);
     MetricData metricData = metricDataFiltered.stream().findFirst().get();
-    assertThat(metricData.getLongSumData().getPoints().stream().findFirst().get().getValue()).isEqualTo(value);
+    assertThat(metricData.getLongSumData().getPoints().stream().findFirst().get().getValue())
+        .isEqualTo(value);
   }
 
-  private static void verifyMetricData(Collection<MetricData>  metricDataCollection, String metricName, int size, double value) {
-    Collection<MetricData> metricDataFiltered = metricDataCollection.stream().filter(x -> x.getName().equals(metricName)).collect(
-        Collectors.toList());;
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection, String metricName, int size, double value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+    ;
     assertThat(metricDataFiltered.size()).isEqualTo(size);
     MetricData metricData = metricDataFiltered.stream().findFirst().get();
-    assertThat(metricData.getDoubleGaugeData().getPoints().stream().findFirst().get().getValue()).isEqualTo(value);
+    assertThat(metricData.getDoubleGaugeData().getPoints().stream().findFirst().get().getValue())
+        .isEqualTo(value);
   }
 
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection,
+      String metricName,
+      int size,
+      String labelName,
+      long value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+    ;
+    assertThat(metricDataFiltered.size()).isEqualTo(size);
+
+    MetricData metricData = metricDataFiltered.stream().findFirst().get();
+
+    // Attributes attributes =
+    assertThat(
+            metricData.getLongSumData().getPoints().stream()
+                .filter(x -> x.getAttributes().asMap().containsValue(labelName))
+                .findFirst()
+                .get()
+                .getValue())
+        .isEqualTo(value);
+  }
 
   @Test
   public void testGetDatabaseRole() throws Exception {

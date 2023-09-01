@@ -1190,9 +1190,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /**
-     * Sets OpenTelemetry object to be used for Spans, Metrics, Views.
-     */
+    /** Sets OpenTelemetry object to be used for Spans, Metrics, Views. */
     public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
       this.openTelemetry = openTelemetry;
       return this;

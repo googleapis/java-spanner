@@ -33,11 +33,15 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_NAME;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_AVAILABLE_NAME;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL_NAME;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_USE_NAME;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TYPE;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
@@ -90,6 +94,7 @@ import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -2042,7 +2047,10 @@ class SessionPool {
    * be created.
    */
   static SessionPool createPool(
-      SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues, Attributes attributes) {
+      SpannerOptions spannerOptions,
+      SessionClient sessionClient,
+      List<LabelValue> labelValues,
+      Attributes attributes) {
     final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
     spannerOptions.getOpenTelemetry();
 
@@ -2056,7 +2064,8 @@ class SessionPool {
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Metrics.getMetricRegistry(),
         labelValues,
-        spannerOptions.getOpenTelemetry(), attributes);
+        spannerOptions.getOpenTelemetry(),
+        attributes);
   }
 
   static SessionPool createPool(
@@ -2782,7 +2791,8 @@ class SessionPool {
         ignored -> 0L);
   }
 
-  private void initOpenTelemetryMetricsCollection(OpenTelemetry openTelemetry, Attributes attributes) {
+  private void initOpenTelemetryMetricsCollection(
+      OpenTelemetry openTelemetry, Attributes attributes) {
 
     if (openTelemetry != null) {
       Meter meter = openTelemetry.getMeter(MetricRegistryConstants.Scope);
@@ -2805,19 +2815,25 @@ class SessionPool {
                 measurement.record(this.maxSessionsInUse, attributes);
               });
 
-      // meter.gaugeBuilder(NUM_SESSIONS_IN_POOL)
-      //     .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
-      //     .setUnit(COUNT)
-      //     .buildWithCallback(measurement -> {
-      //       measurement.record(this.numSessionsInUse, attributes);
-      //     });
-      //
-      // meter.gaugeBuilder(NUM_SESSIONS_IN_POOL)
-      //     .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
-      //     .setUnit(COUNT)
-      //     .buildWithCallback(measurement -> {
-      //       measurement.record(this.sessions.size(), attributes);
-      //     });
+      AttributesBuilder attributesBuilder;
+      if (attributes != null) {
+        attributesBuilder = attributes.toBuilder();
+      } else {
+        attributesBuilder = Attributes.builder();
+      }
+      Attributes attributesInUseSessions =
+          attributesBuilder.put(SESSIONS_TYPE, NUM_SESSIONS_IN_USE_NAME).build();
+      Attributes attributesAvailableSessions =
+          attributesBuilder.put(SESSIONS_TYPE, NUM_SESSIONS_AVAILABLE_NAME).build();
+      meter
+          .upDownCounterBuilder(NUM_SESSIONS_IN_POOL_NAME)
+          .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
+          .setUnit(COUNT)
+          .buildWithCallback(
+              measurement -> {
+                measurement.record(this.numSessionsInUse, attributesInUseSessions);
+                measurement.record(this.sessions.size(), attributesAvailableSessions);
+              });
 
       meter
           .counterBuilder(GET_SESSION_TIMEOUTS_NAME)
@@ -2846,6 +2862,5 @@ class SessionPool {
                 measurement.record(this.numSessionsReleased, attributes);
               });
     }
-
   }
 }
