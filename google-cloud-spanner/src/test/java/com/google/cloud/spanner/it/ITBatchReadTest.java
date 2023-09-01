@@ -258,8 +258,6 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostRead() {
-    // TODO: Remove the following check during GA
-    assumeFalse("DataBoost feature is not yet generally available", true);
     assumeFalse("Emulator does not support data boost read", isUsingEmulator());
 
     BitSet seenRows = new BitSet(numRows);
@@ -314,8 +312,6 @@ public class ITBatchReadTest {
 
   @Test
   public void dataBoostQuery() {
-    // TODO: Remove the following check during GA
-    assumeFalse("DataBoost feature is not yet generally available", true);
     assumeFalse("Emulator does not support data boost query", isUsingEmulator());
     BitSet seenRows = new BitSet(numRows);
     TimestampBound bound = getRandomBound();
