@@ -158,6 +158,9 @@ the Cloud Spanner Java client.
 
 ## OpenCensus Metrics
 
+> Note: OpenCensus project is deprecated. See [Sunsetting OpenCensus](https://opentelemetry.io/blog/2023/sunsetting-opencensus/).
+We recommend migrating to OpenTelemetry, the successor project.
+
 Cloud Spanner client supports [Opencensus Metrics](https://opencensus.io/stats/),
 which gives insight into the client internals and aids in debugging/troubleshooting
 production issues. OpenCensus metrics will provide you with enough data to enable you to

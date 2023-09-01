@@ -43,9 +43,7 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
-import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +58,7 @@ import org.threeten.bp.Instant;
  * users need not be aware of the actual session management, pooling and handling.
  */
 class SessionImpl implements Session {
-  private static final Tracer tracer = Tracing.getTracer();
+  private static final TraceWrapper tracer = new TraceWrapper(Tracing.getTracer());
 
   /** Keep track of running transactions on this session per thread. */
   static final ThreadLocal<Boolean> hasPendingTransaction = ThreadLocal.withInitial(() -> false);
@@ -90,6 +88,8 @@ class SessionImpl implements Session {
     void invalidate();
     /** Registers the current span on the transaction. */
     void setSpan(Span span);
+    /** Registers the current span on the transaction. */
+    void setSpan(ISpan span);
   }
 
   private final SpannerImpl spanner;
@@ -98,8 +98,8 @@ class SessionImpl implements Session {
   private SessionTransaction activeTransaction;
   ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
-  private Span currentSpan;
   private volatile Instant lastUseTime;
+  private ISpan currentSpan;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;
@@ -118,11 +118,11 @@ class SessionImpl implements Session {
     return options;
   }
 
-  void setCurrentSpan(Span span) {
+  void setCurrentSpan(ISpan span) {
     currentSpan = span;
   }
 
-  Span getCurrentSpan() {
+  ISpan getCurrentSpan() {
     return currentSpan;
   }
 
@@ -190,15 +190,15 @@ class SessionImpl implements Session {
       requestBuilder.setRequestOptions(commitRequestOptions);
     }
     CommitRequest request = requestBuilder.build();
-    Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
+    ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
+    try (IScope s = tracer.withSpan(span)) {
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
           () -> new CommitResponse(spanner.getRpc().commit(request, this.options)));
     } catch (RuntimeException e) {
-      TraceUtil.setWithFailure(span, e);
+      span.setStatus(e);
       throw e;
     } finally {
-      span.end(TraceUtil.END_SPAN_OPTIONS);
+      span.end();
     }
   }
 
@@ -230,14 +230,14 @@ class SessionImpl implements Session {
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }
-    Span span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
+    ISpan span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE);
+    try (IScope s = tracer.withSpan(span)) {
       return spanner.getRpc().batchWriteAtLeastOnce(requestBuilder.build(), this.options);
     } catch (Throwable e) {
-      TraceUtil.setWithFailure(span, e);
+      span.setStatus(e);
       throw SpannerExceptionFactory.newSpannerException(e);
     } finally {
-      span.end(TraceUtil.END_SPAN_OPTIONS);
+      span.end();
     }
   }
 
@@ -334,14 +334,14 @@ class SessionImpl implements Session {
 
   @Override
   public void close() {
-    Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
+    ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
+    try (IScope s = tracer.withSpan(span)) {
       spanner.getRpc().deleteSession(name, options);
     } catch (RuntimeException e) {
-      TraceUtil.setWithFailure(span, e);
+      span.setStatus(e);
       throw e;
     } finally {
-      span.end(TraceUtil.END_SPAN_OPTIONS);
+      span.end();
     }
   }
 
@@ -361,7 +361,7 @@ class SessionImpl implements Session {
 
   ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
-    final Span span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION).startSpan();
+    final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(name)
@@ -370,30 +370,31 @@ class SessionImpl implements Session {
     final ApiFuture<Transaction> requestFuture =
         spanner.getRpc().beginTransactionAsync(request, options, routeToLeader);
     requestFuture.addListener(
-        tracer.withSpan(
-            span,
-            () -> {
-              try {
-                Transaction txn = requestFuture.get();
-                if (txn.getId().isEmpty()) {
-                  throw newSpannerException(
-                      ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
-                }
-                span.end(TraceUtil.END_SPAN_OPTIONS);
-                res.set(txn.getId());
-              } catch (ExecutionException e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(
-                    SpannerExceptionFactory.newSpannerException(
-                        e.getCause() == null ? e : e.getCause()));
-              } catch (InterruptedException e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-              } catch (Exception e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(e);
-              }
-            }),
+        () -> {
+          try (IScope s = tracer.withSpan(span)) {
+            Transaction txn = requestFuture.get();
+            if (txn.getId().isEmpty()) {
+              throw newSpannerException(
+                  ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
+            }
+            span.end();
+            res.set(txn.getId());
+          } catch (ExecutionException e) {
+            span.setStatus(e);
+            span.end();
+            res.setException(
+                SpannerExceptionFactory.newSpannerException(
+                    e.getCause() == null ? e : e.getCause()));
+          } catch (InterruptedException e) {
+            span.setStatus(e);
+            span.end();
+            res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+          } catch (Exception e) {
+            span.setStatus(e);
+            span.end();
+            res.setException(e);
+          }
+        },
         MoreExecutors.directExecutor());
     return res;
   }

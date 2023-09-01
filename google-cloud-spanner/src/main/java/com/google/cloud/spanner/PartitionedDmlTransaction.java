@@ -137,7 +137,11 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     isValid = false;
   }
 
-  // No-op method needed to implement SessionTransaction interface.
+  /** No-op method needed to implement SessionTransaction interface. */
+  @Override
+  public void setSpan(ISpan span) {}
+
+  /** No-op method needed to implement SessionTransaction interface. */
   @Override
   public void setSpan(Span span) {}
 

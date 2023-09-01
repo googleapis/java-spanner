@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -127,7 +128,9 @@ public class SessionImplTest {
         .thenReturn(
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
     session = spanner.getSessionClient(db).createSession();
-    ((SessionImpl) session).setCurrentSpan(mock(Span.class));
+    ((SessionImpl) session)
+        .setCurrentSpan(
+            new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
     // We expect the same options, "options", on all calls on "session".
     options = optionsCaptor.getValue();
   }

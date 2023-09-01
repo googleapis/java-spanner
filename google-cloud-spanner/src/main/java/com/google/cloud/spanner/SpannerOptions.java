@@ -61,6 +61,8 @@ import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1282,7 +1284,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.numChannels =
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
-
       return new SpannerOptions(this);
     }
   }
@@ -1310,6 +1311,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  /**
+   * Gets the OpenTelemetry object. Global OpenTelemetry object will be returned if found else No-op
+   * will be returned.
+   */
+  public static OpenTelemetry getOpenTelemetry() {
+    if (GlobalOpenTelemetry.get() != null) {
+      return GlobalOpenTelemetry.get();
+    } else {
+      return OpenTelemetry.noop();
+    }
   }
 
   @Override
