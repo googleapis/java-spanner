@@ -26,6 +26,7 @@ import com.google.cloud.Policy;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
 import com.google.common.testing.EqualsTester;
+import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,12 +50,24 @@ public class InstanceTest {
   public void buildInstance() {
     InstanceId id = new InstanceId("test-project", "test-instance");
     InstanceConfigId configId = new InstanceConfigId("test-project", "test-instance-config");
+    AutoscalingConfig autoscalingConfig =
+        AutoscalingConfig.newBuilder()
+            .setAutoscalingLimits(
+                AutoscalingConfig.AutoscalingLimits.newBuilder()
+                    .setMinProcessingUnits(1000)
+                    .setMaxProcessingUnits(5000))
+            .setAutoscalingTargets(
+                AutoscalingConfig.AutoscalingTargets.newBuilder()
+                    .setHighPriorityCpuUtilizationPercent(65)
+                    .setStorageUtilizationPercent(95))
+            .build();
     Instance instance =
         new Instance.Builder(instanceClient, dbClient, id)
             .setInstanceConfigId(configId)
             .setDisplayName("test instance")
             .setNodeCount(1)
             .setProcessingUnits(2000)
+            .setAutoscalingConfig(autoscalingConfig)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
@@ -66,17 +79,30 @@ public class InstanceTest {
     assertThat(instance.getDisplayName()).isEqualTo("test instance");
     assertThat(instance.getNodeCount()).isEqualTo(1);
     assertThat(instance.getProcessingUnits()).isEqualTo(2000);
+    assertThat(instance.getAutoscalingConfig()).isEqualTo(autoscalingConfig);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
     assertEquals(Timestamp.ofTimeMicroseconds(86000), instance.getUpdateTime());
     assertEquals(Timestamp.ofTimeMicroseconds(46000), instance.getCreateTime());
 
-    instance = instance.toBuilder().setDisplayName("new test instance").build();
+    AutoscalingConfig newAutoscalingConfig =
+        autoscalingConfig
+            .toBuilder()
+            .setAutoscalingLimits(
+                AutoscalingConfig.AutoscalingLimits.newBuilder().setMinNodes(10).setMaxNodes(100))
+            .build();
+    instance =
+        instance
+            .toBuilder()
+            .setDisplayName("new test instance")
+            .setAutoscalingConfig(newAutoscalingConfig)
+            .build();
     assertThat(instance.getId()).isEqualTo(id);
     assertThat(instance.getInstanceConfigId()).isEqualTo(configId);
     assertThat(instance.getDisplayName()).isEqualTo("new test instance");
     assertThat(instance.getNodeCount()).isEqualTo(1);
     assertThat(instance.getProcessingUnits()).isEqualTo(2000);
+    assertThat(instance.getAutoscalingConfig()).isEqualTo(newAutoscalingConfig);
     assertThat(instance.getState()).isEqualTo(InstanceInfo.State.READY);
     assertThat(instance.getLabels()).containsExactly("env", "prod", "region", "us");
     assertEquals(Timestamp.ofTimeMicroseconds(86000), instance.getUpdateTime());
@@ -87,6 +113,28 @@ public class InstanceTest {
   public void equality() {
     InstanceId id = new InstanceId("test-project", "test-instance");
     InstanceConfigId configId = new InstanceConfigId("test-project", "test-instance-config");
+    AutoscalingConfig autoscalingConfig1 =
+        AutoscalingConfig.newBuilder()
+            .setAutoscalingLimits(
+                AutoscalingConfig.AutoscalingLimits.newBuilder()
+                    .setMinProcessingUnits(1000)
+                    .setMaxProcessingUnits(5000))
+            .setAutoscalingTargets(
+                AutoscalingConfig.AutoscalingTargets.newBuilder()
+                    .setHighPriorityCpuUtilizationPercent(65)
+                    .setStorageUtilizationPercent(95))
+            .build();
+
+    AutoscalingConfig autoscalingConfig2 =
+        autoscalingConfig1
+            .toBuilder()
+            .setAutoscalingLimits(
+                autoscalingConfig1
+                    .getAutoscalingLimits()
+                    .toBuilder()
+                    .setMinNodes(50)
+                    .setMaxNodes(100))
+            .build();
 
     Instance instance =
         new Instance.Builder(instanceClient, dbClient, id)
@@ -94,6 +142,7 @@ public class InstanceTest {
             .setDisplayName("test instance")
             .setNodeCount(1)
             .setProcessingUnits(2000)
+            .setAutoscalingConfig(autoscalingConfig1)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .addLabel("region", "us")
@@ -106,6 +155,7 @@ public class InstanceTest {
             .setDisplayName("test instance")
             .setNodeCount(1)
             .setProcessingUnits(2000)
+            .setAutoscalingConfig(autoscalingConfig1)
             .setState(InstanceInfo.State.READY)
             .addLabel("region", "us")
             .addLabel("env", "prod")
@@ -118,14 +168,29 @@ public class InstanceTest {
             .setDisplayName("test instance")
             .setNodeCount(1)
             .setProcessingUnits(2000)
+            .setAutoscalingConfig(autoscalingConfig1)
             .setState(InstanceInfo.State.READY)
             .addLabel("env", "prod")
             .setUpdateTime(Timestamp.ofTimeMicroseconds(8000))
             .setCreateTime(Timestamp.ofTimeMicroseconds(4000))
             .build();
+    Instance instance4 =
+        new Instance.Builder(instanceClient, dbClient, id)
+            .setInstanceConfigId(configId)
+            .setDisplayName("test instance")
+            .setNodeCount(1)
+            .setProcessingUnits(2000)
+            .setAutoscalingConfig(autoscalingConfig2)
+            .setState(InstanceInfo.State.READY)
+            .addLabel("region", "us")
+            .addLabel("env", "prod")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
+            .build();
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(instance, instance2);
     tester.addEqualityGroup(instance3);
+    tester.addEqualityGroup(instance4);
     tester.testEquals();
   }
 
