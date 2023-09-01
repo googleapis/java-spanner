@@ -40,6 +40,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
@@ -66,8 +67,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -84,11 +87,13 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
+import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -3326,6 +3331,92 @@ public class DatabaseClientImplTest {
             assertFalse(resultSet.next());
           }
         });
+  }
+
+  @Test
+  public void testRetryOnResourceExhausted() {
+    final RetrySettings retrySettings =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofSeconds(60L))
+            .setMaxRpcTimeout(Duration.ofSeconds(60L))
+            .setTotalTimeout(Duration.ofSeconds(60L))
+            .setRpcTimeoutMultiplier(1.0d)
+            .setInitialRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxAttempts(100)
+            .build();
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance());
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(
+                com.google.protobuf.Duration.newBuilder()
+                    .setNanos((int) Duration.ofMillis(1).toNanos())
+                    .build())
+            .build();
+    Metadata.Key<RetryInfo> key =
+        Metadata.Key.of(
+            retryInfo.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(retryInfo));
+    Metadata trailers = new Metadata();
+    trailers.put(key, retryInfo);
+    builder
+        .getSpannerStubSettingsBuilder()
+        .executeStreamingSqlSettings()
+        .setRetryableCodes(StatusCode.Code.UNAVAILABLE, StatusCode.Code.RESOURCE_EXHAUSTED)
+        .setRetrySettings(retrySettings);
+
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      final int expectedRowCount = 5;
+      RandomResultSetGenerator generator = new RandomResultSetGenerator(expectedRowCount);
+      Statement statement = Statement.of("select * from random_table");
+      mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+
+      for (int errorIndex = 0; errorIndex < expectedRowCount - 1; errorIndex++) {
+        for (boolean withRetryInfo : new boolean[] {false, true}) {
+          // RESOURCE_EXHAUSTED errors with and without retry-info should be retried.
+          StatusRuntimeException exception =
+              Status.RESOURCE_EXHAUSTED.asRuntimeException(withRetryInfo ? trailers : null);
+          mockSpanner.setExecuteStreamingSqlExecutionTime(
+              SimulatedExecutionTime.ofStreamException(exception, errorIndex));
+          try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+            //noinspection StatementWithEmptyBody
+            while (resultSet.next()) {}
+          }
+          assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+          if (errorIndex == 0) {
+            // We should only have two requests without a resume token, as the error occurred before
+            // any resume token could be returned.
+            assertEquals(
+                2,
+                mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+                    .filter(request -> request.getResumeToken().isEmpty())
+                    .count());
+          } else {
+            final int expectedResumeToken = errorIndex;
+            // Check that we have one request with a resume token that corresponds with the place in
+            // the stream where the error happened.
+            assertEquals(
+                1,
+                mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+                    .filter(
+                        request ->
+                            request
+                                .getResumeToken()
+                                .equals(
+                                    ByteString.copyFromUtf8(
+                                        String.format("%09d", expectedResumeToken))))
+                    .count());
+          }
+          mockSpanner.clearRequests();
+        }
+      }
+    }
   }
 
   static void assertAsString(String expected, ResultSet resultSet, int col) {

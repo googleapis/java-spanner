@@ -422,6 +422,7 @@
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall</className>
     <method>com.google.api.gax.rpc.ApiCallContext getCallContext()</method>
   </difference>
+<<<<<<< HEAD
   <!-- Add an execute method that allows the driver to state what types should be allowed or not. 
        This fixes the gap between what JDBC allows, and what is currently allowed in the Connection
        API:
@@ -434,4 +435,27 @@
     <method>com.google.cloud.spanner.connection.StatementResult execute(com.google.cloud.spanner.Statement, java.util.Set)</method>
   </difference>
   
+=======
+  <!-- (Internal change, propagate streaming retry settings) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getReadRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getExecuteQueryRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getReadRetryableCodes()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getExecuteQueryRetryableCodes()</method>
+  </difference>
+>>>>>>> main
 </differences>
