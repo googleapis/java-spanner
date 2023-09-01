@@ -16,9 +16,16 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_AVAILABLE;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_USE;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
@@ -31,8 +38,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -74,7 +83,15 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
+import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Span;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -149,7 +166,28 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         clock,
         Position.RANDOM,
         metricRegistry,
-        labelValues);
+        labelValues,
+        null,
+        null);
+  }
+
+  private SessionPool createPool(
+      Clock clock,
+      MetricRegistry metricRegistry,
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
+    return SessionPool.createPool(
+        options,
+        TEST_DATABASE_ROLE,
+        new TestExecutorFactory(),
+        client.getSessionClient(db),
+        clock,
+        Position.RANDOM,
+        metricRegistry,
+        labelValues,
+        openTelemetry,
+        attributes);
   }
 
   @BeforeClass
@@ -1387,7 +1425,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(closedTransactionContext);
       when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
-      closedTransactionRunner.setSpan(mock(Span.class));
+      closedTransactionRunner.setSpan(
+          new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
       final SessionImpl openSession = mock(SessionImpl.class);
@@ -1401,7 +1440,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(openSession.beginTransactionAsync(any(), eq(true)))
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
-      openTransactionRunner.setSpan(mock(Span.class));
+      openTransactionRunner.setSpan(
+          new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
       ResultSet openResultSet = mock(ResultSet.class);
@@ -1783,6 +1823,179 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(readSessions.value()).isEqualTo(2L);
     writePreparedSessions = numSessionsInPool.get(3);
     assertThat(writePreparedSessions.value()).isEqualTo(0L);
+  }
+
+  @Test
+  public void testInitOpenTelemetryMetricsCollection_NullOpenTelemetry_shouldNotThrowException() {
+    // Create a session pool with max 2 session and a low timeout for waiting for a session.
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(2)
+            .setMaxIdleSessions(0)
+            .setInitialWaitForSessionTimeoutMillis(50L)
+            .build();
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis = System.currentTimeMillis();
+
+    setupMockSessionCreation();
+    pool =
+        createPool(
+            clock,
+            Metrics.getMetricRegistry(),
+            SPANNER_DEFAULT_LABEL_VALUES,
+            null,
+            mock(Attributes.class));
+  }
+
+  @Test
+  public void testOpenTelemetrySessionMetrics() throws Exception {
+    // Create a session pool with max 2 session and a low timeout for waiting for a session.
+    if (minSessions == 1) {
+      options =
+          SessionPoolOptions.newBuilder()
+              .setMinSessions(1)
+              .setMaxSessions(3)
+              .setMaxIdleSessions(0)
+              .setInitialWaitForSessionTimeoutMillis(50L)
+              .build();
+      FakeClock clock = new FakeClock();
+      clock.currentTimeMillis = System.currentTimeMillis();
+
+      InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
+      SdkMeterProvider sdkMeterProvider =
+          SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
+      OpenTelemetry openTelemetry =
+          OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
+
+      setupMockSessionCreation();
+
+      AttributesBuilder attributesBuilder = Attributes.builder();
+      attributesBuilder.put("client_id", "testClient");
+      attributesBuilder.put("database", "testDb");
+      attributesBuilder.put("instance_id", "test_instance");
+      attributesBuilder.put("library_version", "test_version");
+
+      pool =
+          createPool(
+              clock,
+              Metrics.getMetricRegistry(),
+              SPANNER_DEFAULT_LABEL_VALUES,
+              openTelemetry,
+              attributesBuilder.build());
+      PooledSessionFuture session1 = pool.getSession();
+      PooledSessionFuture session2 = pool.getSession();
+      session1.get();
+      session2.get();
+
+      Collection<MetricData> metricDataCollection = inMemoryMetricReader.collectAllMetrics();
+      // Acquired sessions are 2.
+      verifyMetricData(metricDataCollection, NUM_ACQUIRED_SESSIONS, 1, 2L);
+      // Max in use session are 2.
+      verifyMetricData(metricDataCollection, MAX_IN_USE_SESSIONS, 1, 2D);
+      // Max Allowed sessions should be 3
+      verifyMetricData(metricDataCollection, MAX_ALLOWED_SESSIONS, 1, 3D);
+      // Released sessions should be 0
+      verifyMetricData(metricDataCollection, NUM_RELEASED_SESSIONS, 1, 0L);
+      // Num sessions in pool
+      verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_IN_USE, 2);
+
+      PooledSessionFuture session3 = pool.getSession();
+      session3.get();
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      // Try asynchronously to take another session. This attempt should time out.
+      Future<Void> fut =
+          executor.submit(
+              () -> {
+                latch.countDown();
+                Session session = pool.getSession();
+                session.close();
+                return null;
+              });
+      // Wait until the background thread is actually waiting for a session.
+      latch.await();
+      // Wait until the request has timed out.
+      int waitCount = 0;
+      while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
+        Thread.sleep(5L);
+        waitCount++;
+      }
+      // Return the checked out session to the pool so the async request will get a session and
+      // finish.
+      session2.close();
+      // Verify that the async request also succeeds.
+      fut.get(10L, TimeUnit.SECONDS);
+      executor.shutdown();
+
+      metricDataCollection = inMemoryMetricReader.collectAllMetrics();
+
+      // Max Allowed sessions should be 3
+      verifyMetricData(metricDataCollection, MAX_ALLOWED_SESSIONS, 1, 3D);
+      // Session timeouts 1
+      // verifyMetricData(metricDataCollection, GET_SESSION_TIMEOUTS, 1, 1L);
+      // Max in use session are 2.
+      verifyMetricData(metricDataCollection, MAX_IN_USE_SESSIONS, 1, 3D);
+      // Session released 2
+      verifyMetricData(metricDataCollection, NUM_RELEASED_SESSIONS, 1, 2L);
+      // Acquired sessions are 4.
+      verifyMetricData(metricDataCollection, NUM_ACQUIRED_SESSIONS, 1, 4L);
+      // Num sessions in pool
+      verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_IN_USE, 2);
+      verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_AVAILABLE, 1);
+    }
+  }
+
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection, String metricName, int size, long value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+
+    assertEquals(metricDataFiltered.size(), size);
+    MetricData metricData = metricDataFiltered.stream().findFirst().get();
+    assertEquals(
+        metricData.getLongSumData().getPoints().stream().findFirst().get().getValue(), value);
+  }
+
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection, String metricName, int size, double value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+
+    assertEquals(metricDataFiltered.size(), size);
+    MetricData metricData = metricDataFiltered.stream().findFirst().get();
+    assertEquals(
+        metricData.getDoubleGaugeData().getPoints().stream().findFirst().get().getValue(),
+        value,
+        0.0);
+  }
+
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection,
+      String metricName,
+      int size,
+      String labelName,
+      long value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+
+    assertEquals(metricDataFiltered.size(), size);
+
+    MetricData metricData = metricDataFiltered.stream().findFirst().get();
+
+    assertEquals(
+        metricData.getLongSumData().getPoints().stream()
+            .filter(x -> x.getAttributes().asMap().containsValue(labelName))
+            .findFirst()
+            .get()
+            .getValue(),
+        value);
   }
 
   @Test

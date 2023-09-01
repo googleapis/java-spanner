@@ -37,7 +37,10 @@ public class AsyncTransactionManagerImplTest {
   @Test
   public void testCommitReturnsCommitStats() {
     try (AsyncTransactionManagerImpl manager =
-        new AsyncTransactionManagerImpl(session, mock(Span.class), Options.commitStats())) {
+        new AsyncTransactionManagerImpl(
+            session,
+            new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)),
+            Options.commitStats())) {
       when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))
           .thenReturn(transaction);
       when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.immediateFuture(null));

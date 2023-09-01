@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.DualSpan.END_SPAN_OPTIONS;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -36,7 +37,6 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
-import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Span;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -167,8 +167,11 @@ public class ResumableStreamIteratorTest {
     Assume.assumeTrue(
         "This test is only supported on JDK11 and lower",
         JavaVersionUtil.getJavaMajorVersion() < 12);
+    Span mockSpan = mock(Span.class);
+    io.opentelemetry.api.trace.Span mockOpenTelemetrySpan =
+        mock(io.opentelemetry.api.trace.Span.class);
 
-    Span span = mock(Span.class);
+    ISpan span = new DualSpan(mockSpan, mockOpenTelemetrySpan);
     setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
@@ -180,7 +183,8 @@ public class ResumableStreamIteratorTest {
     assertThat(consume(resumableStreamIterator)).containsExactly("a", "b").inOrder();
 
     resumableStreamIterator.close("closed");
-    verify(span).end(EndSpanOptions.builder().setSampleToLocalSpanStore(true).build());
+    verify(mockSpan).end(END_SPAN_OPTIONS);
+    verify(mockOpenTelemetrySpan).end();
   }
 
   @Test
