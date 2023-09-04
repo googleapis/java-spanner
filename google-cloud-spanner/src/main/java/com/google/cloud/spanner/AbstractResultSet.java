@@ -55,6 +55,7 @@ import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.common.Attributes;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -82,6 +83,9 @@ import org.threeten.bp.Duration;
 
 /** Implementation of {@link ResultSet}. */
 abstract class AbstractResultSet<R> extends AbstractStructReader implements ResultSet {
+  private static final io.opentelemetry.api.trace.Tracer openTelemetryTracer =
+      SpannerOptions.getTracer();
+
   private static final Tracer tracer = Tracing.getTracer();
   private static final com.google.protobuf.Value NULL_VALUE =
       com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
@@ -1094,6 +1098,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private final LinkedList<PartialResultSet> buffer = new LinkedList<>();
     private final int maxBufferSize;
     private final Span span;
+    private final io.opentelemetry.api.trace.Span openTelemetrySpan;
     private CloseableIterator<PartialResultSet> stream;
     private ByteString resumeToken;
     private boolean finished;
@@ -1108,10 +1113,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         int maxBufferSize,
         String streamName,
         Span parent,
+        io.opentelemetry.api.trace.Span openTelemetryParent,
         RetrySettings streamingRetrySettings,
         Set<Code> retryableCodes) {
       checkArgument(maxBufferSize >= 0);
       this.maxBufferSize = maxBufferSize;
+      this.openTelemetrySpan =
+          OpenTelemetryTraceUtil.spanBuilderWithExplicitParent(
+              openTelemetryTracer, streamName, openTelemetryParent);
       this.span = tracer.spanBuilderWithExplicitParent(streamName, parent).startSpan();
       this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
       this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
@@ -1173,6 +1182,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           .addAnnotation(
               "Backing off",
               ImmutableMap.of("Delay", AttributeValue.longAttributeValue(backoffMillis)));
+      OpenTelemetryTraceUtil.addEvent(
+          io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current()),
+          "Backing off",
+          Attributes.builder().put("Delay", backoffMillis).build());
       final CountDownLatch latch = new CountDownLatch(1);
       final Context.CancellationListener listener =
           ignored -> {
@@ -1213,6 +1226,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       if (stream != null) {
         stream.close(message);
         span.end(TraceUtil.END_SPAN_OPTIONS);
+        OpenTelemetryTraceUtil.endSpan(openTelemetrySpan);
         stream = null;
       }
     }
@@ -1228,13 +1242,21 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       while (true) {
         // Eagerly start stream before consuming any buffered items.
         if (stream == null) {
+          OpenTelemetryTraceUtil.addEvent(
+              openTelemetrySpan,
+              "Starting/Resuming stream",
+              Attributes.builder()
+                  .put("ResumeToken", resumeToken == null ? "null" : resumeToken.toStringUtf8())
+                  .build());
+
           span.addAnnotation(
               "Starting/Resuming stream",
               ImmutableMap.of(
                   "ResumeToken",
                   AttributeValue.stringAttributeValue(
                       resumeToken == null ? "null" : resumeToken.toStringUtf8())));
-          try (Scope s = tracer.withSpan(span)) {
+          try (Scope s = tracer.withSpan(span);
+              io.opentelemetry.context.Scope ss = openTelemetrySpan.makeCurrent()) {
             // When start a new stream set the Span as current to make the gRPC Span a child of
             // this Span.
             stream = checkNotNull(startStream(resumeToken));
@@ -1274,6 +1296,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           }
         } catch (SpannerException spannerException) {
           if (safeToRetry && isRetryable(spannerException)) {
+            OpenTelemetryTraceUtil.addEvent(
+                openTelemetrySpan,
+                "Stream broken. Safe to retry",
+                OpenTelemetryTraceUtil.getExceptionAnnotations(spannerException));
+
             span.addAnnotation(
                 "Stream broken. Safe to retry",
                 TraceUtil.getExceptionAnnotations(spannerException));
@@ -1284,7 +1311,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             }
             assert buffer.isEmpty() || buffer.getLast().getResumeToken().equals(resumeToken);
             stream = null;
-            try (Scope s = tracer.withSpan(span)) {
+            try (Scope s = tracer.withSpan(span);
+                io.opentelemetry.context.Scope ss = openTelemetrySpan.makeCurrent()) {
               long delay = spannerException.getRetryDelayInMillis();
               if (delay != -1) {
                 backoffSleep(context, delay);
@@ -1297,10 +1325,15 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           }
           span.addAnnotation("Stream broken. Not safe to retry");
           TraceUtil.setWithFailure(span, spannerException);
+          OpenTelemetryTraceUtil.addEventWithExceptionAndSetFailure(
+              openTelemetrySpan, "Stream broken. Safe to retry", spannerException);
           throw spannerException;
         } catch (RuntimeException e) {
           span.addAnnotation("Stream broken. Not safe to retry");
           TraceUtil.setWithFailure(span, e);
+          OpenTelemetryTraceUtil.addEventWithExceptionAndSetFailure(
+              openTelemetrySpan, "Stream broken. Safe to retry", e);
+
           throw e;
         }
       }

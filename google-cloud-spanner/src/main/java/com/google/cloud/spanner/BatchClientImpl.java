@@ -92,6 +92,8 @@ public class BatchClientImpl implements BatchClient {
       this.sessionName = session.getName();
       this.options = session.getOptions();
       setSpan(Tracing.getTracer().getCurrentSpan());
+      setOpenTelemetrySpan(
+          io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current()));
       initTransaction();
     }
 
@@ -101,6 +103,8 @@ public class BatchClientImpl implements BatchClient {
       this.sessionName = session.getName();
       this.options = session.getOptions();
       setSpan(Tracing.getTracer().getCurrentSpan());
+      setOpenTelemetrySpan(
+          io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current()));
     }
 
     @Override

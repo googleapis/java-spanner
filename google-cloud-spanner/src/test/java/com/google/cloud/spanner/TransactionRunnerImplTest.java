@@ -129,6 +129,7 @@ public class TransactionRunnerImplTest {
     when(rpc.rollbackAsync(Mockito.any(RollbackRequest.class), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     transactionRunner.setSpan(mock(Span.class));
+    transactionRunner.setOpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class));
   }
 
   @SuppressWarnings("unchecked")
@@ -288,8 +289,10 @@ public class TransactionRunnerImplTest {
           }
         };
     session.setCurrentSpan(mock(Span.class));
+    session.setopenTelemetryCurrentSpan(mock(io.opentelemetry.api.trace.Span.class));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(mock(Span.class));
+    runner.setOpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class));
     assertThat(usedInlinedBegin).isFalse();
     runner.run(
         transaction -> {
@@ -321,6 +324,7 @@ public class TransactionRunnerImplTest {
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(mock(Span.class));
+    runner.setOpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()
             .addResultSets(

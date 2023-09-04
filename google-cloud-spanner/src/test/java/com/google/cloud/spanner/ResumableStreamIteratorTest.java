@@ -141,6 +141,7 @@ public class ResumableStreamIteratorTest {
             maxBufferSize,
             "",
             null,
+            null,
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override
@@ -169,7 +170,13 @@ public class ResumableStreamIteratorTest {
         JavaVersionUtil.getJavaMajorVersion() < 12);
 
     Span span = mock(Span.class);
+    io.opentelemetry.api.trace.Span openTelemetrySpan = mock(io.opentelemetry.api.trace.Span.class);
     setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
+    setInternalState(
+        ResumableStreamIterator.class,
+        this.resumableStreamIterator,
+        "openTelemetrySpan",
+        openTelemetrySpan);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
     Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
@@ -181,6 +188,7 @@ public class ResumableStreamIteratorTest {
 
     resumableStreamIterator.close("closed");
     verify(span).end(EndSpanOptions.builder().setSampleToLocalSpanStore(true).build());
+    verify(openTelemetrySpan).end();
   }
 
   @Test
