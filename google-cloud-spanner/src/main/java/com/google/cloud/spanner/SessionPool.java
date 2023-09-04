@@ -96,6 +96,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.StatusCode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -129,6 +130,9 @@ class SessionPool {
 
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
+  private static final io.opentelemetry.api.trace.Tracer openTelemetryTracer =
+      SpannerOptions.getTracer();
+
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
   static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
       ImmutableSet.of(
@@ -1126,8 +1130,10 @@ class SessionPool {
   }
 
   private PooledSessionFuture createPooledSessionFuture(
-      ListenableFuture<PooledSession> future, Span span) {
-    return new PooledSessionFuture(future, span);
+      ListenableFuture<PooledSession> future,
+      Span span,
+      io.opentelemetry.api.trace.Span openTelemetrySpan) {
+    return new PooledSessionFuture(future, span, openTelemetrySpan);
   }
 
   class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
@@ -1136,11 +1142,16 @@ class SessionPool {
     private volatile AtomicBoolean inUse = new AtomicBoolean();
     private volatile CountDownLatch initialized = new CountDownLatch(1);
     private final Span span;
+    private final io.opentelemetry.api.trace.Span openTelemetrySpan;
 
     @VisibleForTesting
-    PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
+    PooledSessionFuture(
+        ListenableFuture<PooledSession> delegate,
+        Span span,
+        io.opentelemetry.api.trace.Span openTelemetrySpan) {
       super(delegate);
       this.span = span;
+      this.openTelemetrySpan = openTelemetrySpan;
     }
 
     @VisibleForTesting
@@ -1358,8 +1369,12 @@ class SessionPool {
           // ignore the exception as it will be handled by the call to super.get() below.
         }
         if (res != null) {
-          res.markBusy(span);
+          res.markBusy(span, openTelemetrySpan);
           span.addAnnotation(sessionAnnotation(res));
+          OpenTelemetryTraceUtil.addEvent(
+              openTelemetrySpan,
+              "Using Session",
+              Attributes.builder().put("sessionId", res.getName()).build());
           synchronized (lock) {
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
@@ -1567,7 +1582,10 @@ class SessionPool {
     private void keepAlive() {
       markUsed();
       final Span previousSpan = delegate.getCurrentSpan();
+      final io.opentelemetry.api.trace.Span openTelemetrySpan =
+          delegate.getopenTelemetryCurrentSpan();
       delegate.setCurrentSpan(BlankSpan.INSTANCE);
+      delegate.setopenTelemetryCurrentSpan(io.opentelemetry.api.trace.Span.getInvalid());
       try (ResultSet resultSet =
           delegate
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
@@ -1575,6 +1593,7 @@ class SessionPool {
         resultSet.next();
       } finally {
         delegate.setCurrentSpan(previousSpan);
+        delegate.setopenTelemetryCurrentSpan(openTelemetrySpan);
       }
     }
 
@@ -1606,8 +1625,9 @@ class SessionPool {
       }
     }
 
-    private void markBusy(Span span) {
+    private void markBusy(Span span, io.opentelemetry.api.trace.Span openTelemetrySpan) {
       this.delegate.setCurrentSpan(span);
+      this.delegate.setopenTelemetryCurrentSpan(openTelemetrySpan);
       this.state = SessionState.BUSY;
     }
 
@@ -1647,21 +1667,28 @@ class SessionPool {
       long currentTimeout = options.getInitialWaitForSessionTimeoutMillis();
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
-        try (Scope waitScope = tracer.withSpan(span)) {
+        io.opentelemetry.api.trace.Span openTelemetrySpan =
+            OpenTelemetryTraceUtil.spanBuilder(openTelemetryTracer, WAIT_FOR_SESSION);
+        try (Scope waitScope = tracer.withSpan(span);
+            io.opentelemetry.context.Scope ss = openTelemetrySpan.makeCurrent()) {
           PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
             tracer.getCurrentSpan().setStatus(Status.DEADLINE_EXCEEDED);
+            io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current())
+                .setStatus(StatusCode.ERROR, "DeadlineExceeded");
             currentTimeout = Math.min(currentTimeout * 2, MAX_SESSION_WAIT_TIMEOUT);
           } else {
             return s;
           }
         } catch (Exception e) {
           TraceUtil.setWithFailure(span, e);
+          OpenTelemetryTraceUtil.setWithFailure(openTelemetrySpan, e);
           throw e;
         } finally {
           span.end(TraceUtil.END_SPAN_OPTIONS);
+          openTelemetrySpan.end();
         }
       }
     }
@@ -2052,7 +2079,6 @@ class SessionPool {
       List<LabelValue> labelValues,
       Attributes attributes) {
     final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
-    spannerOptions.getOpenTelemetry();
 
     // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
     final Clock poolMaintainerClock = sessionPoolOptions.getPoolMaintainerClock();
@@ -2064,7 +2090,7 @@ class SessionPool {
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Metrics.getMetricRegistry(),
         labelValues,
-        spannerOptions.getOpenTelemetry(),
+        SpannerOptions.getOpenTelemetry(),
         attributes);
   }
 
@@ -2327,16 +2353,22 @@ class SessionPool {
    */
   PooledSessionFuture getSession() throws SpannerException {
     Span span = Tracing.getTracer().getCurrentSpan();
+    io.opentelemetry.api.trace.Span openTelemetrySpan =
+        io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current());
+
     span.addAnnotation("Acquiring session");
+    OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Acquiring session", null);
     WaiterFuture waiter = null;
     PooledSession sess = null;
     synchronized (lock) {
       if (closureFuture != null) {
         span.addAnnotation("Pool has been closed");
+        OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Pool has been closed", null);
         throw new IllegalStateException("Pool has been closed", closedException);
       }
       if (resourceNotFoundException != null) {
         span.addAnnotation("Database has been deleted");
+        OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Database has been deleted", null);
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.NOT_FOUND,
             String.format(
@@ -2347,31 +2379,38 @@ class SessionPool {
       sess = sessions.poll();
       if (sess == null) {
         span.addAnnotation("No session available");
+        OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "No session available", null);
         maybeCreateSession();
         waiter = new WaiterFuture();
         waiters.add(waiter);
       } else {
         span.addAnnotation("Acquired session");
+        OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Acquired session", null);
       }
-      return checkoutSession(span, sess, waiter);
+      return checkoutSession(span, openTelemetrySpan, sess, waiter);
     }
   }
 
   private PooledSessionFuture checkoutSession(
-      final Span span, final PooledSession readySession, WaiterFuture waiter) {
+      final Span span,
+      final io.opentelemetry.api.trace.Span openTelemetrySpan,
+      final PooledSession readySession,
+      WaiterFuture waiter) {
     ListenableFuture<PooledSession> sessionFuture;
     if (waiter != null) {
       logger.log(
           Level.FINE,
           "No session available in the pool. Blocking for one to become available/created");
       span.addAnnotation("Waiting for a session to come available");
+      OpenTelemetryTraceUtil.addEvent(
+          openTelemetrySpan, "Waiting for a session to come available", null);
       sessionFuture = waiter;
     } else {
       SettableFuture<PooledSession> fut = SettableFuture.create();
       fut.set(readySession);
       sessionFuture = fut;
     }
-    PooledSessionFuture res = createPooledSessionFuture(sessionFuture, span);
+    PooledSessionFuture res = createPooledSessionFuture(sessionFuture, span, openTelemetrySpan);
     res.markCheckedOut();
     return res;
   }
@@ -2408,13 +2447,19 @@ class SessionPool {
 
   private void maybeCreateSession() {
     Span span = Tracing.getTracer().getCurrentSpan();
+    io.opentelemetry.api.trace.Span openTelemetrySpan =
+        io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current());
+
     synchronized (lock) {
       if (numWaiters() >= numSessionsBeingCreated) {
         if (canCreateSession()) {
           span.addAnnotation("Creating sessions");
+          OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Creating sessions", null);
           createSessions(getAllowedCreateSessions(options.getIncStep()), false);
         } else if (options.isFailIfPoolExhausted()) {
           span.addAnnotation("Pool exhausted. Failing");
+          OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Pool exhausted. Failing", null);
+
           // throw specific exception
           throw newSpannerException(
               ErrorCode.RESOURCE_EXHAUSTED,

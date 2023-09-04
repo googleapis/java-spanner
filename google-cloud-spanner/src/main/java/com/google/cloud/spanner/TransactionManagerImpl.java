@@ -31,14 +31,20 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
 
   private final SessionImpl session;
   private Span span;
+  private io.opentelemetry.api.trace.Span openTelemetrySpan;
   private final Options options;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
+  TransactionManagerImpl(
+      SessionImpl session,
+      Span span,
+      io.opentelemetry.api.trace.Span openTelemetrySpan,
+      TransactionOption... options) {
     this.session = session;
     this.span = span;
+    this.openTelemetrySpan = openTelemetrySpan;
     this.options = Options.fromTransactionOptions(options);
   }
 
@@ -52,9 +58,15 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   }
 
   @Override
+  public void setOpenTelemetrySpan(io.opentelemetry.api.trace.Span span) {
+    this.openTelemetrySpan = span;
+  }
+
+  @Override
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    try (Scope s = tracer.withSpan(span)) {
+    try (Scope s = tracer.withSpan(span);
+        io.opentelemetry.context.Scope ss = openTelemetrySpan.makeCurrent()) {
       txn = session.newTransaction(options);
       session.setActive(this);
       txnState = TransactionState.STARTED;
@@ -102,7 +114,8 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       throw new IllegalStateException(
           "resetForRetry can only be called if the previous attempt" + " aborted");
     }
-    try (Scope s = tracer.withSpan(span)) {
+    try (Scope s = tracer.withSpan(span);
+        io.opentelemetry.context.Scope ss = openTelemetrySpan.makeCurrent()) {
       boolean useInlinedBegin = txn.transactionId != null;
       txn = session.newTransaction(options);
       if (!useInlinedBegin) {
@@ -138,6 +151,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       }
     } finally {
       span.end(TraceUtil.END_SPAN_OPTIONS);
+      openTelemetrySpan.end();
     }
   }
 

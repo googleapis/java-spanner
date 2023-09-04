@@ -135,7 +135,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
-  private final OpenTelemetry openTelemetry;
+  private static OpenTelemetry openTelemetry;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -602,7 +602,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
-    openTelemetry = builder.openTelemetry;
+    // openTelemetry = builder.openTelemetry;
   }
 
   /**
@@ -704,7 +704,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
-    private OpenTelemetry openTelemetry = null;
+    // private OpenTelemetry openTelemetry = null;
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -760,7 +760,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
-      this.openTelemetry = options.openTelemetry;
     }
 
     @Override
@@ -1192,7 +1191,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /** Sets OpenTelemetry object to be used for Spans, Metrics, Views. */
     public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
-      this.openTelemetry = openTelemetry;
+      SpannerOptions.openTelemetry = openTelemetry;
       return this;
     }
 
@@ -1216,7 +1215,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
 
-      SpannerRpcMetrics.initializeRPCMetrics(this.openTelemetry);
+      SpannerRpcMetrics.initializeRPCMetrics(openTelemetry);
       return new SpannerOptions(this);
     }
   }
@@ -1337,8 +1336,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return leaderAwareRoutingEnabled;
   }
 
-  public OpenTelemetry getOpenTelemetry() {
-    return openTelemetry;
+  public static OpenTelemetry getOpenTelemetry() {
+    if (openTelemetry != null) return openTelemetry;
+    else return OpenTelemetry.noop();
+  }
+
+  public static io.opentelemetry.api.trace.Tracer getTracer() {
+    return getOpenTelemetry().getTracer(MetricRegistryConstants.Scope);
   }
 
   /** Returns the default query options to use for the specific database. */

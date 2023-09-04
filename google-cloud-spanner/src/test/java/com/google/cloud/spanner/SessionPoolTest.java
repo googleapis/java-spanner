@@ -37,6 +37,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.atMost;
@@ -1195,6 +1198,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(mock(Span.class));
+      closedTransactionRunner.setOpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
       final SessionImpl openSession = mock(SessionImpl.class);
@@ -1209,6 +1213,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(mock(Span.class));
+      openTransactionRunner.setOpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class));
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
       ResultSet openResultSet = mock(ResultSet.class);

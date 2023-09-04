@@ -53,6 +53,7 @@ import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.context.Context;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -68,6 +69,9 @@ abstract class AbstractReadContext
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractReadContext> {
     private SessionImpl session;
     private SpannerRpc rpc;
+    private io.opentelemetry.api.trace.Span openTelemetrySpan =
+        io.opentelemetry.api.trace.Span.fromContext(Context.current());
+
     private Span span = Tracing.getTracer().getCurrentSpan();
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
@@ -92,6 +96,11 @@ abstract class AbstractReadContext
 
     B setSpan(Span span) {
       this.span = span;
+      return self();
+    }
+
+    B setOpenTelemetrySpan(io.opentelemetry.api.trace.Span span) {
+      this.openTelemetrySpan = span;
       return self();
     }
 
@@ -348,6 +357,8 @@ abstract class AbstractReadContext
         if (transactionId != null) {
           return;
         }
+
+        OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Creating Transaction", null);
         span.addAnnotation("Creating Transaction");
         try {
           TransactionOptions.Builder options = TransactionOptions.newBuilder();
@@ -374,9 +385,15 @@ abstract class AbstractReadContext
                 ErrorCode.INTERNAL, "Bad value in transaction.read_timestamp metadata field", e);
           }
           transactionId = transaction.getId();
+          OpenTelemetryTraceUtil.addEvent(
+              openTelemetrySpan,
+              "Transaction Creation Done",
+              OpenTelemetryTraceUtil.getTransactionAnnotations(transaction));
           span.addAnnotation(
               "Transaction Creation Done", TraceUtil.getTransactionAnnotations(transaction));
         } catch (SpannerException e) {
+          OpenTelemetryTraceUtil.addEventWithException(
+              openTelemetrySpan, "Transaction Creation Failed", e);
           span.addAnnotation("Transaction Creation Failed", TraceUtil.getExceptionAnnotations(e));
           throw e;
         }
@@ -389,6 +406,7 @@ abstract class AbstractReadContext
   final SpannerRpc rpc;
   final ExecutorProvider executorProvider;
   Span span;
+  io.opentelemetry.api.trace.Span openTelemetrySpan;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
@@ -415,12 +433,18 @@ abstract class AbstractReadContext
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
+    this.openTelemetrySpan = builder.openTelemetrySpan;
     this.executorProvider = builder.executorProvider;
   }
 
   @Override
   public void setSpan(Span span) {
     this.span = span;
+  }
+
+  @Override
+  public void setOpenTelemetrySpan(io.opentelemetry.api.trace.Span span) {
+    this.openTelemetrySpan = span;
   }
 
   long getSeqNo() {
@@ -668,6 +692,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.QUERY,
             span,
+            openTelemetrySpan,
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
@@ -727,6 +752,7 @@ abstract class AbstractReadContext
 
   @Override
   public void close() {
+    OpenTelemetryTraceUtil.endSpan(openTelemetrySpan);
     span.end(TraceUtil.END_SPAN_OPTIONS);
     synchronized (lock) {
       isClosed = true;
@@ -807,6 +833,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.READ,
             span,
+            openTelemetrySpan,
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
           @Override

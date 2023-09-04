@@ -54,6 +54,7 @@ import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -72,6 +73,8 @@ import javax.annotation.concurrent.GuardedBy;
 /** Default implementation of {@link TransactionRunner}. */
 class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private static final Tracer tracer = Tracing.getTracer();
+  private static final io.opentelemetry.api.trace.Tracer openTelemetryTracer =
+      SpannerOptions.getTracer();
   private static final Logger txnLogger = Logger.getLogger(TransactionRunner.class.getName());
   /**
    * (Part of) the error message that is returned by Cloud Spanner if a transaction is cancelled
@@ -249,6 +252,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             "Transaction Initialized",
             ImmutableMap.of(
                 "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
+        OpenTelemetryTraceUtil.addEvent(
+            openTelemetrySpan,
+            "Transaction Initialized",
+            Attributes.builder().put("Id", transactionId.toStringUtf8()).build());
         txnLogger.log(
             Level.FINER,
             "Using prepared transaction {0}",
@@ -260,6 +267,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
+      OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Creating Transaction", null);
       final ApiFuture<ByteString> fut = session.beginTransactionAsync(options, isRouteToLeader());
       fut.addListener(
           () -> {
@@ -269,6 +277,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   "Transaction Creation Done",
                   ImmutableMap.of(
                       "Id", AttributeValue.stringAttributeValue(transactionId.toStringUtf8())));
+
+              OpenTelemetryTraceUtil.addEvent(
+                  openTelemetrySpan,
+                  "Transaction Creating Done",
+                  Attributes.builder().put("Id", transactionId.toStringUtf8()).build());
+
               txnLogger.log(
                   Level.FINER,
                   "Started transaction {0}",
@@ -278,6 +292,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               span.addAnnotation(
                   "Transaction Creation Failed",
                   TraceUtil.getExceptionAnnotations(e.getCause() == null ? e : e.getCause()));
+              OpenTelemetryTraceUtil.addEvent(
+                  openTelemetrySpan,
+                  "Transaction Creating Failed",
+                  OpenTelemetryTraceUtil.getExceptionAnnotations(e));
+
               res.setException(e.getCause() == null ? e : e.getCause());
             } catch (InterruptedException e) {
               res.setException(SpannerExceptionFactory.propagateInterrupt(e));
@@ -385,38 +404,49 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           }
           final CommitRequest commitRequest = requestBuilder.build();
           span.addAnnotation("Starting Commit");
+          OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Starting Commit", null);
           final Span opSpan =
               tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
+          final io.opentelemetry.api.trace.Span openTelemetryOpSpan =
+              OpenTelemetryTraceUtil.spanBuilderWithExplicitParent(
+                  openTelemetryTracer, SpannerImpl.COMMIT, openTelemetrySpan);
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture =
               rpc.commitAsync(commitRequest, session.getOptions());
           commitFuture.addListener(
-              tracer.withSpan(
-                  opSpan,
-                  () -> {
-                    try {
-                      com.google.spanner.v1.CommitResponse proto = commitFuture.get();
-                      if (!proto.hasCommitTimestamp()) {
-                        throw newSpannerException(
-                            ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
-                      }
-                      span.addAnnotation("Commit Done");
-                      opSpan.end(TraceUtil.END_SPAN_OPTIONS);
-                      res.set(new CommitResponse(proto));
-                    } catch (Throwable e) {
-                      if (e instanceof ExecutionException) {
-                        e =
-                            SpannerExceptionFactory.newSpannerException(
-                                e.getCause() == null ? e : e.getCause());
-                      } else if (e instanceof InterruptedException) {
-                        e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
-                      } else {
-                        e = SpannerExceptionFactory.newSpannerException(e);
-                      }
-                      span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
-                      TraceUtil.endSpanWithFailure(opSpan, e);
-                      res.setException(onError((SpannerException) e, false));
-                    }
-                  }),
+              () -> {
+                try (Scope s = tracer.withSpan(opSpan);
+                    io.opentelemetry.context.Scope ss = openTelemetryOpSpan.makeCurrent()) {
+                  com.google.spanner.v1.CommitResponse proto = commitFuture.get();
+                  if (!proto.hasCommitTimestamp()) {
+                    throw newSpannerException(
+                        ErrorCode.INTERNAL, "Missing commitTimestamp:\n" + session.getName());
+                  }
+                  span.addAnnotation("Commit Done");
+                  OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Commit Done", null);
+                  opSpan.end(TraceUtil.END_SPAN_OPTIONS);
+                  openTelemetryOpSpan.end();
+                  res.set(new CommitResponse(proto));
+                } catch (Throwable e) {
+                  if (e instanceof ExecutionException) {
+                    e =
+                        SpannerExceptionFactory.newSpannerException(
+                            e.getCause() == null ? e : e.getCause());
+                  } else if (e instanceof InterruptedException) {
+                    e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
+                  } else {
+                    e = SpannerExceptionFactory.newSpannerException(e);
+                  }
+                  span.addAnnotation("Commit Failed", TraceUtil.getExceptionAnnotations(e));
+                  TraceUtil.endSpanWithFailure(opSpan, e);
+
+                  OpenTelemetryTraceUtil.addEvent(
+                      openTelemetrySpan,
+                      "Commit Failed",
+                      OpenTelemetryTraceUtil.getExceptionAnnotations(e));
+                  OpenTelemetryTraceUtil.endSpanWithFailure(openTelemetryOpSpan, e);
+                  res.setException(onError((SpannerException) e, false));
+                }
+              },
               MoreExecutors.directExecutor());
         } catch (InterruptedException e) {
           res.setException(SpannerExceptionFactory.propagateInterrupt(e));
@@ -446,6 +476,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       } catch (ExecutionException e) {
         txnLogger.log(Level.FINE, "Exception during rollback", e);
         span.addAnnotation("Rollback Failed", TraceUtil.getExceptionAnnotations(e));
+        OpenTelemetryTraceUtil.addEvent(
+            openTelemetrySpan,
+            "Rollback Failed",
+            OpenTelemetryTraceUtil.getExceptionAnnotations(e));
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       }
@@ -463,6 +497,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // is still in flight. That transaction will then automatically be terminated by the server.
       if (transactionId != null) {
         span.addAnnotation("Starting Rollback");
+        OpenTelemetryTraceUtil.addEvent(openTelemetrySpan, "Starting Rollback", null);
         return rpc.rollbackAsync(
             RollbackRequest.newBuilder()
                 .setSession(session.getName())
@@ -933,6 +968,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private final SessionImpl session;
   private final Options options;
   private Span span;
+  private io.opentelemetry.api.trace.Span openTelemetrySpan;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
 
@@ -953,16 +989,23 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     this.span = span;
   }
 
+  @Override
+  public void setOpenTelemetrySpan(io.opentelemetry.api.trace.Span span) {
+    this.openTelemetrySpan = span;
+  }
+
   @Nullable
   @Override
   public <T> T run(TransactionCallable<T> callable) {
-    try (Scope s = tracer.withSpan(span)) {
+    try (Scope s = tracer.withSpan(span);
+        io.opentelemetry.context.Scope ss = openTelemetrySpan.makeCurrent()) {
       if (blockNestedTxn) {
         SessionImpl.hasPendingTransaction.set(Boolean.TRUE);
       }
       return runInternal(callable);
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
+      OpenTelemetryTraceUtil.setWithFailure(openTelemetrySpan, e);
       throw e;
     } finally {
       // Remove threadLocal rather than set to FALSE to avoid a possible memory leak.
@@ -989,6 +1032,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           span.addAnnotation(
               "Starting Transaction Attempt",
               ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
+
+          OpenTelemetryTraceUtil.addEvent(
+              openTelemetrySpan,
+              "Starting Transaction Attempt",
+              Attributes.builder().put("Attempt", attempt.longValue()).build());
           // Only ensure that there is a transaction if we should not inline the beginTransaction
           // with the first statement.
           if (!useInlinedBegin) {
@@ -1007,6 +1055,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   "Transaction Attempt Aborted in user operation. Retrying",
                   ImmutableMap.of(
                       "Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
+
+              OpenTelemetryTraceUtil.addEvent(
+                  openTelemetrySpan,
+                  "Transaction Attempt Aborted in user operation. Retrying",
+                  Attributes.builder().put("Attempt", attempt.longValue()).build());
               shouldRollback = false;
               if (e instanceof AbortedException) {
                 throw e;
@@ -1026,6 +1079,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     .putAll(TraceUtil.getExceptionAnnotations(toThrow))
                     .put("Attempt", AttributeValue.longAttributeValue(attempt.longValue()))
                     .build());
+            OpenTelemetryTraceUtil.addEvent(
+                openTelemetrySpan,
+                "Transaction Attempt Failed in user operation",
+                Attributes.builder()
+                    .put("Status", toThrow.getErrorCode().toString())
+                    .put("Attempt", attempt.longValue())
+                    .build());
+
             throw toThrow;
           } finally {
             if (shouldRollback) {
@@ -1038,12 +1099,23 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             span.addAnnotation(
                 "Transaction Attempt Succeeded",
                 ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
+
+            OpenTelemetryTraceUtil.addEvent(
+                openTelemetrySpan,
+                "Transaction Attempt Succeeded",
+                Attributes.builder().put("Attempt", attempt.longValue()).build());
+
             return result;
           } catch (AbortedException e) {
             txnLogger.log(Level.FINE, "Commit aborted", e);
             span.addAnnotation(
                 "Transaction Attempt Aborted in Commit. Retrying",
                 ImmutableMap.of("Attempt", AttributeValue.longAttributeValue(attempt.longValue())));
+            OpenTelemetryTraceUtil.addEvent(
+                openTelemetrySpan,
+                "Transaction Attempt Aborted in Commit. Retrying",
+                Attributes.builder().put("Attempt", attempt.longValue()).build());
+
             throw e;
           } catch (SpannerException e) {
             span.addAnnotation(
@@ -1051,6 +1123,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 ImmutableMap.<String, AttributeValue>builder()
                     .putAll(TraceUtil.getExceptionAnnotations(e))
                     .put("Attempt", AttributeValue.longAttributeValue(attempt.longValue()))
+                    .build());
+
+            OpenTelemetryTraceUtil.addEvent(
+                openTelemetrySpan,
+                "Transaction Attempt Failed in Commit",
+                Attributes.builder()
+                    .put("Status", ((SpannerException) e).getErrorCode().toString())
+                    .put("Attempt", attempt.longValue())
                     .build());
             throw e;
           }
