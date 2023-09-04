@@ -96,5 +96,16 @@ class MetricRegistryConstants {
       "The number of sessions released by the user and pool maintainer.";
   static final String NUM_SESSIONS_IN_POOL_DESCRIPTION = "The number of sessions in the pool.";
 
+  public static final String SPANNER_GFE_LATENCY_NAME = "gfe_latency";
+
+  public static final String SPANNER_GFE_LATENCY_DESCRIPTION =
+      "Latency between Google's network receiving an RPC and reading back the first byte of the response";
+
+  public static final String SPANNER_GFE_HEADER_MISSING_COUNT_NAME = "gfe_header_missing_count";
+
+  public static final String SPANNER_GFE_HEADER_MISSING_COUNT_DESCRIPTION =
+      "Number of RPC responses received without the server-timing header, most likely means that the RPC never reached Google's network";
+
+  public static final String MILLISECOND = "ms";
   static final String Scope = "cloud.google.com/java/spanner";
 }

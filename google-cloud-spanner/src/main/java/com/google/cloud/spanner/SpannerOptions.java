@@ -1216,6 +1216,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
 
+      SpannerRpcMetrics.initializeRPCMetrics(this.openTelemetry);
       return new SpannerOptions(this);
     }
   }

@@ -22,6 +22,7 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
+import com.google.cloud.spanner.SpannerRpcMetrics;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -37,6 +38,8 @@ import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -73,12 +76,13 @@ class HeaderInterceptor implements ClientInterceptor {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         TagContext tagContext = getTagContext(headers, method.getFullMethodName());
+        Attributes attributes = getMetricAttributes(headers, method.getFullMethodName());
         super.start(
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
               public void onHeaders(Metadata metadata) {
 
-                processHeader(metadata, tagContext);
+                processHeader(metadata, tagContext, attributes);
                 super.onHeaders(metadata);
               }
             },
@@ -87,7 +91,7 @@ class HeaderInterceptor implements ClientInterceptor {
     };
   }
 
-  private void processHeader(Metadata metadata, TagContext tagContext) {
+  private void processHeader(Metadata metadata, TagContext tagContext, Attributes attributes) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     if (metadata.get(SERVER_TIMING_HEADER_KEY) != null) {
       String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
@@ -98,11 +102,15 @@ class HeaderInterceptor implements ClientInterceptor {
           measureMap.put(SPANNER_GFE_LATENCY, latency);
           measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
           measureMap.record(tagContext);
+
+          SpannerRpcMetrics.gfeLatencyRecorder(latency, attributes);
+          SpannerRpcMetrics.gfeHeaderMissingCountRecorder(0L, attributes);
         } catch (NumberFormatException e) {
           LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
         }
       }
     } else {
+      SpannerRpcMetrics.gfeHeaderMissingCountRecorder(1L, attributes);
       measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
     }
   }
@@ -138,5 +146,33 @@ class HeaderInterceptor implements ClientInterceptor {
       }
     }
     return getTagContext(method, projectId, instanceId, databaseId);
+  }
+
+  private Attributes getMetricAttributes(Metadata headers, String method) {
+    String projectId = "undefined-project";
+    String instanceId = "undefined-database";
+    String databaseId = "undefined-database";
+    if (headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY) != null) {
+      String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
+      Matcher matcher = GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN.matcher(googleResourcePrefix);
+      if (matcher.find()) {
+        projectId = matcher.group("project");
+        if (matcher.group("instance") != null) {
+          instanceId = matcher.group("instance");
+        }
+        if (matcher.group("database") != null) {
+          databaseId = matcher.group("database");
+        }
+      } else {
+        LOGGER.log(LEVEL, "Error parsing google cloud resource header: " + googleResourcePrefix);
+      }
+    }
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    attributesBuilder.put("database", databaseId);
+    attributesBuilder.put("instance_id", instanceId);
+    attributesBuilder.put("project_id", projectId);
+    attributesBuilder.put("method", method);
+
+    return attributesBuilder.build();
   }
 }
