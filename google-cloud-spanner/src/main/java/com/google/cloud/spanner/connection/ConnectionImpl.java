@@ -1386,32 +1386,15 @@ class ConnectionImpl implements Connection {
 
   @Override
   public long[] executeBatchUpdate(Iterable<Statement> updates) {
-    Preconditions.checkNotNull(updates);
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    // Check that there are only DML statements in the input.
-    List<ParsedStatement> parsedStatements = new LinkedList<>();
-    for (Statement update : updates) {
-      ParsedStatement parsedStatement = getStatementParser().parse(update);
-      switch (parsedStatement.getType()) {
-        case UPDATE:
-          parsedStatements.add(parsedStatement);
-          break;
-        case CLIENT_SIDE:
-        case QUERY:
-        case DDL:
-        case UNKNOWN:
-        default:
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INVALID_ARGUMENT,
-              "The batch update list contains a statement that is not an update statement: "
-                  + parsedStatement.getSqlWithoutComments());
-      }
-    }
-    return get(internalExecuteBatchUpdateAsync(CallType.SYNC, parsedStatements));
+    return get(internalExecuteBatchUpdateAsync(CallType.SYNC, parseUpdateStatements(updates)));
   }
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<Statement> updates) {
+    return internalExecuteBatchUpdateAsync(CallType.ASYNC, parseUpdateStatements(updates));
+  }
+
+  private List<ParsedStatement> parseUpdateStatements(Iterable<Statement> updates) {
     Preconditions.checkNotNull(updates);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     // Check that there are only DML statements in the input.
@@ -1433,7 +1416,7 @@ class ConnectionImpl implements Connection {
                   + parsedStatement.getSqlWithoutComments());
       }
     }
-    return internalExecuteBatchUpdateAsync(CallType.ASYNC, parsedStatements);
+    return parsedStatements;
   }
 
   private QueryOption[] mergeDataBoost(QueryOption... options) {
