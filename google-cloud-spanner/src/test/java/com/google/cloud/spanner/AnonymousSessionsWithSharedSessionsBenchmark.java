@@ -75,13 +75,13 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     private Spanner spanner;
     private DatabaseClientImpl client;
 
-    @Param({"5"})
+    @Param({"2"})
     int minSessions;
 
-    @Param({"5"})
+    @Param({"2"})
     int maxSessions;
 
-    @Param({"5"})
+    @Param({"2"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
@@ -90,7 +90,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
       AnonymousSessionOptions anonymousSessionOptions =
           AnonymousSessionOptions.newBuilder()
               .setActionForAnonymousSessionsChannelHints(
-                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
+                  ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL)
               .setActionForNumberOfAnonymousSessions(
                   ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =
