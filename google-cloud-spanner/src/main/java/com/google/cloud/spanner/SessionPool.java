@@ -38,6 +38,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEY
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
+import static io.grpc.Status.UNIMPLEMENTED;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -1367,7 +1368,121 @@ class SessionPool {
     }
   }
 
-  class PooledSession implements Session {
+  final class SharedSession implements Session {
+    @VisibleForTesting SessionImpl delegate;
+
+    public SharedSession(SessionImpl delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public Dialect getDialect() {
+      return delegate.getDialect();
+    }
+
+    @Override
+    public String getDatabaseRole() {
+      return delegate.getDatabaseRole();
+    }
+
+    @Override
+    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public CommitResponse writeWithOptions(Iterable<Mutation> mutations,
+        TransactionOption... options) throws SpannerException {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(Iterable<Mutation> mutations,
+        TransactionOption... options) throws SpannerException {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public ReadContext singleUse() {
+      return delegate.singleUse();
+    }
+
+    @Override
+    public ReadContext singleUse(TimestampBound bound) {
+      return delegate.singleUse(bound);
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction() {
+      return delegate.singleUseReadOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
+      return delegate.singleUseReadOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction() {
+      return delegate.readOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
+      return delegate.readOnlyTransaction();
+    }
+
+    @Override
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public TransactionManager transactionManager(TransactionOption... options) {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public AsyncRunner runAsync(TransactionOption... options) {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public String getName() {
+      return delegate.getName();
+    }
+
+    @Override
+    public void prepareReadWriteTransaction() {
+      throw UNIMPLEMENTED.asRuntimeException();
+    }
+
+    @Override
+    public void close() {
+    }
+
+    @Override
+    public ApiFuture<Empty> asyncClose() {
+      return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+    }
+  }
+
+  final class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
     private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
@@ -2040,10 +2155,15 @@ class SessionPool {
   private final Set<PooledSession> allSessions = new HashSet<>();
 
   @GuardedBy("lock")
+  private final List<SharedSession> sharedSessions = new ArrayList<>();
+
+  @GuardedBy("lock")
   @VisibleForTesting
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
+
+  private final SessionConsumer sharedSessionConsumer = new SharedSessionConsumerImpl();
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
@@ -2251,6 +2371,9 @@ class SessionPool {
       if (options.getMinSessions() > 0) {
         createSessions(options.getMinSessions(), true);
       }
+      if (options.getMaxSessions() > 0) {
+        createSharedSessions(options.getMaxSessions(), true);
+      }
     }
   }
 
@@ -2356,6 +2479,19 @@ class SessionPool {
         span.addAnnotation("Acquired session");
       }
       return checkoutSession(span, sess, waiter);
+    }
+  }
+
+  /**
+   * This method does not poll the queue. Instead, it selects a session at a random position in the
+   * list and returns the reference. Note that this session can be used with multiple transactions.
+   * @return
+   * @throws SpannerException
+   */
+  Session getRandomSharedSessionV2() throws SpannerException {
+    synchronized (lock) {
+      int randomIndex = random.nextInt(sessions.size());
+      return sessions.get(randomIndex);
     }
   }
 
@@ -2739,6 +2875,21 @@ class SessionPool {
     }
   }
 
+  private void createSharedSessions(final int sessionCount, boolean distributeOverChannels) {
+    logger.log(Level.FINE, String.format("Creating %d shared sessions", sessionCount));
+    synchronized (lock) {
+      try {
+        // Create a batch of sessions. The actual session creation can be split into multiple gRPC
+        // calls and the session consumer consumes the returned sessions as they become available.
+        // The batchCreateSessions method automatically spreads the sessions evenly over all
+        // available channels.
+        sessionClient.asyncBatchCreateSessions(
+            sessionCount, distributeOverChannels, sessionConsumer);
+      } catch (Throwable t) {
+        handleCreateSessionsFailure(newSpannerException(t), sessionCount);
+      }
+    }
+  }
   private void createSessions(final int sessionCount, boolean distributeOverChannels) {
     logger.log(Level.FINE, String.format("Creating %d sessions", sessionCount));
     synchronized (lock) {
@@ -2758,6 +2909,21 @@ class SessionPool {
         }
         handleCreateSessionsFailure(newSpannerException(t), sessionCount);
       }
+    }
+  }
+
+  class SharedSessionConsumerImpl implements SessionConsumer {
+
+    @Override
+    public void onSessionReady(SessionImpl session) {
+      SharedSession sharedSession = new SharedSession(session);
+      synchronized (lock) {
+        sharedSessions.add(sharedSession);
+      }
+    }
+    @Override
+    public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+
     }
   }
 

@@ -75,18 +75,16 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
     private Spanner spanner;
     private DatabaseClientImpl client;
 
-    @Param({"2"})
+    @Param({"100"})
     int minSessions;
 
-    @Param({"2"})
+    @Param({"400"})
     int maxSessions;
 
-    @Param({"2"})
+    @Param({"100", "400"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
-      // TODO : this has a bug since SINGLE_SESSION option will make it share sessions even for
-      // base case. Refactor the base tests to a separate benchmark test.
       AnonymousSessionOptions anonymousSessionOptions =
           AnonymousSessionOptions.newBuilder()
               .setActionForAnonymousSessionsChannelHints(
