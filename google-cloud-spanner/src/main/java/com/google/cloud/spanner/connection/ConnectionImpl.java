@@ -47,6 +47,7 @@ import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
+import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
@@ -60,12 +61,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
@@ -940,9 +944,20 @@ class ConnectionImpl implements Connection {
 
   @Override
   public StatementResult execute(Statement statement) {
-    Preconditions.checkNotNull(statement);
+    return internalExecute(Preconditions.checkNotNull(statement), null);
+  }
+
+  @Override
+  public StatementResult execute(Statement statement, Set<ResultType> allowedResultTypes) {
+    return internalExecute(
+        Preconditions.checkNotNull(statement), Preconditions.checkNotNull(allowedResultTypes));
+  }
+
+  private StatementResult internalExecute(
+      Statement statement, @Nullable Set<ResultType> allowedResultTypes) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
+    checkResultTypeAllowed(parsedStatement, allowedResultTypes);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return parsedStatement
@@ -967,6 +982,53 @@ class ConnectionImpl implements Connection {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
         "Unknown statement: " + parsedStatement.getSqlWithoutComments());
+  }
+
+  @VisibleForTesting
+  static void checkResultTypeAllowed(
+      ParsedStatement parsedStatement, @Nullable Set<ResultType> allowedResultTypes) {
+    if (allowedResultTypes == null) {
+      return;
+    }
+    ResultType resultType = getResultType(parsedStatement);
+    if (!allowedResultTypes.contains(resultType)) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "This statement returns a result of type "
+              + resultType
+              + ". Only statements that return a result of one of the following types are allowed: "
+              + allowedResultTypes.stream()
+                  .map(ResultType::toString)
+                  .collect(Collectors.joining(", ")));
+    }
+  }
+
+  private static ResultType getResultType(ParsedStatement parsedStatement) {
+    switch (parsedStatement.getType()) {
+      case CLIENT_SIDE:
+        if (parsedStatement.getClientSideStatement().isQuery()) {
+          return ResultType.RESULT_SET;
+        } else if (parsedStatement.getClientSideStatement().isUpdate()) {
+          return ResultType.UPDATE_COUNT;
+        } else {
+          return ResultType.NO_RESULT;
+        }
+      case QUERY:
+        return ResultType.RESULT_SET;
+      case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          return ResultType.RESULT_SET;
+        } else {
+          return ResultType.UPDATE_COUNT;
+        }
+      case DDL:
+        return ResultType.NO_RESULT;
+      case UNKNOWN:
+      default:
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Unknown statement: " + parsedStatement.getSqlWithoutComments());
+    }
   }
 
   @Override

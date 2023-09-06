@@ -416,6 +416,18 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setMaxPartitions(int)</method>
   </difference>
+  <!-- Add an execute method that allows the driver to state what types should be allowed or not.
+       This fixes the gap between what JDBC allows, and what is currently allowed in the Connection
+       API:
+       1. JDBC allows executeUpdate to be used for everything that does not return a ResultSet.
+       2. Connection API requires executeUpdate to be used with something that returns an update
+          count (i.e. no DDL and no client-side statements. -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.StatementResult execute(com.google.cloud.spanner.Statement, java.util.Set)</method>
+  </difference>
+
   <!-- (Internal change, use stream timeout) -->
   <difference>
     <differenceType>7012</differenceType>
