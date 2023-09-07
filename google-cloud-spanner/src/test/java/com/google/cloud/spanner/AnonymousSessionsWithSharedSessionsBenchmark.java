@@ -80,7 +80,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     @Param({"400"})
     int maxSessions;
 
-    @Param({"100", "400"})
+    @Param({"50", "100", "400"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {

@@ -55,6 +55,10 @@ abstract class AbstractLatencyBenchmark {
     return allResults;
   }
 
+  /**
+   *
+   * @param results
+   */
   protected void printResults(List<Duration> results) {
     if (results == null) {
       return;
