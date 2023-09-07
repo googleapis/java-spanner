@@ -21,10 +21,11 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.cloud.spanner.SessionPoolOptions.ActionForAnonymousSessionsChannelHints;
 import com.google.cloud.spanner.SessionPoolOptions.ActionForNumberOfAnonymousSessions;
 import com.google.cloud.spanner.SessionPoolOptions.AnonymousSessionOptions;
-import com.google.common.util.concurrent.Futures;
+import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -43,7 +44,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
-import org.threeten.bp.Duration;
 
 /**
  * Benchmarks for long-running sessions scenarios. The simulated execution times are based on
@@ -58,10 +58,9 @@ import org.threeten.bp.Duration;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Warmup(batchSize = 0, iterations = 1)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnonymousSessionsWithSharedSessionsBenchmark {
+public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatencyBenchmark {
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
-  private static final int WAIT_TIME_BETWEEN_REQUESTS = 2;
   static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
   static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
 
@@ -98,7 +97,8 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
                       .setAnonymousSessionOptions(anonymousSessionOptions)
-                      .setWaitForMinSessions(Duration.ofSeconds(20)).build())
+                      .setWaitForMinSessions(
+                          org.threeten.bp.Duration.ofSeconds(20)).build())
               .build();
       spanner = options.getService();
       System.out.println("running benchmark with **REAL** server");
@@ -140,31 +140,44 @@ public class AnonymousSessionsWithSharedSessionsBenchmark {
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
-    List<ListenableFuture<?>> futures = new ArrayList<>(totalReads + totalWrites);
+    List<ListenableFuture<Duration>> futures =
+        new ArrayList<>(totalReads + totalWrites);
     for (int i = 0; i < totalReads; i++) {
       futures.add(
           service.submit(
-              () -> {
-                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
-                try (ResultSet rs =
-                    client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
-                  while (rs.next()) {}
-                  return null;
-                }
-              }));
+              () -> runBenchmarkForReads(server)));
     }
     for (int i = 0; i < totalWrites; i++) {
       futures.add(
           service.submit(
-              () -> {
-                Thread.sleep(WAIT_TIME_BETWEEN_REQUESTS);
-                TransactionRunner runner = server.client.readWriteTransaction();
-                return runner.run(
-                    transaction ->
-                        transaction.executeUpdate(UPDATE_QUERY));
-              }));
+              () -> runBenchmarkForWrites(server)));
     }
-    Futures.allAsList(futures).get();
-    service.shutdown();
+
+    final List<Duration> results =
+        collectResults(service, futures, totalReads + totalWrites);
+
+    System.out.printf("Min Sessions: %d\n", server.minSessions);
+    System.out.printf("Max Sessions: %d\n", server.maxSessions);
+
+    printResults(results);
+  }
+
+  private Duration runBenchmarkForReads(final BenchmarkState server) {
+    Stopwatch watch = Stopwatch.createStarted();
+
+    try (ResultSet rs =
+        server.client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
+      while (rs.next()) {}
+    }
+
+    return watch.elapsed();
+  }
+  private Duration runBenchmarkForWrites(final BenchmarkState server) {
+    Stopwatch watch = Stopwatch.createStarted();
+
+    TransactionRunner runner = server.client.readWriteTransaction();
+    runner.run(transaction -> transaction.executeUpdate(UPDATE_QUERY));
+
+    return watch.elapsed();
   }
 }
