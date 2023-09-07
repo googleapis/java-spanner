@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -66,10 +67,10 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
   SessionPool pool;
   SessionPoolOptions options;
   ExecutorService createExecutor = Executors.newSingleThreadExecutor();
-  Object lock = new Object();
+  final Object lock = new Object();
   Random random = new Random();
   FakeClock clock = new FakeClock();
-  Map<String, Boolean> sessions = new HashMap<>();
+  final Map<String, Boolean> sessions = new ConcurrentHashMap<>();
   // Exception keeps track of where the session was closed at.
   Map<String, Exception> closedSessions = new HashMap<>();
   Set<String> expiredSessions = new HashSet<>();
@@ -236,18 +237,18 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     pool.idleSessionRemovedListener =
         pooled -> {
           String name = pooled.getName();
-          synchronized (lock) {
-            sessions.remove(name);
-            return null;
-          }
+          // We do not take the test lock here, as we already hold the session pool lock. Taking the
+          // test lock as well here can cause a deadlock.
+          sessions.remove(name);
+          return null;
         };
     pool.longRunningSessionRemovedListener =
         pooled -> {
           String name = pooled.getName();
-          synchronized (lock) {
-            sessions.remove(name);
-            return null;
-          }
+          // We do not take the test lock here, as we already hold the session pool lock. Taking the
+          // test lock as well here can cause a deadlock.
+          sessions.remove(name);
+          return null;
         };
     for (int i = 0; i < concurrentThreads; i++) {
       new Thread(

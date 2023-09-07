@@ -1367,7 +1367,7 @@ class SessionPool {
     }
   }
 
-  final class PooledSession implements Session {
+  class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
     private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
@@ -2449,21 +2449,15 @@ class SessionPool {
           // more efficient.
           session.releaseToPosition = Position.FIRST;
         }
-        switch (session.releaseToPosition) {
-          case RANDOM:
-            if (!sessions.isEmpty()) {
-              // A session should only be added at a random position the first time it is added to
-              // the pool. All following releases into the pool should happen at the front of the
-              // pool.
-              session.releaseToPosition = Position.FIRST;
-              int pos = random.nextInt(sessions.size() + 1);
-              sessions.add(pos, session);
-              break;
-            }
-            // fallthrough
-          case FIRST:
-          default:
-            sessions.addFirst(session);
+        if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
+          // A session should only be added at a random position the first time it is added to
+          // the pool. All following releases into the pool should happen at the front of the
+          // pool.
+          session.releaseToPosition = Position.FIRST;
+          int pos = random.nextInt(sessions.size() + 1);
+          sessions.add(pos, session);
+        } else {
+          sessions.addFirst(session);
         }
       } else {
         waiters.poll().put(session);
@@ -2472,12 +2466,50 @@ class SessionPool {
   }
 
   private boolean isUnbalanced(PooledSession session) {
-    // Don't bother with any randomization if the number of checked out sessions is low, as it is
+    int channel = session.getChannel();
+    int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
+    return isUnbalanced(channel, this.sessions, this.checkedOutSessions, numChannels);
+  }
+
+  /**
+   * Returns true if the given list of sessions is considered unbalanced when compared to the
+   * sessionChannel that is about to be added to the pool.
+   *
+   * <p>The method returns true if all the following is true:
+   *
+   * <ol>
+   *   <li>The list of sessions is not empty.
+   *   <li>The number of checked out sessions is > 2.
+   *   <li>The number of channels being used by the pool is > 1.
+   *   <li>And at least one of the following is true:
+   *       <ol>
+   *         <li>The first numChannels sessions in the list of sessions contains more than 2
+   *             sessions that use the same channel as the one being added.
+   *         <li>The list of currently checked out sessions contains more than 2 times the the
+   *             number of sessions with the same channel as the one being added than it should in
+   *             order for it to be perfectly balanced. Perfectly balanced in this case means that
+   *             the list should preferably contain size/numChannels sessions of each channel.
+   *       </ol>
+   * </ol>
+   *
+   * @param channelOfSessionBeingAdded the channel number being used by the session that is about to
+   *     be released into the pool
+   * @param sessions the list of all sessions in the pool
+   * @param checkedOutSessions the currently checked out sessions of the pool
+   * @param numChannels the number of channels in use
+   * @return true if the pool is considered unbalanced, and false otherwise
+   */
+  @VisibleForTesting
+  static boolean isUnbalanced(
+      int channelOfSessionBeingAdded,
+      List<PooledSession> sessions,
+      Set<PooledSessionFuture> checkedOutSessions,
+      int numChannels) {
+    // Do not re-balance the pool if the number of checked out sessions is low, as it is
     // better to re-use sessions as much as possible in a low-QPS scenario.
     if (sessions.isEmpty() || checkedOutSessions.size() <= 2) {
       return false;
     }
-    int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
     if (numChannels == 1) {
       return false;
     }
@@ -2485,14 +2517,16 @@ class SessionPool {
     // Ideally, the first numChannels sessions in the pool should contain exactly one session for
     // each channel.
     // Check if the first numChannels sessions at the head of the pool already contain more than 2
-    // sessions that use the same channel as this one. If so, we randomize.
-    int channel = session.getChannel();
+    // sessions that use the same channel as this one. If so, we re-balance.
+    // We also re-balance the pool in the specific case that the pool uses 2 channels and the first
+    // two sessions use those two channels.
+    int maxSessionsAtHeadOfPool = Math.min(numChannels, 3);
     int count = 0;
     for (int i = 0; i < Math.min(numChannels, sessions.size()); i++) {
       PooledSession otherSession = sessions.get(i);
-      if (channel == otherSession.getChannel()) {
+      if (channelOfSessionBeingAdded == otherSession.getChannel()) {
         count++;
-        if (count > 2) {
+        if (count >= maxSessionsAtHeadOfPool) {
           return true;
         }
       }
@@ -2500,10 +2534,11 @@ class SessionPool {
     // Ideally, the use of a channel in the checked out sessions is exactly
     // numCheckedOut / numChannels
     // We check whether we are more than a factor two away from that perfect distribution.
-    // If we are, then we randomize.
+    // If we are, then we re-balance.
+    count = 0;
     int checkedOutThreshold = Math.max(2, 2 * checkedOutSessions.size() / numChannels);
     for (PooledSessionFuture otherSession : checkedOutSessions) {
-      if (otherSession.isDone() && channel == otherSession.get().getChannel()) {
+      if (otherSession.isDone() && channelOfSessionBeingAdded == otherSession.get().getChannel()) {
         count++;
         if (count > checkedOutThreshold) {
           return true;
