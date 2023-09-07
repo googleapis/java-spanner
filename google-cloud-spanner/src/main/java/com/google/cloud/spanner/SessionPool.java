@@ -2451,8 +2451,9 @@ class SessionPool {
         }
         if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
           // A session should only be added at a random position the first time it is added to
-          // the pool. All following releases into the pool should happen at the front of the
-          // pool.
+          // the pool or if the pool was deemed unbalanced. All following releases into the pool
+          // should normally happen at the front of the pool (unless the pool is again deemed to be
+          // unbalanced).
           session.releaseToPosition = Position.FIRST;
           int pos = random.nextInt(sessions.size() + 1);
           sessions.add(pos, session);
