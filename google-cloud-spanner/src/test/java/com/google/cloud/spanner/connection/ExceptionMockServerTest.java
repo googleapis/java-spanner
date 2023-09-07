@@ -22,11 +22,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.common.collect.ImmutableSet;
+import com.google.longrunning.Operation;
+import com.google.protobuf.Any;
+import com.google.protobuf.Empty;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.Arrays;
@@ -150,6 +157,124 @@ public class ExceptionMockServerTest extends AbstractMockServerTest {
       SpannerException exception = assertThrows(SpannerException.class, connection::commit);
       assertNotNull(exception.getSuppressed());
       assertEquals(0, exception.getSuppressed().length);
+    }
+  }
+
+  @Test
+  public void testAllowedResultType() {
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
+    mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, 1L));
+    mockSpanner.putStatementResult(
+        StatementResult.updateReturning(
+            INSERT_RETURNING_STATEMENT, SELECT_COUNT_RESULTSET_AFTER_INSERT));
+    mockDatabaseAdmin.addResponse(
+        Operation.newBuilder()
+            .setDone(true)
+            .setResponse(Any.pack(Empty.getDefaultInstance()))
+            .setMetadata(Any.pack(UpdateDatabaseDdlMetadata.getDefaultInstance()))
+            .build());
+    Statement ddl = Statement.of("create table foo");
+
+    try (Connection connection = createConnection()) {
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () -> connection.execute(SELECT_COUNT_STATEMENT, ImmutableSet.of()))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () ->
+                      connection.execute(
+                          SELECT_COUNT_STATEMENT, ImmutableSet.of(ResultType.UPDATE_COUNT)))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () ->
+                      connection.execute(
+                          SELECT_COUNT_STATEMENT, ImmutableSet.of(ResultType.NO_RESULT)))
+              .getErrorCode());
+      assertNotNull(
+          connection
+              .execute(SELECT_COUNT_STATEMENT, ImmutableSet.of(ResultType.RESULT_SET))
+              .getResultSet());
+
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () -> connection.execute(INSERT_STATEMENT, ImmutableSet.of()))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () ->
+                      connection.execute(INSERT_STATEMENT, ImmutableSet.of(ResultType.RESULT_SET)))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () -> connection.execute(INSERT_STATEMENT, ImmutableSet.of(ResultType.NO_RESULT)))
+              .getErrorCode());
+      assertNotNull(
+          connection
+              .execute(INSERT_STATEMENT, ImmutableSet.of(ResultType.UPDATE_COUNT))
+              .getUpdateCount());
+
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () -> connection.execute(INSERT_RETURNING_STATEMENT, ImmutableSet.of()))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () ->
+                      connection.execute(
+                          INSERT_RETURNING_STATEMENT, ImmutableSet.of(ResultType.UPDATE_COUNT)))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () ->
+                      connection.execute(
+                          INSERT_RETURNING_STATEMENT, ImmutableSet.of(ResultType.NO_RESULT)))
+              .getErrorCode());
+      assertNotNull(
+          connection
+              .execute(INSERT_RETURNING_STATEMENT, ImmutableSet.of(ResultType.RESULT_SET))
+              .getResultSet());
+
+      // Commit the current transaction and switch to autocommit to allow DDL.
+      connection.commit();
+      connection.setAutocommit(true);
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(SpannerException.class, () -> connection.execute(ddl, ImmutableSet.of()))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () -> connection.execute(ddl, ImmutableSet.of(ResultType.RESULT_SET)))
+              .getErrorCode());
+      assertEquals(
+          ErrorCode.INVALID_ARGUMENT,
+          assertThrows(
+                  SpannerException.class,
+                  () -> connection.execute(ddl, ImmutableSet.of(ResultType.UPDATE_COUNT)))
+              .getErrorCode());
+      assertNotNull(connection.execute(ddl, ImmutableSet.of(ResultType.NO_RESULT)));
     }
   }
 }
