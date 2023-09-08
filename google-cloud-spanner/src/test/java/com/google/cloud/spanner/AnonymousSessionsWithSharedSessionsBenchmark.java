@@ -138,6 +138,8 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+    assertThat(pool.totalSharedSessions()).isEqualTo(
+        server.spanner.getOptions().getSessionPoolOptions().getSharedSessionCount());
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
     List<ListenableFuture<Duration>> futures =

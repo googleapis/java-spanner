@@ -2382,8 +2382,8 @@ class SessionPool {
       if (options.getMinSessions() > 0) {
         createSessions(options.getMinSessions(), true);
       }
-      if (options.getMaxSessions() > 0) {
-        createSharedSessions(options.getMaxSessions(), true);
+      if (options.getSharedSessionCount() > 0) {
+        createSharedSessions(options.getSharedSessionCount(), true);
       }
     }
   }
@@ -2805,6 +2805,13 @@ class SessionPool {
     }
   }
 
+  @VisibleForTesting
+  int totalSharedSessions() {
+    synchronized (lock) {
+      return sharedSessions.size();
+    }
+  }
+
   private ApiFuture<Empty> closeSessionAsync(final PooledSession sess) {
     ApiFuture<Empty> res = sess.delegate.asyncClose();
     res.addListener(
@@ -2889,8 +2896,8 @@ class SessionPool {
       SharedSession sharedSession = new SharedSession(session);
       synchronized (lock) {
         sharedSessions.add(sharedSession);
-        int minSessions = options.getMinSessions();
-        if (sharedSessions.size() >= minSessions) {
+        int maxSharedSessions = options.getSharedSessionCount();
+        if (sharedSessions.size() >= maxSharedSessions) {
           sharedSessionsLatch.countDown();
         }
       }
