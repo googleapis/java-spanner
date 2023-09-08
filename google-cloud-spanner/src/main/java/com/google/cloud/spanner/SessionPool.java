@@ -150,6 +150,13 @@ class SessionPool {
             ErrorCode.DEADLINE_EXCEEDED,
             "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
       }
+
+      if (!sharedSessionsLatch.await(timeoutNanos, TimeUnit.NANOSECONDS)) {
+        final long timeoutMillis = options.getWaitForMinSessions().toMillis();
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Timed out after waiting " + timeoutMillis + "ms for shared session pool creation");
+      }
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
@@ -2171,6 +2178,8 @@ class SessionPool {
 
   private final CountDownLatch waitOnMinSessionsLatch;
 
+  private final CountDownLatch sharedSessionsLatch;
+
   /**
    * Create a session pool with the given options and for the given database. It will also start
    * eagerly creating sessions if {@link SessionPoolOptions#getMinSessions()} is greater than 0.
@@ -2262,6 +2271,8 @@ class SessionPool {
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
     this.waitOnMinSessionsLatch =
+        options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
+    this.sharedSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
 
@@ -2491,54 +2502,10 @@ class SessionPool {
   Session getRandomSharedSessionV2() throws SpannerException {
     // TODO use a session pool configuration and combine this with getSession() method.
     synchronized (lock) {
-      int randomIndex = random.nextInt(sessions.size());
-      return sessions.get(randomIndex);
+      int randomIndex = random.nextInt(sharedSessions.size());
+      return sharedSessions.get(randomIndex);
     }
   }
-
-  /**
-   * This method does not poll the queue. Instead, it selects a session at a random position in the
-   * list and returns the reference. Note that this session can be used with multiple transactions.
-   * @return
-   * @throws SpannerException
-   */
-  PooledSessionFuture getRandomSharedSession() throws SpannerException {
-    Span span = Tracing.getTracer().getCurrentSpan();
-    span.addAnnotation("Acquiring session");
-    WaiterFuture waiter = null;
-    PooledSession sess = null;
-    synchronized (lock) {
-      if (closureFuture != null) {
-        span.addAnnotation("Pool has been closed");
-        throw new IllegalStateException("Pool has been closed", closedException);
-      }
-      if (resourceNotFoundException != null) {
-        span.addAnnotation("Database has been deleted");
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.NOT_FOUND,
-            String.format(
-                "The session pool has been invalidated because a previous RPC returned 'Database not found': %s",
-                resourceNotFoundException.getMessage()),
-            resourceNotFoundException);
-      }
-
-      // Choose a session at random without removing from the queue
-      if(!sessions.isEmpty()) {
-        int randomIndex = random.nextInt(sessions.size());
-        sess = sessions.get(randomIndex);
-      }
-      if (sess == null) {
-        span.addAnnotation("No session available");
-        maybeCreateSession();
-        waiter = new WaiterFuture();
-        waiters.add(waiter);
-      } else {
-        span.addAnnotation("Acquired session");
-      }
-      return checkoutSession(span, sess, waiter);
-    }
-  }
-
   private PooledSessionFuture checkoutSession(
       final Span span, final PooledSession readySession, WaiterFuture waiter) {
     ListenableFuture<PooledSession> sessionFuture;
@@ -2880,12 +2847,8 @@ class SessionPool {
     logger.log(Level.FINE, String.format("Creating %d shared sessions", sessionCount));
     synchronized (lock) {
       try {
-        // Create a batch of sessions. The actual session creation can be split into multiple gRPC
-        // calls and the session consumer consumes the returned sessions as they become available.
-        // The batchCreateSessions method automatically spreads the sessions evenly over all
-        // available channels.
         sessionClient.asyncBatchCreateSessions(
-            sessionCount, distributeOverChannels, sessionConsumer);
+            sessionCount, distributeOverChannels, sharedSessionConsumer);
       } catch (Throwable t) {
         handleCreateSessionsFailure(newSpannerException(t), sessionCount);
       }
@@ -2920,6 +2883,10 @@ class SessionPool {
       SharedSession sharedSession = new SharedSession(session);
       synchronized (lock) {
         sharedSessions.add(sharedSession);
+        int minSessions = options.getMinSessions();
+        if (sharedSessions.size() >= minSessions) {
+          sharedSessionsLatch.countDown();
+        }
       }
     }
     @Override
