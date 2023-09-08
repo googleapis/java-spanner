@@ -121,7 +121,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(
-            Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class));
+            Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class), Mockito.anyBoolean());
   }
 
   private void setupSession(final SessionImpl session) {

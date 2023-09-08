@@ -176,7 +176,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(
-            Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
+            Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
   }
 
   @Test
@@ -260,7 +260,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     pool = createPool();
     Session session1 = pool.getSession();
     // Leaked sessions
@@ -321,7 +321,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
 
     pool = createPool();
     PooledSessionFuture leakedSession = pool.getSession();
@@ -367,7 +367,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
 
     pool = createPool();
     PooledSessionFuture leakedSession = pool.getSession();
@@ -402,7 +402,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     pool = createPool();
     AtomicBoolean failed = new AtomicBoolean(false);
     CountDownLatch latch = new CountDownLatch(1);
@@ -428,7 +428,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     pool = createPool();
     PooledSessionFuture leakedSession = pool.getSession();
     leakedSession.get();
@@ -451,7 +451,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     }
     Uninterruptibles.awaitUninterruptibly(latch);
     verify(sessionClient, atMost(options.getMaxSessions()))
-        .asyncBatchCreateSessions(eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     assertThat(failed.get()).isFalse();
   }
 
@@ -470,7 +470,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     pool = createPool();
     SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession().get());
     assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
@@ -495,7 +495,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     pool = createPool();
     Session session1 = pool.getSession();
     SpannerException e = assertThrows(SpannerException.class, () -> pool.getSession());
@@ -531,7 +531,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     for (SessionImpl session : sessions) {
       mockKeepAlive(session);
     }
@@ -725,7 +725,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
 
     for (SessionImpl session : sessions) {
       mockKeepAlive(session);
@@ -918,7 +918,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
 
     for (SessionImpl session : sessions) {
       mockKeepAlive(session);
@@ -946,7 +946,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
@@ -1058,7 +1058,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
@@ -1102,7 +1102,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
@@ -1228,7 +1228,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               })
           .when(sessionClient)
           .asyncBatchCreateSessions(
-              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+              Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
       SessionPoolOptions options =
           SessionPoolOptions.newBuilder()
               .setMinSessions(0) // The pool should not auto-create any sessions
@@ -1336,7 +1336,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
 
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
@@ -1379,7 +1379,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
@@ -1418,7 +1418,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
@@ -1587,7 +1587,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                       consumer.onSessionReady(mockSession());
                     }))
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
 
     options =
         SessionPoolOptions.newBuilder()
@@ -1605,7 +1605,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Does not call onSessionReady, so session pool is never populated
     doAnswer(invocation -> null)
         .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(),
+            any(SessionConsumer.class), Mockito.anyBoolean());
 
     options =
         SessionPoolOptions.newBuilder()

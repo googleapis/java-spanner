@@ -114,13 +114,16 @@ class SessionClient implements AutoCloseable {
     private final int sessionCount;
     private final SessionConsumer consumer;
 
+    private final boolean useSingleChannel;
+
     private BatchCreateSessionsRunnable(
-        int sessionCount, long channelHint, SessionConsumer consumer) {
+        int sessionCount, long channelHint, SessionConsumer consumer, boolean useSingleChannel) {
       Preconditions.checkNotNull(consumer);
       Preconditions.checkArgument(sessionCount > 0, "sessionCount must be > 0");
       this.channelHint = channelHint;
       this.sessionCount = sessionCount;
       this.consumer = consumer;
+      this.useSingleChannel = useSingleChannel;
     }
 
     @Override
@@ -134,7 +137,7 @@ class SessionClient implements AutoCloseable {
             .addAnnotation(String.format("Creating %d sessions", sessionCount));
         while (remainingSessionsToCreate > 0) {
           try {
-            sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint);
+            sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint, useSingleChannel);
           } catch (Throwable t) {
             TraceUtil.setWithFailure(SpannerImpl.tracer.getCurrentSpan(), t);
             consumer.onSessionCreateFailure(t, remainingSessionsToCreate);
@@ -241,7 +244,8 @@ class SessionClient implements AutoCloseable {
    * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
    */
   void asyncBatchCreateSessions(
-      final int sessionCount, boolean distributeOverChannels, SessionConsumer consumer) {
+      final int sessionCount, boolean distributeOverChannels, SessionConsumer consumer,
+      boolean useSingleChannel) {
     int sessionCountPerChannel;
     int remainder;
     if (distributeOverChannels) {
@@ -270,7 +274,7 @@ class SessionClient implements AutoCloseable {
           try {
             executor.submit(
                 new BatchCreateSessionsRunnable(
-                    createCountForChannel, sessionChannelCounter++, consumer));
+                    createCountForChannel, sessionChannelCounter++, consumer, useSingleChannel));
             numBeingCreated += createCountForChannel;
           } catch (Throwable t) {
             consumer.onSessionCreateFailure(t, sessionCount - numBeingCreated);
@@ -288,11 +292,11 @@ class SessionClient implements AutoCloseable {
    * that are distributed over multiple channels.
    */
   private List<SessionImpl> internalBatchCreateSessions(
-      final int sessionCount, final long channelHint) throws SpannerException {
+      final int sessionCount, final long channelHint, final boolean useSingleChannel) throws SpannerException {
     final SessionPoolOptions sessionPoolOptions = spanner.getOptions().getSessionPoolOptions();
     Map<SpannerRpc.Option, ?> options = null;
 
-    if(sessionPoolOptions.isUseSingleChannelForRO()) {
+    if(sessionPoolOptions.isUseSingleChannelForRO() && useSingleChannel) {
       options = optionMap(SessionOption.channelHint(channelHint));
     }
 

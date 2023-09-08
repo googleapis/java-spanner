@@ -91,7 +91,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(
-            Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
+            Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class), Mockito.anyBoolean());
   }
 
   private SessionImpl setupMockSession(final SessionImpl session) {

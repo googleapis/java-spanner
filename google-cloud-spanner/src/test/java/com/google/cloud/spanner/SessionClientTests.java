@@ -189,7 +189,7 @@ public class SessionClientTests {
         };
     final int numSessions = 10;
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
-      client.asyncBatchCreateSessions(numSessions, true, consumer);
+      client.asyncBatchCreateSessions(numSessions, true, consumer, true);
     }
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions);
     assertThat(usedChannels.size()).isEqualTo(spannerOptions.getNumChannels());
@@ -202,7 +202,7 @@ public class SessionClientTests {
 
   /**
    * Tests that multiple consecutive calls to {@link SessionClient#asyncBatchCreateSessions(int,
-   * boolean, SessionConsumer)} with distributeOverChannels=false does not distribute one batch over
+   * boolean, SessionConsumer, boolean)} with distributeOverChannels=false does not distribute one batch over
    * multiple channels, but it does assign each new call to a new channel. This means that multiple
    * calls to this method will still distribute the total set of sessions over all available
    * channels.
@@ -257,7 +257,8 @@ public class SessionClientTests {
     final int numBatches = spannerOptions.getNumChannels() * 2;
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
       for (int batch = 0; batch < numBatches; batch++) {
-        client.asyncBatchCreateSessions(numSessions, false, consumer);
+        client.asyncBatchCreateSessions(numSessions,
+            false, consumer, true);
       }
     }
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions * numBatches);
@@ -351,7 +352,7 @@ public class SessionClientTests {
             };
         final int numSessions = 10;
         try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
-          client.asyncBatchCreateSessions(numSessions, true, consumer);
+          client.asyncBatchCreateSessions(numSessions, true, consumer, true);
         }
         assertThat(errorCount.get()).isEqualTo(errorOnChannels.size());
         assertThat(returnedSessionCount.get())
@@ -406,7 +407,7 @@ public class SessionClientTests {
     // sessions.
     final int numSessions = 100;
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
-      client.asyncBatchCreateSessions(numSessions, true, consumer);
+      client.asyncBatchCreateSessions(numSessions, true, consumer, true);
     }
     assertThat(returnedSessionCount.get()).isEqualTo(numSessions);
   }
