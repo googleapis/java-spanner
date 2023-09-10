@@ -1,6 +1,6 @@
 echo "Post Create Starting"
 
-mvn install -B -V -ntp \
+mvn clean install -B -V -ntp \
     -DskipTests=true \
     -Dmaven.javadoc.skip=true \
     -Dclirr.skip=true
