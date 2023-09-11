@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.DDL
 import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.SELECT;
 import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.UPDATE;
 import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.expectSpannerException;
+import static com.google.cloud.spanner.connection.ConnectionImpl.checkResultTypeAllowed;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
@@ -73,6 +75,7 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStalene
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
+import com.google.common.collect.ImmutableSet;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
@@ -1623,5 +1626,116 @@ public class ConnectionImplTest {
       }
       assertNull(connection.getTransactionTag());
     }
+  }
+
+  @Test
+  public void testCheckResultTypeAllowed() {
+    AbstractStatementParser parser =
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
+    String query = "select * from foo";
+    String dml = "update foo set bar=1 where true";
+    String dmlReturning = "insert into foo (id, value) values (1, 'One') then return id";
+    String ddl = "create table foo";
+    String set = "set readonly=true";
+    String show = "show variable readonly";
+    String start = "start batch dml";
+
+    // null means all statements should be allowed.
+    ImmutableSet<ResultType> allowedResultTypes = null;
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of();
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.RESULT_SET);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.UPDATE_COUNT);
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.NO_RESULT);
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.RESULT_SET, ResultType.UPDATE_COUNT);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.RESULT_SET, ResultType.NO_RESULT);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.UPDATE_COUNT, ResultType.NO_RESULT);
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes =
+        ImmutableSet.of(ResultType.RESULT_SET, ResultType.UPDATE_COUNT, ResultType.NO_RESULT);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+  }
+
+  private void assertThrowResultNotAllowed(
+      AbstractStatementParser parser, String sql, ImmutableSet<ResultType> allowedResultTypes) {
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () -> checkResultTypeAllowed(parser.parse(Statement.of(sql)), allowedResultTypes));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                "Only statements that return a result of one of the following types are allowed"));
   }
 }

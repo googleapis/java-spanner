@@ -41,6 +41,7 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -948,6 +949,35 @@ public interface Connection extends AutoCloseable {
    * @return the result of the statement
    */
   StatementResult execute(Statement statement);
+
+  /**
+   * Executes the given statement if allowed in the current {@link TransactionMode} and connection
+   * state, and if the result that would be returned is in the set of allowed result types. The
+   * statement will not be sent to Cloud Spanner if the result type would not be allowed. This
+   * method can be used by drivers that must limit the type of statements that are allowed for a
+   * given method, e.g. for the {@link java.sql.Statement#executeQuery(String)} and {@link
+   * java.sql.Statement#executeUpdate(String)} methods.
+   *
+   * <p>The returned value depends on the type of statement:
+   *
+   * <ul>
+   *   <li>Queries and DML statements with returning clause will return a {@link ResultSet}.
+   *   <li>Simple DML statements will return an update count
+   *   <li>DDL statements will return a {@link ResultType#NO_RESULT}
+   *   <li>Connection and transaction statements (SET AUTOCOMMIT=TRUE|FALSE, SHOW AUTOCOMMIT, SET
+   *       TRANSACTION READ ONLY, etc) will return either a {@link ResultSet} or {@link
+   *       ResultType#NO_RESULT}, depending on the type of statement (SHOW or SET)
+   * </ul>
+   *
+   * @param statement The statement to execute
+   * @param allowedResultTypes The result types that this method may return. The statement will not
+   *     be sent to Cloud Spanner if the statement would return a result that is not one of the
+   *     types in this set.
+   * @return the result of the statement
+   */
+  default StatementResult execute(Statement statement, Set<ResultType> allowedResultTypes) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Executes the given statement if allowed in the current {@link TransactionMode} and connection

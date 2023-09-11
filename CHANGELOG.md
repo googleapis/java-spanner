@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.46.0](https://github.com/googleapis/java-spanner/compare/v6.45.3...v6.46.0) (2023-09-06)
+
+
+### Features
+
+* Adding support for databoost ([#2505](https://github.com/googleapis/java-spanner/issues/2505)) ([dd3e9a0](https://github.com/googleapis/java-spanner/commit/dd3e9a0fe4846edcab9501b71c3d9e0fa24ed75b))
+* Support PostgreSQL for autoConfigEmulator ([#2601](https://github.com/googleapis/java-spanner/issues/2601)) ([fbf1df9](https://github.com/googleapis/java-spanner/commit/fbf1df9f3fb12faaead8634b88fd4843cbdedf5b))
+
+
+### Bug Fixes
+
+* Fix kokoro windows java8 ci ([#2573](https://github.com/googleapis/java-spanner/issues/2573)) ([465df7b](https://github.com/googleapis/java-spanner/commit/465df7bad12fbea7dbcf6dbabb1b29d088c42665))
+
+
+### Documentation
+
+* Add sample for transaction timeouts ([#2599](https://github.com/googleapis/java-spanner/issues/2599)) ([59cec9b](https://github.com/googleapis/java-spanner/commit/59cec9b9cdad169bd8de8ab7b264b04150dda7fb))
+
 ## [6.45.3](https://github.com/googleapis/java-spanner/compare/v6.45.2...v6.45.3) (2023-08-17)
 
 
