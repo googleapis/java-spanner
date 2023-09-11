@@ -32,6 +32,7 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
@@ -43,13 +44,16 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Integration tests for DML. */
+/**
+ * Integration tests for DML.
+ */
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public final class ITBatchDmlTest {
 
   private static Database db;
-  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+  @ClassRule
+  public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   private static final String INSERT_DML =
       "INSERT INTO T (k, v) VALUES ('boo1', 1), ('boo2', 2), ('boo3', 3), ('boo4', 4);";
@@ -188,5 +192,48 @@ public final class ITBatchDmlTest {
         assertThat(rc).isEqualTo(4);
       }
     }
+  }
+
+  @Test
+  public void largeBatchDml() {
+    List<Statement> stmts = new LinkedList<>();
+    for (int i = 0; i < 40; i++) {
+      stmts.add(Statement.of("INSERT INTO T (k, v) VALUES ('boo" + i + "', " + i + ");"));
+    }
+
+    for (int i = 0; i < 30; i++) {
+      stmts.add(Statement.of("DELETE FROM T WHERE T.K = 'boo" + i + "';"));
+    }
+
+    final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
+    TransactionRunner runner = client.readWriteTransaction();
+    long[] rowCounts = runner.run(callable);
+    assertThat(rowCounts.length).isEqualTo(10);
+  }
+
+  @Test
+  public void largeBatchDml_withParameterisedStatements() {
+    List<Statement> stmts = new LinkedList<>();
+    String insertQuery = "INSERT INTO T(k, v) VALUES(@key, @val)";
+    for (int i = 0; i < 80; i++) {
+      stmts.add(Statement.newBuilder(insertQuery).bind("key").to("'boo" + i + "'")
+          .bind("val").to(i).build());
+    }
+    final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
+    TransactionRunner runner = client.readWriteTransaction();
+    long[] rowCounts = runner.run(callable);
+    assertThat(rowCounts.length).isEqualTo(80);
+  }
+
+  @Test
+  public void largeBatchDml_withNonParameterisedStatements() {
+    List<Statement> stmts = new LinkedList<>();
+    for (int i = 0; i < 80; i++) {
+      stmts.add(Statement.of("INSERT INTO T (k, v) VALUES ('boo" + i + "', " + i + ");"));
+    }
+    final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
+    TransactionRunner runner = client.readWriteTransaction();
+    long[] rowCounts = runner.run(callable);
+    assertThat(rowCounts.length).isEqualTo(80);
   }
 }
