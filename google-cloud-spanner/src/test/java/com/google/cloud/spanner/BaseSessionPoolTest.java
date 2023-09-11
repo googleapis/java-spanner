@@ -26,16 +26,21 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionPool.Clock;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.protobuf.Empty;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import org.threeten.bp.Instant;
 
 abstract class BaseSessionPoolTest {
   ScheduledExecutorService mockExecutor;
   int sessionIndex;
+  AtomicLong channelHint = new AtomicLong(0L);
 
   final class TestExecutorFactory implements ExecutorFactory<ScheduledExecutorService> {
 
@@ -64,6 +69,9 @@ abstract class BaseSessionPoolTest {
   @SuppressWarnings("unchecked")
   SessionImpl mockSession() {
     final SessionImpl session = mock(SessionImpl.class);
+    Map options = new HashMap<>();
+    options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
+    when(session.getOptions()).thenReturn(options);
     when(session.getName())
         .thenReturn(
             "projects/dummy/instances/dummy/database/dummy/sessions/session" + sessionIndex);
