@@ -52,6 +52,14 @@ import org.openjdk.jmh.annotations.Warmup;
  * profile `benchmark` and can be executed like this: <code>
  * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSharedSessionsBenchmark
  * </code>
+ *
+ * Test Table Schema :
+ *
+ * CREATE TABLE FOO (
+ *   id INT64 NOT NULL,
+ *   BAZ INT64,
+ *   BAR INT64,
+ * ) PRIMARY KEY(id);
  */
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 1)
@@ -68,8 +76,9 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
 
-    private final String instance = System.getProperty("instance", "arpanmishra-testing");
-    private final String database = System.getProperty("database", "test-bit");
+    private final String instance = System.getProperty("instance", "arpanmishra-dev-span");
+    private final String database = System.getProperty("database", "anonymous-sessions");
+    private final String serverUrl = "https://staging-wrenchworks.sandbox.googleapis.com";
 
     private Spanner spanner;
     private DatabaseClientImpl client;
@@ -99,6 +108,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
                       .setAnonymousSessionOptions(anonymousSessionOptions)
                       .setWaitForMinSessions(
                           org.threeten.bp.Duration.ofSeconds(20)).build())
+              .setHost(serverUrl)
               .build();
       spanner = options.getService();
       System.out.println("running benchmark with **REAL** server");
