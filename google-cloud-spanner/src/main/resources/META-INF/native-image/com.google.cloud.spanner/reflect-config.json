@@ -1,4 +1,5 @@
-[ {
+[
+  {
   "name": "com.google.rpc.LocalizedMessage",
   "queryAllDeclaredConstructors": true,
   "queryAllPublicConstructors": true,
@@ -6,7 +7,7 @@
   "allPublicMethods": true,
   "allDeclaredClasses": true,
   "allPublicClasses": true
-},
+  },
   {
     "name": "com.google.rpc.LocalizedMessage$Builder",
     "queryAllDeclaredConstructors": true,
