@@ -64,7 +64,6 @@ import org.openjdk.jmh.annotations.Warmup;
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 1)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
-@Warmup(batchSize = 0, iterations = 1)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatencyBenchmark {
   private static final String TEST_INSTANCE = "my-instance";

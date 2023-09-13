@@ -64,7 +64,6 @@ import org.openjdk.jmh.annotations.Warmup;
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 1)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
-@Warmup(batchSize = 0, iterations = 1)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatencyBenchmark {
   private static final String TEST_INSTANCE = "my-instance";
@@ -99,7 +98,7 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
       AnonymousSessionOptions anonymousSessionOptions =
           AnonymousSessionOptions.newBuilder()
               .setActionForAnonymousSessionsChannelHints(
-                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
+                  ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL)
               .setActionForNumberOfAnonymousSessions(
                   ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =
