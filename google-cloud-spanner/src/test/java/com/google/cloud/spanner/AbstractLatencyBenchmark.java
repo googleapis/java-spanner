@@ -73,12 +73,19 @@ abstract class AbstractLatencyBenchmark {
     System.out.printf("P99: %.2fms\n", percentile(99, orderedResults));
   }
   private double percentile(int percentile, List<Duration> orderedResults) {
-    return orderedResults.get(percentile * orderedResults.size() / 100).get(ChronoUnit.NANOS)
-        / 1_000_000.0f;
+    Duration value = orderedResults.get(percentile * orderedResults.size() / 100);
+    return convertDurationToFraction(value);
   }
 
   private double avg(List<Duration> results) {
     return results.stream()
-        .collect(Collectors.averagingDouble(result -> result.get(ChronoUnit.NANOS) / 1_000_000.0f));
+        .collect(Collectors.averagingDouble(AbstractLatencyBenchmark::convertDurationToFraction));
+  }
+
+  public static double convertDurationToFraction(Duration duration) {
+    long seconds = duration.getSeconds();
+    long nanos = duration.getNano();
+    double fraction = (double) nanos / 1_000_000_000;
+    return seconds + fraction;
   }
 }

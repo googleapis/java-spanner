@@ -146,8 +146,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
     final List<java.time.Duration> results =
         collectResults(service, futures, totalQueries);
 
-    System.out.printf("Min Sessions: %d\n", server.minSessions);
-    System.out.printf("Max Sessions: %d\n", server.maxSessions);
+    System.out.printf("Num Sessions: %d\n", server.numSessions);
 
     printResults(results);
   }
@@ -191,8 +190,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
     final List<java.time.Duration> results =
         collectResults(service, futures, totalReads + totalWrites);
 
-    System.out.printf("Min Sessions: %d\n", server.minSessions);
-    System.out.printf("Max Sessions: %d\n", server.maxSessions);
+    System.out.printf("Num Sessions: %d\n", server.numSessions);
 
     printResults(results);
   }
