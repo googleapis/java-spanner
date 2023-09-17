@@ -64,13 +64,13 @@ class CustomTimeoutAndRetrySettingsExample {
 
                 // Configure RPC and total timeout settings.
                 // Timeout for the first RPC call. Subsequent retries will be based off this value.
-                .setInitialRpcTimeout(Duration.ofSeconds(60))
+                .setInitialRpcTimeout(Duration.ofSeconds(30))
                 // The max for the per RPC timeout.
-                .setMaxRpcTimeout(Duration.ofSeconds(60))
+                .setMaxRpcTimeout(Duration.ofSeconds(120))
                 // Controls the change of timeout for each retry.
-                .setRpcTimeoutMultiplier(1.0)
+                .setRpcTimeoutMultiplier(1.5)
                 // The timeout for all calls (first call + all retries).
-                .setTotalTimeout(Duration.ofSeconds(60))
+                .setTotalTimeout(Duration.ofSeconds(240))
                 .build());
     // Create a Spanner client using the custom retry and timeout settings.
     try (Spanner spanner = builder.build().getService()) {
