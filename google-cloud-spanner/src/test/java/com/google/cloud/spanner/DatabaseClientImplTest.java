@@ -3419,6 +3419,48 @@ public class DatabaseClientImplTest {
     }
   }
 
+  @Test
+  public void testSampleRetrySettings() {
+    String sql =
+        "INSERT INTO Singers (SingerId, FirstName, LastName)\n"
+            + "VALUES (20, 'George', 'Washington')";
+    mockSpanner.putStatementResult(StatementResult.update(Statement.of(sql), 1L));
+
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .setCredentials(NoCredentials.getInstance())
+            .setChannelProvider(channelProvider);
+    // Set a timeout value for the ExecuteSql RPC that is so low that it will always be triggered.
+    // This should cause the RPC to fail with a DEADLINE_EXCEEDED error.
+    builder
+        .getSpannerStubSettingsBuilder()
+        .executeSqlSettings()
+        .setRetryableCodes(StatusCode.Code.UNAVAILABLE)
+        .setRetrySettings(
+            RetrySettings.newBuilder()
+                .setInitialRetryDelay(Duration.ofMillis(500))
+                .setMaxRetryDelay(Duration.ofSeconds(16))
+                .setRetryDelayMultiplier(1.5)
+                .setInitialRpcTimeout(Duration.ofNanos(1L))
+                .setMaxRpcTimeout(Duration.ofNanos(1L))
+                .setRpcTimeoutMultiplier(1.0)
+                .setTotalTimeout(Duration.ofNanos(1L))
+                .build());
+    // Create a Spanner client using the custom retry and timeout settings.
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      SpannerException exception =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  client
+                      .readWriteTransaction()
+                      .run(transaction -> transaction.executeUpdate(Statement.of(sql))));
+      assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+    }
+  }
+
   static void assertAsString(String expected, ResultSet resultSet, int col) {
     assertEquals(expected, resultSet.getValue(col).getAsString());
     assertEquals(ImmutableList.of(expected), resultSet.getValue(col).getAsStringList());
