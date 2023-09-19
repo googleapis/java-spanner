@@ -31,6 +31,7 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -201,14 +202,17 @@ public final class ITBatchDmlTest {
       stmts.add(Statement.of("INSERT INTO T (k, v) VALUES ('boo" + i + "', " + i + ");"));
     }
 
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 40; i++) {
       stmts.add(Statement.of("DELETE FROM T WHERE T.K = 'boo" + i + "';"));
     }
+    long[] expectedRowCounts = new long[stmts.size()];
+    Arrays.fill(expectedRowCounts, 1L);
 
     final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
     TransactionRunner runner = client.readWriteTransaction();
-    long[] rowCounts = runner.run(callable);
-    assertThat(rowCounts.length).isEqualTo(10);
+    long[] actualRowCounts = runner.run(callable);
+    assertThat(actualRowCounts.length).isEqualTo(80);
+    assertThat(expectedRowCounts).isEqualTo(actualRowCounts);
   }
 
   @Test
@@ -219,10 +223,15 @@ public final class ITBatchDmlTest {
       stmts.add(Statement.newBuilder(insertQuery).bind("key").to("'boo" + i + "'")
           .bind("val").to(i).build());
     }
+    long[] expectedRowCounts = new long[stmts.size()];
+    Arrays.fill(expectedRowCounts, 1L);
+
     final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
     TransactionRunner runner = client.readWriteTransaction();
-    long[] rowCounts = runner.run(callable);
-    assertThat(rowCounts.length).isEqualTo(80);
+    long[] actualRowCounts = runner.run(callable);
+
+    assertThat(actualRowCounts.length).isEqualTo(80);
+    assertThat(expectedRowCounts).isEqualTo(actualRowCounts);
   }
 
   @Test
@@ -231,9 +240,14 @@ public final class ITBatchDmlTest {
     for (int i = 0; i < 80; i++) {
       stmts.add(Statement.of("INSERT INTO T (k, v) VALUES ('boo" + i + "', " + i + ");"));
     }
+    long[] expectedRowCounts = new long[stmts.size()];
+    Arrays.fill(expectedRowCounts, 1L);
+
     final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
     TransactionRunner runner = client.readWriteTransaction();
-    long[] rowCounts = runner.run(callable);
-    assertThat(rowCounts.length).isEqualTo(80);
+    long[] actualRowCounts = runner.run(callable);
+
+    assertThat(actualRowCounts.length).isEqualTo(80);
+    assertThat(expectedRowCounts).isEqualTo(actualRowCounts);
   }
 }
