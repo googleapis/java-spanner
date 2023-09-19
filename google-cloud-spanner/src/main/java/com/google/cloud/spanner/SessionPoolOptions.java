@@ -217,11 +217,6 @@ public class SessionPoolOptions {
         == ActionForNumberOfAnonymousSessions.DEFAULT;
   }
 
-  boolean isUseSingleChannelForRO() {
-    return anonymousSessionOptions.actionForAnonymousSessionsChannelHints
-        == ActionForAnonymousSessionsChannelHints.SINGLE_CHANNEL;
-  }
-
   boolean isUseMultipleChannelForRO() {
     return anonymousSessionOptions.actionForAnonymousSessionsChannelHints
         == ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL;

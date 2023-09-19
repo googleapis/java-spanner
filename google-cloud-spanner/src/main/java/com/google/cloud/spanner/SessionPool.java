@@ -2854,7 +2854,7 @@ class SessionPool {
     logger.log(Level.FINE, String.format("Creating %d shared sessions", sessionCount));
     synchronized (lock) {
       try {
-        if(options.isUseSingleChannelForRO()) {
+        if(options.isUseMultipleChannelForRO()) {
           sessionClient.asyncBatchCreateSessions(
               sessionCount, distributeOverChannels, sharedSessionConsumer, true);
         } else {
@@ -2877,7 +2877,7 @@ class SessionPool {
         // The batchCreateSessions method automatically spreads the sessions evenly over all
         // available channels.
         sessionClient.asyncBatchCreateSessions(
-            sessionCount, distributeOverChannels, sessionConsumer, true);
+            sessionCount, distributeOverChannels, sessionConsumer, false);
       } catch (Throwable t) {
         // Expose this to customer via a metric.
         numSessionsBeingCreated -= sessionCount;

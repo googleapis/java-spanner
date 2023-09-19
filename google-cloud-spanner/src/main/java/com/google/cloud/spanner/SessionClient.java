@@ -114,16 +114,16 @@ class SessionClient implements AutoCloseable {
     private final int sessionCount;
     private final SessionConsumer consumer;
 
-    private final boolean useSingleChannel;
+    private final boolean eligibleForMultipleChannel;
 
     private BatchCreateSessionsRunnable(
-        int sessionCount, long channelHint, SessionConsumer consumer, boolean useSingleChannel) {
+        int sessionCount, long channelHint, SessionConsumer consumer, boolean eligibleForMultipleChannel) {
       Preconditions.checkNotNull(consumer);
       Preconditions.checkArgument(sessionCount > 0, "sessionCount must be > 0");
       this.channelHint = channelHint;
       this.sessionCount = sessionCount;
       this.consumer = consumer;
-      this.useSingleChannel = useSingleChannel;
+      this.eligibleForMultipleChannel = eligibleForMultipleChannel;
     }
 
     @Override
@@ -137,7 +137,7 @@ class SessionClient implements AutoCloseable {
             .addAnnotation(String.format("Creating %d sessions", sessionCount));
         while (remainingSessionsToCreate > 0) {
           try {
-            sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint, useSingleChannel);
+            sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint, eligibleForMultipleChannel);
           } catch (Throwable t) {
             TraceUtil.setWithFailure(SpannerImpl.tracer.getCurrentSpan(), t);
             consumer.onSessionCreateFailure(t, remainingSessionsToCreate);
@@ -245,7 +245,7 @@ class SessionClient implements AutoCloseable {
    */
   void asyncBatchCreateSessions(
       final int sessionCount, boolean distributeOverChannels, SessionConsumer consumer,
-      boolean useSingleChannel) {
+      boolean eligibleForMultipleChannel) {
     int sessionCountPerChannel;
     int remainder;
     if (distributeOverChannels) {
@@ -274,7 +274,7 @@ class SessionClient implements AutoCloseable {
           try {
             executor.submit(
                 new BatchCreateSessionsRunnable(
-                    createCountForChannel, sessionChannelCounter++, consumer, useSingleChannel));
+                    createCountForChannel, sessionChannelCounter++, consumer, eligibleForMultipleChannel));
             numBeingCreated += createCountForChannel;
           } catch (Throwable t) {
             consumer.onSessionCreateFailure(t, sessionCount - numBeingCreated);
@@ -292,12 +292,12 @@ class SessionClient implements AutoCloseable {
    * that are distributed over multiple channels.
    */
   private List<SessionImpl> internalBatchCreateSessions(
-      final int sessionCount, final long channelHint, final boolean useSingleChannel) throws SpannerException {
+      final int sessionCount, final long channelHint, final boolean eligibleForMultipleChannel) throws SpannerException {
     final SessionPoolOptions sessionPoolOptions = spanner.getOptions().getSessionPoolOptions();
-    Map<SpannerRpc.Option, ?> options = null;
+    Map<SpannerRpc.Option, ?> options = optionMap(SessionOption.channelHint(channelHint));
 
-    if(sessionPoolOptions.isUseSingleChannelForRO() && useSingleChannel) {
-      options = optionMap(SessionOption.channelHint(channelHint));
+    if(sessionPoolOptions.isUseMultipleChannelForRO() && eligibleForMultipleChannel) {
+      options = null;
     }
 
     Span parent = SpannerImpl.tracer.getCurrentSpan();
