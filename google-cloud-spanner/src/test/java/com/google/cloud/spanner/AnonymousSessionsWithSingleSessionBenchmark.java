@@ -49,8 +49,10 @@ import org.openjdk.jmh.annotations.Warmup;
  * Benchmarks for long-running sessions scenarios. The simulated execution times are based on
  * reasonable estimates and are primarily intended to keep the benchmarks comparable with each other
  * before and after changes have been made to the pool. The benchmarks are bound to the Maven
- * profile `benchmark` and can be executed like this: <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionBenchmark
+ * profile `benchmark` and can be executed like this:
+ *
+ * <code>
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
  * </code>
  *
  * Test Table Schema :
@@ -66,19 +68,15 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatencyBenchmark {
-  private static final String TEST_INSTANCE = "my-instance";
-  private static final String TEST_DATABASE = "my-database";
   static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
-  static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
 
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
 
-    private final String instance = System.getProperty("instance", "arpanmishra-dev-span");
-    private final String database = System.getProperty("database", "anonymous-sessions");
-
-    private final String serverUrl = "https://staging-wrenchworks.sandbox.googleapis.com";
+    private final String instance = System.getProperty("instance");
+    private final String database = System.getProperty("database");
+    private final String serverUrl = System.getProperty("serverUrl", "https://staging-wrenchworks.sandbox.googleapis.com");
 
     private Spanner spanner;
     private DatabaseClientImpl client;

@@ -418,6 +418,9 @@
       <id>benchmark</id>
       <properties>
         <benchmark.name/>
+        <benchmark.database/>
+        <benchmark.instance/>
+        <benchmark.serverUrl/>
       </properties>
       <build>
         <plugins>
@@ -439,6 +442,9 @@
                       <classpath/>
                       <argument>org.openjdk.jmh.Main</argument>
                       <argument>${benchmark.name}</argument>
+                      <argument>${benchmark.database}</argument>
+                      <argument>${benchmark.instance}</argument>
+                      <argument>${benchmark.serverUrl}</argument>
                   </arguments>
                 </configuration>
               </execution>
