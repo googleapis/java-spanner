@@ -45,16 +45,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Integration tests for DML.
- */
+/** Integration tests for DML. */
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public final class ITBatchDmlTest {
 
   private static Database db;
-  @ClassRule
-  public static IntegrationTestEnv env = new IntegrationTestEnv();
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   private static final String INSERT_DML =
       "INSERT INTO T (k, v) VALUES ('boo1', 1), ('boo2', 2), ('boo3', 3), ('boo4', 4);";
@@ -220,8 +217,13 @@ public final class ITBatchDmlTest {
     List<Statement> stmts = new LinkedList<>();
     String insertQuery = "INSERT INTO T(k, v) VALUES(@key, @val)";
     for (int i = 0; i < 80; i++) {
-      stmts.add(Statement.newBuilder(insertQuery).bind("key").to("'boo" + i + "'")
-          .bind("val").to(i).build());
+      stmts.add(
+          Statement.newBuilder(insertQuery)
+              .bind("key")
+              .to("'boo" + i + "'")
+              .bind("val")
+              .to(i)
+              .build());
     }
     long[] expectedRowCounts = new long[stmts.size()];
     Arrays.fill(expectedRowCounts, 1L);
