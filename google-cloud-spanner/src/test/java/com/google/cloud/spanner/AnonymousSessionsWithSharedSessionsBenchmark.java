@@ -94,8 +94,6 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     public void setup() throws Exception {
       AnonymousSessionOptions anonymousSessionOptions =
           AnonymousSessionOptions.newBuilder()
-              .setActionForAnonymousSessionsChannelHints(
-                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
               .setActionForNumberOfAnonymousSessions(
                   ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =

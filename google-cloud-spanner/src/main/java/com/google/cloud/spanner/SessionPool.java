@@ -2861,7 +2861,6 @@ class SessionPool {
           sessionClient.asyncBatchCreateSessions(
               sessionCount, distributeOverChannels, sharedSessionConsumer, false);
         }
-
       } catch (Throwable t) {
         handleCreateSessionsFailure(newSpannerException(t), sessionCount);
       }
