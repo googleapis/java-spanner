@@ -74,9 +74,10 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
 
-    private final String instance = System.getProperty("instance");
-    private final String database = System.getProperty("database");
-    private final String serverUrl = System.getProperty("serverUrl", "https://staging-wrenchworks.sandbox.googleapis.com");
+    private final String instance = System.getProperty("benchmark.instance", "anonymous-sessions");
+    private final String database = System.getProperty("benchmark.database", "arpanmishra-dev-span");
+    private final String serverUrl = System.getProperty("benchmark.serverUrl",
+        "https://staging-wrenchworks.sandbox.googleapis.com");
 
     private Spanner spanner;
     private DatabaseClientImpl client;
@@ -111,6 +112,7 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
       System.out.println("running benchmark with **REAL** server");
       System.out.println("instance: " + instance);
       System.out.println("database: " + database);
+      System.out.println("useMultipleChannels: " + System.getProperty("benchmark.useMultipleChannel"));
       client =
           (DatabaseClientImpl)
               spanner.getDatabaseClient(DatabaseId.of(options.getProjectId(), instance, database));

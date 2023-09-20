@@ -43,7 +43,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
-import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Benchmarks for long-running sessions scenarios. The simulated execution times are based on
@@ -52,7 +51,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * profile `benchmark` and can be executed like this:
  *
  * <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSharedSessionsBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionMultiChannelBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
  * </code>
  *
  * Test Table Schema :
@@ -67,9 +66,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @Fork(value = 1, warmups = 1)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatencyBenchmark {
+public class AnonymousSessionsWithSingleSessionMultiChannelBenchmark extends AbstractLatencyBenchmark {
   static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
-  static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
 
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
@@ -89,12 +87,16 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     @Param({"400"})
     int maxSessions;
 
-    @Param({"50", "100", "400"})
+    // We are adding this configuration to see if having single session has any noticeable differences
+    // as compared to having multiple sessions.
+    @Param({"1", "2", "4", "50", "100", "400"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
       AnonymousSessionOptions anonymousSessionOptions =
           AnonymousSessionOptions.newBuilder()
+              .setActionForAnonymousSessionsChannelHints(
+                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
               .setActionForNumberOfAnonymousSessions(
                   ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =
@@ -104,14 +106,14 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
                       .setAnonymousSessionOptions(anonymousSessionOptions)
-                      .setWaitForMinSessions(
-                          org.threeten.bp.Duration.ofSeconds(20)).build())
+                      .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20)).build())
               .setHost(serverUrl)
               .build();
       spanner = options.getService();
       System.out.println("running benchmark with **REAL** server");
       System.out.println("instance: " + instance);
       System.out.println("database: " + database);
+      System.out.println("useMultipleChannels: " + System.getProperty("benchmark.useMultipleChannel"));
       client =
           (DatabaseClientImpl)
               spanner.getDatabaseClient(DatabaseId.of(options.getProjectId(), instance, database));
@@ -124,23 +126,18 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
   }
 
   /**
-   * Measures the time needed to execute a burst of read and write requests.
+   * Measures the time needed to execute a burst of read requests.
    *
    * <p>Some read requests will be long-running and will cause session leaks. Such sessions will be
    * removed by the session maintenance background task if SessionPool Option
    * ActionOnInactiveTransaction is set as WARN_AND_CLOSE.
    *
-   * <p>Some write requests will be long-running. The test asserts that no sessions are removed by
-   * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
-   * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
-   *
    * @param server
    * @throws Exception
    */
   @Benchmark
-  public void burstReadAndWrite_withSharedROSessions(final BenchmarkState server) throws Exception {
-    int totalWrites = server.maxSessions * 4;
-    int totalReads = server.maxSessions * 4;
+  public void burstRead(final BenchmarkState server) throws Exception {
+    int totalQueries = server.maxSessions * 8;
     int parallelThreads = server.maxSessions * 2;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
@@ -148,23 +145,18 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
     assertThat(pool.totalSharedSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getSharedSessionCount());
+
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
-    List<ListenableFuture<Duration>> futures =
-        new ArrayList<>(totalReads + totalWrites);
-    for (int i = 0; i < totalReads; i++) {
+    List<ListenableFuture<Duration>> futures = new ArrayList<>(totalQueries);
+    for (int i = 0; i < totalQueries; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForReads(server)));
     }
-    for (int i = 0; i < totalWrites; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForWrites(server)));
-    }
 
-    final List<Duration> results =
-        collectResults(service, futures, totalReads + totalWrites);
+    final List<java.time.Duration> results =
+        collectResults(service, futures, totalQueries);
 
     System.out.printf("Num Sessions: %d\n", server.numSessions);
 
@@ -178,14 +170,6 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
         server.client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
       while (rs.next()) {}
     }
-
-    return watch.elapsed();
-  }
-  private Duration runBenchmarkForWrites(final BenchmarkState server) {
-    Stopwatch watch = Stopwatch.createStarted();
-
-    TransactionRunner runner = server.client.readWriteTransaction();
-    runner.run(transaction -> transaction.executeUpdate(UPDATE_QUERY));
 
     return watch.elapsed();
   }

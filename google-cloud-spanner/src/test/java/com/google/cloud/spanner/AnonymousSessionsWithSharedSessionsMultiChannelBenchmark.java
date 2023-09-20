@@ -43,7 +43,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
-import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Benchmarks for long-running sessions scenarios. The simulated execution times are based on
@@ -52,7 +51,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * profile `benchmark` and can be executed like this:
  *
  * <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSharedSessionsBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSharedSessionsMultiChannelBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
  * </code>
  *
  * Test Table Schema :
@@ -67,7 +66,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Fork(value = 1, warmups = 1)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatencyBenchmark {
+public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends AbstractLatencyBenchmark {
   static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
   static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
 
@@ -95,6 +94,8 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     public void setup() throws Exception {
       AnonymousSessionOptions anonymousSessionOptions =
           AnonymousSessionOptions.newBuilder()
+              .setActionForAnonymousSessionsChannelHints(
+                  ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
               .setActionForNumberOfAnonymousSessions(
                   ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
       SpannerOptions options =
@@ -190,3 +191,4 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     return watch.elapsed();
   }
 }
+
