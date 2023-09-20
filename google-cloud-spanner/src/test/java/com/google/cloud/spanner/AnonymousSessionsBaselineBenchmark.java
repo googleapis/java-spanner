@@ -129,7 +129,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
     int totalQueries = server.maxSessions * 8;
-    int parallelThreads = server.maxSessions * 2;
+    int parallelThreads = server.minSessions * 2;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
