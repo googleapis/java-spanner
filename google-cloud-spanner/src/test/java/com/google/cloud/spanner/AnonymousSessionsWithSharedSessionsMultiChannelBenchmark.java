@@ -43,6 +43,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Benchmarks for long-running sessions scenarios. The simulated execution times are based on
@@ -63,9 +64,10 @@ import org.openjdk.jmh.annotations.TearDown;
  * ) PRIMARY KEY(id);
  */
 @BenchmarkMode(Mode.AverageTime)
-@Fork(value = 1, warmups = 1)
+@Fork(value = 1, warmups = 0)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
+@Warmup(iterations = 1)
 public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends AbstractLatencyBenchmark {
   static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
   static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");

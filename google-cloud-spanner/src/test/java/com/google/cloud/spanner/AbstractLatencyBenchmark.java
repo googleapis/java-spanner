@@ -56,6 +56,7 @@ abstract class AbstractLatencyBenchmark {
   }
 
   /**
+   * Utility to print all latency numbers.
    *
    * @param results
    */
@@ -67,10 +68,10 @@ abstract class AbstractLatencyBenchmark {
     Collections.sort(orderedResults);
     System.out.println();
     System.out.printf("Total number of queries: %d\n", orderedResults.size());
-    System.out.printf("Avg: %.2fms\n", avg(results));
-    System.out.printf("P50: %.2fms\n", percentile(50, orderedResults));
-    System.out.printf("P95: %.2fms\n", percentile(95, orderedResults));
-    System.out.printf("P99: %.2fms\n", percentile(99, orderedResults));
+    System.out.printf("Avg: %.2fs\n", avg(results));
+    System.out.printf("P50: %.2fs\n", percentile(50, orderedResults));
+    System.out.printf("P95: %.2fs\n", percentile(95, orderedResults));
+    System.out.printf("P99: %.2fs\n", percentile(99, orderedResults));
   }
   private double percentile(int percentile, List<Duration> orderedResults) {
     Duration value = orderedResults.get(percentile * orderedResults.size() / 100);
