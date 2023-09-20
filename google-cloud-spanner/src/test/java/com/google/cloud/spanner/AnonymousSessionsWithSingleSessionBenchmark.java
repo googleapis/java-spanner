@@ -74,8 +74,8 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
 
-    private final String instance = System.getProperty("benchmark.instance", "anonymous-sessions");
-    private final String database = System.getProperty("benchmark.database", "arpanmishra-dev-span");
+    private final String instance = System.getProperty("benchmark.instance", "arpanmishra-dev-span");
+    private final String database = System.getProperty("benchmark.database", "anonymous-sessions");
     private final String serverUrl = System.getProperty("benchmark.serverUrl",
         "https://staging-wrenchworks.sandbox.googleapis.com");
 
