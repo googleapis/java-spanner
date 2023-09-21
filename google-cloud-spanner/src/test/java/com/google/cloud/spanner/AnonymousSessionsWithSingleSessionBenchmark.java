@@ -106,7 +106,6 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
       System.out.println("running benchmark with **REAL** server");
       System.out.println("instance: " + instance);
       System.out.println("database: " + database);
-      System.out.println("useMultipleChannels: " + System.getProperty("benchmark.useMultipleChannel"));
       client =
           (DatabaseClientImpl)
               spanner.getDatabaseClient(DatabaseId.of(options.getProjectId(), instance, database));

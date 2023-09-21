@@ -90,8 +90,6 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
     @Param({"400"})
     int maxSessions;
 
-    @Param({"50", "100", "400"})
-    int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
       AnonymousSessionOptions anonymousSessionOptions =
@@ -104,8 +102,8 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
-                      .setMinSessions(numSessions)
-                      .setMaxSessions(numSessions)
+                      .setMinSessions(minSessions)
+                      .setMaxSessions(maxSessions)
                       .setAnonymousSessionOptions(anonymousSessionOptions)
                       .setWaitForMinSessions(
                           org.threeten.bp.Duration.ofSeconds(20)).build())
@@ -142,9 +140,9 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
    */
   @Benchmark
   public void burstReadAndWrite_withSharedROSessions(final BenchmarkState server) throws Exception {
-    int totalWrites = server.maxSessions * 4;
-    int totalReads = server.maxSessions * 4;
-    int parallelThreads = server.maxSessions * 2;
+    int totalWrites = 100000;
+    int totalReads = 1000000;
+    int parallelThreads = 300;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -168,8 +166,6 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
 
     final List<Duration> results =
         collectResults(service, futures, totalReads + totalWrites);
-
-    System.out.printf("Num Sessions: %d\n", server.numSessions);
 
     printResults(results);
   }
