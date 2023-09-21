@@ -88,19 +88,14 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
     @Param({"400"})
     int maxSessions;
 
-    // We are adding this configuration to see if having single session has any noticeable differences
-    // as compared to having multiple sessions.
-    @Param({"50", "100", "400"})
-    int numSessions;
-
     @Setup(Level.Invocation)
     public void setup() throws Exception {
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
-                      .setMinSessions(numSessions)
-                      .setMaxSessions(numSessions)
+                      .setMinSessions(minSessions)
+                      .setMaxSessions(maxSessions)
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20)).build())
               .setHost(serverUrl)
               .build();
@@ -128,8 +123,8 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
    */
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
-    int totalQueries = server.numSessions * 4;
-    int parallelThreads = 10;
+    int totalQueries = 100;
+    int parallelThreads = 1;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -147,8 +142,6 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
     final List<java.time.Duration> results =
         collectResults(service, futures, totalQueries);
 
-    System.out.printf("Num Sessions: %d\n", server.numSessions);
-
     printResults(results);
   }
 
@@ -165,9 +158,9 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
    */
   @Benchmark
   public void burstReadAndWrite(final BenchmarkState server) throws Exception {
-    int totalWrites = server.numSessions * 2;
-    int totalReads = server.numSessions * 2;
-    int parallelThreads = 10;
+    int totalWrites = 50;
+    int totalReads = 50;
+    int parallelThreads = 1;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -190,8 +183,6 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
 
     final List<java.time.Duration> results =
         collectResults(service, futures, totalReads + totalWrites);
-
-    System.out.printf("Num Sessions: %d\n", server.numSessions);
 
     printResults(results);
   }
