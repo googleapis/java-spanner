@@ -83,12 +83,6 @@ public class AnonymousSessionsWithSingleSessionMultiChannelBenchmark extends Abs
     private Spanner spanner;
     private DatabaseClientImpl client;
 
-    @Param({"100"})
-    int minSessions;
-
-    @Param({"400"})
-    int maxSessions;
-
     // We are adding this configuration to see if having single session has any noticeable differences
     // as compared to having multiple sessions.
     @Param({"1", "2", "4", "50", "100", "400"})
@@ -105,8 +99,7 @@ public class AnonymousSessionsWithSingleSessionMultiChannelBenchmark extends Abs
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
-                      .setMinSessions(numSessions)
-                      .setMaxSessions(numSessions)
+                      .setSharedSessions(numSessions)
                       .setAnonymousSessionOptions(anonymousSessionOptions)
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20)).build())
               .setHost(serverUrl)
@@ -139,8 +132,8 @@ public class AnonymousSessionsWithSingleSessionMultiChannelBenchmark extends Abs
    */
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
-    int totalQueries = server.maxSessions * 8;
-    int parallelThreads = server.maxSessions * 2;
+    int totalQueries = 1000000;
+    int parallelThreads = 300;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(

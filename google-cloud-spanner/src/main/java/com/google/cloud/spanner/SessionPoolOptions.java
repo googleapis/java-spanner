@@ -586,6 +586,15 @@ public class SessionPoolOptions {
     }
 
     /**
+     * Number of shared sessions.
+     */
+    public Builder setSharedSessions(int sharedSessions) {
+      Preconditions.checkArgument(sharedSessions > 0, "sharedSessions must be > 0");
+      this.sharedSessionsCount = sharedSessions;
+      return this;
+    }
+
+    /**
      * Number of sessions to batch create when the pool needs at least one more session. Defaults to
      * 25.
      */
