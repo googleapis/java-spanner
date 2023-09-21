@@ -85,7 +85,7 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
 
     // We are adding this configuration to see if having single session has any noticeable differences
     // as compared to having multiple sessions.
-    @Param({"1", "2", "4", "50", "100", "400"})
+    @Param({"4"})
     int numSessions;
     @Setup(Level.Invocation)
     public void setup() throws Exception {
