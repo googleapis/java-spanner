@@ -49,6 +49,7 @@ import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collections;
@@ -90,6 +91,7 @@ public class SessionImplTest {
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
     when(spannerOptions.getSessionPoolOptions()).thenReturn(mock(SessionPoolOptions.class));
+    when(spannerOptions.getTracer()).thenReturn(Tracing.getTracer());
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);
     String dbName = "projects/p1/instances/i1/databases/d1";

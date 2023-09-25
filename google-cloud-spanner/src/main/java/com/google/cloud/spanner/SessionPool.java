@@ -116,7 +116,6 @@ import org.threeten.bp.Instant;
 class SessionPool {
 
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
-  private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
   static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
       ImmutableSet.of(
@@ -1974,6 +1973,7 @@ class SessionPool {
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
+  private final Tracer tracer;
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
@@ -2071,7 +2071,8 @@ class SessionPool {
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
         Position.RANDOM,
         Metrics.getMetricRegistry(),
-        labelValues);
+        labelValues,
+        spannerOptions.getTracer());
   }
 
   static SessionPool createPool(
@@ -2095,7 +2096,8 @@ class SessionPool {
         clock,
         initialReleasePosition,
         Metrics.getMetricRegistry(),
-        SPANNER_DEFAULT_LABEL_VALUES);
+        SPANNER_DEFAULT_LABEL_VALUES,
+        Tracing.getTracer());
   }
 
   static SessionPool createPool(
@@ -2106,7 +2108,8 @@ class SessionPool {
       Clock clock,
       Position initialReleasePosition,
       MetricRegistry metricRegistry,
-      List<LabelValue> labelValues) {
+      List<LabelValue> labelValues,
+      Tracer tracer) {
     SessionPool pool =
         new SessionPool(
             poolOptions,
@@ -2117,7 +2120,8 @@ class SessionPool {
             clock,
             initialReleasePosition,
             metricRegistry,
-            labelValues);
+            labelValues,
+            tracer);
     pool.initPool();
     return pool;
   }
@@ -2131,7 +2135,8 @@ class SessionPool {
       Clock clock,
       Position initialReleasePosition,
       MetricRegistry metricRegistry,
-      List<LabelValue> labelValues) {
+      List<LabelValue> labelValues,
+      Tracer tracer) {
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
@@ -2139,6 +2144,7 @@ class SessionPool {
     this.sessionClient = sessionClient;
     this.clock = clock;
     this.initialReleasePosition = initialReleasePosition;
+    this.tracer = tracer;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
     this.waitOnMinSessionsLatch =
@@ -2328,7 +2334,7 @@ class SessionPool {
    * </ol>
    */
   PooledSessionFuture getSession() throws SpannerException {
-    Span span = Tracing.getTracer().getCurrentSpan();
+    Span span = tracer.getCurrentSpan();
     span.addAnnotation("Acquiring session");
     WaiterFuture waiter = null;
     PooledSession sess = null;
@@ -2409,7 +2415,7 @@ class SessionPool {
   }
 
   private void maybeCreateSession() {
-    Span span = Tracing.getTracer().getCurrentSpan();
+    Span span = tracer.getCurrentSpan();
     synchronized (lock) {
       if (numWaiters() >= numSessionsBeingCreated) {
         if (canCreateSession()) {

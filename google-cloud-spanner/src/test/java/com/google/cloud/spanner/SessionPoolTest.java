@@ -73,6 +73,7 @@ import com.google.spanner.v1.RollbackRequest;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -140,7 +141,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         clock,
         Position.RANDOM,
         metricRegistry,
-        labelValues);
+        labelValues,
+        Tracing.getTracer());
   }
 
   @Before
@@ -1167,13 +1169,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               .setSession(closedSession)
               .setOptions(Options.fromTransactionOptions())
               .setRpc(rpc)
+              .setTracer(Tracing.getTracer())
               .build();
       when(closedSession.asyncClose())
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
       when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
-      TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
+      TransactionRunnerImpl closedTransactionRunner =
+          new TransactionRunnerImpl(closedSession, Tracing.getTracer());
       closedTransactionRunner.setSpan(mock(Span.class));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
@@ -1187,7 +1191,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(openTransactionContext);
       when(openSession.beginTransactionAsync(any(), eq(true)))
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
-      TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
+      TransactionRunnerImpl openTransactionRunner =
+          new TransactionRunnerImpl(openSession, Tracing.getTracer());
       openTransactionRunner.setSpan(mock(Span.class));
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
@@ -1240,6 +1245,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
       when(spannerOptions.getNumChannels()).thenReturn(4);
       when(spannerOptions.getDatabaseRole()).thenReturn("role");
+      when(spannerOptions.getTracer()).thenReturn(Tracing.getTracer());
       when(spanner.getOptions()).thenReturn(spannerOptions);
       SessionPool pool =
           SessionPool.createPool(options, new TestExecutorFactory(), spanner.getSessionClient(db));
@@ -1341,7 +1347,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, Tracing.getTracer());
     assertThat(impl.write(mutations)).isNotNull();
   }
 
@@ -1383,7 +1389,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, Tracing.getTracer());
     assertThat(impl.writeAtLeastOnce(mutations)).isNotNull();
   }
 
@@ -1422,7 +1428,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, Tracing.getTracer());
     assertThat(impl.executePartitionedUpdate(statement)).isEqualTo(1L);
   }
 

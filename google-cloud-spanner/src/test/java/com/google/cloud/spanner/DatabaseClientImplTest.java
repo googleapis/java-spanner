@@ -94,6 +94,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
+import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -2191,7 +2192,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, Tracing.getTracer());
     client.readWriteTransaction(option);
 
     verify(session).readWriteTransaction(option);
@@ -2204,7 +2205,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, Tracing.getTracer());
     client.transactionManager(option);
 
     verify(session).transactionManager(option);
@@ -2217,7 +2218,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, Tracing.getTracer());
     client.runAsync(option);
 
     verify(session).runAsync(option);
@@ -2230,7 +2231,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, Tracing.getTracer());
     client.transactionManagerAsync(option);
 
     verify(session).transactionManagerAsync(option);

@@ -57,6 +57,8 @@ import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -134,6 +136,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
+  private final Tracer tracer;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -600,6 +603,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
+    tracer = builder.tracer;
   }
 
   /**
@@ -701,6 +705,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
+    private Tracer tracer = Tracing.getTracer();
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -756,6 +761,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
+      this.tracer = options.tracer;
     }
 
     @Override
@@ -1185,6 +1191,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public Builder setTracer(Tracer tracer) {
+      this.tracer = tracer;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1323,6 +1334,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isLeaderAwareRoutingEnabled() {
     return leaderAwareRoutingEnabled;
+  }
+
+  public Tracer getTracer() {
+    return tracer;
   }
 
   /** Returns the default query options to use for the specific database. */

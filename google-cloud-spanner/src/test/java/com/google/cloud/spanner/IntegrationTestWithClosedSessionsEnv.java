@@ -19,6 +19,8 @@ package com.google.cloud.spanner;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import io.opencensus.trace.Tracer;
+import io.opencensus.trace.Tracing;
 
 /**
  * Subclass of {@link IntegrationTestEnv} that allows the user to specify when the underlying
@@ -46,7 +48,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
 
     @Override
     DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-      return new DatabaseClientWithClosedSessionImpl(clientId, pool);
+      return new DatabaseClientWithClosedSessionImpl(clientId, pool, Tracing.getTracer());
     }
   }
 
@@ -58,8 +60,8 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     private boolean invalidateNextSession = false;
     private boolean allowReplacing = true;
 
-    DatabaseClientWithClosedSessionImpl(String clientId, SessionPool pool) {
-      super(clientId, pool);
+    DatabaseClientWithClosedSessionImpl(String clientId, SessionPool pool, Tracer tracer) {
+      super(clientId, pool, tracer);
     }
 
     /** Invalidate the next session that is checked out from the pool. */

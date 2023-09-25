@@ -23,12 +23,10 @@ import com.google.common.base.Preconditions;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
 
 /** Implementation of {@link TransactionManager}. */
 final class TransactionManagerImpl implements TransactionManager, SessionTransaction {
-  private static final Tracer tracer = Tracing.getTracer();
-
+  private final Tracer tracer;
   private final SessionImpl session;
   private Span span;
   private final Options options;
@@ -36,9 +34,11 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
+  TransactionManagerImpl(
+      SessionImpl session, Span span, Tracer tracer, TransactionOption... options) {
     this.session = session;
     this.span = span;
+    this.tracer = tracer;
     this.options = Options.fromTransactionOptions(options);
   }
 

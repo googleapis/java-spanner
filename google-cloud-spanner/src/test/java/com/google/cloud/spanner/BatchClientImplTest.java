@@ -35,6 +35,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
+import io.opencensus.trace.Tracing;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Before;
@@ -77,6 +78,7 @@ public final class BatchClientImplTest {
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
+    when(spannerOptions.getTracer()).thenReturn(Tracing.getTracer());
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(gapicRpc, spannerOptions);
     client = new BatchClientImpl(spanner.getSessionClient(db));

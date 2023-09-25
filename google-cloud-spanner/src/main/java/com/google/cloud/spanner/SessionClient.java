@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -113,30 +114,30 @@ class SessionClient implements AutoCloseable {
     private final long channelHint;
     private final int sessionCount;
     private final SessionConsumer consumer;
+    private final Tracer tracer;
 
     private BatchCreateSessionsRunnable(
-        int sessionCount, long channelHint, SessionConsumer consumer) {
+        int sessionCount, long channelHint, SessionConsumer consumer, Tracer tracer) {
       Preconditions.checkNotNull(consumer);
       Preconditions.checkArgument(sessionCount > 0, "sessionCount must be > 0");
       this.channelHint = channelHint;
       this.sessionCount = sessionCount;
       this.consumer = consumer;
+      this.tracer = tracer;
     }
 
     @Override
     public void run() {
       List<SessionImpl> sessions;
       int remainingSessionsToCreate = sessionCount;
-      Span span = SpannerImpl.tracer.spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS).startSpan();
-      try (Scope s = SpannerImpl.tracer.withSpan(span)) {
-        SpannerImpl.tracer
-            .getCurrentSpan()
-            .addAnnotation(String.format("Creating %d sessions", sessionCount));
+      Span span = tracer.spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS).startSpan();
+      try (Scope s = tracer.withSpan(span)) {
+        tracer.getCurrentSpan().addAnnotation(String.format("Creating %d sessions", sessionCount));
         while (remainingSessionsToCreate > 0) {
           try {
             sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint);
           } catch (Throwable t) {
-            TraceUtil.setWithFailure(SpannerImpl.tracer.getCurrentSpan(), t);
+            TraceUtil.setWithFailure(tracer.getCurrentSpan(), t);
             consumer.onSessionCreateFailure(t, remainingSessionsToCreate);
             break;
           }
@@ -206,8 +207,8 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    Span span = SpannerImpl.tracer.spanBuilder(SpannerImpl.CREATE_SESSION).startSpan();
-    try (Scope s = SpannerImpl.tracer.withSpan(span)) {
+    Span span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION).startSpan();
+    try (Scope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
@@ -270,7 +271,7 @@ class SessionClient implements AutoCloseable {
           try {
             executor.submit(
                 new BatchCreateSessionsRunnable(
-                    createCountForChannel, sessionChannelCounter++, consumer));
+                    createCountForChannel, sessionChannelCounter++, consumer, spanner.getTracer()));
             numBeingCreated += createCountForChannel;
           } catch (Throwable t) {
             consumer.onSessionCreateFailure(t, sessionCount - numBeingCreated);
@@ -290,13 +291,14 @@ class SessionClient implements AutoCloseable {
   private List<SessionImpl> internalBatchCreateSessions(
       final int sessionCount, final long channelHint) throws SpannerException {
     final Map<SpannerRpc.Option, ?> options = optionMap(SessionOption.channelHint(channelHint));
-    Span parent = SpannerImpl.tracer.getCurrentSpan();
+    Span parent = spanner.getTracer().getCurrentSpan();
     Span span =
-        SpannerImpl.tracer
+        spanner
+            .getTracer()
             .spanBuilderWithExplicitParent(SpannerImpl.BATCH_CREATE_SESSIONS_REQUEST, parent)
             .startSpan();
     span.addAnnotation(String.format("Requesting %d sessions", sessionCount));
-    try (Scope s = SpannerImpl.tracer.withSpan(span)) {
+    try (Scope s = spanner.getTracer().withSpan(span)) {
       List<com.google.spanner.v1.Session> sessions =
           spanner
               .getRpc()

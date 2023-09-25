@@ -30,7 +30,6 @@ import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
 import com.google.spanner.v1.TransactionSelector;
-import io.opencensus.trace.Tracing;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -60,7 +59,8 @@ public class BatchClientImpl implements BatchClient {
             .setDefaultQueryOptions(
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
             .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
-            .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
+            .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks())
+            .setTracer(sessionClient.getSpanner().getTracer()),
         checkNotNull(bound));
   }
 
@@ -77,7 +77,8 @@ public class BatchClientImpl implements BatchClient {
             .setDefaultQueryOptions(
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
             .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
-            .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks()),
+            .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks())
+            .setTracer(sessionClient.getSpanner().getTracer()),
         batchTransactionId);
   }
 
@@ -91,7 +92,7 @@ public class BatchClientImpl implements BatchClient {
       super(builder.setTimestampBound(bound));
       this.sessionName = session.getName();
       this.options = session.getOptions();
-      setSpan(Tracing.getTracer().getCurrentSpan());
+      setSpan(tracer.getCurrentSpan());
       initTransaction();
     }
 
@@ -100,7 +101,7 @@ public class BatchClientImpl implements BatchClient {
       super(builder.setTransactionId(batchTransactionId.getTransactionId()));
       this.sessionName = session.getName();
       this.options = session.getOptions();
-      setSpan(Tracing.getTracer().getCurrentSpan());
+      setSpan(tracer.getCurrentSpan());
     }
 
     @Override

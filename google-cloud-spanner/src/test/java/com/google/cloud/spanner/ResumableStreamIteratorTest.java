@@ -38,6 +38,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -141,6 +142,7 @@ public class ResumableStreamIteratorTest {
             maxBufferSize,
             "",
             null,
+            Tracing.getTracer(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override

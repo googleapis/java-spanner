@@ -46,6 +46,7 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -80,7 +81,7 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session, mock(Span.class));
+    manager = new TransactionManagerImpl(session, mock(Span.class), Tracing.getTracer());
   }
 
   @Test
@@ -200,6 +201,7 @@ public class TransactionManagerImplTest {
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
     when(options.getDatabaseRole()).thenReturn("role");
+    when(options.getTracer()).thenReturn(Tracing.getTracer());
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
@@ -266,6 +268,7 @@ public class TransactionManagerImplTest {
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     when(options.getDatabaseRole()).thenReturn("role");
+    when(options.getTracer()).thenReturn(Tracing.getTracer());
     when(rpc.batchCreateSessions(
             Mockito.anyString(),
             Mockito.eq(1),

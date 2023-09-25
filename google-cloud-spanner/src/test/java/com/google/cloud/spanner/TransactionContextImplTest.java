@@ -33,6 +33,7 @@ import com.google.rpc.Status;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
+import io.opencensus.trace.Tracing;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +69,7 @@ public class TransactionContextImplTest {
         .setRpc(rpc)
         .setTransactionId(ByteString.copyFromUtf8("test"))
         .setOptions(Options.fromTransactionOptions())
+        .setTracer(Tracing.getTracer())
         .build();
   }
 
@@ -167,6 +169,7 @@ public class TransactionContextImplTest {
             .setRpc(rpc)
             .setTransactionId(transactionId)
             .setOptions(Options.fromTransactionOptions(Options.commitStats()))
+            .setTracer(Tracing.getTracer())
             .build()) {
       context.commitAsync();
       CommitRequest request =

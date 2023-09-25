@@ -52,6 +52,7 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -69,6 +70,7 @@ abstract class AbstractReadContext
     private SessionImpl session;
     private SpannerRpc rpc;
     private Span span = Tracing.getTracer().getCurrentSpan();
+    private Tracer tracer;
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
     private ExecutorProvider executorProvider;
@@ -92,6 +94,11 @@ abstract class AbstractReadContext
 
     B setSpan(Span span) {
       this.span = span;
+      return self();
+    }
+
+    B setTracer(Tracer tracer) {
+      this.tracer = tracer;
       return self();
     }
 
@@ -389,6 +396,7 @@ abstract class AbstractReadContext
   final SpannerRpc rpc;
   final ExecutorProvider executorProvider;
   Span span;
+  final Tracer tracer;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
@@ -415,6 +423,7 @@ abstract class AbstractReadContext
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
+    this.tracer = builder.tracer;
     this.executorProvider = builder.executorProvider;
   }
 
@@ -668,6 +677,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.QUERY,
             span,
+            tracer,
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
@@ -807,6 +817,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.READ,
             span,
+            tracer,
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
           @Override

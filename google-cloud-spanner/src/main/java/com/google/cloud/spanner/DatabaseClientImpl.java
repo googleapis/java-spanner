@@ -27,26 +27,26 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
   private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
   private static final String PARTITION_DML_TRANSACTION = "CloudSpanner.PartitionDMLTransaction";
-  private static final Tracer tracer = Tracing.getTracer();
 
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
+  private final Tracer tracer;
 
   @VisibleForTesting
-  DatabaseClientImpl(SessionPool pool) {
-    this("", pool);
+  DatabaseClientImpl(SessionPool pool, Tracer tracer) {
+    this("", pool, tracer);
   }
 
-  DatabaseClientImpl(String clientId, SessionPool pool) {
+  DatabaseClientImpl(String clientId, SessionPool pool, Tracer tracer) {
     this.clientId = clientId;
     this.pool = pool;
+    this.tracer = tracer;
   }
 
   @VisibleForTesting

@@ -53,7 +53,6 @@ import io.opencensus.common.Scope;
 import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -71,7 +70,6 @@ import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation of {@link TransactionRunner}. */
 class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
-  private static final Tracer tracer = Tracing.getTracer();
   private static final Logger txnLogger = Logger.getLogger(TransactionRunner.class.getName());
   /**
    * (Part of) the error message that is returned by Cloud Spanner if a transaction is cancelled
@@ -932,6 +930,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private boolean blockNestedTxn = true;
   private final SessionImpl session;
   private final Options options;
+  private final Tracer tracer;
+
   private Span span;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
@@ -942,8 +942,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     return this;
   }
 
-  TransactionRunnerImpl(SessionImpl session, TransactionOption... options) {
+  TransactionRunnerImpl(SessionImpl session, Tracer tracer, TransactionOption... options) {
     this.session = session;
+    this.tracer = tracer;
     this.options = Options.fromTransactionOptions(options);
     this.txn = session.newTransaction(this.options);
   }

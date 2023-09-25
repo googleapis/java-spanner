@@ -38,7 +38,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +54,6 @@ import org.threeten.bp.Instant;
 /** Default implementation of the Cloud Spanner interface. */
 class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private static final Logger logger = Logger.getLogger(SpannerImpl.class.getName());
-  static final Tracer tracer = Tracing.getTracer();
 
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";
   static final String BATCH_CREATE_SESSIONS = "CloudSpannerOperation.BatchCreateSessions";
@@ -97,6 +95,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   private final DatabaseAdminClient dbAdminClient;
   private final InstanceAdminClient instanceClient;
+  private final Tracer tracer;
 
   /**
    * Exception class used to track the stack trace at the point when a Spanner instance is closed.
@@ -126,6 +125,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
+    this.tracer = options.getTracer();
   }
 
   SpannerImpl(SpannerOptions options) {
@@ -135,6 +135,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   /** Returns the {@link SpannerRpc} of this {@link SpannerImpl} instance. */
   SpannerRpc getRpc() {
     return gapicRpc;
+  }
+
+  public Tracer getTracer() {
+    return tracer;
   }
 
   /** Returns the default setting for prefetchChunks of this {@link SpannerImpl} instance. */
@@ -231,7 +235,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @VisibleForTesting
   DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return new DatabaseClientImpl(clientId, pool);
+    return new DatabaseClientImpl(clientId, pool, getTracer());
   }
 
   @Override
