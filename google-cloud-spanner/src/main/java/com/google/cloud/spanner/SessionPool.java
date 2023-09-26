@@ -1708,7 +1708,9 @@ class SessionPool {
                   ErrorCode.RESOURCE_EXHAUSTED,
                   "Timed out after waiting "
                       + acquireSessionTimeout.toMillis()
-                      + "ms for acquiring session.");
+                      + "ms for acquiring session. To mitigate error increase the timeout duration at"
+                      + " session pool option `acquireSessionTimeout` or increase the "
+                      + "number of sessions in the session pool.");
             }
             return null;
           } catch (ExecutionException e) {
