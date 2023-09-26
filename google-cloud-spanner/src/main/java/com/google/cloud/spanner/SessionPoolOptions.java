@@ -550,8 +550,9 @@ public class SessionPoolOptions {
      * If all sessions are in use and there is no more room for creating new sessions, block for a
      * session to become available. Default behavior is same.
      *
-     * <p>By default the requests are blocked for 60s and will fail with a `SpannerException` with error code `ResourceExhausted` if this timeout is exceeded. If you wish to block for a different period
-     * use the option {@link Builder#setAcquireSessionTimeout(Duration)} ()}
+     * <p>By default the requests are blocked for 60s and will fail with a `SpannerException` with
+     * error code `ResourceExhausted` if this timeout is exceeded. If you wish to block for a
+     * different period use the option {@link Builder#setAcquireSessionTimeout(Duration)} ()}
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
