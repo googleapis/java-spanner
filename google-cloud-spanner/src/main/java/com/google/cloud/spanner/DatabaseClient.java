@@ -16,10 +16,12 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.spanner.v1.BatchWriteResponse;
 
 /**
  * Interface for all the APIs that are used to read/write data into a Cloud Spanner database. An
@@ -190,6 +192,56 @@ public interface DatabaseClient {
    */
   CommitResponse writeAtLeastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException;
+
+  /**
+   * Applies batch of mutation groups in a collection of efficient transactions. The mutation groups
+   * are applied non-atomically in an unspecified order and thus, they must be independent of each
+   * other. Partial failure is possible, i.e., some mutation groups may have been applied
+   * successfully, while some may have failed. The results of individual batches are streamed into
+   * the response as and when the batches are applied.
+   *
+   * <p>One BatchWriteResponse can contain the results for multiple MutationGroups. Inspect the
+   * indexes field to determine the MutationGroups that the BatchWriteResponse is for.
+   *
+   * <p>The mutation groups may be applied more than once. This can lead to failures if the mutation
+   * groups are non-idempotent. For example, an insert that is replayed can return an {@link
+   * ErrorCode#ALREADY_EXISTS} error. For this reason, users of the library may prefer to use {@link
+   * #write(Iterable)} instead. However, {@code batchWriteAtLeastOnce()} method may be appropriate
+   * for non-atomically committing multiple mutation groups in a single RPC with low latency.
+   *
+   * <p>Example of BatchWriteAtLeastOnce
+   *
+   * <pre>{@code
+   * Iterable<MutationGroup> mutationGroups =
+   *     ImmutableList.of(
+   *         MutationGroup.of(
+   *             Mutation.newInsertBuilder("FOO1").set("ID").to(1L).set("NAME").to("Bar1").build(),
+   *             Mutation.newInsertBuilder("FOO2").set("ID").to(2L).set("NAME").to("Bar2").build()),
+   *         MutationGroup.of(
+   *             Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
+   *             Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build()),
+   *         MutationGroup.of(
+   *             Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build(),
+   *             Mutation.newInsertBuilder("FOO5").set("ID").to(5L).set("NAME").to("Bar5").build()),
+   *         MutationGroup.of(
+   *             Mutation.newInsertBuilder("FOO6").set("ID").to(6L).set("NAME").to("Bar6").build()));
+   * ServerStream<BatchWriteResponse> responses =
+   *     dbClient.batchWriteAtLeastOnce(mutationGroups, Options.tag("batch-write-tag"));
+   * for (BatchWriteResponse response : responses) {
+   *   // Do something when a response is received.
+   * }
+   * }</pre>
+   *
+   * Options for a transaction can include:
+   *
+   * <ul>
+   *   <li>{@link Options#priority(com.google.cloud.spanner.Options.RpcPriority)}: The {@link
+   *       RpcPriority} to use for the batch write request.
+   *   <li>{@link Options#tag(String)}: The transaction tag to use for the batch write request.
+   * </ul>
+   */
+  ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      Iterable<MutationGroup> mutationGroups, TransactionOption... options) throws SpannerException;
 
   /**
    * Returns a context in which a single read can be performed using {@link TimestampBound#strong()}
