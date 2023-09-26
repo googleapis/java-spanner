@@ -262,7 +262,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
      */
     public static StatementResult queryAndThen(
         Statement statement, ResultSet resultSet, ResultSet next) {
-      return new StatementResult(statement, resultSet);
+      return new StatementResult(statement, resultSet, next);
     }
 
     /** Creates a {@link StatementResult} for a read request. */
