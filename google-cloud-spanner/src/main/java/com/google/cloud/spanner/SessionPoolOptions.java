@@ -711,7 +711,7 @@ public class SessionPoolOptions {
 
     /**
      * If greater than zero, we wait for said duration when no sessions are available in the {@link
-     * SessionPool}. When no configuration is passed, we default to 60s to acquire a session.
+     * SessionPool}. When no configuration is passed, the default is a 60s timeout.
      */
     public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
       this.acquireSessionTimeout = acquireSessionTimeout;
