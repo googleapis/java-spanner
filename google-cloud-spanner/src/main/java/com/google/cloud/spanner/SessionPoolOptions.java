@@ -52,7 +52,13 @@ public class SessionPoolOptions {
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final boolean trackStackTraceOfSessionCheckout;
   private final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions;
-  private final long initialWaitForSessionTimeoutMillis;
+
+  /**
+   * Use {@link #acquireSessionTimeout} instead to specify the total duration to wait while
+   * acquiring session for a transaction.
+   */
+  @Deprecated private final long initialWaitForSessionTimeoutMillis;
+
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
   private final Duration acquireSessionTimeout;

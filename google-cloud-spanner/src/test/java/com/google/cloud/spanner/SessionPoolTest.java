@@ -980,6 +980,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(minSessions)
             .setMaxSessions(1)
             .setInitialWaitForSessionTimeoutMillis(20L)
+            .setAcquireSessionTimeout(null)
             .build();
     setupMockSessionCreation();
     pool = createPool();
