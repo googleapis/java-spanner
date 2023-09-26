@@ -187,6 +187,42 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
     printResults(results);
   }
 
+  /**
+   * Measures the time needed to execute a burst of read and write requests.
+   *
+   * <p>Some read requests will be long-running and will cause session leaks. Such sessions will be
+   * removed by the session maintenance background task if SessionPool Option
+   * ActionOnInactiveTransaction is set as WARN_AND_CLOSE.
+   *
+   * <p>Some write requests will be long-running. The test asserts that no sessions are removed by
+   * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
+   * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
+   */
+  @Benchmark
+  public void burstWrites(final BenchmarkState server) throws Exception {
+    int totalWrites = 100000;
+    int parallelThreads = 300;
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions()).isEqualTo(
+        server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+
+    ListeningScheduledExecutorService service =
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
+    List<ListenableFuture<java.time.Duration>> futures =
+        new ArrayList<>(totalWrites);
+    for (int i = 0; i < totalWrites; i++) {
+      futures.add(
+          service.submit(
+              () -> runBenchmarkForWrites(server)));
+    }
+
+    final List<java.time.Duration> results =
+        collectResults(service, futures,  totalWrites);
+
+    printResults(results);
+  }
+
   private java.time.Duration runBenchmarkForReads(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
