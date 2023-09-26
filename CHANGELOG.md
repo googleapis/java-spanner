@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.48.0](https://github.com/googleapis/java-spanner/compare/v6.47.0...v6.48.0) (2023-09-26)
+
+
+### Features
+
+* Add support for BatchWriteAtLeastOnce ([#2520](https://github.com/googleapis/java-spanner/issues/2520)) ([8ea7bd1](https://github.com/googleapis/java-spanner/commit/8ea7bd18e92a7c5547d8a33bf46c1e322326447b))
+
+
+### Bug Fixes
+
+* Retry aborted errors for writeAtLeastOnce ([#2627](https://github.com/googleapis/java-spanner/issues/2627)) ([2addb19](https://github.com/googleapis/java-spanner/commit/2addb1930a7b9ada4a4304a44a36d8ff1397cf9e))
+
+
+### Dependencies
+
+* Update actions/checkout action to v4 ([#2608](https://github.com/googleapis/java-spanner/issues/2608)) ([59f3e70](https://github.com/googleapis/java-spanner/commit/59f3e7047a0a9578350b37b46395377d7e014763))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.27 ([#2574](https://github.com/googleapis/java-spanner/issues/2574)) ([e804a4c](https://github.com/googleapis/java-spanner/commit/e804a4c60f369ca88b804fef182b5afae44bd05e))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.27 ([#2575](https://github.com/googleapis/java-spanner/issues/2575)) ([6fe132a](https://github.com/googleapis/java-spanner/commit/6fe132a7c1458da4fc28c950009d152643ced038))
+
 ## [6.47.0](https://github.com/googleapis/java-spanner/compare/v6.46.0...v6.47.0) (2023-09-12)
 
 
