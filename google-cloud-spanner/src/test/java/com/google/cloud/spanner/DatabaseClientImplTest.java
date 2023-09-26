@@ -2261,7 +2261,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBatchCreateSessionsTimesOut_whenResourceExhausted() throws Exception {
-    // Simulate a minimum execution time of 1000 milliseconds for the BatchCreateSessions RPC.
+    // Simulate a minimum execution time of 2000 milliseconds for the BatchCreateSessions RPC.
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofMinimumAndRandomTime(2000, 0));
     // Add a timeout for the max amount of time (60ms) that a request waits when a session is
