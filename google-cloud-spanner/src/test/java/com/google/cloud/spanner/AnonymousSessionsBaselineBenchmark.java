@@ -123,8 +123,8 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
    */
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
-    int totalQueries = 1000000;
-    int parallelThreads = 50;
+    int totalReads = 1000000;
+    int parallelThreads = 25;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -132,15 +132,15 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
-    List<ListenableFuture<Duration>> futures = new ArrayList<>(totalQueries);
-    for (int i = 0; i < totalQueries; i++) {
+    List<ListenableFuture<Duration>> futures = new ArrayList<>(totalReads);
+    for (int i = 0; i < totalReads; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForReads(server)));
     }
 
     final List<java.time.Duration> results =
-        collectResults(service, futures, totalQueries);
+        collectResults(service, futures, totalReads);
 
     printResults(results);
   }
@@ -160,7 +160,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
   public void burstReadAndWrite(final BenchmarkState server) throws Exception {
     int totalWrites = 100000;
     int totalReads = 1000000;
-    int parallelThreads = 50;
+    int parallelThreads = 25;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -201,7 +201,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
   @Benchmark
   public void burstWrites(final BenchmarkState server) throws Exception {
     int totalWrites = 100000;
-    int parallelThreads = 50;
+    int parallelThreads = 25;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
