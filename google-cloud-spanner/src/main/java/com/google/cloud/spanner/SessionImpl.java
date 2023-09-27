@@ -215,8 +215,8 @@ class SessionImpl implements Session {
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }
-    Span span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
+    Span span = spanner.getTracer().spanBuilder(SpannerImpl.BATCH_WRITE).startSpan();
+    try (Scope s = spanner.getTracer().withSpan(span)) {
       return spanner.getRpc().batchWriteAtLeastOnce(requestBuilder.build(), this.options);
     } catch (Throwable e) {
       TraceUtil.setWithFailure(span, e);
