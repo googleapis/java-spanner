@@ -21,7 +21,7 @@ import java.util.Random;
 public class AbstractAnonymousSessionsBenchmark extends AbstractLatencyBenchmark {
   static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
   static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
-  static final int TOTAL_READS = 50000;
+  static final int TOTAL_READS = 300000;
   static final int TOTAL_WRITES = 50000;
   static final int PARALLEL_THREADS = 25;
 
