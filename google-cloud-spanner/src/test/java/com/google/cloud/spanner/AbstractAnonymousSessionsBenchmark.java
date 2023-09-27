@@ -19,7 +19,7 @@ package com.google.cloud.spanner;
 import java.util.Random;
 
 public class AbstractAnonymousSessionsBenchmark extends AbstractLatencyBenchmark {
-  static final String SELECT_QUERY = "SELECT * FROM FOO WHERE ID = @id";
+  static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
   static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
   static final int TOTAL_READS = 25000;
   static final int TOTAL_WRITES = 25000;
