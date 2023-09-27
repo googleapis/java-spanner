@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.AnonymousSessionsWithSharedSessionsBenchmark.BenchmarkState;
 import com.google.cloud.spanner.SessionPoolOptions.ActionForAnonymousSessionsChannelHints;
 import com.google.cloud.spanner.SessionPoolOptions.ActionForNumberOfAnonymousSessions;
 import com.google.cloud.spanner.SessionPoolOptions.AnonymousSessionOptions;
@@ -137,6 +138,8 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
    */
   @Benchmark
   public void burstReadAndWrite_withSharedROSessions(final BenchmarkState server) throws Exception {
+    Stopwatch watch = Stopwatch.createStarted();
+
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -145,26 +148,39 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
         server.spanner.getOptions().getSessionPoolOptions().getSharedSessionCount());
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<Duration>> futures =
-        new ArrayList<>(TOTAL_READS + TOTAL_WRITES);
-    for (int i = 0; i < TOTAL_READS; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForReads(server)));
+    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(service.submit(() -> runBenchmarksForReads(server, TOTAL_READS_PER_THREAD)));
     }
-    for (int i = 0; i < TOTAL_WRITES; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForWrites(server)));
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(
+          service.submit(() -> runBenchmarkForWrites(server, TOTAL_WRITES_PER_THREAD)));
     }
 
-    final List<Duration> results =
-        collectResults(service, futures, TOTAL_READS + TOTAL_WRITES);
-
-    printResults(results);
+    collectResultsAndPrint(service, results);
+    Duration elapsedTime = watch.elapsed();
+    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFraction(elapsedTime));
   }
 
-  private Duration runBenchmarkForReads(final BenchmarkState server) {
+  private void collectResultsAndPrint(ListeningScheduledExecutorService service,
+      List<ListenableFuture<List<Duration>>> results) throws Exception {
+    final List<java.time.Duration> collectResults =
+        collectResults(service, results, TOTAL_READS_PER_THREAD * PARALLEL_THREADS);
+    printResults(collectResults);
+  }
+
+  private List<java.time.Duration> runBenchmarksForReads(
+      final BenchmarkState server, int numberOfOperations) {
+    List<Duration> results = new ArrayList<>(numberOfOperations);
+    // Execute one query to make sure everything has been warmed up.
+    executeQuery(server);
+
+    for (int i = 0; i < numberOfOperations; i++) {
+      results.add(executeQuery(server));
+    }
+    return results;
+  }
+  private Duration executeQuery(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs =
@@ -174,7 +190,19 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
 
     return watch.elapsed();
   }
-  private Duration runBenchmarkForWrites(final BenchmarkState server) {
+
+  private List<java.time.Duration> runBenchmarkForWrites(
+      final BenchmarkState server, int numberOfOperations) {
+    List<Duration> results = new ArrayList<>(numberOfOperations);
+    // Execute one update to make sure everything has been warmed up.
+    executeUpdate(server);
+
+    for (int i = 0; i < numberOfOperations; i++) {
+      results.add(executeUpdate(server));
+    }
+    return results;
+  }
+  private Duration executeUpdate(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
     TransactionRunner runner = server.client.readWriteTransaction();

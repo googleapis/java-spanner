@@ -16,24 +16,25 @@
 
 package com.google.cloud.spanner;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AbstractAnonymousSessionsBenchmark extends AbstractLatencyBenchmark {
   static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
   static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
-  static final int TOTAL_READS = 300000;
-  static final int TOTAL_WRITES = 50000;
+  private static final int TOTAL_READS = 300000;
+  private static final int TOTAL_WRITES = 50000;
   static final int PARALLEL_THREADS = 25;
+  static final int TOTAL_READS_PER_THREAD = TOTAL_READS/PARALLEL_THREADS;
+  static final int TOTAL_WRITES_PER_THREAD = TOTAL_WRITES/PARALLEL_THREADS;
 
   static final int RANDOM_SEARCH_SPACE = 99999;
-  static final Random RANDOM = new Random();
   static Statement getRandomisedReadStatement() {
-    int randomKey = RANDOM.nextInt(RANDOM_SEARCH_SPACE);
+    int randomKey = ThreadLocalRandom.current().nextInt(RANDOM_SEARCH_SPACE);
     return Statement.newBuilder(SELECT_QUERY).bind("id").to(randomKey).build();
   }
 
   static Statement getRandomisedUpdateStatement() {
-    int randomKey = RANDOM.nextInt(RANDOM_SEARCH_SPACE);
+    int randomKey = ThreadLocalRandom.current().nextInt(RANDOM_SEARCH_SPACE);
     return Statement.newBuilder(UPDATE_QUERY).bind("id").to(randomKey).build();
   }
 }

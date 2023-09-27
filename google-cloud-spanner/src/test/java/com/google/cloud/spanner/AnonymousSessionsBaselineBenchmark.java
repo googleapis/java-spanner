@@ -49,17 +49,14 @@ import org.openjdk.jmh.annotations.Warmup;
  * profile `benchmark` and can be executed like this:
  *
  * <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsBaselineBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsBaselineBenchmark
+ * -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions
+ * -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
  * </code>
  *
  * Test Table Schema :
  *
- * CREATE TABLE FOO (
- *   id INT64 NOT NULL,
- *   BAZ INT64,
- *   BAR INT64,
- * ) PRIMARY KEY(id);
- *
+ * CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, ) PRIMARY KEY(id);
  */
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 0)
@@ -72,7 +69,8 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
 
-    private final String instance = System.getProperty("benchmark.instance", "arpanmishra-dev-span");
+    private final String instance = System.getProperty("benchmark.instance",
+        "arpanmishra-dev-span");
     private final String database = System.getProperty("benchmark.database", "anonymous-sessions");
     private final String serverUrl = System.getProperty("benchmark.serverUrl",
         "https://staging-wrenchworks.sandbox.googleapis.com");
@@ -129,20 +127,13 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<Duration>> futures = new ArrayList<>(TOTAL_READS);
-    for (int i = 0; i < TOTAL_READS; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForReads(server)));
+    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(service.submit(() -> runBenchmarksForReads(server, TOTAL_READS_PER_THREAD)));
     }
-
-    final List<java.time.Duration> results =
-        collectResults(service, futures, TOTAL_READS);
-
+    collectResultsAndPrint(service, results);
     Duration elapsedTime = watch.elapsed();
     System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFraction(elapsedTime));
-
-    printResults(results);
   }
 
   /**
@@ -158,34 +149,33 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
    */
 
   /**
-  @Benchmark
-  public void burstReadAndWrite(final BenchmarkState server) throws Exception {
-    final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions()).isEqualTo(
-        server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+   @Benchmark public void burstReadAndWrite(final BenchmarkState server) throws Exception {
+   final DatabaseClientImpl client = server.client;
+   SessionPool pool = client.pool;
+   assertThat(pool.totalSessions()).isEqualTo(
+   server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
-    ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<java.time.Duration>> futures =
-        new ArrayList<>(TOTAL_READS + TOTAL_WRITES);
-    for (int i = 0; i < TOTAL_READS; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForReads(server)));
-    }
-    for (int i = 0; i < TOTAL_WRITES; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForWrites(server)));
-    }
+   ListeningScheduledExecutorService service =
+   MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
+   List<ListenableFuture<java.time.Duration>> futures =
+   new ArrayList<>(TOTAL_READS + TOTAL_WRITES);
+   for (int i = 0; i < TOTAL_READS; i++) {
+   futures.add(
+   service.submit(
+   () -> runBenchmarkForReads(server)));
+   }
+   for (int i = 0; i < TOTAL_WRITES; i++) {
+   futures.add(
+   service.submit(
+   () -> runBenchmarkForWrites(server)));
+   }
 
-    final List<java.time.Duration> results =
-        collectResults(service, futures, TOTAL_READS + TOTAL_WRITES);
+   final List<java.time.Duration> results =
+   collectResults(service, futures, TOTAL_READS + TOTAL_WRITES);
 
-    printResults(results);
-  }
-  */
+   printResults(results);
+   }
+   */
 
   /**
    * Measures the time needed to execute a burst of read and write requests.
@@ -223,17 +213,37 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
     printResults(results);
   }
   */
+  private void collectResultsAndPrint(ListeningScheduledExecutorService service,
+      List<ListenableFuture<List<Duration>>> results) throws Exception {
+    final List<java.time.Duration> collectResults =
+        collectResults(service, results, TOTAL_READS_PER_THREAD * PARALLEL_THREADS);
+    printResults(collectResults);
+  }
 
-  private java.time.Duration runBenchmarkForReads(final BenchmarkState server) {
+  private List<java.time.Duration> runBenchmarksForReads(
+      final BenchmarkState server, int numberOfOperations) {
+    List<Duration> results = new ArrayList<>(numberOfOperations);
+    // Execute one query to make sure everything has been warmed up.
+    executeQuery(server);
+
+    for (int i = 0; i < numberOfOperations; i++) {
+      results.add(executeQuery(server));
+    }
+    return results;
+  }
+
+  private java.time.Duration executeQuery(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs =
         server.client.singleUse().executeQuery(getRandomisedReadStatement())) {
-      while (rs.next()) {}
+      while (rs.next()) {
+        int count = rs.getColumnCount();
+      }
     }
-
     return watch.elapsed();
   }
+
   private java.time.Duration runBenchmarkForWrites(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 

@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.SessionPoolOptions.ActionForAnonymousSessionsChannelHints;
 import com.google.cloud.spanner.SessionPoolOptions.ActionForNumberOfAnonymousSessions;
 import com.google.cloud.spanner.SessionPoolOptions.AnonymousSessionOptions;
 import com.google.common.base.Stopwatch;
@@ -127,6 +126,8 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractAnonymo
    */
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
+    Stopwatch watch = Stopwatch.createStarted();
+
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -136,29 +137,41 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractAnonymo
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<Duration>> futures = new ArrayList<>(TOTAL_READS);
-    for (int i = 0; i < TOTAL_READS; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForReads(server)));
+    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(service.submit(() -> runBenchmarksForReads(server, TOTAL_READS_PER_THREAD)));
     }
 
-    final List<java.time.Duration> results =
-        collectResults(service, futures, TOTAL_READS);
-
-    System.out.printf("Num Sessions: %d\n", server.numSessions);
-
-    printResults(results);
+    collectResultsAndPrint(service, results);
+    Duration elapsedTime = watch.elapsed();
+    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFraction(elapsedTime));
   }
 
-  private Duration runBenchmarkForReads(final BenchmarkState server) {
-    Stopwatch watch = Stopwatch.createStarted();
+  private void collectResultsAndPrint(ListeningScheduledExecutorService service,
+      List<ListenableFuture<List<Duration>>> results) throws Exception {
+    final List<java.time.Duration> collectResults =
+        collectResults(service, results, TOTAL_READS_PER_THREAD * PARALLEL_THREADS);
+    printResults(collectResults);
+  }
 
+  private List<java.time.Duration> runBenchmarksForReads(
+      final BenchmarkState server, int numberOfOperations) {
+    List<Duration> results = new ArrayList<>(numberOfOperations);
+    // Execute one query to make sure everything has been warmed up.
+    executeQuery(server);
+
+    for (int i = 0; i < numberOfOperations; i++) {
+      results.add(executeQuery(server));
+    }
+    return results;
+  }
+
+  private Duration executeQuery(final BenchmarkState server) {
+    Stopwatch watch = Stopwatch.createStarted();
     try (ResultSet rs =
         server.client.singleUseWithSharedSession().executeQuery(getRandomisedReadStatement())) {
       while (rs.next()) {}
     }
-
     return watch.elapsed();
   }
 }

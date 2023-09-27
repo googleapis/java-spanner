@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 abstract class AbstractLatencyBenchmark {
 
+
   /**
    * Collects all results from a collection of future objects.
    *
@@ -41,7 +42,7 @@ abstract class AbstractLatencyBenchmark {
    */
   protected List<Duration> collectResults(
       final ListeningScheduledExecutorService service,
-      final List<ListenableFuture<Duration>> results,
+      final List<ListenableFuture<List<Duration>>> results,
       final int numOperations)
       throws Exception {
     service.shutdown();
@@ -49,8 +50,8 @@ abstract class AbstractLatencyBenchmark {
       throw new TimeoutException();
     }
     List<Duration> allResults = new ArrayList<>(numOperations);
-    for (Future<Duration> result : results) {
-      allResults.add(result.get());
+    for (Future<List<Duration>> result : results) {
+      allResults.addAll(result.get());
     }
     return allResults;
   }
