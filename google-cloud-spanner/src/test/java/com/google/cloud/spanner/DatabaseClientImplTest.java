@@ -40,6 +40,7 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
@@ -71,6 +72,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.rpc.RetryInfo;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -143,6 +146,31 @@ public class DatabaseClientImplTest {
   private static final Statement INVALID_UPDATE_STATEMENT =
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
+  private static final com.google.rpc.Status STATUS_OK =
+      com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build();
+  private static final Iterable<MutationGroup> MUTATION_GROUPS =
+      ImmutableList.of(
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO1").set("ID").to(1L).set("NAME").to("Bar1").build(),
+              Mutation.newInsertBuilder("FOO2").set("ID").to(2L).set("NAME").to("Bar2").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
+              Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build(),
+              Mutation.newInsertBuilder("FOO5").set("ID").to(5L).set("NAME").to("Bar5").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO6").set("ID").to(6L).set("NAME").to("Bar6").build()));
+  private static final Iterable<BatchWriteResponse> BATCH_WRITE_RESPONSES =
+      ImmutableList.of(
+          BatchWriteResponse.newBuilder()
+              .setStatus(STATUS_OK)
+              .addAllIndexes(ImmutableList.of(0, 1))
+              .build(),
+          BatchWriteResponse.newBuilder()
+              .setStatus(STATUS_OK)
+              .addAllIndexes(ImmutableList.of(2, 3))
+              .build());
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
@@ -160,6 +188,7 @@ public class DatabaseClientImplTest {
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+    mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
     executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
@@ -527,6 +556,44 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testWriteAborted() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    Timestamp timestamp =
+        client.write(
+            Collections.singletonList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    assertNotNull(timestamp);
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(2, commitRequests.size());
+  }
+
+  @Test
+  public void testWriteAtLeastOnceAborted() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    Timestamp timestamp =
+        client.writeAtLeastOnce(
+            Collections.singletonList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    assertNotNull(timestamp);
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(2, commitRequests.size());
+  }
+
+  @Test
   public void testWriteWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -608,7 +675,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void writeAtLeastOnceWithTagOptions() {
+  public void testWriteAtLeastOnceWithTagOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
@@ -624,6 +691,62 @@ public class DatabaseClientImplTest {
     assertNotNull(commit.getRequestOptions());
     assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
     assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithoutOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtLeastOnce(MUTATION_GROUPS);
+    int idx = 0;
+    for (BatchWriteResponse response : responseStream) {
+      assertEquals(
+          response.getStatus(),
+          com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build());
+      assertEquals(response.getIndexesList(), ImmutableList.of(idx, idx + 1));
+      idx += 2;
+    }
+
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ServerStream<BatchWriteResponse> responseStream =
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.priority(RpcPriority.LOW));
+    for (BatchWriteResponse response : responseStream) {}
+
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_LOW);
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithTagOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ServerStream<BatchWriteResponse> responseStream =
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.tag("app=spanner,env=test"));
+    for (BatchWriteResponse response : responseStream) {}
+
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertEquals(request.getRequestOptions().getTransactionTag(), "app=spanner,env=test");
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
   }
 
   @Test
