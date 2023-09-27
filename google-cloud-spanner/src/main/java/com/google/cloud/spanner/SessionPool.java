@@ -1665,8 +1665,6 @@ class SessionPool {
         try (Scope waitScope = tracer.withSpan(span)) {
           PooledSession s =
               pollUninterruptiblyWithTimeout(currentTimeout, options.getAcquireSessionTimeout());
-          // TODO clean up this code since acquireSessionTimeout will never be null and hence
-          // we won't have a use-case when s == null
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
@@ -1695,8 +1693,6 @@ class SessionPool {
       try {
         while (true) {
           try {
-            // TODO refactor this code since eventually acquireSessionTimeout will always have a
-            // default value and won't be null
             return acquireSessionTimeout == null
                 ? waiter.get(timeoutMillis, TimeUnit.MILLISECONDS)
                 : waiter.get(acquireSessionTimeout.toMillis(), TimeUnit.MILLISECONDS);
