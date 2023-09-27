@@ -121,6 +121,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
    */
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
+    Stopwatch watch = Stopwatch.createStarted();
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -138,6 +139,9 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
     final List<java.time.Duration> results =
         collectResults(service, futures, TOTAL_READS);
 
+    Duration elapsedTime = watch.elapsed();
+    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFraction(elapsedTime));
+
     printResults(results);
   }
 
@@ -152,6 +156,8 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
    * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
    * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
    */
+
+  /**
   @Benchmark
   public void burstReadAndWrite(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -179,6 +185,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
 
     printResults(results);
   }
+  */
 
   /**
    * Measures the time needed to execute a burst of read and write requests.
@@ -191,6 +198,8 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
    * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
    * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
    */
+
+  /*
   @Benchmark
   public void burstWrites(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -213,6 +222,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
 
     printResults(results);
   }
+  */
 
   private java.time.Duration runBenchmarkForReads(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
