@@ -29,13 +29,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracer;
 
 /** Implementation of {@link AsyncTransactionManager}. */
 final class AsyncTransactionManagerImpl
     implements CommittableAsyncTransactionManager, SessionTransaction {
-  private final Tracer tracer;
-
   private final SessionImpl session;
   private Span span;
   private final Options options;
@@ -44,11 +41,9 @@ final class AsyncTransactionManagerImpl
   private TransactionState txnState;
   private final SettableApiFuture<CommitResponse> commitResponse = SettableApiFuture.create();
 
-  AsyncTransactionManagerImpl(
-      SessionImpl session, Span span, Tracer tracer, TransactionOption... options) {
+  AsyncTransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
     this.session = session;
     this.span = span;
-    this.tracer = tracer;
     this.options = Options.fromTransactionOptions(options);
   }
 

@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
 import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracing;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -38,8 +37,7 @@ public class AsyncTransactionManagerImplTest {
   @Test
   public void testCommitReturnsCommitStats() {
     try (AsyncTransactionManagerImpl manager =
-        new AsyncTransactionManagerImpl(
-            session, mock(Span.class), Tracing.getTracer(), Options.commitStats())) {
+        new AsyncTransactionManagerImpl(session, mock(Span.class), Options.commitStats())) {
       when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))
           .thenReturn(transaction);
       when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.immediateFuture(null));

@@ -42,7 +42,6 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -88,7 +87,6 @@ class SessionImpl implements Session {
   private final SpannerImpl spanner;
   private final String name;
   private final DatabaseId databaseId;
-  private final Tracer tracer;
   private SessionTransaction activeTransaction;
   ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
@@ -99,7 +97,6 @@ class SessionImpl implements Session {
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
-    this.tracer = spanner.getTracer();
   }
 
   @Override
@@ -181,8 +178,8 @@ class SessionImpl implements Session {
       }
       requestBuilder.setRequestOptions(requestOptionsBuilder.build());
     }
-    Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
+    Span span = spanner.getTracer().spanBuilder(SpannerImpl.COMMIT).startSpan();
+    try (Scope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.CommitResponse response =
           spanner.getRpc().commit(requestBuilder.build(), this.options);
       return new CommitResponse(response);
@@ -209,7 +206,7 @@ class SessionImpl implements Session {
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setSpan(currentSpan)
-            .setTracer(tracer)
+            .setTracer(spanner.getTracer())
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
@@ -229,7 +226,7 @@ class SessionImpl implements Session {
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setSpan(currentSpan)
-            .setTracer(tracer)
+            .setTracer(spanner.getTracer())
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .buildSingleUseReadOnlyTransaction());
   }
@@ -249,29 +246,30 @@ class SessionImpl implements Session {
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setSpan(currentSpan)
-            .setTracer(tracer)
+            .setTracer(spanner.getTracer())
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    return setActive(new TransactionRunnerImpl(this, tracer, options));
+    return setActive(new TransactionRunnerImpl(this, spanner.getTracer(), options));
   }
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    return new AsyncRunnerImpl(setActive(new TransactionRunnerImpl(this, tracer, options)));
+    return new AsyncRunnerImpl(
+        setActive(new TransactionRunnerImpl(this, spanner.getTracer(), options)));
   }
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    return new TransactionManagerImpl(this, currentSpan, tracer, options);
+    return new TransactionManagerImpl(this, currentSpan, spanner.getTracer(), options);
   }
 
   @Override
   public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
-    return new AsyncTransactionManagerImpl(this, currentSpan, tracer, options);
+    return new AsyncTransactionManagerImpl(this, currentSpan, options);
   }
 
   @Override
@@ -287,8 +285,8 @@ class SessionImpl implements Session {
 
   @Override
   public void close() {
-    Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
+    Span span = spanner.getTracer().spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
+    try (Scope s = spanner.getTracer().withSpan(span)) {
       spanner.getRpc().deleteSession(name, options);
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
@@ -314,7 +312,7 @@ class SessionImpl implements Session {
 
   ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
-    final Span span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION).startSpan();
+    final Span span = spanner.getTracer().spanBuilder(SpannerImpl.BEGIN_TRANSACTION).startSpan();
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(name)
@@ -323,30 +321,32 @@ class SessionImpl implements Session {
     final ApiFuture<Transaction> requestFuture =
         spanner.getRpc().beginTransactionAsync(request, options, routeToLeader);
     requestFuture.addListener(
-        tracer.withSpan(
-            span,
-            () -> {
-              try {
-                Transaction txn = requestFuture.get();
-                if (txn.getId().isEmpty()) {
-                  throw newSpannerException(
-                      ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
-                }
-                span.end(TraceUtil.END_SPAN_OPTIONS);
-                res.set(txn.getId());
-              } catch (ExecutionException e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(
-                    SpannerExceptionFactory.newSpannerException(
-                        e.getCause() == null ? e : e.getCause()));
-              } catch (InterruptedException e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-              } catch (Exception e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(e);
-              }
-            }),
+        spanner
+            .getTracer()
+            .withSpan(
+                span,
+                () -> {
+                  try {
+                    Transaction txn = requestFuture.get();
+                    if (txn.getId().isEmpty()) {
+                      throw newSpannerException(
+                          ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
+                    }
+                    span.end(TraceUtil.END_SPAN_OPTIONS);
+                    res.set(txn.getId());
+                  } catch (ExecutionException e) {
+                    TraceUtil.endSpanWithFailure(span, e);
+                    res.setException(
+                        SpannerExceptionFactory.newSpannerException(
+                            e.getCause() == null ? e : e.getCause()));
+                  } catch (InterruptedException e) {
+                    TraceUtil.endSpanWithFailure(span, e);
+                    res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+                  } catch (Exception e) {
+                    TraceUtil.endSpanWithFailure(span, e);
+                    res.setException(e);
+                  }
+                }),
         MoreExecutors.directExecutor());
     return res;
   }
@@ -362,7 +362,7 @@ class SessionImpl implements Session {
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
         .setSpan(currentSpan)
-        .setTracer(tracer)
+        .setTracer(spanner.getTracer())
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
         .build();
   }

@@ -81,7 +81,6 @@ import org.threeten.bp.Duration;
 
 /** Implementation of {@link ResultSet}. */
 abstract class AbstractResultSet<R> extends AbstractStructReader implements ResultSet {
-  private Tracer tracer;
   private static final com.google.protobuf.Value NULL_VALUE =
       com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
 
