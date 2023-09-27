@@ -66,9 +66,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 1)
-public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark {
-  static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
-  static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
+public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSessionsBenchmark {
 
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
@@ -123,24 +121,22 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
    */
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
-    int totalReads = 1000000;
-    int parallelThreads = 25;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
-    List<ListenableFuture<Duration>> futures = new ArrayList<>(totalReads);
-    for (int i = 0; i < totalReads; i++) {
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
+    List<ListenableFuture<Duration>> futures = new ArrayList<>(TOTAL_READS);
+    for (int i = 0; i < TOTAL_READS; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForReads(server)));
     }
 
     final List<java.time.Duration> results =
-        collectResults(service, futures, totalReads);
+        collectResults(service, futures, TOTAL_READS);
 
     printResults(results);
   }
@@ -158,31 +154,28 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
    */
   @Benchmark
   public void burstReadAndWrite(final BenchmarkState server) throws Exception {
-    int totalWrites = 100000;
-    int totalReads = 1000000;
-    int parallelThreads = 25;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<java.time.Duration>> futures =
-        new ArrayList<>(totalReads + totalWrites);
-    for (int i = 0; i < totalReads; i++) {
+        new ArrayList<>(TOTAL_READS + TOTAL_WRITES);
+    for (int i = 0; i < TOTAL_READS; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForReads(server)));
     }
-    for (int i = 0; i < totalWrites; i++) {
+    for (int i = 0; i < TOTAL_WRITES; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForWrites(server)));
     }
 
     final List<java.time.Duration> results =
-        collectResults(service, futures, totalReads + totalWrites);
+        collectResults(service, futures, TOTAL_READS + TOTAL_WRITES);
 
     printResults(results);
   }
@@ -200,25 +193,23 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
    */
   @Benchmark
   public void burstWrites(final BenchmarkState server) throws Exception {
-    int totalWrites = 100000;
-    int parallelThreads = 25;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
     ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<java.time.Duration>> futures =
-        new ArrayList<>(totalWrites);
-    for (int i = 0; i < totalWrites; i++) {
+        new ArrayList<>(TOTAL_WRITES);
+    for (int i = 0; i < TOTAL_WRITES; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForWrites(server)));
     }
 
     final List<java.time.Duration> results =
-        collectResults(service, futures,  totalWrites);
+        collectResults(service, futures,  TOTAL_WRITES);
 
     printResults(results);
   }
@@ -227,7 +218,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs =
-        server.client.singleUse().executeQuery(SELECT_QUERY)) {
+        server.client.singleUse().executeQuery(getRandomisedReadStatement())) {
       while (rs.next()) {}
     }
 
@@ -237,7 +228,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractLatencyBenchmark
     Stopwatch watch = Stopwatch.createStarted();
 
     TransactionRunner runner = server.client.readWriteTransaction();
-    runner.run(transaction -> transaction.executeUpdate(UPDATE_QUERY));
+    runner.run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
 
     return watch.elapsed();
   }

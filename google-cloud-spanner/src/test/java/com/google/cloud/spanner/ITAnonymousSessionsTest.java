@@ -18,18 +18,10 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
-import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
-import com.google.cloud.spanner.SessionPoolOptions.ActionForAnonymousSessionsChannelHints;
-import com.google.cloud.spanner.SessionPoolOptions.ActionForNumberOfAnonymousSessions;
-import com.google.cloud.spanner.SessionPoolOptions.AnonymousSessionOptions;
-import java.util.ArrayList;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -43,84 +35,61 @@ import org.junit.runners.JUnit4;
  * <p>See also {@code it/WriteIntegrationTest}, which provides coverage of writing and reading back
  * all Cloud Spanner types.
  */
-@Category(SerialIntegrationTest.class)
+@Category(SlowTest.class)
 @RunWith(JUnit4.class)
 public class ITAnonymousSessionsTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static final String TABLE_NAME = "TestTable";
-
   private static Database db;
-  private SessionPool pool;
+  private static DatabaseClient client;
+  private static Spanner spanner;
+  private static DatabaseAdminClient databaseAdminClient;
+  private static String projectId;
 
   @BeforeClass
-  public static void setUpDatabase() {
-    db =
-        env.getTestHelper()
-            .createTestDatabase(
-                "CREATE TABLE TestTable ("
-                    + "  Key                STRING(MAX) NOT NULL,"
-                    + "  StringValue        STRING(MAX),"
-                    + ") PRIMARY KEY (Key)",
-                "CREATE INDEX TestTableByValue ON TestTable(StringValue)");
+  public static void beforeClass() {
+    final String serverUrl = "https://staging-wrenchworks.sandbox.googleapis.com";
+    final SpannerOptions.Builder optionsBuilder = SpannerOptions
+        .newBuilder()
+        .setProjectId("span-cloud-testing")
+        .setAutoThrottleAdministrativeRequests();
+    if (!serverUrl.isEmpty()) {
+      optionsBuilder.setHost(serverUrl);
+    }
+    final SpannerOptions options = optionsBuilder.build();
+    projectId = options.getProjectId();
+    spanner = options.getService();
+    databaseAdminClient = spanner.getDatabaseAdminClient();
+    client = spanner.getDatabaseClient(DatabaseId.of("span-cloud-testing",
+        "arpanmishra-dev-span", "anonymous-sessions"));
   }
 
-  @Before
-  public void setUp() {
-    AnonymousSessionOptions anonymousSessionOptions =
-        AnonymousSessionOptions.newBuilder()
-            .setActionForAnonymousSessionsChannelHints(
-                ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
-            .setActionForNumberOfAnonymousSessions(
-                ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
-    SessionPoolOptions options =
-        SessionPoolOptions.newBuilder().setMinSessions(1)
-            .setAnonymousSessionOptions(anonymousSessionOptions).setMaxSessions(2).build();
-    pool =
-        SessionPool.createPool(
-            options,
-            new ExecutorFactory<ScheduledExecutorService>() {
-
-              @Override
-              public void release(ScheduledExecutorService executor) {
-                executor.shutdown();
-              }
-
-              @Override
-              public ScheduledExecutorService get() {
-                return new ScheduledThreadPoolExecutor(2);
-              }
-            },
-            ((SpannerImpl) env.getTestHelper().getClient()).getSessionClient(db.getId()));
+  @AfterClass
+  public static void afterClass() {
+    spanner.close();
   }
   @Test
-  public void testAnonymousSessions() {
-    AnonymousSessionOptions anonymousSessionOptions =
-        AnonymousSessionOptions.newBuilder()
-            .setActionForAnonymousSessionsChannelHints(
-                ActionForAnonymousSessionsChannelHints.MULTI_CHANNEL)
-            .setActionForNumberOfAnonymousSessions(
-                ActionForNumberOfAnonymousSessions.SHARED_SESSION).build();
-
-    Session session1 = pool.getSession().get();
-    Session session2 = pool.getSession().get();
-
-    SpannerOptions options = env.getTestHelper().getOptions()
-        .toBuilder()
-        .setSessionPoolOption(SessionPoolOptions.newBuilder()
-            .setAnonymousSessionOptions(anonymousSessionOptions).build()).build();
-
-    try (Spanner spanner = options.getService()) {
-      DatabaseClientImpl client = (DatabaseClientImpl) spanner.getDatabaseClient(db.getId());
-      try (ResultSet rs =
-          client.singleUseWithSharedSession()
-              .executeQuery(Statement.of("SELECT 1 AS COL1"))) {
-        assertThat(rs.next()).isTrue();
-        assertThat(rs.getLong(0)).isEqualTo(1L);
-        assertThat(rs.next()).isFalse();
+  public void bulkInsertTestData() {
+    String insertQuery = "INSERT INTO FOO(id, BAZ, BAR) VALUES(@key, @val1, @val2)";
+    int key = 0;
+    for(int batch = 0; batch < 1000; batch++) {
+      List<Statement> stmts = new LinkedList<>();
+      for (int i = 0; i < 100; i++) {
+        stmts.add(
+            Statement.newBuilder(insertQuery)
+                .bind("key")
+                .to(key)
+                .bind("val1")
+                .to(1)
+                .bind("val2")
+                .to(2)
+                .build());
+        key++;
       }
+      final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
+      TransactionRunner runner = client.readWriteTransaction();
+      long[] actualRowCounts = runner.run(callable);
+      assertThat(actualRowCounts.length).isEqualTo(100);
+      System.out.println("Completed batch => " + batch);
     }
-
-    assertThat(pool.getNumberOfSessionsInPool()).isEqualTo(2);
-    assertThat(pool.getNumberOfSessionsInUse()).isEqualTo(0);
   }
 }

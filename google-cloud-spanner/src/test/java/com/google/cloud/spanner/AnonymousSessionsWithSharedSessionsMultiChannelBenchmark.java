@@ -68,10 +68,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 1)
-public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends AbstractLatencyBenchmark {
-  static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
-  static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
-
+public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends AbstractAnonymousSessionsBenchmark {
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
@@ -140,9 +137,6 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
    */
   @Benchmark
   public void burstReadAndWrite_withSharedROSessions(final BenchmarkState server) throws Exception {
-    int totalWrites = 100000;
-    int totalReads = 1000000;
-    int parallelThreads = 300;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -150,22 +144,22 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
     assertThat(pool.totalSharedSessions()).isEqualTo(
         server.spanner.getOptions().getSessionPoolOptions().getSharedSessionCount());
     ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<Duration>> futures =
-        new ArrayList<>(totalReads + totalWrites);
-    for (int i = 0; i < totalReads; i++) {
+        new ArrayList<>(TOTAL_READS + TOTAL_WRITES);
+    for (int i = 0; i < TOTAL_READS; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForReads(server)));
     }
-    for (int i = 0; i < totalWrites; i++) {
+    for (int i = 0; i < TOTAL_WRITES; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForWrites(server)));
     }
 
     final List<Duration> results =
-        collectResults(service, futures, totalReads + totalWrites);
+        collectResults(service, futures, TOTAL_READS + TOTAL_WRITES);
 
     printResults(results);
   }
@@ -174,7 +168,7 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs =
-        server.client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
+        server.client.singleUseWithSharedSession().executeQuery(getRandomisedReadStatement())) {
       while (rs.next()) {}
     }
 
@@ -184,7 +178,7 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
     Stopwatch watch = Stopwatch.createStarted();
 
     TransactionRunner runner = server.client.readWriteTransaction();
-    runner.run(transaction -> transaction.executeUpdate(UPDATE_QUERY));
+    runner.run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
 
     return watch.elapsed();
   }

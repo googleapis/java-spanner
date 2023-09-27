@@ -68,10 +68,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 1)
-public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatencyBenchmark {
-  static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
-  static final Statement UPDATE_QUERY = Statement.of("UPDATE FOO SET BAR=1 WHERE BAZ=2");
-
+public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractAnonymousSessionsBenchmark {
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
@@ -173,7 +170,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs =
-        server.client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
+        server.client.singleUseWithSharedSession().executeQuery(getRandomisedReadStatement())) {
       while (rs.next()) {}
     }
 
@@ -183,7 +180,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractLatenc
     Stopwatch watch = Stopwatch.createStarted();
 
     TransactionRunner runner = server.client.readWriteTransaction();
-    runner.run(transaction -> transaction.executeUpdate(UPDATE_QUERY));
+    runner.run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
 
     return watch.elapsed();
   }

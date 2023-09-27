@@ -68,9 +68,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 1)
-public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatencyBenchmark {
-  static final Statement SELECT_QUERY = Statement.of("SELECT id,BAZ,BAR FROM FOO WHERE ID = 1");
-
+public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractAnonymousSessionsBenchmark {
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
@@ -129,8 +127,6 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
    */
   @Benchmark
   public void burstRead(final BenchmarkState server) throws Exception {
-    int totalQueries = 1000000;
-    int parallelThreads = 300;
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -139,16 +135,16 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
         server.spanner.getOptions().getSessionPoolOptions().getSharedSessionCount());
 
     ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(parallelThreads));
-    List<ListenableFuture<Duration>> futures = new ArrayList<>(totalQueries);
-    for (int i = 0; i < totalQueries; i++) {
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
+    List<ListenableFuture<Duration>> futures = new ArrayList<>(TOTAL_READS);
+    for (int i = 0; i < TOTAL_READS; i++) {
       futures.add(
           service.submit(
               () -> runBenchmarkForReads(server)));
     }
 
     final List<java.time.Duration> results =
-        collectResults(service, futures, totalQueries);
+        collectResults(service, futures, TOTAL_READS);
 
     System.out.printf("Num Sessions: %d\n", server.numSessions);
 
@@ -159,7 +155,7 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractLatency
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs =
-        server.client.singleUseWithSharedSession().executeQuery(SELECT_QUERY)) {
+        server.client.singleUseWithSharedSession().executeQuery(getRandomisedReadStatement())) {
       while (rs.next()) {}
     }
 
