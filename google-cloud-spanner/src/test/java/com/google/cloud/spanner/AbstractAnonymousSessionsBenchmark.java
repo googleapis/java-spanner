@@ -24,14 +24,16 @@ public class AbstractAnonymousSessionsBenchmark extends AbstractLatencyBenchmark
   static final int TOTAL_READS = 25000;
   static final int TOTAL_WRITES = 25000;
   static final int PARALLEL_THREADS = 25;
+
+  static final int RANDOM_SEARCH_SPACE = 9999;
   static final Random RANDOM = new Random();
   static Statement getRandomisedReadStatement() {
-    int randomKey = RANDOM.nextInt(99999);
+    int randomKey = RANDOM.nextInt(RANDOM_SEARCH_SPACE);
     return Statement.newBuilder(SELECT_QUERY).bind("id").to(randomKey).build();
   }
 
   static Statement getRandomisedUpdateStatement() {
-    int randomKey = RANDOM.nextInt(99999);
+    int randomKey = RANDOM.nextInt(RANDOM_SEARCH_SPACE);
     return Statement.newBuilder(UPDATE_QUERY).bind("id").to(randomKey).build();
   }
 }
