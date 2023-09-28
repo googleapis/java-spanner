@@ -50,8 +50,6 @@ import org.openjdk.jmh.annotations.Warmup;
  *
  * <code>
  * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsBaselineBenchmark
- * -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions
- * -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
  * </code>
  *
  * Test Table Schema :
@@ -133,7 +131,8 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
     }
     collectResultsAndPrint(service, results);
     Duration elapsedTime = watch.elapsed();
-    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
+    System.out.printf("Total Execution Time: %.2fs\n",
+        convertDurationToFractionInSeconds(elapsedTime));
   }
 
   /**
@@ -224,12 +223,18 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
     // Execute one query to make sure everything has been warmed up.
-    executeQuery(server);
+    executeWarmup(server);
 
     for (int i = 0; i < numberOfOperations; i++) {
       results.add(executeQuery(server));
     }
     return results;
+  }
+
+  private void executeWarmup(final BenchmarkState server) {
+    for (int i = 0; i < WARMUP_TRANSACTIONS; i++) {
+      executeQuery(server);
+    }
   }
 
   private java.time.Duration executeQuery(final BenchmarkState server) {

@@ -27,6 +27,7 @@ public class AbstractAnonymousSessionsBenchmark extends AbstractLatencyBenchmark
   static final int TOTAL_READS_PER_THREAD = TOTAL_READS/PARALLEL_THREADS;
   static final int TOTAL_WRITES_PER_THREAD = TOTAL_WRITES/PARALLEL_THREADS;
 
+  static final int WARMUP_TRANSACTIONS = PARALLEL_THREADS * 3;
   static final int RANDOM_SEARCH_SPACE = 99999;
   static Statement getRandomisedReadStatement() {
     int randomKey = ThreadLocalRandom.current().nextInt(RANDOM_SEARCH_SPACE);
