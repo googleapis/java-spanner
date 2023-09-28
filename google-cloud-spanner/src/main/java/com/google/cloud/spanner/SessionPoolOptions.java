@@ -723,9 +723,11 @@ public class SessionPoolOptions {
      */
     public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
       try {
-        Preconditions.checkArgument(
-            acquireSessionTimeout.toMillis() > 0,
-            "acquireSessionTimeout should be greater than 0 ns");
+        if (acquireSessionTimeout != null) {
+          Preconditions.checkArgument(
+              acquireSessionTimeout.toMillis() > 0,
+              "acquireSessionTimeout should be greater than 0 ns");
+        }
       } catch (ArithmeticException ex) {
         throw new IllegalArgumentException(
             "acquireSessionTimeout in millis should be lesser than Long.MAX_VALUE");
