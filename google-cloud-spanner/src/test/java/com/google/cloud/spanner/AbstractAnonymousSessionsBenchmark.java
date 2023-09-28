@@ -16,6 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AbstractAnonymousSessionsBenchmark extends AbstractLatencyBenchmark {
@@ -37,5 +41,12 @@ public class AbstractAnonymousSessionsBenchmark extends AbstractLatencyBenchmark
   static Statement getRandomisedUpdateStatement() {
     int randomKey = ThreadLocalRandom.current().nextInt(RANDOM_SEARCH_SPACE);
     return Statement.newBuilder(UPDATE_QUERY).bind("id").to(randomKey).build();
+  }
+
+  static void collectResultsAndPrint(ListeningScheduledExecutorService service,
+      List<ListenableFuture<List<Duration>>> results, int numOperationsPerThread) throws Exception {
+    final List<java.time.Duration> collectResults =
+        collectResults(service, results, numOperationsPerThread * PARALLEL_THREADS);
+    printResults(collectResults);
   }
 }

@@ -130,7 +130,7 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
     for (int i = 0; i < PARALLEL_THREADS; i++) {
       results.add(service.submit(() -> runBenchmarksForReads(server, TOTAL_READS_PER_THREAD)));
     }
-    collectResultsAndPrint(service, results);
+    collectResultsAndPrint(service, results, TOTAL_READS_PER_THREAD);
     Duration elapsedTime = watch.elapsed();
     System.out.printf("Total Execution Time: %.2fs\n",
         convertDurationToFractionInSeconds(elapsedTime));
@@ -167,7 +167,8 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
           service.submit(() -> runBenchmarkForWrites(server, TOTAL_WRITES_PER_THREAD)));
     }
 
-    collectResultsAndPrint(service, results);
+    collectResultsAndPrint(service, results,
+        TOTAL_READS_PER_THREAD + TOTAL_WRITES_PER_THREAD);
     Duration elapsedTime = watch.elapsed();
     System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
   }
@@ -200,16 +201,9 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
           service.submit(() -> runBenchmarkForWrites(server, TOTAL_WRITES_PER_THREAD)));
     }
 
-    collectResultsAndPrint(service, results);
+    collectResultsAndPrint(service, results, TOTAL_WRITES_PER_THREAD);
     Duration elapsedTime = watch.elapsed();
     System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
-  }
-
-  private void collectResultsAndPrint(ListeningScheduledExecutorService service,
-      List<ListenableFuture<List<Duration>>> results) throws Exception {
-    final List<java.time.Duration> collectResults =
-        collectResults(service, results, TOTAL_READS_PER_THREAD * PARALLEL_THREADS);
-    printResults(collectResults);
   }
 
   private List<java.time.Duration> runBenchmarksForReads(
@@ -241,16 +235,6 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
     }
     return watch.elapsed();
   }
-
-  private java.time.Duration runBenchmarkForWrites(final BenchmarkState server) {
-    Stopwatch watch = Stopwatch.createStarted();
-
-    TransactionRunner runner = server.client.readWriteTransaction();
-    runner.run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
-
-    return watch.elapsed();
-  }
-
   private List<java.time.Duration> runBenchmarkForWrites(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);

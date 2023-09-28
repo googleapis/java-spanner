@@ -156,16 +156,9 @@ public class AnonymousSessionsWithSharedSessionsMultiChannelBenchmark extends Ab
           service.submit(() -> runBenchmarkForWrites(server, TOTAL_WRITES_PER_THREAD)));
     }
 
-    collectResultsAndPrint(service, results);
+    collectResultsAndPrint(service, results, TOTAL_READS_PER_THREAD + TOTAL_WRITES_PER_THREAD);
     Duration elapsedTime = watch.elapsed();
     System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
-  }
-
-  private void collectResultsAndPrint(ListeningScheduledExecutorService service,
-      List<ListenableFuture<List<Duration>>> results) throws Exception {
-    final List<java.time.Duration> collectResults =
-        collectResults(service, results, TOTAL_READS_PER_THREAD * PARALLEL_THREADS);
-    printResults(collectResults);
   }
 
   private List<java.time.Duration> runBenchmarksForReads(

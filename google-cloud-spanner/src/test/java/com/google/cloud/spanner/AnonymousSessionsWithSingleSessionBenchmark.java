@@ -51,7 +51,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * profile `benchmark` and can be executed like this:
  *
  * <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionBenchmark
  * </code>
  *
  * Test Table Schema :
@@ -142,16 +142,9 @@ public class AnonymousSessionsWithSingleSessionBenchmark extends AbstractAnonymo
       results.add(service.submit(() -> runBenchmarksForReads(server, TOTAL_READS_PER_THREAD)));
     }
 
-    collectResultsAndPrint(service, results);
+    collectResultsAndPrint(service, results, TOTAL_READS_PER_THREAD);
     Duration elapsedTime = watch.elapsed();
     System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
-  }
-
-  private void collectResultsAndPrint(ListeningScheduledExecutorService service,
-      List<ListenableFuture<List<Duration>>> results) throws Exception {
-    final List<java.time.Duration> collectResults =
-        collectResults(service, results, TOTAL_READS_PER_THREAD * PARALLEL_THREADS);
-    printResults(collectResults);
   }
 
   private List<java.time.Duration> runBenchmarksForReads(
