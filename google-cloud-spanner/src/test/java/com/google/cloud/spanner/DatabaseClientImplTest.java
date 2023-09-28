@@ -48,7 +48,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
-import com.google.cloud.spanner.BaseSessionPoolTest.FakeClock;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.RpcPriority;
