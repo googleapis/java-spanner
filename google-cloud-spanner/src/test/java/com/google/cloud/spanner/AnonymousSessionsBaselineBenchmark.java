@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.cloud.spanner.AnonymousSessionsWithSharedSessionsBenchmark.BenchmarkState;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -60,7 +61,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Fork(value = 1, warmups = 0)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 2)
+@Warmup(iterations = 1)
 public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSessionsBenchmark {
 
   @State(Scope.Thread)
@@ -146,35 +147,30 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
    * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
    * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
    */
+  @Benchmark
+  public void burstReadAndWrite(final BenchmarkState server) throws Exception {
+    Stopwatch watch = Stopwatch.createStarted();
 
-  /**
-   @Benchmark public void burstReadAndWrite(final BenchmarkState server) throws Exception {
-   final DatabaseClientImpl client = server.client;
-   SessionPool pool = client.pool;
-   assertThat(pool.totalSessions()).isEqualTo(
-   server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions()).isEqualTo(
+        server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
 
-   ListeningScheduledExecutorService service =
-   MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-   List<ListenableFuture<java.time.Duration>> futures =
-   new ArrayList<>(TOTAL_READS + TOTAL_WRITES);
-   for (int i = 0; i < TOTAL_READS; i++) {
-   futures.add(
-   service.submit(
-   () -> runBenchmarkForReads(server)));
-   }
-   for (int i = 0; i < TOTAL_WRITES; i++) {
-   futures.add(
-   service.submit(
-   () -> runBenchmarkForWrites(server)));
-   }
+    ListeningScheduledExecutorService service =
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
+    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(service.submit(() -> runBenchmarksForReads(server, TOTAL_READS_PER_THREAD)));
+    }
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(
+          service.submit(() -> runBenchmarkForWrites(server, TOTAL_WRITES_PER_THREAD)));
+    }
 
-   final List<java.time.Duration> results =
-   collectResults(service, futures, TOTAL_READS + TOTAL_WRITES);
-
-   printResults(results);
-   }
-   */
+    collectResultsAndPrint(service, results);
+    Duration elapsedTime = watch.elapsed();
+    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
+  }
 
   /**
    * Measures the time needed to execute a burst of read and write requests.
@@ -187,10 +183,10 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
    * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
    * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
    */
-
-  /*
   @Benchmark
   public void burstWrites(final BenchmarkState server) throws Exception {
+    Stopwatch watch = Stopwatch.createStarted();
+
     final DatabaseClientImpl client = server.client;
     SessionPool pool = client.pool;
     assertThat(pool.totalSessions()).isEqualTo(
@@ -198,20 +194,17 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
 
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<java.time.Duration>> futures =
-        new ArrayList<>(TOTAL_WRITES);
-    for (int i = 0; i < TOTAL_WRITES; i++) {
-      futures.add(
-          service.submit(
-              () -> runBenchmarkForWrites(server)));
+    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(
+          service.submit(() -> runBenchmarkForWrites(server, TOTAL_WRITES_PER_THREAD)));
     }
 
-    final List<java.time.Duration> results =
-        collectResults(service, futures,  TOTAL_WRITES);
-
-    printResults(results);
+    collectResultsAndPrint(service, results);
+    Duration elapsedTime = watch.elapsed();
+    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
   }
-  */
+
   private void collectResultsAndPrint(ListeningScheduledExecutorService service,
       List<ListenableFuture<List<Duration>>> results) throws Exception {
     final List<java.time.Duration> collectResults =
@@ -250,6 +243,26 @@ public class AnonymousSessionsBaselineBenchmark extends AbstractAnonymousSession
   }
 
   private java.time.Duration runBenchmarkForWrites(final BenchmarkState server) {
+    Stopwatch watch = Stopwatch.createStarted();
+
+    TransactionRunner runner = server.client.readWriteTransaction();
+    runner.run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
+
+    return watch.elapsed();
+  }
+
+  private List<java.time.Duration> runBenchmarkForWrites(
+      final BenchmarkState server, int numberOfOperations) {
+    List<Duration> results = new ArrayList<>(numberOfOperations);
+    // Execute one update to make sure everything has been warmed up.
+    executeUpdate(server);
+
+    for (int i = 0; i < numberOfOperations; i++) {
+      results.add(executeUpdate(server));
+    }
+    return results;
+  }
+  private Duration executeUpdate(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
     TransactionRunner runner = server.client.readWriteTransaction();
