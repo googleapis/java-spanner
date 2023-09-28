@@ -718,8 +718,7 @@ public class SessionPoolOptions {
 
     /**
      * If greater than zero, we wait for said duration when no sessions are available in the {@link
-     * SessionPool}. When no configuration is passed, the default is a 60s timeout. To avoid setting
-     * a default value, set the value as null.
+     * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
      */
     public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
       try {
