@@ -52,7 +52,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * profile `benchmark` and can be executed like this:
  *
  * <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionMultiChannelBenchmark -Dbenchmark.database=arpanmishra-dev-span -Dbenchmark.instance=anonymous-sessions -Dbenchmark.serverUrl=https://staging-wrenchworks.sandbox.googleapis.com
+ * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=AnonymousSessionsWithSingleSessionMultiChannelBenchmark
  * </code>
  *
  * Test Table Schema :
