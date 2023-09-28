@@ -41,17 +41,14 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
 import org.threeten.bp.Duration;
 
 @Category(SlowTest.class)
 @RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BatchCreateSessionsSlowTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_DATABASE_ROLE = "my-role";
