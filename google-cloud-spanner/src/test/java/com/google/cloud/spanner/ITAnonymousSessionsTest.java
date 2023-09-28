@@ -16,9 +16,12 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.AbstractLatencyBenchmark.convertDurationToFraction;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import org.junit.AfterClass;
@@ -91,5 +94,15 @@ public class ITAnonymousSessionsTest {
       assertThat(actualRowCounts.length).isEqualTo(100);
       System.out.println("Completed batch => " + batch);
     }
+  }
+
+  @Test
+  public void testConvertDurationToFraction() {
+    System.out.println((convertDurationToFraction(Duration.ofNanos(10000000))));
+    System.out.println((convertDurationToFraction(Duration.ofMillis(20000000))));
+
+    Duration d = Duration.ofMillis(10);
+    System.out.println(d.getNano());
+    System.out.println(d.getSeconds());
   }
 }
