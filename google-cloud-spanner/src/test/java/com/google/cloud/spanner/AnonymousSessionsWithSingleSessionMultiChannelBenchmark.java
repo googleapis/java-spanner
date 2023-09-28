@@ -148,7 +148,7 @@ public class AnonymousSessionsWithSingleSessionMultiChannelBenchmark extends Abs
 
     collectResultsAndPrint(service, results);
     Duration elapsedTime = watch.elapsed();
-    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFraction(elapsedTime));
+    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
   }
 
   private void collectResultsAndPrint(ListeningScheduledExecutorService service,

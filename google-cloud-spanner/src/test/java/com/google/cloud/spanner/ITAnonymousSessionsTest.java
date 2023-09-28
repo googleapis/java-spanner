@@ -16,11 +16,12 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.AbstractLatencyBenchmark.convertDurationToFraction;
+import static com.google.cloud.spanner.AbstractLatencyBenchmark.convertDurationToFractionInSeconds;
+import static com.google.cloud.spanner.AbstractLatencyBenchmark.printResults;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.collect.Lists;
 import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
@@ -98,11 +99,19 @@ public class ITAnonymousSessionsTest {
 
   @Test
   public void testConvertDurationToFraction() {
-    System.out.println((convertDurationToFraction(Duration.ofNanos(10000000))));
-    System.out.println((convertDurationToFraction(Duration.ofMillis(20000000))));
+    System.out.println((convertDurationToFractionInSeconds(Duration.ofNanos(10000000))));
+    System.out.println((convertDurationToFractionInSeconds(Duration.ofMillis(20000000))));
 
     Duration d = Duration.ofMillis(10);
     System.out.println(d.getNano());
     System.out.println(d.getSeconds());
+  }
+
+  @Test
+  public void testPrintResults() {
+    printResults(Lists.newArrayList(Duration.ofMillis(1001), Duration.ofMillis(1001), Duration.ofMillis(1002), Duration.ofMillis(1003), Duration.ofMillis(1004),
+        Duration.ofMillis(1001), Duration.ofMillis(1001), Duration.ofMillis(1002), Duration.ofMillis(1003), Duration.ofMillis(1004),
+        Duration.ofMillis(1005), Duration.ofMillis(1005), Duration.ofMillis(1006), Duration.ofMillis(1006), Duration.ofMillis(1007),
+        Duration.ofMillis(1017), Duration.ofMillis(1009), Duration.ofMillis(1015), Duration.ofMillis(1015), Duration.ofMillis(1010)));
   }
 }

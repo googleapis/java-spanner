@@ -18,8 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.AnonymousSessionsBaselineBenchmark.BenchmarkState;
-import com.google.cloud.spanner.SessionPoolOptions.ActionForAnonymousSessionsChannelHints;
 import com.google.cloud.spanner.SessionPoolOptions.ActionForNumberOfAnonymousSessions;
 import com.google.cloud.spanner.SessionPoolOptions.AnonymousSessionOptions;
 import com.google.common.base.Stopwatch;
@@ -157,7 +155,7 @@ public class AnonymousSessionsWithSharedSessionsBenchmark extends AbstractAnonym
 
     collectResultsAndPrint(service, results);
     Duration elapsedTime = watch.elapsed();
-    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFraction(elapsedTime));
+    System.out.printf("Total Execution Time: %.2fs\n", convertDurationToFractionInSeconds(elapsedTime));
   }
 
   private void collectResultsAndPrint(ListeningScheduledExecutorService service,

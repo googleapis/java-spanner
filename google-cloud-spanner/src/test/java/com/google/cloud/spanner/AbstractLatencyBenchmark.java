@@ -40,7 +40,7 @@ abstract class AbstractLatencyBenchmark {
    * @return
    * @throws Exception
    */
-  protected List<Duration> collectResults(
+  public static List<Duration> collectResults(
       final ListeningScheduledExecutorService service,
       final List<ListenableFuture<List<Duration>>> results,
       final int numOperations)
@@ -61,7 +61,7 @@ abstract class AbstractLatencyBenchmark {
    *
    * @param results
    */
-  protected void printResults(List<Duration> results) {
+  public static void printResults(List<Duration> results) {
     if (results == null) {
       return;
     }
@@ -69,25 +69,29 @@ abstract class AbstractLatencyBenchmark {
     Collections.sort(orderedResults);
     System.out.println();
     System.out.printf("Total number of queries: %d\n", orderedResults.size());
-    System.out.printf("Avg: %.2fs\n", avg(results));
-    System.out.printf("P50: %.2fs\n", percentile(50, orderedResults));
-    System.out.printf("P95: %.2fs\n", percentile(95, orderedResults));
-    System.out.printf("P99: %.2fs\n", percentile(99, orderedResults));
+    System.out.printf("Avg: %fs\n", avg(results));
+    System.out.printf("P50: %fs\n", percentile(50, orderedResults));
+    System.out.printf("P95: %fs\n", percentile(95, orderedResults));
+    System.out.printf("P99: %fs\n", percentile(99, orderedResults));
   }
-  private double percentile(int percentile, List<Duration> orderedResults) {
-    Duration value = orderedResults.get(percentile * orderedResults.size() / 100);
-    return convertDurationToFraction(value);
+  public static double percentile(int percentile, List<Duration> orderedResults) {
+    int index = percentile * orderedResults.size() / 100;
+    Duration value = orderedResults.get(index);
+    Double convertedValue = convertDurationToFractionInSeconds(value);
+    return convertedValue;
   }
 
-  private double avg(List<Duration> results) {
+  public static double avg(List<Duration> results) {
     return results.stream()
-        .collect(Collectors.averagingDouble(AbstractLatencyBenchmark::convertDurationToFraction));
+        .collect(Collectors.averagingDouble(
+            AbstractLatencyBenchmark::convertDurationToFractionInSeconds));
   }
 
-  public static double convertDurationToFraction(Duration duration) {
+  public static double convertDurationToFractionInSeconds(Duration duration) {
     long seconds = duration.getSeconds();
     long nanos = duration.getNano();
     double fraction = (double) nanos / 1_000_000_000;
-    return seconds + fraction;
+    double value = seconds + fraction;
+    return value;
   }
 }
