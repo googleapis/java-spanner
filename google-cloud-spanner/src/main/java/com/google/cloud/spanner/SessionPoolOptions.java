@@ -588,9 +588,9 @@ public class SessionPoolOptions {
     /**
      * Number of shared sessions.
      */
-    public Builder setSharedSessions(int sharedSessions) {
-      Preconditions.checkArgument(sharedSessions > 0, "sharedSessions must be > 0");
-      this.sharedSessionsCount = sharedSessions;
+    public Builder setSharedSessionsCount(int sharedSessionsCount) {
+      Preconditions.checkArgument(sharedSessionsCount > 0, "sharedSessions must be > 0");
+      this.sharedSessionsCount = sharedSessionsCount;
       return this;
     }
 

@@ -83,8 +83,8 @@ public class AnonymousSessionsWithSingleSessionMultiChannelBenchmark extends Abs
 
     // We are adding this configuration to see if having single session has any noticeable differences
     // as compared to having multiple sessions.
-    @Param({"4"})
-    int numSessions;
+    @Param({"1", "2", "4", "100", "200", "400"})
+    int numSharedSessions;
 
     @Setup(Level.Invocation)
     public void setup() throws Exception {
@@ -98,7 +98,7 @@ public class AnonymousSessionsWithSingleSessionMultiChannelBenchmark extends Abs
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
-                      .setSharedSessions(numSessions)
+                      .setSharedSessionsCount(numSharedSessions)
                       .setAnonymousSessionOptions(anonymousSessionOptions)
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20)).build())
               .setHost(serverUrl)
