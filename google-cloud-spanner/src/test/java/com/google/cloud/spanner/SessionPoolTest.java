@@ -980,6 +980,55 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(minSessions)
             .setMaxSessions(1)
             .setInitialWaitForSessionTimeoutMillis(20L)
+            .setAcquireSessionTimeout(null)
+            .build();
+    setupMockSessionCreation();
+    pool = createPool();
+    // Take the only session that can be in the pool.
+    PooledSessionFuture checkedOutSession = pool.getSession();
+    checkedOutSession.get();
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final CountDownLatch latch = new CountDownLatch(1);
+    // Then try asynchronously to take another session. This attempt should time out.
+    Future<Void> fut =
+        executor.submit(
+            () -> {
+              latch.countDown();
+              PooledSessionFuture session = pool.getSession();
+              session.close();
+              return null;
+            });
+    // Wait until the background thread is actually waiting for a session.
+    latch.await();
+    // Wait until the request has timed out.
+    int waitCount = 0;
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
+      Thread.sleep(5L);
+      waitCount++;
+    }
+    // Return the checked out session to the pool so the async request will get a session and
+    // finish.
+    checkedOutSession.close();
+    // Verify that the async request also succeeds.
+    fut.get(10L, TimeUnit.SECONDS);
+    executor.shutdown();
+
+    // Verify that the session was returned to the pool and that we can get it again.
+    Session session = pool.getSession();
+    assertThat(session).isNotNull();
+    session.close();
+    assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
+  }
+
+  @Test
+  public void blockAndTimeoutOnPoolExhaustion_withAcquireSessionTimeout() throws Exception {
+    // Create a session pool with max 1 session and a low timeout for waiting for a session.
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(1)
+            .setInitialWaitForSessionTimeoutMillis(20L)
+            .setAcquireSessionTimeout(Duration.ofMillis(20L))
             .build();
     setupMockSessionCreation();
     pool = createPool();
