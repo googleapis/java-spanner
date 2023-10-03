@@ -35,18 +35,18 @@ public class BatchWriteAtLeastOnceSample {
   /***
    * Assume DDL for the underlying database:
    * <pre>{@code
-   * CREATE TABLE Singers (
-   * SingerId   INT64 NOT NULL,
-   * FirstName  STRING(1024),
-   * LastName   STRING(1024),
-   * ) PRIMARY KEY (SingerId)
+   *   CREATE TABLE Singers (
+   *     SingerId   INT64 NOT NULL,
+   *     FirstName  STRING(1024),
+   *     LastName   STRING(1024),
+   *   ) PRIMARY KEY (SingerId)
    *
-   * CREATE TABLE Albums (
-   * SingerId     INT64 NOT NULL,
-   * AlbumId      INT64 NOT NULL,
-   * AlbumTitle   STRING(1024),
-   * ) PRIMARY KEY (SingerId, AlbumId),
-   * INTERLEAVE IN PARENT Singers ON DELETE CASCADE
+   *   CREATE TABLE Albums (
+   *     SingerId     INT64 NOT NULL,
+   *     AlbumId      INT64 NOT NULL,
+   *     AlbumTitle   STRING(1024),
+   *   ) PRIMARY KEY (SingerId, AlbumId),
+   *   INTERLEAVE IN PARENT Singers ON DELETE CASCADE
    * }</pre>
    */
 

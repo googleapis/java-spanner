@@ -55,8 +55,6 @@ public class BatchWriteAtLeastOnceSampleIT extends SampleTestBase {
     final String out =
         SampleRunner.runSample(() -> BatchWriteAtLeastOnceSample.batchWriteAtLeastOnce(
             projectId, instanceId, databaseId));
-    assertTrue(
-        out.contains("have been applied with commit timestamp")
-            || out.contains("could not be applied with error code"));
+    assertTrue(out.contains("have been applied with commit timestamp"));
   }
 }
