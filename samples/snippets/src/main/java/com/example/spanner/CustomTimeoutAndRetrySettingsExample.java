@@ -49,7 +49,7 @@ class CustomTimeoutAndRetrySettingsExample {
         .getSpannerStubSettingsBuilder()
         .executeSqlSettings()
         // Configure which errors should be retried.
-        .setRetryableCodes(Code.DEADLINE_EXCEEDED, Code.UNAVAILABLE)
+        .setRetryableCodes(Code.UNAVAILABLE)
         .setRetrySettings(
             RetrySettings.newBuilder()
                 // Configure retry delay settings.
@@ -57,7 +57,7 @@ class CustomTimeoutAndRetrySettingsExample {
                 .setInitialRetryDelay(Duration.ofMillis(500))
                 // The maximum amount of time to wait before retrying. I.e. after this value is
                 // reached, the wait time will not increase further by the multiplier.
-                .setMaxRetryDelay(Duration.ofSeconds(64))
+                .setMaxRetryDelay(Duration.ofSeconds(16))
                 // The previous wait time is multiplied by this multiplier to come up with the next
                 // wait time, until the max is reached.
                 .setRetryDelayMultiplier(1.5)

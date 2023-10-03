@@ -26,6 +26,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -35,6 +36,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.io.IOException;
@@ -204,8 +206,14 @@ public class ConnectionOptions {
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
   /** Name of the 'encodedCredentials' connection property. */
   public static final String ENCODED_CREDENTIALS_PROPERTY_NAME = "encodedCredentials";
+
+  public static final String ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY =
+      "ENABLE_ENCODED_CREDENTIALS";
   /** Name of the 'credentialsProvider' connection property. */
   public static final String CREDENTIALS_PROVIDER_PROPERTY_NAME = "credentialsProvider";
+
+  public static final String ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY =
+      "ENABLE_CREDENTIALS_PROVIDER";
   /**
    * OAuth token to use for authentication. Cannot be used in combination with a credentials file.
    */
@@ -218,6 +226,8 @@ public class ConnectionOptions {
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
+
+  public static final String ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY = "ENABLE_CHANNEL_PROVIDER";
   /** Custom user agent string is only for other Google libraries. */
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
@@ -246,6 +256,19 @@ public class ConnectionOptions {
   public static final String MAX_PARTITIONS_PROPERTY_NAME = "maxPartitions";
   public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
       "maxPartitionedParallelism";
+
+  private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
+      "%s can only be used if the system property %s has been set to true. "
+          + "Start the application with the JVM command line option -D%s=true";
+
+  private static String generateGuardedConnectionPropertyError(
+      String systemPropertyName, String connectionPropertyName) {
+    return String.format(
+        GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE,
+        connectionPropertyName,
+        systemPropertyName,
+        systemPropertyName);
+  }
 
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
@@ -307,7 +330,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
-                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). The instance and database in the connection string will automatically be created if these do not yet exist on the emulator.",
+                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
+                          + "The instance and database in the connection string will automatically be created if these do not yet exist on the emulator. "
+                          + "Add dialect=postgresql to the connection string to make sure that the database that is created uses the PostgreSQL dialect.",
                       false),
                   ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
@@ -317,7 +342,8 @@ public class ConnectionOptions {
                       RPC_PRIORITY_NAME,
                       "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."),
                   ConnectionProperty.createStringProperty(
-                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
+                      DIALECT_PROPERTY_NAME,
+                      "Sets the dialect to use for new databases that are created by this connection."),
                   ConnectionProperty.createStringProperty(
                       DATABASE_ROLE_PROPERTY_NAME,
                       "Sets the database role to use for this connection. The default is privileges assigned to IAM role"),
@@ -626,6 +652,7 @@ public class ConnectionOptions {
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
+  private final Dialect dialect;
   private final RpcPriority rpcPriority;
   private final boolean delayTransactionStartUntilFirstWrite;
   private final boolean trackSessionLeaks;
@@ -677,6 +704,7 @@ public class ConnectionOptions {
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
+    this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
     this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
     this.rpcPriority = parseRPCPriority(this.uri);
@@ -840,38 +868,62 @@ public class ConnectionOptions {
 
   @VisibleForTesting
   static @Nullable String parseEncodedCredentials(String uri) {
-    return parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
+    String encodedCredentials = parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
+    checkGuardedProperty(
+        encodedCredentials,
+        ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY,
+        ENCODED_CREDENTIALS_PROPERTY_NAME);
+    return encodedCredentials;
   }
 
   @VisibleForTesting
   static @Nullable CredentialsProvider parseCredentialsProvider(String uri) {
-    String name = parseUriProperty(uri, CREDENTIALS_PROVIDER_PROPERTY_NAME);
-    if (name != null) {
+    String credentialsProviderName = parseUriProperty(uri, CREDENTIALS_PROVIDER_PROPERTY_NAME);
+    checkGuardedProperty(
+        credentialsProviderName,
+        ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY,
+        CREDENTIALS_PROVIDER_PROPERTY_NAME);
+    if (!Strings.isNullOrEmpty(credentialsProviderName)) {
       try {
         Class<? extends CredentialsProvider> clazz =
-            (Class<? extends CredentialsProvider>) Class.forName(name);
+            (Class<? extends CredentialsProvider>) Class.forName(credentialsProviderName);
         Constructor<? extends CredentialsProvider> constructor = clazz.getDeclaredConstructor();
         return constructor.newInstance();
       } catch (ClassNotFoundException classNotFoundException) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Unknown or invalid CredentialsProvider class name: " + name,
+            "Unknown or invalid CredentialsProvider class name: " + credentialsProviderName,
             classNotFoundException);
       } catch (NoSuchMethodException noSuchMethodException) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Credentials provider " + name + " does not have a public no-arg constructor.",
+            "Credentials provider "
+                + credentialsProviderName
+                + " does not have a public no-arg constructor.",
             noSuchMethodException);
       } catch (InvocationTargetException
           | InstantiationException
           | IllegalAccessException exception) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Failed to create an instance of " + name + ": " + exception.getMessage(),
+            "Failed to create an instance of "
+                + credentialsProviderName
+                + ": "
+                + exception.getMessage(),
             exception);
       }
     }
     return null;
+  }
+
+  private static void checkGuardedProperty(
+      String value, String systemPropertyName, String connectionPropertyName) {
+    if (!Strings.isNullOrEmpty(value)
+        && !Boolean.parseBoolean(System.getProperty(systemPropertyName))) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.FAILED_PRECONDITION,
+          generateGuardedConnectionPropertyError(systemPropertyName, connectionPropertyName));
+    }
   }
 
   @VisibleForTesting
@@ -901,6 +953,8 @@ public class ConnectionOptions {
   @VisibleForTesting
   static String parseChannelProvider(String uri) {
     String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
+    checkGuardedProperty(
+        value, ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY, CHANNEL_PROVIDER_PROPERTY_NAME);
     return value != null ? value : DEFAULT_CHANNEL_PROVIDER;
   }
 
@@ -937,6 +991,12 @@ public class ConnectionOptions {
   static boolean parseAutoConfigEmulator(String uri) {
     String value = parseUriProperty(uri, "autoConfigEmulator");
     return Boolean.parseBoolean(value);
+  }
+
+  @VisibleForTesting
+  static Dialect parseDialect(String uri) {
+    String value = parseUriProperty(uri, DIALECT_PROPERTY_NAME);
+    return value != null ? Dialect.valueOf(value.toUpperCase()) : Dialect.GOOGLE_STANDARD_SQL;
   }
 
   @VisibleForTesting
@@ -1257,6 +1317,10 @@ public class ConnectionOptions {
    */
   public boolean isAutoConfigEmulator() {
     return autoConfigEmulator;
+  }
+
+  public Dialect getDialect() {
+    return dialect;
   }
 
   /** The {@link RpcPriority} to use for the connection. */

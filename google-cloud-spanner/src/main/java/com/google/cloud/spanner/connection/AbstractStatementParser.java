@@ -539,11 +539,10 @@ public abstract class AbstractStatementParser {
    * Converts all positional parameters (?) in the given sql string into named parameters. The
    * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
    * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
-   * parameters. The input SQL string may not contain any comments. There is an exception case if
-   * the statement starts with a GSQL comment which forces it to be interpreted as a GoogleSql
-   * statement.
+   * parameters. The input SQL string may not contain any comments, except for PostgreSQL-dialect
+   * SQL strings.
    *
-   * @param sql The sql string without comments that should be converted
+   * @param sql The sql string that should be converted
    * @return A {@link ParametersInfo} object containing a string with named parameters instead of
    *     positional parameters and the number of parameters.
    * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
