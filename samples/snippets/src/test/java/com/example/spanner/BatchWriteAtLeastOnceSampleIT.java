@@ -26,6 +26,7 @@ import org.junit.Test;
 
 public class BatchWriteAtLeastOnceSampleIT extends SampleTestBase {
   private static String databaseId;
+
   @Before
   public void setup() throws ExecutionException, InterruptedException {
     databaseId = idGenerator.generateDatabaseId();
@@ -52,7 +53,8 @@ public class BatchWriteAtLeastOnceSampleIT extends SampleTestBase {
   @Test
   public void testBatchWriteAtLeastOnce() throws Exception {
     final String out =
-        SampleRunner.runSample(() -> BatchWriteAtLeastOnceSample.batchWriteAtLeastOnce(projectId, instanceId, databaseId));
+        SampleRunner.runSample(() -> BatchWriteAtLeastOnceSample.batchWriteAtLeastOnce(
+            projectId, instanceId, databaseId));
     assertTrue(
         out.contains("have been applied with commit timestamp")
             || out.contains("could not be applied with error code"));

@@ -34,19 +34,20 @@ public class BatchWriteAtLeastOnceSample {
 
   /***
    * Assume DDL for the underlying database:
-   * <p>
+   * <pre>{@code
    * CREATE TABLE Singers (
    * SingerId   INT64 NOT NULL,
    * FirstName  STRING(1024),
    * LastName   STRING(1024),
    * ) PRIMARY KEY (SingerId)
-   * <p>
+   *
    * CREATE TABLE Albums (
    * SingerId     INT64 NOT NULL,
    * AlbumId      INT64 NOT NULL,
    * AlbumTitle   STRING(1024),
    * ) PRIMARY KEY (SingerId, AlbumId),
    * INTERLEAVE IN PARENT Singers ON DELETE CASCADE
+   * }</pre>
    */
 
   private static final MutationGroup MUTATION_GROUP1 =
@@ -122,8 +123,9 @@ public class BatchWriteAtLeastOnceSample {
               response.getIndexesList(), response.getCommitTimestamp());
         } else {
           System.out.printf(
-              "Mutation group indexes %s could not be applied with error code %s",
-              response.getIndexesList(), Code.forNumber(response.getStatus().getCode()));
+              "Mutation group indexes %s could not be applied with error code %s and "
+                  + "error message %s", response.getIndexesList(),
+              Code.forNumber(response.getStatus().getCode()), response.getStatus().getMessage());
         }
       }
     }
