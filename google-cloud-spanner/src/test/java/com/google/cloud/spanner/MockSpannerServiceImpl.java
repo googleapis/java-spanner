@@ -667,6 +667,13 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  public void removeStatementResult(Statement statement) {
+    Preconditions.checkNotNull(statement);
+    synchronized (lock) {
+      statementResults.remove(statement);
+    }
+  }
+
   public void putStatementResults(StatementResult... results) {
     synchronized (lock) {
       for (StatementResult result : results) {

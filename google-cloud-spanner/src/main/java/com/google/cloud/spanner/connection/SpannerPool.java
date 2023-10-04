@@ -22,6 +22,7 @@ import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerImpl;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -76,6 +77,14 @@ public class SpannerPool {
    */
   public static void closeSpannerPool() {
     INSTANCE.checkAndCloseSpanners();
+  }
+
+  public static void recreateSpannerConnections() {
+    for (Spanner spanner : INSTANCE.spanners.values()) {
+      if (spanner instanceof SpannerImpl) {
+        ((SpannerImpl) spanner).getRpc().createStubs(false);
+      }
+    }
   }
 
   /**

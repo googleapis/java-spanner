@@ -494,6 +494,9 @@ public interface SpannerRpc extends ServiceRpc {
   TestIamPermissionsResponse testInstanceAdminIAMPermissions(
       String resource, Iterable<String> permissions);
 
+  /** (Re-)creates the gRPC stubs that are used by this SpannerRpc. */
+  void createStubs(boolean checkEmulatorConnection);
+
   void shutdown();
 
   boolean isClosed();

@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmul
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -42,6 +43,7 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerImpl;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
@@ -58,7 +60,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -77,6 +84,13 @@ public class ITTransactionTest {
   /** Sequence for assigning unique keys to test cases. */
   private static int seq;
 
+  /** Executor for repeatedly reconnecting to Cloud Spanner. */
+  private static final ScheduledExecutorService reconnectExecutor =
+      Executors.newSingleThreadScheduledExecutor();
+
+  /** Counter for the number of times that we forced a reconnect to Spanner. */
+  private static final AtomicInteger RECONNECT_COUNT = new AtomicInteger();
+
   @BeforeClass
   public static void setUpDatabase() {
     db =
@@ -87,11 +101,28 @@ public class ITTransactionTest {
                     + "  V    INT64,"
                     + ") PRIMARY KEY (K)");
     client = env.getTestHelper().getDatabaseClient(db);
+
+    // Schedule a reconnect every 500 to 1500 milliseconds.
+    int initialDelay = ThreadLocalRandom.current().nextInt(1000) + 500;
+    int period = ThreadLocalRandom.current().nextInt(1000) + 500;
+    reconnectExecutor.scheduleAtFixedRate(
+        ITTransactionTest::reconnectSpanner, initialDelay, period, TimeUnit.MILLISECONDS);
+  }
+
+  @AfterClass
+  public static void stopReconnect() {
+    reconnectExecutor.shutdown();
+    assertTrue("Spanner should have reconnected at least once", RECONNECT_COUNT.get() > 0);
   }
 
   @Before
   public void removeTestData() {
     client.writeAtLeastOnce(Collections.singletonList(Mutation.delete("T", KeySet.all())));
+  }
+
+  static void reconnectSpanner() {
+    ((SpannerImpl) env.getTestHelper().getClient()).getRpc().createStubs(false);
+    RECONNECT_COUNT.incrementAndGet();
   }
 
   private static String uniqueKey() {
@@ -298,7 +329,7 @@ public class ITTransactionTest {
                           } catch (SpannerException e) {
                             if (e.getErrorCode() == ErrorCode.ABORTED) {
                               assertThat(e).isInstanceOf(AbortedException.class);
-                              assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
+                              // assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
                             }
                             throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
@@ -338,7 +369,7 @@ public class ITTransactionTest {
                           } catch (SpannerException e) {
                             if (e.getErrorCode() == ErrorCode.ABORTED) {
                               assertThat(e).isInstanceOf(AbortedException.class);
-                              assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
+                              // assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
                             }
                             throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }

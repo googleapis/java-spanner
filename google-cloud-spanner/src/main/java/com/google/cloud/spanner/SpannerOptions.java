@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.core.InternalApi;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
@@ -104,6 +105,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final SessionPoolOptions sessionPoolOptions;
   private final int prefetchChunks;
   private final int numChannels;
+  private final int closeChannelsDelayMillis;
   private final String transportChannelExecutorThreadNameFormat;
   private final String databaseRole;
   private final ImmutableMap<String, String> sessionLabels;
@@ -559,6 +561,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "Number of channels must fall in the range [1, %s], found: %s",
         MAX_CHANNELS,
         numChannels);
+    closeChannelsDelayMillis = builder.closeChannelsDelayMillis;
 
     transportChannelExecutorThreadNameFormat = builder.transportChannelExecutorThreadNameFormat;
     channelProvider = builder.channelProvider;
@@ -675,6 +678,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private GrpcInterceptorProvider interceptorProvider;
 
     private Integer numChannels;
+    private int closeChannelsDelayMillis = 60_000;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
@@ -734,6 +738,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.emulatorHost = null;
       }
       this.numChannels = options.numChannels;
+      this.closeChannelsDelayMillis = options.closeChannelsDelayMillis;
       this.transportChannelExecutorThreadNameFormat =
           options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
@@ -820,6 +825,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setNumChannels(int numChannels) {
       this.numChannels = numChannels;
+      return this;
+    }
+
+    Builder setCloseChannelsDelayMillis(int millis) {
+      this.closeChannelsDelayMillis = millis;
       return this;
     }
 
@@ -1259,6 +1269,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public int getNumChannels() {
     return numChannels;
+  }
+
+  @InternalApi
+  public int getCloseChannelsDelayMillis() {
+    return closeChannelsDelayMillis;
   }
 
   public String getTransportChannelExecutorThreadNameFormat() {

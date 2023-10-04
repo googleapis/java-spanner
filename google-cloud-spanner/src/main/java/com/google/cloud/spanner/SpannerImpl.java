@@ -53,7 +53,7 @@ import javax.annotation.concurrent.GuardedBy;
 import org.threeten.bp.Instant;
 
 /** Default implementation of the Cloud Spanner interface. */
-class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
+public class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private static final Logger logger = Logger.getLogger(SpannerImpl.class.getName());
   static final Tracer tracer = Tracing.getTracer();
 
@@ -134,7 +134,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   /** Returns the {@link SpannerRpc} of this {@link SpannerImpl} instance. */
-  SpannerRpc getRpc() {
+  public SpannerRpc getRpc() {
     return gapicRpc;
   }
 

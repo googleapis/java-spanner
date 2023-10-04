@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmul
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
@@ -39,6 +40,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerImpl;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
@@ -47,9 +49,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -61,6 +69,33 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ITDatabaseTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+
+  /** Executor for repeatedly reconnecting to Cloud Spanner. */
+  private static final ScheduledExecutorService reconnectExecutor =
+      Executors.newSingleThreadScheduledExecutor();
+
+  /** Counter for the number of times that we forced a reconnect to Spanner. */
+  private static final AtomicInteger RECONNECT_COUNT = new AtomicInteger();
+
+  @BeforeClass
+  public static void setupReconnectExecutor() {
+    // Schedule a reconnect every 500 to 1500 milliseconds.
+    int initialDelay = ThreadLocalRandom.current().nextInt(1000) + 500;
+    int period = ThreadLocalRandom.current().nextInt(1000) + 500;
+    reconnectExecutor.scheduleAtFixedRate(
+        ITDatabaseTest::reconnectSpanner, initialDelay, period, TimeUnit.MILLISECONDS);
+  }
+
+  @AfterClass
+  public static void shutdownReconnectExecutor() {
+    reconnectExecutor.shutdown();
+    assertTrue("Spanner should have reconnected at least once", RECONNECT_COUNT.get() > 0);
+  }
+
+  static void reconnectSpanner() {
+    ((SpannerImpl) env.getTestHelper().getClient()).getRpc().createStubs(false);
+    RECONNECT_COUNT.incrementAndGet();
+  }
 
   @Test
   public void badDdl() {

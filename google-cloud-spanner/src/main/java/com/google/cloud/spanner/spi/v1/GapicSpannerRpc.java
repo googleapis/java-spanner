@@ -22,12 +22,12 @@ import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
+import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcCallSettings;
-import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
@@ -187,6 +187,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -204,6 +205,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -231,19 +234,29 @@ public class GapicSpannerRpc implements SpannerRpc {
       CLIENT_LIBRARY_LANGUAGE + "/" + GaxProperties.getLibraryVersion(GapicSpannerRpc.class);
   private static final String API_FILE = "grpc-gcp-apiconfig.json";
 
+  private final ReentrantReadWriteLock stubsLock = new ReentrantReadWriteLock(/* fair= */ true);
+  private final ScheduledExecutorService closeStubsExecutor =
+      Executors.newSingleThreadScheduledExecutor(
+          ignore -> {
+            Thread thread = new Thread("close-spanner-stubs");
+            thread.setDaemon(true);
+            return thread;
+          });
   private boolean rpcIsClosed;
-  private final SpannerStub spannerStub;
+  private SpannerStub spannerStub;
   private final RetrySettings executeQueryRetrySettings;
   private final Set<Code> executeQueryRetryableCodes;
   private final RetrySettings readRetrySettings;
   private final Set<Code> readRetryableCodes;
-  private final SpannerStub partitionedDmlStub;
+  private SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
-  private final InstanceAdminStub instanceAdminStub;
-  private final DatabaseAdminStubSettings databaseAdminStubSettings;
-  private final DatabaseAdminStub databaseAdminStub;
+  private InstanceAdminStub instanceAdminStub;
+  private DatabaseAdminStubSettings databaseAdminStubSettings;
+  private DatabaseAdminStub databaseAdminStub;
+  private final SpannerOptions options;
   private final String projectId;
   private final String projectName;
+  private final InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder;
   private final SpannerMetadataProvider metadataProvider;
   private final CallCredentialsProvider callCredentialsProvider;
   private final String compressorName;
@@ -255,6 +268,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       systemProperty(PROPERTY_PERIOD_SECONDS, DEFAULT_PERIOD_SECONDS);
 
   private final ScheduledExecutorService spannerWatchdog;
+  private final WatchdogProvider watchdogProvider;
 
   private final boolean throttleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
@@ -272,6 +286,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   GapicSpannerRpc(final SpannerOptions options, boolean initializeStubs) {
+    this.options = options;
     this.projectId = options.getProjectId();
     String projectNameStr = PROJECT_NAME_TEMPLATE.instantiate("project", this.projectId);
     try {
@@ -317,7 +332,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
       // with information gathered from SpannerOptions if none is provided
-      InstantiatingGrpcChannelProvider.Builder defaultChannelProviderBuilder =
+      this.defaultChannelProviderBuilder =
           InstantiatingGrpcChannelProvider.newBuilder()
               .setChannelConfigurator(options.getChannelConfigurator())
               .setEndpoint(options.getEndpoint())
@@ -346,144 +361,44 @@ public class GapicSpannerRpc implements SpannerRpc {
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
-      TransportChannelProvider channelProvider =
-          MoreObjects.firstNonNull(
-              options.getChannelProvider(), defaultChannelProviderBuilder.build());
-
-      CredentialsProvider credentialsProvider =
-          GrpcTransportOptions.setUpCredentialsProvider(options);
-
       spannerWatchdog =
           Executors.newSingleThreadScheduledExecutor(
               new ThreadFactoryBuilder()
                   .setDaemon(true)
                   .setNameFormat("Cloud-Spanner-WatchdogProvider-%d")
                   .build());
-      WatchdogProvider watchdogProvider =
+      watchdogProvider =
           InstantiatingWatchdogProvider.create()
               .withExecutor(spannerWatchdog)
               .withCheckInterval(checkInterval)
               .withClock(NanoClock.getDefaultClock());
 
-      try {
-        this.spannerStub =
-            GrpcSpannerStub.create(
-                options
-                    .getSpannerStubSettings()
-                    .toBuilder()
-                    .setTransportChannelProvider(channelProvider)
-                    .setCredentialsProvider(credentialsProvider)
-                    .setStreamWatchdogProvider(watchdogProvider)
-                    .build());
-        this.readRetrySettings =
-            options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
-        this.readRetryableCodes =
-            options.getSpannerStubSettings().streamingReadSettings().getRetryableCodes();
-        this.executeQueryRetrySettings =
-            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
-        this.executeQueryRetryableCodes =
-            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
-        partitionedDmlRetrySettings =
-            options
-                .getSpannerStubSettings()
-                .executeSqlSettings()
-                .getRetrySettings()
-                .toBuilder()
-                .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
-                .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
-                .setTotalTimeout(options.getPartitionedDmlTimeout())
-                .setRpcTimeoutMultiplier(1.0)
-                .build();
-        SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
-        pdmlSettings
-            .setTransportChannelProvider(channelProvider)
-            .setCredentialsProvider(credentialsProvider)
-            .setStreamWatchdogProvider(watchdogProvider)
-            .executeSqlSettings()
-            .setRetrySettings(partitionedDmlRetrySettings);
-        pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
-        // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
-        // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
-        // also change the StreamWatchdogCheckInterval.
-        if (options
-                .getPartitionedDmlTimeout()
-                .dividedBy(10L)
-                .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
-            < 0) {
-          pdmlSettings.setStreamWatchdogCheckInterval(
-              options.getPartitionedDmlTimeout().dividedBy(10));
-          pdmlSettings.setStreamWatchdogProvider(
-              pdmlSettings
-                  .getStreamWatchdogProvider()
-                  .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
-        }
-        this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
+      this.readRetrySettings =
+          options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
+      this.readRetryableCodes =
+          options.getSpannerStubSettings().streamingReadSettings().getRetryableCodes();
+      this.executeQueryRetrySettings =
+          options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
+      this.executeQueryRetryableCodes =
+          options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
+      this.partitionedDmlRetrySettings =
+          options
+              .getSpannerStubSettings()
+              .executeSqlSettings()
+              .getRetrySettings()
+              .toBuilder()
+              .setInitialRpcTimeout(options.getPartitionedDmlTimeout())
+              .setMaxRpcTimeout(options.getPartitionedDmlTimeout())
+              .setTotalTimeout(options.getPartitionedDmlTimeout())
+              .setRpcTimeoutMultiplier(1.0)
+              .build();
+      this.databaseAdminStubSettings = options.getDatabaseAdminStubSettings();
 
-        this.instanceAdminStub =
-            GrpcInstanceAdminStub.create(
-                options
-                    .getInstanceAdminStubSettings()
-                    .toBuilder()
-                    .setTransportChannelProvider(channelProvider)
-                    .setCredentialsProvider(credentialsProvider)
-                    .setStreamWatchdogProvider(watchdogProvider)
-                    .build());
-
-        this.databaseAdminStubSettings =
-            options
-                .getDatabaseAdminStubSettings()
-                .toBuilder()
-                .setTransportChannelProvider(channelProvider)
-                .setCredentialsProvider(credentialsProvider)
-                .setStreamWatchdogProvider(watchdogProvider)
-                .build();
-
-        // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
-        // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
-        // while polling long-running operations for their progress and can also cause these errors.
-        // The default behavior is not to retry these errors, and this option should normally only
-        // be enabled for (integration) testing.
-        if (options.isAutoThrottleAdministrativeRequests()) {
-          GrpcStubCallableFactory factory =
-              new GrpcDatabaseAdminCallableFactory() {
-                @Override
-                public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
-                    GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
-                    UnaryCallSettings<RequestT, ResponseT> callSettings,
-                    ClientContext clientContext) {
-                  // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations
-                  // from failing with an Administrative requests limit exceeded error.
-                  if (grpcCallSettings
-                      .getMethodDescriptor()
-                      .getFullMethodName()
-                      .equals("google.longrunning.Operations/GetOperation")) {
-                    Set<StatusCode.Code> codes =
-                        ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
-                                callSettings.getRetryableCodes().size() + 1)
-                            .addAll(callSettings.getRetryableCodes())
-                            .add(StatusCode.Code.RESOURCE_EXHAUSTED)
-                            .build();
-                    callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
-                  }
-                  return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
-                }
-              };
-          this.databaseAdminStub =
-              new GrpcDatabaseAdminStubWithCustomCallableFactory(
-                  databaseAdminStubSettings,
-                  ClientContext.create(databaseAdminStubSettings),
-                  factory);
-        } else {
-          this.databaseAdminStub = GrpcDatabaseAdminStub.create(databaseAdminStubSettings);
-        }
-
-        // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator
-        // is actually running.
-        checkEmulatorConnection(options, channelProvider, credentialsProvider);
-      } catch (Exception e) {
-        throw newSpannerException(e);
-      }
+      // Create the gRPC stubs and check whether the emulator is running if the emulator environment
+      // variable has been set.
+      createStubs(true);
     } else {
+      this.defaultChannelProviderBuilder = null;
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
@@ -494,8 +409,163 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.partitionedDmlStub = null;
       this.databaseAdminStubSettings = null;
       this.spannerWatchdog = null;
+      this.watchdogProvider = null;
       this.partitionedDmlRetrySettings = null;
     }
+  }
+
+  /** (Re-)creates the gRPC stubs that are used by this SpannerRpc. */
+  @Override
+  public void createStubs(boolean checkEmulatorConnection) {
+    TransportChannelProvider channelProvider =
+        MoreObjects.firstNonNull(
+            options.getChannelProvider(), defaultChannelProviderBuilder.build());
+    CredentialsProvider credentialsProvider =
+        GrpcTransportOptions.setUpCredentialsProvider(options);
+
+    WriteLock writeLock = stubsLock.writeLock();
+    try {
+      GrpcSpannerStub spannerStub =
+          GrpcSpannerStub.create(
+              options
+                  .getSpannerStubSettings()
+                  .toBuilder()
+                  .setTransportChannelProvider(channelProvider)
+                  .setCredentialsProvider(credentialsProvider)
+                  .setStreamWatchdogProvider(watchdogProvider)
+                  .build());
+      SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
+      pdmlSettings
+          .setTransportChannelProvider(channelProvider)
+          .setCredentialsProvider(credentialsProvider)
+          .setStreamWatchdogProvider(watchdogProvider)
+          .executeSqlSettings()
+          .setRetrySettings(partitionedDmlRetrySettings);
+      pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
+      // The stream watchdog will by default only check for a timeout every 10 seconds, so if the
+      // timeout is less than 10 seconds, it would be ignored for the first 10 seconds unless we
+      // also change the StreamWatchdogCheckInterval.
+      if (options
+              .getPartitionedDmlTimeout()
+              .dividedBy(10L)
+              .compareTo(pdmlSettings.getStreamWatchdogCheckInterval())
+          < 0) {
+        pdmlSettings.setStreamWatchdogCheckInterval(
+            options.getPartitionedDmlTimeout().dividedBy(10));
+        pdmlSettings.setStreamWatchdogProvider(
+            pdmlSettings
+                .getStreamWatchdogProvider()
+                .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
+      }
+      GrpcSpannerStub partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
+
+      GrpcInstanceAdminStub instanceAdminStub =
+          GrpcInstanceAdminStub.create(
+              options
+                  .getInstanceAdminStubSettings()
+                  .toBuilder()
+                  .setTransportChannelProvider(channelProvider)
+                  .setCredentialsProvider(credentialsProvider)
+                  .setStreamWatchdogProvider(watchdogProvider)
+                  .build());
+
+      DatabaseAdminStubSettings databaseAdminStubSettings =
+          options
+              .getDatabaseAdminStubSettings()
+              .toBuilder()
+              .setTransportChannelProvider(channelProvider)
+              .setCredentialsProvider(credentialsProvider)
+              .setStreamWatchdogProvider(watchdogProvider)
+              .build();
+
+      // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
+      // administrative requests has been set. The GetOperation RPC is called repeatedly by gax
+      // while polling long-running operations for their progress and can also cause these errors.
+      // The default behavior is not to retry these errors, and this option should normally only
+      // be enabled for (integration) testing.
+      GrpcDatabaseAdminStub databaseAdminStub;
+      if (options.isAutoThrottleAdministrativeRequests()) {
+        databaseAdminStub =
+            new GrpcDatabaseAdminStubWithCustomCallableFactory(
+                databaseAdminStubSettings,
+                ClientContext.create(databaseAdminStubSettings),
+                createDatabaseAdminCallableFactoryWithRetryOnResourceExhausted());
+      } else {
+        databaseAdminStub = GrpcDatabaseAdminStub.create(databaseAdminStubSettings);
+      }
+
+      // Take a write lock for the stubs and replace the existing stubs with the new ones.
+      writeLock.lockInterruptibly();
+
+      // Close and replace the existing stubs.
+      // Note that closing the existing stubs will still allow running requests to finish, but will
+      // reject any new requests.
+      delayedCloseStubs(options.getCloseChannelsDelayMillis());
+      this.spannerStub = spannerStub;
+      this.partitionedDmlStub = partitionedDmlStub;
+      this.instanceAdminStub = instanceAdminStub;
+      this.databaseAdminStub = databaseAdminStub;
+
+      // Release the write lock.
+      writeLock.unlock();
+
+      if (checkEmulatorConnection) {
+        // Check whether the SPANNER_EMULATOR_HOST env var has been set, and if so, if the emulator
+        // is actually running.
+        checkEmulatorConnection(options, channelProvider, credentialsProvider);
+      }
+    } catch (Exception exception) {
+      throw SpannerExceptionFactory.asSpannerException(exception);
+    } finally {
+      if (writeLock.isHeldByCurrentThread()) {
+        writeLock.unlock();
+      }
+    }
+  }
+
+  void delayedCloseStubs(int delayMillis) {
+    Iterable<BackgroundResource> stubs = getStubs();
+    closeStubsExecutor.schedule(() -> closeStubs(stubs), delayMillis, TimeUnit.MILLISECONDS);
+  }
+
+  void closeStubs(Iterable<BackgroundResource> stubs) {
+    for (BackgroundResource stub : stubs) {
+      if (stub != null && !stub.isShutdown()) {
+        stub.shutdown();
+      }
+    }
+  }
+
+  Iterable<BackgroundResource> getStubs() {
+    return Arrays.asList(
+        this.spannerStub, this.partitionedDmlStub, this.instanceAdminStub, this.databaseAdminStub);
+  }
+
+  private static GrpcDatabaseAdminCallableFactory
+      createDatabaseAdminCallableFactoryWithRetryOnResourceExhausted() {
+    return new GrpcDatabaseAdminCallableFactory() {
+      @Override
+      public <RequestT, ResponseT> UnaryCallable<RequestT, ResponseT> createUnaryCallable(
+          GrpcCallSettings<RequestT, ResponseT> grpcCallSettings,
+          UnaryCallSettings<RequestT, ResponseT> callSettings,
+          ClientContext clientContext) {
+        // Make GetOperation retry on RESOURCE_EXHAUSTED to prevent polling operations
+        // from failing with an Administrative requests limit exceeded error.
+        if (grpcCallSettings
+            .getMethodDescriptor()
+            .getFullMethodName()
+            .equals("google.longrunning.Operations/GetOperation")) {
+          Set<StatusCode.Code> codes =
+              ImmutableSet.<StatusCode.Code>builderWithExpectedSize(
+                      callSettings.getRetryableCodes().size() + 1)
+                  .addAll(callSettings.getRetryableCodes())
+                  .add(StatusCode.Code.RESOURCE_EXHAUSTED)
+                  .build();
+          callSettings = callSettings.toBuilder().setRetryableCodes(codes).build();
+        }
+        return super.createUnaryCallable(grpcCallSettings, callSettings, clientContext);
+      }
+    };
   }
 
   private static String parseGrpcGcpApiConfig() {
@@ -827,6 +897,34 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  void runWithStubReadLock(Runnable runnable) {
+    runWithStubReadLock(
+        (Callable<Void>)
+            () -> {
+              runnable.run();
+              return null;
+            });
+  }
+
+  <T> T runWithStubReadLock(Callable<T> callable) {
+    boolean locked = false;
+    try {
+      stubsLock.readLock().lockInterruptibly();
+      locked = true;
+      return callable.call();
+    } catch (ExecutionException executionException) {
+      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+    } catch (InterruptedException interruptedException) {
+      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+    } catch (Exception exception) {
+      throw SpannerExceptionFactory.asSpannerException(exception);
+    } finally {
+      if (locked) {
+        stubsLock.readLock().unlock();
+      }
+    }
+  }
+
   @Override
   public Paginated<InstanceConfig> listInstanceConfigs(int pageSize, @Nullable String pageToken)
       throws SpannerException {
@@ -841,7 +939,10 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(
             null, projectName, request, InstanceAdminGrpc.getListInstanceConfigsMethod());
     ListInstanceConfigsResponse response =
-        get(instanceAdminStub.listInstanceConfigsCallable().futureCall(request, context));
+        get(
+            runWithStubReadLock(
+                () ->
+                    instanceAdminStub.listInstanceConfigsCallable().futureCall(request, context)));
     return new Paginated<>(response.getInstanceConfigsList(), response.getNextPageToken());
   }
 
@@ -863,7 +964,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     CreateInstanceConfigRequest request = builder.build();
     GrpcCallContext context =
         newCallContext(null, parent, request, InstanceAdminGrpc.getCreateInstanceConfigMethod());
-    return instanceAdminStub.createInstanceConfigOperationCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () ->
+            instanceAdminStub.createInstanceConfigOperationCallable().futureCall(request, context));
   }
 
   @Override
@@ -884,7 +987,9 @@ public class GapicSpannerRpc implements SpannerRpc {
             instanceConfig.getName(),
             request,
             InstanceAdminGrpc.getUpdateInstanceConfigMethod());
-    return instanceAdminStub.updateInstanceConfigOperationCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () ->
+            instanceAdminStub.updateInstanceConfigOperationCallable().futureCall(request, context));
   }
 
   @Override
@@ -894,7 +999,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     GrpcCallContext context =
         newCallContext(null, projectName, request, InstanceAdminGrpc.getGetInstanceConfigMethod());
-    return get(instanceAdminStub.getInstanceConfigCallable().futureCall(request, context));
+    return get(
+        runWithStubReadLock(
+            () -> instanceAdminStub.getInstanceConfigCallable().futureCall(request, context)));
   }
 
   @Override
@@ -914,7 +1021,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             null, instanceConfigName, request, InstanceAdminGrpc.getDeleteInstanceConfigMethod());
-    get(instanceAdminStub.deleteInstanceConfigCallable().futureCall(request, context));
+    get(
+        runWithStubReadLock(
+            () -> instanceAdminStub.deleteInstanceConfigCallable().futureCall(request, context)));
   }
 
   @Override
@@ -940,9 +1049,11 @@ public class GapicSpannerRpc implements SpannerRpc {
         runWithRetryOnAdministrativeRequestsExceeded(
             () ->
                 get(
-                    instanceAdminStub
-                        .listInstanceConfigOperationsCallable()
-                        .futureCall(request, context)));
+                    runWithStubReadLock(
+                        () ->
+                            instanceAdminStub
+                                .listInstanceConfigOperationsCallable()
+                                .futureCall(request, context))));
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 
@@ -962,7 +1073,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(null, projectName, request, InstanceAdminGrpc.getListInstancesMethod());
     ListInstancesResponse response =
-        get(instanceAdminStub.listInstancesCallable().futureCall(request, context));
+        get(
+            runWithStubReadLock(
+                () -> instanceAdminStub.listInstancesCallable().futureCall(request, context)));
     return new Paginated<>(response.getInstancesList(), response.getNextPageToken());
   }
 
@@ -977,7 +1090,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             .build();
     GrpcCallContext context =
         newCallContext(null, parent, request, InstanceAdminGrpc.getCreateInstanceMethod());
-    return instanceAdminStub.createInstanceOperationCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () -> instanceAdminStub.createInstanceOperationCallable().futureCall(request, context));
   }
 
   @Override
@@ -988,7 +1102,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             null, instance.getName(), request, InstanceAdminGrpc.getUpdateInstanceMethod());
-    return instanceAdminStub.updateInstanceOperationCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () -> instanceAdminStub.updateInstanceOperationCallable().futureCall(request, context));
   }
 
   @Override
@@ -997,7 +1112,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     GrpcCallContext context =
         newCallContext(null, instanceName, request, InstanceAdminGrpc.getGetInstanceMethod());
-    return get(instanceAdminStub.getInstanceCallable().futureCall(request, context));
+    return get(
+        runWithStubReadLock(
+            () -> instanceAdminStub.getInstanceCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1007,7 +1124,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     GrpcCallContext context =
         newCallContext(null, instanceName, request, InstanceAdminGrpc.getDeleteInstanceMethod());
-    get(instanceAdminStub.deleteInstanceCallable().futureCall(request, context));
+    get(
+        runWithStubReadLock(
+            () -> instanceAdminStub.deleteInstanceCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1030,7 +1149,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     ListBackupOperationsResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
             () ->
-                get(databaseAdminStub.listBackupOperationsCallable().futureCall(request, context)));
+                get(
+                    runWithStubReadLock(
+                        () ->
+                            databaseAdminStub
+                                .listBackupOperationsCallable()
+                                .futureCall(request, context))));
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
 
@@ -1056,9 +1180,11 @@ public class GapicSpannerRpc implements SpannerRpc {
         runWithRetryOnAdministrativeRequestsExceeded(
             () ->
                 get(
-                    databaseAdminStub
-                        .listDatabaseOperationsCallable()
-                        .futureCall(request, context)));
+                    runWithStubReadLock(
+                        () ->
+                            databaseAdminStub
+                                .listDatabaseOperationsCallable()
+                                .futureCall(request, context))));
 
     return new Paginated<>(response.getOperationsList(), response.getNextPageToken());
   }
@@ -1079,7 +1205,13 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getListDatabaseRolesMethod());
     ListDatabaseRolesResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
-            () -> get(databaseAdminStub.listDatabaseRolesCallable().futureCall(request, context)));
+            () ->
+                get(
+                    runWithStubReadLock(
+                        () ->
+                            databaseAdminStub
+                                .listDatabaseRolesCallable()
+                                .futureCall(request, context))));
 
     return new Paginated<>(response.getDatabaseRolesList(), response.getNextPageToken());
   }
@@ -1103,7 +1235,11 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, instanceName, request, DatabaseAdminGrpc.getListBackupsMethod());
     ListBackupsResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
-            () -> get(databaseAdminStub.listBackupsCallable().futureCall(request, context)));
+            () ->
+                get(
+                    runWithStubReadLock(
+                        () ->
+                            databaseAdminStub.listBackupsCallable().futureCall(request, context))));
 
     return new Paginated<>(response.getBackupsList(), response.getNextPageToken());
   }
@@ -1123,7 +1259,13 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, instanceName, request, DatabaseAdminGrpc.getListDatabasesMethod());
     ListDatabasesResponse response =
         runWithRetryOnAdministrativeRequestsExceeded(
-            () -> get(databaseAdminStub.listDatabasesCallable().futureCall(request, context)));
+            () ->
+                get(
+                    runWithStubReadLock(
+                        () ->
+                            databaseAdminStub
+                                .listDatabasesCallable()
+                                .futureCall(request, context))));
 
     return new Paginated<>(response.getDatabasesList(), response.getNextPageToken());
   }
@@ -1182,7 +1324,7 @@ public class GapicSpannerRpc implements SpannerRpc {
               return null;
             });
     return RetryHelper.runWithRetries(
-        callable,
+        () -> runWithStubReadLock(callable),
         databaseAdminStubSettings
             .createDatabaseOperationSettings()
             .getInitialCallSettings()
@@ -1223,7 +1365,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     return runWithRetryOnAdministrativeRequestsExceeded(
         () -> {
           OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture =
-              callable.futureCall(request, context);
+              runWithStubReadLock(() -> callable.futureCall(request, context));
           try {
             operationFuture.getInitialFuture().get();
           } catch (InterruptedException e) {
@@ -1239,7 +1381,7 @@ public class GapicSpannerRpc implements SpannerRpc {
               String operationName =
                   OPERATION_NAME_TEMPLATE.instantiate(
                       "database", databaseName, "operation", updateId);
-              return callable.resumeFutureCall(operationName, context);
+              return runWithStubReadLock(() -> callable.resumeFutureCall(operationName, context));
             }
           }
           return operationFuture;
@@ -1256,7 +1398,9 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getDropDatabaseMethod());
     runWithRetryOnAdministrativeRequestsExceeded(
         () -> {
-          get(databaseAdminStub.dropDatabaseCallable().futureCall(request, context));
+          get(
+              runWithStubReadLock(
+                  () -> databaseAdminStub.dropDatabaseCallable().futureCall(request, context)));
           return null;
         });
   }
@@ -1270,7 +1414,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(databaseAdminStub.getDatabaseCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () -> databaseAdminStub.getDatabaseCallable().futureCall(request, context))));
   }
 
   @Override
@@ -1281,7 +1428,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             null, database.getName(), request, DatabaseAdminGrpc.getUpdateDatabaseMethod());
-    return databaseAdminStub.updateDatabaseOperationCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () -> databaseAdminStub.updateDatabaseOperationCallable().futureCall(request, context));
   }
 
   @Override
@@ -1294,7 +1442,8 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getGetDatabaseDdlMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
         () ->
-            get(databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context))
+            get(runWithStubReadLock(
+                    () -> databaseAdminStub.getDatabaseDdlCallable().futureCall(request, context)))
                 .getStatementsList());
   }
 
@@ -1351,7 +1500,7 @@ public class GapicSpannerRpc implements SpannerRpc {
               }
             });
     return RetryHelper.runWithRetries(
-        callable,
+        () -> runWithStubReadLock(callable),
         databaseAdminStubSettings
             .createBackupOperationSettings()
             .getInitialCallSettings()
@@ -1410,7 +1559,7 @@ public class GapicSpannerRpc implements SpannerRpc {
               }
             });
     return RetryHelper.runWithRetries(
-        callable,
+        () -> runWithStubReadLock(callable),
         databaseAdminStubSettings
             .copyBackupOperationSettings()
             .getInitialCallSettings()
@@ -1462,7 +1611,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                   }
                 });
     return RetryHelper.runWithRetries(
-        callable,
+        () -> runWithStubReadLock(callable),
         databaseAdminStubSettings
             .restoreDatabaseOperationSettings()
             .getInitialCallSettings()
@@ -1479,7 +1628,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, backup.getName(), request, DatabaseAdminGrpc.getUpdateBackupMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> databaseAdminStub.updateBackupCallable().call(request, context));
+        () ->
+            runWithStubReadLock(
+                () -> databaseAdminStub.updateBackupCallable().call(request, context)));
   }
 
   @Override
@@ -1491,7 +1642,8 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(null, backupName, request, DatabaseAdminGrpc.getDeleteBackupMethod());
     runWithRetryOnAdministrativeRequestsExceeded(
         () -> {
-          databaseAdminStub.deleteBackupCallable().call(request, context);
+          runWithStubReadLock(
+              () -> databaseAdminStub.deleteBackupCallable().call(request, context));
           return null;
         });
   }
@@ -1503,7 +1655,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, backupName, request, DatabaseAdminGrpc.getGetBackupMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(databaseAdminStub.getBackupCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () -> databaseAdminStub.getBackupCallable().futureCall(request, context))));
   }
 
   @Override
@@ -1515,10 +1670,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     return runWithRetryOnAdministrativeRequestsExceeded(
         () ->
             get(
-                databaseAdminStub
-                    .getOperationsStub()
-                    .getOperationCallable()
-                    .futureCall(request, context)));
+                runWithStubReadLock(
+                    () ->
+                        databaseAdminStub
+                            .getOperationsStub()
+                            .getOperationCallable()
+                            .futureCall(request, context))));
   }
 
   @Override
@@ -1531,10 +1688,12 @@ public class GapicSpannerRpc implements SpannerRpc {
     runWithRetryOnAdministrativeRequestsExceeded(
         () -> {
           get(
-              databaseAdminStub
-                  .getOperationsStub()
-                  .cancelOperationCallable()
-                  .futureCall(request, context));
+              runWithStubReadLock(
+                  () ->
+                      databaseAdminStub
+                          .getOperationsStub()
+                          .cancelOperationCallable()
+                          .futureCall(request, context)));
           return null;
         });
   }
@@ -1563,7 +1722,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             options, databaseName, request, SpannerGrpc.getBatchCreateSessionsMethod(), true);
-    return get(spannerStub.batchCreateSessionsCallable().futureCall(request, context))
+    return get(runWithStubReadLock(
+            () -> spannerStub.batchCreateSessionsCallable().futureCall(request, context)))
         .getSessionList();
   }
 
@@ -1587,7 +1747,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context =
         newCallContext(options, databaseName, request, SpannerGrpc.getCreateSessionMethod(), true);
-    return get(spannerStub.createSessionCallable().futureCall(request, context));
+    return get(
+        runWithStubReadLock(
+            () -> spannerStub.createSessionCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1601,7 +1763,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     DeleteSessionRequest request = DeleteSessionRequest.newBuilder().setName(sessionName).build();
     GrpcCallContext context =
         newCallContext(options, sessionName, request, SpannerGrpc.getDeleteSessionMethod());
-    return spannerStub.deleteSessionCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () -> spannerStub.deleteSessionCallable().futureCall(request, context));
   }
 
   @Override
@@ -1624,7 +1787,8 @@ public class GapicSpannerRpc implements SpannerRpc {
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getReadMethod(), routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
-    spannerStub.streamingReadCallable().call(request, responseObserver, context);
+    runWithStubReadLock(
+        () -> spannerStub.streamingReadCallable().call(request, responseObserver, context));
     return new GrpcStreamingCall(context, responseObserver.getController());
   }
 
@@ -1654,7 +1818,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             SpannerGrpc.getExecuteSqlMethod(),
             routeToLeader);
-    return spannerStub.executeSqlCallable().futureCall(request, context);
+    return runWithStubReadLock(() -> spannerStub.executeSqlCallable().futureCall(request, context));
   }
 
   @Override
@@ -1663,7 +1827,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getExecuteSqlMethod(), true);
-    return get(partitionedDmlStub.executeSqlCallable().futureCall(request, context));
+    return get(
+        runWithStubReadLock(
+            () -> partitionedDmlStub.executeSqlCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1682,8 +1848,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             SpannerGrpc.getExecuteStreamingSqlMethod(),
             true);
     // Override any timeout settings that might have been set on the call context.
-    context = context.withTimeout(timeout).withStreamWaitTimeout(timeout);
-    return partitionedDmlStub.executeStreamingSqlCallable().call(request, context);
+    final GrpcCallContext finalContext =
+        context.withTimeout(timeout).withStreamWaitTimeout(timeout);
+    return runWithStubReadLock(
+        () -> partitionedDmlStub.executeStreamingSqlCallable().call(request, finalContext));
   }
 
   @Override
@@ -1691,7 +1859,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       BatchWriteRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getBatchWriteMethod());
-    return spannerStub.batchWriteCallable().call(request, context);
+    return runWithStubReadLock(() -> spannerStub.batchWriteCallable().call(request, context));
   }
 
   @Override
@@ -1709,7 +1877,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             routeToLeader);
 
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
-    spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
+    runWithStubReadLock(
+        () -> spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context));
     return new GrpcStreamingCall(context, responseObserver.getController());
   }
 
@@ -1725,7 +1894,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getExecuteBatchDmlMethod(), true);
-    return spannerStub.executeBatchDmlCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () -> spannerStub.executeBatchDmlCallable().futureCall(request, context));
   }
 
   @Override
@@ -1738,7 +1908,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             SpannerGrpc.getBeginTransactionMethod(),
             routeToLeader);
-    return spannerStub.beginTransactionCallable().futureCall(request, context);
+    return runWithStubReadLock(
+        () -> spannerStub.beginTransactionCallable().futureCall(request, context));
   }
 
   @Override
@@ -1753,7 +1924,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       CommitRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
         newCallContext(options, request.getSession(), request, SpannerGrpc.getCommitMethod(), true);
-    return spannerStub.commitCallable().futureCall(request, context);
+    return runWithStubReadLock(() -> spannerStub.commitCallable().futureCall(request, context));
   }
 
   @Override
@@ -1767,7 +1938,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getRollbackMethod(), true);
-    return spannerStub.rollbackCallable().futureCall(request, context);
+    return runWithStubReadLock(() -> spannerStub.rollbackCallable().futureCall(request, context));
   }
 
   @Override
@@ -1782,7 +1953,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getPartitionQueryMethod(), true);
-    return get(spannerStub.partitionQueryCallable().futureCall(request, context));
+    return get(
+        runWithStubReadLock(
+            () -> spannerStub.partitionQueryCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1791,7 +1964,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context =
         newCallContext(
             options, request.getSession(), request, SpannerGrpc.getPartitionReadMethod(), true);
-    return get(spannerStub.partitionReadCallable().futureCall(request, context));
+    return get(
+        runWithStubReadLock(
+            () -> spannerStub.partitionReadCallable().futureCall(request, context)));
   }
 
   @Override
@@ -1805,7 +1980,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getGetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(databaseAdminStub.getIamPolicyCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () -> databaseAdminStub.getIamPolicyCallable().futureCall(request, context))));
   }
 
   @Override
@@ -1816,7 +1994,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getSetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(databaseAdminStub.setIamPolicyCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () -> databaseAdminStub.setIamPolicyCallable().futureCall(request, context))));
   }
 
   @Override
@@ -1831,7 +2012,13 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, DatabaseAdminGrpc.getTestIamPermissionsMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(databaseAdminStub.testIamPermissionsCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () ->
+                        databaseAdminStub
+                            .testIamPermissionsCallable()
+                            .futureCall(request, context))));
   }
 
   @Override
@@ -1842,7 +2029,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getGetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(instanceAdminStub.getIamPolicyCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () -> instanceAdminStub.getIamPolicyCallable().futureCall(request, context))));
   }
 
   @Override
@@ -1853,7 +2043,10 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getSetIamPolicyMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(instanceAdminStub.setIamPolicyCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () -> instanceAdminStub.setIamPolicyCallable().futureCall(request, context))));
   }
 
   @Override
@@ -1868,7 +2061,13 @@ public class GapicSpannerRpc implements SpannerRpc {
     final GrpcCallContext context =
         newCallContext(null, resource, request, InstanceAdminGrpc.getTestIamPermissionsMethod());
     return runWithRetryOnAdministrativeRequestsExceeded(
-        () -> get(instanceAdminStub.testIamPermissionsCallable().futureCall(request, context)));
+        () ->
+            get(
+                runWithStubReadLock(
+                    () ->
+                        instanceAdminStub
+                            .testIamPermissionsCallable()
+                            .futureCall(request, context))));
   }
 
   /** Gets the result of an async RPC call, handling any exceptions encountered. */
@@ -1957,6 +2156,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       }
     }
+    this.closeStubsExecutor.shutdown();
   }
 
   public void shutdownNow() {
@@ -1972,6 +2172,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.instanceAdminStub.shutdownNow();
     this.databaseAdminStub.shutdownNow();
     this.spannerWatchdog.shutdownNow();
+    this.closeStubsExecutor.shutdownNow();
   }
 
   @Override
