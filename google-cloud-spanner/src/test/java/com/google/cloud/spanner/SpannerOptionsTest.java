@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nonnull;
 import org.junit.Test;
@@ -911,6 +912,62 @@ public class SpannerOptionsTest {
             .setAsyncExecutorProvider(FixedCloseableExecutorProvider.create(service))
             .build();
     assertSame(service, options.getAsyncExecutorProvider().getExecutor());
+  }
+
+  @Test
+  public void testAsyncExecutorProviderCoreThreadCount() throws Exception {
+    assertEquals(8, SpannerOptions.getDefaultAsyncExecutorProviderCoreThreadCount());
+    String propertyName = "SPANNER_ASYNC_NUM_CORE_THREADS";
+    assertEquals(
+        Integer.valueOf(8),
+        runWithSystemProperty(
+            propertyName, null, SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertEquals(
+        Integer.valueOf(16),
+        runWithSystemProperty(
+            propertyName, "16", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertEquals(
+        Integer.valueOf(1),
+        runWithSystemProperty(
+            propertyName, "1", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runWithSystemProperty(
+                propertyName,
+                "foo",
+                SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runWithSystemProperty(
+                propertyName,
+                "-1",
+                SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runWithSystemProperty(
+                propertyName, "", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+  }
+
+  static <V> V runWithSystemProperty(
+      String propertyName, String propertyValue, Callable<V> callable) throws Exception {
+    String currentValue = System.getProperty(propertyName);
+    if (propertyValue == null) {
+      System.clearProperty(propertyName);
+    } else {
+      System.setProperty(propertyName, propertyValue);
+    }
+    try {
+      return callable.call();
+    } finally {
+      if (currentValue == null) {
+        System.clearProperty(propertyName);
+      } else {
+        System.setProperty(propertyName, currentValue);
+      }
+    }
   }
 
   @Test
