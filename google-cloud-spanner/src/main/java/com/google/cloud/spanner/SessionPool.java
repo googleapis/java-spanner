@@ -43,6 +43,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -62,13 +63,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.ResultSetStats;
 import io.opencensus.common.Scope;
 import io.opencensus.metrics.DerivedLongCumulative;
@@ -118,17 +119,6 @@ class SessionPool {
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
-  static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
-      ImmutableSet.of(
-          ErrorCode.UNKNOWN,
-          ErrorCode.INVALID_ARGUMENT,
-          ErrorCode.PERMISSION_DENIED,
-          ErrorCode.UNAUTHENTICATED,
-          ErrorCode.RESOURCE_EXHAUSTED,
-          ErrorCode.FAILED_PRECONDITION,
-          ErrorCode.OUT_OF_RANGE,
-          ErrorCode.UNIMPLEMENTED,
-          ErrorCode.INTERNAL);
 
   /**
    * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
@@ -1173,6 +1163,17 @@ class SessionPool {
     }
 
     @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        return get().batchWriteAtLeastOnce(mutationGroups, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
     public ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
@@ -1466,6 +1467,18 @@ class SessionPool {
     }
 
     @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        markUsed();
+        return delegate.batchWriteAtLeastOnce(mutationGroups, options);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
     public long executePartitionedUpdate(Statement stmt, UpdateOption... options)
         throws SpannerException {
       try {
@@ -1650,7 +1663,8 @@ class SessionPool {
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
         try (Scope waitScope = tracer.withSpan(span)) {
-          PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
+          PooledSession s =
+              pollUninterruptiblyWithTimeout(currentTimeout, options.getAcquireSessionTimeout());
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
@@ -1660,6 +1674,11 @@ class SessionPool {
             return s;
           }
         } catch (Exception e) {
+          if (e instanceof SpannerException
+              && ErrorCode.RESOURCE_EXHAUSTED.equals(((SpannerException) e).getErrorCode())) {
+            numWaiterTimeouts.incrementAndGet();
+            tracer.getCurrentSpan().setStatus(Status.RESOURCE_EXHAUSTED);
+          }
           TraceUtil.setWithFailure(span, e);
           throw e;
         } finally {
@@ -1668,15 +1687,26 @@ class SessionPool {
       }
     }
 
-    private PooledSession pollUninterruptiblyWithTimeout(long timeoutMillis) {
+    private PooledSession pollUninterruptiblyWithTimeout(
+        long timeoutMillis, Duration acquireSessionTimeout) {
       boolean interrupted = false;
       try {
         while (true) {
           try {
-            return waiter.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            return acquireSessionTimeout == null
+                ? waiter.get(timeoutMillis, TimeUnit.MILLISECONDS)
+                : waiter.get(acquireSessionTimeout.toMillis(), TimeUnit.MILLISECONDS);
           } catch (InterruptedException e) {
             interrupted = true;
           } catch (TimeoutException e) {
+            if (acquireSessionTimeout != null) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.RESOURCE_EXHAUSTED,
+                  "Timed out after waiting "
+                      + acquireSessionTimeout.toMillis()
+                      + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
+                      + " or increase the number of sessions in the session pool.");
+            }
             return null;
           } catch (ExecutionException e) {
             throw SpannerExceptionFactory.newSpannerException(e.getCause());

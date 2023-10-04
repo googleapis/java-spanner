@@ -1315,4 +1315,15 @@ public class SpannerClientHttpJsonTest {
       // Expected exception.
     }
   }
+
+  @Test
+  public void batchWriteTest() throws Exception {}
+
+  @Test
+  public void batchWriteExceptionTest() throws Exception {
+    ApiException exception =
+        ApiExceptionFactory.createException(
+            new Exception(), FakeStatusCode.of(StatusCode.Code.INVALID_ARGUMENT), false);
+    mockService.addException(exception);
+  }
 }

@@ -919,6 +919,10 @@ public class SpannerOptionsTest {
     assertEquals(8, SpannerOptions.getDefaultAsyncExecutorProviderCoreThreadCount());
     String propertyName = "SPANNER_ASYNC_NUM_CORE_THREADS";
     assertEquals(
+        Integer.valueOf(8),
+        runWithSystemProperty(
+            propertyName, null, SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertEquals(
         Integer.valueOf(16),
         runWithSystemProperty(
             propertyName, "16", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
@@ -940,12 +944,21 @@ public class SpannerOptionsTest {
                 propertyName,
                 "-1",
                 SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runWithSystemProperty(
+                propertyName, "", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
   }
 
   static <V> V runWithSystemProperty(
       String propertyName, String propertyValue, Callable<V> callable) throws Exception {
     String currentValue = System.getProperty(propertyName);
-    System.setProperty(propertyName, propertyValue);
+    if (propertyValue == null) {
+      System.clearProperty(propertyName);
+    } else {
+      System.setProperty(propertyName, propertyValue);
+    }
     try {
       return callable.call();
     } finally {
