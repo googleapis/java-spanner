@@ -291,10 +291,10 @@ If a session is never returned to the pool (hence causing a session leak), the t
 indefinitely and your application will be blocked.
 
 #### Common Root Causes
-The most common reason for a session leak is that a transaction was started by the application but 
-never committed or rolled back. What you should do is simply call commit on the transaction at the 
-end of your transaction code. Spanner has two types of transactions, read only and read-write 
-transactions. When we perform a read in a read-write transaction we still need to commit it.
+The most common reason for session leaks in the Java client library are:
+1. Not closing a `ResultSet` that is returned by `executeQuery`. Always put `ResultSet` objects in a try-with-resources block, or take other measures to ensure that the `ResultSet` is always closed.
+2. Not closing a `ReadOnlyTransaction` when you no longer need it. Always put `ReadOnlyTransaction` objects in a try-with-resources block, or take other measures to ensure that the `ReadOnlyTransaction` is always closed.
+3. Not closing a `TransactionManager` when you no longer need it. Always put `TransactionManager` objects in a try-with-resources block, or take other measures to ensure that the `TransactionManager` is always closed.
 
 As shown in the example below, the `try-with-resources` block releases the session after it is complete. 
 If you don't use `try-with-resources` block, unless you explicitly call the `close()` method on all resources 
