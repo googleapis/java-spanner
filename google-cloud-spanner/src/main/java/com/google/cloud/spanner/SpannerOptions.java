@@ -530,7 +530,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @VisibleForTesting
   static int getDefaultAsyncExecutorProviderCoreThreadCount() {
-    String propertyName = "SPANNER_ASYNC_NUM_CORE_THREADS";
+    String propertyName = "com.google.cloud.spanner.async_num_core_threads";
     String propertyValue = System.getProperty(propertyName, "8");
     try {
       int corePoolSize = Integer.parseInt(propertyValue);
