@@ -456,7 +456,7 @@ public class SessionPoolOptions {
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
-      String key = "SESSION_POOL_RELEASE_TO_POSITION";
+      String key = "com.google.cloud.spanner.session_pool_release_to_position";
       if (System.getProperties().containsKey(key)) {
         try {
           return Position.valueOf(System.getProperty(key).toUpperCase(Locale.ENGLISH));

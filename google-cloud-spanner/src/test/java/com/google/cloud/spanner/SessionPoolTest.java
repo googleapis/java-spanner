@@ -245,7 +245,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void poolFifo() throws Exception {
     setupMockSessionCreation();
     runWithSystemProperty(
-        "SESSION_POOL_RELEASE_TO_POSITION",
+        "com.google.cloud.spanner.session_pool_release_to_position",
         "LAST",
         () -> {
           options =
@@ -275,7 +275,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           Session session3 = pool.getSession().get();
           Session session4 = pool.getSession().get();
           assertEquals(session2, session3);
-          assertEquals(session4, session1);
+          assertEquals(session1, session4);
           session3.close();
           session4.close();
 
@@ -289,7 +289,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     setupMockSessionCreation();
     for (Position position : Position.values()) {
       runWithSystemProperty(
-          "SESSION_POOL_RELEASE_TO_POSITION",
+          "com.google.cloud.spanner.session_pool_release_to_position",
           position.name(),
           () -> {
             int attempt = 0;
@@ -325,29 +325,24 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                       .collect(Collectors.toList());
               switch (position) {
                 case FIRST:
-                  // FIFO:
+                  // LIFO:
                   // First check out all sessions, so we have 1, 2, 3, 4, ..., N
-                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ...,
-                  // N).
+                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ..., N)
                   // That will give us the list N, ..., 4, 3, 2, 1 because each session is added at
-                  // the
-                  // front of the pool.
+                  // the front of the pool.
                   assertEquals(firstTime, Lists.reverse(secondTime));
                   break;
                 case LAST:
-                  // LIFO:
+                  // FIFO:
                   // First check out all sessions, so we have 1, 2, 3, 4, ..., N
-                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ...,
-                  // N).
+                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ..., N)
                   // That will give us the list 1, 2, 3, 4, ..., N because each session is added at
-                  // the
-                  // end of the pool.
+                  // the end of the pool.
                   assertEquals(firstTime, secondTime);
                   break;
                 case RANDOM:
                   // Random means that we should not get the same order twice (unless the randomizer
-                  // got
-                  // lucky, and then we retry).
+                  // got lucky, and then we retry).
                   if (attempt < (maxAttempts - 1)) {
                     if (Objects.equals(firstTime, secondTime)) {
                       attempt++;
