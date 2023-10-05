@@ -283,7 +283,7 @@ This will cause the following to happen internally in the client library:
    thread pool.
 
 ### Session Leak
-A Spanner object of the Client Library has a limit on the number of maximum sessions. For example the 
+A `DatabaseClient` object of the Client Library has a limit on the number of maximum sessions. For example the 
 default value of `MaxSessions` in the Java Client Library is 400. You can configure these values at the time of 
 creating a `Spanner` instance by setting custom `SessionPoolOptions`. When all the sessions are checked 
 out of the session pool, every new transaction has to wait until a session is returned to the pool. 
