@@ -298,8 +298,7 @@ transactions. When we perform a read in a read-write transaction we still need t
 
 As shown in the example below, the `try-with-resources` block releases the session after it is complete. 
 If you don't use `try-with-resources` block, unless you explicitly call the `close()` method on all resources 
-such as `ResultSet` the session is not released back to the pool. If the transaction does not run within 
-`try-with-resources` block and if we don't close the resources explicitly, we will have a session leak.
+such as `ResultSet`, the session is not released back to the pool.
 
 ```java
 DatabaseClient client =
