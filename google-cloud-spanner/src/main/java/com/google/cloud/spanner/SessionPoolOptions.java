@@ -17,8 +17,10 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.spanner.SessionPool.Clock;
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.util.Locale;
 import java.util.Objects;
 import org.threeten.bp.Duration;
 
@@ -62,6 +64,7 @@ public class SessionPoolOptions {
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
   private final Duration acquireSessionTimeout;
+  private final Position releaseToPosition;
 
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
@@ -86,6 +89,7 @@ public class SessionPoolOptions {
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
     this.acquireSessionTimeout = builder.acquireSessionTimeout;
+    this.releaseToPosition = builder.releaseToPosition;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
   }
@@ -114,6 +118,7 @@ public class SessionPoolOptions {
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
         && Objects.equals(this.acquireSessionTimeout, other.acquireSessionTimeout)
+        && Objects.equals(this.releaseToPosition, other.releaseToPosition)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
@@ -138,6 +143,7 @@ public class SessionPoolOptions {
         this.autoDetectDialect,
         this.waitForMinSessions,
         this.acquireSessionTimeout,
+        this.releaseToPosition,
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock);
   }
@@ -252,6 +258,10 @@ public class SessionPoolOptions {
   @VisibleForTesting
   Duration getAcquireSessionTimeout() {
     return acquireSessionTimeout;
+  }
+
+  Position getReleaseToPosition() {
+    return releaseToPosition;
   }
 
   public static Builder newBuilder() {
@@ -440,8 +450,22 @@ public class SessionPoolOptions {
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
     private Duration acquireSessionTimeout = Duration.ofSeconds(60);
+    private Position releaseToPosition = getReleaseToPositionFromSystemProperty();
 
     private Clock poolMaintainerClock;
+
+    private static Position getReleaseToPositionFromSystemProperty() {
+      // NOTE: This System property is a beta feature. Support for it can be removed in the future.
+      String key = "SESSION_POOL_RELEASE_TO_POSITION";
+      if (System.getProperties().containsKey(key)) {
+        try {
+          return Position.valueOf(System.getProperty(key).toUpperCase(Locale.ENGLISH));
+        } catch (Throwable ignore) {
+          // fallthrough and return the default.
+        }
+      }
+      return Position.FIRST;
+    }
 
     public Builder() {}
 
@@ -732,6 +756,11 @@ public class SessionPoolOptions {
             "acquireSessionTimeout in millis should be lesser than Long.MAX_VALUE");
       }
       this.acquireSessionTimeout = acquireSessionTimeout;
+      return this;
+    }
+
+    Builder setReleaseToPosition(Position releaseToPosition) {
+      this.releaseToPosition = Preconditions.checkNotNull(releaseToPosition);
       return this;
     }
 
