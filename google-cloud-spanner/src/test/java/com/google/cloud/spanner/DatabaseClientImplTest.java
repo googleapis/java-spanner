@@ -236,7 +236,6 @@ public class DatabaseClientImplTest {
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
   }
-
   @Test
   public void
       testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
@@ -359,6 +358,156 @@ public class DatabaseClientImplTest {
           // one.
           // As per this test, anything which takes more than 2s is long-running
           poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+          // force trigger pool maintainer to check for long-running sessions
+          client.pool.poolMaintainer.maintainPool();
+
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+      }
+    }
+    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    // first session executed update, session found to be long-running and cleaned up.
+    // During commit, SessionNotFound exception from backend caused replacement of session and
+    // transaction needs to be retried.
+    // On retry, session again found to be long-running and cleaned up.
+    // During commit, there was no exception from backend.
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(1, client.pool.numLeakedSessionsRemoved());
+    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+  }
+
+  @Test
+  public void
+  testPoolMaintainer_whenMultipleReadsExceedingLongRunningThreshold_retainSessionForTransaction() throws Exception {
+    FakeClock poolMaintainerClock = new FakeClock();
+    InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder()
+            .setIdleTimeThreshold(
+                Duration.ofSeconds(
+                    3L)) // any session not used for more than 2s will be long-running
+            .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
+            .build();
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
+            .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
+            .setPoolMaintainerClock(poolMaintainerClock)
+            .build();
+    spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setDatabaseRole(TEST_DATABASE_ROLE)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.priority(RpcPriority.HIGH))) {
+            while (resultSet.next()) {}
+          }
+          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+
+          try (ResultSet resultSet =
+              transaction.read(
+                  READ_TABLE_NAME,
+                  KeySet.singleKey(Key.of(1L)),
+                  READ_COLUMN_NAMES,
+                  Options.priority(RpcPriority.HIGH))) {
+            while (resultSet.next()) {}
+          }
+          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+
+          // force trigger pool maintainer to check for long-running sessions
+          client.pool.poolMaintainer.maintainPool();
+
+          return null;
+        });
+
+    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    // first session executed update, session found to be long-running and cleaned up.
+    // During commit, SessionNotFound exception from backend caused replacement of session and
+    // transaction needs to be retried.
+    // On retry, session again found to be long-running and cleaned up.
+    // During commit, there was no exception from backend.
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(1, client.pool.numLeakedSessionsRemoved());
+    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+  }
+
+  @Test
+  public void
+  testPoolMaintainer_whenMultipleUpdatesExceedingLongRunningThreshold_retainSessionForTransaction() throws Exception {
+    FakeClock poolMaintainerClock = new FakeClock();
+    InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder()
+            .setIdleTimeThreshold(
+                Duration.ofSeconds(
+                    3L)) // any session not used for more than 2s will be long-running
+            .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
+            .build();
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
+            .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
+            .setPoolMaintainerClock(poolMaintainerClock)
+            .build();
+    spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setDatabaseRole(TEST_DATABASE_ROLE)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        try {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+
+          transaction.executeUpdate(UPDATE_STATEMENT);
+          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+
           // force trigger pool maintainer to check for long-running sessions
           client.pool.poolMaintainer.maintainPool();
 

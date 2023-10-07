@@ -860,6 +860,7 @@ class SessionPool {
     public void commit() {
       try {
         delegate.commit();
+        session.get().markUsed();
       } catch (SessionNotFoundException e) {
         throw handleSessionNotFound(e);
       } finally {
