@@ -413,6 +413,22 @@ public class ConnectionImplTest {
   }
 
   @Test
+  public void testExecuteAutocommitNoop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+
+      StatementResult res = subject.execute(Statement.of("set autocommit = true"));
+      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      assertThat(subject.isAutocommit(), is(true));
+    }
+  }
+
+  @Test
   public void testExecuteGetAutocommit() {
     try (ConnectionImpl subject =
         createConnection(
