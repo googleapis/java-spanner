@@ -232,7 +232,8 @@ public final class ITDmlReturningTest {
   @Test
   public void dmlReturningWithExecuteQuery() {
     List<Struct> rows = executeQuery(DML_COUNT, insertDmlReturning());
-    assertEquals(1,
+    assertEquals(
+        1,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
@@ -244,7 +245,8 @@ public final class ITDmlReturningTest {
       assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
     rows = executeQuery(DML_COUNT, updateDmlReturning());
-    assertEquals(100,
+    assertEquals(
+        100,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
@@ -293,7 +295,8 @@ public final class ITDmlReturningTest {
   @Test
   public void dmlReturningWithExecuteQueryAsync() {
     List<Struct> rows = executeQueryAsync(DML_COUNT, insertDmlReturning());
-    assertEquals(1,
+    assertEquals(
+        1,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
@@ -305,7 +308,8 @@ public final class ITDmlReturningTest {
       assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
     rows = executeQueryAsync(DML_COUNT, updateDmlReturning());
-    assertEquals(100,
+    assertEquals(
+        100,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
