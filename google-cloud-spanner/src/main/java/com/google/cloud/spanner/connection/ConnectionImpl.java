@@ -401,10 +401,10 @@ class ConnectionImpl implements Connection {
 
   @Override
   public void setAutocommit(boolean autocommit) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     if (isAutocommit() == autocommit) {
       return;
     }
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isBatchActive(), "Cannot set autocommit while in a batch");
     ConnectionPreconditions.checkState(
         !isTransactionStarted(), "Cannot set autocommit while a transaction is active");

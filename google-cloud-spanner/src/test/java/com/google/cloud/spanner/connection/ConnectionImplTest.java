@@ -413,7 +413,7 @@ public class ConnectionImplTest {
   }
 
   @Test
-  public void testExecuteAutocommitNoop() {
+  public void testSetAutocommitToTrue_inAutoCommitAndNotInTransaction_noop() {
     try (ConnectionImpl subject =
         createConnection(
             ConnectionOptions.newBuilder()
@@ -422,9 +422,127 @@ public class ConnectionImplTest {
                 .build())) {
       assertThat(subject.isAutocommit(), is(true));
 
-      StatementResult res = subject.execute(Statement.of("set autocommit = true"));
-      assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
+      subject.setAutocommit(true);
+
       assertThat(subject.isAutocommit(), is(true));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToTrue_inAutoCommitAndInTransaction_noop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+      subject.execute(Statement.of("begin transaction"));
+
+      subject.setAutocommit(true);
+
+      assertThat(subject.isAutocommit(), is(true));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_inAutoCommitAndNotInTransaction_autocommitModeChanged() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+
+      subject.setAutocommit(false);
+
+      assertThat(subject.isAutocommit(), is(false));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_inAutoCommitAndInTransaction_throwsException() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+      subject.execute(Statement.of("begin transaction"));
+
+      subject.setAutocommit(false);
+      fail("Cannot set autocommit while in a temporary transaction");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_notInAutoCommitAndTransactionNotStarted_noop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+
+      subject.setAutocommit(false);
+
+      assertThat(subject.isAutocommit(), is(false));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_notInAutoCommitAndTransactionStarted_noop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+      subject.executeQuery(Statement.of(SELECT));
+
+      subject.setAutocommit(false);
+
+      assertThat(subject.isAutocommit(), is(false));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToTrue_notInAutoCommitAndTransactionNotStarted_autocommitModeChanged() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+
+      subject.setAutocommit(true);
+
+      assertThat(subject.isAutocommit(), is(true));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToTrue_notInAutoCommitAndTransactionStarted_throwsException() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+      subject.executeQuery(Statement.of(SELECT));
+
+      subject.setAutocommit(true);
+      fail("Cannot set autocommit while in a temporary transaction");
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
     }
   }
 
