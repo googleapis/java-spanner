@@ -424,7 +424,7 @@ public class ConnectionImplTest {
 
       subject.setAutocommit(true);
 
-      assertThat(subject.isAutocommit(), is(true));
+      assertTrue(subject.isAutocommit());
     }
   }
 
@@ -441,7 +441,7 @@ public class ConnectionImplTest {
 
       subject.setAutocommit(true);
 
-      assertThat(subject.isAutocommit(), is(true));
+      assertTrue(subject.isAutocommit());
     }
   }
 
@@ -457,7 +457,7 @@ public class ConnectionImplTest {
 
       subject.setAutocommit(false);
 
-      assertThat(subject.isAutocommit(), is(false));
+      assertFalse(subject.isAutocommit());
     }
   }
 
@@ -472,10 +472,9 @@ public class ConnectionImplTest {
       assertThat(subject.isAutocommit(), is(true));
       subject.execute(Statement.of("begin transaction"));
 
-      subject.setAutocommit(false);
-      fail("Cannot set autocommit while in a temporary transaction");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
+      SpannerException exception = assertThrows(SpannerException.class, () -> subject.setAutocommit(false));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(exception.getMessage().contains("Cannot set autocommit while in a temporary transaction"));
     }
   }
 
@@ -491,7 +490,7 @@ public class ConnectionImplTest {
 
       subject.setAutocommit(false);
 
-      assertThat(subject.isAutocommit(), is(false));
+      assertFalse(subject.isAutocommit());
     }
   }
 
@@ -508,7 +507,7 @@ public class ConnectionImplTest {
 
       subject.setAutocommit(false);
 
-      assertThat(subject.isAutocommit(), is(false));
+      assertFalse(subject.isAutocommit());
     }
   }
 
@@ -524,7 +523,7 @@ public class ConnectionImplTest {
 
       subject.setAutocommit(true);
 
-      assertThat(subject.isAutocommit(), is(true));
+      assertTrue(subject.isAutocommit());
     }
   }
 
@@ -539,10 +538,9 @@ public class ConnectionImplTest {
       assertThat(subject.isAutocommit(), is(false));
       subject.executeQuery(Statement.of(SELECT));
 
-      subject.setAutocommit(true);
-      fail("Cannot set autocommit while in a temporary transaction");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode(), is(equalTo(ErrorCode.FAILED_PRECONDITION)));
+      SpannerException exception = assertThrows(SpannerException.class, () -> subject.setAutocommit(true));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(exception.getMessage().contains("Cannot set autocommit while a transaction is active"));
     }
   }
 
