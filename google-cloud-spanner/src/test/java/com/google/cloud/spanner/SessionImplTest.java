@@ -27,11 +27,14 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFutures;
 import com.google.api.core.NanoClock;
+import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
@@ -113,6 +116,16 @@ public class SessionImplTest {
         .thenReturn(ApiFutures.immediateFuture(commitResponse));
     Mockito.when(rpc.rollbackAsync(Mockito.any(RollbackRequest.class), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
+    when(rpc.getReadRetrySettings())
+        .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetrySettings());
+    when(rpc.getReadRetryableCodes())
+        .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetryableCodes());
+    when(rpc.getExecuteQueryRetrySettings())
+        .thenReturn(
+            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings());
+    when(rpc.getExecuteQueryRetryableCodes())
+        .thenReturn(
+            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
     session = spanner.getSessionClient(db).createSession();
     ((SessionImpl) session).setCurrentSpan(mock(Span.class));
     // We expect the same options, "options", on all calls on "session".
@@ -407,6 +420,11 @@ public class SessionImplTest {
   }
 
   private static class NoOpStreamingCall implements SpannerRpc.StreamingCall {
+    @Override
+    public ApiCallContext getCallContext() {
+      return GrpcCallContext.createDefault();
+    }
+
     @Override
     public void cancel(@Nullable String message) {}
 

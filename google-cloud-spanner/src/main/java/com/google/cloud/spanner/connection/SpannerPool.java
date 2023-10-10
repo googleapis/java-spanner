@@ -154,6 +154,7 @@ public class SpannerPool {
     private final boolean usePlainText;
     private final String userAgent;
     private final String databaseRole;
+    private final boolean routeToLeader;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -179,6 +180,7 @@ public class SpannerPool {
       this.numChannels = options.getNumChannels();
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
+      this.routeToLeader = options.isRouteToLeader();
     }
 
     @Override
@@ -194,7 +196,8 @@ public class SpannerPool {
           && Objects.equals(this.numChannels, other.numChannels)
           && Objects.equals(this.databaseRole, other.databaseRole)
           && Objects.equals(this.usePlainText, other.usePlainText)
-          && Objects.equals(this.userAgent, other.userAgent);
+          && Objects.equals(this.userAgent, other.userAgent)
+          && Objects.equals(this.routeToLeader, other.routeToLeader);
     }
 
     @Override
@@ -207,7 +210,8 @@ public class SpannerPool {
           this.numChannels,
           this.usePlainText,
           this.databaseRole,
-          this.userAgent);
+          this.userAgent,
+          this.routeToLeader);
     }
   }
 
@@ -341,6 +345,9 @@ public class SpannerPool {
     }
     if (options.getChannelProvider() != null) {
       builder.setChannelProvider(options.getChannelProvider());
+    }
+    if (!options.isRouteToLeader()) {
+      builder.disableLeaderAwareRouting();
     }
     if (key.usePlainText) {
       // Credentials may not be sent over a plain text channel.

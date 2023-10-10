@@ -26,6 +26,7 @@ import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -38,6 +39,9 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.ServerStream;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
@@ -49,8 +53,12 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
+import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
+import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
+import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
 import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
@@ -59,8 +67,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.rpc.RetryInfo;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
@@ -77,10 +89,13 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
+import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
 import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.protobuf.lite.ProtoLiteUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -108,6 +123,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
+import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
@@ -128,6 +144,31 @@ public class DatabaseClientImplTest {
   private static final Statement INVALID_UPDATE_STATEMENT =
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
   private static final long UPDATE_COUNT = 1L;
+  private static final com.google.rpc.Status STATUS_OK =
+      com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build();
+  private static final Iterable<MutationGroup> MUTATION_GROUPS =
+      ImmutableList.of(
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO1").set("ID").to(1L).set("NAME").to("Bar1").build(),
+              Mutation.newInsertBuilder("FOO2").set("ID").to(2L).set("NAME").to("Bar2").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO3").set("ID").to(3L).set("NAME").to("Bar3").build(),
+              Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO4").set("ID").to(4L).set("NAME").to("Bar4").build(),
+              Mutation.newInsertBuilder("FOO5").set("ID").to(5L).set("NAME").to("Bar5").build()),
+          MutationGroup.of(
+              Mutation.newInsertBuilder("FOO6").set("ID").to(6L).set("NAME").to("Bar6").build()));
+  private static final Iterable<BatchWriteResponse> BATCH_WRITE_RESPONSES =
+      ImmutableList.of(
+          BatchWriteResponse.newBuilder()
+              .setStatus(STATUS_OK)
+              .addAllIndexes(ImmutableList.of(0, 1))
+              .build(),
+          BatchWriteResponse.newBuilder()
+              .setStatus(STATUS_OK)
+              .addAllIndexes(ImmutableList.of(2, 3))
+              .build());
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
@@ -145,6 +186,7 @@ public class DatabaseClientImplTest {
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+    mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
     executor = Executors.newSingleThreadExecutor();
     String uniqueName = InProcessServerBuilder.generateName();
@@ -196,6 +238,305 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void
+      testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
+    FakeClock poolMaintainerClock = new FakeClock();
+    InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder()
+            .setIdleTimeThreshold(
+                Duration.ofSeconds(
+                    2L)) // any session not used for more than 2s will be long-running
+            .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
+            .build();
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
+            .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
+            .setPoolMaintainerClock(poolMaintainerClock)
+            .build();
+    spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setDatabaseRole(TEST_DATABASE_ROLE)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      mockSpanner.setCommitExecutionTime(
+          SimulatedExecutionTime.ofException(
+              mockSpanner.createSessionNotFoundException("TEST_SESSION_NAME")));
+      while (true) {
+        try {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+
+          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+          // one.
+          // As per this test, anything which takes more than 2s is long-running
+          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+          // force trigger pool maintainer to check for long-running sessions
+          client.pool.poolMaintainer.maintainPool();
+
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+        mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(0, 0));
+      }
+    }
+    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    // first session executed update, session found to be long-running and cleaned up.
+    // During commit, SessionNotFound exception from backend caused replacement of session and
+    // transaction needs to be retried.
+    // On retry, session again found to be long-running and cleaned up.
+    // During commit, there was no exception from backend.
+
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(2, client.pool.numLeakedSessionsRemoved());
+    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+  }
+
+  @Test
+  public void
+      testPoolMaintainer_whenInactiveTransactionAndSessionExistsOnBackend_removeSessionsFromPool() {
+    FakeClock poolMaintainerClock = new FakeClock();
+    InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder()
+            .setIdleTimeThreshold(
+                Duration.ofSeconds(
+                    2L)) // any session not used for more than 2s will be long-running
+            .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
+            .build();
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
+            .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
+            .setPoolMaintainerClock(poolMaintainerClock)
+            .build();
+    spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setDatabaseRole(TEST_DATABASE_ROLE)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        try {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+
+          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+          // one.
+          // As per this test, anything which takes more than 2s is long-running
+          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+          // force trigger pool maintainer to check for long-running sessions
+          client.pool.poolMaintainer.maintainPool();
+
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+      }
+    }
+    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    // first session executed update, session found to be long-running and cleaned up.
+    // During commit, SessionNotFound exception from backend caused replacement of session and
+    // transaction needs to be retried.
+    // On retry, session again found to be long-running and cleaned up.
+    // During commit, there was no exception from backend.
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(1, client.pool.numLeakedSessionsRemoved());
+    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+  }
+
+  @Test
+  public void testPoolMaintainer_whenLongRunningPartitionedUpdateRequest_takeNoAction() {
+    FakeClock poolMaintainerClock = new FakeClock();
+    InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder()
+            .setIdleTimeThreshold(
+                Duration.ofSeconds(
+                    2L)) // any session not used for more than 2s will be long-running
+            .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
+            .build();
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
+            .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
+            .setPoolMaintainerClock(poolMaintainerClock)
+            .build();
+
+    spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setDatabaseRole(TEST_DATABASE_ROLE)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    client.executePartitionedUpdate(UPDATE_STATEMENT);
+
+    // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running one.
+    // As per this test, anything which takes more than 2s is long-running
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    // force trigger pool maintainer to check for long-running sessions
+    client.pool.poolMaintainer.maintainPool();
+
+    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(0, client.pool.numLeakedSessionsRemoved());
+    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+  }
+
+  /**
+   * PDML transaction is expected to be long-running. This is indicated through session flag
+   * eligibleForLongRunning = true . For all other transactions which are not expected to be
+   * long-running eligibleForLongRunning = false.
+   *
+   * <p>Below tests uses a session for PDML transaction. Post that, the same session is used for
+   * executeUpdate(). Both transactions are long-running. The test verifies that
+   * eligibleForLongRunning = false for the second transaction, and it's identified as a
+   * long-running transaction.
+   */
+  @Test
+  public void testPoolMaintainer_whenPDMLFollowedByInactiveTransaction_removeSessionsFromPool() {
+    FakeClock poolMaintainerClock = new FakeClock();
+    InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder()
+            .setIdleTimeThreshold(
+                Duration.ofSeconds(
+                    2L)) // any session not used for more than 2s will be long-running
+            .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+            .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
+            .build();
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(1) // to ensure there is 1 session and pool is 100% utilized
+            .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions)
+            .setLoopFrequency(1000L) // main thread runs every 1s
+            .setPoolMaintainerClock(poolMaintainerClock)
+            .build();
+    spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setDatabaseRole(TEST_DATABASE_ROLE)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+    DatabaseClientImpl client =
+        (DatabaseClientImpl)
+            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    client.executePartitionedUpdate(UPDATE_STATEMENT);
+
+    // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running one.
+    // As per this test, anything which takes more than 2s is long-running
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    // force trigger pool maintainer to check for long-running sessions
+    client.pool.poolMaintainer.maintainPool();
+
+    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(0, client.pool.numLeakedSessionsRemoved());
+    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+
+    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+
+    try (TransactionManager manager = client.transactionManager()) {
+      TransactionContext transaction = manager.begin();
+      while (true) {
+        try {
+          transaction.executeUpdate(UPDATE_STATEMENT);
+
+          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+          // one.
+          // As per this test, anything which takes more than 2s is long-running
+          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+          // force trigger pool maintainer to check for long-running sessions
+          client.pool.poolMaintainer.maintainPool();
+
+          manager.commit();
+          assertNotNull(manager.getCommitTimestamp());
+          break;
+        } catch (AbortedException e) {
+          transaction = manager.resetForRetry();
+        }
+      }
+    }
+    endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+    // first session executed update, session found to be long-running and cleaned up.
+    // During commit, SessionNotFound exception from backend caused replacement of session and
+    // transaction needs to be retried.
+    // On retry, session again found to be long-running and cleaned up.
+    // During commit, there was no exception from backend.
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(1, client.pool.numLeakedSessionsRemoved());
+    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+  }
+
+  @Test
   public void testWrite() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -210,6 +551,44 @@ public class DatabaseClientImplTest {
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testWriteAborted() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    Timestamp timestamp =
+        client.write(
+            Collections.singletonList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    assertNotNull(timestamp);
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(2, commitRequests.size());
+  }
+
+  @Test
+  public void testWriteAtLeastOnceAborted() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
+    // after the first call, so the retry should succeed.
+    mockSpanner.setCommitExecutionTime(
+        SimulatedExecutionTime.ofException(
+            mockSpanner.createAbortedException(ByteString.copyFromUtf8("test"))));
+    Timestamp timestamp =
+        client.writeAtLeastOnce(
+            Collections.singletonList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
+    assertNotNull(timestamp);
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertEquals(2, commitRequests.size());
   }
 
   @Test
@@ -294,7 +673,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void writeAtLeastOnceWithTagOptions() {
+  public void testWriteAtLeastOnceWithTagOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.writeAtLeastOnceWithOptions(
@@ -310,6 +689,62 @@ public class DatabaseClientImplTest {
     assertNotNull(commit.getRequestOptions());
     assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
     assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithoutOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+
+    ServerStream<BatchWriteResponse> responseStream = client.batchWriteAtLeastOnce(MUTATION_GROUPS);
+    int idx = 0;
+    for (BatchWriteResponse response : responseStream) {
+      assertEquals(
+          response.getStatus(),
+          com.google.rpc.Status.newBuilder().setCode(com.google.rpc.Code.OK_VALUE).build());
+      assertEquals(response.getIndexesList(), ImmutableList.of(idx, idx + 1));
+      idx += 2;
+    }
+
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ServerStream<BatchWriteResponse> responseStream =
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.priority(RpcPriority.LOW));
+    for (BatchWriteResponse response : responseStream) {}
+
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_LOW);
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithTagOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    ServerStream<BatchWriteResponse> responseStream =
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.tag("app=spanner,env=test"));
+    for (BatchWriteResponse response : responseStream) {}
+
+    assertNotNull(responseStream);
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertEquals(request.getRequestOptions().getTransactionTag(), "app=spanner,env=test");
+    assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
   }
 
   @Test
@@ -2963,6 +3398,149 @@ public class DatabaseClientImplTest {
     }
   }
 
+  @Test
+  public void testStreamWaitTimeout() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Add a wait time to the mock server. Note that the test won't actually wait 100ms, as it uses
+    // a 1ns time out.
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(100, 0));
+    // Create a custom call configuration that uses a 1 nanosecond stream timeout value. This will
+    // always time out, as a call to the mock server will always take more than 1 nanosecond.
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          @Override
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            return context.withStreamWaitTimeout(Duration.ofNanos(1L));
+          }
+        };
+    Context context =
+        Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
+    context.run(
+        () -> {
+          try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
+            SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+            assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+            assertTrue(
+                exception.getMessage(), exception.getMessage().contains("stream wait timeout"));
+          }
+        });
+  }
+
+  @Test
+  public void testZeroStreamWaitTimeout() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    // Create a custom call configuration that sets the stream timeout to zero.
+    // This should disable the timeout.
+    CallContextConfigurator configurator =
+        new CallContextConfigurator() {
+          @Override
+          public <ReqT, RespT> ApiCallContext configure(
+              ApiCallContext context, ReqT request, MethodDescriptor<ReqT, RespT> method) {
+            return context.withStreamWaitTimeout(Duration.ZERO);
+          }
+        };
+    Context context =
+        Context.current().withValue(SpannerOptions.CALL_CONTEXT_CONFIGURATOR_KEY, configurator);
+    context.run(
+        () -> {
+          try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
+            // A zero timeout should not cause a timeout, and instead be ignored.
+            assertTrue(resultSet.next());
+            assertFalse(resultSet.next());
+          }
+        });
+  }
+
+  @Test
+  public void testRetryOnResourceExhausted() {
+    final RetrySettings retrySettings =
+        RetrySettings.newBuilder()
+            .setInitialRpcTimeout(Duration.ofSeconds(60L))
+            .setMaxRpcTimeout(Duration.ofSeconds(60L))
+            .setTotalTimeout(Duration.ofSeconds(60L))
+            .setRpcTimeoutMultiplier(1.0d)
+            .setInitialRetryDelay(Duration.ZERO)
+            .setMaxRetryDelay(Duration.ZERO)
+            .setMaxAttempts(100)
+            .build();
+    SpannerOptions.Builder builder =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance());
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(
+                com.google.protobuf.Duration.newBuilder()
+                    .setNanos((int) Duration.ofMillis(1).toNanos())
+                    .build())
+            .build();
+    Metadata.Key<RetryInfo> key =
+        Metadata.Key.of(
+            retryInfo.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(retryInfo));
+    Metadata trailers = new Metadata();
+    trailers.put(key, retryInfo);
+    builder
+        .getSpannerStubSettingsBuilder()
+        .executeStreamingSqlSettings()
+        .setRetryableCodes(StatusCode.Code.UNAVAILABLE, StatusCode.Code.RESOURCE_EXHAUSTED)
+        .setRetrySettings(retrySettings);
+
+    try (Spanner spanner = builder.build().getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      final int expectedRowCount = 5;
+      RandomResultSetGenerator generator = new RandomResultSetGenerator(expectedRowCount);
+      Statement statement = Statement.of("select * from random_table");
+      mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+
+      for (int errorIndex = 0; errorIndex < expectedRowCount - 1; errorIndex++) {
+        for (boolean withRetryInfo : new boolean[] {false, true}) {
+          // RESOURCE_EXHAUSTED errors with and without retry-info should be retried.
+          StatusRuntimeException exception =
+              Status.RESOURCE_EXHAUSTED.asRuntimeException(withRetryInfo ? trailers : null);
+          mockSpanner.setExecuteStreamingSqlExecutionTime(
+              SimulatedExecutionTime.ofStreamException(exception, errorIndex));
+          try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+            //noinspection StatementWithEmptyBody
+            while (resultSet.next()) {}
+          }
+          assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+          if (errorIndex == 0) {
+            // We should only have two requests without a resume token, as the error occurred before
+            // any resume token could be returned.
+            assertEquals(
+                2,
+                mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+                    .filter(request -> request.getResumeToken().isEmpty())
+                    .count());
+          } else {
+            final int expectedResumeToken = errorIndex;
+            // Check that we have one request with a resume token that corresponds with the place in
+            // the stream where the error happened.
+            assertEquals(
+                1,
+                mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+                    .filter(
+                        request ->
+                            request
+                                .getResumeToken()
+                                .equals(
+                                    ByteString.copyFromUtf8(
+                                        String.format("%09d", expectedResumeToken))))
+                    .count());
+          }
+          mockSpanner.clearRequests();
+        }
+      }
+    }
+  }
+
   static void assertAsString(String expected, ResultSet resultSet, int col) {
     assertEquals(expected, resultSet.getValue(col).getAsString());
     assertEquals(ImmutableList.of(expected), resultSet.getValue(col).getAsStringList());
@@ -2973,5 +3551,14 @@ public class DatabaseClientImplTest {
     assertEquals(
         expected.stream().collect(Collectors.joining(",", "[", "]")),
         resultSet.getValue(col).getAsString());
+  }
+
+  static class FakeClock extends Clock {
+    volatile long currentTimeMillis;
+
+    @Override
+    public Instant instant() {
+      return Instant.ofEpochMilli(currentTimeMillis);
+    }
   }
 }

@@ -524,7 +524,30 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   @VisibleForTesting
   static CloseableExecutorProvider createDefaultAsyncExecutorProvider() {
-    return createAsyncExecutorProvider(8, 60L, TimeUnit.SECONDS);
+    return createAsyncExecutorProvider(
+        getDefaultAsyncExecutorProviderCoreThreadCount(), 60L, TimeUnit.SECONDS);
+  }
+
+  @VisibleForTesting
+  static int getDefaultAsyncExecutorProviderCoreThreadCount() {
+    String propertyName = "com.google.cloud.spanner.async_num_core_threads";
+    String propertyValue = System.getProperty(propertyName, "8");
+    try {
+      int corePoolSize = Integer.parseInt(propertyValue);
+      if (corePoolSize < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            String.format(
+                "The value for %s must be >=0. Invalid value: %s", propertyName, propertyValue));
+      }
+      return corePoolSize;
+    } catch (NumberFormatException exception) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          String.format(
+              "The %s system property must be a valid integer. The value %s could not be parsed as an integer.",
+              propertyName, propertyValue));
+    }
   }
 
   /**

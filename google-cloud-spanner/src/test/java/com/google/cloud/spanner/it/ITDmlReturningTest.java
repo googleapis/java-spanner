@@ -196,7 +196,7 @@ public final class ITDmlReturningTest {
         };
     TransactionRunner runner = getClient().readWriteTransaction();
     Long rowCount = runner.run(callable);
-    assertEquals(rowCount, (Long) expectedCount);
+    assertEquals((Long) expectedCount, rowCount);
   }
 
   @Test
@@ -217,7 +217,7 @@ public final class ITDmlReturningTest {
         };
     TransactionRunner runner = getClient().readWriteTransaction();
     Long rowCount = runner.run(callable);
-    assertEquals(rowCount, (Long) expectedCount);
+    assertEquals((Long) expectedCount, rowCount);
   }
 
   @Test
@@ -226,36 +226,36 @@ public final class ITDmlReturningTest {
         assertThrows(
             SpannerException.class,
             () -> getClient().executePartitionedUpdate(Statement.of(updateDmlReturning())));
-    assertEquals(e.getErrorCode(), ErrorCode.UNIMPLEMENTED);
+    assertEquals(ErrorCode.UNIMPLEMENTED, e.getErrorCode());
   }
 
   @Test
   public void dmlReturningWithExecuteQuery() {
     List<Struct> rows = executeQuery(DML_COUNT, insertDmlReturning());
     assertEquals(
+        1,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
-            .getLong(0),
-        1);
+            .getLong(0));
 
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
-      assertEquals(rows.get(idx).getLong("V"), idx + 1);
-      assertEquals(rows.get(idx).getString("K"), String.format("%d-boo%d", id, idx + 1));
+      assertEquals(idx + 1, rows.get(idx).getLong("V"));
+      assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
     rows = executeQuery(DML_COUNT, updateDmlReturning());
     assertEquals(
+        100,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
-            .getLong(0),
-        100);
+            .getLong(0));
 
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
-      assertEquals(rows.get(idx).getLong("V"), 100);
-      assertEquals(rows.get(idx).getString("K"), String.format("%d-boo%d", id, idx + 1));
+      assertEquals(100, rows.get(idx).getLong("V"));
+      assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
     rows = executeQuery(DML_COUNT, deleteDmlReturning());
     assertNull(
@@ -265,8 +265,8 @@ public final class ITDmlReturningTest {
 
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
-      assertEquals(rows.get(idx).getLong("V"), 100);
-      assertEquals(rows.get(idx).getString("K"), String.format("%d-boo%d", id, idx + 1));
+      assertEquals(100, rows.get(idx).getLong("V"));
+      assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
   }
 
@@ -296,29 +296,29 @@ public final class ITDmlReturningTest {
   public void dmlReturningWithExecuteQueryAsync() {
     List<Struct> rows = executeQueryAsync(DML_COUNT, insertDmlReturning());
     assertEquals(
+        1,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
-            .getLong(0),
-        1);
+            .getLong(0));
 
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
-      assertEquals(rows.get(idx).getLong("V"), idx + 1);
-      assertEquals(rows.get(idx).getString("K"), String.format("%d-boo%d", id, idx + 1));
+      assertEquals(idx + 1, rows.get(idx).getLong("V"));
+      assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
     rows = executeQueryAsync(DML_COUNT, updateDmlReturning());
     assertEquals(
+        100,
         getClient()
             .singleUse()
             .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
-            .getLong(0),
-        100);
+            .getLong(0));
 
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
-      assertEquals(rows.get(idx).getLong("V"), 100);
-      assertEquals(rows.get(idx).getString("K"), String.format("%d-boo%d", id, idx + 1));
+      assertEquals(100, rows.get(idx).getLong("V"));
+      assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
     rows = executeQueryAsync(DML_COUNT, deleteDmlReturning());
     assertNull(
@@ -328,8 +328,8 @@ public final class ITDmlReturningTest {
 
     // Check if keys(K) and V have expected values.
     for (int idx = 0; idx < rows.size(); idx++) {
-      assertEquals(rows.get(idx).getLong("V"), 100);
-      assertEquals(rows.get(idx).getString("K"), String.format("%d-boo%d", id, idx + 1));
+      assertEquals(100, rows.get(idx).getLong("V"));
+      assertEquals(String.format("%d-boo%d", id, idx + 1), rows.get(idx).getString("K"));
     }
   }
 
@@ -373,10 +373,10 @@ public final class ITDmlReturningTest {
   public void dmlReturningWithBatchUpdate() {
     // Check if batchUpdate works well with a mix of Simple DML and DML Returning statements.
     long[] rowCounts = batchUpdate(insertDmlReturning(), updateDmlReturning(), deleteDml());
-    assertEquals(rowCounts.length, 3);
-    assertEquals(rowCounts[0], DML_COUNT);
-    assertEquals(rowCounts[1], DML_COUNT);
-    assertEquals(rowCounts[2], DML_COUNT);
+    assertEquals(3, rowCounts.length);
+    assertEquals(DML_COUNT, rowCounts[0]);
+    assertEquals(DML_COUNT, rowCounts[1]);
+    assertEquals(DML_COUNT, rowCounts[2]);
   }
 
   private long[] batchUpdate(final String... stmts) {
@@ -392,10 +392,10 @@ public final class ITDmlReturningTest {
   public void dmlReturningWithBatchUpdateAsync() {
     // Check if batchUpdateAsync works well with a mix of Simple DML and DML Returning statements.
     long[] rowCounts = batchUpdateAsync(insertDmlReturning(), updateDmlReturning(), deleteDml());
-    assertEquals(rowCounts.length, 3);
-    assertEquals(rowCounts[0], DML_COUNT);
-    assertEquals(rowCounts[1], DML_COUNT);
-    assertEquals(rowCounts[2], DML_COUNT);
+    assertEquals(3, rowCounts.length);
+    assertEquals(DML_COUNT, rowCounts[0]);
+    assertEquals(DML_COUNT, rowCounts[1]);
+    assertEquals(DML_COUNT, rowCounts[2]);
   }
 
   private long[] batchUpdateAsync(final String... stmts) {

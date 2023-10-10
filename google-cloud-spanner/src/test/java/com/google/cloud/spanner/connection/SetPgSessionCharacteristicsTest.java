@@ -44,7 +44,7 @@ public class SetPgSessionCharacteristicsTest {
     String sql = "set session characteristics as transaction isolation level default";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-    statement.getClientSideStatement().execute(executor, sql);
+    statement.getClientSideStatement().execute(executor, statement);
 
     verify(connection, never()).setReadOnly(anyBoolean());
   }
@@ -57,7 +57,7 @@ public class SetPgSessionCharacteristicsTest {
     String sql = "set session characteristics as transaction isolation level serializable";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-    statement.getClientSideStatement().execute(executor, sql);
+    statement.getClientSideStatement().execute(executor, statement);
 
     verify(connection, never()).setReadOnly(anyBoolean());
   }
@@ -70,7 +70,7 @@ public class SetPgSessionCharacteristicsTest {
     String sql = "set\tsession\ncharacteristics as transaction read   only";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-    statement.getClientSideStatement().execute(executor, sql);
+    statement.getClientSideStatement().execute(executor, statement);
 
     verify(connection).setReadOnly(true);
     verify(connection, never()).setReadOnly(false);
@@ -84,7 +84,7 @@ public class SetPgSessionCharacteristicsTest {
     String sql = "set   session   characteristics   as   transaction   read   write";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-    statement.getClientSideStatement().execute(executor, sql);
+    statement.getClientSideStatement().execute(executor, statement);
 
     verify(connection).setReadOnly(false);
     verify(connection, never()).setReadOnly(true);
@@ -99,7 +99,7 @@ public class SetPgSessionCharacteristicsTest {
         "set   session   characteristics   as   transaction  isolation level serializable read write";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-    statement.getClientSideStatement().execute(executor, sql);
+    statement.getClientSideStatement().execute(executor, statement);
 
     verify(connection).setReadOnly(false);
     verify(connection, never()).setReadOnly(true);
@@ -114,7 +114,7 @@ public class SetPgSessionCharacteristicsTest {
         "set   session   characteristics   as   transaction  isolation level serializable read only";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-    statement.getClientSideStatement().execute(executor, sql);
+    statement.getClientSideStatement().execute(executor, statement);
 
     verify(connection).setReadOnly(true);
   }
@@ -128,7 +128,7 @@ public class SetPgSessionCharacteristicsTest {
         "set session characteristics as transaction isolation level default, read only, isolation level serializable, read write";
     ParsedStatement statement = parser.parse(Statement.of(sql));
     assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-    statement.getClientSideStatement().execute(executor, sql);
+    statement.getClientSideStatement().execute(executor, statement);
 
     verify(connection).setReadOnly(false);
     verify(connection, never()).setReadOnly(true);
@@ -154,7 +154,7 @@ public class SetPgSessionCharacteristicsTest {
         }) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
     }
 
     // Setting the isolation level is a no-op.
@@ -189,7 +189,7 @@ public class SetPgSessionCharacteristicsTest {
     for (String sql : statements) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
     }
 
     verify(connection, times(statements.length)).setReadOnly(true);
@@ -223,7 +223,7 @@ public class SetPgSessionCharacteristicsTest {
     for (String sql : statements) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
     }
 
     verify(connection, times(statements.length)).setReadOnly(false);

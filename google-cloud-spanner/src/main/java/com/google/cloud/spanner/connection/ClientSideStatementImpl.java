@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.common.base.Preconditions;
@@ -160,7 +161,8 @@ class ClientSideStatementImpl implements ClientSideStatement {
   }
 
   @Override
-  public StatementResult execute(ConnectionStatementExecutor connection, String statement) {
+  public StatementResult execute(
+      ConnectionStatementExecutor connection, ParsedStatement statement) {
     Preconditions.checkState(executor != null, "This statement has not been compiled");
     try {
       return executor.execute(connection, statement);
@@ -170,9 +172,9 @@ class ClientSideStatementImpl implements ClientSideStatement {
       if (e.getCause() instanceof SpannerException) {
         throw (SpannerException) e.getCause();
       }
-      throw new ExecuteException(e.getCause(), this, statement);
+      throw new ExecuteException(e.getCause(), this, statement.getStatement().getSql());
     } catch (Exception e) {
-      throw new ExecuteException(e, this, statement);
+      throw new ExecuteException(e, this, statement.getStatement().getSql());
     }
   }
 
