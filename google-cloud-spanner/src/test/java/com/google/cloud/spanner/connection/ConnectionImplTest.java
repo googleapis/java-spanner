@@ -472,9 +472,13 @@ public class ConnectionImplTest {
       assertThat(subject.isAutocommit(), is(true));
       subject.execute(Statement.of("begin transaction"));
 
-      SpannerException exception = assertThrows(SpannerException.class, () -> subject.setAutocommit(false));
+      SpannerException exception =
+          assertThrows(SpannerException.class, () -> subject.setAutocommit(false));
       assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
-      assertTrue(exception.getMessage().contains("Cannot set autocommit while in a temporary transaction"));
+      assertTrue(
+          exception
+              .getMessage()
+              .contains("Cannot set autocommit while in a temporary transaction"));
     }
   }
 
@@ -512,7 +516,8 @@ public class ConnectionImplTest {
   }
 
   @Test
-  public void testSetAutocommitToTrue_notInAutoCommitAndTransactionNotStarted_autocommitModeChanged() {
+  public void
+      testSetAutocommitToTrue_notInAutoCommitAndTransactionNotStarted_autocommitModeChanged() {
     try (ConnectionImpl subject =
         createConnection(
             ConnectionOptions.newBuilder()
@@ -538,9 +543,11 @@ public class ConnectionImplTest {
       assertThat(subject.isAutocommit(), is(false));
       subject.executeQuery(Statement.of(SELECT));
 
-      SpannerException exception = assertThrows(SpannerException.class, () -> subject.setAutocommit(true));
+      SpannerException exception =
+          assertThrows(SpannerException.class, () -> subject.setAutocommit(true));
       assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
-      assertTrue(exception.getMessage().contains("Cannot set autocommit while a transaction is active"));
+      assertTrue(
+          exception.getMessage().contains("Cannot set autocommit while a transaction is active"));
     }
   }
 
