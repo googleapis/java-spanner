@@ -17,9 +17,12 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.google.api.core.ApiClock;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutures;
 import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
@@ -30,6 +33,7 @@ import com.google.api.gax.grpc.GrpcCallSettings;
 import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.retrying.BasicResultRetryAlgorithm;
 import com.google.api.gax.retrying.ResultRetryAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.TimedAttemptSettings;
@@ -52,6 +56,8 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
+import com.google.api.gax.tracing.ApiTracer;
+import com.google.api.gax.tracing.BaseApiTracer;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
@@ -204,6 +210,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -333,7 +341,7 @@ public class GapicSpannerRpc implements SpannerRpc {
               // SpannerInterceptorProvider if none is provided
               .setInterceptorProvider(
                   SpannerInterceptorProvider.create(
-                          MoreObjects.firstNonNull(
+                          firstNonNull(
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault()))
                       // This sets the response compressor (Server -> Client).
@@ -347,7 +355,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
       TransportChannelProvider channelProvider =
-          MoreObjects.firstNonNull(
+          firstNonNull(
               options.getChannelProvider(), defaultChannelProviderBuilder.build());
 
       CredentialsProvider credentialsProvider =
@@ -510,9 +518,9 @@ public class GapicSpannerRpc implements SpannerRpc {
   // Enhance metric options for gRPC-GCP extension. Adds metric registry if not specified.
   private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
-        MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
+        firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
     GcpMetricsOptions metricsOptions =
-        MoreObjects.firstNonNull(
+        firstNonNull(
             grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
     GcpMetricsOptions.Builder metricsOptionsBuilder = GcpMetricsOptions.newBuilder(metricsOptions);
     if (metricsOptions.getMetricRegistry() == null) {
@@ -1213,7 +1221,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         UpdateDatabaseDdlRequest.newBuilder()
             .setDatabase(databaseName)
             .addAllStatements(updateDatabaseStatements)
-            .setOperationId(MoreObjects.firstNonNull(updateId, ""))
+            .setOperationId(firstNonNull(updateId, ""))
             .build();
     final GrpcCallContext context =
         newCallContext(null, databaseName, request, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
@@ -1738,7 +1746,41 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             SpannerGrpc.getBeginTransactionMethod(),
             routeToLeader);
-    return spannerStub.beginTransactionCallable().futureCall(request, context);
+    if (isRetryBeginTransactionOnNewChannel()) {
+      ImmutableSet<ErrorCode> retryableCodes = ImmutableSet.of(ErrorCode.UNAVAILABLE, ErrorCode.DEADLINE_EXCEEDED);
+      RetrySettings retrySettings = RetrySettings.newBuilder()
+        .setInitialRetryDelay(Duration.ofMillis(5))
+        .setMaxRetryDelay(Duration.ofMillis(5))
+        .setRetryDelayMultiplier(1.0)
+        .setMaxAttempts(8)
+        .build();
+      AtomicBoolean isRetry = new AtomicBoolean(false);
+      return RetryHelper.runWithRetries(() -> {
+        GrpcCallContext callContext;
+        if (isRetry.getAndSet(true)) {
+          callContext = context.withChannelAffinity(null);
+        } else {
+          callContext = context;
+        }
+        return ApiFutures.immediateFuture(get(Objects.requireNonNull(spannerStub).beginTransactionCallable().futureCall(request, callContext)));
+      }, retrySettings, new BasicResultRetryAlgorithm<ApiFuture<Transaction>>(){
+        @Override
+        public boolean shouldRetry(Throwable previousThrowable,
+            ApiFuture<Transaction> previousResponse) {
+          if (previousThrowable instanceof SpannerException) {
+            SpannerException spannerException = (SpannerException) previousThrowable;
+            return retryableCodes.contains(spannerException.getErrorCode());
+          }
+          return false;
+        }
+      }, NanoClock.getDefaultClock());
+    } else {
+      return spannerStub.beginTransactionCallable().futureCall(request, context);
+    }
+  }
+  
+  boolean isRetryBeginTransactionOnNewChannel() {
+    return true;
   }
 
   @Override
@@ -1912,6 +1954,13 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+      context = context.withTracer(new BaseApiTracer() {
+        @Override
+        public void attemptStarted(Object request, int attemptNumber) {
+          super.attemptStarted(request, attemptNumber);
+          System.out.println("Attempt started");
+        }
+      });
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.

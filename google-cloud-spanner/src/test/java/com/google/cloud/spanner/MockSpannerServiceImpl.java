@@ -78,14 +78,20 @@ import com.google.spanner.v1.TransactionSelector;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
+import io.grpc.Attributes;
+import io.grpc.Grpc;
 import io.grpc.Metadata;
+import io.grpc.ServerCall;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
+import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,6 +103,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
@@ -1797,10 +1804,30 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         return null;
     }
   }
+  
+  private void logRemotePort(StreamObserver<Transaction> responseObserver) {
+    try {
+      java.lang.reflect.Field callField = responseObserver.getClass().getDeclaredField("call");
+      callField.setAccessible(true);
+      Object serverCall = callField.get(responseObserver);
+      java.lang.reflect.Field streamField = serverCall.getClass().getDeclaredField("stream");
+      streamField.setAccessible(true);
+      Object stream = streamField.get(serverCall);
+      java.lang.reflect.Field attributesField = stream.getClass().getDeclaredField("attributes");
+      attributesField.setAccessible(true);
+      Attributes attributes = (Attributes) attributesField.get(stream);
+      SocketAddress remoteAddress = attributes.get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+      System.out.println(remoteAddress);
+    } catch (Throwable t) {
+      t.printStackTrace();
+      // ignore
+    }
+  }
 
   @Override
   public void beginTransaction(
       BeginTransactionRequest request, StreamObserver<Transaction> responseObserver) {
+    logRemotePort(responseObserver);
     requests.add(request);
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
