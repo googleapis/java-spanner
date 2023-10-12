@@ -112,9 +112,7 @@ public class InstanceInfo {
      * instance. Exactly one of processing units, node count, or autoscaling config must be set when
      * creating a new instance.
      */
-    public Builder setAutoscalingConfig(AutoscalingConfig autoscalingConfig) {
-      throw new UnsupportedOperationException("Unimplemented");
-    }
+    public abstract Builder setAutoscalingConfig(AutoscalingConfig autoscalingConfig);
 
     public abstract Builder setState(State state);
 

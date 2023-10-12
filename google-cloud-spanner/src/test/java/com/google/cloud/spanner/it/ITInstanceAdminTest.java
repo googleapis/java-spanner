@@ -21,14 +21,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfig;
-import com.google.cloud.spanner.InstanceInfo;
-import com.google.cloud.spanner.IntegrationTestEnv;
-import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.*;
 import com.google.common.collect.Iterators;
+import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,6 +114,51 @@ public class ITInstanceAdminTest {
     toUpdate =
         InstanceInfo.newBuilder(instance.getId()).setDisplayName(instance.getDisplayName()).build();
     instanceClient.updateInstance(toUpdate, InstanceInfo.InstanceField.DISPLAY_NAME).get();
+  }
+
+  @Test
+  public void updateInstanceWithAutoscalingConfig() throws Exception {
+    assumeFalse(
+        "The emulator does not support updating instances with autoscaler", isUsingEmulator());
+
+    Instance instance =
+        instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
+    AutoscalingConfig autoscalingConfig =
+        AutoscalingConfig.newBuilder()
+            .setAutoscalingLimits(
+                AutoscalingConfig.AutoscalingLimits.newBuilder()
+                    .setMinProcessingUnits(1000)
+                    .setMaxProcessingUnits(2000))
+            .setAutoscalingTargets(
+                AutoscalingConfig.AutoscalingTargets.newBuilder()
+                    .setHighPriorityCpuUtilizationPercent(65)
+                    .setStorageUtilizationPercent(95))
+            .build();
+    InstanceInfo toUpdate =
+        InstanceInfo.newBuilder(env.getTestHelper().getInstanceId())
+            .setNodeCount(0)
+            .setAutoscalingConfig(autoscalingConfig)
+            .build();
+    OperationFuture<Instance, UpdateInstanceMetadata> op =
+        instanceClient.updateInstance(toUpdate, InstanceInfo.InstanceField.AUTOSCALING_CONFIG);
+    Instance newInstance = op.get();
+    assertThat(newInstance.getAutoscalingConfig()).isEqualTo(autoscalingConfig);
+
+    Instance newInstanceFromGet =
+        instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
+    assertThat(newInstanceFromGet).isEqualTo(newInstance);
+
+    toUpdate =
+        InstanceInfo.newBuilder(instance.getId())
+            .setAutoscalingConfig(null)
+            .setNodeCount(instance.getNodeCount())
+            .build();
+    instanceClient
+        .updateInstance(
+            toUpdate,
+            InstanceInfo.InstanceField.AUTOSCALING_CONFIG,
+            InstanceInfo.InstanceField.NODE_COUNT)
+        .get();
   }
 
   @Test

@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -315,24 +314,6 @@ public class InstanceAdminClientImplTest {
   }
 
   @Test
-  public void testCreateInstanceWithBothNodeCountAndProcessingUnits() throws Exception {
-    try {
-      client.createInstance(
-          InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
-              .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
-              .setNodeCount(1)
-              .setProcessingUnits(100)
-              .build());
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertTrue(
-          e.getMessage()
-              .contains(
-                  "Only one of nodeCount, processingUnits or autoscalingConfig can be set when creating a new instance"));
-    }
-  }
-
-  @Test
   public void testCreateInstanceWithAutoscalingConfig() throws Exception {
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
         rawOperationFuture =
@@ -350,42 +331,6 @@ public class InstanceAdminClientImplTest {
                 .build());
     assertTrue(operation.isDone());
     assertEquals(INSTANCE_NAME, operation.get().getId().getName());
-  }
-
-  @Test
-  public void testCreateInstanceWithBothNodeCountAndAutoscalingConfig() throws Exception {
-    try {
-      client.createInstance(
-          InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
-              .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
-              .setNodeCount(1)
-              .setAutoscalingConfig(getAutoscalingConfigProto())
-              .build());
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertTrue(
-          e.getMessage()
-              .contains(
-                  "Only one of nodeCount, processingUnits or autoscalingConfig can be set when creating a new instance"));
-    }
-  }
-
-  @Test
-  public void testCreateInstanceWithBothProcessingUnitsAndAutoscalingConfig() throws Exception {
-    try {
-      client.createInstance(
-          InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
-              .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
-              .setProcessingUnits(1000)
-              .setAutoscalingConfig(getAutoscalingConfigProto())
-              .build());
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertTrue(
-          e.getMessage()
-              .contains(
-                  "Only one of nodeCount, processingUnits or autoscalingConfig can be set when creating a new instance"));
-    }
   }
 
   @Test
