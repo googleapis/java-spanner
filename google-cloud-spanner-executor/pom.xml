@@ -90,14 +90,6 @@
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
       <version>1.4.0</version>
-      <!--   Temp exclusion. Remove next protobuf upgrade (to 3.23.3 or higher)
-         context: https://github.com/googleapis/sdk-platform-java/pull/1791#issuecomment-1601587713-->
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.j2objc</groupId>
-          <artifactId>j2objc-annotations</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
