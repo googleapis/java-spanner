@@ -2953,8 +2953,7 @@ public class CloudClientExecutor extends CloudExecutor {
             // Unreachable
           default:
             throw SpannerExceptionFactory.newSpannerException(
-                ErrorCode.INVALID_ARGUMENT,
-                "Unsupported key part type: " + type.getCode().name());
+                ErrorCode.INVALID_ARGUMENT, "Unsupported key part type: " + type.getCode().name());
         }
       } else if (part.hasStringValue()) {
         if (type.getCode() == TypeCode.NUMERIC) {
