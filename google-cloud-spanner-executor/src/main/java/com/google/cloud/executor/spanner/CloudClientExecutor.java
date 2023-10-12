@@ -632,7 +632,7 @@ public class CloudClientExecutor extends CloudExecutor {
       dbClient = client;
     }
 
-    /** Return a list of serviceKeyFile column types of the given table. */
+    /** Return a list of key column types of the given table. */
     public List<com.google.spanner.v1.Type> getKeyColumnTypes(String tableName)
         throws SpannerException {
       Preconditions.checkNotNull(metadata);
@@ -2381,7 +2381,7 @@ public class CloudClientExecutor extends CloudExecutor {
           String.format("Executing read %s\n%s\n", executionContext.getTransactionSeed(), action));
       List<com.google.spanner.v1.Type> typeList = new ArrayList<>();
       if (action.hasIndex()) {
-        // For index read, we assume the serviceKeyFile columns are listed at the front of the read
+        // For index read, we assume the key columns are listed at the front of the read
         // column
         // list.
         for (int i = 0; i < action.getColumnCount(); ++i) {
@@ -2900,11 +2900,11 @@ public class CloudClientExecutor extends CloudExecutor {
         // Unreachable.
       default:
         throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "Unrecognized serviceKeyFile range type");
+            ErrorCode.INVALID_ARGUMENT, "Unrecognized key range type");
     }
   }
 
-  /** Convert a serviceKeyFile proto(value list) to a cloud Key. */
+  /** Convert a key proto(value list) to a cloud Key. */
   private static com.google.cloud.spanner.Key keyProtoToCloudKey(
       com.google.spanner.executor.v1.ValueList keyProto, List<com.google.spanner.v1.Type> typeList)
       throws SpannerException {
@@ -2912,7 +2912,7 @@ public class CloudClientExecutor extends CloudExecutor {
     if (typeList.size() < keyProto.getValueCount()) {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT,
-          "There's more serviceKeyFile parts in " + keyProto + " than column types in " + typeList);
+          "There's more key parts in " + keyProto + " than column types in " + typeList);
     }
 
     for (int i = 0; i < keyProto.getValueCount(); ++i) {
@@ -2934,7 +2934,7 @@ public class CloudClientExecutor extends CloudExecutor {
           default:
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT,
-                "Unsupported null serviceKeyFile part type: " + type.getCode().name());
+                "Unsupported null key part type: " + type.getCode().name());
         }
       } else if (part.hasIntValue()) {
         cloudKey.append(part.getIntValue());
@@ -2954,7 +2954,7 @@ public class CloudClientExecutor extends CloudExecutor {
           default:
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INVALID_ARGUMENT,
-                "Unsupported serviceKeyFile part type: " + type.getCode().name());
+                "Unsupported key part type: " + type.getCode().name());
         }
       } else if (part.hasStringValue()) {
         if (type.getCode() == TypeCode.NUMERIC) {
@@ -2969,7 +2969,7 @@ public class CloudClientExecutor extends CloudExecutor {
         cloudKey.append(dateFromDays(part.getDateDaysValue()));
       } else {
         throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, "Unsupported serviceKeyFile part: " + part);
+            ErrorCode.INVALID_ARGUMENT, "Unsupported key part: " + part);
       }
     }
     return cloudKey.build();
