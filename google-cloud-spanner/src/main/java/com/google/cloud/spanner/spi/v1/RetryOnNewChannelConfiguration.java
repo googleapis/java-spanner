@@ -42,11 +42,11 @@ class RetryOnNewChannelConfiguration {
   // This is the initial RPC timeout that is used by Gax when retrying on a new channel is enabled.
   private final int initialRpcTimeoutBeginTransactionOnNewChannel =
       getIntProperty(
-          "com.google.cloud.spanner.initial_rpc_timeout_begin_transaction_on_new_channel", 200);
+          "com.google.cloud.spanner.initial_rpc_timeout_begin_transaction_on_new_channel", 500);
   // This is the max RPC timeout that is used by Gax when retrying on a new channel is enabled.
   private final int maxRpcTimeoutBeginTransactionOnNewChannel =
       getIntProperty(
-          "com.google.cloud.spanner.max_rpc_timeout_begin_transaction_on_new_channel", 200);
+          "com.google.cloud.spanner.max_rpc_timeout_begin_transaction_on_new_channel", 500);
 
   RetryOnNewChannelConfiguration(SpannerStubSettings.Builder spannerStubSettingsBuilder) {
     if (isRetryBeginTransactionOnNewChannel()) {
