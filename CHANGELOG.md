@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.50.1](https://github.com/googleapis/java-spanner/compare/v6.50.0...v6.50.1) (2023-10-11)
+
+
+### Bug Fixes
+
+* Noop in case there is no change in  autocommit value for setAutocommit() method ([#2662](https://github.com/googleapis/java-spanner/issues/2662)) ([9f51b64](https://github.com/googleapis/java-spanner/commit/9f51b6445f064439379af752372a3490a2fd5087))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.17.0 ([#2660](https://github.com/googleapis/java-spanner/issues/2660)) ([96b9dd6](https://github.com/googleapis/java-spanner/commit/96b9dd6b6a0ee7b1a0a1cc58a8880a10799665e6))
+* Update dependency commons-io:commons-io to v2.14.0 ([#2649](https://github.com/googleapis/java-spanner/issues/2649)) ([fa1b73c](https://github.com/googleapis/java-spanner/commit/fa1b73c1bf4700be5e8865211817e2bc7cc77119))
+
 ## [6.50.0](https://github.com/googleapis/java-spanner/compare/v6.49.0...v6.50.0) (2023-10-09)
 
 
