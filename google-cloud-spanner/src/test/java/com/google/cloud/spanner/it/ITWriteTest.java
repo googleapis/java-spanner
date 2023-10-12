@@ -91,6 +91,15 @@ import org.junit.runners.Parameterized;
 @Category(ParallelIntegrationTest.class)
 @RunWith(Parameterized.class)
 public class ITWriteTest {
+  private static final String RETRY_BEGIN_TRANSACTION_ON_NEW_CHANNEL_PROPERTY =
+      "com.google.cloud.spanner.retry_begin_transaction_on_new_channel";
+  private static final String originalValueForBeginTransactionOnNewChannel =
+      System.getProperty(RETRY_BEGIN_TRANSACTION_ON_NEW_CHANNEL_PROPERTY);
+
+  static {
+    System.setProperty(RETRY_BEGIN_TRANSACTION_ON_NEW_CHANNEL_PROPERTY, "true");
+  }
+
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   @Parameterized.Parameters(name = "Dialect = {0}")
@@ -197,6 +206,13 @@ public class ITWriteTest {
   @AfterClass
   public static void teardown() {
     ConnectionOptions.closeSpanner();
+    if (originalValueForBeginTransactionOnNewChannel == null) {
+      System.clearProperty(RETRY_BEGIN_TRANSACTION_ON_NEW_CHANNEL_PROPERTY);
+    } else {
+      System.setProperty(
+          RETRY_BEGIN_TRANSACTION_ON_NEW_CHANNEL_PROPERTY,
+          originalValueForBeginTransactionOnNewChannel);
+    }
   }
 
   private static String uniqueString() {

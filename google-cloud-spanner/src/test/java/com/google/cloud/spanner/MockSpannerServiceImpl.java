@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
+import com.google.cloud.Tuple;
 import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
 import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
@@ -28,6 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.AbstractMessage;
@@ -81,16 +83,13 @@ import com.google.spanner.v1.TypeCode;
 import io.grpc.Attributes;
 import io.grpc.Grpc;
 import io.grpc.Metadata;
-import io.grpc.ServerCall;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
-import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,7 +102,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
@@ -119,6 +117,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import javax.annotation.Nullable;
 import org.threeten.bp.Instant;
 
 /**
@@ -515,11 +514,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           minimumExecutionTime, randomExecutionTime, exceptions, false, Collections.emptySet());
     }
 
-    private SimulatedExecutionTime(int minimum, int random) {
+    protected SimulatedExecutionTime(int minimum, int random) {
       this(minimum, random, Collections.emptyList(), false, Collections.emptySet());
     }
 
-    private SimulatedExecutionTime(
+    protected SimulatedExecutionTime(
         int minimum,
         int random,
         Collection<? extends Exception> exceptions,
@@ -538,6 +537,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         Queue<Exception> globalExceptions,
         boolean stickyGlobalExceptions,
         CountDownLatch freezeLock) {
+      simulateExecutionTime(globalExceptions, stickyGlobalExceptions, freezeLock, null);
+    }
+
+    protected void simulateExecutionTime(
+        Queue<Exception> globalExceptions,
+        boolean stickyGlobalExceptions,
+        CountDownLatch freezeLock,
+        @Nullable SocketAddress remoteAddress) {
       Uninterruptibles.awaitUninterruptibly(freezeLock);
       checkException(globalExceptions, stickyGlobalExceptions);
       if (streamIndices.isEmpty()) {
@@ -584,7 +591,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private boolean includeDetermineDialectStatementInRequests = false;
 
   private final Object lock = new Object();
-  private Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
+  private Deque<Tuple<AbstractMessage, SocketAddress>> requests = new ConcurrentLinkedDeque<>();
   private volatile CountDownLatch freezeLock = new CountDownLatch(0);
   private Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
@@ -802,7 +809,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   public void batchCreateSessions(
       BatchCreateSessionsRequest request,
       StreamObserver<BatchCreateSessionsResponse> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getDatabase());
     String name = null;
     try {
@@ -812,7 +820,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             .asRuntimeException();
       }
       batchCreateSessionsExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       if (sessions.size() >= maxTotalSessions) {
         throw Status.RESOURCE_EXHAUSTED
             .withDescription("Maximum number of sessions reached")
@@ -864,12 +872,13 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void createSession(
       CreateSessionRequest request, StreamObserver<Session> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getDatabase());
     String name = generateSessionName(request.getDatabase());
     try {
       createSessionExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       Timestamp now = getCurrentGoogleTimestamp();
       Session session =
           Session.newBuilder()
@@ -901,10 +910,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   @Override
   public void getSession(GetSessionRequest request, StreamObserver<Session> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getName());
     try {
-      getSessionExecutionTime.simulateExecutionTime(exceptions, stickyGlobalExceptions, freezeLock);
+      getSessionExecutionTime.simulateExecutionTime(
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       Session session = sessions.get(request.getName());
       if (session == null) {
         setSessionNotFound(request.getName(), responseObserver);
@@ -946,10 +957,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void listSessions(
       ListSessionsRequest request, StreamObserver<ListSessionsResponse> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     try {
       listSessionsExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       List<Session> res = new ArrayList<>();
       for (Session session : sessions.values()) {
         if (session.getName().startsWith(request.getDatabase())) {
@@ -969,11 +981,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   @Override
   public void deleteSession(DeleteSessionRequest request, StreamObserver<Empty> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getName());
     try {
       deleteSessionExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       Session session = sessions.get(request.getName());
       if (session != null) {
         try {
@@ -998,7 +1011,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   @Override
   public void executeSql(ExecuteSqlRequest request, StreamObserver<ResultSet> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -1007,7 +1021,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
-      executeSqlExecutionTime.simulateExecutionTime(exceptions, stickyGlobalExceptions, freezeLock);
+      executeSqlExecutionTime.simulateExecutionTime(
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       simulateAbort(session, transactionId);
       Statement statement =
@@ -1084,7 +1099,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void executeBatchDml(
       ExecuteBatchDmlRequest request, StreamObserver<ExecuteBatchDmlResponse> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -1094,7 +1110,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
       executeBatchDmlExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       // Get or start transaction
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       if (isPartitionedDmlTransaction(transactionId)) {
@@ -1184,9 +1200,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void executeStreamingSql(
       ExecuteSqlRequest request, StreamObserver<PartialResultSet> responseObserver) {
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
     if (includeDetermineDialectStatementInRequests
         || !request.getSql().equals(SessionPool.DETERMINE_DIALECT_STATEMENT.getSql())) {
-      requests.add(request);
+      requests.add(Tuple.of(request, remoteAddress));
     }
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
@@ -1215,7 +1232,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         }
       }
       executeStreamingSqlExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       // Get or start transaction
       if (!request.getPartitionToken().isEmpty()) {
         List<ByteString> tokens =
@@ -1572,7 +1589,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   @Override
   public void read(final ReadRequest request, StreamObserver<ResultSet> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -1581,7 +1599,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
-      readExecutionTime.simulateExecutionTime(exceptions, stickyGlobalExceptions, freezeLock);
+      readExecutionTime.simulateExecutionTime(
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       // Get or start transaction
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       simulateAbort(session, transactionId);
@@ -1605,7 +1624,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void streamingRead(
       final ReadRequest request, StreamObserver<PartialResultSet> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -1615,7 +1635,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
       streamingReadExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       // Get or start transaction
       ByteString transactionId = getTransactionId(session, request.getTransaction());
       if (!request.getPartitionToken().isEmpty()) {
@@ -1804,8 +1824,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
         return null;
     }
   }
-  
-  private void logRemotePort(StreamObserver<Transaction> responseObserver) {
+
+  private SocketAddress getRemoteAddress(StreamObserver<?> responseObserver) {
     try {
       java.lang.reflect.Field callField = responseObserver.getClass().getDeclaredField("call");
       callField.setAccessible(true);
@@ -1816,19 +1836,18 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       java.lang.reflect.Field attributesField = stream.getClass().getDeclaredField("attributes");
       attributesField.setAccessible(true);
       Attributes attributes = (Attributes) attributesField.get(stream);
-      SocketAddress remoteAddress = attributes.get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
-      System.out.println(remoteAddress);
+      return attributes.get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
     } catch (Throwable t) {
-      t.printStackTrace();
       // ignore
+      return null;
     }
   }
 
   @Override
   public void beginTransaction(
       BeginTransactionRequest request, StreamObserver<Transaction> responseObserver) {
-    logRemotePort(responseObserver);
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -1838,7 +1857,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
       beginTransactionExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       Transaction transaction = beginTransaction(session, request.getOptions());
       responseObserver.onNext(transaction);
       responseObserver.onCompleted();
@@ -1939,7 +1958,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   @Override
   public void commit(CommitRequest request, StreamObserver<CommitResponse> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -1948,7 +1968,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
-      commitExecutionTime.simulateExecutionTime(exceptions, stickyGlobalExceptions, freezeLock);
+      commitExecutionTime.simulateExecutionTime(
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       // Find or start a transaction
       Transaction transaction;
       if (request.hasSingleUseTransaction()) {
@@ -2001,7 +2022,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void batchWrite(
       BatchWriteRequest request, StreamObserver<BatchWriteResponse> responseObserver) {
-    requests.add(request);
+    requests.add(Tuple.of(request, getRemoteAddress(responseObserver)));
     Preconditions.checkNotNull(request.getSession());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -2029,7 +2050,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   @Override
   public void rollback(RollbackRequest request, StreamObserver<Empty> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     Preconditions.checkNotNull(request.getTransactionId());
     Session session = sessions.get(request.getSession());
     if (session == null) {
@@ -2038,7 +2060,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
     sessionLastUsed.put(session.getName(), Instant.now());
     try {
-      rollbackExecutionTime.simulateExecutionTime(exceptions, stickyGlobalExceptions, freezeLock);
+      rollbackExecutionTime.simulateExecutionTime(
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       Transaction transaction = transactions.get(request.getTransactionId());
       if (transaction != null) {
         rollbackTransaction(transaction.getId());
@@ -2068,10 +2091,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void partitionQuery(
       PartitionQueryRequest request, StreamObserver<PartitionResponse> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     try {
       partitionQueryExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       partition(
           request.getSession(),
           request.getTransaction(),
@@ -2087,10 +2111,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @Override
   public void partitionRead(
       PartitionReadRequest request, StreamObserver<PartitionResponse> responseObserver) {
-    requests.add(request);
+    SocketAddress remoteAddress = getRemoteAddress(responseObserver);
+    requests.add(Tuple.of(request, remoteAddress));
     try {
       partitionReadExecutionTime.simulateExecutionTime(
-          exceptions, stickyGlobalExceptions, freezeLock);
+          exceptions, stickyGlobalExceptions, freezeLock, remoteAddress);
       partition(
           request.getSession(),
           request.getTransaction(),
@@ -2143,7 +2168,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   @Override
   public List<AbstractMessage> getRequests() {
-    return new ArrayList<>(this.requests);
+    return this.requests.stream().map(Tuple::x).collect(Collectors.toList());
+  }
+
+  public ImmutableList<Tuple<AbstractMessage, SocketAddress>> getRequestTuples() {
+    return ImmutableList.copyOf(this.requests);
   }
 
   public void clearRequests() {
@@ -2153,9 +2182,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   @SuppressWarnings("unchecked")
   public <T extends AbstractMessage> List<T> getRequestsOfType(Class<T> type) {
     List<T> result = new ArrayList<>();
-    for (AbstractMessage message : this.requests) {
-      if (message.getClass().equals(type)) {
-        result.add((T) message);
+    for (Tuple<AbstractMessage, SocketAddress> message : this.requests) {
+      if (message.x().getClass().equals(type)) {
+        result.add((T) message.x());
       }
     }
     return result;
@@ -2163,16 +2192,16 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
 
   public Iterable<Class<? extends AbstractMessage>> getRequestTypes() {
     List<Class<? extends AbstractMessage>> res = new LinkedList<>();
-    for (AbstractMessage m : this.requests) {
-      res.add(m.getClass());
+    for (Tuple<AbstractMessage, SocketAddress> message : this.requests) {
+      res.add(message.x().getClass());
     }
     return res;
   }
 
   public int countRequestsOfType(Class<? extends AbstractMessage> type) {
     int c = 0;
-    for (AbstractMessage m : this.requests) {
-      if (m.getClass().equals(type)) {
+    for (Tuple<AbstractMessage, SocketAddress> message : this.requests) {
+      if (message.x().getClass().equals(type)) {
         c++;
       }
     }

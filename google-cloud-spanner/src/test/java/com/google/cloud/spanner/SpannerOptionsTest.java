@@ -951,6 +951,18 @@ public class SpannerOptionsTest {
                 propertyName, "", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
   }
 
+  static void runWithSystemProperty(String propertyName, String propertyValue, Runnable runnable)
+      throws Exception {
+    runWithSystemProperty(
+        propertyName,
+        propertyValue,
+        (Callable<Void>)
+            () -> {
+              runnable.run();
+              return null;
+            });
+  }
+
   static <V> V runWithSystemProperty(
       String propertyName, String propertyValue, Callable<V> callable) throws Exception {
     String currentValue = System.getProperty(propertyName);

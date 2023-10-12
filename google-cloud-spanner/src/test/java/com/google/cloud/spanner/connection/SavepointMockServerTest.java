@@ -20,46 +20,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.google.api.core.ApiFunction;
-import com.google.api.gax.retrying.RetrySettings;
-import com.google.api.gax.rpc.StatusCode;
-import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.TransactionManager;
-import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.AbstractMessage;
-import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
-import io.grpc.Context;
-import io.grpc.Context.CancellableContext;
-import io.grpc.Deadline;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Status;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
@@ -68,7 +45,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.threeten.bp.Duration;
 
 @RunWith(Parameterized.class)
 public class SavepointMockServerTest extends AbstractMockServerTest {
@@ -670,54 +646,5 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
         assertEquals(numRows, count);
       }
     }
-  }
-  
-  @Test
-  public void testRetry() {
-    mockSpanner.setBeginTransactionExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTimeAndExceptions(0, 5000,
-        ImmutableList.of(Status.UNAVAILABLE.asRuntimeException(), Status.UNAVAILABLE.asRuntimeException())));
-    
-    RandomResultSetGenerator generator = new RandomResultSetGenerator(10);
-    mockSpanner.putStatementResult(StatementResult.query(SELECT_RANDOM_STATEMENT, generator.generate()));
-    
-    SpannerOptions.Builder builder = SpannerOptions.newBuilder()
-        .setHost("http://localhost:" + getPort())
-        .setProjectId("test-project")
-        .setCredentials(NoCredentials.getInstance())
-        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
-    SpannerStubSettings.Builder settingsBuilder = builder.getSpannerStubSettingsBuilder();
-    settingsBuilder.beginTransactionSettings()
-        .setRetryableCodes(StatusCode.Code.UNAVAILABLE)
-        .setRetrySettings(
-            RetrySettings.newBuilder()
-                .setInitialRetryDelay(Duration.ofMillis(5))
-                .setMaxRetryDelay(Duration.ofMillis(5))
-                .setRetryDelayMultiplier(1.0)
-                .setInitialRpcTimeout(Duration.ofMillis(100))
-                .setMaxRpcTimeout(Duration.ofMillis(100))
-                .setRpcTimeoutMultiplier(1.0)
-                .setMaxAttempts(3)
-                .setTotalTimeout(Duration.ofMillis(30000))
-                .build());
-    try (Spanner spanner = builder.build().getService()) {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("test-project", "test-instance", "test-database"));
-      ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-      try (CancellableContext context = Context.current().withDeadline(Deadline.after(5L, TimeUnit.SECONDS), executor)) {
-        context.run(() -> {
-          try (ResultSet resultSet = client.singleUse().executeQuery(SELECT_RANDOM_STATEMENT)) {
-            while (resultSet.next()) {
-              // ignore
-            }
-          }
-          try (TransactionManager transactionManager = client.transactionManager()) {
-            try (TransactionContext transaction = transactionManager.begin()) {
-              transaction.buffer(Mutation.newInsertBuilder("my-table").set("id").to(1L).build());
-              transactionManager.commit();
-            }
-          }
-        });
-      }
-    }
-    assertTrue(mockSpanner.countRequestsOfType(BeginTransactionRequest.class) > 0);
   }
 }

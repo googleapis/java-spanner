@@ -19,7 +19,6 @@ package com.google.cloud.spanner.spi.v1;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
-import com.google.api.core.ApiClock;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -56,8 +55,6 @@ import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
-import com.google.api.gax.tracing.ApiTracer;
-import com.google.api.gax.tracing.BaseApiTracer;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
@@ -212,6 +209,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -220,6 +219,7 @@ import org.threeten.bp.Duration;
 /** Implementation of Cloud Spanner remote calls using Gapic libraries. */
 @InternalApi
 public class GapicSpannerRpc implements SpannerRpc {
+  private static final Logger LOG = Logger.getLogger(GapicSpannerRpc.class.getName());
   private static final PathTemplate PROJECT_NAME_TEMPLATE =
       PathTemplate.create("projects/{project}");
   private static final PathTemplate OPERATION_NAME_TEMPLATE =
@@ -247,6 +247,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final Set<Code> readRetryableCodes;
   private final SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
+  private final RetryOnNewChannelConfiguration retryOnNewChannelConfiguration;
   private final InstanceAdminStub instanceAdminStub;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final DatabaseAdminStub databaseAdminStub;
@@ -355,8 +356,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
       TransportChannelProvider channelProvider =
-          firstNonNull(
-              options.getChannelProvider(), defaultChannelProviderBuilder.build());
+          firstNonNull(options.getChannelProvider(), defaultChannelProviderBuilder.build());
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);
@@ -373,27 +373,27 @@ public class GapicSpannerRpc implements SpannerRpc {
               .withCheckInterval(checkInterval)
               .withClock(NanoClock.getDefaultClock());
 
+      SpannerStubSettings.Builder spannerStubSettingsBuilder =
+          options
+              .getSpannerStubSettings()
+              .toBuilder()
+              .setTransportChannelProvider(channelProvider)
+              .setCredentialsProvider(credentialsProvider)
+              .setStreamWatchdogProvider(watchdogProvider);
+      retryOnNewChannelConfiguration =
+          new RetryOnNewChannelConfiguration(spannerStubSettingsBuilder);
+
       try {
-        this.spannerStub =
-            GrpcSpannerStub.create(
-                options
-                    .getSpannerStubSettings()
-                    .toBuilder()
-                    .setTransportChannelProvider(channelProvider)
-                    .setCredentialsProvider(credentialsProvider)
-                    .setStreamWatchdogProvider(watchdogProvider)
-                    .build());
-        this.readRetrySettings =
-            options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
-        this.readRetryableCodes =
-            options.getSpannerStubSettings().streamingReadSettings().getRetryableCodes();
+        SpannerStubSettings spannerStubSettings = spannerStubSettingsBuilder.build();
+        this.spannerStub = GrpcSpannerStub.create(spannerStubSettings);
+        this.readRetrySettings = spannerStubSettings.streamingReadSettings().getRetrySettings();
+        this.readRetryableCodes = spannerStubSettings.streamingReadSettings().getRetryableCodes();
         this.executeQueryRetrySettings =
-            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
+            spannerStubSettings.executeStreamingSqlSettings().getRetrySettings();
         this.executeQueryRetryableCodes =
-            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
+            spannerStubSettings.executeStreamingSqlSettings().getRetryableCodes();
         partitionedDmlRetrySettings =
-            options
-                .getSpannerStubSettings()
+            spannerStubSettings
                 .executeSqlSettings()
                 .getRetrySettings()
                 .toBuilder()
@@ -402,7 +402,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setTotalTimeout(options.getPartitionedDmlTimeout())
                 .setRpcTimeoutMultiplier(1.0)
                 .build();
-        SpannerStubSettings.Builder pdmlSettings = options.getSpannerStubSettings().toBuilder();
+        SpannerStubSettings.Builder pdmlSettings = spannerStubSettings.toBuilder();
         pdmlSettings
             .setTransportChannelProvider(channelProvider)
             .setCredentialsProvider(credentialsProvider)
@@ -492,6 +492,7 @@ public class GapicSpannerRpc implements SpannerRpc {
         throw newSpannerException(e);
       }
     } else {
+      this.retryOnNewChannelConfiguration = null;
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
@@ -520,8 +521,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     GcpManagedChannelOptions grpcGcpOptions =
         firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
     GcpMetricsOptions metricsOptions =
-        firstNonNull(
-            grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
+        firstNonNull(grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
     GcpMetricsOptions.Builder metricsOptionsBuilder = GcpMetricsOptions.newBuilder(metricsOptions);
     if (metricsOptions.getMetricRegistry() == null) {
       metricsOptionsBuilder.withMetricRegistry(Metrics.getMetricRegistry());
@@ -1746,41 +1746,16 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             SpannerGrpc.getBeginTransactionMethod(),
             routeToLeader);
-    if (isRetryBeginTransactionOnNewChannel()) {
-      ImmutableSet<ErrorCode> retryableCodes = ImmutableSet.of(ErrorCode.UNAVAILABLE, ErrorCode.DEADLINE_EXCEEDED);
-      RetrySettings retrySettings = RetrySettings.newBuilder()
-        .setInitialRetryDelay(Duration.ofMillis(5))
-        .setMaxRetryDelay(Duration.ofMillis(5))
-        .setRetryDelayMultiplier(1.0)
-        .setMaxAttempts(8)
-        .build();
-      AtomicBoolean isRetry = new AtomicBoolean(false);
-      return RetryHelper.runWithRetries(() -> {
-        GrpcCallContext callContext;
-        if (isRetry.getAndSet(true)) {
-          callContext = context.withChannelAffinity(null);
-        } else {
-          callContext = context;
-        }
-        return ApiFutures.immediateFuture(get(Objects.requireNonNull(spannerStub).beginTransactionCallable().futureCall(request, callContext)));
-      }, retrySettings, new BasicResultRetryAlgorithm<ApiFuture<Transaction>>(){
-        @Override
-        public boolean shouldRetry(Throwable previousThrowable,
-            ApiFuture<Transaction> previousResponse) {
-          if (previousThrowable instanceof SpannerException) {
-            SpannerException spannerException = (SpannerException) previousThrowable;
-            return retryableCodes.contains(spannerException.getErrorCode());
-          }
-          return false;
-        }
-      }, NanoClock.getDefaultClock());
+    if (retryOnNewChannelConfiguration.isRetryBeginTransactionOnNewChannel()) {
+      return executeUnaryWithRetryOnNewChannel(
+          spannerStub.beginTransactionCallable(),
+          request,
+          context,
+          retryOnNewChannelConfiguration.getRetryDelayBeginTransactionOnNewChannel(),
+          retryOnNewChannelConfiguration.getMaxAttemptsBeginTransactionOnNewChannel());
     } else {
       return spannerStub.beginTransactionCallable().futureCall(request, context);
     }
-  }
-  
-  boolean isRetryBeginTransactionOnNewChannel() {
-    return true;
   }
 
   @Override
@@ -1927,6 +1902,59 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
   }
 
+  /**
+   * Executes a unary RPC with retries on a new gRPC channel if the RPC fails with UNAVAILABLE or
+   * DEADLINE_EXCEEDED.
+   */
+  private <RequestT, ResponseT> ApiFuture<ResponseT> executeUnaryWithRetryOnNewChannel(
+      UnaryCallable<RequestT, ResponseT> callable,
+      RequestT request,
+      GrpcCallContext context,
+      int retryDelayMillis,
+      int maxAttempts) {
+    ImmutableSet<ErrorCode> retryableCodes =
+        ImmutableSet.of(ErrorCode.UNAVAILABLE, ErrorCode.DEADLINE_EXCEEDED);
+    RetrySettings retrySettings =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(Duration.ofMillis(retryDelayMillis))
+            .setMaxRetryDelay(Duration.ofMillis(retryDelayMillis))
+            .setRetryDelayMultiplier(1.0)
+            .setMaxAttempts(maxAttempts)
+            .build();
+    AtomicBoolean isRetry = new AtomicBoolean(false);
+    AtomicInteger channelHint =
+        new AtomicInteger(MoreObjects.firstNonNull(context.getChannelAffinity(), 0));
+    try {
+      return RetryHelper.runWithRetries(
+          () -> {
+            GrpcCallContext callContext;
+            if (isRetry.getAndSet(true)) {
+              callContext = context.withChannelAffinity(channelHint.incrementAndGet());
+              LOG.log(
+                  Level.FINE, "Retrying BeginTransaction with channel hint {0}", channelHint.get());
+            } else {
+              callContext = context;
+            }
+            return ApiFutures.immediateFuture(get(callable.futureCall(request, callContext)));
+          },
+          retrySettings,
+          new BasicResultRetryAlgorithm<ApiFuture<ResponseT>>() {
+            @Override
+            public boolean shouldRetry(
+                Throwable previousThrowable, ApiFuture<ResponseT> previousResponse) {
+              if (previousThrowable instanceof SpannerException) {
+                SpannerException spannerException = (SpannerException) previousThrowable;
+                return retryableCodes.contains(spannerException.getErrorCode());
+              }
+              return false;
+            }
+          },
+          NanoClock.getDefaultClock());
+    } catch (RetryHelperException retryHelperException) {
+      throw SpannerExceptionFactory.asSpannerException(retryHelperException.getCause());
+    }
+  }
+
   // Before removing this method, please verify with a code owner that it is not used
   // in any internal testing infrastructure.
   @VisibleForTesting
@@ -1954,13 +1982,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
-      context = context.withTracer(new BaseApiTracer() {
-        @Override
-        public void attemptStarted(Object request, int attemptNumber) {
-          super.attemptStarted(request, attemptNumber);
-          System.out.println("Attempt started");
-        }
-      });
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.
