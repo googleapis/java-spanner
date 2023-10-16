@@ -113,6 +113,52 @@ public class InstanceTest {
   public void equality() {
     InstanceId id = new InstanceId("test-project", "test-instance");
     InstanceConfigId configId = new InstanceConfigId("test-project", "test-instance-config");
+
+    Instance instance =
+        new Instance.Builder(instanceClient, dbClient, id)
+            .setInstanceConfigId(configId)
+            .setDisplayName("test instance")
+            .setNodeCount(1)
+            .setProcessingUnits(2000)
+            .setState(InstanceInfo.State.READY)
+            .addLabel("env", "prod")
+            .addLabel("region", "us")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
+            .build();
+    Instance instance2 =
+        new Instance.Builder(instanceClient, dbClient, id)
+            .setInstanceConfigId(configId)
+            .setDisplayName("test instance")
+            .setNodeCount(1)
+            .setProcessingUnits(2000)
+            .setState(InstanceInfo.State.READY)
+            .addLabel("region", "us")
+            .addLabel("env", "prod")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(86000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(46000))
+            .build();
+    Instance instance3 =
+        new Instance.Builder(instanceClient, dbClient, id)
+            .setInstanceConfigId(configId)
+            .setDisplayName("test instance")
+            .setNodeCount(1)
+            .setProcessingUnits(2000)
+            .setState(InstanceInfo.State.READY)
+            .addLabel("env", "prod")
+            .setUpdateTime(Timestamp.ofTimeMicroseconds(8000))
+            .setCreateTime(Timestamp.ofTimeMicroseconds(4000))
+            .build();
+    EqualsTester tester = new EqualsTester();
+    tester.addEqualityGroup(instance, instance2);
+    tester.addEqualityGroup(instance3);
+    tester.testEquals();
+  }
+
+  @Test
+  public void equalityWithAutoscalingConfig() {
+    InstanceId id = new InstanceId("test-project", "test-instance");
+    InstanceConfigId configId = new InstanceConfigId("test-project", "test-instance-config");
     AutoscalingConfig autoscalingConfig1 =
         AutoscalingConfig.newBuilder()
             .setAutoscalingLimits(

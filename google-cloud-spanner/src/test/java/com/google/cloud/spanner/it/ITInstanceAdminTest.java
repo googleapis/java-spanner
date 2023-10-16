@@ -21,7 +21,13 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.Instance;
+import com.google.cloud.spanner.InstanceAdminClient;
+import com.google.cloud.spanner.InstanceConfig;
+import com.google.cloud.spanner.InstanceInfo;
+import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -148,6 +154,7 @@ public class ITInstanceAdminTest {
         instanceClient.getInstance(env.getTestHelper().getInstanceId().getInstance());
     assertThat(newInstanceFromGet).isEqualTo(newInstance);
 
+    // Revert back to the instance original state.
     toUpdate =
         InstanceInfo.newBuilder(instance.getId())
             .setAutoscalingConfig(null)

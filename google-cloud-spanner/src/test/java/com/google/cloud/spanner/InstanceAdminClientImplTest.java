@@ -331,6 +331,9 @@ public class InstanceAdminClientImplTest {
                 .build());
     assertTrue(operation.isDone());
     assertEquals(INSTANCE_NAME, operation.get().getId().getName());
+    assertEquals(
+        getAutoscalingInstanceProto().getAutoscalingConfig(),
+        operation.get().getAutoscalingConfig());
   }
 
   @Test
