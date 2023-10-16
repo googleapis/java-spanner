@@ -632,16 +632,21 @@ class SessionPool {
   static class SessionPoolTransactionContext implements TransactionContext {
     private final SessionNotFoundHandler handler;
     final TransactionContext delegate;
+    private final PooledSessionFuture pooledSessionFuture;
 
-    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate) {
+    SessionPoolTransactionContext(SessionNotFoundHandler handler,
+        TransactionContext delegate, PooledSessionFuture pooledSessionFuture) {
       this.handler = Preconditions.checkNotNull(handler);
       this.delegate = delegate;
+      this.pooledSessionFuture = Preconditions.checkNotNull(pooledSessionFuture);
     }
 
     @Override
     public ResultSet read(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
+      ResultSet resultSet = new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
+      pooledSessionFuture.get().markUsed();
+      return resultSet;
     }
 
     @Override
@@ -671,6 +676,8 @@ class SessionPool {
         return delegate.readRow(table, key, columns);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        pooledSessionFuture.get().markUsed();
       }
     }
 
@@ -690,6 +697,7 @@ class SessionPool {
     @Override
     public void buffer(Mutation mutation) {
       delegate.buffer(mutation);
+      pooledSessionFuture.get().markUsed();
     }
 
     @Override
@@ -703,6 +711,8 @@ class SessionPool {
         return delegate.readRowUsingIndex(table, index, key, columns);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        pooledSessionFuture.get().markUsed();
       }
     }
 
@@ -723,6 +733,7 @@ class SessionPool {
     @Override
     public void buffer(Iterable<Mutation> mutations) {
       delegate.buffer(mutations);
+      pooledSessionFuture.get().markUsed();
     }
 
     @Override
@@ -743,6 +754,8 @@ class SessionPool {
         return delegate.analyzeUpdateStatement(statement, analyzeMode, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        pooledSessionFuture.get().markUsed();
       }
     }
 
@@ -752,6 +765,8 @@ class SessionPool {
         return delegate.executeUpdate(statement, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        pooledSessionFuture.get().markUsed();
       }
     }
 
@@ -772,6 +787,8 @@ class SessionPool {
         return delegate.batchUpdate(statements, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        pooledSessionFuture.get().markUsed();
       }
     }
 
@@ -789,17 +806,23 @@ class SessionPool {
 
     @Override
     public ResultSet executeQuery(Statement statement, QueryOption... options) {
-      return new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
+      ResultSet resultSet = new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
+      pooledSessionFuture.get().markUsed();
+      return resultSet;
     }
 
     @Override
     public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-      return new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
+      AsyncResultSet resultSet = new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
+      pooledSessionFuture.get().markUsed();
+      return resultSet;
     }
 
     @Override
     public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
-      return new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
+      ResultSet resultSet = new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
+      pooledSessionFuture.get().markUsed();
+      return resultSet;
     }
 
     @Override
@@ -833,7 +856,7 @@ class SessionPool {
     }
 
     private TransactionContext internalBegin() {
-      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
+      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin(), session);
       session.get().markUsed();
       return res;
     }
@@ -884,11 +907,11 @@ class SessionPool {
       while (true) {
         try {
           if (restartedAfterSessionNotFound) {
-            TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
+            TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin(), session);
             restartedAfterSessionNotFound = false;
             return res;
           } else {
-            return new SessionPoolTransactionContext(this, delegate.resetForRetry());
+            return new SessionPoolTransactionContext(this, delegate.resetForRetry(), session);
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);

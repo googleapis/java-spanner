@@ -450,16 +450,8 @@ public class DatabaseClientImplTest {
 
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    // first session executed update, session found to be long-running and cleaned up.
-    // During commit, SessionNotFound exception from backend caused replacement of session and
-    // transaction needs to be retried.
-    // On retry, session again found to be long-running and cleaned up.
-    // During commit, there was no exception from backend.
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(1, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    assertNotEquals(endExecutionTime, initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(0, client.pool.numLeakedSessionsRemoved());
   }
 
   @Test
@@ -521,15 +513,8 @@ public class DatabaseClientImplTest {
     }
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    // first session executed update, session found to be long-running and cleaned up.
-    // During commit, SessionNotFound exception from backend caused replacement of session and
-    // transaction needs to be retried.
-    // On retry, session again found to be long-running and cleaned up.
-    // During commit, there was no exception from backend.
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(1, client.pool.numLeakedSessionsRemoved());
+    assertNotEquals(endExecutionTime, initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertEquals(0, client.pool.numLeakedSessionsRemoved());
     assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
   }
 
