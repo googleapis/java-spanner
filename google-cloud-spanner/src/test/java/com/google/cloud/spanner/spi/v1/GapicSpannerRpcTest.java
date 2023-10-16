@@ -584,6 +584,35 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
+  public void testClientLibToken() {
+    SpannerOptions options = createSpannerOptions();
+    try (Spanner spanner = options.getService()) {
+      DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
+    }
+    Key<String> key = Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER);
+    assertTrue(lastSeenHeaders.containsKey(key));
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key))
+            .contains(ServiceOptions.getGoogApiClientLibName() + "/"));
+    // Check that the default header value is only included once in the header.
+    // We do this by splitting the entire header by the default header value. The resulting array
+    // should have 2 elements.
+    assertEquals(
+        lastSeenHeaders.get(key),
+        2,
+        Objects.requireNonNull(lastSeenHeaders.get(key))
+            .split(ServiceOptions.getGoogApiClientLibName())
+            .length);
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key)).contains("gl-java/"));
+  }
+
+  @Test
   public void testCustomClientLibToken_alsoContainsDefaultToken() {
     SpannerOptions options =
         createSpannerOptions().toBuilder().setClientLibToken("pg-adapter").build();
@@ -602,6 +631,9 @@ public class GapicSpannerRpcTest {
         lastSeenHeaders.get(key),
         Objects.requireNonNull(lastSeenHeaders.get(key))
             .contains(ServiceOptions.getGoogApiClientLibName() + "/"));
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key)).contains("gl-java/"));
   }
 
   private SpannerOptions createSpannerOptions() {
