@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.opencensus.contrib.grpc.util.StatusConverter;
 import io.opencensus.trace.AttributeValue;
@@ -30,21 +31,21 @@ import java.util.Map;
 
 class DualSpan implements ISpan {
 
-  public static EndSpanOptions END_SPAN_OPTIONS =
+  static final EndSpanOptions END_SPAN_OPTIONS =
       EndSpanOptions.builder().setSampleToLocalSpanStore(true).build();
-  private Span openCensusSpan;
-  private io.opentelemetry.api.trace.Span openTelemetrySpan;
+  private final Span openCensusSpan;
+  private final io.opentelemetry.api.trace.Span openTelemetrySpan;
 
   public DualSpan(Span openCensusSpan, io.opentelemetry.api.trace.Span openTelemetrySpan) {
-    this.openCensusSpan = openCensusSpan;
-    this.openTelemetrySpan = openTelemetrySpan;
+    this.openCensusSpan = Preconditions.checkNotNull(openCensusSpan);
+    this.openTelemetrySpan = Preconditions.checkNotNull(openTelemetrySpan);
   }
 
-  public Span getOpenCensusSpan() {
+  Span getOpenCensusSpan() {
     return openCensusSpan;
   }
 
-  public io.opentelemetry.api.trace.Span getOpenTelemetrySpan() {
+  io.opentelemetry.api.trace.Span getOpenTelemetrySpan() {
     return openTelemetrySpan;
   }
 

@@ -1336,7 +1336,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               "Starting/Resuming stream",
               "ResumeToken",
               resumeToken == null ? "null" : resumeToken.toStringUtf8());
-          try (IScope sss = tracer.withSpan(span)) {
+          try (IScope scope = tracer.withSpan(span)) {
             // When start a new stream set the Span as current to make the gRPC Span a child of
             // this Span.
             stream = checkNotNull(startStream(resumeToken));

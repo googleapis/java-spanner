@@ -21,6 +21,13 @@ import java.util.Map;
 
 interface ISpan {
 
+  /**
+   * Adds an annotation to the OpenCensus and OpenTelemetry span.
+   *
+   * @param message the description of the annotation event.
+   * @param attributes the map of attribute key-value pairs that will be added; these are associated
+   *     with this annotation.
+   */
   void addAnnotation(String message, Map<String, Object> attributes);
 
   void addAnnotation(String message);

@@ -24,11 +24,11 @@ class TraceWrapper {
 
   private Tracer openCensusTracer;
 
-  public TraceWrapper(Tracer openCensusTracer) {
+  TraceWrapper(Tracer openCensusTracer) {
     this.openCensusTracer = openCensusTracer;
   }
 
-  public ISpan spanBuilder(String spanName) {
+  ISpan spanBuilder(String spanName) {
     return new DualSpan(
         openCensusTracer.spanBuilder(spanName).startSpan(),
         SpannerOptions.getOpenTelemetry()
@@ -37,7 +37,7 @@ class TraceWrapper {
             .startSpan());
   }
 
-  public ISpan spanBuilderWithExplicitParent(String spanName, ISpan parentSpan) {
+  ISpan spanBuilderWithExplicitParent(String spanName, ISpan parentSpan) {
     DualSpan dualParentSpan;
     if (!(parentSpan instanceof DualSpan)) {
       dualParentSpan = new DualSpan(null, null);
@@ -68,13 +68,13 @@ class TraceWrapper {
     return new DualSpan(ocSpan, otSpan);
   }
 
-  public ISpan getCurrentSpan() {
+  ISpan getCurrentSpan() {
     return new DualSpan(
         openCensusTracer.getCurrentSpan(),
         io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current()));
   }
 
-  public IScope withSpan(ISpan span) {
+  IScope withSpan(ISpan span) {
     DualSpan dualSpan;
     if (!(span instanceof DualSpan)) {
       dualSpan = new DualSpan(null, null);

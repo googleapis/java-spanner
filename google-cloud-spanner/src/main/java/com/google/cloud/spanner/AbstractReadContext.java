@@ -396,7 +396,7 @@ abstract class AbstractReadContext
           span.addAnnotation(
               "Transaction Creation Done",
               ImmutableMap.of(
-                  "id",
+                  "Id",
                   transaction.getId().toStringUtf8(),
                   "Timestamp",
                   Timestamp.fromProto(transaction.getReadTimestamp()).toString()));
