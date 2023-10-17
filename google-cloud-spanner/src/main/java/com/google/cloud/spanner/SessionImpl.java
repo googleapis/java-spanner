@@ -29,6 +29,7 @@ import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
+import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
+import org.threeten.bp.Instant;
 
 /**
  * Implementation of {@link Session}. Sessions are managed internally by the client library, and
@@ -98,12 +100,14 @@ class SessionImpl implements Session {
   ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
   private Span currentSpan;
+  private volatile Instant lastUseTime;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
+    this.lastUseTime = new Clock().instant();
   }
 
   @Override
@@ -121,6 +125,14 @@ class SessionImpl implements Session {
 
   Span getCurrentSpan() {
     return currentSpan;
+  }
+
+  Instant getLastUseTime() {
+    return lastUseTime;
+  }
+
+  void markUsed(Instant instant) {
+    lastUseTime = instant;
   }
 
   @Override
