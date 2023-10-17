@@ -87,7 +87,7 @@ class HeaderInterceptor implements ClientInterceptor {
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
-        SpannerProperties spannerProperties = setProjectPropertes(headers);
+        SpannerProperties spannerProperties = createProjectPropertes(headers);
         TagContext tagContext = getTagContext(method.getFullMethodName(), spannerProperties);
         Attributes attributes = getMetricAttributes(method.getFullMethodName(), spannerProperties);
         super.start(
@@ -127,7 +127,7 @@ class HeaderInterceptor implements ClientInterceptor {
     }
   }
 
-  private SpannerProperties setProjectPropertes(Metadata headers) {
+  private SpannerProperties createProjectPropertes(Metadata headers) {
     String projectId = "undefined-project";
     String instanceId = "undefined-database";
     String databaseId = "undefined-database";

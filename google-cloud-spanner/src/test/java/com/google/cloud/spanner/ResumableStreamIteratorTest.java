@@ -140,7 +140,7 @@ public class ResumableStreamIteratorTest {
         new AbstractResultSet.ResumableStreamIterator(
             maxBufferSize,
             "",
-            null,
+            new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override

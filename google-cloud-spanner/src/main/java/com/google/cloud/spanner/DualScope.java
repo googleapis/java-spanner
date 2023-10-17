@@ -20,8 +20,8 @@ import io.opencensus.common.Scope;
 
 class DualScope implements IScope {
 
-  private Scope openCensusScope;
-  private io.opentelemetry.context.Scope openTelemetryScope;
+  private final Scope openCensusScope;
+  private final io.opentelemetry.context.Scope openTelemetryScope;
 
   public DualScope(Scope openCensusScope, io.opentelemetry.context.Scope openTelemetryScope) {
     this.openCensusScope = openCensusScope;
