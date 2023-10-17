@@ -358,8 +358,7 @@ public class SessionPoolOptions {
     }
 
     static class Builder {
-      private ActionOnInactiveTransaction actionOnInactiveTransaction =
-          ActionOnInactiveTransaction.WARN;
+      private ActionOnInactiveTransaction actionOnInactiveTransaction;
       private Duration executionFrequency = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
       private Duration idleTimeThreshold = Duration.ofMinutes(60L);
@@ -600,7 +599,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
-    public Builder setWarnIfInactiveTransactions() {
+    Builder setWarnIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN)
@@ -619,7 +618,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
-    public Builder setWarnAndCloseIfInactiveTransactions() {
+    Builder setWarnAndCloseIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
