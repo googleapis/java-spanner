@@ -917,7 +917,7 @@ public class SpannerOptionsTest {
   @Test
   public void testAsyncExecutorProviderCoreThreadCount() throws Exception {
     assertEquals(8, SpannerOptions.getDefaultAsyncExecutorProviderCoreThreadCount());
-    String propertyName = "SPANNER_ASYNC_NUM_CORE_THREADS";
+    String propertyName = "com.google.cloud.spanner.async_num_core_threads";
     assertEquals(
         Integer.valueOf(8),
         runWithSystemProperty(

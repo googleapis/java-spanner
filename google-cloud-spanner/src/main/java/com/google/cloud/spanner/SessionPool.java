@@ -2000,6 +2000,7 @@ class SessionPool {
 
   enum Position {
     FIRST,
+    LAST,
     RANDOM
   }
 
@@ -2501,16 +2502,18 @@ class SessionPool {
           // Do not randomize if there are few other sessions checked out and this session has been
           // used. This ensures that this session will be re-used for the next transaction, which is
           // more efficient.
-          session.releaseToPosition = Position.FIRST;
+          session.releaseToPosition = options.getReleaseToPosition();
         }
         if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
           // A session should only be added at a random position the first time it is added to
           // the pool or if the pool was deemed unbalanced. All following releases into the pool
-          // should normally happen at the front of the pool (unless the pool is again deemed to be
-          // unbalanced).
-          session.releaseToPosition = Position.FIRST;
+          // should normally happen at the default release position (unless the pool is again deemed
+          // to be unbalanced and the insertion would happen at the front of the pool).
+          session.releaseToPosition = options.getReleaseToPosition();
           int pos = random.nextInt(sessions.size() + 1);
           sessions.add(pos, session);
+        } else if (session.releaseToPosition == Position.LAST) {
+          sessions.addLast(session);
         } else {
           sessions.addFirst(session);
         }

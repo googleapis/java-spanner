@@ -55,6 +55,7 @@ import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.ServiceOptions;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
@@ -296,7 +297,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     ApiClientHeaderProvider internalHeaderProvider =
         internalHeaderProviderBuilder
             .setClientLibToken(
-                options.getClientLibToken(), GaxProperties.getLibraryVersion(options.getClass()))
+                options.getClientLibToken() + " " + ServiceOptions.getGoogApiClientLibName(),
+                GaxProperties.getLibraryVersion(options.getClass()))
             .setTransportToken(
                 GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion())
             .build();
