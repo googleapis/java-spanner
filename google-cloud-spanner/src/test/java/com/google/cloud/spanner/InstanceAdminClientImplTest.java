@@ -330,10 +330,10 @@ public class InstanceAdminClientImplTest {
                 .setAutoscalingConfig(getAutoscalingInstanceProto().getAutoscalingConfig())
                 .build());
     assertTrue(operation.isDone());
-    assertEquals(INSTANCE_NAME, operation.get().getId().getName());
+    Instance instance = operation.get();
+    assertEquals(INSTANCE_NAME, instance.getId().getName());
     assertEquals(
-        getAutoscalingInstanceProto().getAutoscalingConfig(),
-        operation.get().getAutoscalingConfig());
+        getAutoscalingInstanceProto().getAutoscalingConfig(), instance.getAutoscalingConfig());
   }
 
   @Test
@@ -398,12 +398,7 @@ public class InstanceAdminClientImplTest {
                 "updateInstance",
                 getInstanceProtoWithProcessingUnits(),
                 UpdateInstanceMetadata.getDefaultInstance());
-    when(rpc.updateInstance(
-            instance,
-            FieldMask.newBuilder()
-                .addPaths("autoscaling_config")
-                .addPaths("processing_units")
-                .build()))
+    when(rpc.updateInstance(instance, FieldMask.newBuilder().addPaths("processing_units").build()))
         .thenReturn(rawOperationFuture);
     InstanceInfo instanceInfo =
         InstanceInfo.newBuilder(InstanceId.of(INSTANCE_NAME))
@@ -411,10 +406,7 @@ public class InstanceAdminClientImplTest {
             .setProcessingUnits(10)
             .build();
     OperationFuture<Instance, UpdateInstanceMetadata> operationWithFieldMask =
-        client.updateInstance(
-            instanceInfo,
-            InstanceInfo.InstanceField.AUTOSCALING_CONFIG,
-            InstanceInfo.InstanceField.PROCESSING_UNITS);
+        client.updateInstance(instanceInfo, InstanceInfo.InstanceField.PROCESSING_UNITS);
     assertTrue(operationWithFieldMask.isDone());
     assertEquals(INSTANCE_NAME, operationWithFieldMask.get().getId().getName());
 
