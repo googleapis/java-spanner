@@ -44,7 +44,6 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
-import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,8 +88,6 @@ class SessionImpl implements Session {
     /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
 
-    /** Registers the current span on the transaction. */
-    void setSpan(Span span);
     /** Registers the current span on the transaction. */
     void setSpan(ISpan span);
   }

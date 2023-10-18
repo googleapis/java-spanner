@@ -28,7 +28,6 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.opencensus.trace.Span;
 
 /** Implementation of {@link AsyncTransactionManager}. */
 final class AsyncTransactionManagerImpl
@@ -52,10 +51,6 @@ final class AsyncTransactionManagerImpl
   public void setSpan(ISpan span) {
     this.span = span;
   }
-
-  /** No-op method needed to implement SessionTransaction interface. */
-  @Override
-  public void setSpan(Span span) {}
 
   @Override
   public void close() {

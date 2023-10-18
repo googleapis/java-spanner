@@ -54,7 +54,6 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.context.Context;
 import java.util.Map;
@@ -452,10 +451,6 @@ abstract class AbstractReadContext
   public void setSpan(ISpan span) {
     this.span = span;
   }
-
-  /** No-op method needed to implement SessionTransaction interface. */
-  @Override
-  public void setSpan(Span span) {}
 
   long getSeqNo() {
     return seqNo.incrementAndGet();
