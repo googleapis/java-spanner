@@ -49,7 +49,6 @@ import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
@@ -957,10 +956,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   public void setSpan(ISpan span) {
     this.span = span;
   }
-
-  /** No-op method needed to implement SessionTransaction interface. */
-  @Override
-  public void setSpan(Span span) {}
 
   @Nullable
   @Override

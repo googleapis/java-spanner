@@ -20,7 +20,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.base.Preconditions;
-import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 
 /** Implementation of {@link TransactionManager}. */
@@ -48,10 +47,6 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   public void setSpan(ISpan span) {
     this.span = span;
   }
-
-  /** No-op method needed to implement SessionTransaction interface. */
-  @Override
-  public void setSpan(Span span) {}
 
   @Override
   public TransactionContext begin() {
