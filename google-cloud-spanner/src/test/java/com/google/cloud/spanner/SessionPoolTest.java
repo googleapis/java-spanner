@@ -641,6 +641,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   @Test
   public void idleSessionCleanup() throws Exception {
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis = System.currentTimeMillis();
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
@@ -648,9 +650,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setIncStep(1)
             .setMaxIdleSessions(0)
             .build();
-    SessionImpl session1 = mockSession();
-    SessionImpl session2 = mockSession();
-    SessionImpl session3 = mockSession();
+    SessionImpl session1 = mockSession(clock);
+    SessionImpl session2 = mockSession(clock);
+    SessionImpl session3 = mockSession(clock);
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
     doAnswer(
@@ -668,8 +670,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     for (SessionImpl session : sessions) {
       mockKeepAlive(session);
     }
-    FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
     pool = createPool(clock);
     // Make sure pool has been initialized
     pool.getSession().close();

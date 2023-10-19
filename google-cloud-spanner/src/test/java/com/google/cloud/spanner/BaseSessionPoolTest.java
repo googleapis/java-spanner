@@ -80,7 +80,24 @@ abstract class BaseSessionPoolTest {
         .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
     when(session.writeAtLeastOnceWithOptions(any(Iterable.class)))
         .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
-    when(session.getLastUseTime()).thenReturn(Instant.now());
+    sessionIndex++;
+    return session;
+  }
+
+  SessionImpl mockSession(Clock clock) {
+    final SessionImpl session = mock(SessionImpl.class);
+    Map options = new HashMap<>();
+    options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
+    when(session.getOptions()).thenReturn(options);
+    when(session.getName())
+        .thenReturn(
+            "projects/dummy/instances/dummy/database/dummy/sessions/session" + sessionIndex);
+    when(session.asyncClose()).thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
+    when(session.writeWithOptions(any(Iterable.class)))
+        .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
+    when(session.writeAtLeastOnceWithOptions(any(Iterable.class)))
+        .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
+    when(session.getLastUseTime()).thenReturn(clock.instant());
     sessionIndex++;
     return session;
   }

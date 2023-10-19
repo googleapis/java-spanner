@@ -53,6 +53,7 @@ import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
+import java.time.Clock;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -72,6 +73,8 @@ abstract class AbstractReadContext
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
     private ExecutorProvider executorProvider;
+
+    private Clock clock;
 
     Builder() {}
 
@@ -107,6 +110,11 @@ abstract class AbstractReadContext
 
     B setExecutorProvider(ExecutorProvider executorProvider) {
       this.executorProvider = executorProvider;
+      return self();
+    }
+
+    B setClock(Clock clock) {
+      this.clock = clock;
       return self();
     }
 
@@ -392,6 +400,8 @@ abstract class AbstractReadContext
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
+  private final Clock clock;
+
   @GuardedBy("lock")
   private boolean isValid = true;
 
@@ -416,6 +426,8 @@ abstract class AbstractReadContext
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
+    this.clock = builder.clock;
+
   }
 
   @Override

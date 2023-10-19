@@ -632,10 +632,28 @@ class SessionPool {
   static class SessionPoolTransactionContext implements TransactionContext {
     private final SessionNotFoundHandler handler;
     final TransactionContext delegate;
+    private final SessionImpl sessionImpl;
+    private final Clock clock;
 
-    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate) {
+    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate,
+        SessionImpl sessionImpl) {
+      this(handler, delegate, sessionImpl, null);
+    }
+
+    /**
+     * Constructor accepts a {@link Clock} instance which can be mocked within tests.
+     * @param handler
+     * @param delegate
+     * @param sessionImpl
+     * @param clock
+     */
+    @VisibleForTesting
+    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate,
+        SessionImpl sessionImpl, Clock clock) {
       this.handler = Preconditions.checkNotNull(handler);
       this.delegate = delegate;
+      this.sessionImpl = sessionImpl;
+      this.clock = clock == null? new Clock() : clock;
     }
 
     @Override
@@ -743,6 +761,8 @@ class SessionPool {
         return delegate.analyzeUpdateStatement(statement, analyzeMode, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -752,6 +772,8 @@ class SessionPool {
         return delegate.executeUpdate(statement, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -772,6 +794,8 @@ class SessionPool {
         return delegate.batchUpdate(statements, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -833,7 +857,8 @@ class SessionPool {
     }
 
     private TransactionContext internalBegin() {
-      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
+      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin(),
+          session.get().delegate);
       session.get().markUsed();
       return res;
     }
@@ -883,11 +908,13 @@ class SessionPool {
       while (true) {
         try {
           if (restartedAfterSessionNotFound) {
-            TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
+            TransactionContext res = new SessionPoolTransactionContext(this,
+                delegate.begin(), session.get().delegate);
             restartedAfterSessionNotFound = false;
             return res;
           } else {
-            return new SessionPoolTransactionContext(this, delegate.resetForRetry());
+            return new SessionPoolTransactionContext(this, delegate.resetForRetry(),
+                session.get().delegate);
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
