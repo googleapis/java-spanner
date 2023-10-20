@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.52.1](https://github.com/googleapis/java-spanner/compare/v6.52.0...v6.52.1) (2023-10-20)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.18.0 ([#2691](https://github.com/googleapis/java-spanner/issues/2691)) ([b425021](https://github.com/googleapis/java-spanner/commit/b4250218a500eb1540920ed0023454d06c54d621))
+
 ## [6.52.0](https://github.com/googleapis/java-spanner/compare/v6.51.0...v6.52.0) (2023-10-19)
 
 
