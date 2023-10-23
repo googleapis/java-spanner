@@ -45,6 +45,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
+import com.google.cloud.Tuple;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -1864,7 +1865,7 @@ class SessionPool {
 
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {
-        PooledSession sessionToKeepAlive = null;
+        Tuple<PooledSession, Integer> sessionToKeepAlive;
         synchronized (lock) {
           sessionToKeepAlive = findSessionToKeepAlive(sessions, keepAliveThreshold, 0);
         }
@@ -1872,10 +1873,10 @@ class SessionPool {
           break;
         }
         try {
-          logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
+          logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.x().getName());
           numSessionsToKeepAlive--;
-          sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive, false);
+          sessionToKeepAlive.x().keepAlive();
+          releaseSession(sessionToKeepAlive);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -2291,11 +2292,11 @@ class SessionPool {
     }
   }
 
-  private void handleException(SpannerException e, PooledSession session) {
+  private void handleException(SpannerException e, Tuple<PooledSession, Integer> session) {
     if (isSessionNotFound(e)) {
-      invalidateSession(session);
+      invalidateSession(session.x());
     } else {
-      releaseSession(session, false);
+      releaseSession(session);
     }
   }
 
@@ -2319,7 +2320,7 @@ class SessionPool {
     }
   }
 
-  private PooledSession findSessionToKeepAlive(
+  private Tuple<PooledSession, Integer> findSessionToKeepAlive(
       Queue<PooledSession> queue, Instant keepAliveThreshold, int numAlreadyChecked) {
     int numChecked = 0;
     Iterator<PooledSession> iterator = queue.iterator();
@@ -2329,7 +2330,7 @@ class SessionPool {
       PooledSession session = iterator.next();
       if (session.lastUseTime.isBefore(keepAliveThreshold)) {
         iterator.remove();
-        return session;
+        return Tuple.of(session, numChecked);
       }
       numChecked++;
     }
@@ -2459,8 +2460,17 @@ class SessionPool {
     }
   }
 
-  /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
+  private void releaseSession(Tuple<PooledSession, Integer> sessionWithPosition) {
+    releaseSession(sessionWithPosition.x(), false, sessionWithPosition.y());
+  }
+
   private void releaseSession(PooledSession session, boolean isNewSession) {
+    releaseSession(session, isNewSession, null);
+  }
+
+  /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
+  private void releaseSession(
+      PooledSession session, boolean isNewSession, @Nullable Integer position) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
@@ -2480,7 +2490,12 @@ class SessionPool {
           // more efficient.
           session.releaseToPosition = options.getReleaseToPosition();
         }
-        if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
+        if (position != null) {
+          // Make sure we use a valid position, as the number of sessions could have changed in the
+          // meantime.
+          int actualPosition = Math.min(position, sessions.size());
+          sessions.add(actualPosition, session);
+        } else if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
           // A session should only be added at a random position the first time it is added to
           // the pool or if the pool was deemed unbalanced. All following releases into the pool
           // should normally happen at the default release position (unless the pool is again deemed
@@ -2493,6 +2508,7 @@ class SessionPool {
         } else {
           sessions.addFirst(session);
         }
+        session.releaseToPosition = options.getReleaseToPosition();
       } else {
         waiters.poll().put(session);
       }
