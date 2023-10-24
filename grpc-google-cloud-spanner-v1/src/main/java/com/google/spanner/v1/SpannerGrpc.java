@@ -34,7 +34,7 @@ public final class SpannerGrpc {
 
   private SpannerGrpc() {}
 
-  public static final String SERVICE_NAME = "google.spanner.v1.Spanner";
+  public static final java.lang.String SERVICE_NAME = "google.spanner.v1.Spanner";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<
@@ -652,6 +652,47 @@ public final class SpannerGrpc {
     return getPartitionReadMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.v1.BatchWriteRequest, com.google.spanner.v1.BatchWriteResponse>
+      getBatchWriteMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "BatchWrite",
+      requestType = com.google.spanner.v1.BatchWriteRequest.class,
+      responseType = com.google.spanner.v1.BatchWriteResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.v1.BatchWriteRequest, com.google.spanner.v1.BatchWriteResponse>
+      getBatchWriteMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.v1.BatchWriteRequest, com.google.spanner.v1.BatchWriteResponse>
+        getBatchWriteMethod;
+    if ((getBatchWriteMethod = SpannerGrpc.getBatchWriteMethod) == null) {
+      synchronized (SpannerGrpc.class) {
+        if ((getBatchWriteMethod = SpannerGrpc.getBatchWriteMethod) == null) {
+          SpannerGrpc.getBatchWriteMethod =
+              getBatchWriteMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.v1.BatchWriteRequest,
+                          com.google.spanner.v1.BatchWriteResponse>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "BatchWrite"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.v1.BatchWriteRequest.getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.v1.BatchWriteResponse.getDefaultInstance()))
+                      .setSchemaDescriptor(new SpannerMethodDescriptorSupplier("BatchWrite"))
+                      .build();
+        }
+      }
+    }
+    return getBatchWriteMethod;
+  }
+
   /** Creates a new async stub that supports all call types for the service */
   public static SpannerStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<SpannerStub> factory =
@@ -1003,6 +1044,32 @@ public final class SpannerGrpc {
         io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
           getPartitionReadMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Batches the supplied mutation groups in a collection of efficient
+     * transactions. All mutations in a group are committed atomically. However,
+     * mutations across groups can be committed non-atomically in an unspecified
+     * order and thus, they must be independent of each other. Partial failure is
+     * possible, i.e., some groups may have been committed successfully, while
+     * some may have failed. The results of individual batches are streamed into
+     * the response as the batches are applied.
+     * BatchWrite requests are not replay protected, meaning that each mutation
+     * group may be applied more than once. Replays of non-idempotent mutations
+     * may have undesirable effects. For example, replays of an insert mutation
+     * may produce an already exists error or if you use generated or commit
+     * timestamp-based keys, it may result in additional rows being added to the
+     * mutation's table. We recommend structuring your mutation groups to be
+     * idempotent to avoid this issue.
+     * </pre>
+     */
+    default void batchWrite(
+        com.google.spanner.v1.BatchWriteRequest request,
+        io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchWriteResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getBatchWriteMethod(), responseObserver);
     }
   }
 
@@ -1368,6 +1435,33 @@ public final class SpannerGrpc {
           request,
           responseObserver);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * Batches the supplied mutation groups in a collection of efficient
+     * transactions. All mutations in a group are committed atomically. However,
+     * mutations across groups can be committed non-atomically in an unspecified
+     * order and thus, they must be independent of each other. Partial failure is
+     * possible, i.e., some groups may have been committed successfully, while
+     * some may have failed. The results of individual batches are streamed into
+     * the response as the batches are applied.
+     * BatchWrite requests are not replay protected, meaning that each mutation
+     * group may be applied more than once. Replays of non-idempotent mutations
+     * may have undesirable effects. For example, replays of an insert mutation
+     * may produce an already exists error or if you use generated or commit
+     * timestamp-based keys, it may result in additional rows being added to the
+     * mutation's table. We recommend structuring your mutation groups to be
+     * idempotent to avoid this issue.
+     * </pre>
+     */
+    public void batchWrite(
+        com.google.spanner.v1.BatchWriteRequest request,
+        io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchWriteResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncServerStreamingCall(
+          getChannel().newCall(getBatchWriteMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -1677,6 +1771,32 @@ public final class SpannerGrpc {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getPartitionReadMethod(), getCallOptions(), request);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * Batches the supplied mutation groups in a collection of efficient
+     * transactions. All mutations in a group are committed atomically. However,
+     * mutations across groups can be committed non-atomically in an unspecified
+     * order and thus, they must be independent of each other. Partial failure is
+     * possible, i.e., some groups may have been committed successfully, while
+     * some may have failed. The results of individual batches are streamed into
+     * the response as the batches are applied.
+     * BatchWrite requests are not replay protected, meaning that each mutation
+     * group may be applied more than once. Replays of non-idempotent mutations
+     * may have undesirable effects. For example, replays of an insert mutation
+     * may produce an already exists error or if you use generated or commit
+     * timestamp-based keys, it may result in additional rows being added to the
+     * mutation's table. We recommend structuring your mutation groups to be
+     * idempotent to avoid this issue.
+     * </pre>
+     */
+    public java.util.Iterator<com.google.spanner.v1.BatchWriteResponse> batchWrite(
+        com.google.spanner.v1.BatchWriteRequest request) {
+      return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
+          getChannel(), getBatchWriteMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -1976,6 +2096,7 @@ public final class SpannerGrpc {
   private static final int METHODID_ROLLBACK = 12;
   private static final int METHODID_PARTITION_QUERY = 13;
   private static final int METHODID_PARTITION_READ = 14;
+  private static final int METHODID_BATCH_WRITE = 15;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -2074,6 +2195,12 @@ public final class SpannerGrpc {
           serviceImpl.partitionRead(
               (com.google.spanner.v1.PartitionReadRequest) request,
               (io.grpc.stub.StreamObserver<com.google.spanner.v1.PartitionResponse>)
+                  responseObserver);
+          break;
+        case METHODID_BATCH_WRITE:
+          serviceImpl.batchWrite(
+              (com.google.spanner.v1.BatchWriteRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.spanner.v1.BatchWriteResponse>)
                   responseObserver);
           break;
         default:
@@ -2187,6 +2314,12 @@ public final class SpannerGrpc {
                 new MethodHandlers<
                     com.google.spanner.v1.PartitionReadRequest,
                     com.google.spanner.v1.PartitionResponse>(service, METHODID_PARTITION_READ)))
+        .addMethod(
+            getBatchWriteMethod(),
+            io.grpc.stub.ServerCalls.asyncServerStreamingCall(
+                new MethodHandlers<
+                    com.google.spanner.v1.BatchWriteRequest,
+                    com.google.spanner.v1.BatchWriteResponse>(service, METHODID_BATCH_WRITE)))
         .build();
   }
 
@@ -2212,9 +2345,9 @@ public final class SpannerGrpc {
 
   private static final class SpannerMethodDescriptorSupplier extends SpannerBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    SpannerMethodDescriptorSupplier(String methodName) {
+    SpannerMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 
@@ -2251,6 +2384,7 @@ public final class SpannerGrpc {
                       .addMethod(getRollbackMethod())
                       .addMethod(getPartitionQueryMethod())
                       .addMethod(getPartitionReadMethod())
+                      .addMethod(getBatchWriteMethod())
                       .build();
         }
       }

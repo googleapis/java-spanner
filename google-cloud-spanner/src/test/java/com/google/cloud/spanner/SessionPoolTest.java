@@ -23,8 +23,10 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSION
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
+import static com.google.cloud.spanner.SpannerOptionsTest.runWithSystemProperty;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +62,7 @@ import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -82,12 +85,14 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -234,6 +239,134 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(session4).isEqualTo(session2);
     session3.close();
     session4.close();
+  }
+
+  @Test
+  public void poolFifo() throws Exception {
+    setupMockSessionCreation();
+    runWithSystemProperty(
+        "com.google.cloud.spanner.session_pool_release_to_position",
+        "LAST",
+        () -> {
+          options =
+              options
+                  .toBuilder()
+                  .setMinSessions(2)
+                  .setWaitForMinSessions(Duration.ofSeconds(10L))
+                  .build();
+          pool = createPool();
+          pool.maybeWaitOnMinSessions();
+          Session session1 = pool.getSession().get();
+          Session session2 = pool.getSession().get();
+          assertNotEquals(session1, session2);
+
+          session2.close();
+          session1.close();
+
+          // Check the session out and back in once more to finalize their positions.
+          session1 = pool.getSession().get();
+          session2 = pool.getSession().get();
+          session2.close();
+          session1.close();
+
+          // Verify that we get the sessions in FIFO order, so in this order:
+          // 1. session2
+          // 2. session1
+          Session session3 = pool.getSession().get();
+          Session session4 = pool.getSession().get();
+          assertEquals(session2, session3);
+          assertEquals(session1, session4);
+          session3.close();
+          session4.close();
+
+          return null;
+        });
+  }
+
+  @Test
+  public void poolAllPositions() throws Exception {
+    int maxAttempts = 100;
+    setupMockSessionCreation();
+    for (Position position : Position.values()) {
+      runWithSystemProperty(
+          "com.google.cloud.spanner.session_pool_release_to_position",
+          position.name(),
+          () -> {
+            int attempt = 0;
+            while (attempt < maxAttempts) {
+              int numSessions = 5;
+              options =
+                  options
+                      .toBuilder()
+                      .setMinSessions(numSessions)
+                      .setMaxSessions(numSessions)
+                      .setWaitForMinSessions(Duration.ofSeconds(10L))
+                      .build();
+              pool = createPool();
+              pool.maybeWaitOnMinSessions();
+              // First check out and release the sessions twice to the pool, so we know that we have
+              // finalized the position of them.
+              for (int n = 0; n < 2; n++) {
+                checkoutAndReleaseAllSessions();
+              }
+
+              // Now verify that if we get all sessions twice, they will be in random order.
+              List<List<PooledSessionFuture>> allSessions = new ArrayList<>(2);
+              for (int n = 0; n < 2; n++) {
+                allSessions.add(checkoutAndReleaseAllSessions());
+              }
+              List<Session> firstTime =
+                  allSessions.get(0).stream()
+                      .map(PooledSessionFuture::get)
+                      .collect(Collectors.toList());
+              List<Session> secondTime =
+                  allSessions.get(1).stream()
+                      .map(PooledSessionFuture::get)
+                      .collect(Collectors.toList());
+              switch (position) {
+                case FIRST:
+                  // LIFO:
+                  // First check out all sessions, so we have 1, 2, 3, 4, ..., N
+                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ..., N)
+                  // That will give us the list N, ..., 4, 3, 2, 1 because each session is added at
+                  // the front of the pool.
+                  assertEquals(firstTime, Lists.reverse(secondTime));
+                  break;
+                case LAST:
+                  // FIFO:
+                  // First check out all sessions, so we have 1, 2, 3, 4, ..., N
+                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ..., N)
+                  // That will give us the list 1, 2, 3, 4, ..., N because each session is added at
+                  // the end of the pool.
+                  assertEquals(firstTime, secondTime);
+                  break;
+                case RANDOM:
+                  // Random means that we should not get the same order twice (unless the randomizer
+                  // got lucky, and then we retry).
+                  if (attempt < (maxAttempts - 1)) {
+                    if (Objects.equals(firstTime, secondTime)) {
+                      attempt++;
+                      continue;
+                    }
+                  }
+                  assertNotEquals(firstTime, secondTime);
+              }
+              break;
+            }
+            return null;
+          });
+    }
+  }
+
+  private List<PooledSessionFuture> checkoutAndReleaseAllSessions() {
+    List<PooledSessionFuture> sessions = new ArrayList<>(pool.totalSessions());
+    for (int i = 0; i < pool.totalSessions(); i++) {
+      sessions.add(pool.getSession());
+    }
+    for (Session session : sessions) {
+      session.close();
+    }
+    return sessions;
   }
 
   @Test
@@ -980,6 +1113,55 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(minSessions)
             .setMaxSessions(1)
             .setInitialWaitForSessionTimeoutMillis(20L)
+            .setAcquireSessionTimeout(null)
+            .build();
+    setupMockSessionCreation();
+    pool = createPool();
+    // Take the only session that can be in the pool.
+    PooledSessionFuture checkedOutSession = pool.getSession();
+    checkedOutSession.get();
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final CountDownLatch latch = new CountDownLatch(1);
+    // Then try asynchronously to take another session. This attempt should time out.
+    Future<Void> fut =
+        executor.submit(
+            () -> {
+              latch.countDown();
+              PooledSessionFuture session = pool.getSession();
+              session.close();
+              return null;
+            });
+    // Wait until the background thread is actually waiting for a session.
+    latch.await();
+    // Wait until the request has timed out.
+    int waitCount = 0;
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
+      Thread.sleep(5L);
+      waitCount++;
+    }
+    // Return the checked out session to the pool so the async request will get a session and
+    // finish.
+    checkedOutSession.close();
+    // Verify that the async request also succeeds.
+    fut.get(10L, TimeUnit.SECONDS);
+    executor.shutdown();
+
+    // Verify that the session was returned to the pool and that we can get it again.
+    Session session = pool.getSession();
+    assertThat(session).isNotNull();
+    session.close();
+    assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
+  }
+
+  @Test
+  public void blockAndTimeoutOnPoolExhaustion_withAcquireSessionTimeout() throws Exception {
+    // Create a session pool with max 1 session and a low timeout for waiting for a session.
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(1)
+            .setInitialWaitForSessionTimeoutMillis(20L)
+            .setAcquireSessionTimeout(Duration.ofMillis(20L))
             .build();
     setupMockSessionCreation();
     pool = createPool();
