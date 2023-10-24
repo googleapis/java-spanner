@@ -53,6 +53,7 @@ import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
@@ -342,7 +343,11 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setAllowNonDefaultServiceAccount(true)
               // Attempts direct access to spanner service over gRPC to improve throughput,
               // whether the attempt is allowed is totally controlled by service owner.
-              .setAttemptDirectPath(true);
+              // We'll only attempt DirectPath if we are using real credentials.
+              // NoCredentials is used for plain text connections, for example when connecting to
+              // the emulator.
+              .setAttemptDirectPath(
+                  !Objects.equals(options.getScopedCredentials(), NoCredentials.getInstance()));
 
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
