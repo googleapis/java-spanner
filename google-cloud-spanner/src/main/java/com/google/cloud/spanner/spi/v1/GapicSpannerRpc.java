@@ -347,7 +347,9 @@ public class GapicSpannerRpc implements SpannerRpc {
               // NoCredentials is used for plain text connections, for example when connecting to
               // the emulator.
               .setAttemptDirectPath(
-                  !Objects.equals(options.getScopedCredentials(), NoCredentials.getInstance()));
+                  options.isAttemptDirectPath()
+                      && !Objects.equals(
+                          options.getScopedCredentials(), NoCredentials.getInstance()));
 
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
