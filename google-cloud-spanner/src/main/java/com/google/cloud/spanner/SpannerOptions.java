@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.core.InternalApi;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
@@ -686,10 +687,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
-            JDBC_API_CLIENT_LIB_TOKEN,
-            HIBERNATE_API_CLIENT_LIB_TOKEN,
-            LIQUIBASE_API_CLIENT_LIB_TOKEN,
-            PG_ADAPTER_CLIENT_LIB_TOKEN);
+            createCustomClientLibToken(JDBC_API_CLIENT_LIB_TOKEN),
+            createCustomClientLibToken(HIBERNATE_API_CLIENT_LIB_TOKEN),
+            createCustomClientLibToken(LIQUIBASE_API_CLIENT_LIB_TOKEN),
+            createCustomClientLibToken(PG_ADAPTER_CLIENT_LIB_TOKEN));
     private TransportChannelProvider channelProvider;
 
     @SuppressWarnings("rawtypes")
@@ -724,6 +725,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
+
+    private static String createCustomClientLibToken(String token) {
+      return token + " " + ServiceOptions.getGoogApiClientLibName();
+    }
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -793,6 +798,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     protected Set<String> getAllowedClientLibTokens() {
       return allowedClientLibTokens;
+    }
+
+    @InternalApi
+    @Override
+    public SpannerOptions.Builder setClientLibToken(String clientLibToken) {
+      return super.setClientLibToken(
+          clientLibToken + " " + ServiceOptions.getGoogApiClientLibName());
     }
 
     /**
