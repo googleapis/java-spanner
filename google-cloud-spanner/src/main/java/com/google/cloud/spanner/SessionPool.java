@@ -1435,6 +1435,9 @@ class SessionPool {
     private PooledSession(SessionImpl delegate) {
       this.delegate = delegate;
       this.state = SessionState.AVAILABLE;
+
+      // initialise the lastUseTime field for each session.
+      this.markUsed();
     }
 
     int getChannel() {

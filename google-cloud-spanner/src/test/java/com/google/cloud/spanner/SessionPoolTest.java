@@ -641,8 +641,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   @Test
   public void idleSessionCleanup() throws Exception {
-    FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    ReadContext context = mock(ReadContext.class);
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
@@ -650,9 +649,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setIncStep(1)
             .setMaxIdleSessions(0)
             .build();
-    SessionImpl session1 = mockSession(clock);
-    SessionImpl session2 = mockSession(clock);
-    SessionImpl session3 = mockSession(clock);
+    SessionImpl session1 = mockSession(context);
+    SessionImpl session2 = mockSession(context);
+    SessionImpl session3 = mockSession(context);
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
     doAnswer(
@@ -667,9 +666,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    for (SessionImpl session : sessions) {
-      mockKeepAlive(session);
-    }
+
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis = System.currentTimeMillis();
+
+    mockKeepAlive(context);
+
     pool = createPool(clock);
     // Make sure pool has been initialized
     pool.getSession().close();
@@ -1034,9 +1036,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   private void setupForLongRunningTransactionsCleanup() {
-    SessionImpl session1 = mockSession();
-    SessionImpl session2 = mockSession();
-    SessionImpl session3 = mockSession();
+    ReadContext context = mock(ReadContext.class);
+    SessionImpl session1 = mockSession(context);
+    SessionImpl session2 = mockSession(context);
+    SessionImpl session3 = mockSession(context);
 
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
@@ -1053,16 +1056,20 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
-    for (SessionImpl session : sessions) {
-      mockKeepAlive(session);
-    }
+    mockKeepAlive(context);
   }
 
   @Test
   public void keepAlive() throws Exception {
+    ReadContext context = mock(ReadContext.class);
     options = SessionPoolOptions.newBuilder().setMinSessions(2).setMaxSessions(3).build();
-    final SessionImpl session = mockSession();
-    mockKeepAlive(session);
+    final SessionImpl mockSession1 = mockSession(context);
+    final SessionImpl mockSession2 = mockSession(context);
+    final SessionImpl mockSession3 = mockSession(context);
+    final LinkedList<SessionImpl> sessions =
+        new LinkedList<>(Arrays.asList(mockSession1, mockSession2, mockSession3));
+
+    mockKeepAlive(context);
     // This is cheating as we are returning the same session each but it makes the verification
     // easier.
     doAnswer(
@@ -1073,7 +1080,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     SessionConsumerImpl consumer =
                         invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
-                      consumer.onSessionReady(session);
+                      consumer.onSessionReady(sessions.pop());
                     }
                   });
               return null;
@@ -1090,9 +1097,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session1.close();
     session2.close();
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, never()).singleUse(any(TimestampBound.class));
+    verify(context, never()).executeQuery(any(Statement.class));
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, times(2)).singleUse(any(TimestampBound.class));
+    verify(context, times(2)).executeQuery(Statement.newBuilder("SELECT 1").build());
     clock.currentTimeMillis +=
         clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
     session1 = pool.getSession();
@@ -1100,8 +1107,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session1.close();
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     // The session pool only keeps MinSessions + MaxIdleSessions alive.
-    verify(session, times(options.getMinSessions() + options.getMaxIdleSessions()))
-        .singleUse(any(TimestampBound.class));
+    verify(context, times(options.getMinSessions() + options.getMaxIdleSessions()))
+        .executeQuery(Statement.newBuilder("SELECT 1").build());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -1799,6 +1806,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.maybeWaitOnMinSessions();
   }
 
+  private void mockKeepAlive(ReadContext context) {
+    ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true, false);
+    when(context.executeQuery(any(Statement.class))).thenReturn(resultSet);
+  }
   private void mockKeepAlive(Session session) {
     ReadContext context = mock(ReadContext.class);
     ResultSet resultSet = mock(ResultSet.class);

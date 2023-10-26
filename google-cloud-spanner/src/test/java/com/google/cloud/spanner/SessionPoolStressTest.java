@@ -89,6 +89,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
   }
 
   private void setupSpanner(DatabaseId db) {
+    ReadContext context = mock(ReadContext.class);
     mockSpanner = mock(SpannerImpl.class);
     spannerOptions = mock(SpannerOptions.class);
     when(spannerOptions.getNumChannels()).thenReturn(4);
@@ -105,7 +106,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                     for (int s = 0; s < sessionCount; s++) {
                       SessionImpl session;
                       synchronized (lock) {
-                        session = mockSession();
+                        session = mockSession(context);
                         setupSession(session);
                         sessions.put(session.getName(), false);
                         if (sessions.size() > maxAliveSessions) {
