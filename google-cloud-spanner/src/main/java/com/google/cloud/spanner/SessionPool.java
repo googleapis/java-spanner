@@ -640,14 +640,6 @@ class SessionPool {
       this(handler, delegate, sessionImpl, null);
     }
 
-    /**
-     * Constructor accepts a {@link Clock} instance which can be mocked within tests.
-     * @param handler
-     * @param delegate
-     * @param sessionImpl
-     * @param clock
-     */
-    @VisibleForTesting
     SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate,
         SessionImpl sessionImpl, Clock clock) {
       this.handler = Preconditions.checkNotNull(handler);
@@ -659,28 +651,36 @@ class SessionPool {
     @Override
     public ResultSet read(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
+      ResultSet resultSet = new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
+      sessionImpl.markUsed(clock.instant());
+      return resultSet;
     }
 
     @Override
     public AsyncResultSet readAsync(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new AsyncSessionPoolResultSet(
+      AsyncResultSet resultSet = new AsyncSessionPoolResultSet(
           handler, delegate.readAsync(table, keys, columns, options));
+      sessionImpl.markUsed(clock.instant());
+      return resultSet;
     }
 
     @Override
     public ResultSet readUsingIndex(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new SessionPoolResultSet(
+      ResultSet resultSet =  new SessionPoolResultSet(
           handler, delegate.readUsingIndex(table, index, keys, columns, options));
+      sessionImpl.markUsed(clock.instant());
+      return resultSet;
     }
 
     @Override
     public AsyncResultSet readUsingIndexAsync(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new AsyncSessionPoolResultSet(
+      AsyncResultSet resultSet =  new AsyncSessionPoolResultSet(
           handler, delegate.readUsingIndexAsync(table, index, keys, columns, options));
+      sessionImpl.markUsed(clock.instant());
+      return resultSet;
     }
 
     @Override
@@ -689,6 +689,8 @@ class SessionPool {
         return delegate.readRow(table, key, columns);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -708,6 +710,7 @@ class SessionPool {
     @Override
     public void buffer(Mutation mutation) {
       delegate.buffer(mutation);
+      sessionImpl.markUsed(clock.instant());
     }
 
     @Override
@@ -721,6 +724,8 @@ class SessionPool {
         return delegate.readRowUsingIndex(table, index, key, columns);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
+      } finally {
+        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -779,13 +784,15 @@ class SessionPool {
 
     @Override
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
-      return ApiFutures.catching(
+      ApiFuture<Long> apiFuture = ApiFutures.catching(
           delegate.executeUpdateAsync(statement, options),
           SessionNotFoundException.class,
           input -> {
             throw handler.handleSessionNotFound(input);
           },
           MoreExecutors.directExecutor());
+      sessionImpl.markUsed(clock.instant());
+      return apiFuture;
     }
 
     @Override
@@ -802,28 +809,39 @@ class SessionPool {
     @Override
     public ApiFuture<long[]> batchUpdateAsync(
         Iterable<Statement> statements, UpdateOption... options) {
-      return ApiFutures.catching(
+      ApiFuture<long[]> apiFuture =  ApiFutures.catching(
           delegate.batchUpdateAsync(statements, options),
           SessionNotFoundException.class,
           input -> {
             throw handler.handleSessionNotFound(input);
           },
           MoreExecutors.directExecutor());
+      sessionImpl.markUsed(clock.instant());
+      return apiFuture;
     }
 
     @Override
     public ResultSet executeQuery(Statement statement, QueryOption... options) {
-      return new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
+      ResultSet resultSet =
+          new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
+      sessionImpl.markUsed(clock.instant());
+      return resultSet;
     }
 
     @Override
     public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-      return new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
+      AsyncResultSet resultSet =
+          new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
+      sessionImpl.markUsed(clock.instant());
+      return resultSet;
     }
 
     @Override
     public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
-      return new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
+      ResultSet resultSet =
+          new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
+      sessionImpl.markUsed(clock.instant());
+      return resultSet;
     }
 
     @Override
@@ -858,7 +876,7 @@ class SessionPool {
 
     private TransactionContext internalBegin() {
       TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin(),
-          session.get().delegate);
+          session.get().delegate, sessionPool.clock);
       session.get().markUsed();
       return res;
     }
@@ -909,7 +927,7 @@ class SessionPool {
         try {
           if (restartedAfterSessionNotFound) {
             TransactionContext res = new SessionPoolTransactionContext(this,
-                delegate.begin(), session.get().delegate);
+                delegate.begin(), session.get().delegate, sessionPool.clock);
             restartedAfterSessionNotFound = false;
             return res;
           } else {
