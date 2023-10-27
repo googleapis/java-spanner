@@ -636,11 +636,6 @@ class SessionPool {
     private final Clock clock;
 
     SessionPoolTransactionContext(
-        SessionNotFoundHandler handler, TransactionContext delegate, SessionImpl sessionImpl) {
-      this(handler, delegate, sessionImpl, null);
-    }
-
-    SessionPoolTransactionContext(
         SessionNotFoundHandler handler,
         TransactionContext delegate,
         SessionImpl sessionImpl,
@@ -648,7 +643,7 @@ class SessionPool {
       this.handler = Preconditions.checkNotNull(handler);
       this.delegate = delegate;
       this.sessionImpl = sessionImpl;
-      this.clock = clock == null ? new Clock() : clock;
+      this.clock = clock;
     }
 
     @Override
@@ -942,7 +937,7 @@ class SessionPool {
             return res;
           } else {
             return new SessionPoolTransactionContext(
-                this, delegate.resetForRetry(), session.get().delegate);
+                this, delegate.resetForRetry(), session.get().delegate, sessionPool.clock);
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
@@ -2064,7 +2059,7 @@ class SessionPool {
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
 
   final PoolMaintainer poolMaintainer;
-  private final Clock clock;
+  final Clock clock;
   /**
    * initialReleasePosition determines where in the pool sessions are added when they are released
    * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to

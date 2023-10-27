@@ -151,7 +151,8 @@ class SessionPoolAsyncTransactionManager
                         new SessionPool.SessionPoolTransactionContext(
                             SessionPoolAsyncTransactionManager.this,
                             result,
-                            session.get().delegate));
+                            session.get().delegate,
+                            pool.clock));
                   }
                 },
                 MoreExecutors.directExecutor());
@@ -255,7 +256,10 @@ class SessionPoolAsyncTransactionManager
                 MoreExecutors.directExecutor()),
             input ->
                 new SessionPool.SessionPoolTransactionContext(
-                    SessionPoolAsyncTransactionManager.this, input, session.get().delegate),
+                    SessionPoolAsyncTransactionManager.this,
+                    input,
+                    session.get().delegate,
+                    pool.clock),
             MoreExecutors.directExecutor()));
   }
 
