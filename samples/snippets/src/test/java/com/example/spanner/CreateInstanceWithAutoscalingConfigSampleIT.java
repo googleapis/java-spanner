@@ -16,19 +16,19 @@
 
 package com.example.spanner;
 
-import static org.junit.Assert.assertTrue;
-
+import static com.google.common.truth.Truth.assertThat;
+import java.util.UUID;
 import org.junit.Test;
+import com.google.cloud.spanner.InstanceId;
 
 public class CreateInstanceWithAutoscalingConfigSampleIT extends SampleTestBase {
     @Test
     public void testCreateInstanceWithAutoscalingConfig() throws Exception {
-        String instanceId = formatForTest("sample-inst");
-        String out =
-                runSampleRunnable(() -> {
+        String instanceId = String.format("autoscaler-%s", UUID.randomUUID());
+        String out = SampleRunner.runSample(() -> {
                     try {
                         CreateInstanceWithAutoscalingConfigExample.createInstance(
-                                dbId.getInstanceId().getProject(), instanceId);
+                                projectId, instanceId);
                     } finally {
                         spanner.getInstanceAdminClient().deleteInstance(instanceId);
                     }
@@ -37,6 +37,6 @@ public class CreateInstanceWithAutoscalingConfigSampleIT extends SampleTestBase 
                 .contains(
                         String.format(
                                 "Created autoscaler instance %s",
-                                InstanceId.of(dbId.getInstanceId().getProject(), instanceId)));
+                                InstanceId.of(projectId, instanceId)));
     }
 }

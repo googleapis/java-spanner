@@ -27,8 +27,9 @@ import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 
-class CreateInstanceWithProcessingUnitsExample {
+class CreateInstanceWithAutoscalingConfigExample {
 
     static void createInstance() {
         // TODO(developer): Replace these variables before running the sample.
@@ -54,6 +55,7 @@ class CreateInstanceWithProcessingUnitsExample {
                                 AutoscalingConfig.AutoscalingTargets.newBuilder()
                                         .setHighPriorityCpuUtilizationPercent(65)
                                         .setStorageUtilizationPercent(95))
+                        .build();
         String displayName = "Descriptive name";
 
         try {
