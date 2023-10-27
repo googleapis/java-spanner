@@ -139,7 +139,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.1</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>spanner-testing-east1</spanner.test.instance>
