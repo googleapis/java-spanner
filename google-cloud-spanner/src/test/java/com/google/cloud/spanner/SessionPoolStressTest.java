@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -127,14 +126,16 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(
             Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class));
   }
+
   SessionImpl getMockedSession(ReadContext context) {
     SpannerImpl spanner = mock(SpannerImpl.class);
     Map options = new HashMap<>();
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
     final SessionImpl session =
         new SessionImpl(
-            spanner, "projects/dummy/instances/dummy/databases/dummy/sessions/session"
-            + sessionIndex, options) {
+            spanner,
+            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+            options) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.

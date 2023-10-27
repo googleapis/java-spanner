@@ -85,7 +85,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
                     SessionConsumerImpl consumer =
                         invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
-                      consumer.onSessionReady(setupMockSession(mockSession(mockContext), mockContext));
+                      consumer.onSessionReady(
+                          setupMockSession(mockSession(mockContext), mockContext));
                     }
                   });
               return null;

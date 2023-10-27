@@ -427,7 +427,6 @@ abstract class AbstractReadContext
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
     this.clock = builder.clock;
-
   }
 
   @Override

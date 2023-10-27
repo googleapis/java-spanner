@@ -149,7 +149,8 @@ class SessionPoolAsyncTransactionManager
                   public void onSuccess(TransactionContext result) {
                     delegateTxnFuture.set(
                         new SessionPool.SessionPoolTransactionContext(
-                            SessionPoolAsyncTransactionManager.this, result,
+                            SessionPoolAsyncTransactionManager.this,
+                            result,
                             session.get().delegate));
                   }
                 },

@@ -635,23 +635,27 @@ class SessionPool {
     private final SessionImpl sessionImpl;
     private final Clock clock;
 
-    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate,
-        SessionImpl sessionImpl) {
+    SessionPoolTransactionContext(
+        SessionNotFoundHandler handler, TransactionContext delegate, SessionImpl sessionImpl) {
       this(handler, delegate, sessionImpl, null);
     }
 
-    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate,
-        SessionImpl sessionImpl, Clock clock) {
+    SessionPoolTransactionContext(
+        SessionNotFoundHandler handler,
+        TransactionContext delegate,
+        SessionImpl sessionImpl,
+        Clock clock) {
       this.handler = Preconditions.checkNotNull(handler);
       this.delegate = delegate;
       this.sessionImpl = sessionImpl;
-      this.clock = clock == null? new Clock() : clock;
+      this.clock = clock == null ? new Clock() : clock;
     }
 
     @Override
     public ResultSet read(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      ResultSet resultSet = new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
+      ResultSet resultSet =
+          new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
       sessionImpl.markUsed(clock.instant());
       return resultSet;
     }
@@ -659,8 +663,8 @@ class SessionPool {
     @Override
     public AsyncResultSet readAsync(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      AsyncResultSet resultSet = new AsyncSessionPoolResultSet(
-          handler, delegate.readAsync(table, keys, columns, options));
+      AsyncResultSet resultSet =
+          new AsyncSessionPoolResultSet(handler, delegate.readAsync(table, keys, columns, options));
       sessionImpl.markUsed(clock.instant());
       return resultSet;
     }
@@ -668,8 +672,9 @@ class SessionPool {
     @Override
     public ResultSet readUsingIndex(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      ResultSet resultSet =  new SessionPoolResultSet(
-          handler, delegate.readUsingIndex(table, index, keys, columns, options));
+      ResultSet resultSet =
+          new SessionPoolResultSet(
+              handler, delegate.readUsingIndex(table, index, keys, columns, options));
       sessionImpl.markUsed(clock.instant());
       return resultSet;
     }
@@ -677,8 +682,9 @@ class SessionPool {
     @Override
     public AsyncResultSet readUsingIndexAsync(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      AsyncResultSet resultSet =  new AsyncSessionPoolResultSet(
-          handler, delegate.readUsingIndexAsync(table, index, keys, columns, options));
+      AsyncResultSet resultSet =
+          new AsyncSessionPoolResultSet(
+              handler, delegate.readUsingIndexAsync(table, index, keys, columns, options));
       sessionImpl.markUsed(clock.instant());
       return resultSet;
     }
@@ -784,13 +790,14 @@ class SessionPool {
 
     @Override
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
-      ApiFuture<Long> apiFuture = ApiFutures.catching(
-          delegate.executeUpdateAsync(statement, options),
-          SessionNotFoundException.class,
-          input -> {
-            throw handler.handleSessionNotFound(input);
-          },
-          MoreExecutors.directExecutor());
+      ApiFuture<Long> apiFuture =
+          ApiFutures.catching(
+              delegate.executeUpdateAsync(statement, options),
+              SessionNotFoundException.class,
+              input -> {
+                throw handler.handleSessionNotFound(input);
+              },
+              MoreExecutors.directExecutor());
       sessionImpl.markUsed(clock.instant());
       return apiFuture;
     }
@@ -809,13 +816,14 @@ class SessionPool {
     @Override
     public ApiFuture<long[]> batchUpdateAsync(
         Iterable<Statement> statements, UpdateOption... options) {
-      ApiFuture<long[]> apiFuture =  ApiFutures.catching(
-          delegate.batchUpdateAsync(statements, options),
-          SessionNotFoundException.class,
-          input -> {
-            throw handler.handleSessionNotFound(input);
-          },
-          MoreExecutors.directExecutor());
+      ApiFuture<long[]> apiFuture =
+          ApiFutures.catching(
+              delegate.batchUpdateAsync(statements, options),
+              SessionNotFoundException.class,
+              input -> {
+                throw handler.handleSessionNotFound(input);
+              },
+              MoreExecutors.directExecutor());
       sessionImpl.markUsed(clock.instant());
       return apiFuture;
     }
@@ -875,8 +883,9 @@ class SessionPool {
     }
 
     private TransactionContext internalBegin() {
-      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin(),
-          session.get().delegate, sessionPool.clock);
+      TransactionContext res =
+          new SessionPoolTransactionContext(
+              this, delegate.begin(), session.get().delegate, sessionPool.clock);
       session.get().markUsed();
       return res;
     }
@@ -926,13 +935,14 @@ class SessionPool {
       while (true) {
         try {
           if (restartedAfterSessionNotFound) {
-            TransactionContext res = new SessionPoolTransactionContext(this,
-                delegate.begin(), session.get().delegate, sessionPool.clock);
+            TransactionContext res =
+                new SessionPoolTransactionContext(
+                    this, delegate.begin(), session.get().delegate, sessionPool.clock);
             restartedAfterSessionNotFound = false;
             return res;
           } else {
-            return new SessionPoolTransactionContext(this, delegate.resetForRetry(),
-                session.get().delegate);
+            return new SessionPoolTransactionContext(
+                this, delegate.resetForRetry(), session.get().delegate);
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
@@ -1975,8 +1985,8 @@ class SessionPool {
             // collection is populated only when the get() method in {@code PooledSessionFuture} is
             // called.
             final PooledSession session = sessionFuture.get();
-            final Duration durationFromLastUse = Duration.between(
-                session.delegate.getLastUseTime(), currentTime);
+            final Duration durationFromLastUse =
+                Duration.between(session.delegate.getLastUseTime(), currentTime);
             if (!session.eligibleForLongRunning
                 && durationFromLastUse.compareTo(
                         inactiveTransactionRemovalOptions.getIdleTimeThreshold())

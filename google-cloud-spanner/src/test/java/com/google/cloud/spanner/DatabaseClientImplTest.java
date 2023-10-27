@@ -538,7 +538,8 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-  testPoolMaintainer_whenMultipleReadsExceedingLongRunningThreshold_retainSessionForTransaction() throws Exception {
+      testPoolMaintainer_whenMultipleReadsExceedingLongRunningThreshold_retainSessionForTransaction()
+          throws Exception {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -603,13 +604,16 @@ public class DatabaseClientImplTest {
 
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(endExecutionTime, initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
     assertEquals(0, client.pool.numLeakedSessionsRemoved());
   }
 
   @Test
   public void
-  testPoolMaintainer_whenMultipleUpdatesExceedingLongRunningThreshold_retainSessionForTransaction() throws Exception {
+      testPoolMaintainer_whenMultipleUpdatesExceedingLongRunningThreshold_retainSessionForTransaction()
+          throws Exception {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -666,7 +670,9 @@ public class DatabaseClientImplTest {
     }
     Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(endExecutionTime, initialExecutionTime); // if session clean up task runs then these timings won't match
+    assertNotEquals(
+        endExecutionTime,
+        initialExecutionTime); // if session clean up task runs then these timings won't match
     assertEquals(0, client.pool.numLeakedSessionsRemoved());
     assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
   }

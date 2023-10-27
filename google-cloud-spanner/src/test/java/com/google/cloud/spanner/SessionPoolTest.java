@@ -1811,6 +1811,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     when(resultSet.next()).thenReturn(true, false);
     when(context.executeQuery(any(Statement.class))).thenReturn(resultSet);
   }
+
   private void mockKeepAlive(Session session) {
     ReadContext context = mock(ReadContext.class);
     ResultSet resultSet = mock(ResultSet.class);

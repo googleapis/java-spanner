@@ -30,7 +30,6 @@ import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.protobuf.Empty;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,8 +37,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.threeten.bp.Instant;
 
 abstract class BaseSessionPoolTest {
@@ -95,8 +92,9 @@ abstract class BaseSessionPoolTest {
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
     final SessionImpl session =
         new SessionImpl(
-            spanner, "projects/dummy/instances/dummy/databases/dummy/sessions/session"
-            + sessionIndex, options) {
+            spanner,
+            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+            options) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.
@@ -109,14 +107,15 @@ abstract class BaseSessionPoolTest {
           }
 
           @Override
-          public CommitResponse writeAtLeastOnceWithOptions(Iterable<Mutation> mutations,
-              TransactionOption... transactionOptions) throws SpannerException {
+          public CommitResponse writeAtLeastOnceWithOptions(
+              Iterable<Mutation> mutations, TransactionOption... transactionOptions)
+              throws SpannerException {
             return new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance());
           }
 
           @Override
-          public CommitResponse writeWithOptions(Iterable<Mutation> mutations,
-              TransactionOption... options) throws SpannerException {
+          public CommitResponse writeWithOptions(
+              Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
             return new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance());
           }
         };
