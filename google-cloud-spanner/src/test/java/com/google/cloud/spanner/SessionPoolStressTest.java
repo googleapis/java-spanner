@@ -22,13 +22,16 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -106,8 +109,8 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                     for (int s = 0; s < sessionCount; s++) {
                       SessionImpl session;
                       synchronized (lock) {
-                        session = mockSession(context);
-                        setupSession(session);
+                        session = getMockedSession(context);
+                        setupSession(session, context);
                         sessions.put(session.getName(), false);
                         if (sessions.size() > maxAliveSessions) {
                           maxAliveSessions = sessions.size();
@@ -124,11 +127,59 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(
             Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class));
   }
+  SessionImpl getMockedSession(ReadContext context) {
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    Map options = new HashMap<>();
+    options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
+    final SessionImpl session =
+        new SessionImpl(
+            spanner, "projects/dummy/instances/dummy/databases/dummy/sessions/session"
+            + sessionIndex, options) {
+          @Override
+          public ReadContext singleUse(TimestampBound bound) {
+            // The below stubs are added so that we can mock keep-alive.
+            return context;
+          }
 
-  private void setupSession(final SessionImpl session) {
-    ReadContext mockContext = mock(ReadContext.class);
+          @Override
+          public ApiFuture<Empty> asyncClose() {
+            synchronized (lock) {
+              if (expiredSessions.contains(this.getName())) {
+                return ApiFutures.immediateFailedFuture(
+                    SpannerExceptionFactoryTest.newSessionNotFoundException(this.getName()));
+              }
+              if (sessions.remove(this.getName()) == null) {
+                setFailed(closedSessions.get(this.getName()));
+              }
+              closedSessions.put(this.getName(), new Exception("Session closed at:"));
+              if (sessions.size() < minSessionsWhenSessionClosed) {
+                minSessionsWhenSessionClosed = sessions.size();
+              }
+            }
+            return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+          }
+
+          @Override
+          public void prepareReadWriteTransaction() {
+            if (random.nextInt(100) < 10) {
+              expireSession(this);
+              throw SpannerExceptionFactoryTest.newSessionNotFoundException(this.getName());
+            }
+            String name = this.getName();
+            synchronized (lock) {
+              if (sessions.put(name, true)) {
+                setFailed();
+              }
+              this.readyTransactionId = ByteString.copyFromUtf8("foo");
+            }
+          }
+        };
+    sessionIndex++;
+    return session;
+  }
+
+  private void setupSession(final SessionImpl session, final ReadContext mockContext) {
     final ResultSet mockResult = mock(ResultSet.class);
-    when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
             invocation -> {
@@ -136,44 +187,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
               return mockResult;
             });
     when(mockResult.next()).thenReturn(true);
-    doAnswer(
-            invocation -> {
-              synchronized (lock) {
-                if (expiredSessions.contains(session.getName())) {
-                  return ApiFutures.immediateFailedFuture(
-                      SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName()));
-                }
-                if (sessions.remove(session.getName()) == null) {
-                  setFailed(closedSessions.get(session.getName()));
-                }
-                closedSessions.put(session.getName(), new Exception("Session closed at:"));
-                if (sessions.size() < minSessionsWhenSessionClosed) {
-                  minSessionsWhenSessionClosed = sessions.size();
-                }
-              }
-              return ApiFutures.immediateFuture(Empty.getDefaultInstance());
-            })
-        .when(session)
-        .asyncClose();
-
-    doAnswer(
-            invocation -> {
-              if (random.nextInt(100) < 10) {
-                expireSession(session);
-                throw SpannerExceptionFactoryTest.newSessionNotFoundException(session.getName());
-              }
-              String name = session.getName();
-              synchronized (lock) {
-                if (sessions.put(name, true)) {
-                  setFailed();
-                }
-                session.readyTransactionId = ByteString.copyFromUtf8("foo");
-              }
-              return null;
-            })
-        .when(session)
-        .prepareReadWriteTransaction();
-    when(session.hasReadyTransaction()).thenCallRealMethod();
   }
 
   private void expireSession(Session session) {
