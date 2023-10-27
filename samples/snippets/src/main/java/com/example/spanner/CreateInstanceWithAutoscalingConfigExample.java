@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
+import java.util.concurrent.ExecutionException;
 
 class CreateInstanceWithAutoscalingConfigExample {
 
@@ -44,13 +45,13 @@ class CreateInstanceWithAutoscalingConfigExample {
 
         // Set Instance configuration.
         String configId = "regional-us-central1";
-        // This will create an autoscaling instance with the following config.
+        // Create an autoscaling config.
         AutoscalingConfig autoscalingConfig =
                 AutoscalingConfig.newBuilder()
                         .setAutoscalingLimits(
                                 AutoscalingConfig.AutoscalingLimits.newBuilder()
-                                        .setMinProcessingUnits(1000)
-                                        .setMaxProcessingUnits(2000))
+                                        .setMinNodes(1)
+                                        .setMaxNodes(2))
                         .setAutoscalingTargets(
                                 AutoscalingConfig.AutoscalingTargets.newBuilder()
                                         .setHighPriorityCpuUtilizationPercent(65)
@@ -58,30 +59,29 @@ class CreateInstanceWithAutoscalingConfigExample {
                         .build();
         String displayName = "Descriptive name";
 
+        // Create an InstanceInfo object that will be used to create the instance.
+        InstanceInfo instanceInfo =
+                InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+                        .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
+                        .setAutoscalingConfig(autoscalingConfig)
+                        .setDisplayName(displayName)
+                        .build();
+        OperationFuture<Instance, CreateInstanceMetadata> operation =
+                instanceAdminClient.createInstance(instanceInfo);
+
         try {
-            // Creates a new instance
-            System.out.printf("Creating instance %s.%n", instanceId);
-            OperationFuture<Instance, CreateInstanceMetadata> operation =
-                    instanceAdminClient.createInstance(InstanceInfo
-                            .newBuilder(InstanceId.of(projectId, instanceId))
-                            .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
-                            .setAutoscalingConfig(autoscalingConfig)
-                            .setDisplayName(displayName)
-                            .build());
-
             // Wait for the createInstance operation to finish.
-            System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
-            Instance createdInstance = operation.get();
-
-            System.out.printf("Created autoscaler instance %s.%n", createdInstance.getId().getInstance());
-
-            Instance instance = instanceAdminClient.getInstance(instanceId);
-            System.out.printf("Instance %s has autoscaling config: %s.%n", instance.getId().getInstance(),
-                    instance.getAutoscalingConfig());
-        } catch (Exception e) {
-            System.out.printf("Error: %s.%n", e.getMessage());
+            Instance instance = operation.get();
+            System.out.printf("Autoscaler instance %s was successfully created%n", instance.getId());
+        } catch (ExecutionException e) {
+            System.out.printf(
+                    "Error: Creating instance %s failed with error message %s%n",
+                    instanceInfo.getId(), e.getMessage());
+        } catch (InterruptedException e) {
+            System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+        } finally {
+            spanner.close();
         }
-        spanner.close();
     }
 }
 //[END spanner_create_instance_with_autoscaling_config]

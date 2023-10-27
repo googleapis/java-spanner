@@ -36,7 +36,7 @@ public class CreateInstanceWithAutoscalingConfigSampleIT extends SampleTestBase 
         assertThat(out)
                 .contains(
                         String.format(
-                                "Created autoscaler instance %s",
+                                "Autoscaler instance %s",
                                 InstanceId.of(projectId, instanceId)));
     }
 }
