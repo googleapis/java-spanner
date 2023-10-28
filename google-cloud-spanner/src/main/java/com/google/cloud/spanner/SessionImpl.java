@@ -29,6 +29,7 @@ import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
+import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
@@ -396,6 +397,7 @@ class SessionImpl implements Session {
   }
 
   TransactionContextImpl newTransaction(Options options) {
+    final Clock clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
@@ -407,6 +409,7 @@ class SessionImpl implements Session {
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
         .setSpan(currentSpan)
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
+        .setClock(clock)
         .build();
   }
 

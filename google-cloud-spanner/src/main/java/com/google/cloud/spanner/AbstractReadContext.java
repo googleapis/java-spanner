@@ -36,6 +36,7 @@ import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
+import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -53,7 +54,6 @@ import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
-import java.time.Clock;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -426,7 +426,7 @@ abstract class AbstractReadContext
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
-    this.clock = builder.clock;
+    this.clock = builder.clock == null ? new Clock() : builder.clock;
   }
 
   @Override
@@ -837,6 +837,7 @@ abstract class AbstractReadContext
             SpannerRpc.StreamingCall call =
                 rpc.read(
                     builder.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
+            session.markUsed(clock.instant());
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;

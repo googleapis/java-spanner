@@ -30,6 +30,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
+import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -85,11 +86,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
+
+      private Clock clock;
       private ByteString transactionId;
       private Options options;
       private boolean trackTransactionStarter;
 
       private Builder() {}
+
+      Builder setClock(Clock clock) {
+        this.clock = clock;
+        return self();
+      }
 
       Builder setTransactionId(ByteString transactionId) {
         this.transactionId = transactionId;
