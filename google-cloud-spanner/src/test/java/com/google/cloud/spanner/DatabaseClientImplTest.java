@@ -53,7 +53,6 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
-import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
@@ -3692,14 +3691,5 @@ public class DatabaseClientImplTest {
     assertEquals(
         expected.stream().collect(Collectors.joining(",", "[", "]")),
         resultSet.getValue(col).getAsString());
-  }
-
-  static class FakeClock extends Clock {
-    volatile long currentTimeMillis;
-
-    @Override
-    public Instant instant() {
-      return Instant.ofEpochMilli(currentTimeMillis);
-    }
   }
 }
