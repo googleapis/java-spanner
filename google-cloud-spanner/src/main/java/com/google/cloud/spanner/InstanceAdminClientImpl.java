@@ -193,9 +193,6 @@ class InstanceAdminClientImpl implements InstanceAdminClient {
   @Override
   public OperationFuture<Instance, CreateInstanceMetadata> createInstance(InstanceInfo instance)
       throws SpannerException {
-    Preconditions.checkArgument(
-        instance.getNodeCount() == 0 || instance.getProcessingUnits() == 0,
-        "Only one of nodeCount and processingUnits can be set when creating a new instance");
     String projectName = PROJECT_NAME_TEMPLATE.instantiate("project", projectId);
     OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
         rawOperationFuture =
