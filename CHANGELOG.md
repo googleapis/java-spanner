@@ -1,5 +1,56 @@
 # Changelog
 
+## [6.52.1](https://github.com/googleapis/java-spanner/compare/v6.52.0...v6.52.1) (2023-10-20)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.18.0 ([#2691](https://github.com/googleapis/java-spanner/issues/2691)) ([b425021](https://github.com/googleapis/java-spanner/commit/b4250218a500eb1540920ed0023454d06c54d621))
+
+## [6.52.0](https://github.com/googleapis/java-spanner/compare/v6.51.0...v6.52.0) (2023-10-19)
+
+
+### Features
+
+* Add support for Managed Autoscaler ([#2624](https://github.com/googleapis/java-spanner/issues/2624)) ([e5e6923](https://github.com/googleapis/java-spanner/commit/e5e6923a351670ab237c411bb4a549533dac1b6b))
+
+## [6.51.0](https://github.com/googleapis/java-spanner/compare/v6.50.1...v6.51.0) (2023-10-14)
+
+
+### Features
+
+* **spanner:** Add autoscaling config to the instance proto ([#2674](https://github.com/googleapis/java-spanner/issues/2674)) ([8d38ca3](https://github.com/googleapis/java-spanner/commit/8d38ca393a6c0f9df18c9d02fa9392e11af01246))
+
+
+### Bug Fixes
+
+* Always include default client lib header ([#2676](https://github.com/googleapis/java-spanner/issues/2676)) ([74fd174](https://github.com/googleapis/java-spanner/commit/74fd174a84f6f97949b9caaadddf366aafd4a469))
+
+## [6.50.1](https://github.com/googleapis/java-spanner/compare/v6.50.0...v6.50.1) (2023-10-11)
+
+
+### Bug Fixes
+
+* Noop in case there is no change in  autocommit value for setAutocommit() method ([#2662](https://github.com/googleapis/java-spanner/issues/2662)) ([9f51b64](https://github.com/googleapis/java-spanner/commit/9f51b6445f064439379af752372a3490a2fd5087))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.17.0 ([#2660](https://github.com/googleapis/java-spanner/issues/2660)) ([96b9dd6](https://github.com/googleapis/java-spanner/commit/96b9dd6b6a0ee7b1a0a1cc58a8880a10799665e6))
+* Update dependency commons-io:commons-io to v2.14.0 ([#2649](https://github.com/googleapis/java-spanner/issues/2649)) ([fa1b73c](https://github.com/googleapis/java-spanner/commit/fa1b73c1bf4700be5e8865211817e2bc7cc77119))
+
+## [6.50.0](https://github.com/googleapis/java-spanner/compare/v6.49.0...v6.50.0) (2023-10-09)
+
+
+### Features
+
+* Support setting core pool size for async API in system property ([#2632](https://github.com/googleapis/java-spanner/issues/2632)) ([e51c55d](https://github.com/googleapis/java-spanner/commit/e51c55d332bacb9d174a24b0d842b2cba4762db8)), closes [#2631](https://github.com/googleapis/java-spanner/issues/2631)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-trace to v2.24.0 ([#2577](https://github.com/googleapis/java-spanner/issues/2577)) ([311c2ad](https://github.com/googleapis/java-spanner/commit/311c2ad97311490893f3abf4da5fe4d511c445dd))
+
 ## [6.49.0](https://github.com/googleapis/java-spanner/compare/v6.48.0...v6.49.0) (2023-09-28)
 
 
