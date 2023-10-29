@@ -397,7 +397,10 @@ class SessionImpl implements Session {
   }
 
   TransactionContextImpl newTransaction(Options options) {
-    final Clock clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
+    final Clock clock =
+        spanner.getOptions().getSessionPoolOptions() != null
+            ? spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock()
+            : null;
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
