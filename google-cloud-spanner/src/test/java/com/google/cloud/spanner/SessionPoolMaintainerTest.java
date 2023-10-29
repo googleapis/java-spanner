@@ -76,7 +76,6 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   }
 
   private void setupMockSessionCreation() {
-    ReadContext mockContext = mock(ReadContext.class);
     doAnswer(
             invocation -> {
               executor.submit(
@@ -85,8 +84,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
                     SessionConsumerImpl consumer =
                         invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
+                      ReadContext mockContext = mock(ReadContext.class);
                       consumer.onSessionReady(
-                          setupMockSession(mockSession(mockContext), mockContext));
+                          setupMockSession(buildMockSession(mockContext), mockContext));
                     }
                   });
               return null;

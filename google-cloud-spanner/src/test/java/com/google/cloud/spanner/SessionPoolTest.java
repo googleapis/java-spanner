@@ -649,9 +649,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setIncStep(1)
             .setMaxIdleSessions(0)
             .build();
-    SessionImpl session1 = mockSession(context);
-    SessionImpl session2 = mockSession(context);
-    SessionImpl session3 = mockSession(context);
+    SessionImpl session1 = buildMockSession(context);
+    SessionImpl session2 = buildMockSession(context);
+    SessionImpl session3 = buildMockSession(context);
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
     doAnswer(
@@ -1037,9 +1037,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   private void setupForLongRunningTransactionsCleanup() {
     ReadContext context = mock(ReadContext.class);
-    SessionImpl session1 = mockSession(context);
-    SessionImpl session2 = mockSession(context);
-    SessionImpl session3 = mockSession(context);
+    SessionImpl session1 = buildMockSession(context);
+    SessionImpl session2 = buildMockSession(context);
+    SessionImpl session3 = buildMockSession(context);
 
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
@@ -1063,9 +1063,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void keepAlive() throws Exception {
     ReadContext context = mock(ReadContext.class);
     options = SessionPoolOptions.newBuilder().setMinSessions(2).setMaxSessions(3).build();
-    final SessionImpl mockSession1 = mockSession(context);
-    final SessionImpl mockSession2 = mockSession(context);
-    final SessionImpl mockSession3 = mockSession(context);
+    final SessionImpl mockSession1 = buildMockSession(context);
+    final SessionImpl mockSession2 = buildMockSession(context);
+    final SessionImpl mockSession3 = buildMockSession(context);
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(mockSession1, mockSession2, mockSession3));
 

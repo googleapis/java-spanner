@@ -86,7 +86,7 @@ abstract class BaseSessionPoolTest {
     return session;
   }
 
-  SessionImpl mockSession(ReadContext context) {
+  SessionImpl buildMockSession(ReadContext context) {
     SpannerImpl spanner = mock(SpannerImpl.class);
     Map options = new HashMap<>();
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
