@@ -201,8 +201,15 @@ class SessionImpl implements Session {
       if (requestOptions.hasTag()) {
         requestOptionsBuilder.setTransactionTag(requestOptions.tag());
       }
+      if (requestOptions.hasMaxBatchingDelayMs()) {
+        int maxBatchingDelayMs = requestOptions.maxBatchingDelayMs();
+        // TODO set the data into the proto object
+      }
       return requestOptionsBuilder.build();
     }
+
+    if (requestOptions.hasMaxBatchingDelayMs()) {}
+
     return null;
   }
 
