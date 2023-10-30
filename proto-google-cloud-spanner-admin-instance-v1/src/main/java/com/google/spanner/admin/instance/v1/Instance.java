@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -418,8 +418,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * The number of nodes allocated to this instance. At most one of either
-   * node_count or processing_units should be present in the message. This
-   * may be zero in API responses for instances that are not yet in state
+   * node_count or processing_units should be present in the message.
+   *
+   * Users can set the node_count field to specify the target number of nodes
+   * allocated to the instance.
+   *
+   * This may be zero in API responses for instances that are not yet in state
    * `READY`.
    *
    * See [the
@@ -443,8 +447,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * The number of processing units allocated to this instance. At most one of
-   * processing_units or node_count should be present in the message. This may
-   * be zero in API responses for instances that are not yet in state `READY`.
+   * processing_units or node_count should be present in the message.
+   *
+   * Users can set the processing_units field to specify the target number of
+   * processing units allocated to the instance.
+   *
+   * This may be zero in API responses for instances that are not yet in state
+   * `READY`.
    *
    * See [the
    * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
@@ -458,6 +467,72 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public int getProcessingUnits() {
     return processingUnits_;
+  }
+
+  public static final int AUTOSCALING_CONFIG_FIELD_NUMBER = 17;
+  private com.google.spanner.admin.instance.v1.AutoscalingConfig autoscalingConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, node_count and processing_units
+   * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the autoscalingConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasAutoscalingConfig() {
+    return autoscalingConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, node_count and processing_units
+   * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The autoscalingConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfig getAutoscalingConfig() {
+    return autoscalingConfig_ == null
+        ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+        : autoscalingConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, node_count and processing_units
+   * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder
+      getAutoscalingConfigOrBuilder() {
+    return autoscalingConfig_ == null
+        ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+        : autoscalingConfig_;
   }
 
   public static final int STATE_FIELD_NUMBER = 6;
@@ -897,6 +972,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (updateTime_ != null) {
       output.writeMessage(12, getUpdateTime());
     }
+    if (autoscalingConfig_ != null) {
+      output.writeMessage(17, getAutoscalingConfig());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -949,6 +1027,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (updateTime_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(12, getUpdateTime());
     }
+    if (autoscalingConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(17, getAutoscalingConfig());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -970,6 +1051,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (!getDisplayName().equals(other.getDisplayName())) return false;
     if (getNodeCount() != other.getNodeCount()) return false;
     if (getProcessingUnits() != other.getProcessingUnits()) return false;
+    if (hasAutoscalingConfig() != other.hasAutoscalingConfig()) return false;
+    if (hasAutoscalingConfig()) {
+      if (!getAutoscalingConfig().equals(other.getAutoscalingConfig())) return false;
+    }
     if (state_ != other.state_) return false;
     if (!internalGetLabels().equals(other.internalGetLabels())) return false;
     if (!getEndpointUrisList().equals(other.getEndpointUrisList())) return false;
@@ -1002,6 +1087,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + getNodeCount();
     hash = (37 * hash) + PROCESSING_UNITS_FIELD_NUMBER;
     hash = (53 * hash) + getProcessingUnits();
+    if (hasAutoscalingConfig()) {
+      hash = (37 * hash) + AUTOSCALING_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getAutoscalingConfig().hashCode();
+    }
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
     if (!internalGetLabels().getMap().isEmpty()) {
@@ -1184,6 +1273,11 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       displayName_ = "";
       nodeCount_ = 0;
       processingUnits_ = 0;
+      autoscalingConfig_ = null;
+      if (autoscalingConfigBuilder_ != null) {
+        autoscalingConfigBuilder_.dispose();
+        autoscalingConfigBuilder_ = null;
+      }
       state_ = 0;
       internalGetMutableLabels().clear();
       endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
@@ -1249,20 +1343,26 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         result.processingUnits_ = processingUnits_;
       }
       if (((from_bitField0_ & 0x00000020) != 0)) {
-        result.state_ = state_;
+        result.autoscalingConfig_ =
+            autoscalingConfigBuilder_ == null
+                ? autoscalingConfig_
+                : autoscalingConfigBuilder_.build();
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.state_ = state_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
         result.labels_ = internalGetLabels();
         result.labels_.makeImmutable();
       }
-      if (((from_bitField0_ & 0x00000080) != 0)) {
+      if (((from_bitField0_ & 0x00000100) != 0)) {
         endpointUris_.makeImmutable();
         result.endpointUris_ = endpointUris_;
       }
-      if (((from_bitField0_ & 0x00000100) != 0)) {
+      if (((from_bitField0_ & 0x00000200) != 0)) {
         result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
       }
-      if (((from_bitField0_ & 0x00000200) != 0)) {
+      if (((from_bitField0_ & 0x00000400) != 0)) {
         result.updateTime_ = updateTimeBuilder_ == null ? updateTime_ : updateTimeBuilder_.build();
       }
     }
@@ -1333,15 +1433,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (other.getProcessingUnits() != 0) {
         setProcessingUnits(other.getProcessingUnits());
       }
+      if (other.hasAutoscalingConfig()) {
+        mergeAutoscalingConfig(other.getAutoscalingConfig());
+      }
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
       internalGetMutableLabels().mergeFrom(other.internalGetLabels());
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       if (!other.endpointUris_.isEmpty()) {
         if (endpointUris_.isEmpty()) {
           endpointUris_ = other.endpointUris_;
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000100;
         } else {
           ensureEndpointUrisIsMutable();
           endpointUris_.addAll(other.endpointUris_);
@@ -1407,7 +1510,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
             case 48:
               {
                 state_ = input.readEnum();
-                bitField0_ |= 0x00000020;
+                bitField0_ |= 0x00000040;
                 break;
               } // case 48
             case 58:
@@ -1419,7 +1522,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
                 internalGetMutableLabels()
                     .getMutableMap()
                     .put(labels__.getKey(), labels__.getValue());
-                bitField0_ |= 0x00000040;
+                bitField0_ |= 0x00000080;
                 break;
               } // case 58
             case 66:
@@ -1438,15 +1541,22 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
             case 90:
               {
                 input.readMessage(getCreateTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000100;
+                bitField0_ |= 0x00000200;
                 break;
               } // case 90
             case 98:
               {
                 input.readMessage(getUpdateTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000200;
+                bitField0_ |= 0x00000400;
                 break;
               } // case 98
+            case 138:
+              {
+                input.readMessage(
+                    getAutoscalingConfigFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 138
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1835,8 +1945,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of nodes allocated to this instance. At most one of either
-     * node_count or processing_units should be present in the message. This
-     * may be zero in API responses for instances that are not yet in state
+     * node_count or processing_units should be present in the message.
+     *
+     * Users can set the node_count field to specify the target number of nodes
+     * allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
      * `READY`.
      *
      * See [the
@@ -1857,8 +1971,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of nodes allocated to this instance. At most one of either
-     * node_count or processing_units should be present in the message. This
-     * may be zero in API responses for instances that are not yet in state
+     * node_count or processing_units should be present in the message.
+     *
+     * Users can set the node_count field to specify the target number of nodes
+     * allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
      * `READY`.
      *
      * See [the
@@ -1883,8 +2001,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of nodes allocated to this instance. At most one of either
-     * node_count or processing_units should be present in the message. This
-     * may be zero in API responses for instances that are not yet in state
+     * node_count or processing_units should be present in the message.
+     *
+     * Users can set the node_count field to specify the target number of nodes
+     * allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
      * `READY`.
      *
      * See [the
@@ -1909,8 +2031,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of processing units allocated to this instance. At most one of
-     * processing_units or node_count should be present in the message. This may
-     * be zero in API responses for instances that are not yet in state `READY`.
+     * processing_units or node_count should be present in the message.
+     *
+     * Users can set the processing_units field to specify the target number of
+     * processing units allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
      *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
@@ -1930,8 +2057,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of processing units allocated to this instance. At most one of
-     * processing_units or node_count should be present in the message. This may
-     * be zero in API responses for instances that are not yet in state `READY`.
+     * processing_units or node_count should be present in the message.
+     *
+     * Users can set the processing_units field to specify the target number of
+     * processing units allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
      *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
@@ -1955,8 +2087,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of processing units allocated to this instance. At most one of
-     * processing_units or node_count should be present in the message. This may
-     * be zero in API responses for instances that are not yet in state `READY`.
+     * processing_units or node_count should be present in the message.
+     *
+     * Users can set the processing_units field to specify the target number of
+     * processing units allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
      *
      * See [the
      * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
@@ -1972,6 +2109,240 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       processingUnits_ = 0;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.admin.instance.v1.AutoscalingConfig autoscalingConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>
+        autoscalingConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the autoscalingConfig field is set.
+     */
+    public boolean hasAutoscalingConfig() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The autoscalingConfig.
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig getAutoscalingConfig() {
+      if (autoscalingConfigBuilder_ == null) {
+        return autoscalingConfig_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+            : autoscalingConfig_;
+      } else {
+        return autoscalingConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig value) {
+      if (autoscalingConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        autoscalingConfig_ = value;
+      } else {
+        autoscalingConfigBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder builderForValue) {
+      if (autoscalingConfigBuilder_ == null) {
+        autoscalingConfig_ = builderForValue.build();
+      } else {
+        autoscalingConfigBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig value) {
+      if (autoscalingConfigBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0)
+            && autoscalingConfig_ != null
+            && autoscalingConfig_
+                != com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()) {
+          getAutoscalingConfigBuilder().mergeFrom(value);
+        } else {
+          autoscalingConfig_ = value;
+        }
+      } else {
+        autoscalingConfigBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearAutoscalingConfig() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      autoscalingConfig_ = null;
+      if (autoscalingConfigBuilder_ != null) {
+        autoscalingConfigBuilder_.dispose();
+        autoscalingConfigBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder
+        getAutoscalingConfigBuilder() {
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return getAutoscalingConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder
+        getAutoscalingConfigOrBuilder() {
+      if (autoscalingConfigBuilder_ != null) {
+        return autoscalingConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return autoscalingConfig_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+            : autoscalingConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>
+        getAutoscalingConfigFieldBuilder() {
+      if (autoscalingConfigBuilder_ == null) {
+        autoscalingConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.instance.v1.AutoscalingConfig,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+                com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>(
+                getAutoscalingConfig(), getParentForChildren(), isClean());
+        autoscalingConfig_ = null;
+      }
+      return autoscalingConfigBuilder_;
     }
 
     private int state_ = 0;
@@ -2016,7 +2387,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder setStateValue(int value) {
       state_ = value;
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2067,7 +2438,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       state_ = value.getNumber();
       onChanged();
       return this;
@@ -2090,7 +2461,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearState() {
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000040);
       state_ = 0;
       onChanged();
       return this;
@@ -2113,7 +2484,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (!labels_.isMutable()) {
         labels_ = labels_.copy();
       }
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       onChanged();
       return labels_;
     }
@@ -2278,7 +2649,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
 
     public Builder clearLabels() {
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000080);
       internalGetMutableLabels().getMutableMap().clear();
       return this;
     }
@@ -2321,7 +2692,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     /** Use alternate mutation accessors instead. */
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String> getMutableLabels() {
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       return internalGetMutableLabels().getMutableMap();
     }
     /**
@@ -2361,7 +2732,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException("map value");
       }
       internalGetMutableLabels().getMutableMap().put(key, value);
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       return this;
     }
     /**
@@ -2395,7 +2766,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder putAllLabels(java.util.Map<java.lang.String, java.lang.String> values) {
       internalGetMutableLabels().getMutableMap().putAll(values);
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000080;
       return this;
     }
 
@@ -2406,7 +2777,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (!endpointUris_.isModifiable()) {
         endpointUris_ = new com.google.protobuf.LazyStringArrayList(endpointUris_);
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
     }
     /**
      *
@@ -2486,7 +2857,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.set(index, value);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2508,7 +2879,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2527,7 +2898,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllEndpointUris(java.lang.Iterable<java.lang.String> values) {
       ensureEndpointUrisIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, endpointUris_);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2544,7 +2915,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearEndpointUris() {
       endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000080);
+      bitField0_ = (bitField0_ & ~0x00000100);
       ;
       onChanged();
       return this;
@@ -2568,7 +2939,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2593,7 +2964,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the createTime field is set.
      */
     public boolean hasCreateTime() {
-      return ((bitField0_ & 0x00000100) != 0);
+      return ((bitField0_ & 0x00000200) != 0);
     }
     /**
      *
@@ -2637,7 +3008,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         createTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -2658,7 +3029,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         createTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -2675,7 +3046,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
       if (createTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000100) != 0)
+        if (((bitField0_ & 0x00000200) != 0)
             && createTime_ != null
             && createTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getCreateTimeBuilder().mergeFrom(value);
@@ -2685,7 +3056,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         createTimeBuilder_.mergeFrom(value);
       }
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -2701,7 +3072,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearCreateTime() {
-      bitField0_ = (bitField0_ & ~0x00000100);
+      bitField0_ = (bitField0_ & ~0x00000200);
       createTime_ = null;
       if (createTimeBuilder_ != null) {
         createTimeBuilder_.dispose();
@@ -2722,7 +3093,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000200;
       onChanged();
       return getCreateTimeFieldBuilder().getBuilder();
     }
@@ -2794,7 +3165,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the updateTime field is set.
      */
     public boolean hasUpdateTime() {
-      return ((bitField0_ & 0x00000200) != 0);
+      return ((bitField0_ & 0x00000400) != 0);
     }
     /**
      *
@@ -2838,7 +3209,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         updateTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -2859,7 +3230,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         updateTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -2876,7 +3247,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeUpdateTime(com.google.protobuf.Timestamp value) {
       if (updateTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000200) != 0)
+        if (((bitField0_ & 0x00000400) != 0)
             && updateTime_ != null
             && updateTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getUpdateTimeBuilder().mergeFrom(value);
@@ -2886,7 +3257,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       } else {
         updateTimeBuilder_.mergeFrom(value);
       }
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -2902,7 +3273,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearUpdateTime() {
-      bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ = (bitField0_ & ~0x00000400);
       updateTime_ = null;
       if (updateTimeBuilder_ != null) {
         updateTimeBuilder_.dispose();
@@ -2923,7 +3294,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getUpdateTimeBuilder() {
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000400;
       onChanged();
       return getUpdateTimeFieldBuilder().getBuilder();
     }

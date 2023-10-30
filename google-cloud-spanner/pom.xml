@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.45.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,12 +11,11 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.45.4-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
-    <graalvm.version>22.3.3</graalvm.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
     <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
     <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
@@ -29,7 +28,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.10</version>
+        <version>0.8.11</version>
         <executions>
           <execution>
             <goals>
@@ -165,7 +164,7 @@
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
-      <artifactId>grpc-context</artifactId>
+      <artifactId>grpc-inprocess</artifactId>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
@@ -194,14 +193,6 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <!--   Temp exclusion. Remove next protobuf upgrade (to 3.23.3 or higher)
-         context: https://github.com/googleapis/sdk-platform-java/pull/1791#issuecomment-1601587713-->
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.j2objc</groupId>
-          <artifactId>j2objc-annotations</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
@@ -326,7 +317,7 @@
     <dependency>
       <groupId>org.graalvm.sdk</groupId>
       <artifactId>graal-sdk</artifactId>
-      <version>${graalvm.version}</version>
+      <version>${graal-sdk.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -370,7 +361,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20230618</version>
+      <version>20231013</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -43,6 +43,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -54,6 +55,7 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -61,13 +63,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.ResultSetStats;
 import io.opencensus.common.Scope;
 import io.opencensus.metrics.DerivedLongCumulative;
@@ -117,17 +119,6 @@ class SessionPool {
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
-  static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
-      ImmutableSet.of(
-          ErrorCode.UNKNOWN,
-          ErrorCode.INVALID_ARGUMENT,
-          ErrorCode.PERMISSION_DENIED,
-          ErrorCode.UNAUTHENTICATED,
-          ErrorCode.RESOURCE_EXHAUSTED,
-          ErrorCode.FAILED_PRECONDITION,
-          ErrorCode.OUT_OF_RANGE,
-          ErrorCode.UNIMPLEMENTED,
-          ErrorCode.INTERNAL);
 
   /**
    * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
@@ -1172,6 +1163,17 @@ class SessionPool {
     }
 
     @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        return get().batchWriteAtLeastOnce(mutationGroups, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
     public ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
@@ -1366,11 +1368,18 @@ class SessionPool {
     }
   }
 
-  final class PooledSession implements Session {
+  class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
     private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
+
+    /**
+     * This ensures that the session is added at a random position in the pool the first time it is
+     * actually added to the pool.
+     */
+    @GuardedBy("lock")
+    private Position releaseToPosition = initialReleasePosition;
 
     /**
      * Property to mark if the session is eligible to be long-running. This can only be true if the
@@ -1401,6 +1410,13 @@ class SessionPool {
       this.delegate = delegate;
       this.state = SessionState.AVAILABLE;
       this.lastUseTime = clock.instant();
+    }
+
+    int getChannel() {
+      Long channelHint = (Long) delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+      return channelHint == null
+          ? 0
+          : (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
     }
 
     @Override
@@ -1445,6 +1461,18 @@ class SessionPool {
       try {
         markUsed();
         return delegate.writeAtLeastOnceWithOptions(mutations, options);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        markUsed();
+        return delegate.batchWriteAtLeastOnce(mutationGroups, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
@@ -1536,7 +1564,7 @@ class SessionPool {
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
-        releaseSession(this, Position.FIRST);
+        releaseSession(this, false);
       }
     }
 
@@ -1576,7 +1604,7 @@ class SessionPool {
               // in the database dialect, and there's nothing sensible that we can do with it here.
               dialect.setException(t);
             } finally {
-              releaseSession(this, Position.FIRST);
+              releaseSession(this, false);
             }
           });
     }
@@ -1635,7 +1663,8 @@ class SessionPool {
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
         try (Scope waitScope = tracer.withSpan(span)) {
-          PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
+          PooledSession s =
+              pollUninterruptiblyWithTimeout(currentTimeout, options.getAcquireSessionTimeout());
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
@@ -1645,6 +1674,11 @@ class SessionPool {
             return s;
           }
         } catch (Exception e) {
+          if (e instanceof SpannerException
+              && ErrorCode.RESOURCE_EXHAUSTED.equals(((SpannerException) e).getErrorCode())) {
+            numWaiterTimeouts.incrementAndGet();
+            tracer.getCurrentSpan().setStatus(Status.RESOURCE_EXHAUSTED);
+          }
           TraceUtil.setWithFailure(span, e);
           throw e;
         } finally {
@@ -1653,15 +1687,26 @@ class SessionPool {
       }
     }
 
-    private PooledSession pollUninterruptiblyWithTimeout(long timeoutMillis) {
+    private PooledSession pollUninterruptiblyWithTimeout(
+        long timeoutMillis, Duration acquireSessionTimeout) {
       boolean interrupted = false;
       try {
         while (true) {
           try {
-            return waiter.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            return acquireSessionTimeout == null
+                ? waiter.get(timeoutMillis, TimeUnit.MILLISECONDS)
+                : waiter.get(acquireSessionTimeout.toMillis(), TimeUnit.MILLISECONDS);
           } catch (InterruptedException e) {
             interrupted = true;
           } catch (TimeoutException e) {
+            if (acquireSessionTimeout != null) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.RESOURCE_EXHAUSTED,
+                  "Timed out after waiting "
+                      + acquireSessionTimeout.toMillis()
+                      + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
+                      + " or increase the number of sessions in the session pool.");
+            }
             return null;
           } catch (ExecutionException e) {
             throw SpannerExceptionFactory.newSpannerException(e.getCause());
@@ -1830,7 +1875,7 @@ class SessionPool {
           logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
           numSessionsToKeepAlive--;
           sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive, Position.FIRST);
+          releaseSession(sessionToKeepAlive, false);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -1929,8 +1974,9 @@ class SessionPool {
     }
   }
 
-  private enum Position {
+  enum Position {
     FIRST,
+    LAST,
     RANDOM
   }
 
@@ -1962,6 +2008,15 @@ class SessionPool {
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
+  /**
+   * initialReleasePosition determines where in the pool sessions are added when they are released
+   * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to
+   * be able to verify the order of sessions in the pool. Using RANDOM ensures that we do not get an
+   * unbalanced session pool where all sessions belonging to one gRPC channel are added to the same
+   * region in the pool.
+   */
+  private final Position initialReleasePosition;
+
   private final Object lock = new Object();
   private final Random random = new Random();
 
@@ -2045,6 +2100,7 @@ class SessionPool {
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
+        Position.RANDOM,
         Metrics.getMetricRegistry(),
         labelValues);
   }
@@ -2053,20 +2109,22 @@ class SessionPool {
       SessionPoolOptions poolOptions,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient) {
-    return createPool(poolOptions, executorFactory, sessionClient, new Clock());
+    return createPool(poolOptions, executorFactory, sessionClient, new Clock(), Position.RANDOM);
   }
 
   static SessionPool createPool(
       SessionPoolOptions poolOptions,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
-      Clock clock) {
+      Clock clock,
+      Position initialReleasePosition) {
     return createPool(
         poolOptions,
         null,
         executorFactory,
         sessionClient,
         clock,
+        initialReleasePosition,
         Metrics.getMetricRegistry(),
         SPANNER_DEFAULT_LABEL_VALUES);
   }
@@ -2077,6 +2135,7 @@ class SessionPool {
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
     SessionPool pool =
@@ -2087,6 +2146,7 @@ class SessionPool {
             executorFactory.get(),
             sessionClient,
             clock,
+            initialReleasePosition,
             metricRegistry,
             labelValues);
     pool.initPool();
@@ -2100,6 +2160,7 @@ class SessionPool {
       ScheduledExecutorService executor,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
     this.options = options;
@@ -2108,6 +2169,7 @@ class SessionPool {
     this.executor = executor;
     this.sessionClient = sessionClient;
     this.clock = clock;
+    this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
     this.waitOnMinSessionsLatch =
@@ -2233,7 +2295,7 @@ class SessionPool {
     if (isSessionNotFound(e)) {
       invalidateSession(session);
     } else {
-      releaseSession(session, Position.FIRST);
+      releaseSession(session, false);
     }
   }
 
@@ -2396,31 +2458,128 @@ class SessionPool {
       }
     }
   }
+
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
-  private void releaseSession(PooledSession session, Position position) {
+  private void releaseSession(PooledSession session, boolean isNewSession) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
         return;
       }
       if (waiters.size() == 0) {
-        // No pending waiters
-        switch (position) {
-          case RANDOM:
-            if (!sessions.isEmpty()) {
-              int pos = random.nextInt(sessions.size() + 1);
-              sessions.add(pos, session);
-              break;
-            }
-            // fallthrough
-          case FIRST:
-          default:
-            sessions.addFirst(session);
+        // There are no pending waiters.
+        // Add to a random position if the head of the session pool already contains many sessions
+        // with the same channel as this one.
+        if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
+          session.releaseToPosition = Position.RANDOM;
+        } else if (session.releaseToPosition == Position.RANDOM
+            && !isNewSession
+            && checkedOutSessions.size() <= 2) {
+          // Do not randomize if there are few other sessions checked out and this session has been
+          // used. This ensures that this session will be re-used for the next transaction, which is
+          // more efficient.
+          session.releaseToPosition = options.getReleaseToPosition();
+        }
+        if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
+          // A session should only be added at a random position the first time it is added to
+          // the pool or if the pool was deemed unbalanced. All following releases into the pool
+          // should normally happen at the default release position (unless the pool is again deemed
+          // to be unbalanced and the insertion would happen at the front of the pool).
+          session.releaseToPosition = options.getReleaseToPosition();
+          int pos = random.nextInt(sessions.size() + 1);
+          sessions.add(pos, session);
+        } else if (session.releaseToPosition == Position.LAST) {
+          sessions.addLast(session);
+        } else {
+          sessions.addFirst(session);
         }
       } else {
         waiters.poll().put(session);
       }
     }
+  }
+
+  private boolean isUnbalanced(PooledSession session) {
+    int channel = session.getChannel();
+    int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
+    return isUnbalanced(channel, this.sessions, this.checkedOutSessions, numChannels);
+  }
+
+  /**
+   * Returns true if the given list of sessions is considered unbalanced when compared to the
+   * sessionChannel that is about to be added to the pool.
+   *
+   * <p>The method returns true if all the following is true:
+   *
+   * <ol>
+   *   <li>The list of sessions is not empty.
+   *   <li>The number of checked out sessions is > 2.
+   *   <li>The number of channels being used by the pool is > 1.
+   *   <li>And at least one of the following is true:
+   *       <ol>
+   *         <li>The first numChannels sessions in the list of sessions contains more than 2
+   *             sessions that use the same channel as the one being added.
+   *         <li>The list of currently checked out sessions contains more than 2 times the the
+   *             number of sessions with the same channel as the one being added than it should in
+   *             order for it to be perfectly balanced. Perfectly balanced in this case means that
+   *             the list should preferably contain size/numChannels sessions of each channel.
+   *       </ol>
+   * </ol>
+   *
+   * @param channelOfSessionBeingAdded the channel number being used by the session that is about to
+   *     be released into the pool
+   * @param sessions the list of all sessions in the pool
+   * @param checkedOutSessions the currently checked out sessions of the pool
+   * @param numChannels the number of channels in use
+   * @return true if the pool is considered unbalanced, and false otherwise
+   */
+  @VisibleForTesting
+  static boolean isUnbalanced(
+      int channelOfSessionBeingAdded,
+      List<PooledSession> sessions,
+      Set<PooledSessionFuture> checkedOutSessions,
+      int numChannels) {
+    // Do not re-balance the pool if the number of checked out sessions is low, as it is
+    // better to re-use sessions as much as possible in a low-QPS scenario.
+    if (sessions.isEmpty() || checkedOutSessions.size() <= 2) {
+      return false;
+    }
+    if (numChannels == 1) {
+      return false;
+    }
+
+    // Ideally, the first numChannels sessions in the pool should contain exactly one session for
+    // each channel.
+    // Check if the first numChannels sessions at the head of the pool already contain more than 2
+    // sessions that use the same channel as this one. If so, we re-balance.
+    // We also re-balance the pool in the specific case that the pool uses 2 channels and the first
+    // two sessions use those two channels.
+    int maxSessionsAtHeadOfPool = Math.min(numChannels, 3);
+    int count = 0;
+    for (int i = 0; i < Math.min(numChannels, sessions.size()); i++) {
+      PooledSession otherSession = sessions.get(i);
+      if (channelOfSessionBeingAdded == otherSession.getChannel()) {
+        count++;
+        if (count >= maxSessionsAtHeadOfPool) {
+          return true;
+        }
+      }
+    }
+    // Ideally, the use of a channel in the checked out sessions is exactly
+    // numCheckedOut / numChannels
+    // We check whether we are more than a factor two away from that perfect distribution.
+    // If we are, then we re-balance.
+    count = 0;
+    int checkedOutThreshold = Math.max(2, 2 * checkedOutSessions.size() / numChannels);
+    for (PooledSessionFuture otherSession : checkedOutSessions) {
+      if (otherSession.isDone() && channelOfSessionBeingAdded == otherSession.get().getChannel()) {
+        count++;
+        if (count > checkedOutThreshold) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private void handleCreateSessionsFailure(SpannerException e, int count) {
@@ -2622,7 +2781,7 @@ class SessionPool {
             // Release the session to a random position in the pool to prevent the case that a batch
             // of sessions that are affiliated with the same channel are all placed sequentially in
             // the pool.
-            releaseSession(pooledSession, Position.RANDOM);
+            releaseSession(pooledSession, true);
           }
         }
       }

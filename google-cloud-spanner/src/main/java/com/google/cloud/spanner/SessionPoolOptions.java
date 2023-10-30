@@ -17,8 +17,10 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.spanner.SessionPool.Clock;
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.util.Locale;
 import java.util.Objects;
 import org.threeten.bp.Duration;
 
@@ -52,9 +54,17 @@ public class SessionPoolOptions {
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final boolean trackStackTraceOfSessionCheckout;
   private final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions;
-  private final long initialWaitForSessionTimeoutMillis;
+
+  /**
+   * Use {@link #acquireSessionTimeout} instead to specify the total duration to wait while
+   * acquiring session for a transaction.
+   */
+  @Deprecated private final long initialWaitForSessionTimeoutMillis;
+
   private final boolean autoDetectDialect;
   private final Duration waitForMinSessions;
+  private final Duration acquireSessionTimeout;
+  private final Position releaseToPosition;
 
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
@@ -78,6 +88,8 @@ public class SessionPoolOptions {
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
     this.waitForMinSessions = builder.waitForMinSessions;
+    this.acquireSessionTimeout = builder.acquireSessionTimeout;
+    this.releaseToPosition = builder.releaseToPosition;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
   }
@@ -105,6 +117,8 @@ public class SessionPoolOptions {
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
+        && Objects.equals(this.acquireSessionTimeout, other.acquireSessionTimeout)
+        && Objects.equals(this.releaseToPosition, other.releaseToPosition)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
@@ -128,6 +142,8 @@ public class SessionPoolOptions {
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
         this.waitForMinSessions,
+        this.acquireSessionTimeout,
+        this.releaseToPosition,
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock);
   }
@@ -237,6 +253,15 @@ public class SessionPoolOptions {
 
   Duration getWaitForMinSessions() {
     return waitForMinSessions;
+  }
+
+  @VisibleForTesting
+  Duration getAcquireSessionTimeout() {
+    return acquireSessionTimeout;
+  }
+
+  Position getReleaseToPosition() {
+    return releaseToPosition;
   }
 
   public static Builder newBuilder() {
@@ -424,8 +449,23 @@ public class SessionPoolOptions {
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
+    private Duration acquireSessionTimeout = Duration.ofSeconds(60);
+    private Position releaseToPosition = getReleaseToPositionFromSystemProperty();
 
     private Clock poolMaintainerClock;
+
+    private static Position getReleaseToPositionFromSystemProperty() {
+      // NOTE: This System property is a beta feature. Support for it can be removed in the future.
+      String key = "com.google.cloud.spanner.session_pool_release_to_position";
+      if (System.getProperties().containsKey(key)) {
+        try {
+          return Position.valueOf(System.getProperty(key).toUpperCase(Locale.ENGLISH));
+        } catch (Throwable ignore) {
+          // fallthrough and return the default.
+        }
+      }
+      return Position.FIRST;
+    }
 
     public Builder() {}
 
@@ -446,6 +486,7 @@ public class SessionPoolOptions {
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
       this.waitForMinSessions = options.waitForMinSessions;
+      this.acquireSessionTimeout = options.acquireSessionTimeout;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -538,6 +579,10 @@ public class SessionPoolOptions {
     /**
      * If all sessions are in use and there is no more room for creating new sessions, block for a
      * session to become available. Default behavior is same.
+     *
+     * <p>By default the requests are blocked for 60s and will fail with a `SpannerException` with
+     * error code `ResourceExhausted` if this timeout is exceeded. If you wish to block for a
+     * different period use the option {@link Builder#setAcquireSessionTimeout(Duration)} ()}
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
@@ -692,6 +737,30 @@ public class SessionPoolOptions {
      */
     public Builder setWaitForMinSessions(Duration waitForMinSessions) {
       this.waitForMinSessions = waitForMinSessions;
+      return this;
+    }
+
+    /**
+     * If greater than zero, we wait for said duration when no sessions are available in the {@link
+     * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
+     */
+    public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
+      try {
+        if (acquireSessionTimeout != null) {
+          Preconditions.checkArgument(
+              acquireSessionTimeout.toMillis() > 0,
+              "acquireSessionTimeout should be greater than 0 ns");
+        }
+      } catch (ArithmeticException ex) {
+        throw new IllegalArgumentException(
+            "acquireSessionTimeout in millis should be lesser than Long.MAX_VALUE");
+      }
+      this.acquireSessionTimeout = acquireSessionTimeout;
+      return this;
+    }
+
+    Builder setReleaseToPosition(Position releaseToPosition) {
+      this.releaseToPosition = Preconditions.checkNotNull(releaseToPosition);
       return this;
     }
 
