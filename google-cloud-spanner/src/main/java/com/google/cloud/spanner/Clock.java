@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.google.cloud.spanner;
 
 import org.threeten.bp.Instant;
 
 /**
- * Class which allows to mock {@link Clock} in unit tests and return custom time values within the
- * tests.
+ * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
+ * Clock.
  */
-class FakeClock extends Clock {
-  volatile long currentTimeMillis;
-
-  @Override
-  public Instant instant() {
-    return Instant.ofEpochMilli(currentTimeMillis);
+class Clock {
+  Instant instant() {
+    return Instant.now();
   }
 }

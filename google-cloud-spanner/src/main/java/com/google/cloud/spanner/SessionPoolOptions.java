@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;

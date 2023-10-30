@@ -144,16 +144,6 @@ class SessionPool {
     }
   }
 
-  /**
-   * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
-   * Clock.
-   */
-  static class Clock {
-    Instant instant() {
-      return Instant.now();
-    }
-  }
-
   private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
     private ResultSet cached;
 

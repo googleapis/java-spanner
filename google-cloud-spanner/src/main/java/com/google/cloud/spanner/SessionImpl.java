@@ -29,7 +29,6 @@ import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionId;
-import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
