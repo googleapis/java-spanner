@@ -639,39 +639,28 @@ class SessionPool {
     @Override
     public ResultSet read(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      ResultSet resultSet =
-          new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
-      sessionImpl.markUsed(clock.instant());
-      return resultSet;
+      return new SessionPoolResultSet(handler, delegate.read(table, keys, columns, options));
     }
 
     @Override
     public AsyncResultSet readAsync(
         String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      AsyncResultSet resultSet =
-          new AsyncSessionPoolResultSet(handler, delegate.readAsync(table, keys, columns, options));
-      sessionImpl.markUsed(clock.instant());
-      return resultSet;
+      return new AsyncSessionPoolResultSet(
+          handler, delegate.readAsync(table, keys, columns, options));
     }
 
     @Override
     public ResultSet readUsingIndex(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      ResultSet resultSet =
-          new SessionPoolResultSet(
-              handler, delegate.readUsingIndex(table, index, keys, columns, options));
-      sessionImpl.markUsed(clock.instant());
-      return resultSet;
+      return new SessionPoolResultSet(
+          handler, delegate.readUsingIndex(table, index, keys, columns, options));
     }
 
     @Override
     public AsyncResultSet readUsingIndexAsync(
         String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      AsyncResultSet resultSet =
-          new AsyncSessionPoolResultSet(
-              handler, delegate.readUsingIndexAsync(table, index, keys, columns, options));
-      sessionImpl.markUsed(clock.instant());
-      return resultSet;
+      return new AsyncSessionPoolResultSet(
+          handler, delegate.readUsingIndexAsync(table, index, keys, columns, options));
     }
 
     @Override
@@ -680,8 +669,6 @@ class SessionPool {
         return delegate.readRow(table, key, columns);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
-      } finally {
-        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -714,8 +701,6 @@ class SessionPool {
         return delegate.readRowUsingIndex(table, index, key, columns);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
-      } finally {
-        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -767,23 +752,18 @@ class SessionPool {
         return delegate.executeUpdate(statement, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
-      } finally {
-        sessionImpl.markUsed(clock.instant());
       }
     }
 
     @Override
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
-      ApiFuture<Long> apiFuture =
-          ApiFutures.catching(
-              delegate.executeUpdateAsync(statement, options),
-              SessionNotFoundException.class,
-              input -> {
-                throw handler.handleSessionNotFound(input);
-              },
-              MoreExecutors.directExecutor());
-      sessionImpl.markUsed(clock.instant());
-      return apiFuture;
+      return ApiFutures.catching(
+          delegate.executeUpdateAsync(statement, options),
+          SessionNotFoundException.class,
+          input -> {
+            throw handler.handleSessionNotFound(input);
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Override
