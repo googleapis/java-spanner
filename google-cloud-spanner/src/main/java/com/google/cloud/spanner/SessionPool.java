@@ -701,7 +701,6 @@ class SessionPool {
     @Override
     public void buffer(Mutation mutation) {
       delegate.buffer(mutation);
-      sessionImpl.markUsed(clock.instant());
     }
 
     @Override
