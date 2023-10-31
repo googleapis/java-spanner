@@ -174,9 +174,15 @@ class SessionImpl implements Session {
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
-    RequestOptions commitRequestOptions = getRequestOptions(transactionOptions);
+    Options requestOptions = Options.fromTransactionOptions(transactionOptions);
+    RequestOptions commitRequestOptions = getRequestOptions(requestOptions);
     if (commitRequestOptions != null) {
       requestBuilder.setRequestOptions(commitRequestOptions);
+    }
+    if (requestOptions.hasMaxBatchingDelayMs()) {
+      int maxBatchingDelayMs = requestOptions.maxBatchingDelayMs();
+      // TODO set the data into the proto object. Presently field is unavailable in proto
+      // requestBuilder.setMaxBatchingDelay(maxBatchingDelay);
     }
     CommitRequest request = requestBuilder.build();
     Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
@@ -191,26 +197,18 @@ class SessionImpl implements Session {
     }
   }
 
-  private RequestOptions getRequestOptions(TransactionOption... transactionOptions) {
-    Options requestOptions = Options.fromTransactionOptions(transactionOptions);
+  private RequestOptions getRequestOptions(Options requestOptions) {
+    RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+
     if (requestOptions.hasPriority() || requestOptions.hasTag()) {
-      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
       if (requestOptions.hasPriority()) {
         requestOptionsBuilder.setPriority(requestOptions.priority());
       }
       if (requestOptions.hasTag()) {
         requestOptionsBuilder.setTransactionTag(requestOptions.tag());
       }
-      if (requestOptions.hasMaxBatchingDelayMs()) {
-        int maxBatchingDelayMs = requestOptions.maxBatchingDelayMs();
-        // TODO set the data into the proto object
-      }
-      return requestOptionsBuilder.build();
     }
-
-    if (requestOptions.hasMaxBatchingDelayMs()) {}
-
-    return null;
+    return requestOptionsBuilder.build();
   }
 
   @Override
@@ -222,7 +220,8 @@ class SessionImpl implements Session {
         MutationGroup.toListProto(mutationGroups);
     final BatchWriteRequest.Builder requestBuilder =
         BatchWriteRequest.newBuilder().setSession(name).addAllMutationGroups(mutationGroupsProto);
-    RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
+    Options requestOptions = Options.fromTransactionOptions(transactionOptions);
+    RequestOptions batchWriteRequestOptions = getRequestOptions(requestOptions);
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
     }

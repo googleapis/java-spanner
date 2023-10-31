@@ -655,6 +655,25 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testWriteAtLeastOnceWithMaxBatchingDelayMs() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    CommitResponse response =
+        client.writeAtLeastOnceWithOptions(
+            Collections.singletonList(
+                Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+            Options.maxBatchingDelayMs(10),
+            Options.priority(RpcPriority.LOW));
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertNotNull(commit.getRequestOptions());
+  }
+
+  @Test
   public void testWriteAtLeastOnceWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
