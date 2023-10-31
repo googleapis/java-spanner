@@ -544,7 +544,7 @@ public class DatabaseClientImplTest {
         InactiveTransactionRemovalOptions.newBuilder()
             .setIdleTimeThreshold(
                 Duration.ofSeconds(
-                    3L)) // any session not used for more than 2s will be long-running
+                    3L)) // any session not used for more than 3s will be long-running
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
             .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
             .build();
@@ -569,8 +569,6 @@ public class DatabaseClientImplTest {
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
-
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
 
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(
@@ -618,7 +616,7 @@ public class DatabaseClientImplTest {
         InactiveTransactionRemovalOptions.newBuilder()
             .setIdleTimeThreshold(
                 Duration.ofSeconds(
-                    3L)) // any session not used for more than 2s will be long-running
+                    3L)) // any session not used for more than 3s will be long-running
             .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
             .setExecutionFrequency(Duration.ofSeconds(1)) // execute thread every 1s
             .build();
@@ -643,8 +641,6 @@ public class DatabaseClientImplTest {
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
-
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
 
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
