@@ -516,7 +516,9 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .setClientLibToken(jdbcToken)
             .build();
-    assertThat(options.getClientLibToken()).isEqualTo(jdbcToken);
+    // Verify that the client lib token that will actually be used contains both the JDBC token and
+    // the standard Java client library token ('gccl').
+    assertEquals("sp-jdbc gccl", options.getClientLibToken());
 
     options =
         SpannerOptions.newBuilder()
@@ -524,7 +526,7 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .setClientLibToken(hibernateToken)
             .build();
-    assertThat(options.getClientLibToken()).isEqualTo(hibernateToken);
+    assertEquals("sp-hib gccl", options.getClientLibToken());
 
     options =
         SpannerOptions.newBuilder()
@@ -532,7 +534,7 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .setClientLibToken(pgAdapterToken)
             .build();
-    assertEquals(options.getClientLibToken(), pgAdapterToken);
+    assertEquals("pg-adapter gccl", options.getClientLibToken());
 
     options =
         SpannerOptions.newBuilder()
