@@ -134,7 +134,10 @@ public class ITTransactionManagerTest {
           assertThat(row.getBoolean(1)).isTrue();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
+          long retryDelayInMillis = e.getRetryDelayInMillis();
+          if (retryDelayInMillis > 0) {
+            Thread.sleep(retryDelayInMillis);
+          }
           txn = manager.resetForRetry();
         }
       }
@@ -158,7 +161,10 @@ public class ITTransactionManagerTest {
           manager.commit();
           fail("Expected exception");
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
+          long retryDelayInMillis = e.getRetryDelayInMillis();
+          if (retryDelayInMillis > 0) {
+            Thread.sleep(retryDelayInMillis);
+          }
           txn = manager.resetForRetry();
         } catch (SpannerException e) {
           // expected
@@ -188,7 +194,10 @@ public class ITTransactionManagerTest {
           manager.rollback();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
+          long retryDelayInMillis = e.getRetryDelayInMillis();
+          if (retryDelayInMillis > 0) {
+            Thread.sleep(retryDelayInMillis);
+          }
           txn = manager.resetForRetry();
         }
       }
@@ -231,7 +240,10 @@ public class ITTransactionManagerTest {
           manager1.commit();
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
+          long retryDelayInMillis = e.getRetryDelayInMillis();
+          if (retryDelayInMillis > 0) {
+            Thread.sleep(retryDelayInMillis);
+          }
           // It is possible that it was txn2 that aborted.
           // In that case we should just retry without resetting anything.
           if (manager1.getState() == TransactionState.ABORTED) {
@@ -278,7 +290,10 @@ public class ITTransactionManagerTest {
           assertEquals(2L, manager.getCommitResponse().getCommitStats().getMutationCount());
           break;
         } catch (AbortedException e) {
-          Thread.sleep(e.getRetryDelayInMillis());
+          long retryDelayInMillis = e.getRetryDelayInMillis();
+          if (retryDelayInMillis > 0) {
+            Thread.sleep(retryDelayInMillis);
+          }
           transaction = manager.resetForRetry();
         }
       }
