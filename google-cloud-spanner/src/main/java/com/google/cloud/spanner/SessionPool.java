@@ -622,18 +622,10 @@ class SessionPool {
   static class SessionPoolTransactionContext implements TransactionContext {
     private final SessionNotFoundHandler handler;
     final TransactionContext delegate;
-    private final SessionImpl sessionImpl;
-    private final Clock clock;
 
-    SessionPoolTransactionContext(
-        SessionNotFoundHandler handler,
-        TransactionContext delegate,
-        SessionImpl sessionImpl,
-        Clock clock) {
+    SessionPoolTransactionContext(SessionNotFoundHandler handler, TransactionContext delegate) {
       this.handler = Preconditions.checkNotNull(handler);
       this.delegate = delegate;
-      this.sessionImpl = sessionImpl;
-      this.clock = clock;
     }
 
     @Override
@@ -831,9 +823,7 @@ class SessionPool {
     }
 
     private TransactionContext internalBegin() {
-      TransactionContext res =
-          new SessionPoolTransactionContext(
-              this, delegate.begin(), session.get().delegate, sessionPool.clock);
+      TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
       session.get().markUsed();
       return res;
     }
@@ -883,14 +873,11 @@ class SessionPool {
       while (true) {
         try {
           if (restartedAfterSessionNotFound) {
-            TransactionContext res =
-                new SessionPoolTransactionContext(
-                    this, delegate.begin(), session.get().delegate, sessionPool.clock);
+            TransactionContext res = new SessionPoolTransactionContext(this, delegate.begin());
             restartedAfterSessionNotFound = false;
             return res;
           } else {
-            return new SessionPoolTransactionContext(
-                this, delegate.resetForRetry(), session.get().delegate, sessionPool.clock);
+            return new SessionPoolTransactionContext(this, delegate.resetForRetry());
           }
         } catch (SessionNotFoundException e) {
           session = sessionPool.replaceSession(e, session);
@@ -2012,7 +1999,7 @@ class SessionPool {
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
 
   final PoolMaintainer poolMaintainer;
-  final Clock clock;
+  private final Clock clock;
   /**
    * initialReleasePosition determines where in the pool sessions are added when they are released
    * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to

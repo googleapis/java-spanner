@@ -149,10 +149,7 @@ class SessionPoolAsyncTransactionManager
                   public void onSuccess(TransactionContext result) {
                     delegateTxnFuture.set(
                         new SessionPool.SessionPoolTransactionContext(
-                            SessionPoolAsyncTransactionManager.this,
-                            result,
-                            session.get().delegate,
-                            pool.clock));
+                            SessionPoolAsyncTransactionManager.this, result));
                   }
                 },
                 MoreExecutors.directExecutor());
@@ -256,10 +253,7 @@ class SessionPoolAsyncTransactionManager
                 MoreExecutors.directExecutor()),
             input ->
                 new SessionPool.SessionPoolTransactionContext(
-                    SessionPoolAsyncTransactionManager.this,
-                    input,
-                    session.get().delegate,
-                    pool.clock),
+                    SessionPoolAsyncTransactionManager.this, input),
             MoreExecutors.directExecutor()));
   }
 
