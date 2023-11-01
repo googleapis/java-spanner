@@ -741,8 +741,6 @@ class SessionPool {
         return delegate.analyzeUpdateStatement(statement, analyzeMode, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
-      } finally {
-        sessionImpl.markUsed(clock.instant());
       }
     }
 
@@ -772,48 +770,34 @@ class SessionPool {
         return delegate.batchUpdate(statements, options);
       } catch (SessionNotFoundException e) {
         throw handler.handleSessionNotFound(e);
-      } finally {
-        sessionImpl.markUsed(clock.instant());
       }
     }
 
     @Override
     public ApiFuture<long[]> batchUpdateAsync(
         Iterable<Statement> statements, UpdateOption... options) {
-      ApiFuture<long[]> apiFuture =
-          ApiFutures.catching(
-              delegate.batchUpdateAsync(statements, options),
-              SessionNotFoundException.class,
-              input -> {
-                throw handler.handleSessionNotFound(input);
-              },
-              MoreExecutors.directExecutor());
-      sessionImpl.markUsed(clock.instant());
-      return apiFuture;
+      return ApiFutures.catching(
+          delegate.batchUpdateAsync(statements, options),
+          SessionNotFoundException.class,
+          input -> {
+            throw handler.handleSessionNotFound(input);
+          },
+          MoreExecutors.directExecutor());
     }
 
     @Override
     public ResultSet executeQuery(Statement statement, QueryOption... options) {
-      ResultSet resultSet =
-          new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
-      sessionImpl.markUsed(clock.instant());
-      return resultSet;
+      return new SessionPoolResultSet(handler, delegate.executeQuery(statement, options));
     }
 
     @Override
     public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-      AsyncResultSet resultSet =
-          new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
-      sessionImpl.markUsed(clock.instant());
-      return resultSet;
+      return new AsyncSessionPoolResultSet(handler, delegate.executeQueryAsync(statement, options));
     }
 
     @Override
     public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
-      ResultSet resultSet =
-          new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
-      sessionImpl.markUsed(clock.instant());
-      return resultSet;
+      return new SessionPoolResultSet(handler, delegate.analyzeQuery(statement, queryMode));
     }
 
     @Override
