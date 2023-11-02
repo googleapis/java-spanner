@@ -396,7 +396,9 @@ class SessionImpl implements Session {
   }
 
   TransactionContextImpl newTransaction(Options options) {
-    final Clock clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
+    // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
+    final Clock poolMaintainerClock =
+        spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
@@ -408,7 +410,7 @@ class SessionImpl implements Session {
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
         .setSpan(currentSpan)
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
-        .setClock(clock)
+        .setClock(poolMaintainerClock == null ? new Clock() : poolMaintainerClock)
         .build();
   }
 

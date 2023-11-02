@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerBatchUpdateException;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -205,7 +204,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.trackTransactionStarter = builder.trackTransactionStarter;
       this.options = builder.options;
       this.finishedAsyncOperations.set(null);
-      this.clock = firstNonNull(builder.clock, this.clock);
+      this.clock = builder.clock;
     }
 
     @Override

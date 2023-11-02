@@ -17,7 +17,6 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -39,6 +38,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -73,7 +73,7 @@ abstract class AbstractReadContext
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
     private ExecutorProvider executorProvider;
-    private Clock clock;
+    private Clock clock = new Clock();
 
     Builder() {}
 
@@ -113,7 +113,7 @@ abstract class AbstractReadContext
     }
 
     B setClock(Clock clock) {
-      this.clock = clock;
+      this.clock = Preconditions.checkNotNull(clock);
       return self();
     }
 
@@ -399,7 +399,7 @@ abstract class AbstractReadContext
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
-  private Clock clock = new Clock();
+  private final Clock clock;
 
   @GuardedBy("lock")
   private boolean isValid = true;
@@ -425,7 +425,7 @@ abstract class AbstractReadContext
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
-    this.clock = firstNonNull(builder.clock, this.clock);
+    this.clock = builder.clock;
   }
 
   @Override
