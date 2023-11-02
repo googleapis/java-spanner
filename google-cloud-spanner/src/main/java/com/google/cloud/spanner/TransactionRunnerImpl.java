@@ -95,7 +95,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       private Builder() {}
 
       Builder setClock(Clock clock) {
-        this.clock = clock;
+        this.clock = Preconditions.checkNotNull(clock);
         return self();
       }
 
