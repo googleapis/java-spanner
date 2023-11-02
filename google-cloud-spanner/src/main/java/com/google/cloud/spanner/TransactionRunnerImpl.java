@@ -197,7 +197,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ByteString transactionId;
 
     private CommitResponse commitResponse;
-    private Clock clock = new Clock();
+    private final Clock clock;
 
     private TransactionContextImpl(Builder builder) {
       super(builder);
