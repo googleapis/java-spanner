@@ -87,7 +87,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
 
-      private Clock clock;
+      private Clock clock = new Clock();
       private ByteString transactionId;
       private Options options;
       private boolean trackTransactionStarter;
