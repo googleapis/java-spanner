@@ -24,7 +24,11 @@ import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIO
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IDLE_SESSIONS_REMOVED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IDLE_SESSIONS_REMOVED_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_LONG_RUNNING_SESSIONS_REMOVED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_LONG_RUNNING_SESSIONS_REMOVED_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_DESCRIPTION;
@@ -2865,6 +2869,24 @@ class SessionPool {
                 .setLabelKeys(SPANNER_LABEL_KEYS_WITH_TYPE)
                 .build());
 
+    DerivedLongGauge numIdleSessionsRemovedMetric =
+        metricRegistry.addDerivedLongGauge(
+            NUM_IDLE_SESSIONS_REMOVED,
+            MetricOptions.builder()
+                .setDescription(NUM_IDLE_SESSIONS_REMOVED_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
+    DerivedLongGauge numLongRunningSessionsRemovedMetric =
+        metricRegistry.addDerivedLongGauge(
+            NUM_LONG_RUNNING_SESSIONS_REMOVED,
+            MetricOptions.builder()
+                .setDescription(NUM_LONG_RUNNING_SESSIONS_REMOVED_DESCRIPTION)
+                .setUnit(COUNT)
+                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .build());
+
     // The value of a maxSessionsInUse is observed from a callback function. This function is
     // invoked whenever metrics are collected.
     maxInUseSessionsMetric.removeTimeSeries(labelValues);
@@ -2881,6 +2903,19 @@ class SessionPool {
     // invoked whenever metrics are collected.
     sessionsTimeouts.removeTimeSeries(labelValues);
     sessionsTimeouts.createTimeSeries(labelValues, this, SessionPool::getNumWaiterTimeouts);
+
+    // The value of a numIdleSessionsRemoved is observed from a callback function. This function is
+    // invoked whenever metrics are collected.
+    numIdleSessionsRemovedMetric.removeTimeSeries(labelValues);
+    numIdleSessionsRemovedMetric.createTimeSeries(
+        labelValues, this, sessionPool -> sessionPool.numIdleSessionsRemoved);
+
+    // The value of a numLeakedSessionsRemoved is observed from a callback function. This function is
+    // invoked whenever metrics are collected.
+    numLongRunningSessionsRemovedMetric.removeTimeSeries(labelValues);
+    numLongRunningSessionsRemovedMetric.createTimeSeries(
+        labelValues, this, sessionPool -> sessionPool.numLeakedSessionsRemoved);
+
 
     numAcquiredSessionsMetric.removeTimeSeries(labelValues);
     numAcquiredSessionsMetric.createTimeSeries(

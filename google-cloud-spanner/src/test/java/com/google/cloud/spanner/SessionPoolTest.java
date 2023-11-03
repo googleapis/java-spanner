@@ -1636,7 +1636,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session2.get();
 
     MetricsRecord record = metricRegistry.pollRecord();
-    assertThat(record.getMetrics().size()).isEqualTo(6);
+    assertThat(record.getMetrics().size()).isEqualTo(8);
 
     List<PointWithFunction> maxInUseSessions =
         record.getMetrics().get(MetricRegistryConstants.MAX_IN_USE_SESSIONS);
@@ -1700,6 +1700,21 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(writePreparedSessions.value()).isEqualTo(0L);
     assertThat(writePreparedSessions.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_TYPE);
     assertThat(writePreparedSessions.values()).isEqualTo(labelValuesWithWriteType);
+
+    List<PointWithFunction> numIdleSessionsRemoved =
+        record.getMetrics().get(MetricRegistryConstants.NUM_IDLE_SESSIONS_REMOVED);
+    assertThat(numIdleSessionsRemoved.size()).isEqualTo(1);
+    assertThat(numIdleSessionsRemoved.get(0).value()).isEqualTo(0);
+    assertThat(numIdleSessionsRemoved.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
+    assertThat(numIdleSessionsRemoved.get(0).values()).isEqualTo(labelValues);
+
+    List<PointWithFunction> numLongRunningSessionsRemoved =
+        record.getMetrics().get(MetricRegistryConstants.NUM_LONG_RUNNING_SESSIONS_REMOVED);
+    assertThat(numLongRunningSessionsRemoved.size()).isEqualTo(1);
+    assertThat(numLongRunningSessionsRemoved.get(0).value()).isEqualTo(0);
+    assertThat(numLongRunningSessionsRemoved.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
+    assertThat(numLongRunningSessionsRemoved.get(0).values()).isEqualTo(labelValues);
+
 
     final CountDownLatch latch = new CountDownLatch(1);
     // Try asynchronously to take another session. This attempt should time out.
