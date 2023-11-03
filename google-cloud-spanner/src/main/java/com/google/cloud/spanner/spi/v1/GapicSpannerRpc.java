@@ -178,8 +178,12 @@ import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.Transaction;
 import io.grpc.CallCredentials;
+import io.grpc.ClientStreamTracer;
+import io.grpc.ClientStreamTracer.Factory;
+import io.grpc.ClientStreamTracer.StreamInfo;
 import io.grpc.Context;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.opencensus.metrics.Metrics;
 import java.io.IOException;
@@ -1917,6 +1921,18 @@ public class GapicSpannerRpc implements SpannerRpc {
       // This sets the compressor for Client -> Server.
       context = context.withCallOptions(context.getCallOptions().withCompression(compressorName));
     }
+    context =
+        context.withCallOptions(
+            context
+                .getCallOptions()
+                .withStreamTracerFactory(
+                    new Factory() {
+                      @Override
+                      public ClientStreamTracer newClientStreamTracer(
+                          StreamInfo info, Metadata headers) {
+                        return new SpannerClientStreamTracer(request, info, headers);
+                      }
+                    }));
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
@@ -1936,6 +1952,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
   }
+
+  private static final class NoOpClientStreamTracer extends ClientStreamTracer {}
 
   @Override
   public void shutdown() {

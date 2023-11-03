@@ -1097,6 +1097,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private CloseableIterator<PartialResultSet> stream;
     private ByteString resumeToken;
     private boolean finished;
+    private int numRpcRetries;
     /**
      * Indicates whether it is currently safe to retry RPCs. This will be {@code false} if we have
      * reached the maximum buffer size without seeing a restart token; in this case, we will drain
@@ -1284,11 +1285,22 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             }
             assert buffer.isEmpty() || buffer.getLast().getResumeToken().equals(resumeToken);
             stream = null;
+            numRpcRetries++;
             try (Scope s = tracer.withSpan(span)) {
               long delay = spannerException.getRetryDelayInMillis();
               if (delay != -1) {
+                logger.log(
+                    Level.FINE,
+                    () ->
+                        String.format(
+                            "Backing off for %dms before retry %d", delay, numRpcRetries));
                 backoffSleep(context, delay);
               } else {
+                logger.log(
+                    Level.FINE,
+                    String.format(
+                        "Using client-side backoff as the error did not include a retry delay before retry %d",
+                        numRpcRetries));
                 backoffSleep(context, backOff);
               }
             }
