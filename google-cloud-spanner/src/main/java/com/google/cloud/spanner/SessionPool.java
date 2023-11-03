@@ -2910,12 +2910,12 @@ class SessionPool {
     numIdleSessionsRemovedMetric.createTimeSeries(
         labelValues, this, sessionPool -> sessionPool.numIdleSessionsRemoved);
 
-    // The value of a numLeakedSessionsRemoved is observed from a callback function. This function is
+    // The value of a numLeakedSessionsRemoved is observed from a callback function. This function
+    // is
     // invoked whenever metrics are collected.
     numLongRunningSessionsRemovedMetric.removeTimeSeries(labelValues);
     numLongRunningSessionsRemovedMetric.createTimeSeries(
         labelValues, this, sessionPool -> sessionPool.numLeakedSessionsRemoved);
-
 
     numAcquiredSessionsMetric.removeTimeSeries(labelValues);
     numAcquiredSessionsMetric.createTimeSeries(

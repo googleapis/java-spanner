@@ -1715,7 +1715,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(numLongRunningSessionsRemoved.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(numLongRunningSessionsRemoved.get(0).values()).isEqualTo(labelValues);
 
-
     final CountDownLatch latch = new CountDownLatch(1);
     // Try asynchronously to take another session. This attempt should time out.
     Future<Void> fut =
