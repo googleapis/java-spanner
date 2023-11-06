@@ -420,11 +420,23 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               MoreExecutors.directExecutor());
         } catch (InterruptedException e) {
           res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+          txnLogger.log(
+              Level.WARNING,
+              String.format("TimeoutException occurred for Session => %s", session.getName()),
+              e);
         } catch (TimeoutException e) {
           res.setException(SpannerExceptionFactory.propagateTimeout(e));
+          txnLogger.log(
+              Level.WARNING,
+              String.format("TimeoutException occurred for Session => %s", session.getName()),
+              e);
         } catch (ExecutionException e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
+          txnLogger.log(
+              Level.WARNING,
+              String.format("TimeoutException occurred for Session => %s", session.getName()),
+              e);
         }
       }
     }
