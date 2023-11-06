@@ -422,7 +422,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           res.setException(SpannerExceptionFactory.propagateInterrupt(e));
           txnLogger.log(
               Level.WARNING,
-              String.format("TimeoutException occurred for Session => %s", session.getName()),
+              String.format("InterruptedException occurred for Session => %s", session.getName()),
               e);
         } catch (TimeoutException e) {
           res.setException(SpannerExceptionFactory.propagateTimeout(e));
@@ -435,7 +435,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
           txnLogger.log(
               Level.WARNING,
-              String.format("TimeoutException occurred for Session => %s", session.getName()),
+              String.format("ExecutionException occurred for Session => %s", session.getName()),
               e);
         }
       }
