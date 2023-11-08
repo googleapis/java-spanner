@@ -1,5 +1,30 @@
 # Changelog
 
+## [6.53.0](https://github.com/googleapis/java-spanner/compare/v6.52.1...v6.53.0) (2023-11-06)
+
+
+### Features
+
+* Move session lastUseTime parameter from PooledSession to SessionImpl class. Fix updation of the parameter for chained RPCs within one transaction. ([#2704](https://github.com/googleapis/java-spanner/issues/2704)) ([e75a281](https://github.com/googleapis/java-spanner/commit/e75a2818124621a3ab837151a8e1094fa6c3b8f3))
+* Rely on graal-sdk version declaration from property in java-shared-config ([#2696](https://github.com/googleapis/java-spanner/issues/2696)) ([cfab83a](https://github.com/googleapis/java-spanner/commit/cfab83ad3bd1a026e0b3da5a4cc2154b0f8c3ddf))
+
+
+### Bug Fixes
+
+* Prevent illegal negative timeout values into thread sleep() method in ITTransactionManagerTest. ([#2715](https://github.com/googleapis/java-spanner/issues/2715)) ([1c26cf6](https://github.com/googleapis/java-spanner/commit/1c26cf60efa1b98203af9b21a47e37c8fb1e0e97))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.19.0 ([#2719](https://github.com/googleapis/java-spanner/issues/2719)) ([e320753](https://github.com/googleapis/java-spanner/commit/e320753b2bd125f94775db9c71a4b7803fa49c38))
+* Update dependency com.google.cloud:google-cloud-trace to v2.28.0 ([#2670](https://github.com/googleapis/java-spanner/issues/2670)) ([078b7ca](https://github.com/googleapis/java-spanner/commit/078b7ca95548ac984c79d29197032b3f813abbcf))
+* Update dependency com.google.cloud:google-cloud-trace to v2.29.0 ([#2714](https://github.com/googleapis/java-spanner/issues/2714)) ([b400eca](https://github.com/googleapis/java-spanner/commit/b400ecabb9fa6f262befa903163746fac2c7c15e))
+* Update dependency commons-cli:commons-cli to v1.6.0 ([#2710](https://github.com/googleapis/java-spanner/issues/2710)) ([e3e8f6a](https://github.com/googleapis/java-spanner/commit/e3e8f6ac82d827280299038d3962fe66b110e0c4))
+* Update dependency commons-io:commons-io to v2.15.0 ([#2712](https://github.com/googleapis/java-spanner/issues/2712)) ([a5f59aa](https://github.com/googleapis/java-spanner/commit/a5f59aa3e992d0594519983880a29f17301923e7))
+* Update dependency org.graalvm.buildtools:junit-platform-native to v0.9.28 ([#2692](https://github.com/googleapis/java-spanner/issues/2692)) ([d8a2b02](https://github.com/googleapis/java-spanner/commit/d8a2b02d43a68e04bebb2349af61cc8901ccd667))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.9.28 ([#2705](https://github.com/googleapis/java-spanner/issues/2705)) ([2b17f09](https://github.com/googleapis/java-spanner/commit/2b17f095a294defa5ea022c243fa750486b7d496))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.10.1 ([#2723](https://github.com/googleapis/java-spanner/issues/2723)) ([9cf6d0e](https://github.com/googleapis/java-spanner/commit/9cf6d0eae5d2a86c89de2d252d0f4a4dab0b54a4))
+
 ## [6.52.1](https://github.com/googleapis/java-spanner/compare/v6.52.0...v6.52.1) (2023-10-20)
 
 
