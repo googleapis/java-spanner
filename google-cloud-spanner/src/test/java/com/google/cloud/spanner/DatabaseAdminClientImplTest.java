@@ -73,6 +73,7 @@ import org.mockito.Mock;
 public class DatabaseAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";
+  private static final String INSTANCE_ID_2 = "my-instance-2";
   private static final String INSTANCE_NAME = "projects/my-project/instances/my-instance";
   private static final String DB_ID = "my-db";
   private static final String DB_NAME = "projects/my-project/instances/my-instance/databases/my-db";
@@ -565,9 +566,14 @@ public class DatabaseAdminClientImplTest {
 
   @Test
   public void copyBackupWithBackupObject() throws ExecutionException, InterruptedException {
+    Backup testProto = Backup.newBuilder()
+        .setName(BK_NAME)
+        .setDatabase("projects/my-project/instances/my-instance-2/databases/my-db")
+        .setState(Backup.State.READY)
+        .build();
     final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
-            "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+            "copyBackup", testProto, CopyBackupMetadata.getDefaultInstance());
     final Timestamp expireTime =
         Timestamp.ofTimeMicroseconds(
             TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
@@ -577,7 +583,7 @@ public class DatabaseAdminClientImplTest {
             TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
     final com.google.cloud.spanner.Backup requestBackup =
         client
-            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID_2, BK_ID))
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
             .build();
