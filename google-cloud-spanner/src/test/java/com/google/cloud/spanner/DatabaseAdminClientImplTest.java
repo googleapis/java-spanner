@@ -566,11 +566,41 @@ public class DatabaseAdminClientImplTest {
 
   @Test
   public void copyBackupWithBackupObject() throws ExecutionException, InterruptedException {
-    Backup testProto = Backup.newBuilder()
-        .setName(BK_NAME)
-        .setDatabase("projects/my-project/instances/my-instance-2/databases/my-db")
-        .setState(Backup.State.READY)
-        .build();
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", getBackupProto(), CopyBackupMetadata.getDefaultInstance());
+    final Timestamp expireTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final Timestamp versionTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+    BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
+
+    when(rpc.copyBackup(sourceBackupId, requestBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(sourceBackupId, requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void copyBackupWithBackupObject_onDifferentInstances()
+      throws ExecutionException, InterruptedException {
+    Backup testProto =
+        Backup.newBuilder()
+            .setName(BK_NAME)
+            .setDatabase("projects/my-project/instances/my-instance-2/databases/my-db")
+            .setState(Backup.State.READY)
+            .build();
     final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
         OperationFutureUtil.immediateOperationFuture(
             "copyBackup", testProto, CopyBackupMetadata.getDefaultInstance());

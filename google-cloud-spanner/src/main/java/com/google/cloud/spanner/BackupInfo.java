@@ -156,9 +156,6 @@ public class BackupInfo {
 
     @Override
     public Builder setDatabase(DatabaseId database) {
-      Preconditions.checkArgument(
-          database.getInstanceId().equals(id.getInstanceId()),
-          "The instance of the source database must be equal to the instance of the backup.");
       this.database = Preconditions.checkNotNull(database);
       return this;
     }
