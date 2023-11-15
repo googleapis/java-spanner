@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.54.0](https://github.com/googleapis/java-spanner/compare/v6.53.0...v6.54.0) (2023-11-15)
+
+
+### Features
+
+* Enable session leaks prevention by cleaning up long-running tra… ([#2655](https://github.com/googleapis/java-spanner/issues/2655)) ([faa7e5d](https://github.com/googleapis/java-spanner/commit/faa7e5dff17897b0432bc505b7ed24c33805f418))
+
+
+### Bug Fixes
+
+* Copy backup issue when backup is done across different instance IDs ([#2732](https://github.com/googleapis/java-spanner/issues/2732)) ([7f6b158](https://github.com/googleapis/java-spanner/commit/7f6b1582770d2270efc9501136afb17a2677eaeb))
+* Respect SPANNER_EMULATOR_HOST env var when autoConfigEmulator=true ([#2730](https://github.com/googleapis/java-spanner/issues/2730)) ([9c19934](https://github.com/googleapis/java-spanner/commit/9c19934a6170232f6ac2478ef9bfcdb2914d2562))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-trace to v2.30.0 ([#2725](https://github.com/googleapis/java-spanner/issues/2725)) ([8618042](https://github.com/googleapis/java-spanner/commit/8618042bb716d8a6626bacee59f9e6c6f0d50362))
+
 ## [6.53.0](https://github.com/googleapis/java-spanner/compare/v6.52.1...v6.53.0) (2023-11-06)
 
 
