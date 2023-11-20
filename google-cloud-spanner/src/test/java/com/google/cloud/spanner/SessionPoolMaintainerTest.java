@@ -84,7 +84,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
                     SessionConsumerImpl consumer =
                         invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
-                      consumer.onSessionReady(setupMockSession(mockSession()));
+                      ReadContext mockContext = mock(ReadContext.class);
+                      consumer.onSessionReady(
+                          setupMockSession(buildMockSession(mockContext), mockContext));
                     }
                   });
               return null;
@@ -94,10 +96,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
   }
 
-  private SessionImpl setupMockSession(final SessionImpl session) {
-    ReadContext mockContext = mock(ReadContext.class);
+  private SessionImpl setupMockSession(final SessionImpl session, final ReadContext mockContext) {
     final ResultSet mockResult = mock(ResultSet.class);
-    when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
             invocation -> {
