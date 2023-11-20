@@ -227,6 +227,18 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public long getPgOid(int columnIndex) {
+    checkClosed();
+    return delegate.getPgOid(columnIndex);
+  }
+
+  @Override
+  public long getPgOid(String columnName) {
+    checkClosed();
+    return delegate.getPgOid(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     checkClosed();
     return delegate.getBytes(columnIndex);
@@ -392,6 +404,30 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<String> getPgJsonbList(String columnName) {
     checkClosed();
     return delegate.getPgJsonbList(columnName);
+  }
+
+  @Override
+  public long[] getPgOidArray(int columnIndex) {
+    checkClosed();
+    return delegate.getPgOidArray(columnIndex);
+  }
+
+  @Override
+  public long[] getPgOidArray(String columnName) {
+    checkClosed();
+    return delegate.getPgOidArray(columnName);
+  }
+
+  @Override
+  public List<Long> getPgOidList(int columnIndex) {
+    checkClosed();
+    return delegate.getPgOidList(columnIndex);
+  }
+
+  @Override
+  public List<Long> getPgOidList(String columnName) {
+    checkClosed();
+    return delegate.getPgOidList(columnName);
   }
 
   @Override

@@ -52,6 +52,8 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
+  protected abstract long getPgOidInternal(int columnIndex);
+
   protected abstract ByteArray getBytesInternal(int columnIndex);
 
   protected abstract Timestamp getTimestampInternal(int columnIndex);
@@ -85,6 +87,10 @@ public abstract class AbstractStructReader implements StructReader {
   protected List<String> getPgJsonbListInternal(int columnIndex) {
     throw new UnsupportedOperationException("Not implemented");
   }
+
+  protected abstract long[] getPgOidArrayInternal(int columnIndex);
+
+  protected abstract List<Long> getPgOidListInternal(int columnIndex);
 
   protected abstract List<ByteArray> getBytesListInternal(int columnIndex);
 
@@ -208,6 +214,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.pgJsonb(), columnName);
     return getPgJsonbInternal(columnIndex);
+  }
+
+  @Override
+  public long getPgOid(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.pgOid(), columnIndex);
+    return getPgOidInternal(columnIndex);
+  }
+
+  @Override
+  public long getPgOid(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.pgOid(), columnName);
+    return getPgOidInternal(columnIndex);
   }
 
   @Override
@@ -396,6 +415,32 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.array(Type.pgJsonb()), columnName);
     return getPgJsonbListInternal(columnIndex);
+  }
+
+  @Override
+  public long[] getPgOidArray(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnIndex);
+    return getPgOidArrayInternal(columnIndex);
+  }
+
+  @Override
+  public long[] getPgOidArray(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnName);
+    return getPgOidArrayInternal(columnIndex);
+  }
+
+  @Override
+  public List<Long> getPgOidList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnIndex);
+    return getPgOidListInternal(columnIndex);
+  }
+
+  @Override
+  public List<Long> getPgOidList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnName);
+    return getPgOidListInternal(columnIndex);
   }
 
   @Override

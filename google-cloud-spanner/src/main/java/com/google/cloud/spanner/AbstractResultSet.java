@@ -480,6 +480,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case PG_JSONB:
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
+          case PG_OID:
+            builder.set(fieldName).to(Value.pgOid((Long) value));
+            break;
           case BYTES:
             builder
                 .set(fieldName)
@@ -519,6 +522,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 break;
               case PG_JSONB:
                 builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
+                break;
+              case PG_OID:
+                builder.set(fieldName).toPgOidArray((Iterable<Long>) value);
                 break;
               case BYTES:
                 builder
@@ -596,6 +602,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.BOOL_VALUE);
           return proto.getBoolValue();
         case INT64:
+        case PG_OID:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return Long.parseLong(proto.getStringValue());
         case FLOAT64:
@@ -666,6 +673,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case STRUCT:
           return Lists.transform(
               listValue.getValuesList(), input -> decodeValue(elementType, input));
+        case PG_OID:
+          return new PgOidArray(listValue);
         default:
           throw new AssertionError("Unhandled type code: " + elementType.getCode());
       }
@@ -735,6 +744,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    protected long getPgOidInternal(int columnIndex) {
+      return (Long) rowData.get(columnIndex);
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return getLazyBytesInternal(columnIndex).getByteArray();
     }
@@ -780,6 +794,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.json(isNull ? null : getJsonInternal(columnIndex));
         case PG_JSONB:
           return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
+        case PG_OID:
+          return Value.pgOid(isNull ? null : getPgOidInternal(columnIndex));
         case BYTES:
           return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
         case TIMESTAMP:
@@ -810,6 +826,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.jsonArray(isNull ? null : getJsonListInternal(columnIndex));
             case PG_JSONB:
               return Value.pgJsonbArray(isNull ? null : getPgJsonbListInternal(columnIndex));
+            case PG_OID:
+              return Value.pgOidArray(isNull ? null : getPgOidListInternal(columnIndex));
             case BYTES:
               return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
             case TIMESTAMP:
@@ -895,6 +913,16 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @SuppressWarnings("unchecked") // We know ARRAY<JSONB> produces a List<String>.
     protected List<String> getPgJsonbListInternal(int columnIndex) {
       return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
+    }
+
+    @Override
+    protected long[] getPgOidArrayInternal(int columnIndex) {
+      return getPgOidListInternal(columnIndex).toPrimitiveArray(columnIndex);
+    }
+
+    @Override
+    protected PgOidArray getPgOidListInternal(int columnIndex) {
+      return (PgOidArray) rowData.get(columnIndex);
     }
 
     @Override
@@ -1457,6 +1485,31 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
+  static class PgOidArray extends PrimitiveArray<Long, long[]> {
+    PgOidArray(ListValue protoList) {
+      super(protoList);
+    }
+
+    PgOidArray(long[] data, BitSet nulls) {
+      super(data, nulls, data.length);
+    }
+
+    @Override
+    long[] newArray(int size) {
+      return new long[size];
+    }
+
+    @Override
+    void setProto(long[] array, int i, com.google.protobuf.Value protoValue) {
+      array[i] = Long.parseLong(protoValue.getStringValue());
+    }
+
+    @Override
+    Long get(long[] array, int i) {
+      return array[i];
+    }
+  }
+
   protected abstract GrpcStruct currRow();
 
   @Override
@@ -1497,6 +1550,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected String getPgJsonbInternal(int columnIndex) {
     return currRow().getPgJsonbInternal(columnIndex);
+  }
+
+  @Override
+  protected long getPgOidInternal(int columnIndex) {
+    return currRow().getPgOidInternal(columnIndex);
   }
 
   @Override
@@ -1567,6 +1625,16 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<String> getPgJsonbListInternal(int columnIndex) {
     return currRow().getJsonListInternal(columnIndex);
+  }
+
+  @Override
+  protected long[] getPgOidArrayInternal(int columnIndex) {
+    return currRow().getPgOidArrayInternal(columnIndex);
+  }
+
+  @Override
+  protected List<Long> getPgOidListInternal(int columnIndex) {
+    return currRow().getPgOidListInternal(columnIndex);
   }
 
   @Override

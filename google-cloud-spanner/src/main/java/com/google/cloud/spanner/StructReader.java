@@ -190,6 +190,22 @@ public interface StructReader {
 
   /**
    * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#pgOid()}.
+   */
+  default long getPgOid(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#pgOid()}.
+   */
+  default long getPgOid(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * @param columnIndex index of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#bytes()}.
    */
   ByteArray getBytes(int columnIndex);
@@ -405,6 +421,46 @@ public interface StructReader {
    *     access each element in the list multiple times.
    */
   default List<String> getPgJsonbList(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgOid())}.
+   * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
+   *     may contain {@code NULL} values, use {@link #getPgOidList(int)} instead.
+   */
+  default long[] getPgOidArray(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgOid())}.
+   * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
+   *     may contain {@code NULL} values, use {@link #getPgOidList(String)} instead.
+   */
+  default long[] getPgOidArray(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgOid())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
+   */
+  default List<Long> getPgOidList(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  };
+
+  /**
+   * @param columnName
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.pgOid())}. The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
+   */
+  default List<Long> getPgOidList(String columnName) {
     throw new UnsupportedOperationException("method should be overwritten");
   };
 

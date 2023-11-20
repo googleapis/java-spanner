@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultBytesBase64;
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultJson;
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultPgJsonb;
+import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultLongWrapper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -42,6 +43,7 @@ import org.junit.runners.JUnit4;
 public class ValueBinderTest {
   private static final String JSON_METHOD_NAME = "json";
   private static final String PG_JSONB_METHOD_NAME = "pgJsonb";
+  private static final String PG_OID_METHOD_NAME = "pgOid";
   private static final String PG_NUMERIC_METHOD_NAME = "pgNumeric";
   private static final String BYTES_BASE64_METHOD_NAME = "bytesFromBase64";
   public static final String DEFAULT_PG_NUMERIC = "1.23";
@@ -134,6 +136,9 @@ public class ValueBinderTest {
           } else if (method.getName().equalsIgnoreCase(PG_JSONB_METHOD_NAME)) {
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
             assertThat(binderMethod.invoke(binder, Value.pgJsonb(null))).isEqualTo(lastReturnValue);
+          } else if (method.getName().equalsIgnoreCase(PG_OID_METHOD_NAME)) {
+            binderMethod = ValueBinder.class.getMethod("to", Value.class);
+            assertThat(binderMethod.invoke(binder, Value.pgOid(null))).isEqualTo(lastReturnValue);
           } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
             binderMethod = ValueBinder.class.getMethod("to", Value.class);
             assertThat(binderMethod.invoke(binder, Value.pgNumeric(null)))
@@ -162,6 +167,11 @@ public class ValueBinderTest {
           defaultObject = defaultPgJsonb();
           binderMethod = ValueBinder.class.getMethod("to", Value.class);
           assertThat(binderMethod.invoke(binder, Value.pgJsonb(defaultPgJsonb())))
+              .isEqualTo(lastReturnValue);
+        } else if (method.getName().equalsIgnoreCase(PG_OID_METHOD_NAME)) {
+          defaultObject = defaultLongWrapper();
+          binderMethod = ValueBinder.class.getMethod("to", Value.class);
+          assertThat(binderMethod.invoke(binder, Value.pgOid(defaultLongWrapper())))
               .isEqualTo(lastReturnValue);
         } else if (method.getName().equalsIgnoreCase(PG_NUMERIC_METHOD_NAME)) {
           defaultObject = DEFAULT_PG_NUMERIC;

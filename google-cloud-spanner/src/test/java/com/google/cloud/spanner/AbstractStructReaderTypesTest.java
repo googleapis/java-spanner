@@ -81,6 +81,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected long getPgOidInternal(int columnIndex) {
+      return 0;
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return null;
     }
@@ -147,6 +152,16 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected List<String> getPgJsonbListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected long[] getPgOidArrayInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected List<Long> getPgOidListInternal(int columnIndex) {
       return null;
     }
 
@@ -238,6 +253,7 @@ public class AbstractStructReaderTypesTest {
             "getJson",
             Collections.singletonList("getValue")
           },
+          {Type.pgOid(), "getPgOidInternal", 123L, "getPgOid", Collections.singletonList("getValue")},
           {
             Type.timestamp(),
             "getTimestampInternal",
@@ -321,6 +337,13 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
             "getJsonList",
             Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getPgOidArrayInternal",
+            new long[] {1, 2},
+            "getPgOidArray",
+            Arrays.asList("getPgOidList", "getValue")
           },
           {
             Type.array(Type.bytes()),

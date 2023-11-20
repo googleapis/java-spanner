@@ -251,6 +251,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             case PG_JSONB:
               funnelValue(type, row.getPgJsonb(i), into);
               break;
+            case PG_OID:
+              funnelValue(type, row.getPgOid(i), into);
+              break;
             case TIMESTAMP:
               funnelValue(type, row.getTimestamp(i), into);
               break;
@@ -327,6 +330,12 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             funnelValue(Code.PG_JSONB, value, into);
           }
           break;
+        case PG_OID:
+          into.putInt(row.getPgOidList(columnIndex).size());
+          for (Long value : row.getPgOidList(columnIndex)) {
+            funnelValue(Code.PG_OID, value, into);
+          }
+          break;
         case TIMESTAMP:
           into.putInt(row.getTimestampList(columnIndex).size());
           for (Timestamp value : row.getTimestampList(columnIndex)) {
@@ -383,6 +392,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             String stringValue = (String) value;
             into.putInt(stringValue.length());
             into.putUnencodedChars(stringValue);
+            break;
+          case PG_OID:
+            into.putLong((Long) value);
             break;
           case TIMESTAMP:
             Timestamp timestamp = (Timestamp) value;

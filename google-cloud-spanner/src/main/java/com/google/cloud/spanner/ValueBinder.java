@@ -199,6 +199,21 @@ public abstract class ValueBinder<R> {
     return handle(Value.pgJsonbArray(values));
   }
 
+  /** Binds to {@code Value.pgOidArray(values)} */
+  public R toPgOidArray(@Nullable long[] values) {
+    return handle(Value.pgOidArray(values));
+  }
+
+  /** Binds to {@code Value.pgOidArray(values, pos, length)} */
+  public R toPgOidArray(@Nullable long[] values, int pos, int length) {
+    return handle(Value.pgOidArray(values, pos, length));
+  }
+
+  /** Binds to {@code Value.pgOidArray(values)} */
+  public R toPgOidArray(@Nullable Iterable<Long> values) {
+    return handle(Value.pgOidArray(values));
+  }
+
   /** Binds to {@code Value.bytesArray(values)} */
   public R toBytesArray(@Nullable Iterable<ByteArray> values) {
     return handle(Value.bytesArray(values));

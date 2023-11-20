@@ -766,6 +766,22 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getPgOid() {
+    consumer.onPartialResultSet(
+            PartialResultSet.newBuilder()
+                    .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.pgOid()))))
+                    .addValues(Value.pgOid(Long.MIN_VALUE).toProto())
+                    .addValues(Value.pgOid(Long.MAX_VALUE).toProto())
+                    .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getPgOid(0)).isEqualTo(Long.MIN_VALUE);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getPgOid(0)).isEqualTo(Long.MAX_VALUE);
+  }
+
+  @Test
   public void getBooleanArray() {
     boolean[] boolArray = {true, true, false};
     consumer.onPartialResultSet(
@@ -905,5 +921,20 @@ public class GrpcResultSetTest {
 
     assertTrue(resultSet.next());
     assertEquals(jsonList, resultSet.getPgJsonbList(0));
+  }
+
+  @Test
+  public void getPgOidArray() {
+    long[] longArray = {111, 333, 444, 0, -1, -2234, Long.MAX_VALUE, Long.MIN_VALUE};
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.pgOid())))))
+            .addValues(Value.pgOidArray(longArray).toProto())
+            .build());
+    consumer.onCompleted();
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getPgOidArray(0)).isEqualTo(longArray);
   }
 }

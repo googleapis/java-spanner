@@ -91,6 +91,7 @@ public class ResultSetsTest {
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
+            Type.StructField.of("pgOidVal", Type.pgOid()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -103,7 +104,8 @@ public class ResultSetsTest {
             Type.StructField.of("dateArray", Type.array(Type.date())),
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
-            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())));
+            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())));
     Struct struct1 =
         Struct.newBuilder()
             .set("f1")
@@ -122,6 +124,8 @@ public class ResultSetsTest {
             .to(Value.json(jsonVal))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(jsonVal))
+            .set("pgOidVal")
+            .to(Value.pgOid(2))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -148,6 +152,8 @@ public class ResultSetsTest {
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .set("pgJsonbArray")
             .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(longArray))
             .build();
     Struct struct2 =
         Struct.newBuilder()
@@ -167,6 +173,8 @@ public class ResultSetsTest {
             .to(Value.json(jsonVal))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(jsonVal))
+            .set("pgOidVal")
+            .to(Value.pgOid(3))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -193,6 +201,8 @@ public class ResultSetsTest {
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .set("pgJsonbArray")
             .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(longArray))
             .build();
     ResultSet rs = ResultSets.forRows(type, Arrays.asList(struct1, struct2));
 
@@ -243,6 +253,10 @@ public class ResultSetsTest {
     assertEquals(Value.pgJsonb(jsonVal), rs.getValue(columnIndex++));
     assertEquals(jsonVal, rs.getPgJsonb("pgJsonbVal"));
     assertEquals(Value.pgJsonb(jsonVal), rs.getValue("pgJsonbVal"));
+
+    assertThat(rs.getPgOid(columnIndex)).isEqualTo(2L);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.pgOid(2L));
+    assertThat(rs.getColumnType("pgOidVal")).isEqualTo(Type.pgOid());
 
     assertThat(rs.getBytes(columnIndex)).isEqualTo(ByteArray.copyFrom(byteVal));
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.bytes(ByteArray.copyFrom(byteVal)));
@@ -305,8 +319,15 @@ public class ResultSetsTest {
     assertThat(rs.getJsonList(columnIndex++)).isEqualTo(Arrays.asList(jsonArray));
     assertThat(rs.getJsonList("jsonArray")).isEqualTo(Arrays.asList(jsonArray));
 
-    assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList(columnIndex));
+    assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList(columnIndex++));
     assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList("pgJsonbArray"));
+
+    assertThat(rs.getPgOidArray(columnIndex)).isEqualTo(longArray);
+    assertThat(rs.getValue(columnIndex)).isEqualTo(Value.pgOidArray(longArray));
+    assertThat(rs.getPgOidArray("pgOidArray")).isEqualTo(longArray);
+    assertThat(rs.getValue("pgOidArray")).isEqualTo(Value.pgOidArray(longArray));
+    assertThat(rs.getPgOidList(columnIndex++)).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getPgOidList("pgOidArray")).isEqualTo(Longs.asList(longArray));
 
     assertThat(rs.next()).isTrue();
     assertThat(rs.getCurrentRowAsStruct()).isEqualTo(struct2);

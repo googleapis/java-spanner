@@ -261,6 +261,19 @@ public class DirectExecuteResultSetTest {
     subject.getPgJsonbList("test2");
     verify(delegate).getPgJsonbList("test2");
 
+    subject.getPgOid(0);
+    verify(delegate).getPgOid(0);
+    subject.getPgOid("test0");
+    verify(delegate).getPgOid("test0");
+    subject.getPgOidArray(1);
+    verify(delegate).getPgOidArray(1);
+    subject.getPgOidArray("test1");
+    verify(delegate).getPgOidArray("test1");
+    subject.getPgOidList(2);
+    verify(delegate).getPgOidList(2);
+    subject.getPgOidList("test2");
+    verify(delegate).getPgOidList("test2");
+
     subject.getStructList(0);
     subject.getStructList("test0");
 

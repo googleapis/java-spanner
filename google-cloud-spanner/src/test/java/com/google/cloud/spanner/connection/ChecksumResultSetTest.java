@@ -65,6 +65,8 @@ public class ChecksumResultSetTest {
           .to(Value.json("{\"color\":\"red\",\"value\":\"#ff0\"}"))
           .set("pgJsonbVal")
           .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#00f\"}"))
+          .set("pgOidVal")
+          .to(Value.pgOid(2 * 2))
           .set("byteVal")
           .to(Value.bytes(ByteArray.copyFrom("bytes".getBytes(StandardCharsets.UTF_8))))
           .set("timestamp")
@@ -104,6 +106,8 @@ public class ChecksumResultSetTest {
           .to(
               Value.pgJsonbArray(
                   Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "[]")))
+          .set("pgOidArray")
+          .to(Value.pgOidArray(Arrays.asList(2L, null, 1L, 0L)))
           .build();
 
   @Test
@@ -118,6 +122,7 @@ public class ChecksumResultSetTest {
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
+            Type.StructField.of("pgOidVal", Type.pgOid()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -131,7 +136,8 @@ public class ChecksumResultSetTest {
             Type.StructField.of("dateArray", Type.array(Type.date())),
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
-            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())));
+            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())));
     Struct rowNonNullValues =
         Struct.newBuilder()
             .set("boolVal")
@@ -150,6 +156,8 @@ public class ChecksumResultSetTest {
             .to(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}"))
             .set("pgJsonbVal")
             .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#f00\"}"))
+            .set("pgOidVal")
+            .to(Value.pgOid(2))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom("test".getBytes(StandardCharsets.UTF_8))))
             .set("timestamp")
@@ -192,6 +200,8 @@ public class ChecksumResultSetTest {
             .to(
                 Value.pgJsonbArray(
                     Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "{}")))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(Arrays.asList(1L, null, 2L)))
             .build();
     Struct rowNullValues =
         Struct.newBuilder()
@@ -211,6 +221,8 @@ public class ChecksumResultSetTest {
             .to(Value.json(null))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(null))
+            .set("pgOidVal")
+            .to(Value.pgOid(null))
             .set("byteVal")
             .to((ByteArray) null)
             .set("timestamp")
@@ -239,6 +251,8 @@ public class ChecksumResultSetTest {
             .toJsonArray(null)
             .set("pgJsonbArray")
             .toPgJsonbArray(null)
+            .set("pgOidArray")
+            .toPgOidArray((Iterable<Long>) null)
             .build();
 
     ParsedStatement parsedStatement = mock(ParsedStatement.class);

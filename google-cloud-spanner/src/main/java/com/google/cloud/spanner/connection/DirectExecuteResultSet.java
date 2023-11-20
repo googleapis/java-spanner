@@ -222,6 +222,18 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public long getPgOid(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgOid(columnIndex);
+  }
+
+  @Override
+  public long getPgOid(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgOid(columnName);
+  }
+
+  @Override
   public ByteArray getBytes(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getBytes(columnIndex);
@@ -387,6 +399,30 @@ class DirectExecuteResultSet implements ResultSet {
   public List<String> getPgJsonbList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getPgJsonbList(columnName);
+  }
+
+  @Override
+  public long[] getPgOidArray(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgOidArray(columnIndex);
+  }
+
+  @Override
+  public long[] getPgOidArray(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgOidArray(columnName);
+  }
+
+  @Override
+  public List<Long> getPgOidList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgOidList(columnIndex);
+  }
+
+  @Override
+  public List<Long> getPgOidList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getPgOidList(columnName);
   }
 
   @Override
