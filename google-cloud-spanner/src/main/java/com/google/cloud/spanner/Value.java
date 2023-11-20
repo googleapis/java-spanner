@@ -231,7 +231,7 @@ public abstract class Value implements Serializable {
     return new PgJsonbImpl(v == null, v);
   }
 
-    /**
+  /**
    * Returns an {@code PG_OID} value.
    *
    * @param v the value, which may be null
@@ -925,7 +925,7 @@ public abstract class Value implements Serializable {
           return new PgOidArrayImpl(isNull, nulls, values);
         }
       };
-      
+
   private static final PrimitiveArrayValueFactory<double[], Double> float64ArrayFactory =
       new PrimitiveArrayValueFactory<double[], Double>() {
         @Override
@@ -2087,8 +2087,8 @@ public abstract class Value implements Serializable {
     @Override
     com.google.protobuf.Value getValueAsProto(int i) {
       return com.google.protobuf.Value.newBuilder()
-              .setStringValue(Long.toString(values[i]))
-              .build();
+          .setStringValue(Long.toString(values[i]))
+          .build();
     }
 
     @Override
@@ -2335,7 +2335,7 @@ public abstract class Value implements Serializable {
                 return Value.jsonArray(value.getJsonList(fieldIndex));
               case PG_JSONB:
                 return Value.pgJsonbArray(value.getPgJsonbList(fieldIndex));
-             case PG_OID:
+              case PG_OID:
                 return Value.pgOidArray(value.getPgOidList(fieldIndex));
               case BYTES:
                 return Value.bytesArray(value.getBytesList(fieldIndex));

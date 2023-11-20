@@ -618,7 +618,7 @@ public class MutationTest {
         .set("pgOidArrNull")
         .toPgOidArray((long[]) null)
         .set("pgOidArrValue")
-        .to(Value.pgOidArray(ImmutableList.of(1L, 2L)))        
+        .to(Value.pgOidArray(ImmutableList.of(1L, 2L)))
         .set("timestampArr")
         .toTimestampArray(ImmutableList.of(Timestamp.MAX_VALUE, Timestamp.MAX_VALUE))
         .set("timestampArrNull")

@@ -253,7 +253,13 @@ public class AbstractStructReaderTypesTest {
             "getJson",
             Collections.singletonList("getValue")
           },
-          {Type.pgOid(), "getPgOidInternal", 123L, "getPgOid", Collections.singletonList("getValue")},
+          {
+            Type.pgOid(),
+            "getPgOidInternal",
+            123L,
+            "getPgOid",
+            Collections.singletonList("getValue")
+          },
           {
             Type.timestamp(),
             "getTimestampInternal",

@@ -18,8 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultBytesBase64;
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultJson;
-import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultPgJsonb;
 import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultLongWrapper;
+import static com.google.cloud.spanner.ValueBinderTest.DefaultValues.defaultPgJsonb;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 

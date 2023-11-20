@@ -768,11 +768,11 @@ public class GrpcResultSetTest {
   @Test
   public void getPgOid() {
     consumer.onPartialResultSet(
-            PartialResultSet.newBuilder()
-                    .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.pgOid()))))
-                    .addValues(Value.pgOid(Long.MIN_VALUE).toProto())
-                    .addValues(Value.pgOid(Long.MAX_VALUE).toProto())
-                    .build());
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.pgOid()))))
+            .addValues(Value.pgOid(Long.MIN_VALUE).toProto())
+            .addValues(Value.pgOid(Long.MAX_VALUE).toProto())
+            .build());
     consumer.onCompleted();
 
     assertThat(resultSet.next()).isTrue();

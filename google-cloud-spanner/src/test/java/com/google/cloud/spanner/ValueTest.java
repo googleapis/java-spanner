@@ -1929,10 +1929,10 @@ public class ValueTest {
     tester.addEqualityGroup(Value.pgNumericArray(null), Value.pgNumericArray(null));
 
     tester.addEqualityGroup(
-            Value.pgOidArray(Arrays.asList(1L, 2L)),
-            Value.pgOidArray(new long[] {1L, 2L}),
-            Value.pgOidArray(new long[] {0L, 1L, 2L, 3L}, 1, 2),
-            Value.pgOidArray(plainIterable(1L, 2L)));
+        Value.pgOidArray(Arrays.asList(1L, 2L)),
+        Value.pgOidArray(new long[] {1L, 2L}),
+        Value.pgOidArray(new long[] {0L, 1L, 2L, 3L}, 1, 2),
+        Value.pgOidArray(plainIterable(1L, 2L)));
     tester.addEqualityGroup(Value.pgOidArray(Collections.singletonList(3L)));
     tester.addEqualityGroup(Value.pgOidArray(Collections.singletonList(null)));
     tester.addEqualityGroup(Value.pgOidArray((Iterable<Long>) null));
@@ -2093,8 +2093,10 @@ public class ValueTest {
         Value.pgNumericArray(BrokenSerializationList.of("1.23", "1.24", Value.NAN)));
     reserializeAndAssert(Value.pgNumericArray(null));
 
-    reserializeAndAssert(Value.pgOidArray(BrokenSerializationList.of(Long.valueOf(1L), Long.valueOf(2L))));
-    reserializeAndAssert(Value.pgOidArray(BrokenSerializationList.of(Long.valueOf(1L), Long.valueOf(2L), null)));
+    reserializeAndAssert(
+        Value.pgOidArray(BrokenSerializationList.of(Long.valueOf(1L), Long.valueOf(2L))));
+    reserializeAndAssert(
+        Value.pgOidArray(BrokenSerializationList.of(Long.valueOf(1L), Long.valueOf(2L), null)));
     reserializeAndAssert(Value.pgOidArray((Iterable<Long>) null));
 
     reserializeAndAssert(Value.timestamp(null));
