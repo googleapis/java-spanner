@@ -58,6 +58,7 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.spi.v1.SpannerMetrics;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -2939,7 +2940,7 @@ class SessionPool {
 
   private void initOpenTelemetryMetricsCollection(
       OpenTelemetry openTelemetry, Attributes attributes) {
-    if (openTelemetry == null) {
+    if (openTelemetry == null || !SpannerMetrics.isSessionMetricsEnabled()) {
       return;
     }
 
