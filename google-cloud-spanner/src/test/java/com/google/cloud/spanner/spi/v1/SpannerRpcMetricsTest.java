@@ -113,7 +113,7 @@ public class SpannerRpcMetricsTest {
   @BeforeClass
   public static void startServer() throws IOException {
     assumeFalse(EmulatorSpannerHelper.isUsingEmulator());
-
+    SpannerMetrics.enableRPCMetrics();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(

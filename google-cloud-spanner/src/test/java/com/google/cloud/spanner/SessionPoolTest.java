@@ -67,6 +67,7 @@ import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.cloud.spanner.spi.v1.SpannerMetrics;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -1862,6 +1863,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       FakeClock clock = new FakeClock();
       clock.currentTimeMillis = System.currentTimeMillis();
 
+      SpannerMetrics.enableSessionMetrics();
       InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
       SdkMeterProvider sdkMeterProvider =
           SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
