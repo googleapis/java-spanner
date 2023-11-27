@@ -156,7 +156,9 @@ See [Session Pool and Channel Pool Configuration](session-and-channel-pool-confi
 for in-depth background information about sessions and gRPC channels and how these are handled in
 the Cloud Spanner Java client.
 
-## OpenCensus Metrics
+## OpenCensus Metrics (Obsolete)
+
+> `Update`: The OpenCensus project is obsolete and was archived on July 31st, 2023. This means that any security vulnerabilities that are found will not be patched. We recommend that you begin migrating OpenCensus metrics to OpenTelemetry, the successor project. [Click here](https://docs.google.com/document/d/1hIpYd9R9ZC5d0bsHhM1Dwz_BDtUYPpNmFKHaww3Uugc/edit?pli=1&resourcekey=0-SHlXjOUFeIq_u6_0GZwblg) for more information.
 
 Cloud Spanner client supports [Opencensus Metrics](https://opencensus.io/stats/),
 which gives insight into the client internals and aids in debugging/troubleshooting
