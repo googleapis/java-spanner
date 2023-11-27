@@ -662,7 +662,7 @@ public class DatabaseClientImplTest {
         client.writeAtLeastOnceWithOptions(
             Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
-            Options.maxBatchingDelayMs(10),
+            Options.maxBatchingDelay(10),
             Options.priority(RpcPriority.LOW));
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
