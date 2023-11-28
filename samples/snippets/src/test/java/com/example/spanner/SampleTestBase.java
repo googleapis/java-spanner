@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class SampleTestBase {
     final String serverUrl = "";
     final SpannerOptions.Builder optionsBuilder = SpannerOptions
         .newBuilder()
+            .setProjectId("span-cloud-testing")
         .setAutoThrottleAdministrativeRequests();
     if (!serverUrl.isEmpty()) {
       optionsBuilder.setHost(serverUrl);

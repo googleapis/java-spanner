@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 public class CreateInstanceWithAutoscalingConfigSampleIT extends SampleTestBase {
+
   @Test
   public void testCreateInstanceWithAutoscalingConfig() throws Exception {
     String instanceId = String.format("autoscaler-%s", UUID.randomUUID());
