@@ -22,11 +22,18 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import java.util.Arrays;
+import java.util.List;
 
 @InternalApi
 public class SpannerRpcMetrics {
   private static LongHistogram gfeLatencies = null;
   private static LongCounter gfeHeaderMissingCount = null;
+  private static final List<Long> RPC_MILLIS_BUCKET_BOUNDARIES =
+      Arrays.asList(
+          1L, 2L, 3L, 4L, 5L, 6L, 8L, 10L, 13L, 16L, 20L, 25L, 30L, 40L, 50L, 65L, 80L, 100L, 130L,
+          160L, 200L, 250L, 300L, 400L, 500L, 650L, 800L, 1000L, 2000L, 5000L, 10000L, 20000L,
+          50000L, 100000L);
 
   static void initializeRPCMetrics(OpenTelemetry openTelemetry) {
     if (openTelemetry == null || !SpannerMetrics.isRPCMetricsEnabled()) {
@@ -39,13 +46,7 @@ public class SpannerRpcMetrics {
             .ofLongs()
             .setDescription(MetricRegistryConstants.SPANNER_GFE_LATENCY_DESCRIPTION)
             .setUnit(MetricRegistryConstants.MILLISECOND)
-            // .setExplicitBucketBoundariesAdvice(
-            //     Collections.unmodifiableList(
-            //         Arrays.asList(
-            //             0.0, 0.01, 0.05, 0.1, 0.3, 0.6, 0.8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0,
-            //             10.0, 13.0, 16.0, 20.0, 25.0, 30.0, 40.0, 50.0, 65.0, 80.0, 100.0, 130.0,
-            //             160.0, 200.0, 250.0, 300.0, 400.0, 500.0, 650.0, 800.0, 1000.0, 2000.0,
-            //             5000.0, 10000.0, 20000.0, 50000.0, 100000.0)))
+            .setExplicitBucketBoundariesAdvice(RPC_MILLIS_BUCKET_BOUNDARIES)
             .build();
     gfeHeaderMissingCount =
         meter
