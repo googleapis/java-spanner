@@ -179,8 +179,8 @@ class SessionImpl implements Session {
     if (commitRequestOptions != null) {
       requestBuilder.setRequestOptions(commitRequestOptions);
     }
-    if (requestOptions.hasMaxBatchingDelayMs()) {
-      int maxBatchingDelayMs = requestOptions.maxBatchingDelayMs();
+    if (requestOptions.hasMaxBatchingDelay()) {
+      int maxBatchingDelayMs = requestOptions.maxBatchingDelay();
       // TODO set the data into the proto object. Presently field is unavailable in proto
       // requestBuilder.setMaxBatchingDelay(maxBatchingDelay);
     }
