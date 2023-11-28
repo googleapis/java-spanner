@@ -55,14 +55,13 @@ class CreateInstanceWithAutoscalingConfigExample {
                     .setHighPriorityCpuUtilizationPercent(65)
                     .setStorageUtilizationPercent(95))
             .build();
-    String displayName = "Descriptive name";
 
     // Create an InstanceInfo object that will be used to create the instance.
     InstanceInfo instanceInfo =
         InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
             .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
             .setAutoscalingConfig(autoscalingConfig)
-            .setDisplayName(displayName)
+            .setDisplayName("Descriptive name")
             .build();
     OperationFuture<Instance, CreateInstanceMetadata> operation =
         instanceAdminClient.createInstance(instanceInfo);
