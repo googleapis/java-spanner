@@ -149,6 +149,20 @@ public abstract class Value implements Serializable {
     return new Int64Impl(false, v);
   }
 
+/**
+   * Returns a {@code FLOAT32} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value float32(@Nullable Float v) {
+    return new Float32Impl(v == null, v == null ? 0 : v);
+  }
+
+  /** Returns a {@code FLOAT32} value. */
+  public static Value float32(float v) {
+    return new Float32Impl(false, v);
+  }
+
   /**
    * Returns a {@code FLOAT64} value.
    *
@@ -455,6 +469,40 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<FLOAT32>} value.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   */
+  public static Value float32Array(@Nullable float[] v) {
+    return float32Array(v, 0, v == null ? 0 : v.length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<FLOAT32>} value that takes its elements from a region of an array.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   * @param pos the start position of {@code v} to copy values from. Ignored if {@code v} is {@code
+   *     null}.
+   * @param length the number of values to copy from {@code v}. Ignored if {@code v} is {@code
+   *     null}.
+   */
+  public static Value float32Array(@Nullable float[] v, int pos, int length) {
+    return float32ArrayFactory.create(v, pos, length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<FLOAT32>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value float32Array(@Nullable Iterable<Float> v) {
+    return float32ArrayFactory.create(v);
+  }
+
+  /**
    * Returns an {@code ARRAY<FLOAT64>} value.
    *
    * @param v the source of element values, which may be null to produce a value for which {@code
@@ -730,6 +778,13 @@ public abstract class Value implements Serializable {
   public abstract long getInt64();
 
   /**
+   * Returns the value of a {@code FLOAT32}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract float getFloat32();
+
+  /**
    * Returns the value of a {@code FLOAT64}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -834,6 +889,14 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<Long> getInt64Array();
+
+  /**
+   * Returns the value of an {@code ARRAY<FLOAT32>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<Float> getFloat32Array();
 
   /**
    * Returns the value of an {@code ARRAY<FLOAT64>}-typed instance. While the returned list itself
@@ -1052,6 +1115,23 @@ public abstract class Value implements Serializable {
           return new Int64ArrayImpl(isNull, nulls, values);
         }
       };
+  private static final PrimitiveArrayValueFactory<float[], Float> float32ArrayFactory =
+      new PrimitiveArrayValueFactory<float[], Float>() {
+        @Override
+        float[] newArray(int size) {
+          return new float[size];
+        }
+
+        @Override
+        void set(float[] arr, int i, Float value) {
+          arr[i] = value;
+        }
+
+        @Override
+        Value newValue(boolean isNull, BitSet nulls, float[] values) {
+          return new Float32ArrayImpl(isNull, nulls, values);
+        }
+      };
   private static final PrimitiveArrayValueFactory<double[], Double> float64ArrayFactory =
       new PrimitiveArrayValueFactory<double[], Double>() {
         @Override
@@ -1123,6 +1203,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public float getFloat32() {
+      throw defaultGetter(Type.float32());
+    }
+
+    @Override
     public double getFloat64() {
       throw defaultGetter(Type.float64());
     }
@@ -1179,6 +1264,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<Long> getInt64Array() {
       throw defaultGetter(Type.array(Type.int64()));
+    }
+
+    @Override
+    public List<Float> getFloat32Array() {
+      throw defaultGetter(Type.array(Type.float32()));
     }
 
     @Override
@@ -1347,6 +1437,14 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public float getFloat32() {
+      checkNotNull();
+      Preconditions.checkState(
+          value.hasNumberValue(), "This value does not contain a number value");
+      return (float)value.getNumberValue();
+    }
+
+    @Override
     public double getFloat64() {
       checkNotNull();
       Preconditions.checkState(
@@ -1489,6 +1587,41 @@ public abstract class Value implements Serializable {
     @Override
     int valueHash() {
       return Long.valueOf(value).hashCode();
+    }
+  }
+
+  private static class Float32Impl extends AbstractValue {
+    private final float value;
+
+    private Float32Impl(boolean isNull, float value) {
+      super(isNull, Type.float32());
+      this.value = value;
+    }
+
+    @Override
+    public float getFloat32() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder().setNumberValue((double)value).build();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      return ((Float32Impl) v).value == value;
+    }
+
+    @Override
+    int valueHash() {
+      return Float.valueOf(value).hashCode();
     }
   }
 
@@ -1879,6 +2012,8 @@ public abstract class Value implements Serializable {
   private static class PgNumericImpl extends AbstractObjectValue<String> {
     private BigDecimal valueAsBigDecimal;
     private NumberFormatException bigDecimalConversionError;
+    private Float valueAsFloat;
+    private NumberFormatException floatConversionError;
     private Double valueAsDouble;
     private NumberFormatException doubleConversionError;
 
@@ -1907,6 +2042,23 @@ public abstract class Value implements Serializable {
         }
       }
       return valueAsBigDecimal;
+    }
+
+    @Override
+    public float getFloat32() {
+      checkNotNull();
+      if (floatConversionError != null) {
+        throw floatConversionError;
+      }
+      if (valueAsFloat == null) {
+        try {
+          valueAsFloat = Float.parseFloat(value);
+        } catch (NumberFormatException e) {
+          floatConversionError = e;
+          throw e;
+        }
+      }
+      return valueAsFloat;
     }
 
     @Override
@@ -2098,6 +2250,46 @@ public abstract class Value implements Serializable {
       return com.google.protobuf.Value.newBuilder()
           .setStringValue(Long.toString(values[i]))
           .build();
+    }
+
+    @Override
+    int arrayHash() {
+      return Arrays.hashCode(values);
+    }
+  }
+
+  private static class Float32ArrayImpl extends PrimitiveArrayImpl<Float> {
+    private final float[] values;
+
+    private Float32ArrayImpl(boolean isNull, BitSet nulls, float[] values) {
+      super(isNull, Type.float32(), nulls);
+      this.values = values;
+    }
+
+    @Override
+    public List<Float> getFloat32Array() {
+      return getArray();
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      Float32ArrayImpl that = (Float32ArrayImpl) v;
+      return Arrays.equals(values, that.values);
+    }
+
+    @Override
+    int size() {
+      return values.length;
+    }
+
+    @Override
+    Float getValue(int i) {
+      return values[i];
+    }
+
+    @Override
+    com.google.protobuf.Value getValueAsProto(int i) {
+      return com.google.protobuf.Value.newBuilder().setNumberValue((double)values[i]).build();
     }
 
     @Override
@@ -2481,6 +2673,8 @@ public abstract class Value implements Serializable {
 
     private List<BigDecimal> valuesAsBigDecimal;
     private NumberFormatException bigDecimalConversionError;
+    private List<Float> valuesAsFloat;
+    private NumberFormatException floatConversionError;
     private List<Double> valuesAsDouble;
     private NumberFormatException doubleConversionError;
 
@@ -2512,6 +2706,26 @@ public abstract class Value implements Serializable {
         }
       }
       return valuesAsBigDecimal;
+    }
+
+    @Override
+    public List<Float> getFloat32Array() {
+      checkNotNull();
+      if (floatConversionError != null) {
+        throw floatConversionError;
+      }
+      if (valuesAsFloat == null) {
+        try {
+          valuesAsFloat =
+              value.stream()
+                  .map(v -> v == null ? null : Float.valueOf(v))
+                  .collect(Collectors.toList());
+        } catch (NumberFormatException e) {
+          floatConversionError = e;
+          throw e;
+        }
+      }
+      return valuesAsFloat;
     }
 
     @Override
@@ -2588,6 +2802,8 @@ public abstract class Value implements Serializable {
           return Value.pgJsonb(value.getPgJsonb(fieldIndex));
         case BYTES:
           return Value.bytes(value.getBytes(fieldIndex));
+        case FLOAT32:
+          return Value.float32(value.getFloat(fieldIndex));
         case FLOAT64:
           return Value.float64(value.getDouble(fieldIndex));
         case NUMERIC:
@@ -2622,6 +2838,8 @@ public abstract class Value implements Serializable {
               case BYTES:
               case PROTO:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
+              case FLOAT32:
+                return Value.float32Array(value.getFloatList(fieldIndex));
               case FLOAT64:
                 return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:

@@ -537,6 +537,8 @@ public class GrpcResultSetTest {
         Value.int64(null),
         Value.float64(1.0),
         Value.float64(null),
+        Value.float32(1.0f),
+        Value.float32(null),
         Value.bytes(ByteArray.fromBase64("abcd")),
         Value.bytesFromBase64(
             Base64.getEncoder().encodeToString("test".getBytes(StandardCharsets.UTF_8))),
@@ -554,6 +556,8 @@ public class GrpcResultSetTest {
         Value.int64Array((long[]) null),
         Value.float64Array(new double[] {1.1, 2.2, 3.3}),
         Value.float64Array((double[]) null),
+        Value.float32Array(new float[] {1.1f, 2.2f, 3.3f}),
+        Value.float32Array((float[]) null),
         Value.bytesArray(Arrays.asList(ByteArray.fromBase64("abcd"), null)),
         Value.bytesArrayFromBase64(
             Arrays.asList(
@@ -653,6 +657,22 @@ public class GrpcResultSetTest {
     assertThat(resultSet.getDouble(0)).isWithin(0.0).of(Double.MIN_VALUE);
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getDouble(0)).isWithin(0.0).of(Double.MAX_VALUE);
+  }
+
+  @Test
+  public void getFloat() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.float32()))))
+            .addValues(Value.float32(Float.MIN_VALUE).toProto())
+            .addValues(Value.float32(Float.MAX_VALUE).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getFloat(0)).isWithin(0.0f).of(Float.MIN_VALUE);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getFloat(0)).isWithin(0.0f).of(Float.MAX_VALUE);
   }
 
   @Test
@@ -874,6 +894,25 @@ public class GrpcResultSetTest {
     assertThat(resultSet.getDoubleArray(0))
         .usingTolerance(0.0)
         .containsExactly(doubleArray)
+        .inOrder();
+  }
+
+  @Test
+  public void getFloatArray() {
+    float[] floatArray = {Float.MAX_VALUE, Float.MIN_VALUE, 111, 333, 444, 0, -1, -2234};
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.float32())))))
+            .addValues(Value.float32Array(floatArray).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getFloatArray(0))
+        .usingTolerance(0.0)
+        .containsExactly(floatArray)
         .inOrder();
   }
 

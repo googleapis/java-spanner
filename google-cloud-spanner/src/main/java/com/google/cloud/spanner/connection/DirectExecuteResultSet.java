@@ -181,6 +181,12 @@ class DirectExecuteResultSet implements ProtobufResultSet {
   }
 
   @Override
+  public float getFloat(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloat(columnIndex);
+  }
+
+  @Override
   public double getDouble(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDouble(columnIndex);
@@ -196,6 +202,12 @@ class DirectExecuteResultSet implements ProtobufResultSet {
   public BigDecimal getBigDecimal(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getBigDecimal(columnIndex);
+  }
+
+  @Override
+  public float getFloat(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloat(columnName);
   }
 
   @Override
@@ -334,6 +346,30 @@ class DirectExecuteResultSet implements ProtobufResultSet {
   public List<Long> getLongList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getLongList(columnName);
+  }
+
+  @Override
+  public float[] getFloatArray(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatArray(columnIndex);
+  }
+
+  @Override
+  public float[] getFloatArray(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatArray(columnName);
+  }
+
+  @Override
+  public List<Float> getFloatList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatList(columnIndex);
+  }
+
+  @Override
+  public List<Float> getFloatList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatList(columnName);
   }
 
   @Override

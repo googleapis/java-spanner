@@ -126,6 +126,18 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public float getFloat(int columnIndex) {
+    checkValidState();
+    return delegate.get().getFloat(columnIndex);
+  }
+
+  @Override
+  public float getFloat(String columnName) {
+    checkValidState();
+    return delegate.get().getFloat(columnName);
+  }
+
+  @Override
   public double getDouble(int columnIndex) {
     checkValidState();
     return delegate.get().getDouble(columnIndex);
@@ -265,6 +277,30 @@ public class ForwardingStructReader implements StructReader {
   public List<Long> getLongList(String columnName) {
     checkValidState();
     return delegate.get().getLongList(columnName);
+  }
+
+  @Override
+  public float[] getFloatArray(int columnIndex) {
+    checkValidState();
+    return delegate.get().getFloatArray(columnIndex);
+  }
+
+  @Override
+  public float[] getFloatArray(String columnName) {
+    checkValidState();
+    return delegate.get().getFloatArray(columnName);
+  }
+
+  @Override
+  public List<Float> getFloatList(int columnIndex) {
+    checkValidState();
+    return delegate.get().getFloatList(columnIndex);
+  }
+
+  @Override
+  public List<Float> getFloatList(String columnName) {
+    checkValidState();
+    return delegate.get().getFloatList(columnName);
   }
 
   @Override

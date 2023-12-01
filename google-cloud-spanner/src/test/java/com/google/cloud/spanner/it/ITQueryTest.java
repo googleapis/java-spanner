@@ -255,6 +255,21 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindFloat32() {
+    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0f), Type.float32());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloat(0)).isWithin(0.0f).of(2.0f);
+  }
+
+  @Test
+  public void bindFloat32Null() {
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").to((Float) null), Type.float32());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
   public void bindFloat64() {
     Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0), Type.float64());
     assertThat(row.isNull(0)).isFalse();
@@ -494,6 +509,51 @@ public class ITQueryTest {
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toInt64Array((long[]) null),
             Type.array(Type.int64()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  @Ignore
+  // Fails due to backend issues. Should be resolved soon.
+  public void bindFloat32Array() {
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toFloat32Array(
+                    asList(
+                        null,
+                        1.0f,
+                        2.0f,
+                        Float.NEGATIVE_INFINITY,
+                        Float.POSITIVE_INFINITY,
+                        Float.NaN)),
+            Type.array(Type.float32()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloatList(0))
+        .containsExactly(
+            null, 1.0f, 2.0f, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
+        .inOrder();
+  }
+
+  @Test
+  public void bindFloat32ArrayEmpty() {
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toFloat32Array(Collections.emptyList()),
+            Type.array(Type.float32()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloatList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindFloat32ArrayNull() {
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toFloat32Array((float[]) null),
+            Type.array(Type.float32()));
     assertThat(row.isNull(0)).isTrue();
   }
 

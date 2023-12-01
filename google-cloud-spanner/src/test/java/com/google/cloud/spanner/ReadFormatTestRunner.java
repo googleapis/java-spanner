@@ -170,6 +170,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
           case INT64:
             assertThat(actualRow.getLong(i)).isEqualTo(expectedRow.getLong(i));
             break;
+          case FLOAT32:
+            assertThat(actualRow.getFloat(i)).isEqualTo(expectedRow.getFloat(i));
+            break;
           case FLOAT64:
             assertThat(actualRow.getDouble(i)).isEqualTo(expectedRow.getDouble(i));
             break;
@@ -207,6 +210,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
           break;
         case INT64:
           rawList = actualRow.getLongList(index);
+          break;
+        case FLOAT32:
+          rawList = actualRow.getFloatList(index);
           break;
         case FLOAT64:
           rawList = actualRow.getDoubleList(index);

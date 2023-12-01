@@ -211,12 +211,64 @@ public class MutationTest {
         Mutation.delete("T1", KeySet.singleKey(Key.of("k"))), Mutation.delete("T1", Key.of("k")));
 
     // Test NaNs
+    // tester.addEqualityGroup(
+    //   // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    // // DO NOT SUBMIT
+    //   Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build(),
+    //     Mutation.newInsertBuilder("T1").set("C").to(Value.float32(Float.NaN)).build());
     tester.addEqualityGroup(
         Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
         Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Double.NaN)).build(),
-        Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build(),
         Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Float.NaN)).build());
 
+    // Test NaN arrays
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1").set("C").toFloat32Array(new float[] {Float.NaN}).build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat32Array(new float[] {Float.NaN}, 0, 1)
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat32Array(Collections.singletonList(Float.NaN))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float32Array(new float[] {Float.NaN}))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float32Array(new float[] {Float.NaN}, 0, 1))
+            .build(),
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .to(Value.float32Array(Collections.singletonList(Float.NaN)))
+            .build());
     tester.addEqualityGroup(
         Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Double.NaN}).build(),
         Mutation.newInsertBuilder("T1").set("C").toFloat64Array(new double[] {Float.NaN}).build(),
@@ -269,6 +321,11 @@ public class MutationTest {
         Mutation.newInsertBuilder("T1")
             .set("C")
             .toFloat64Array(Arrays.asList(null, (double) Float.NaN))
+            .build());
+    tester.addEqualityGroup(
+        Mutation.newInsertBuilder("T1")
+            .set("C")
+            .toFloat32Array(Arrays.asList(null, Float.NaN))
             .build());
 
     tester.testEquals();
@@ -523,11 +580,17 @@ public class MutationTest {
         .to((Long) null)
         .set("intValue")
         .to(Value.int64(1L))
-        .set("float")
+        .set("float32")
+        .to(42.1f)
+        .set("float32Null")
+        .to((Float) null)
+        .set("float32Value")
+        .to(Value.float32(10f))
+        .set("float64")
         .to(42.1)
-        .set("floatNull")
+        .set("float64Null")
         .to((Double) null)
-        .set("floatValue")
+        .set("float64Value")
         .to(Value.float64(10D))
         .set("string")
         .to("str")
@@ -583,11 +646,17 @@ public class MutationTest {
         .toInt64Array((long[]) null)
         .set("intArrValue")
         .to(Value.int64Array(ImmutableList.of(1L, 2L)))
-        .set("floatArr")
+        .set("float32Arr")
+        .toFloat32Array(new float[] {1.1f, 2.2f, 3.3f})
+        .set("float32ArrNull")
+        .toFloat32Array((float[]) null)
+        .set("float32ArrValue")
+        .to(Value.float32Array(ImmutableList.of(10.1F, 10.2F, 10.3F)))
+        .set("float64Arr")
         .toFloat64Array(new double[] {1.1, 2.2, 3.3})
-        .set("floatArrNull")
+        .set("float64ArrNull")
         .toFloat64Array((double[]) null)
-        .set("floatArrValue")
+        .set("float64ArrValue")
         .to(Value.float64Array(ImmutableList.of(10.1D, 10.2D, 10.3D)))
         .set("stringArr")
         .toStringArray(ImmutableList.of("one", "two"))

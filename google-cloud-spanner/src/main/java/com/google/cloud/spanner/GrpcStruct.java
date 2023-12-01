@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.AbstractResultSet.throwNotNull;
+import static com.google.cloud.spanner.AbstractResultSet.valueProtoToFloat32;
 import static com.google.cloud.spanner.AbstractResultSet.valueProtoToFloat64;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -24,6 +25,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbstractResultSet.Float32Array;
 import com.google.cloud.spanner.AbstractResultSet.Float64Array;
 import com.google.cloud.spanner.AbstractResultSet.Int64Array;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
@@ -82,6 +84,9 @@ class GrpcStruct extends Struct implements Serializable {
         case FLOAT64:
           builder.set(fieldName).to((Double) value);
           break;
+        case FLOAT32:
+          builder.set(fieldName).to((Float) value);
+          break;
         case NUMERIC:
           builder.set(fieldName).to((BigDecimal) value);
           break;
@@ -133,6 +138,9 @@ class GrpcStruct extends Struct implements Serializable {
               break;
             case FLOAT64:
               builder.set(fieldName).toFloat64Array((Iterable<Double>) value);
+              break;
+            case FLOAT32:
+              builder.set(fieldName).toFloat32Array((Iterable<Float>) value);
               break;
             case NUMERIC:
               builder.set(fieldName).toNumericArray((Iterable<BigDecimal>) value);
@@ -258,6 +266,8 @@ class GrpcStruct extends Struct implements Serializable {
         return Long.parseLong(proto.getStringValue());
       case FLOAT64:
         return valueProtoToFloat64(proto);
+      case FLOAT32:
+        return valueProtoToFloat32(proto);
       case NUMERIC:
         checkType(fieldType, proto, KindCase.STRING_VALUE);
         return new BigDecimal(proto.getStringValue());
@@ -309,11 +319,13 @@ class GrpcStruct extends Struct implements Serializable {
     switch (elementType.getCode()) {
       case INT64:
       case ENUM:
-        // For int64/float64/enum types, use custom containers.  These avoid wrapper object
-        // creation for non-null arrays.
+        // For int64/float64/float32/enum types, use custom containers.
+        // These avoid wrapper object creation for non-null arrays.
         return new Int64Array(listValue);
       case FLOAT64:
         return new Float64Array(listValue);
+      case FLOAT32:
+        return new Float32Array(listValue);
       case BOOL:
       case NUMERIC:
       case PG_NUMERIC:
@@ -415,6 +427,13 @@ class GrpcStruct extends Struct implements Serializable {
     ensureDecoded(columnIndex);
     return (Double) rowData.get(columnIndex);
   }
+
+  @Override
+  protected float getFloatInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
+    return (Float) rowData.get(columnIndex);
+  }
+
 
   @Override
   protected BigDecimal getBigDecimalInternal(int columnIndex) {
@@ -535,6 +554,8 @@ class GrpcStruct extends Struct implements Serializable {
         return Value.pgNumeric(isNull ? null : getStringInternal(columnIndex));
       case FLOAT64:
         return Value.float64(isNull ? null : getDoubleInternal(columnIndex));
+      case FLOAT32:
+        return Value.float32(isNull ? null : getFloatInternal(columnIndex));
       case STRING:
         return Value.string(isNull ? null : getStringInternal(columnIndex));
       case JSON:
@@ -568,6 +589,8 @@ class GrpcStruct extends Struct implements Serializable {
             return Value.pgNumericArray(isNull ? null : getStringListInternal(columnIndex));
           case FLOAT64:
             return Value.float64Array(isNull ? null : getDoubleListInternal(columnIndex));
+          case FLOAT32:
+            return Value.float32Array(isNull ? null : getFloatListInternal(columnIndex));
           case STRING:
             return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
           case JSON:
@@ -648,6 +671,18 @@ class GrpcStruct extends Struct implements Serializable {
   protected Float64Array getDoubleListInternal(int columnIndex) {
     ensureDecoded(columnIndex);
     return (Float64Array) rowData.get(columnIndex);
+  }
+
+  @Override
+  protected float[] getFloatArrayInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
+    return getFloatListInternal(columnIndex).toPrimitiveArray(columnIndex);
+  }
+
+  @Override
+  protected Float32Array getFloatListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
+    return (Float32Array) rowData.get(columnIndex);
   }
 
   @Override

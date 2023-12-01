@@ -81,6 +81,16 @@ public abstract class ValueBinder<R> {
     return handle(Value.int64(value));
   }
 
+  /** Binds to {@code Value.float32(value)} */
+  public R to(float value) {
+    return handle(Value.float32(value));
+  }
+
+  /** Binds to {@code Value.float32(value)} */
+  public R to(@Nullable Float value) {
+    return handle(Value.float32(value));
+  }
+
   /** Binds to {@code Value.float64(value)} */
   public R to(double value) {
     return handle(Value.float64(value));
@@ -196,6 +206,21 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.int64Array(values)} */
   public R toInt64Array(@Nullable Iterable<Long> values) {
     return handle(Value.int64Array(values));
+  }
+
+  /** Binds to {@code Value.float32Array(values)} */
+  public R toFloat32Array(@Nullable float[] values) {
+    return handle(Value.float32Array(values));
+  }
+
+  /** Binds to {@code Value.float32Array(values, pos, length)} */
+  public R toFloat32Array(@Nullable float[] values, int pos, int length) {
+    return handle(Value.float32Array(values, pos, length));
+  }
+
+  /** Binds to {@code Value.float32Array(values)} */
+  public R toFloat32Array(@Nullable Iterable<Float> values) {
+    return handle(Value.float32Array(values));
   }
 
   /** Binds to {@code Value.float64Array(values)} */

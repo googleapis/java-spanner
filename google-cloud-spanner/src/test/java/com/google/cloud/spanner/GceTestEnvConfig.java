@@ -60,11 +60,11 @@ public class GceTestEnvConfig implements TestEnvConfig {
   public GceTestEnvConfig() {
     String projectId = System.getProperty(GCE_PROJECT_ID, "");
     String serverUrl = System.getProperty(GCE_SERVER_URL, "");
-    String credentialsFile = System.getProperty(GCE_CREDENTIALS_FILE, "");
+    String credentialsFile = System.getProperty(GCE_CREDENTIALS_FILE, "/usr/local/google/home/arawind/arawind-cloud-devel_span-cloud-testing.json");
     double errorProbability =
         Double.parseDouble(System.getProperty(GCE_STREAM_BROKEN_PROBABILITY, "0.0"));
     checkState(errorProbability <= 1.0);
-    boolean attemptDirectPath = Boolean.getBoolean(ATTEMPT_DIRECT_PATH);
+    boolean attemptDirectPath = false;
     String directPathTestScenario = System.getProperty(DIRECT_PATH_TEST_SCENARIO, "");
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
