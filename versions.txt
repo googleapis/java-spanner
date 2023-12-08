@@ -9,3 +9,5 @@ grpc-google-cloud-spanner-admin-instance-v1:6.55.0:6.55.1-SNAPSHOT
 grpc-google-cloud-spanner-admin-database-v1:6.55.0:6.55.1-SNAPSHOT
 google-cloud-spanner:6.55.0:6.55.1-SNAPSHOT
 google-cloud-spanner-executor:6.55.0:6.55.1-SNAPSHOT
+proto-google-cloud-spanner-executor-v1:6.55.0:6.55.1-SNAPSHOT
+grpc-google-cloud-spanner-executor-v1:6.55.0:6.55.1-SNAPSHOT
