@@ -16,4 +16,24 @@
     <className>com/google/spanner/executor/v1/*OrBuilder</className>
     <method>boolean has*(*)</method>
   </difference>
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/spanner/executor/v1/SpannerExecutorProxyGrpc</className>
+  </difference>
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/spanner/executor/v1/SpannerExecutorProxyGrpc$SpannerExecutorProxyBlockingStub</className>
+  </difference>
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/spanner/executor/v1/SpannerExecutorProxyGrpc$SpannerExecutorProxyFutureStub</className>
+  </difference>
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/spanner/executor/v1/SpannerExecutorProxyGrpc$SpannerExecutorProxyImplBase</className>
+  </difference>
+  <difference>
+    <differenceType>8001</differenceType>
+    <className>com/google/spanner/executor/v1/SpannerExecutorProxyGrpc$SpannerExecutorProxyStub</className>
+  </difference>
 </differences>
