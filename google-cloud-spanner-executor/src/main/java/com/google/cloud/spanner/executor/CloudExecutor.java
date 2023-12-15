@@ -18,10 +18,10 @@ package com.google.cloud.spanner.executor;
 
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.auth.http.HttpTransportFactory;
-import com.google.cloud.spanner.executor.CloudClientExecutor.ExecutionFlowContext;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.executor.CloudClientExecutor.ExecutionFlowContext;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
