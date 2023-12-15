@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.executor.spanner;
+package com.google.cloud.spanner.executor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

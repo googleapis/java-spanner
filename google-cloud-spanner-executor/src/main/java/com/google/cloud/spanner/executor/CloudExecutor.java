@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.google.cloud.executor.spanner;
+package com.google.cloud.spanner.executor;
 
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.auth.http.HttpTransportFactory;
-import com.google.cloud.executor.spanner.CloudClientExecutor.ExecutionFlowContext;
+import com.google.cloud.spanner.executor.CloudClientExecutor.ExecutionFlowContext;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;

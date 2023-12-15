@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.executor.spanner;
+package com.google.cloud.spanner.executor;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
