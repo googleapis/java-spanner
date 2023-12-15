@@ -79,8 +79,8 @@ public interface ListSessionsResponseOrBuilder
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListSessions][google.spanner.v1.Spanner.ListSessions] call to fetch more of the matching
-   * sessions.
+   * [ListSessions][google.spanner.v1.Spanner.ListSessions] call to fetch more
+   * of the matching sessions.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -93,8 +93,8 @@ public interface ListSessionsResponseOrBuilder
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListSessions][google.spanner.v1.Spanner.ListSessions] call to fetch more of the matching
-   * sessions.
+   * [ListSessions][google.spanner.v1.Spanner.ListSessions] call to fetch more
+   * of the matching sessions.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>

@@ -47,6 +47,7 @@ import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -556,6 +557,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -577,6 +579,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
     Assert.assertEquals(request.getQueryOptions(), actualRequest.getQueryOptions());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
@@ -603,6 +606,7 @@ public class SpannerClientTest {
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.executeSql(request);
@@ -636,6 +640,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -667,6 +672,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -768,6 +774,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -788,6 +795,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getResumeToken(), actualRequest.getResumeToken());
     Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
@@ -814,6 +822,7 @@ public class SpannerClientTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.read(request);
@@ -847,6 +856,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -878,6 +888,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
