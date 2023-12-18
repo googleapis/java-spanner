@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,79 +43,6 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new UpdateBackupRequest();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private UpdateBackupRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.spanner.admin.database.v1.Backup.Builder subBuilder = null;
-              if (backup_ != null) {
-                subBuilder = backup_.toBuilder();
-              }
-              backup_ =
-                  input.readMessage(
-                      com.google.spanner.admin.database.v1.Backup.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(backup_);
-                backup_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 18:
-            {
-              com.google.protobuf.FieldMask.Builder subBuilder = null;
-              if (updateMask_ != null) {
-                subBuilder = updateMask_.toBuilder();
-              }
-              updateMask_ =
-                  input.readMessage(com.google.protobuf.FieldMask.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(updateMask_);
-                updateMask_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -193,7 +120,9 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.BackupOrBuilder getBackupOrBuilder() {
-    return getBackup();
+    return backup_ == null
+        ? com.google.spanner.admin.database.v1.Backup.getDefaultInstance()
+        : backup_;
   }
 
   public static final int UPDATE_MASK_FIELD_NUMBER = 2;
@@ -254,7 +183,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
    */
   @java.lang.Override
   public com.google.protobuf.FieldMaskOrBuilder getUpdateMaskOrBuilder() {
-    return getUpdateMask();
+    return updateMask_ == null ? com.google.protobuf.FieldMask.getDefaultInstance() : updateMask_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -277,7 +206,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
     if (updateMask_ != null) {
       output.writeMessage(2, getUpdateMask());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -292,7 +221,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
     if (updateMask_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getUpdateMask());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -316,7 +245,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
     if (hasUpdateMask()) {
       if (!getUpdateMask().equals(other.getUpdateMask())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -335,7 +264,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
       hash = (37 * hash) + UPDATE_MASK_FIELD_NUMBER;
       hash = (53 * hash) + getUpdateMask().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -465,32 +394,24 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
     }
 
     // Construct using com.google.spanner.admin.database.v1.UpdateBackupRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (backupBuilder_ == null) {
-        backup_ = null;
-      } else {
-        backup_ = null;
+      bitField0_ = 0;
+      backup_ = null;
+      if (backupBuilder_ != null) {
+        backupBuilder_.dispose();
         backupBuilder_ = null;
       }
-      if (updateMaskBuilder_ == null) {
-        updateMask_ = null;
-      } else {
-        updateMask_ = null;
+      updateMask_ = null;
+      if (updateMaskBuilder_ != null) {
+        updateMaskBuilder_.dispose();
         updateMaskBuilder_ = null;
       }
       return this;
@@ -520,18 +441,21 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
     public com.google.spanner.admin.database.v1.UpdateBackupRequest buildPartial() {
       com.google.spanner.admin.database.v1.UpdateBackupRequest result =
           new com.google.spanner.admin.database.v1.UpdateBackupRequest(this);
-      if (backupBuilder_ == null) {
-        result.backup_ = backup_;
-      } else {
-        result.backup_ = backupBuilder_.build();
-      }
-      if (updateMaskBuilder_ == null) {
-        result.updateMask_ = updateMask_;
-      } else {
-        result.updateMask_ = updateMaskBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.UpdateBackupRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.backup_ = backupBuilder_ == null ? backup_ : backupBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.updateMask_ = updateMaskBuilder_ == null ? updateMask_ : updateMaskBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -586,7 +510,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
       if (other.hasUpdateMask()) {
         mergeUpdateMask(other.getUpdateMask());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -601,20 +525,47 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.UpdateBackupRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getBackupFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getUpdateMaskFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.database.v1.UpdateBackupRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.spanner.admin.database.v1.Backup backup_;
     private com.google.protobuf.SingleFieldBuilderV3<
@@ -639,7 +590,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      * @return Whether the backup field is set.
      */
     public boolean hasBackup() {
-      return backupBuilder_ != null || backup_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -686,11 +637,11 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
           throw new NullPointerException();
         }
         backup_ = value;
-        onChanged();
       } else {
         backupBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -710,11 +661,11 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
     public Builder setBackup(com.google.spanner.admin.database.v1.Backup.Builder builderForValue) {
       if (backupBuilder_ == null) {
         backup_ = builderForValue.build();
-        onChanged();
       } else {
         backupBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -733,19 +684,18 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      */
     public Builder mergeBackup(com.google.spanner.admin.database.v1.Backup value) {
       if (backupBuilder_ == null) {
-        if (backup_ != null) {
-          backup_ =
-              com.google.spanner.admin.database.v1.Backup.newBuilder(backup_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && backup_ != null
+            && backup_ != com.google.spanner.admin.database.v1.Backup.getDefaultInstance()) {
+          getBackupBuilder().mergeFrom(value);
         } else {
           backup_ = value;
         }
-        onChanged();
       } else {
         backupBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -763,14 +713,13 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      * </code>
      */
     public Builder clearBackup() {
-      if (backupBuilder_ == null) {
-        backup_ = null;
-        onChanged();
-      } else {
-        backup_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      backup_ = null;
+      if (backupBuilder_ != null) {
+        backupBuilder_.dispose();
         backupBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -788,7 +737,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      * </code>
      */
     public com.google.spanner.admin.database.v1.Backup.Builder getBackupBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getBackupFieldBuilder().getBuilder();
     }
@@ -869,7 +818,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      * @return Whether the updateMask field is set.
      */
     public boolean hasUpdateMask() {
-      return updateMaskBuilder_ != null || updateMask_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -916,11 +865,11 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
           throw new NullPointerException();
         }
         updateMask_ = value;
-        onChanged();
       } else {
         updateMaskBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -940,11 +889,11 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
     public Builder setUpdateMask(com.google.protobuf.FieldMask.Builder builderForValue) {
       if (updateMaskBuilder_ == null) {
         updateMask_ = builderForValue.build();
-        onChanged();
       } else {
         updateMaskBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -963,17 +912,18 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      */
     public Builder mergeUpdateMask(com.google.protobuf.FieldMask value) {
       if (updateMaskBuilder_ == null) {
-        if (updateMask_ != null) {
-          updateMask_ =
-              com.google.protobuf.FieldMask.newBuilder(updateMask_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && updateMask_ != null
+            && updateMask_ != com.google.protobuf.FieldMask.getDefaultInstance()) {
+          getUpdateMaskBuilder().mergeFrom(value);
         } else {
           updateMask_ = value;
         }
-        onChanged();
       } else {
         updateMaskBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -991,14 +941,13 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      * </code>
      */
     public Builder clearUpdateMask() {
-      if (updateMaskBuilder_ == null) {
-        updateMask_ = null;
-        onChanged();
-      } else {
-        updateMask_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      updateMask_ = null;
+      if (updateMaskBuilder_ != null) {
+        updateMaskBuilder_.dispose();
         updateMaskBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1016,7 +965,7 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
      * </code>
      */
     public com.google.protobuf.FieldMask.Builder getUpdateMaskBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getUpdateMaskFieldBuilder().getBuilder();
     }
@@ -1106,7 +1055,18 @@ public final class UpdateBackupRequest extends com.google.protobuf.GeneratedMess
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UpdateBackupRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

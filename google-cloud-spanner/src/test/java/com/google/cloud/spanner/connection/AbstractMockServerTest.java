@@ -37,6 +37,7 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
@@ -96,8 +97,25 @@ public abstract class AbstractMockServerTest {
                   .build())
           .setMetadata(SELECT_COUNT_METADATA)
           .build();
+  public static final com.google.spanner.v1.ResultSet UPDATE_RETURNING_RESULTSET =
+      com.google.spanner.v1.ResultSet.newBuilder()
+          .setStats(ResultSetStats.newBuilder().setRowCountExact(1))
+          .setMetadata(
+              ResultSetMetadata.newBuilder()
+                  .setRowType(
+                      StructType.newBuilder()
+                          .addFields(
+                              Field.newBuilder()
+                                  .setName("col")
+                                  .setType(Type.newBuilder().setCodeValue(TypeCode.INT64_VALUE))
+                                  .build())))
+          .build();
   public static final Statement INSERT_STATEMENT =
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')");
+  public static final Statement INSERT_RETURNING_STATEMENT =
+      Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted') THEN RETURN *");
+  public static final Statement PG_INSERT_RETURNING_STATEMENT =
+      Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted') RETURNING *");
   public static final long UPDATE_COUNT = 1L;
 
   public static final int RANDOM_RESULT_SET_ROW_COUNT = 100;
@@ -150,6 +168,10 @@ public abstract class AbstractMockServerTest {
         StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
     mockSpanner.putStatementResult(StatementResult.update(INSERT_STATEMENT, UPDATE_COUNT));
     mockSpanner.putStatementResult(
+        StatementResult.updateReturning(INSERT_RETURNING_STATEMENT, UPDATE_RETURNING_RESULTSET));
+    mockSpanner.putStatementResult(
+        StatementResult.updateReturning(PG_INSERT_RETURNING_STATEMENT, UPDATE_RETURNING_RESULTSET));
+    mockSpanner.putStatementResult(
         StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
 
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
@@ -201,6 +223,10 @@ public abstract class AbstractMockServerTest {
     return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
+  ITConnection createConnection(String additionalUrlOptions) {
+    return createConnection(Collections.emptyList(), Collections.emptyList(), additionalUrlOptions);
+  }
+
   ITConnection createConnection(
       AbortInterceptor interceptor, TransactionRetryListener transactionRetryListener) {
     return createConnection(
@@ -211,9 +237,16 @@ public abstract class AbstractMockServerTest {
   ITConnection createConnection(
       List<StatementExecutionInterceptor> interceptors,
       List<TransactionRetryListener> transactionRetryListeners) {
+    return createConnection(interceptors, transactionRetryListeners, "");
+  }
+
+  ITConnection createConnection(
+      List<StatementExecutionInterceptor> interceptors,
+      List<TransactionRetryListener> transactionRetryListeners,
+      String additionalUrlOptions) {
     ConnectionOptions.Builder builder =
         ConnectionOptions.newBuilder()
-            .setUri(getBaseUrl())
+            .setUri(getBaseUrl() + additionalUrlOptions)
             .setStatementExecutionInterceptors(interceptors);
     ConnectionOptions options = builder.build();
     ITConnection connection = createITConnection(options);

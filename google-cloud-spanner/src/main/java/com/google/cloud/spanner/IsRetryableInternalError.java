@@ -29,6 +29,8 @@ public class IsRetryableInternalError implements Predicate<Throwable> {
   private static final String EOS_ERROR_MESSAGE =
       "Received unexpected EOS on DATA frame from server";
 
+  private static final String RST_STREAM_ERROR_MESSAGE = "stream terminated by RST_STREAM";
+
   @Override
   public boolean apply(Throwable cause) {
     if (isInternalError(cause)) {
@@ -37,6 +39,8 @@ public class IsRetryableInternalError implements Predicate<Throwable> {
       } else if (cause.getMessage().contains(CONNECTION_CLOSED_ERROR_MESSAGE)) {
         return true;
       } else if (cause.getMessage().contains(EOS_ERROR_MESSAGE)) {
+        return true;
+      } else if (cause.getMessage().contains(RST_STREAM_ERROR_MESSAGE)) {
         return true;
       }
     }

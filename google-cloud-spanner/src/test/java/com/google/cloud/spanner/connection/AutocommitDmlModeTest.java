@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Spanner;
@@ -70,7 +71,7 @@ public class AutocommitDmlModeTest {
     when(txManager.begin()).thenReturn(txContext);
     when(dbClient.transactionManager()).thenReturn(txManager);
 
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
+    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, mock(BatchClient.class));
   }
 
   @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.admin.instance.v1.stub;
 
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
@@ -29,6 +30,9 @@ import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.grpc.ProtoOperationTransformers;
+import com.google.api.gax.httpjson.GaxHttpJsonProperties;
+import com.google.api.gax.httpjson.HttpJsonTransportChannel;
+import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
@@ -56,17 +60,24 @@ import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
@@ -92,6 +103,11 @@ import org.threeten.bp.Duration;
  * <p>For example, to set the total timeout of getInstanceConfig to 30 seconds:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * InstanceAdminStubSettings.Builder instanceAdminSettingsBuilder =
  *     InstanceAdminStubSettings.newBuilder();
  * instanceAdminSettingsBuilder
@@ -120,6 +136,22 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       listInstanceConfigsSettings;
   private final UnaryCallSettings<GetInstanceConfigRequest, InstanceConfig>
       getInstanceConfigSettings;
+  private final UnaryCallSettings<CreateInstanceConfigRequest, Operation>
+      createInstanceConfigSettings;
+  private final OperationCallSettings<
+          CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigOperationSettings;
+  private final UnaryCallSettings<UpdateInstanceConfigRequest, Operation>
+      updateInstanceConfigSettings;
+  private final OperationCallSettings<
+          UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigOperationSettings;
+  private final UnaryCallSettings<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigSettings;
+  private final PagedCallSettings<
+          ListInstanceConfigOperationsRequest,
+          ListInstanceConfigOperationsResponse,
+          ListInstanceConfigOperationsPagedResponse>
+      listInstanceConfigOperationsSettings;
   private final PagedCallSettings<
           ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
       listInstancesSettings;
@@ -173,6 +205,53 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               return payload.getInstanceConfigsList() == null
                   ? ImmutableList.<InstanceConfig>of()
                   : payload.getInstanceConfigsList();
+            }
+          };
+
+  private static final PagedListDescriptor<
+          ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse, Operation>
+      LIST_INSTANCE_CONFIG_OPERATIONS_PAGE_STR_DESC =
+          new PagedListDescriptor<
+              ListInstanceConfigOperationsRequest,
+              ListInstanceConfigOperationsResponse,
+              Operation>() {
+            @Override
+            public String emptyToken() {
+              return "";
+            }
+
+            @Override
+            public ListInstanceConfigOperationsRequest injectToken(
+                ListInstanceConfigOperationsRequest payload, String token) {
+              return ListInstanceConfigOperationsRequest.newBuilder(payload)
+                  .setPageToken(token)
+                  .build();
+            }
+
+            @Override
+            public ListInstanceConfigOperationsRequest injectPageSize(
+                ListInstanceConfigOperationsRequest payload, int pageSize) {
+              return ListInstanceConfigOperationsRequest.newBuilder(payload)
+                  .setPageSize(pageSize)
+                  .build();
+            }
+
+            @Override
+            public Integer extractPageSize(ListInstanceConfigOperationsRequest payload) {
+              return payload.getPageSize();
+            }
+
+            @Override
+            public String extractNextToken(ListInstanceConfigOperationsResponse payload) {
+              return payload.getNextPageToken();
+            }
+
+            @Override
+            public Iterable<Operation> extractResources(
+                ListInstanceConfigOperationsResponse payload) {
+              return payload.getOperationsList() == null
+                  ? ImmutableList.<Operation>of()
+                  : payload.getOperationsList();
             }
           };
 
@@ -234,6 +313,38 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           };
 
   private static final PagedListResponseFactory<
+          ListInstanceConfigOperationsRequest,
+          ListInstanceConfigOperationsResponse,
+          ListInstanceConfigOperationsPagedResponse>
+      LIST_INSTANCE_CONFIG_OPERATIONS_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListInstanceConfigOperationsRequest,
+              ListInstanceConfigOperationsResponse,
+              ListInstanceConfigOperationsPagedResponse>() {
+            @Override
+            public ApiFuture<ListInstanceConfigOperationsPagedResponse> getFuturePagedResponse(
+                UnaryCallable<
+                        ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
+                    callable,
+                ListInstanceConfigOperationsRequest request,
+                ApiCallContext context,
+                ApiFuture<ListInstanceConfigOperationsResponse> futureResponse) {
+              PageContext<
+                      ListInstanceConfigOperationsRequest,
+                      ListInstanceConfigOperationsResponse,
+                      Operation>
+                  pageContext =
+                      PageContext.create(
+                          callable,
+                          LIST_INSTANCE_CONFIG_OPERATIONS_PAGE_STR_DESC,
+                          request,
+                          context);
+              return ListInstanceConfigOperationsPagedResponse.createAsync(
+                  pageContext, futureResponse);
+            }
+          };
+
+  private static final PagedListResponseFactory<
           ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
       LIST_INSTANCES_PAGE_STR_FACT =
           new PagedListResponseFactory<
@@ -260,6 +371,44 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   /** Returns the object with the settings used for calls to getInstanceConfig. */
   public UnaryCallSettings<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigSettings() {
     return getInstanceConfigSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createInstanceConfig. */
+  public UnaryCallSettings<CreateInstanceConfigRequest, Operation> createInstanceConfigSettings() {
+    return createInstanceConfigSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createInstanceConfig. */
+  public OperationCallSettings<
+          CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigOperationSettings() {
+    return createInstanceConfigOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateInstanceConfig. */
+  public UnaryCallSettings<UpdateInstanceConfigRequest, Operation> updateInstanceConfigSettings() {
+    return updateInstanceConfigSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateInstanceConfig. */
+  public OperationCallSettings<
+          UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigOperationSettings() {
+    return updateInstanceConfigOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to deleteInstanceConfig. */
+  public UnaryCallSettings<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigSettings() {
+    return deleteInstanceConfigSettings;
+  }
+
+  /** Returns the object with the settings used for calls to listInstanceConfigOperations. */
+  public PagedCallSettings<
+          ListInstanceConfigOperationsRequest,
+          ListInstanceConfigOperationsResponse,
+          ListInstanceConfigOperationsPagedResponse>
+      listInstanceConfigOperationsSettings() {
+    return listInstanceConfigOperationsSettings;
   }
 
   /** Returns the object with the settings used for calls to listInstances. */
@@ -316,12 +465,16 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     return testIamPermissionsSettings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public InstanceAdminStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
         .equals(GrpcTransportChannel.getGrpcTransportName())) {
       return GrpcInstanceAdminStub.create(this);
+    }
+    if (getTransportChannelProvider()
+        .getTransportName()
+        .equals(HttpJsonTransportChannel.getHttpJsonTransportName())) {
+      return HttpJsonInstanceAdminStub.create(this);
     }
     throw new UnsupportedOperationException(
         String.format(
@@ -355,10 +508,17 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
         .setUseJwtAccessWithScope(true);
   }
 
-  /** Returns a builder for the default ChannelProvider for this service. */
+  /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
     return InstantiatingGrpcChannelProvider.newBuilder()
         .setMaxInboundMessageSize(Integer.MAX_VALUE);
+  }
+
+  /** Returns a builder for the default REST ChannelProvider for this service. */
+  @BetaApi
+  public static InstantiatingHttpJsonChannelProvider.Builder
+      defaultHttpJsonTransportProviderBuilder() {
+    return InstantiatingHttpJsonChannelProvider.newBuilder();
   }
 
   public static TransportChannelProvider defaultTransportChannelProvider() {
@@ -366,7 +526,7 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   }
 
   @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
-  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
+  public static ApiClientHeaderProvider.Builder defaultGrpcApiClientHeaderProviderBuilder() {
     return ApiClientHeaderProvider.newBuilder()
         .setGeneratedLibToken(
             "gapic", GaxProperties.getLibraryVersion(InstanceAdminStubSettings.class))
@@ -374,9 +534,28 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
             GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion());
   }
 
-  /** Returns a new builder for this class. */
+  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
+  public static ApiClientHeaderProvider.Builder defaultHttpJsonApiClientHeaderProviderBuilder() {
+    return ApiClientHeaderProvider.newBuilder()
+        .setGeneratedLibToken(
+            "gapic", GaxProperties.getLibraryVersion(InstanceAdminStubSettings.class))
+        .setTransportToken(
+            GaxHttpJsonProperties.getHttpJsonTokenName(),
+            GaxHttpJsonProperties.getHttpJsonVersion());
+  }
+
+  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
+    return InstanceAdminStubSettings.defaultGrpcApiClientHeaderProviderBuilder();
+  }
+
+  /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
     return Builder.createDefault();
+  }
+
+  /** Returns a new REST builder for this class. */
+  public static Builder newHttpJsonBuilder() {
+    return Builder.createHttpJsonDefault();
   }
 
   /** Returns a new builder for this class. */
@@ -394,6 +573,15 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
 
     listInstanceConfigsSettings = settingsBuilder.listInstanceConfigsSettings().build();
     getInstanceConfigSettings = settingsBuilder.getInstanceConfigSettings().build();
+    createInstanceConfigSettings = settingsBuilder.createInstanceConfigSettings().build();
+    createInstanceConfigOperationSettings =
+        settingsBuilder.createInstanceConfigOperationSettings().build();
+    updateInstanceConfigSettings = settingsBuilder.updateInstanceConfigSettings().build();
+    updateInstanceConfigOperationSettings =
+        settingsBuilder.updateInstanceConfigOperationSettings().build();
+    deleteInstanceConfigSettings = settingsBuilder.deleteInstanceConfigSettings().build();
+    listInstanceConfigOperationsSettings =
+        settingsBuilder.listInstanceConfigOperationsSettings().build();
     listInstancesSettings = settingsBuilder.listInstancesSettings().build();
     getInstanceSettings = settingsBuilder.getInstanceSettings().build();
     createInstanceSettings = settingsBuilder.createInstanceSettings().build();
@@ -416,6 +604,23 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
         listInstanceConfigsSettings;
     private final UnaryCallSettings.Builder<GetInstanceConfigRequest, InstanceConfig>
         getInstanceConfigSettings;
+    private final UnaryCallSettings.Builder<CreateInstanceConfigRequest, Operation>
+        createInstanceConfigSettings;
+    private final OperationCallSettings.Builder<
+            CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+        createInstanceConfigOperationSettings;
+    private final UnaryCallSettings.Builder<UpdateInstanceConfigRequest, Operation>
+        updateInstanceConfigSettings;
+    private final OperationCallSettings.Builder<
+            UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+        updateInstanceConfigOperationSettings;
+    private final UnaryCallSettings.Builder<DeleteInstanceConfigRequest, Empty>
+        deleteInstanceConfigSettings;
+    private final PagedCallSettings.Builder<
+            ListInstanceConfigOperationsRequest,
+            ListInstanceConfigOperationsResponse,
+            ListInstanceConfigOperationsPagedResponse>
+        listInstanceConfigOperationsSettings;
     private final PagedCallSettings.Builder<
             ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
         listInstancesSettings;
@@ -446,6 +651,7 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           ImmutableSet.copyOf(
               Lists.<StatusCode.Code>newArrayList(
                   StatusCode.Code.UNAVAILABLE, StatusCode.Code.DEADLINE_EXCEEDED)));
+      definitions.put("no_retry_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       definitions.put(
           "no_retry_2_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       definitions.put(
@@ -474,6 +680,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               .setTotalTimeout(Duration.ofMillis(3600000L))
               .build();
       definitions.put("retry_policy_0_params", settings);
+      settings = RetrySettings.newBuilder().setRpcTimeoutMultiplier(1.0).build();
+      definitions.put("no_retry_params", settings);
       settings =
           RetrySettings.newBuilder()
               .setInitialRpcTimeout(Duration.ofMillis(3600000L))
@@ -514,6 +722,13 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       listInstanceConfigsSettings =
           PagedCallSettings.newBuilder(LIST_INSTANCE_CONFIGS_PAGE_STR_FACT);
       getInstanceConfigSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      createInstanceConfigSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      createInstanceConfigOperationSettings = OperationCallSettings.newBuilder();
+      updateInstanceConfigSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      updateInstanceConfigOperationSettings = OperationCallSettings.newBuilder();
+      deleteInstanceConfigSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      listInstanceConfigOperationsSettings =
+          PagedCallSettings.newBuilder(LIST_INSTANCE_CONFIG_OPERATIONS_PAGE_STR_FACT);
       listInstancesSettings = PagedCallSettings.newBuilder(LIST_INSTANCES_PAGE_STR_FACT);
       getInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       createInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
@@ -529,6 +744,10 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
               listInstanceConfigsSettings,
               getInstanceConfigSettings,
+              createInstanceConfigSettings,
+              updateInstanceConfigSettings,
+              deleteInstanceConfigSettings,
+              listInstanceConfigOperationsSettings,
               listInstancesSettings,
               getInstanceSettings,
               createInstanceSettings,
@@ -545,6 +764,15 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
 
       listInstanceConfigsSettings = settings.listInstanceConfigsSettings.toBuilder();
       getInstanceConfigSettings = settings.getInstanceConfigSettings.toBuilder();
+      createInstanceConfigSettings = settings.createInstanceConfigSettings.toBuilder();
+      createInstanceConfigOperationSettings =
+          settings.createInstanceConfigOperationSettings.toBuilder();
+      updateInstanceConfigSettings = settings.updateInstanceConfigSettings.toBuilder();
+      updateInstanceConfigOperationSettings =
+          settings.updateInstanceConfigOperationSettings.toBuilder();
+      deleteInstanceConfigSettings = settings.deleteInstanceConfigSettings.toBuilder();
+      listInstanceConfigOperationsSettings =
+          settings.listInstanceConfigOperationsSettings.toBuilder();
       listInstancesSettings = settings.listInstancesSettings.toBuilder();
       getInstanceSettings = settings.getInstanceSettings.toBuilder();
       createInstanceSettings = settings.createInstanceSettings.toBuilder();
@@ -560,6 +788,10 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
               listInstanceConfigsSettings,
               getInstanceConfigSettings,
+              createInstanceConfigSettings,
+              updateInstanceConfigSettings,
+              deleteInstanceConfigSettings,
+              listInstanceConfigOperationsSettings,
               listInstancesSettings,
               getInstanceSettings,
               createInstanceSettings,
@@ -583,6 +815,19 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       return initDefaults(builder);
     }
 
+    private static Builder createHttpJsonDefault() {
+      Builder builder = new Builder(((ClientContext) null));
+
+      builder.setTransportChannelProvider(defaultHttpJsonTransportProviderBuilder().build());
+      builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
+      builder.setInternalHeaderProvider(defaultHttpJsonApiClientHeaderProviderBuilder().build());
+      builder.setEndpoint(getDefaultEndpoint());
+      builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
+      builder.setSwitchToMtlsEndpointAllowed(true);
+
+      return initDefaults(builder);
+    }
+
     private static Builder initDefaults(Builder builder) {
       builder
           .listInstanceConfigsSettings()
@@ -593,6 +838,26 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           .getInstanceConfigSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
+
+      builder
+          .createInstanceConfigSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .updateInstanceConfigSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .deleteInstanceConfigSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .listInstanceConfigOperationsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
 
       builder
           .listInstancesSettings()
@@ -633,6 +898,56 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           .testIamPermissionsSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_3_params"));
+
+      builder
+          .createInstanceConfigOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateInstanceConfigRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"))
+                  .build())
+          .setResponseTransformer(
+              ProtoOperationTransformers.ResponseTransformer.create(InstanceConfig.class))
+          .setMetadataTransformer(
+              ProtoOperationTransformers.MetadataTransformer.create(
+                  CreateInstanceConfigMetadata.class))
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(5000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelay(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
+                      .setTotalTimeout(Duration.ofMillis(300000L))
+                      .build()));
+
+      builder
+          .updateInstanceConfigOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<UpdateInstanceConfigRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"))
+                  .build())
+          .setResponseTransformer(
+              ProtoOperationTransformers.ResponseTransformer.create(InstanceConfig.class))
+          .setMetadataTransformer(
+              ProtoOperationTransformers.MetadataTransformer.create(
+                  UpdateInstanceConfigMetadata.class))
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(5000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelay(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
+                      .setTotalTimeout(Duration.ofMillis(300000L))
+                      .build()));
 
       builder
           .createInstanceOperationSettings()
@@ -713,6 +1028,51 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     public UnaryCallSettings.Builder<GetInstanceConfigRequest, InstanceConfig>
         getInstanceConfigSettings() {
       return getInstanceConfigSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to createInstanceConfig. */
+    public UnaryCallSettings.Builder<CreateInstanceConfigRequest, Operation>
+        createInstanceConfigSettings() {
+      return createInstanceConfigSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to createInstanceConfig. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<
+            CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+        createInstanceConfigOperationSettings() {
+      return createInstanceConfigOperationSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstanceConfig. */
+    public UnaryCallSettings.Builder<UpdateInstanceConfigRequest, Operation>
+        updateInstanceConfigSettings() {
+      return updateInstanceConfigSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstanceConfig. */
+    @BetaApi(
+        "The surface for use by generated code is not stable yet and may change in the future.")
+    public OperationCallSettings.Builder<
+            UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+        updateInstanceConfigOperationSettings() {
+      return updateInstanceConfigOperationSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to deleteInstanceConfig. */
+    public UnaryCallSettings.Builder<DeleteInstanceConfigRequest, Empty>
+        deleteInstanceConfigSettings() {
+      return deleteInstanceConfigSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to listInstanceConfigOperations. */
+    public PagedCallSettings.Builder<
+            ListInstanceConfigOperationsRequest,
+            ListInstanceConfigOperationsResponse,
+            ListInstanceConfigOperationsPagedResponse>
+        listInstanceConfigOperationsSettings() {
+      return listInstanceConfigOperationsSettings;
     }
 
     /** Returns the builder for the settings used for calls to listInstances. */

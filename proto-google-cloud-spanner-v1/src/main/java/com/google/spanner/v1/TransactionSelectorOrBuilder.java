@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,8 @@ public interface TransactionSelectorOrBuilder
    * <pre>
    * Begin a new transaction and execute this read or SQL query in
    * it. The transaction ID of the new transaction is returned in
-   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+   * which is a [Transaction][google.spanner.v1.Transaction].
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -109,7 +110,8 @@ public interface TransactionSelectorOrBuilder
    * <pre>
    * Begin a new transaction and execute this read or SQL query in
    * it. The transaction ID of the new transaction is returned in
-   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+   * which is a [Transaction][google.spanner.v1.Transaction].
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -123,12 +125,13 @@ public interface TransactionSelectorOrBuilder
    * <pre>
    * Begin a new transaction and execute this read or SQL query in
    * it. The transaction ID of the new transaction is returned in
-   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+   * which is a [Transaction][google.spanner.v1.Transaction].
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
    */
   com.google.spanner.v1.TransactionOptionsOrBuilder getBeginOrBuilder();
 
-  public com.google.spanner.v1.TransactionSelector.SelectorCase getSelectorCase();
+  com.google.spanner.v1.TransactionSelector.SelectorCase getSelectorCase();
 }

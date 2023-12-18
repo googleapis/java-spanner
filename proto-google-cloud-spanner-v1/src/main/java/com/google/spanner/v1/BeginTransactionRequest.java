@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * The request for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
+ * The request for
+ * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.BeginTransactionRequest}
@@ -47,87 +48,6 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     return new BeginTransactionRequest();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private BeginTransactionRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              session_ = s;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
-              if (options_ != null) {
-                subBuilder = options_.toBuilder();
-              }
-              options_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(options_);
-                options_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 26:
-            {
-              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-              if (requestOptions_ != null) {
-                subBuilder = requestOptions_.toBuilder();
-              }
-              requestOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(requestOptions_);
-                requestOptions_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_BeginTransactionRequest_descriptor;
@@ -144,7 +64,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object session_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object session_ = "";
   /**
    *
    *
@@ -247,7 +169,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionOptionsOrBuilder getOptionsOrBuilder() {
-    return getOptions();
+    return options_ == null
+        ? com.google.spanner.v1.TransactionOptions.getDefaultInstance()
+        : options_;
   }
 
   public static final int REQUEST_OPTIONS_FIELD_NUMBER = 3;
@@ -307,7 +231,9 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    */
   @java.lang.Override
   public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
-    return getRequestOptions();
+    return requestOptions_ == null
+        ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+        : requestOptions_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -333,7 +259,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (requestOptions_ != null) {
       output.writeMessage(3, getRequestOptions());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -351,7 +277,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getRequestOptions());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -376,7 +302,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -397,7 +323,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -501,7 +427,8 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * The request for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
+   * The request for
+   * [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.BeginTransactionRequest}
@@ -526,34 +453,25 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     }
 
     // Construct using com.google.spanner.v1.BeginTransactionRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       session_ = "";
-
-      if (optionsBuilder_ == null) {
-        options_ = null;
-      } else {
-        options_ = null;
+      options_ = null;
+      if (optionsBuilder_ != null) {
+        optionsBuilder_.dispose();
         optionsBuilder_ = null;
       }
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-      } else {
-        requestOptions_ = null;
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
       return this;
@@ -583,19 +501,25 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     public com.google.spanner.v1.BeginTransactionRequest buildPartial() {
       com.google.spanner.v1.BeginTransactionRequest result =
           new com.google.spanner.v1.BeginTransactionRequest(this);
-      result.session_ = session_;
-      if (optionsBuilder_ == null) {
-        result.options_ = options_;
-      } else {
-        result.options_ = optionsBuilder_.build();
-      }
-      if (requestOptionsBuilder_ == null) {
-        result.requestOptions_ = requestOptions_;
-      } else {
-        result.requestOptions_ = requestOptionsBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.BeginTransactionRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.session_ = session_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.options_ = optionsBuilder_ == null ? options_ : optionsBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.requestOptions_ =
+            requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -645,6 +569,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       if (other == com.google.spanner.v1.BeginTransactionRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasOptions()) {
@@ -653,7 +578,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -668,19 +593,53 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.BeginTransactionRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                session_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getOptionsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getRequestOptionsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.BeginTransactionRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object session_ = "";
     /**
@@ -749,8 +708,8 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
       if (value == null) {
         throw new NullPointerException();
       }
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -768,8 +727,8 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * @return This builder for chaining.
      */
     public Builder clearSession() {
-
       session_ = getDefaultInstance().getSession();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -792,8 +751,8 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -818,7 +777,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * @return Whether the options field is set.
      */
     public boolean hasOptions() {
-      return optionsBuilder_ != null || options_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -859,11 +818,11 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
           throw new NullPointerException();
         }
         options_ = value;
-        onChanged();
       } else {
         optionsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -880,11 +839,11 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     public Builder setOptions(com.google.spanner.v1.TransactionOptions.Builder builderForValue) {
       if (optionsBuilder_ == null) {
         options_ = builderForValue.build();
-        onChanged();
       } else {
         optionsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -900,19 +859,18 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      */
     public Builder mergeOptions(com.google.spanner.v1.TransactionOptions value) {
       if (optionsBuilder_ == null) {
-        if (options_ != null) {
-          options_ =
-              com.google.spanner.v1.TransactionOptions.newBuilder(options_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && options_ != null
+            && options_ != com.google.spanner.v1.TransactionOptions.getDefaultInstance()) {
+          getOptionsBuilder().mergeFrom(value);
         } else {
           options_ = value;
         }
-        onChanged();
       } else {
         optionsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -927,14 +885,13 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * </code>
      */
     public Builder clearOptions() {
-      if (optionsBuilder_ == null) {
-        options_ = null;
-        onChanged();
-      } else {
-        options_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      options_ = null;
+      if (optionsBuilder_ != null) {
+        optionsBuilder_.dispose();
         optionsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -949,7 +906,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * </code>
      */
     public com.google.spanner.v1.TransactionOptions.Builder getOptionsBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getOptionsFieldBuilder().getBuilder();
     }
@@ -1023,7 +980,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * @return Whether the requestOptions field is set.
      */
     public boolean hasRequestOptions() {
-      return requestOptionsBuilder_ != null || requestOptions_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1068,11 +1025,11 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
           throw new NullPointerException();
         }
         requestOptions_ = value;
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1091,11 +1048,11 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
     public Builder setRequestOptions(com.google.spanner.v1.RequestOptions.Builder builderForValue) {
       if (requestOptionsBuilder_ == null) {
         requestOptions_ = builderForValue.build();
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1113,19 +1070,18 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      */
     public Builder mergeRequestOptions(com.google.spanner.v1.RequestOptions value) {
       if (requestOptionsBuilder_ == null) {
-        if (requestOptions_ != null) {
-          requestOptions_ =
-              com.google.spanner.v1.RequestOptions.newBuilder(requestOptions_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && requestOptions_ != null
+            && requestOptions_ != com.google.spanner.v1.RequestOptions.getDefaultInstance()) {
+          getRequestOptionsBuilder().mergeFrom(value);
         } else {
           requestOptions_ = value;
         }
-        onChanged();
       } else {
         requestOptionsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1142,14 +1098,13 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
      */
     public Builder clearRequestOptions() {
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-        onChanged();
-      } else {
-        requestOptions_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1166,7 +1121,7 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
      * <code>.google.spanner.v1.RequestOptions request_options = 3;</code>
      */
     public com.google.spanner.v1.RequestOptions.Builder getRequestOptionsBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
@@ -1254,7 +1209,18 @@ public final class BeginTransactionRequest extends com.google.protobuf.Generated
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new BeginTransactionRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

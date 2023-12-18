@@ -43,6 +43,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -51,8 +52,10 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -60,13 +63,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.BatchWriteResponse;
+import com.google.spanner.v1.ResultSetStats;
 import io.opencensus.common.Scope;
 import io.opencensus.metrics.DerivedLongCumulative;
 import io.opencensus.metrics.DerivedLongGauge;
@@ -115,25 +119,28 @@ class SessionPool {
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
-  static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
-      ImmutableSet.of(
-          ErrorCode.UNKNOWN,
-          ErrorCode.INVALID_ARGUMENT,
-          ErrorCode.PERMISSION_DENIED,
-          ErrorCode.UNAUTHENTICATED,
-          ErrorCode.RESOURCE_EXHAUSTED,
-          ErrorCode.FAILED_PRECONDITION,
-          ErrorCode.OUT_OF_RANGE,
-          ErrorCode.UNIMPLEMENTED,
-          ErrorCode.INTERNAL);
 
   /**
-   * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
-   * Clock.
+   * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
+   * for the creation of at least {@link SessionPoolOptions#getMinSessions()} in the pool using the
+   * given duration. If the waiting times out, a {@link SpannerException} with the {@link
+   * ErrorCode#DEADLINE_EXCEEDED} is thrown.
    */
-  static class Clock {
-    Instant instant() {
-      return Instant.now();
+  void maybeWaitOnMinSessions() {
+    final long timeoutNanos = options.getWaitForMinSessions().toNanos();
+    if (timeoutNanos <= 0) {
+      return;
+    }
+
+    try {
+      if (!waitOnMinSessionsLatch.await(timeoutNanos, TimeUnit.NANOSECONDS)) {
+        final long timeoutMillis = options.getWaitForMinSessions().toMillis();
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
+      }
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
 
@@ -714,6 +721,22 @@ class SessionPool {
     }
 
     @Override
+    public ResultSetStats analyzeUpdate(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      return analyzeUpdateStatement(statement, analyzeMode, options).getStats();
+    }
+
+    @Override
+    public ResultSet analyzeUpdateStatement(
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+      try {
+        return delegate.analyzeUpdateStatement(statement, analyzeMode, options);
+      } catch (SessionNotFoundException e) {
+        throw handler.handleSessionNotFound(e);
+      }
+    }
+
+    @Override
     public long executeUpdate(Statement statement, UpdateOption... options) {
       try {
         return delegate.executeUpdate(statement, options);
@@ -1058,6 +1081,10 @@ class SessionPool {
     private LeakedSessionException() {
       super("Session was checked out from the pool at " + clock.instant());
     }
+
+    private LeakedSessionException(String message) {
+      super(message);
+    }
   }
 
   private enum SessionState {
@@ -1090,7 +1117,9 @@ class SessionPool {
     }
 
     private void markCheckedOut() {
-      this.leakedException = new LeakedSessionException();
+      if (options.isTrackStackTraceOfSessionCheckout()) {
+        this.leakedException = new LeakedSessionException();
+      }
     }
 
     @Override
@@ -1118,6 +1147,17 @@ class SessionPool {
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
         return get().writeAtLeastOnceWithOptions(mutations, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        return get().batchWriteAtLeastOnce(mutationGroups, options);
       } finally {
         close();
       }
@@ -1232,7 +1272,7 @@ class SessionPool {
     @Override
     public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       try {
-        return get().executePartitionedUpdate(stmt, options);
+        return get(true).executePartitionedUpdate(stmt, options);
       } finally {
         close();
       }
@@ -1285,6 +1325,10 @@ class SessionPool {
 
     @Override
     public PooledSession get() {
+      return get(false);
+    }
+
+    PooledSession get(final boolean eligibleForLongRunning) {
       if (inUse.compareAndSet(false, true)) {
         PooledSession res = null;
         try {
@@ -1299,6 +1343,7 @@ class SessionPool {
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
           }
+          res.eligibleForLongRunning = eligibleForLongRunning;
         }
         initialized.countDown();
       }
@@ -1313,11 +1358,39 @@ class SessionPool {
     }
   }
 
-  final class PooledSession implements Session {
+  class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
-    private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
+
+    /**
+     * This ensures that the session is added at a random position in the pool the first time it is
+     * actually added to the pool.
+     */
+    @GuardedBy("lock")
+    private Position releaseToPosition = initialReleasePosition;
+
+    /**
+     * Property to mark if the session is eligible to be long-running. This can only be true if the
+     * session is executing certain types of transactions (for ex - Partitioned DML) which can be
+     * long-running. By default, most transaction types are not expected to be long-running and
+     * hence this value is false.
+     */
+    private volatile boolean eligibleForLongRunning = false;
+
+    /**
+     * Property to mark if the session is no longer part of the session pool. For ex - A session
+     * which is long-running gets cleaned up and removed from the pool.
+     */
+    private volatile boolean isRemovedFromPool = false;
+
+    /**
+     * Property to mark if a leaked session exception is already logged. Given a session maintainer
+     * thread runs repeatedly at a defined interval, this property allows us to ensure that an
+     * exception is logged only once per leaked session. This is to avoid noisy repeated logs around
+     * session leaks for long-running sessions.
+     */
+    private volatile boolean isLeakedExceptionLogged = false;
 
     @GuardedBy("lock")
     private SessionState state;
@@ -1325,7 +1398,16 @@ class SessionPool {
     private PooledSession(SessionImpl delegate) {
       this.delegate = delegate;
       this.state = SessionState.AVAILABLE;
-      this.lastUseTime = clock.instant();
+
+      // initialise the lastUseTime field for each session.
+      this.markUsed();
+    }
+
+    int getChannel() {
+      Long channelHint = (Long) delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+      return channelHint == null
+          ? 0
+          : (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
     }
 
     @Override
@@ -1336,6 +1418,11 @@ class SessionPool {
     @VisibleForTesting
     void setAllowReplacing(boolean allowReplacing) {
       this.allowReplacing = allowReplacing;
+    }
+
+    @VisibleForTesting
+    void setEligibleForLongRunning(boolean eligibleForLongRunning) {
+      this.eligibleForLongRunning = eligibleForLongRunning;
     }
 
     @Override
@@ -1365,6 +1452,18 @@ class SessionPool {
       try {
         markUsed();
         return delegate.writeAtLeastOnceWithOptions(mutations, options);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        markUsed();
+        return delegate.batchWriteAtLeastOnce(mutationGroups, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
@@ -1438,7 +1537,7 @@ class SessionPool {
         numSessionsInUse--;
         numSessionsReleased++;
       }
-      if (lastException != null && isSessionNotFound(lastException)) {
+      if ((lastException != null && isSessionNotFound(lastException)) || isRemovedFromPool) {
         invalidateSession(this);
       } else {
         if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
@@ -1452,10 +1551,11 @@ class SessionPool {
           }
         }
         lastException = null;
+        isRemovedFromPool = false;
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
-        releaseSession(this, Position.FIRST);
+        releaseSession(this, false);
       }
     }
 
@@ -1495,7 +1595,7 @@ class SessionPool {
               // in the database dialect, and there's nothing sensible that we can do with it here.
               dialect.setException(t);
             } finally {
-              releaseSession(this, Position.FIRST);
+              releaseSession(this, false);
             }
           });
     }
@@ -1522,7 +1622,7 @@ class SessionPool {
     }
 
     void markUsed() {
-      lastUseTime = clock.instant();
+      delegate.markUsed(clock.instant());
     }
 
     @Override
@@ -1554,7 +1654,8 @@ class SessionPool {
       while (true) {
         Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
         try (Scope waitScope = tracer.withSpan(span)) {
-          PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
+          PooledSession s =
+              pollUninterruptiblyWithTimeout(currentTimeout, options.getAcquireSessionTimeout());
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
@@ -1564,6 +1665,11 @@ class SessionPool {
             return s;
           }
         } catch (Exception e) {
+          if (e instanceof SpannerException
+              && ErrorCode.RESOURCE_EXHAUSTED.equals(((SpannerException) e).getErrorCode())) {
+            numWaiterTimeouts.incrementAndGet();
+            tracer.getCurrentSpan().setStatus(Status.RESOURCE_EXHAUSTED);
+          }
           TraceUtil.setWithFailure(span, e);
           throw e;
         } finally {
@@ -1572,15 +1678,26 @@ class SessionPool {
       }
     }
 
-    private PooledSession pollUninterruptiblyWithTimeout(long timeoutMillis) {
+    private PooledSession pollUninterruptiblyWithTimeout(
+        long timeoutMillis, Duration acquireSessionTimeout) {
       boolean interrupted = false;
       try {
         while (true) {
           try {
-            return waiter.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            return acquireSessionTimeout == null
+                ? waiter.get(timeoutMillis, TimeUnit.MILLISECONDS)
+                : waiter.get(acquireSessionTimeout.toMillis(), TimeUnit.MILLISECONDS);
           } catch (InterruptedException e) {
             interrupted = true;
           } catch (TimeoutException e) {
+            if (acquireSessionTimeout != null) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.RESOURCE_EXHAUSTED,
+                  "Timed out after waiting "
+                      + acquireSessionTimeout.toMillis()
+                      + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
+                      + " or increase the number of sessions in the session pool.");
+            }
             return null;
           } catch (ExecutionException e) {
             throw SpannerExceptionFactory.newSpannerException(e.getCause());
@@ -1604,6 +1721,10 @@ class SessionPool {
    *   <li>Keeps alive sessions that have not been used for a user configured time in order to keep
    *       MinSessions sessions alive in the pool at any time. The keep-alive traffic is smeared out
    *       over a window of 10 minutes to avoid bursty traffic.
+   *   <li>Removes unexpected long running transactions from the pool. Only certain transaction
+   *       types (for ex - Partitioned DML / Batch Reads) can be long running. This tasks checks the
+   *       sessions which have been inactive for a longer than usual duration (for ex - 60 minutes)
+   *       and removes such sessions from the pool.
    * </ul>
    */
   final class PoolMaintainer {
@@ -1612,16 +1733,24 @@ class SessionPool {
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
     // Frequency of the timer loop.
     @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
-    // Number of loop iterations in which we need to to close all the sessions waiting for closure.
+    // Number of loop iterations in which we need to close all the sessions waiting for closure.
     @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
     private final Duration keepAliveMillis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
     @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
-    Instant lastResetTime = Instant.ofEpochMilli(0);
-    int numSessionsToClose = 0;
-    int sessionsToClosePerLoop = 0;
+    /**
+     * Variable maintaining the last execution time of the long-running transaction cleanup task.
+     *
+     * <p>The long-running transaction cleanup needs to be performed every X minutes. The X minutes
+     * recurs multiple times within the invocation of the pool maintainer thread. For ex - If the
+     * main thread runs every 10s and the long-running transaction clean-up needs to be performed
+     * every 2 minutes, then we need to keep a track of when was the last time that this task
+     * executed and makes sure we only execute it every 2 minutes and not every 10 seconds.
+     */
+    @VisibleForTesting Instant lastExecutionTime;
+
     boolean closed = false;
 
     @GuardedBy("lock")
@@ -1631,6 +1760,7 @@ class SessionPool {
     boolean running;
 
     void init() {
+      lastExecutionTime = clock.instant();
       // Scheduled pool maintenance worker.
       synchronized (lock) {
         scheduledFuture =
@@ -1676,6 +1806,7 @@ class SessionPool {
           decrementPendingClosures(1);
         }
       }
+      removeLongRunningSessions(currTime);
     }
 
     private void removeIdleSessions(Instant currTime) {
@@ -1687,9 +1818,15 @@ class SessionPool {
         Iterator<PooledSession> iterator = sessions.descendingIterator();
         while (iterator.hasNext()) {
           PooledSession session = iterator.next();
-          if (session.lastUseTime.isBefore(minLastUseTime)) {
+          if (session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {
-              removeFromPool(session);
+              boolean isRemoved = removeFromPool(session);
+              if (isRemoved) {
+                numIdleSessionsRemoved++;
+                if (idleSessionRemovedListener != null) {
+                  idleSessionRemovedListener.apply(session);
+                }
+              }
               iterator.remove();
             }
           }
@@ -1729,7 +1866,7 @@ class SessionPool {
           logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
           numSessionsToKeepAlive--;
           sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive, Position.FIRST);
+          releaseSession(sessionToKeepAlive, false);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -1745,10 +1882,93 @@ class SessionPool {
         }
       }
     }
+
+    // cleans up sessions which are unexpectedly long-running.
+    void removeLongRunningSessions(Instant currentTime) {
+      try {
+        if (SessionPool.this.isClosed()) {
+          return;
+        }
+        final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+            options.getInactiveTransactionRemovalOptions();
+        final Instant minExecutionTime =
+            lastExecutionTime.plus(inactiveTransactionRemovalOptions.getExecutionFrequency());
+        if (currentTime.isBefore(minExecutionTime)) {
+          return;
+        }
+        lastExecutionTime = currentTime; // update this only after we have decided to execute task
+        if (options.closeInactiveTransactions()
+            || options.warnInactiveTransactions()
+            || options.warnAndCloseInactiveTransactions()) {
+          removeLongRunningSessions(currentTime, inactiveTransactionRemovalOptions);
+        }
+      } catch (final Throwable t) {
+        logger.log(Level.WARNING, "Failed removing long running transactions", t);
+      }
+    }
+
+    private void removeLongRunningSessions(
+        final Instant currentTime,
+        final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions) {
+      synchronized (lock) {
+        final double usedSessionsRatio = getRatioOfSessionsInUse();
+        if (usedSessionsRatio > inactiveTransactionRemovalOptions.getUsedSessionsRatioThreshold()) {
+          Iterator<PooledSessionFuture> iterator = checkedOutSessions.iterator();
+          while (iterator.hasNext()) {
+            final PooledSessionFuture sessionFuture = iterator.next();
+            // the below get() call on future object is non-blocking since checkedOutSessions
+            // collection is populated only when the get() method in {@code PooledSessionFuture} is
+            // called.
+            final PooledSession session = sessionFuture.get();
+            final Duration durationFromLastUse =
+                Duration.between(session.delegate.getLastUseTime(), currentTime);
+            if (!session.eligibleForLongRunning
+                && durationFromLastUse.compareTo(
+                        inactiveTransactionRemovalOptions.getIdleTimeThreshold())
+                    > 0) {
+              if ((options.warnInactiveTransactions() || options.warnAndCloseInactiveTransactions())
+                  && !session.isLeakedExceptionLogged) {
+                if (options.warnAndCloseInactiveTransactions()) {
+                  logger.log(
+                      Level.WARNING,
+                      String.format("Removing long-running session => %s", session.getName()),
+                      sessionFuture.leakedException);
+                  session.isLeakedExceptionLogged = true;
+                } else if (options.warnInactiveTransactions()) {
+                  logger.log(
+                      Level.WARNING,
+                      String.format(
+                          "Detected long-running session => %s. To automatically remove "
+                              + "long-running sessions, set SessionOption ActionOnInactiveTransaction "
+                              + "to WARN_AND_CLOSE by invoking setWarnAndCloseIfInactiveTransactions() method.",
+                          session.getName()),
+                      sessionFuture.leakedException);
+                  session.isLeakedExceptionLogged = true;
+                }
+              }
+              if ((options.closeInactiveTransactions()
+                      || options.warnAndCloseInactiveTransactions())
+                  && session.state != SessionState.CLOSING) {
+                final boolean isRemoved = removeFromPool(session);
+                if (isRemoved) {
+                  session.isRemovedFromPool = true;
+                  numLeakedSessionsRemoved++;
+                  if (longRunningSessionRemovedListener != null) {
+                    longRunningSessionRemovedListener.apply(session);
+                  }
+                }
+                iterator.remove();
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  private enum Position {
+  enum Position {
     FIRST,
+    LAST,
     RANDOM
   }
 
@@ -1773,12 +1993,22 @@ class SessionPool {
 
   private final SessionPoolOptions options;
   private final SettableFuture<Dialect> dialect = SettableFuture.create();
+  private final String databaseRole;
   private final SessionClient sessionClient;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
+  /**
+   * initialReleasePosition determines where in the pool sessions are added when they are released
+   * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to
+   * be able to verify the order of sessions in the pool. Using RANDOM ensures that we do not get an
+   * unbalanced session pool where all sessions belonging to one gRPC channel are added to the same
+   * region in the pool.
+   */
+  private final Position initialReleasePosition;
+
   private final Object lock = new Object();
   private final Random random = new Random();
 
@@ -1824,6 +2054,9 @@ class SessionPool {
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
 
+  @GuardedBy("lock")
+  private long numLeakedSessionsRemoved = 0;
+
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
   @GuardedBy("lock")
@@ -1837,6 +2070,10 @@ class SessionPool {
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
+  @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
+
+  private final CountDownLatch waitOnMinSessionsLatch;
+
   /**
    * Create a session pool with the given options and for the given database. It will also start
    * eagerly creating sessions if {@link SessionPoolOptions#getMinSessions()} is greater than 0.
@@ -1845,11 +2082,17 @@ class SessionPool {
    */
   static SessionPool createPool(
       SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
+    final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
+
+    // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
+    final Clock poolMaintainerClock = sessionPoolOptions.getPoolMaintainerClock();
     return createPool(
-        spannerOptions.getSessionPoolOptions(),
+        sessionPoolOptions,
+        spannerOptions.getDatabaseRole(),
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
-        new Clock(),
+        poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
+        Position.RANDOM,
         Metrics.getMetricRegistry(),
         labelValues);
   }
@@ -1858,21 +2101,7 @@ class SessionPool {
       SessionPoolOptions poolOptions,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient) {
-    return createPool(poolOptions, executorFactory, sessionClient, new Clock());
-  }
-
-  static SessionPool createPool(
-      SessionPoolOptions poolOptions,
-      ExecutorFactory<ScheduledExecutorService> executorFactory,
-      SessionClient sessionClient,
-      Clock clock) {
-    return createPool(
-        poolOptions,
-        executorFactory,
-        sessionClient,
-        clock,
-        Metrics.getMetricRegistry(),
-        SPANNER_DEFAULT_LABEL_VALUES);
+    return createPool(poolOptions, executorFactory, sessionClient, new Clock(), Position.RANDOM);
   }
 
   static SessionPool createPool(
@@ -1880,15 +2109,36 @@ class SessionPool {
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition) {
+    return createPool(
+        poolOptions,
+        null,
+        executorFactory,
+        sessionClient,
+        clock,
+        initialReleasePosition,
+        Metrics.getMetricRegistry(),
+        SPANNER_DEFAULT_LABEL_VALUES);
+  }
+
+  static SessionPool createPool(
+      SessionPoolOptions poolOptions,
+      String databaseRole,
+      ExecutorFactory<ScheduledExecutorService> executorFactory,
+      SessionClient sessionClient,
+      Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
     SessionPool pool =
         new SessionPool(
             poolOptions,
+            databaseRole,
             executorFactory,
             executorFactory.get(),
             sessionClient,
             clock,
+            initialReleasePosition,
             metricRegistry,
             labelValues);
     pool.initPool();
@@ -1897,19 +2147,25 @@ class SessionPool {
 
   private SessionPool(
       SessionPoolOptions options,
+      String databaseRole,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       ScheduledExecutorService executor,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
       List<LabelValue> labelValues) {
     this.options = options;
+    this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
     this.executor = executor;
     this.sessionClient = sessionClient;
     this.clock = clock;
+    this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
     this.initMetricsCollection(metricRegistry, labelValues);
+    this.waitOnMinSessionsLatch =
+        options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
 
   /**
@@ -1945,6 +2201,11 @@ class SessionPool {
     }
   }
 
+  @Nullable
+  public String getDatabaseRole() {
+    return databaseRole;
+  }
+
   @VisibleForTesting
   int getNumberOfSessionsInUse() {
     synchronized (lock) {
@@ -1952,24 +2213,39 @@ class SessionPool {
     }
   }
 
-  void removeFromPool(PooledSession session) {
+  @VisibleForTesting
+  double getRatioOfSessionsInUse() {
+    synchronized (lock) {
+      final int maxSessions = options.getMaxSessions();
+      if (maxSessions == 0) {
+        return 0;
+      }
+      return (double) numSessionsInUse / maxSessions;
+    }
+  }
+
+  boolean removeFromPool(PooledSession session) {
     synchronized (lock) {
       if (isClosed()) {
         decrementPendingClosures(1);
-        return;
+        return false;
       }
       session.markClosing();
       allSessions.remove(session);
-      numIdleSessionsRemoved++;
-    }
-    if (idleSessionRemovedListener != null) {
-      idleSessionRemovedListener.apply(session);
+      return true;
     }
   }
 
   long numIdleSessionsRemoved() {
     synchronized (lock) {
       return numIdleSessionsRemoved;
+    }
+  }
+
+  @VisibleForTesting
+  long numLeakedSessionsRemoved() {
+    synchronized (lock) {
+      return numLeakedSessionsRemoved;
     }
   }
 
@@ -2011,7 +2287,7 @@ class SessionPool {
     if (isSessionNotFound(e)) {
       invalidateSession(session);
     } else {
-      releaseSession(session, Position.FIRST);
+      releaseSession(session, false);
     }
   }
 
@@ -2043,7 +2319,7 @@ class SessionPool {
         && (numChecked + numAlreadyChecked)
             < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
-      if (session.lastUseTime.isBefore(keepAliveThreshold)) {
+      if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
         iterator.remove();
         return session;
       }
@@ -2174,31 +2450,128 @@ class SessionPool {
       }
     }
   }
+
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
-  private void releaseSession(PooledSession session, Position position) {
+  private void releaseSession(PooledSession session, boolean isNewSession) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
         return;
       }
       if (waiters.size() == 0) {
-        // No pending waiters
-        switch (position) {
-          case RANDOM:
-            if (!sessions.isEmpty()) {
-              int pos = random.nextInt(sessions.size() + 1);
-              sessions.add(pos, session);
-              break;
-            }
-            // fallthrough
-          case FIRST:
-          default:
-            sessions.addFirst(session);
+        // There are no pending waiters.
+        // Add to a random position if the head of the session pool already contains many sessions
+        // with the same channel as this one.
+        if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
+          session.releaseToPosition = Position.RANDOM;
+        } else if (session.releaseToPosition == Position.RANDOM
+            && !isNewSession
+            && checkedOutSessions.size() <= 2) {
+          // Do not randomize if there are few other sessions checked out and this session has been
+          // used. This ensures that this session will be re-used for the next transaction, which is
+          // more efficient.
+          session.releaseToPosition = options.getReleaseToPosition();
+        }
+        if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
+          // A session should only be added at a random position the first time it is added to
+          // the pool or if the pool was deemed unbalanced. All following releases into the pool
+          // should normally happen at the default release position (unless the pool is again deemed
+          // to be unbalanced and the insertion would happen at the front of the pool).
+          session.releaseToPosition = options.getReleaseToPosition();
+          int pos = random.nextInt(sessions.size() + 1);
+          sessions.add(pos, session);
+        } else if (session.releaseToPosition == Position.LAST) {
+          sessions.addLast(session);
+        } else {
+          sessions.addFirst(session);
         }
       } else {
         waiters.poll().put(session);
       }
     }
+  }
+
+  private boolean isUnbalanced(PooledSession session) {
+    int channel = session.getChannel();
+    int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
+    return isUnbalanced(channel, this.sessions, this.checkedOutSessions, numChannels);
+  }
+
+  /**
+   * Returns true if the given list of sessions is considered unbalanced when compared to the
+   * sessionChannel that is about to be added to the pool.
+   *
+   * <p>The method returns true if all the following is true:
+   *
+   * <ol>
+   *   <li>The list of sessions is not empty.
+   *   <li>The number of checked out sessions is > 2.
+   *   <li>The number of channels being used by the pool is > 1.
+   *   <li>And at least one of the following is true:
+   *       <ol>
+   *         <li>The first numChannels sessions in the list of sessions contains more than 2
+   *             sessions that use the same channel as the one being added.
+   *         <li>The list of currently checked out sessions contains more than 2 times the the
+   *             number of sessions with the same channel as the one being added than it should in
+   *             order for it to be perfectly balanced. Perfectly balanced in this case means that
+   *             the list should preferably contain size/numChannels sessions of each channel.
+   *       </ol>
+   * </ol>
+   *
+   * @param channelOfSessionBeingAdded the channel number being used by the session that is about to
+   *     be released into the pool
+   * @param sessions the list of all sessions in the pool
+   * @param checkedOutSessions the currently checked out sessions of the pool
+   * @param numChannels the number of channels in use
+   * @return true if the pool is considered unbalanced, and false otherwise
+   */
+  @VisibleForTesting
+  static boolean isUnbalanced(
+      int channelOfSessionBeingAdded,
+      List<PooledSession> sessions,
+      Set<PooledSessionFuture> checkedOutSessions,
+      int numChannels) {
+    // Do not re-balance the pool if the number of checked out sessions is low, as it is
+    // better to re-use sessions as much as possible in a low-QPS scenario.
+    if (sessions.isEmpty() || checkedOutSessions.size() <= 2) {
+      return false;
+    }
+    if (numChannels == 1) {
+      return false;
+    }
+
+    // Ideally, the first numChannels sessions in the pool should contain exactly one session for
+    // each channel.
+    // Check if the first numChannels sessions at the head of the pool already contain more than 2
+    // sessions that use the same channel as this one. If so, we re-balance.
+    // We also re-balance the pool in the specific case that the pool uses 2 channels and the first
+    // two sessions use those two channels.
+    int maxSessionsAtHeadOfPool = Math.min(numChannels, 3);
+    int count = 0;
+    for (int i = 0; i < Math.min(numChannels, sessions.size()); i++) {
+      PooledSession otherSession = sessions.get(i);
+      if (channelOfSessionBeingAdded == otherSession.getChannel()) {
+        count++;
+        if (count >= maxSessionsAtHeadOfPool) {
+          return true;
+        }
+      }
+    }
+    // Ideally, the use of a channel in the checked out sessions is exactly
+    // numCheckedOut / numChannels
+    // We check whether we are more than a factor two away from that perfect distribution.
+    // If we are, then we re-balance.
+    count = 0;
+    int checkedOutThreshold = Math.max(2, 2 * checkedOutSessions.size() / numChannels);
+    for (PooledSessionFuture otherSession : checkedOutSessions) {
+      if (otherSession.isDone() && channelOfSessionBeingAdded == otherSession.get().getChannel()) {
+        count++;
+        if (count > checkedOutThreshold) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private void handleCreateSessionsFailure(SpannerException e, int count) {
@@ -2266,6 +2639,16 @@ class SessionPool {
             throw session.leakedException;
           } else {
             logger.log(Level.WARNING, "Leaked session", session.leakedException);
+          }
+        } else {
+          String message =
+              "Leaked session. "
+                  + "Call SessionOptions.Builder#setTrackStackTraceOfSessionCheckout(true) to start "
+                  + "tracking the call stack trace of the thread that checked out the session.";
+          if (options.isFailOnSessionLeak()) {
+            throw new LeakedSessionException(message);
+          } else {
+            logger.log(Level.WARNING, message);
           }
         }
       }
@@ -2370,6 +2753,7 @@ class SessionPool {
       PooledSession pooledSession = null;
       boolean closeSession = false;
       synchronized (lock) {
+        int minSessions = options.getMinSessions();
         pooledSession = new PooledSession(session);
         numSessionsBeingCreated--;
         if (closureFuture != null) {
@@ -2377,6 +2761,9 @@ class SessionPool {
         } else {
           Preconditions.checkState(totalSessions() <= options.getMaxSessions() - 1);
           allSessions.add(pooledSession);
+          if (allSessions.size() >= minSessions) {
+            waitOnMinSessionsLatch.countDown();
+          }
           if (options.isAutoDetectDialect() && !detectDialectStarted) {
             // Get the dialect of the underlying database if that has not yet been done. Note that
             // this method will release the session into the pool once it is done.
@@ -2386,7 +2773,7 @@ class SessionPool {
             // Release the session to a random position in the pool to prevent the case that a batch
             // of sessions that are affiliated with the same channel are all placed sequentially in
             // the pool.
-            releaseSession(pooledSession, Position.RANDOM);
+            releaseSession(pooledSession, true);
           }
         }
       }

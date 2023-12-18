@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,58 +46,6 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     return new PartitionOptions();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private PartitionOptions(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 8:
-            {
-              partitionSizeBytes_ = input.readInt64();
-              break;
-            }
-          case 16:
-            {
-              maxPartitions_ = input.readInt64();
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_PartitionOptions_descriptor;
@@ -114,13 +62,14 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int PARTITION_SIZE_BYTES_FIELD_NUMBER = 1;
-  private long partitionSizeBytes_;
+  private long partitionSizeBytes_ = 0L;
   /**
    *
    *
    * <pre>
    * **Note:** This hint is currently ignored by PartitionQuery and
    * PartitionRead requests.
+   *
    * The desired data size for each partition generated.  The default for this
    * option is currently 1 GiB.  This is only a hint. The actual size of each
    * partition may be smaller or larger than this size request.
@@ -136,13 +85,14 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int MAX_PARTITIONS_FIELD_NUMBER = 2;
-  private long maxPartitions_;
+  private long maxPartitions_ = 0L;
   /**
    *
    *
    * <pre>
    * **Note:** This hint is currently ignored by PartitionQuery and
    * PartitionRead requests.
+   *
    * The desired maximum number of partitions to return.  For example, this may
    * be set to the number of workers available.  The default for this option
    * is currently 10,000. The maximum value is currently 200,000.  This is only
@@ -179,7 +129,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     if (maxPartitions_ != 0L) {
       output.writeInt64(2, maxPartitions_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -194,7 +144,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     if (maxPartitions_ != 0L) {
       size += com.google.protobuf.CodedOutputStream.computeInt64Size(2, maxPartitions_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -211,7 +161,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
 
     if (getPartitionSizeBytes() != other.getPartitionSizeBytes()) return false;
     if (getMaxPartitions() != other.getMaxPartitions()) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -226,7 +176,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getPartitionSizeBytes());
     hash = (37 * hash) + MAX_PARTITIONS_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getMaxPartitions());
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -356,26 +306,18 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     }
 
     // Construct using com.google.spanner.v1.PartitionOptions.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       partitionSizeBytes_ = 0L;
-
       maxPartitions_ = 0L;
-
       return this;
     }
 
@@ -403,10 +345,21 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public com.google.spanner.v1.PartitionOptions buildPartial() {
       com.google.spanner.v1.PartitionOptions result =
           new com.google.spanner.v1.PartitionOptions(this);
-      result.partitionSizeBytes_ = partitionSizeBytes_;
-      result.maxPartitions_ = maxPartitions_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.PartitionOptions result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.partitionSizeBytes_ = partitionSizeBytes_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.maxPartitions_ = maxPartitions_;
+      }
     }
 
     @java.lang.Override
@@ -460,7 +413,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
       if (other.getMaxPartitions() != 0L) {
         setMaxPartitions(other.getMaxPartitions());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -475,19 +428,47 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.PartitionOptions parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8:
+              {
+                partitionSizeBytes_ = input.readInt64();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+            case 16:
+              {
+                maxPartitions_ = input.readInt64();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.PartitionOptions) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private long partitionSizeBytes_;
     /**
@@ -496,6 +477,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired data size for each partition generated.  The default for this
      * option is currently 1 GiB.  This is only a hint. The actual size of each
      * partition may be smaller or larger than this size request.
@@ -515,6 +497,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired data size for each partition generated.  The default for this
      * option is currently 1 GiB.  This is only a hint. The actual size of each
      * partition may be smaller or larger than this size request.
@@ -528,6 +511,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public Builder setPartitionSizeBytes(long value) {
 
       partitionSizeBytes_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -537,6 +521,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired data size for each partition generated.  The default for this
      * option is currently 1 GiB.  This is only a hint. The actual size of each
      * partition may be smaller or larger than this size request.
@@ -547,7 +532,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearPartitionSizeBytes() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       partitionSizeBytes_ = 0L;
       onChanged();
       return this;
@@ -560,6 +545,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired maximum number of partitions to return.  For example, this may
      * be set to the number of workers available.  The default for this option
      * is currently 10,000. The maximum value is currently 200,000.  This is only
@@ -581,6 +567,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired maximum number of partitions to return.  For example, this may
      * be set to the number of workers available.  The default for this option
      * is currently 10,000. The maximum value is currently 200,000.  This is only
@@ -596,6 +583,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
     public Builder setMaxPartitions(long value) {
 
       maxPartitions_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -605,6 +593,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * <pre>
      * **Note:** This hint is currently ignored by PartitionQuery and
      * PartitionRead requests.
+     *
      * The desired maximum number of partitions to return.  For example, this may
      * be set to the number of workers available.  The default for this option
      * is currently 10,000. The maximum value is currently 200,000.  This is only
@@ -617,7 +606,7 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearMaxPartitions() {
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       maxPartitions_ = 0L;
       onChanged();
       return this;
@@ -655,7 +644,18 @@ public final class PartitionOptions extends com.google.protobuf.GeneratedMessage
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PartitionOptions(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

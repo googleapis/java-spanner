@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,8 @@ public final class InstanceAdminGrpc {
 
   private InstanceAdminGrpc() {}
 
-  public static final String SERVICE_NAME = "google.spanner.admin.instance.v1.InstanceAdmin";
+  public static final java.lang.String SERVICE_NAME =
+      "google.spanner.admin.instance.v1.InstanceAdmin";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<
@@ -146,6 +147,203 @@ public final class InstanceAdminGrpc {
       }
     }
     return getGetInstanceConfigMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest,
+          com.google.longrunning.Operation>
+      getCreateInstanceConfigMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "CreateInstanceConfig",
+      requestType = com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest,
+          com.google.longrunning.Operation>
+      getCreateInstanceConfigMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest,
+            com.google.longrunning.Operation>
+        getCreateInstanceConfigMethod;
+    if ((getCreateInstanceConfigMethod = InstanceAdminGrpc.getCreateInstanceConfigMethod) == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getCreateInstanceConfigMethod = InstanceAdminGrpc.getCreateInstanceConfigMethod)
+            == null) {
+          InstanceAdminGrpc.getCreateInstanceConfigMethod =
+              getCreateInstanceConfigMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest,
+                          com.google.longrunning.Operation>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "CreateInstanceConfig"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.longrunning.Operation.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("CreateInstanceConfig"))
+                      .build();
+        }
+      }
+    }
+    return getCreateInstanceConfigMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest,
+          com.google.longrunning.Operation>
+      getUpdateInstanceConfigMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "UpdateInstanceConfig",
+      requestType = com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest,
+          com.google.longrunning.Operation>
+      getUpdateInstanceConfigMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest,
+            com.google.longrunning.Operation>
+        getUpdateInstanceConfigMethod;
+    if ((getUpdateInstanceConfigMethod = InstanceAdminGrpc.getUpdateInstanceConfigMethod) == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getUpdateInstanceConfigMethod = InstanceAdminGrpc.getUpdateInstanceConfigMethod)
+            == null) {
+          InstanceAdminGrpc.getUpdateInstanceConfigMethod =
+              getUpdateInstanceConfigMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest,
+                          com.google.longrunning.Operation>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "UpdateInstanceConfig"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.longrunning.Operation.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("UpdateInstanceConfig"))
+                      .build();
+        }
+      }
+    }
+    return getUpdateInstanceConfigMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest,
+          com.google.protobuf.Empty>
+      getDeleteInstanceConfigMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "DeleteInstanceConfig",
+      requestType = com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.class,
+      responseType = com.google.protobuf.Empty.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest,
+          com.google.protobuf.Empty>
+      getDeleteInstanceConfigMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest,
+            com.google.protobuf.Empty>
+        getDeleteInstanceConfigMethod;
+    if ((getDeleteInstanceConfigMethod = InstanceAdminGrpc.getDeleteInstanceConfigMethod) == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getDeleteInstanceConfigMethod = InstanceAdminGrpc.getDeleteInstanceConfigMethod)
+            == null) {
+          InstanceAdminGrpc.getDeleteInstanceConfigMethod =
+              getDeleteInstanceConfigMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest,
+                          com.google.protobuf.Empty>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "DeleteInstanceConfig"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.protobuf.Empty.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("DeleteInstanceConfig"))
+                      .build();
+        }
+      }
+    }
+    return getDeleteInstanceConfigMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest,
+          com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
+      getListInstanceConfigOperationsMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListInstanceConfigOperations",
+      requestType = com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest.class,
+      responseType =
+          com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest,
+          com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
+      getListInstanceConfigOperationsMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest,
+            com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
+        getListInstanceConfigOperationsMethod;
+    if ((getListInstanceConfigOperationsMethod =
+            InstanceAdminGrpc.getListInstanceConfigOperationsMethod)
+        == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getListInstanceConfigOperationsMethod =
+                InstanceAdminGrpc.getListInstanceConfigOperationsMethod)
+            == null) {
+          InstanceAdminGrpc.getListInstanceConfigOperationsMethod =
+              getListInstanceConfigOperationsMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest,
+                          com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "ListInstanceConfigOperations"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1
+                                  .ListInstanceConfigOperationsRequest.getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1
+                                  .ListInstanceConfigOperationsResponse.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("ListInstanceConfigOperations"))
+                      .build();
+        }
+      }
+    }
+    return getListInstanceConfigOperationsMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<
@@ -561,7 +759,7 @@ public final class InstanceAdminGrpc {
    * databases in that instance, and their performance may suffer.
    * </pre>
    */
-  public abstract static class InstanceAdminImplBase implements io.grpc.BindableService {
+  public interface AsyncService {
 
     /**
      *
@@ -570,7 +768,7 @@ public final class InstanceAdminGrpc {
      * Lists the supported instance configurations for a given project.
      * </pre>
      */
-    public void listInstanceConfigs(
+    default void listInstanceConfigs(
         com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest request,
         io.grpc.stub.StreamObserver<
                 com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>
@@ -586,7 +784,7 @@ public final class InstanceAdminGrpc {
      * Gets information about a particular instance configuration.
      * </pre>
      */
-    public void getInstanceConfig(
+    default void getInstanceConfig(
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>
             responseObserver) {
@@ -598,10 +796,149 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
+     * Creates an instance config and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance config. The instance config name is assigned by the caller. If the
+     * named instance config already exists, `CreateInstanceConfig` returns
+     * `ALREADY_EXISTS`.
+     * Immediately after the request returns:
+     *   * The instance config is readable via the API, with all requested
+     *     attributes. The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true. Its state is `CREATING`.
+     * While the operation is pending:
+     *   * Cancelling the operation renders the instance config immediately
+     *     unreadable via the API.
+     *   * Except for deleting the creating resource, all other attempts to modify
+     *     the instance config are rejected.
+     * Upon completion of the returned operation:
+     *   * Instances can be created using the instance configuration.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false. Its state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * creation of the instance config. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.create` permission on
+     * the resource
+     * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+     * </pre>
+     */
+    default void createInstanceConfig(
+        com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getCreateInstanceConfigMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance config. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the instance. If the named instance config does
+     * not exist, returns `NOT_FOUND`.
+     * Only user managed configurations can be updated.
+     * Immediately after the request returns:
+     *   * The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true.
+     * While the operation is pending:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
+     *     The operation is guaranteed to succeed at undoing all changes, after
+     *     which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance config are rejected.
+     *   * Reading the instance config via the API continues to give the
+     *     pre-request values.
+     * Upon completion of the returned operation:
+     *   * Creating instances using the instance configuration uses the new
+     *     values.
+     *   * The instance config's new values are readable via the API.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the instance config modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.update` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    default void updateInstanceConfig(
+        com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getUpdateInstanceConfigMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes the instance config. Deletion is only allowed when no
+     * instances are using the configuration. If any instances are using
+     * the config, returns `FAILED_PRECONDITION`.
+     * Only user managed configurations can be deleted.
+     * Authorization requires `spanner.instanceConfigs.delete` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    default void deleteInstanceConfig(
+        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest request,
+        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getDeleteInstanceConfigMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists the user-managed instance config [long-running
+     * operations][google.longrunning.Operation] in the given project. An instance
+     * config operation has a name of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
+    default void listInstanceConfigOperations(
+        com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
+            responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListInstanceConfigOperationsMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Lists all instances in the given project.
      * </pre>
      */
-    public void listInstances(
+    default void listInstances(
         com.google.spanner.admin.instance.v1.ListInstancesRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.ListInstancesResponse>
             responseObserver) {
@@ -616,7 +953,7 @@ public final class InstanceAdminGrpc {
      * Gets information about a particular instance.
      * </pre>
      */
-    public void getInstance(
+    default void getInstance(
         com.google.spanner.admin.instance.v1.GetInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.Instance>
             responseObserver) {
@@ -657,7 +994,7 @@ public final class InstanceAdminGrpc {
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * </pre>
      */
-    public void createInstance(
+    default void createInstance(
         com.google.spanner.admin.instance.v1.CreateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -678,9 +1015,9 @@ public final class InstanceAdminGrpc {
      *     has been requested, billing is based on the newly-requested level.
      * Until completion of the returned operation:
      *   * Cancelling the operation sets its metadata's
-     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-     *     restoring resources to their pre-request values. The operation
-     *     is guaranteed to succeed at undoing all resource changes,
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
      *     after which point it terminates with a `CANCELLED` status.
      *   * All other attempts to modify the instance are rejected.
      *   * Reading the instance via the API continues to give the pre-request
@@ -699,10 +1036,10 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
-    public void updateInstance(
+    default void updateInstance(
         com.google.spanner.admin.instance.v1.UpdateInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -722,7 +1059,7 @@ public final class InstanceAdminGrpc {
      *     is permanently deleted.
      * </pre>
      */
-    public void deleteInstance(
+    default void deleteInstance(
         com.google.spanner.admin.instance.v1.DeleteInstanceRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -739,7 +1076,7 @@ public final class InstanceAdminGrpc {
      * [resource][google.iam.v1.SetIamPolicyRequest.resource].
      * </pre>
      */
-    public void setIamPolicy(
+    default void setIamPolicy(
         com.google.iam.v1.SetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -756,7 +1093,7 @@ public final class InstanceAdminGrpc {
      * [resource][google.iam.v1.GetIamPolicyRequest.resource].
      * </pre>
      */
-    public void getIamPolicy(
+    default void getIamPolicy(
         com.google.iam.v1.GetIamPolicyRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.Policy> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
@@ -774,87 +1111,50 @@ public final class InstanceAdminGrpc {
      * empty set of permissions.
      * </pre>
      */
-    public void testIamPermissions(
+    default void testIamPermissions(
         com.google.iam.v1.TestIamPermissionsRequest request,
         io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>
             responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
           getTestIamPermissionsMethod(), responseObserver);
     }
+  }
+
+  /**
+   * Base class for the server implementation of the service InstanceAdmin.
+   *
+   * <pre>
+   * Cloud Spanner Instance Admin API
+   * The Cloud Spanner Instance Admin API can be used to create, delete,
+   * modify and list instances. Instances are dedicated Cloud Spanner serving
+   * and storage resources to be used by Cloud Spanner databases.
+   * Each instance has a "configuration", which dictates where the
+   * serving resources for the Cloud Spanner instance are located (e.g.,
+   * US-central, Europe). Configurations are created by Google based on
+   * resource availability.
+   * Cloud Spanner billing is based on the instances that exist and their
+   * sizes. After an instance exists, there are no additional
+   * per-database or per-operation charges for use of the instance
+   * (though there may be additional network bandwidth charges).
+   * Instances offer isolation: problems with databases in one instance
+   * will not affect other instances. However, within an instance
+   * databases can affect each other. For example, if one database in an
+   * instance receives a lot of requests and consumes most of the
+   * instance resources, fewer resources are available for other
+   * databases in that instance, and their performance may suffer.
+   * </pre>
+   */
+  public abstract static class InstanceAdminImplBase
+      implements io.grpc.BindableService, AsyncService {
 
     @java.lang.Override
     public final io.grpc.ServerServiceDefinition bindService() {
-      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-          .addMethod(
-              getListInstanceConfigsMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
-                      com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>(
-                      this, METHODID_LIST_INSTANCE_CONFIGS)))
-          .addMethod(
-              getGetInstanceConfigMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
-                      com.google.spanner.admin.instance.v1.InstanceConfig>(
-                      this, METHODID_GET_INSTANCE_CONFIG)))
-          .addMethod(
-              getListInstancesMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.ListInstancesRequest,
-                      com.google.spanner.admin.instance.v1.ListInstancesResponse>(
-                      this, METHODID_LIST_INSTANCES)))
-          .addMethod(
-              getGetInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.GetInstanceRequest,
-                      com.google.spanner.admin.instance.v1.Instance>(this, METHODID_GET_INSTANCE)))
-          .addMethod(
-              getCreateInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.CreateInstanceRequest,
-                      com.google.longrunning.Operation>(this, METHODID_CREATE_INSTANCE)))
-          .addMethod(
-              getUpdateInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
-                      com.google.longrunning.Operation>(this, METHODID_UPDATE_INSTANCE)))
-          .addMethod(
-              getDeleteInstanceMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.spanner.admin.instance.v1.DeleteInstanceRequest,
-                      com.google.protobuf.Empty>(this, METHODID_DELETE_INSTANCE)))
-          .addMethod(
-              getSetIamPolicyMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>(
-                      this, METHODID_SET_IAM_POLICY)))
-          .addMethod(
-              getGetIamPolicyMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>(
-                      this, METHODID_GET_IAM_POLICY)))
-          .addMethod(
-              getTestIamPermissionsMethod(),
-              io.grpc.stub.ServerCalls.asyncUnaryCall(
-                  new MethodHandlers<
-                      com.google.iam.v1.TestIamPermissionsRequest,
-                      com.google.iam.v1.TestIamPermissionsResponse>(
-                      this, METHODID_TEST_IAM_PERMISSIONS)))
-          .build();
+      return InstanceAdminGrpc.bindService(this);
     }
   }
 
   /**
-   *
+   * A stub to allow clients to do asynchronous rpc calls to service InstanceAdmin.
    *
    * <pre>
    * Cloud Spanner Instance Admin API
@@ -919,6 +1219,153 @@ public final class InstanceAdminGrpc {
             responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetInstanceConfigMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance config and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance config. The instance config name is assigned by the caller. If the
+     * named instance config already exists, `CreateInstanceConfig` returns
+     * `ALREADY_EXISTS`.
+     * Immediately after the request returns:
+     *   * The instance config is readable via the API, with all requested
+     *     attributes. The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true. Its state is `CREATING`.
+     * While the operation is pending:
+     *   * Cancelling the operation renders the instance config immediately
+     *     unreadable via the API.
+     *   * Except for deleting the creating resource, all other attempts to modify
+     *     the instance config are rejected.
+     * Upon completion of the returned operation:
+     *   * Instances can be created using the instance configuration.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false. Its state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * creation of the instance config. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.create` permission on
+     * the resource
+     * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+     * </pre>
+     */
+    public void createInstanceConfig(
+        com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getCreateInstanceConfigMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance config. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the instance. If the named instance config does
+     * not exist, returns `NOT_FOUND`.
+     * Only user managed configurations can be updated.
+     * Immediately after the request returns:
+     *   * The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true.
+     * While the operation is pending:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
+     *     The operation is guaranteed to succeed at undoing all changes, after
+     *     which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance config are rejected.
+     *   * Reading the instance config via the API continues to give the
+     *     pre-request values.
+     * Upon completion of the returned operation:
+     *   * Creating instances using the instance configuration uses the new
+     *     values.
+     *   * The instance config's new values are readable via the API.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the instance config modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.update` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    public void updateInstanceConfig(
+        com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getUpdateInstanceConfigMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes the instance config. Deletion is only allowed when no
+     * instances are using the configuration. If any instances are using
+     * the config, returns `FAILED_PRECONDITION`.
+     * Only user managed configurations can be deleted.
+     * Authorization requires `spanner.instanceConfigs.delete` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    public void deleteInstanceConfig(
+        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest request,
+        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getDeleteInstanceConfigMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists the user-managed instance config [long-running
+     * operations][google.longrunning.Operation] in the given project. An instance
+     * config operation has a name of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
+    public void listInstanceConfigOperations(
+        com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
+            responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getListInstanceConfigOperationsMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1013,9 +1460,9 @@ public final class InstanceAdminGrpc {
      *     has been requested, billing is based on the newly-requested level.
      * Until completion of the returned operation:
      *   * Cancelling the operation sets its metadata's
-     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-     *     restoring resources to their pre-request values. The operation
-     *     is guaranteed to succeed at undoing all resource changes,
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
      *     after which point it terminates with a `CANCELLED` status.
      *   * All other attempts to modify the instance are rejected.
      *   * Reading the instance via the API continues to give the pre-request
@@ -1034,7 +1481,7 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
     public void updateInstance(
@@ -1129,7 +1576,7 @@ public final class InstanceAdminGrpc {
   }
 
   /**
-   *
+   * A stub to allow clients to do synchronous rpc calls to service InstanceAdmin.
    *
    * <pre>
    * Cloud Spanner Instance Admin API
@@ -1188,6 +1635,140 @@ public final class InstanceAdminGrpc {
         com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetInstanceConfigMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance config and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance config. The instance config name is assigned by the caller. If the
+     * named instance config already exists, `CreateInstanceConfig` returns
+     * `ALREADY_EXISTS`.
+     * Immediately after the request returns:
+     *   * The instance config is readable via the API, with all requested
+     *     attributes. The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true. Its state is `CREATING`.
+     * While the operation is pending:
+     *   * Cancelling the operation renders the instance config immediately
+     *     unreadable via the API.
+     *   * Except for deleting the creating resource, all other attempts to modify
+     *     the instance config are rejected.
+     * Upon completion of the returned operation:
+     *   * Instances can be created using the instance configuration.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false. Its state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * creation of the instance config. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.create` permission on
+     * the resource
+     * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+     * </pre>
+     */
+    public com.google.longrunning.Operation createInstanceConfig(
+        com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCreateInstanceConfigMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance config. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the instance. If the named instance config does
+     * not exist, returns `NOT_FOUND`.
+     * Only user managed configurations can be updated.
+     * Immediately after the request returns:
+     *   * The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true.
+     * While the operation is pending:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
+     *     The operation is guaranteed to succeed at undoing all changes, after
+     *     which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance config are rejected.
+     *   * Reading the instance config via the API continues to give the
+     *     pre-request values.
+     * Upon completion of the returned operation:
+     *   * Creating instances using the instance configuration uses the new
+     *     values.
+     *   * The instance config's new values are readable via the API.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the instance config modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.update` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    public com.google.longrunning.Operation updateInstanceConfig(
+        com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getUpdateInstanceConfigMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes the instance config. Deletion is only allowed when no
+     * instances are using the configuration. If any instances are using
+     * the config, returns `FAILED_PRECONDITION`.
+     * Only user managed configurations can be deleted.
+     * Authorization requires `spanner.instanceConfigs.delete` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    public com.google.protobuf.Empty deleteInstanceConfig(
+        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteInstanceConfigMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists the user-managed instance config [long-running
+     * operations][google.longrunning.Operation] in the given project. An instance
+     * config operation has a name of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
+    public com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+        listInstanceConfigOperations(
+            com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListInstanceConfigOperationsMethod(), getCallOptions(), request);
     }
 
     /**
@@ -1269,9 +1850,9 @@ public final class InstanceAdminGrpc {
      *     has been requested, billing is based on the newly-requested level.
      * Until completion of the returned operation:
      *   * Cancelling the operation sets its metadata's
-     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-     *     restoring resources to their pre-request values. The operation
-     *     is guaranteed to succeed at undoing all resource changes,
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
      *     after which point it terminates with a `CANCELLED` status.
      *   * All other attempts to modify the instance are rejected.
      *   * Reading the instance via the API continues to give the pre-request
@@ -1290,7 +1871,7 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
     public com.google.longrunning.Operation updateInstance(
@@ -1367,7 +1948,7 @@ public final class InstanceAdminGrpc {
   }
 
   /**
-   *
+   * A stub to allow clients to do ListenableFuture-style rpc calls to service InstanceAdmin.
    *
    * <pre>
    * Cloud Spanner Instance Admin API
@@ -1429,6 +2010,144 @@ public final class InstanceAdminGrpc {
         getInstanceConfig(com.google.spanner.admin.instance.v1.GetInstanceConfigRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetInstanceConfigMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance config and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new
+     * instance config. The instance config name is assigned by the caller. If the
+     * named instance config already exists, `CreateInstanceConfig` returns
+     * `ALREADY_EXISTS`.
+     * Immediately after the request returns:
+     *   * The instance config is readable via the API, with all requested
+     *     attributes. The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true. Its state is `CREATING`.
+     * While the operation is pending:
+     *   * Cancelling the operation renders the instance config immediately
+     *     unreadable via the API.
+     *   * Except for deleting the creating resource, all other attempts to modify
+     *     the instance config are rejected.
+     * Upon completion of the returned operation:
+     *   * Instances can be created using the instance configuration.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false. Its state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * creation of the instance config. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.create` permission on
+     * the resource
+     * [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
+        createInstanceConfig(
+            com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getCreateInstanceConfigMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance config. The returned
+     * [long-running operation][google.longrunning.Operation] can be used to track
+     * the progress of updating the instance. If the named instance config does
+     * not exist, returns `NOT_FOUND`.
+     * Only user managed configurations can be updated.
+     * Immediately after the request returns:
+     *   * The instance config's
+     *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *     field is set to true.
+     * While the operation is pending:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
+     *     The operation is guaranteed to succeed at undoing all changes, after
+     *     which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance config are rejected.
+     *   * Reading the instance config via the API continues to give the
+     *     pre-request values.
+     * Upon completion of the returned operation:
+     *   * Creating instances using the instance configuration uses the new
+     *     values.
+     *   * The instance config's new values are readable via the API.
+     *   * The instance config's
+     *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
+     *   field becomes false.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the instance config modification.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if
+     * successful.
+     * Authorization requires `spanner.instanceConfigs.update` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
+        updateInstanceConfig(
+            com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getUpdateInstanceConfigMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes the instance config. Deletion is only allowed when no
+     * instances are using the configuration. If any instances are using
+     * the config, returns `FAILED_PRECONDITION`.
+     * Only user managed configurations can be deleted.
+     * Authorization requires `spanner.instanceConfigs.delete` permission on
+     * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
+        deleteInstanceConfig(
+            com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getDeleteInstanceConfigMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists the user-managed instance config [long-running
+     * operations][google.longrunning.Operation] in the given project. An instance
+     * config operation has a name of the form
+     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting
+     * from the most recently started operation.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<
+            com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>
+        listInstanceConfigOperations(
+            com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getListInstanceConfigOperationsMethod(), getCallOptions()), request);
     }
 
     /**
@@ -1512,9 +2231,9 @@ public final class InstanceAdminGrpc {
      *     has been requested, billing is based on the newly-requested level.
      * Until completion of the returned operation:
      *   * Cancelling the operation sets its metadata's
-     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time], and begins
-     *     restoring resources to their pre-request values. The operation
-     *     is guaranteed to succeed at undoing all resource changes,
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
      *     after which point it terminates with a `CANCELLED` status.
      *   * All other attempts to modify the instance are rejected.
      *   * Reading the instance via the API continues to give the pre-request
@@ -1533,7 +2252,7 @@ public final class InstanceAdminGrpc {
      * The [response][google.longrunning.Operation.response] field type is
      * [Instance][google.spanner.admin.instance.v1.Instance], if successful.
      * Authorization requires `spanner.instances.update` permission on
-     * resource [name][google.spanner.admin.instance.v1.Instance.name].
+     * the resource [name][google.spanner.admin.instance.v1.Instance.name].
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
@@ -1614,24 +2333,28 @@ public final class InstanceAdminGrpc {
 
   private static final int METHODID_LIST_INSTANCE_CONFIGS = 0;
   private static final int METHODID_GET_INSTANCE_CONFIG = 1;
-  private static final int METHODID_LIST_INSTANCES = 2;
-  private static final int METHODID_GET_INSTANCE = 3;
-  private static final int METHODID_CREATE_INSTANCE = 4;
-  private static final int METHODID_UPDATE_INSTANCE = 5;
-  private static final int METHODID_DELETE_INSTANCE = 6;
-  private static final int METHODID_SET_IAM_POLICY = 7;
-  private static final int METHODID_GET_IAM_POLICY = 8;
-  private static final int METHODID_TEST_IAM_PERMISSIONS = 9;
+  private static final int METHODID_CREATE_INSTANCE_CONFIG = 2;
+  private static final int METHODID_UPDATE_INSTANCE_CONFIG = 3;
+  private static final int METHODID_DELETE_INSTANCE_CONFIG = 4;
+  private static final int METHODID_LIST_INSTANCE_CONFIG_OPERATIONS = 5;
+  private static final int METHODID_LIST_INSTANCES = 6;
+  private static final int METHODID_GET_INSTANCE = 7;
+  private static final int METHODID_CREATE_INSTANCE = 8;
+  private static final int METHODID_UPDATE_INSTANCE = 9;
+  private static final int METHODID_DELETE_INSTANCE = 10;
+  private static final int METHODID_SET_IAM_POLICY = 11;
+  private static final int METHODID_GET_IAM_POLICY = 12;
+  private static final int METHODID_TEST_IAM_PERMISSIONS = 13;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
           io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
           io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
           io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final InstanceAdminImplBase serviceImpl;
+    private final AsyncService serviceImpl;
     private final int methodId;
 
-    MethodHandlers(InstanceAdminImplBase serviceImpl, int methodId) {
+    MethodHandlers(AsyncService serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -1651,6 +2374,28 @@ public final class InstanceAdminGrpc {
           serviceImpl.getInstanceConfig(
               (com.google.spanner.admin.instance.v1.GetInstanceConfigRequest) request,
               (io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstanceConfig>)
+                  responseObserver);
+          break;
+        case METHODID_CREATE_INSTANCE_CONFIG:
+          serviceImpl.createInstanceConfig(
+              (com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
+          break;
+        case METHODID_UPDATE_INSTANCE_CONFIG:
+          serviceImpl.updateInstanceConfig(
+              (com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
+          break;
+        case METHODID_DELETE_INSTANCE_CONFIG:
+          serviceImpl.deleteInstanceConfig(
+              (com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);
+          break;
+        case METHODID_LIST_INSTANCE_CONFIG_OPERATIONS:
+          serviceImpl.listInstanceConfigOperations(
+              (com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest) request,
+              (io.grpc.stub.StreamObserver<
+                      com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>)
                   responseObserver);
           break;
         case METHODID_LIST_INSTANCES:
@@ -1713,6 +2458,98 @@ public final class InstanceAdminGrpc {
     }
   }
 
+  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+        .addMethod(
+            getListInstanceConfigsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest,
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse>(
+                    service, METHODID_LIST_INSTANCE_CONFIGS)))
+        .addMethod(
+            getGetInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.GetInstanceConfigRequest,
+                    com.google.spanner.admin.instance.v1.InstanceConfig>(
+                    service, METHODID_GET_INSTANCE_CONFIG)))
+        .addMethod(
+            getCreateInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest,
+                    com.google.longrunning.Operation>(service, METHODID_CREATE_INSTANCE_CONFIG)))
+        .addMethod(
+            getUpdateInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest,
+                    com.google.longrunning.Operation>(service, METHODID_UPDATE_INSTANCE_CONFIG)))
+        .addMethod(
+            getDeleteInstanceConfigMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest,
+                    com.google.protobuf.Empty>(service, METHODID_DELETE_INSTANCE_CONFIG)))
+        .addMethod(
+            getListInstanceConfigOperationsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest,
+                    com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>(
+                    service, METHODID_LIST_INSTANCE_CONFIG_OPERATIONS)))
+        .addMethod(
+            getListInstancesMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstancesRequest,
+                    com.google.spanner.admin.instance.v1.ListInstancesResponse>(
+                    service, METHODID_LIST_INSTANCES)))
+        .addMethod(
+            getGetInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.GetInstanceRequest,
+                    com.google.spanner.admin.instance.v1.Instance>(service, METHODID_GET_INSTANCE)))
+        .addMethod(
+            getCreateInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.CreateInstanceRequest,
+                    com.google.longrunning.Operation>(service, METHODID_CREATE_INSTANCE)))
+        .addMethod(
+            getUpdateInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.UpdateInstanceRequest,
+                    com.google.longrunning.Operation>(service, METHODID_UPDATE_INSTANCE)))
+        .addMethod(
+            getDeleteInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.DeleteInstanceRequest,
+                    com.google.protobuf.Empty>(service, METHODID_DELETE_INSTANCE)))
+        .addMethod(
+            getSetIamPolicyMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<com.google.iam.v1.SetIamPolicyRequest, com.google.iam.v1.Policy>(
+                    service, METHODID_SET_IAM_POLICY)))
+        .addMethod(
+            getGetIamPolicyMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<com.google.iam.v1.GetIamPolicyRequest, com.google.iam.v1.Policy>(
+                    service, METHODID_GET_IAM_POLICY)))
+        .addMethod(
+            getTestIamPermissionsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.iam.v1.TestIamPermissionsRequest,
+                    com.google.iam.v1.TestIamPermissionsResponse>(
+                    service, METHODID_TEST_IAM_PERMISSIONS)))
+        .build();
+  }
+
   private abstract static class InstanceAdminBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier,
           io.grpc.protobuf.ProtoServiceDescriptorSupplier {
@@ -1737,9 +2574,9 @@ public final class InstanceAdminGrpc {
   private static final class InstanceAdminMethodDescriptorSupplier
       extends InstanceAdminBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    InstanceAdminMethodDescriptorSupplier(String methodName) {
+    InstanceAdminMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 
@@ -1763,6 +2600,10 @@ public final class InstanceAdminGrpc {
                       .setSchemaDescriptor(new InstanceAdminFileDescriptorSupplier())
                       .addMethod(getListInstanceConfigsMethod())
                       .addMethod(getGetInstanceConfigMethod())
+                      .addMethod(getCreateInstanceConfigMethod())
+                      .addMethod(getUpdateInstanceConfigMethod())
+                      .addMethod(getDeleteInstanceConfigMethod())
+                      .addMethod(getListInstanceConfigOperationsMethod())
                       .addMethod(getListInstancesMethod())
                       .addMethod(getGetInstanceMethod())
                       .addMethod(getCreateInstanceMethod())

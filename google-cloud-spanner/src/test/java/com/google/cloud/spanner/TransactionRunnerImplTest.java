@@ -21,6 +21,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -72,7 +73,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit test for {@link com.google.cloud.spanner.SpannerImpl.TransactionRunnerImpl} */
+/** Unit test for {@link com.google.cloud.spanner.TransactionRunnerImpl} */
 @RunWith(JUnit4.class)
 public class TransactionRunnerImplTest {
   private static final class TestExecutorFactory
@@ -100,7 +101,7 @@ public class TransactionRunnerImplTest {
     MockitoAnnotations.initMocks(this);
     firstRun = true;
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
-    when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap()))
+    when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
               ResultSet.Builder builder =
@@ -142,11 +143,16 @@ public class TransactionRunnerImplTest {
         SessionPoolOptions.newBuilder().setMinSessions(0).setIncStep(1).build();
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
+    when(options.getDatabaseRole()).thenReturn("role");
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     when(rpc.batchCreateSessions(
-            Mockito.anyString(), Mockito.eq(1), Mockito.anyMap(), Mockito.anyMap()))
+            Mockito.anyString(),
+            Mockito.eq(1),
+            Mockito.anyString(),
+            Mockito.anyMap(),
+            Mockito.anyMap()))
         .thenAnswer(
             invocation ->
                 Collections.singletonList(
@@ -155,7 +161,8 @@ public class TransactionRunnerImplTest {
                         .setCreateTime(
                             Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
-    when(rpc.beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap()))
+    when(rpc.beginTransactionAsync(
+            Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation ->
                 ApiFutures.immediateFuture(
@@ -175,7 +182,8 @@ public class TransactionRunnerImplTest {
       DatabaseClient client = spanner.getDatabaseClient(db);
       client.readWriteTransaction().run(transaction -> null);
       verify(rpc, times(1))
-          .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+          .beginTransactionAsync(
+              Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true));
     }
   }
 
@@ -265,10 +273,15 @@ public class TransactionRunnerImplTest {
   @Test
   public void inlineBegin() {
     SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions options = mock(SpannerOptions.class);
+
     when(spanner.getRpc()).thenReturn(rpc);
     when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
-    when(spanner.getOptions()).thenReturn(mock(SpannerOptions.class));
+    when(spanner.getOptions()).thenReturn(options);
+    SessionPoolOptions sessionPoolOptions = SessionPoolOptions.newBuilder().build();
+    when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
+
     SessionImpl session =
         new SessionImpl(
             spanner, "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP) {
@@ -289,9 +302,10 @@ public class TransactionRunnerImplTest {
           return null;
         });
     verify(rpc, Mockito.never())
-        .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+        .beginTransaction(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true));
     verify(rpc, Mockito.never())
-        .beginTransactionAsync(Mockito.any(BeginTransactionRequest.class), Mockito.anyMap());
+        .beginTransactionAsync(
+            Mockito.any(BeginTransactionRequest.class), Mockito.anyMap(), eq(true));
     assertThat(usedInlinedBegin).isTrue();
   }
 
@@ -306,7 +320,7 @@ public class TransactionRunnerImplTest {
             .setRpc(rpc)
             .build();
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);
-    when(session.beginTransactionAsync())
+    when(session.beginTransactionAsync(true))
         .thenReturn(
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());

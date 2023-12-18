@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,110 +46,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new ExecuteBatchDmlRequest();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private ExecuteBatchDmlRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              session_ = s;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
-              if (transaction_ != null) {
-                subBuilder = transaction_.toBuilder();
-              }
-              transaction_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(transaction_);
-                transaction_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 26:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                statements_ =
-                    new java.util.ArrayList<
-                        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              statements_.add(
-                  input.readMessage(
-                      com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.parser(),
-                      extensionRegistry));
-              break;
-            }
-          case 32:
-            {
-              seqno_ = input.readInt64();
-              break;
-            }
-          case 42:
-            {
-              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-              if (requestOptions_ != null) {
-                subBuilder = requestOptions_.toBuilder();
-              }
-              requestOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(requestOptions_);
-                requestOptions_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        statements_ = java.util.Collections.unmodifiableList(statements_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -202,12 +98,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
+     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
+     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
+     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -221,12 +121,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
+     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
+     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
+     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -240,12 +144,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
+     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
+     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
+     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -259,7 +167,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -275,7 +186,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -294,7 +208,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -310,7 +227,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -319,15 +239,21 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
+    /* nullable */
     com.google.spanner.v1.Type getParamTypesOrDefault(
-        java.lang.String key, com.google.spanner.v1.Type defaultValue);
+        java.lang.String key,
+        /* nullable */
+        com.google.spanner.v1.Type defaultValue);
     /**
      *
      *
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -367,86 +293,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       return new Statement();
     }
 
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-      return this.unknownFields;
-    }
-
-    private Statement(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                sql_ = s;
-                break;
-              }
-            case 18:
-              {
-                com.google.protobuf.Struct.Builder subBuilder = null;
-                if (params_ != null) {
-                  subBuilder = params_.toBuilder();
-                }
-                params_ = input.readMessage(com.google.protobuf.Struct.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(params_);
-                  params_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-            case 26:
-              {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  paramTypes_ =
-                      com.google.protobuf.MapField.newMapField(
-                          ParamTypesDefaultEntryHolder.defaultEntry);
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
-                    paramTypes__ =
-                        input.readMessage(
-                            ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
-                            extensionRegistry);
-                paramTypes_.getMutableMap().put(paramTypes__.getKey(), paramTypes__.getValue());
-                break;
-              }
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.v1.SpannerProto
           .internal_static_google_spanner_v1_ExecuteBatchDmlRequest_Statement_descriptor;
@@ -474,7 +320,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     }
 
     public static final int SQL_FIELD_NUMBER = 1;
-    private volatile java.lang.Object sql_;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object sql_ = "";
     /**
      *
      *
@@ -529,12 +377,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
+     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
+     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
+     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -551,12 +403,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
+     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
+     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
+     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -573,12 +429,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Parameter names and values that bind to placeholders in the DML string.
+     *
      * A parameter placeholder consists of the `&#64;` character followed by the
      * parameter name (for example, `&#64;firstName`). Parameter names can contain
      * letters, numbers, and underscores.
+     *
      * Parameters can appear anywhere that a literal value is expected.  The
      * same parameter name can be used more than once, for example:
+     *
      * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+     *
      * It is an error to execute a SQL statement with unbound parameters.
      * </pre>
      *
@@ -586,7 +446,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      */
     @java.lang.Override
     public com.google.protobuf.StructOrBuilder getParamsOrBuilder() {
-      return getParams();
+      return params_ == null ? com.google.protobuf.Struct.getDefaultInstance() : params_;
     }
 
     public static final int PARAM_TYPES_FIELD_NUMBER = 3;
@@ -604,6 +464,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
                       com.google.spanner.v1.Type.getDefaultInstance());
     }
 
+    @SuppressWarnings("serial")
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type> paramTypes_;
 
     private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
@@ -624,7 +485,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -636,7 +500,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     @java.lang.Override
     public boolean containsParamTypes(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       return internalGetParamTypes().getMap().containsKey(key);
     }
@@ -652,7 +516,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -671,7 +538,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -681,10 +551,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
      */
     @java.lang.Override
-    public com.google.spanner.v1.Type getParamTypesOrDefault(
-        java.lang.String key, com.google.spanner.v1.Type defaultValue) {
+    public /* nullable */ com.google.spanner.v1.Type getParamTypesOrDefault(
+        java.lang.String key,
+        /* nullable */
+        com.google.spanner.v1.Type defaultValue) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
           internalGetParamTypes().getMap();
@@ -696,7 +568,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <pre>
      * It is not always possible for Cloud Spanner to infer the right SQL type
      * from a JSON value.  For example, values of type `BYTES` and values
-     * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+     * of type `STRING` both appear in
+     * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+     * JSON strings.
+     *
      * In these cases, `param_types` can be used to specify the exact
      * SQL type for some or all of the SQL statement parameters. See the
      * definition of [Type][google.spanner.v1.Type] for more information
@@ -708,7 +583,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     @java.lang.Override
     public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
           internalGetParamTypes().getMap();
@@ -740,7 +615,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
       com.google.protobuf.GeneratedMessageV3.serializeStringMapTo(
           output, internalGetParamTypes(), ParamTypesDefaultEntryHolder.defaultEntry, 3);
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -765,7 +640,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
                 .build();
         size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, paramTypes__);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -787,7 +662,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         if (!getParams().equals(other.getParams())) return false;
       }
       if (!internalGetParamTypes().equals(other.internalGetParamTypes())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -808,7 +683,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         hash = (37 * hash) + PARAM_TYPES_FIELD_NUMBER;
         hash = (53 * hash) + internalGetParamTypes().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -960,28 +835,20 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
 
       // Construct using com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         sql_ = "";
-
-        if (paramsBuilder_ == null) {
-          params_ = null;
-        } else {
-          params_ = null;
+        params_ = null;
+        if (paramsBuilder_ != null) {
+          paramsBuilder_.dispose();
           paramsBuilder_ = null;
         }
         internalGetMutableParamTypes().clear();
@@ -1012,17 +879,25 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       public com.google.spanner.v1.ExecuteBatchDmlRequest.Statement buildPartial() {
         com.google.spanner.v1.ExecuteBatchDmlRequest.Statement result =
             new com.google.spanner.v1.ExecuteBatchDmlRequest.Statement(this);
-        int from_bitField0_ = bitField0_;
-        result.sql_ = sql_;
-        if (paramsBuilder_ == null) {
-          result.params_ = params_;
-        } else {
-          result.params_ = paramsBuilder_.build();
+        if (bitField0_ != 0) {
+          buildPartial0(result);
         }
-        result.paramTypes_ = internalGetParamTypes();
-        result.paramTypes_.makeImmutable();
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.ExecuteBatchDmlRequest.Statement result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.sql_ = sql_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.params_ = paramsBuilder_ == null ? params_ : paramsBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          result.paramTypes_ = internalGetParamTypes();
+          result.paramTypes_.makeImmutable();
+        }
       }
 
       @java.lang.Override
@@ -1075,13 +950,15 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           return this;
         if (!other.getSql().isEmpty()) {
           sql_ = other.sql_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (other.hasParams()) {
           mergeParams(other.getParams());
         }
         internalGetMutableParamTypes().mergeFrom(other.internalGetParamTypes());
-        this.mergeUnknownFields(other.unknownFields);
+        bitField0_ |= 0x00000004;
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1096,18 +973,56 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  sql_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+              case 18:
+                {
+                  input.readMessage(getParamsFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+              case 26:
+                {
+                  com.google.protobuf.MapEntry<java.lang.String, com.google.spanner.v1.Type>
+                      paramTypes__ =
+                          input.readMessage(
+                              ParamTypesDefaultEntryHolder.defaultEntry.getParserForType(),
+                              extensionRegistry);
+                  internalGetMutableParamTypes()
+                      .getMutableMap()
+                      .put(paramTypes__.getKey(), paramTypes__.getValue());
+                  bitField0_ |= 0x00000004;
+                  break;
+                } // case 26
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage =
-              (com.google.spanner.v1.ExecuteBatchDmlRequest.Statement) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -1174,8 +1089,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         if (value == null) {
           throw new NullPointerException();
         }
-
         sql_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1191,8 +1106,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * @return This builder for chaining.
        */
       public Builder clearSql() {
-
         sql_ = getDefaultInstance().getSql();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -1213,8 +1128,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         checkByteStringIsUtf8(value);
-
         sql_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1230,12 +1145,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1244,19 +1163,23 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * @return Whether the params field is set.
        */
       public boolean hasParams() {
-        return paramsBuilder_ != null || params_ != null;
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        *
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1276,12 +1199,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1293,11 +1220,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             throw new NullPointerException();
           }
           params_ = value;
-          onChanged();
         } else {
           paramsBuilder_.setMessage(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -1305,12 +1232,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1319,11 +1250,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       public Builder setParams(com.google.protobuf.Struct.Builder builderForValue) {
         if (paramsBuilder_ == null) {
           params_ = builderForValue.build();
-          onChanged();
         } else {
           paramsBuilder_.setMessage(builderForValue.build());
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -1331,12 +1262,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1344,17 +1279,18 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        */
       public Builder mergeParams(com.google.protobuf.Struct value) {
         if (paramsBuilder_ == null) {
-          if (params_ != null) {
-            params_ =
-                com.google.protobuf.Struct.newBuilder(params_).mergeFrom(value).buildPartial();
+          if (((bitField0_ & 0x00000002) != 0)
+              && params_ != null
+              && params_ != com.google.protobuf.Struct.getDefaultInstance()) {
+            getParamsBuilder().mergeFrom(value);
           } else {
             params_ = value;
           }
-          onChanged();
         } else {
           paramsBuilder_.mergeFrom(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -1362,26 +1298,29 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
        * <code>.google.protobuf.Struct params = 2;</code>
        */
       public Builder clearParams() {
-        if (paramsBuilder_ == null) {
-          params_ = null;
-          onChanged();
-        } else {
-          params_ = null;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        params_ = null;
+        if (paramsBuilder_ != null) {
+          paramsBuilder_.dispose();
           paramsBuilder_ = null;
         }
-
+        onChanged();
         return this;
       }
       /**
@@ -1389,19 +1328,23 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
        * <code>.google.protobuf.Struct params = 2;</code>
        */
       public com.google.protobuf.Struct.Builder getParamsBuilder() {
-
+        bitField0_ |= 0x00000002;
         onChanged();
         return getParamsFieldBuilder().getBuilder();
       }
@@ -1410,12 +1353,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1433,12 +1380,16 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        *
        * <pre>
        * Parameter names and values that bind to placeholders in the DML string.
+       *
        * A parameter placeholder consists of the `&#64;` character followed by the
        * parameter name (for example, `&#64;firstName`). Parameter names can contain
        * letters, numbers, and underscores.
+       *
        * Parameters can appear anywhere that a literal value is expected.  The
        * same parameter name can be used more than once, for example:
+       *
        * `"WHERE id &gt; &#64;msg_id AND id &lt; &#64;msg_id + 100"`
+       *
        * It is an error to execute a SQL statement with unbound parameters.
        * </pre>
        *
@@ -1475,8 +1426,6 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
 
       private com.google.protobuf.MapField<java.lang.String, com.google.spanner.v1.Type>
           internalGetMutableParamTypes() {
-        onChanged();
-        ;
         if (paramTypes_ == null) {
           paramTypes_ =
               com.google.protobuf.MapField.newMapField(ParamTypesDefaultEntryHolder.defaultEntry);
@@ -1484,6 +1433,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         if (!paramTypes_.isMutable()) {
           paramTypes_ = paramTypes_.copy();
         }
+        bitField0_ |= 0x00000004;
+        onChanged();
         return paramTypes_;
       }
 
@@ -1496,7 +1447,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+       * of type `STRING` both appear in
+       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+       * JSON strings.
+       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1508,7 +1462,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       @java.lang.Override
       public boolean containsParamTypes(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         return internalGetParamTypes().getMap().containsKey(key);
       }
@@ -1524,7 +1478,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+       * of type `STRING` both appear in
+       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+       * JSON strings.
+       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1543,7 +1500,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+       * of type `STRING` both appear in
+       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+       * JSON strings.
+       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1553,10 +1513,12 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <code>map&lt;string, .google.spanner.v1.Type&gt; param_types = 3;</code>
        */
       @java.lang.Override
-      public com.google.spanner.v1.Type getParamTypesOrDefault(
-          java.lang.String key, com.google.spanner.v1.Type defaultValue) {
+      public /* nullable */ com.google.spanner.v1.Type getParamTypesOrDefault(
+          java.lang.String key,
+          /* nullable */
+          com.google.spanner.v1.Type defaultValue) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
             internalGetParamTypes().getMap();
@@ -1568,7 +1530,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+       * of type `STRING` both appear in
+       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+       * JSON strings.
+       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1580,7 +1545,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       @java.lang.Override
       public com.google.spanner.v1.Type getParamTypesOrThrow(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         java.util.Map<java.lang.String, com.google.spanner.v1.Type> map =
             internalGetParamTypes().getMap();
@@ -1591,6 +1556,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       }
 
       public Builder clearParamTypes() {
+        bitField0_ = (bitField0_ & ~0x00000004);
         internalGetMutableParamTypes().getMutableMap().clear();
         return this;
       }
@@ -1600,7 +1566,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+       * of type `STRING` both appear in
+       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+       * JSON strings.
+       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1611,7 +1580,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        */
       public Builder removeParamTypes(java.lang.String key) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         internalGetMutableParamTypes().getMutableMap().remove(key);
         return this;
@@ -1619,6 +1588,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       /** Use alternate mutation accessors instead. */
       @java.lang.Deprecated
       public java.util.Map<java.lang.String, com.google.spanner.v1.Type> getMutableParamTypes() {
+        bitField0_ |= 0x00000004;
         return internalGetMutableParamTypes().getMutableMap();
       }
       /**
@@ -1627,7 +1597,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+       * of type `STRING` both appear in
+       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+       * JSON strings.
+       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1638,12 +1611,13 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        */
       public Builder putParamTypes(java.lang.String key, com.google.spanner.v1.Type value) {
         if (key == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map key");
         }
         if (value == null) {
-          throw new java.lang.NullPointerException();
+          throw new NullPointerException("map value");
         }
         internalGetMutableParamTypes().getMutableMap().put(key, value);
+        bitField0_ |= 0x00000004;
         return this;
       }
       /**
@@ -1652,7 +1626,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
        * <pre>
        * It is not always possible for Cloud Spanner to infer the right SQL type
        * from a JSON value.  For example, values of type `BYTES` and values
-       * of type `STRING` both appear in [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as JSON strings.
+       * of type `STRING` both appear in
+       * [params][google.spanner.v1.ExecuteBatchDmlRequest.Statement.params] as
+       * JSON strings.
+       *
        * In these cases, `param_types` can be used to specify the exact
        * SQL type for some or all of the SQL statement parameters. See the
        * definition of [Type][google.spanner.v1.Type] for more information
@@ -1664,6 +1641,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       public Builder putAllParamTypes(
           java.util.Map<java.lang.String, com.google.spanner.v1.Type> values) {
         internalGetMutableParamTypes().getMutableMap().putAll(values);
+        bitField0_ |= 0x00000004;
         return this;
       }
 
@@ -1700,7 +1678,19 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new Statement(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -1720,7 +1710,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object session_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object session_ = "";
   /**
    *
    *
@@ -1779,6 +1771,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
+   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -1799,6 +1792,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
+   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -1821,6 +1815,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    * <pre>
    * Required. The transaction to use. Must be a read-write transaction.
+   *
    * To protect against replays, single-use transactions are not supported. The
    * caller must either supply an existing transaction ID or begin a new
    * transaction.
@@ -1832,19 +1827,24 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
-    return getTransaction();
+    return transaction_ == null
+        ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
+        : transaction_;
   }
 
   public static final int STATEMENTS_FIELD_NUMBER = 3;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement> statements_;
   /**
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1861,10 +1861,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1881,10 +1882,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1900,10 +1902,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1919,10 +1922,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
+   *
    * Callers must provide at least one statement.
    * </pre>
    *
@@ -1937,14 +1941,15 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
   }
 
   public static final int SEQNO_FIELD_NUMBER = 4;
-  private long seqno_;
+  private long seqno_ = 0L;
   /**
    *
    *
    * <pre>
-   * Required. A per-transaction sequence number used to identify this request. This field
-   * makes each request idempotent such that if the request is received multiple
-   * times, at most one will succeed.
+   * Required. A per-transaction sequence number used to identify this request.
+   * This field makes each request idempotent such that if the request is
+   * received multiple times, at most one will succeed.
+   *
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order
    * sequence number, the transaction may be aborted. Replays of previously
@@ -2005,7 +2010,9 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
-    return getRequestOptions();
+    return requestOptions_ == null
+        ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+        : requestOptions_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -2037,7 +2044,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     if (requestOptions_ != null) {
       output.writeMessage(5, getRequestOptions());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -2061,7 +2068,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getRequestOptions());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -2088,7 +2095,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -2115,7 +2122,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -2244,44 +2251,33 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     }
 
     // Construct using com.google.spanner.v1.ExecuteBatchDmlRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getStatementsFieldBuilder();
-      }
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       session_ = "";
-
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-      } else {
-        transaction_ = null;
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
       if (statementsBuilder_ == null) {
         statements_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        statements_ = null;
         statementsBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000004);
       seqno_ = 0L;
-
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-      } else {
-        requestOptions_ = null;
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
       return this;
@@ -2311,30 +2307,42 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public com.google.spanner.v1.ExecuteBatchDmlRequest buildPartial() {
       com.google.spanner.v1.ExecuteBatchDmlRequest result =
           new com.google.spanner.v1.ExecuteBatchDmlRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.session_ = session_;
-      if (transactionBuilder_ == null) {
-        result.transaction_ = transaction_;
-      } else {
-        result.transaction_ = transactionBuilder_.build();
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.ExecuteBatchDmlRequest result) {
       if (statementsBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000004) != 0)) {
           statements_ = java.util.Collections.unmodifiableList(statements_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000004);
         }
         result.statements_ = statements_;
       } else {
         result.statements_ = statementsBuilder_.build();
       }
-      result.seqno_ = seqno_;
-      if (requestOptionsBuilder_ == null) {
-        result.requestOptions_ = requestOptions_;
-      } else {
-        result.requestOptions_ = requestOptionsBuilder_.build();
+    }
+
+    private void buildPartial0(com.google.spanner.v1.ExecuteBatchDmlRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.session_ = session_;
       }
-      onBuilt();
-      return result;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transaction_ =
+            transactionBuilder_ == null ? transaction_ : transactionBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.seqno_ = seqno_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.requestOptions_ =
+            requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -2384,6 +2392,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       if (other == com.google.spanner.v1.ExecuteBatchDmlRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasTransaction()) {
@@ -2393,7 +2402,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         if (!other.statements_.isEmpty()) {
           if (statements_.isEmpty()) {
             statements_ = other.statements_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000004);
           } else {
             ensureStatementsIsMutable();
             statements_.addAll(other.statements_);
@@ -2406,7 +2415,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             statementsBuilder_.dispose();
             statementsBuilder_ = null;
             statements_ = other.statements_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000004);
             statementsBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                     ? getStatementsFieldBuilder()
@@ -2422,7 +2431,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -2437,17 +2446,69 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.ExecuteBatchDmlRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                session_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                com.google.spanner.v1.ExecuteBatchDmlRequest.Statement m =
+                    input.readMessage(
+                        com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.parser(),
+                        extensionRegistry);
+                if (statementsBuilder_ == null) {
+                  ensureStatementsIsMutable();
+                  statements_.add(m);
+                } else {
+                  statementsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 26
+            case 32:
+              {
+                seqno_ = input.readInt64();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 32
+            case 42:
+              {
+                input.readMessage(getRequestOptionsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.ExecuteBatchDmlRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -2520,8 +2581,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
       if (value == null) {
         throw new NullPointerException();
       }
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -2539,8 +2600,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * @return This builder for chaining.
      */
     public Builder clearSession() {
-
       session_ = getDefaultInstance().getSession();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -2563,8 +2624,8 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -2580,6 +2641,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2592,13 +2654,14 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * @return Whether the transaction field is set.
      */
     public boolean hasTransaction() {
-      return transactionBuilder_ != null || transaction_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2624,6 +2687,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2639,11 +2703,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         transaction_ = value;
-        onChanged();
       } else {
         transactionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -2651,6 +2715,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2664,11 +2729,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         com.google.spanner.v1.TransactionSelector.Builder builderForValue) {
       if (transactionBuilder_ == null) {
         transaction_ = builderForValue.build();
-        onChanged();
       } else {
         transactionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -2676,6 +2741,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2687,19 +2753,18 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      */
     public Builder mergeTransaction(com.google.spanner.v1.TransactionSelector value) {
       if (transactionBuilder_ == null) {
-        if (transaction_ != null) {
-          transaction_ =
-              com.google.spanner.v1.TransactionSelector.newBuilder(transaction_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && transaction_ != null
+            && transaction_ != com.google.spanner.v1.TransactionSelector.getDefaultInstance()) {
+          getTransactionBuilder().mergeFrom(value);
         } else {
           transaction_ = value;
         }
-        onChanged();
       } else {
         transactionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -2707,6 +2772,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2717,14 +2783,13 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * </code>
      */
     public Builder clearTransaction() {
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-        onChanged();
-      } else {
-        transaction_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2732,6 +2797,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2742,7 +2808,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * </code>
      */
     public com.google.spanner.v1.TransactionSelector.Builder getTransactionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
@@ -2751,6 +2817,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2774,6 +2841,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      * <pre>
      * Required. The transaction to use. Must be a read-write transaction.
+     *
      * To protect against replays, single-use transactions are not supported. The
      * caller must either supply an existing transaction ID or begin a new
      * transaction.
@@ -2804,11 +2872,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
         java.util.Collections.emptyList();
 
     private void ensureStatementsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000004) != 0)) {
         statements_ =
             new java.util.ArrayList<com.google.spanner.v1.ExecuteBatchDmlRequest.Statement>(
                 statements_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000004;
       }
     }
 
@@ -2822,10 +2890,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2845,10 +2914,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2867,10 +2937,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2889,10 +2960,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2918,10 +2990,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2944,10 +3017,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -2972,10 +3046,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3001,10 +3076,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3027,10 +3103,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3053,10 +3130,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3080,10 +3158,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3094,7 +3173,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public Builder clearStatements() {
       if (statementsBuilder_ == null) {
         statements_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
       } else {
         statementsBuilder_.clear();
@@ -3105,10 +3184,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3130,10 +3210,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3149,10 +3230,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3172,10 +3254,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3195,10 +3278,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3214,10 +3298,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3235,10 +3320,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. The list of statements to execute in this batch. Statements are executed
-     * serially, such that the effects of statement `i` are visible to statement
-     * `i+1`. Each statement must be a DML statement. Execution stops at the
-     * first failed statement; the remaining statements are not executed.
+     * Required. The list of statements to execute in this batch. Statements are
+     * executed serially, such that the effects of statement `i` are visible to
+     * statement `i+1`. Each statement must be a DML statement. Execution stops at
+     * the first failed statement; the remaining statements are not executed.
+     *
      * Callers must provide at least one statement.
      * </pre>
      *
@@ -3262,7 +3348,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
                 com.google.spanner.v1.ExecuteBatchDmlRequest.Statement,
                 com.google.spanner.v1.ExecuteBatchDmlRequest.Statement.Builder,
                 com.google.spanner.v1.ExecuteBatchDmlRequest.StatementOrBuilder>(
-                statements_, ((bitField0_ & 0x00000001) != 0), getParentForChildren(), isClean());
+                statements_, ((bitField0_ & 0x00000004) != 0), getParentForChildren(), isClean());
         statements_ = null;
       }
       return statementsBuilder_;
@@ -3273,9 +3359,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. A per-transaction sequence number used to identify this request. This field
-     * makes each request idempotent such that if the request is received multiple
-     * times, at most one will succeed.
+     * Required. A per-transaction sequence number used to identify this request.
+     * This field makes each request idempotent such that if the request is
+     * received multiple times, at most one will succeed.
+     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
@@ -3294,9 +3381,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. A per-transaction sequence number used to identify this request. This field
-     * makes each request idempotent such that if the request is received multiple
-     * times, at most one will succeed.
+     * Required. A per-transaction sequence number used to identify this request.
+     * This field makes each request idempotent such that if the request is
+     * received multiple times, at most one will succeed.
+     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
@@ -3311,6 +3399,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public Builder setSeqno(long value) {
 
       seqno_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -3318,9 +3407,10 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * Required. A per-transaction sequence number used to identify this request. This field
-     * makes each request idempotent such that if the request is received multiple
-     * times, at most one will succeed.
+     * Required. A per-transaction sequence number used to identify this request.
+     * This field makes each request idempotent such that if the request is
+     * received multiple times, at most one will succeed.
+     *
      * The sequence number must be monotonically increasing within the
      * transaction. If a request arrives for the first time with an out-of-order
      * sequence number, the transaction may be aborted. Replays of previously
@@ -3332,7 +3422,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * @return This builder for chaining.
      */
     public Builder clearSeqno() {
-
+      bitField0_ = (bitField0_ & ~0x00000008);
       seqno_ = 0L;
       onChanged();
       return this;
@@ -3356,7 +3446,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * @return Whether the requestOptions field is set.
      */
     public boolean hasRequestOptions() {
-      return requestOptionsBuilder_ != null || requestOptions_ != null;
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      *
@@ -3393,11 +3483,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         requestOptions_ = value;
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -3412,11 +3502,11 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
     public Builder setRequestOptions(com.google.spanner.v1.RequestOptions.Builder builderForValue) {
       if (requestOptionsBuilder_ == null) {
         requestOptions_ = builderForValue.build();
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -3430,19 +3520,18 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      */
     public Builder mergeRequestOptions(com.google.spanner.v1.RequestOptions value) {
       if (requestOptionsBuilder_ == null) {
-        if (requestOptions_ != null) {
-          requestOptions_ =
-              com.google.spanner.v1.RequestOptions.newBuilder(requestOptions_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000010) != 0)
+            && requestOptions_ != null
+            && requestOptions_ != com.google.spanner.v1.RequestOptions.getDefaultInstance()) {
+          getRequestOptionsBuilder().mergeFrom(value);
         } else {
           requestOptions_ = value;
         }
-        onChanged();
       } else {
         requestOptionsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -3455,14 +3544,13 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <code>.google.spanner.v1.RequestOptions request_options = 5;</code>
      */
     public Builder clearRequestOptions() {
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-        onChanged();
-      } else {
-        requestOptions_ = null;
+      bitField0_ = (bitField0_ & ~0x00000010);
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -3475,7 +3563,7 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
      * <code>.google.spanner.v1.RequestOptions request_options = 5;</code>
      */
     public com.google.spanner.v1.RequestOptions.Builder getRequestOptionsBuilder() {
-
+      bitField0_ |= 0x00000010;
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
@@ -3555,7 +3643,18 @@ public final class ExecuteBatchDmlRequest extends com.google.protobuf.GeneratedM
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ExecuteBatchDmlRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

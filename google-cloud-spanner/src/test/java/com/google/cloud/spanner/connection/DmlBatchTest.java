@@ -22,6 +22,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,6 +36,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +56,7 @@ public class DmlBatchTest {
 
   private DmlBatch createSubject() {
     UnitOfWork transaction = mock(UnitOfWork.class);
-    when(transaction.executeBatchUpdateAsync(Arrays.asList(statement1, statement2)))
+    when(transaction.executeBatchUpdateAsync(any(), eq(Arrays.asList(statement1, statement2))))
         .thenReturn(ApiFutures.immediateFuture(new long[] {3L, 5L}));
     return createSubject(transaction);
   }
@@ -69,7 +72,7 @@ public class DmlBatchTest {
   public void testExecuteQuery() {
     DmlBatch batch = createSubject();
     try {
-      batch.executeQueryAsync(mock(ParsedStatement.class), AnalyzeMode.NONE);
+      batch.executeQueryAsync(CallType.SYNC, mock(ParsedStatement.class), AnalyzeMode.NONE);
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -80,7 +83,7 @@ public class DmlBatchTest {
   public void testExecuteDdl() {
     DmlBatch batch = createSubject();
     try {
-      batch.executeDdlAsync(mock(ParsedStatement.class));
+      batch.executeDdlAsync(CallType.SYNC, mock(ParsedStatement.class));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -90,7 +93,7 @@ public class DmlBatchTest {
   @Test
   public void testGetReadTimestamp() {
     DmlBatch batch = createSubject();
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     try {
       batch.getReadTimestamp();
       fail("Expected exception");
@@ -108,7 +111,7 @@ public class DmlBatchTest {
   @Test
   public void testGetCommitTimestamp() {
     DmlBatch batch = createSubject();
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     try {
       batch.getCommitTimestamp();
       fail("Expected exception");
@@ -120,7 +123,7 @@ public class DmlBatchTest {
   @Test
   public void testGetCommitResponse() {
     DmlBatch batch = createSubject();
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     try {
       batch.getCommitResponse();
       fail("Expected exception");
@@ -132,7 +135,7 @@ public class DmlBatchTest {
   @Test
   public void testGetCommitResponseOrNull() {
     DmlBatch batch = createSubject();
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     assertNull(batch.getCommitResponseOrNull());
   }
 
@@ -140,7 +143,8 @@ public class DmlBatchTest {
   public void testWriteIterable() {
     DmlBatch batch = createSubject();
     try {
-      batch.writeAsync(Collections.singletonList(Mutation.newInsertBuilder("foo").build()));
+      batch.writeAsync(
+          CallType.SYNC, Collections.singletonList(Mutation.newInsertBuilder("foo").build()));
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -152,7 +156,7 @@ public class DmlBatchTest {
     DmlBatch batch = createSubject();
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
     assertThat(batch.isActive(), is(true));
-    get(batch.runBatchAsync());
+    get(batch.runBatchAsync(CallType.SYNC));
     assertThat(batch.getState(), is(UnitOfWorkState.RAN));
     assertThat(batch.isActive(), is(false));
 
@@ -164,7 +168,7 @@ public class DmlBatchTest {
     assertThat(batch.isActive(), is(false));
 
     UnitOfWork tx = mock(UnitOfWork.class);
-    when(tx.executeBatchUpdateAsync(anyList()))
+    when(tx.executeBatchUpdateAsync(any(), anyList()))
         .thenReturn(ApiFutures.immediateFailedFuture(mock(SpannerException.class)));
     batch = createSubject(tx);
     assertThat(batch.getState(), is(UnitOfWorkState.STARTED));
@@ -173,10 +177,10 @@ public class DmlBatchTest {
     when(statement.getStatement()).thenReturn(Statement.of("UPDATE TEST SET COL1=2"));
     when(statement.getSqlWithoutComments()).thenReturn("UPDATE TEST SET COL1=2");
     when(statement.getType()).thenReturn(StatementType.UPDATE);
-    get(batch.executeUpdateAsync(statement));
+    get(batch.executeUpdateAsync(CallType.SYNC, statement));
     boolean exception = false;
     try {
-      get(batch.runBatchAsync());
+      get(batch.runBatchAsync(CallType.SYNC));
     } catch (SpannerException e) {
       exception = true;
     }
@@ -189,7 +193,7 @@ public class DmlBatchTest {
   public void testCommit() {
     DmlBatch batch = createSubject();
     try {
-      batch.commitAsync();
+      batch.commitAsync(CallType.SYNC);
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -200,7 +204,7 @@ public class DmlBatchTest {
   public void testRollback() {
     DmlBatch batch = createSubject();
     try {
-      batch.rollbackAsync();
+      batch.rollbackAsync(CallType.SYNC);
       fail("Expected exception");
     } catch (SpannerException e) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());

@@ -21,6 +21,8 @@ import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
+import com.google.cloud.spanner.connection.PgTransactionMode.AccessMode;
+import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
@@ -28,6 +30,7 @@ import com.google.protobuf.util.Durations;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -82,6 +85,78 @@ class ClientSideStatementValueConverters {
         return Boolean.FALSE;
       }
       return null;
+    }
+  }
+
+  /** Converter from string to {@link Boolean} */
+  static class PgBooleanConverter implements ClientSideStatementValueConverter<Boolean> {
+
+    public PgBooleanConverter(String allowedValues) {}
+
+    @Override
+    public Class<Boolean> getParameterClass() {
+      return Boolean.class;
+    }
+
+    @Override
+    public Boolean convert(String value) {
+      if (value == null) {
+        return null;
+      }
+      if (value.length() > 1
+          && ((value.startsWith("'") && value.endsWith("'"))
+              || (value.startsWith("\"") && value.endsWith("\"")))) {
+        value = value.substring(1, value.length() - 1);
+      }
+      if ("true".equalsIgnoreCase(value)
+          || "tru".equalsIgnoreCase(value)
+          || "tr".equalsIgnoreCase(value)
+          || "t".equalsIgnoreCase(value)
+          || "on".equalsIgnoreCase(value)
+          || "1".equalsIgnoreCase(value)
+          || "yes".equalsIgnoreCase(value)
+          || "ye".equalsIgnoreCase(value)
+          || "y".equalsIgnoreCase(value)) {
+        return Boolean.TRUE;
+      }
+      if ("false".equalsIgnoreCase(value)
+          || "fals".equalsIgnoreCase(value)
+          || "fal".equalsIgnoreCase(value)
+          || "fa".equalsIgnoreCase(value)
+          || "f".equalsIgnoreCase(value)
+          || "off".equalsIgnoreCase(value)
+          || "of".equalsIgnoreCase(value)
+          || "0".equalsIgnoreCase(value)
+          || "no".equalsIgnoreCase(value)
+          || "n".equalsIgnoreCase(value)) {
+        return Boolean.FALSE;
+      }
+      return null;
+    }
+  }
+
+  /** Converter from string to a non-negative integer. */
+  static class NonNegativeIntegerConverter implements ClientSideStatementValueConverter<Integer> {
+
+    public NonNegativeIntegerConverter(String allowedValues) {}
+
+    @Override
+    public Class<Integer> getParameterClass() {
+      return Integer.class;
+    }
+
+    @Override
+    public Integer convert(String value) {
+      try {
+        int res = Integer.parseInt(value);
+        if (res < 0) {
+          // The conventions for these converters is to return null if the value is invalid.
+          return null;
+        }
+        return res;
+      } catch (Exception ignore) {
+        return null;
+      }
     }
   }
 
@@ -286,16 +361,39 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  static class PgTransactionIsolationConverter
+      implements ClientSideStatementValueConverter<IsolationLevel> {
+    private final CaseInsensitiveEnumMap<IsolationLevel> values =
+        new CaseInsensitiveEnumMap<>(IsolationLevel.class, IsolationLevel::getShortStatementString);
+
+    public PgTransactionIsolationConverter(String allowedValues) {}
+
+    @Override
+    public Class<IsolationLevel> getParameterClass() {
+      return IsolationLevel.class;
+    }
+
+    @Override
+    public IsolationLevel convert(String value) {
+      // Isolation level may contain multiple spaces.
+      String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
+      if (valueWithSingleSpaces.length() > 1
+          && ((valueWithSingleSpaces.startsWith("'") && valueWithSingleSpaces.endsWith("'"))
+              || (valueWithSingleSpaces.startsWith("\"")
+                  && valueWithSingleSpaces.endsWith("\"")))) {
+        valueWithSingleSpaces =
+            valueWithSingleSpaces.substring(1, valueWithSingleSpaces.length() - 1);
+      }
+      return values.get(valueWithSingleSpaces);
+    }
+  }
+
   /**
    * Converter for converting string values to {@link PgTransactionMode} values. Includes no-op
    * handling of setting the isolation level of the transaction to default or serializable.
    */
   static class PgTransactionModeConverter
       implements ClientSideStatementValueConverter<PgTransactionMode> {
-    private final CaseInsensitiveEnumMap<PgTransactionMode> values =
-        new CaseInsensitiveEnumMap<>(
-            PgTransactionMode.class, PgTransactionMode::getStatementString);
-
     PgTransactionModeConverter() {}
 
     public PgTransactionModeConverter(String allowedValues) {}
@@ -307,9 +405,50 @@ class ClientSideStatementValueConverters {
 
     @Override
     public PgTransactionMode convert(String value) {
+      PgTransactionMode mode = new PgTransactionMode();
       // Transaction mode may contain multiple spaces.
-      String valueWithSingleSpaces = value.replaceAll("\\s+", " ");
-      return values.get(valueWithSingleSpaces);
+      String valueWithoutDeferrable = value.replaceAll("(?i)(not\\s+deferrable)", " ");
+      String valueWithSingleSpaces =
+          valueWithoutDeferrable.replaceAll("\\s+", " ").toLowerCase(Locale.ENGLISH).trim();
+      int currentIndex = 0;
+      while (currentIndex < valueWithSingleSpaces.length()) {
+        // This will use the last access mode and isolation level that is encountered in the string.
+        // This is consistent with the behavior of PostgreSQL, which also allows multiple modes to
+        // be specified in one string, and will use the last one that is encountered.
+        if (valueWithSingleSpaces.substring(currentIndex).startsWith("read only")) {
+          currentIndex += "read only".length();
+          mode.setAccessMode(AccessMode.READ_ONLY_TRANSACTION);
+        } else if (valueWithSingleSpaces.substring(currentIndex).startsWith("read write")) {
+          currentIndex += "read write".length();
+          mode.setAccessMode(AccessMode.READ_WRITE_TRANSACTION);
+        } else if (valueWithSingleSpaces
+            .substring(currentIndex)
+            .startsWith("isolation level serializable")) {
+          currentIndex += "isolation level serializable".length();
+          mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_SERIALIZABLE);
+        } else if (valueWithSingleSpaces
+            .substring(currentIndex)
+            .startsWith("isolation level default")) {
+          currentIndex += "isolation level default".length();
+          mode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_DEFAULT);
+        } else {
+          return null;
+        }
+        // Skip space and/or comma that may separate multiple transaction modes.
+        if (currentIndex < valueWithSingleSpaces.length()
+            && valueWithSingleSpaces.charAt(currentIndex) == ' ') {
+          currentIndex++;
+        }
+        if (currentIndex < valueWithSingleSpaces.length()
+            && valueWithSingleSpaces.charAt(currentIndex) == ',') {
+          currentIndex++;
+        }
+        if (currentIndex < valueWithSingleSpaces.length()
+            && valueWithSingleSpaces.charAt(currentIndex) == ' ') {
+          currentIndex++;
+        }
+      }
+      return mode;
     }
   }
 
@@ -340,6 +479,44 @@ class ClientSideStatementValueConverters {
         }
       }
       return values.get("PRIORITY_" + value);
+    }
+  }
+
+  /** Converter for converting strings to {@link SavepointSupport} values. */
+  static class SavepointSupportConverter
+      implements ClientSideStatementValueConverter<SavepointSupport> {
+    private final CaseInsensitiveEnumMap<SavepointSupport> values =
+        new CaseInsensitiveEnumMap<>(SavepointSupport.class);
+
+    public SavepointSupportConverter(String allowedValues) {}
+
+    @Override
+    public Class<SavepointSupport> getParameterClass() {
+      return SavepointSupport.class;
+    }
+
+    @Override
+    public SavepointSupport convert(String value) {
+      return values.get(value);
+    }
+  }
+
+  static class ExplainCommandConverter implements ClientSideStatementValueConverter<String> {
+    @Override
+    public Class<String> getParameterClass() {
+      return String.class;
+    }
+
+    @Override
+    public String convert(String value) {
+      /* The first word in the string should be "explain"
+       *  So, if the size of the string <= 7 (number of letters in the word "explain"), its an invalid statement
+       *  If the size is greater than 7, we'll consider everything after explain as the query.
+       */
+      if (value.length() <= 7) {
+        return null;
+      }
+      return value.substring(7).trim();
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ package com.google.spanner.v1;
  * `KeySet` defines a collection of Cloud Spanner keys and/or key ranges. All
  * the keys are expected to be in the same table or index. The keys need
  * not be sorted in any particular way.
+ *
  * If the same key is specified multiple times in the set (for example
  * if two ranges, two keys, or a key and a range overlap), Cloud Spanner
  * behaves as if the key were only specified once.
@@ -53,80 +54,6 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     return new KeySet();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private KeySet(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                keys_ = new java.util.ArrayList<com.google.protobuf.ListValue>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              keys_.add(
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry));
-              break;
-            }
-          case 18:
-            {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                ranges_ = new java.util.ArrayList<com.google.spanner.v1.KeyRange>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              ranges_.add(
-                  input.readMessage(com.google.spanner.v1.KeyRange.parser(), extensionRegistry));
-              break;
-            }
-          case 24:
-            {
-              all_ = input.readBool();
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        keys_ = java.util.Collections.unmodifiableList(keys_);
-      }
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        ranges_ = java.util.Collections.unmodifiableList(ranges_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.KeysProto.internal_static_google_spanner_v1_KeySet_descriptor;
   }
@@ -141,6 +68,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int KEYS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.protobuf.ListValue> keys_;
   /**
    *
@@ -224,6 +153,8 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int RANGES_FIELD_NUMBER = 2;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.KeyRange> ranges_;
   /**
    *
@@ -298,7 +229,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ALL_FIELD_NUMBER = 3;
-  private boolean all_;
+  private boolean all_ = false;
   /**
    *
    *
@@ -340,7 +271,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     if (all_ != false) {
       output.writeBool(3, all_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -358,7 +289,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     if (all_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(3, all_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -376,7 +307,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     if (!getKeysList().equals(other.getKeysList())) return false;
     if (!getRangesList().equals(other.getRangesList())) return false;
     if (getAll() != other.getAll()) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -397,7 +328,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + ALL_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getAll());
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -503,6 +434,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
    * `KeySet` defines a collection of Cloud Spanner keys and/or key ranges. All
    * the keys are expected to be in the same table or index. The keys need
    * not be sorted in any particular way.
+   *
    * If the same key is specified multiple times in the set (for example
    * if two ranges, two keys, or a key and a range overlap), Cloud Spanner
    * behaves as if the key were only specified once.
@@ -528,39 +460,31 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.KeySet.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getKeysFieldBuilder();
-        getRangesFieldBuilder();
-      }
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (keysBuilder_ == null) {
         keys_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        keys_ = null;
         keysBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000001);
       if (rangesBuilder_ == null) {
         ranges_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
       } else {
+        ranges_ = null;
         rangesBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000002);
       all_ = false;
-
       return this;
     }
 
@@ -586,7 +510,15 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.KeySet buildPartial() {
       com.google.spanner.v1.KeySet result = new com.google.spanner.v1.KeySet(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.KeySet result) {
       if (keysBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           keys_ = java.util.Collections.unmodifiableList(keys_);
@@ -605,9 +537,13 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       } else {
         result.ranges_ = rangesBuilder_.build();
       }
-      result.all_ = all_;
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.KeySet result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.all_ = all_;
+      }
     }
 
     @java.lang.Override
@@ -712,7 +648,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
       if (other.getAll() != false) {
         setAll(other.getAll());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -727,17 +663,61 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.KeySet parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                com.google.protobuf.ListValue m =
+                    input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
+                if (keysBuilder_ == null) {
+                  ensureKeysIsMutable();
+                  keys_.add(m);
+                } else {
+                  keysBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+            case 18:
+              {
+                com.google.spanner.v1.KeyRange m =
+                    input.readMessage(com.google.spanner.v1.KeyRange.parser(), extensionRegistry);
+                if (rangesBuilder_ == null) {
+                  ensureRangesIsMutable();
+                  ranges_.add(m);
+                } else {
+                  rangesBuilder_.addMessage(m);
+                }
+                break;
+              } // case 18
+            case 24:
+              {
+                all_ = input.readBool();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.KeySet) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1538,6 +1518,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
     public Builder setAll(boolean value) {
 
       all_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1555,7 +1536,7 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearAll() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       all_ = false;
       onChanged();
       return this;
@@ -1593,7 +1574,18 @@ public final class KeySet extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new KeySet(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,8 @@ public interface ListSessionsRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
+   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
+   * from a previous
    * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
    * </pre>
    *
@@ -85,7 +86,8 @@ public interface ListSessionsRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
+   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
+   * from a previous
    * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
    * </pre>
    *
@@ -101,8 +103,11 @@ public interface ListSessionsRequestOrBuilder
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
+   *
    *   * `labels.key` where key is the name of a label
+   *
    * Some examples of using filters are:
+   *
    *   * `labels.env:*` --&gt; The session has the label "env".
    *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
    *                        the label contains the string "dev".
@@ -119,8 +124,11 @@ public interface ListSessionsRequestOrBuilder
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
+   *
    *   * `labels.key` where key is the name of a label
+   *
    * Some examples of using filters are:
+   *
    *   * `labels.env:*` --&gt; The session has the label "env".
    *   * `labels.env:dev` --&gt; The session has the label "env" and the value of
    *                        the label contains the string "dev".

@@ -28,10 +28,12 @@ java.common_templates(
         ".kokoro/nightly/java8-samples.cfg",
         ".kokoro/nightly/java11-samples.cfg",
         ".kokoro/nightly/samples.cfg",
+        ".kokoro/build.bat",
         ".kokoro/presubmit/common.cfg",
         ".kokoro/presubmit/java8-samples.cfg",
         ".kokoro/presubmit/java11-samples.cfg",
         ".kokoro/presubmit/samples.cfg",
+        ".kokoro/release/common.cfg",
         "samples/install-without-bom/pom.xml",
         "samples/snapshot/pom.xml",
         "samples/snippets/pom.xml",
@@ -40,6 +42,9 @@ java.common_templates(
         ".github/release-please.yml",
         ".github/blunderbuss.yml",
         ".github/workflows/samples.yaml",
+        ".github/workflows/ci.yaml",
+        ".kokoro/common.sh",
         ".kokoro/build.sh",
+        ".kokoro/dependencies.sh",
     ]
 )

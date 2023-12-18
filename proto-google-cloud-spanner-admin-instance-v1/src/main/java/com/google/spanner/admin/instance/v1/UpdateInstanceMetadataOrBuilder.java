@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,8 @@ public interface UpdateInstanceMetadataOrBuilder
    *
    *
    * <pre>
-   * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+   * The time at which
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
    * request was received.
    * </pre>
    *
@@ -75,7 +76,8 @@ public interface UpdateInstanceMetadataOrBuilder
    *
    *
    * <pre>
-   * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+   * The time at which
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
    * request was received.
    * </pre>
    *
@@ -88,7 +90,8 @@ public interface UpdateInstanceMetadataOrBuilder
    *
    *
    * <pre>
-   * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+   * The time at which
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
    * request was received.
    * </pre>
    *

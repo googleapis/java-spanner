@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.httpjson.GaxHttpJsonProperties;
+import com.google.api.gax.httpjson.HttpJsonTransportChannel;
+import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
@@ -48,6 +51,8 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -91,6 +96,11 @@ import org.threeten.bp.Duration;
  * <p>For example, to set the total timeout of createSession to 30 seconds:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * SpannerStubSettings.Builder spannerSettingsBuilder = SpannerStubSettings.newBuilder();
  * spannerSettingsBuilder
  *     .createSessionSettings()
@@ -133,6 +143,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   private final UnaryCallSettings<RollbackRequest, Empty> rollbackSettings;
   private final UnaryCallSettings<PartitionQueryRequest, PartitionResponse> partitionQuerySettings;
   private final UnaryCallSettings<PartitionReadRequest, PartitionResponse> partitionReadSettings;
+  private final ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse>
+      batchWriteSettings;
 
   private static final PagedListDescriptor<ListSessionsRequest, ListSessionsResponse, Session>
       LIST_SESSIONS_PAGE_STR_DESC =
@@ -266,12 +278,21 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     return partitionReadSettings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
+  /** Returns the object with the settings used for calls to batchWrite. */
+  public ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteSettings() {
+    return batchWriteSettings;
+  }
+
   public SpannerStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
         .equals(GrpcTransportChannel.getGrpcTransportName())) {
       return GrpcSpannerStub.create(this);
+    }
+    if (getTransportChannelProvider()
+        .getTransportName()
+        .equals(HttpJsonTransportChannel.getHttpJsonTransportName())) {
+      return HttpJsonSpannerStub.create(this);
     }
     throw new UnsupportedOperationException(
         String.format(
@@ -305,10 +326,17 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
         .setUseJwtAccessWithScope(true);
   }
 
-  /** Returns a builder for the default ChannelProvider for this service. */
+  /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
     return InstantiatingGrpcChannelProvider.newBuilder()
         .setMaxInboundMessageSize(Integer.MAX_VALUE);
+  }
+
+  /** Returns a builder for the default REST ChannelProvider for this service. */
+  @BetaApi
+  public static InstantiatingHttpJsonChannelProvider.Builder
+      defaultHttpJsonTransportProviderBuilder() {
+    return InstantiatingHttpJsonChannelProvider.newBuilder();
   }
 
   public static TransportChannelProvider defaultTransportChannelProvider() {
@@ -316,16 +344,34 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   }
 
   @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
-  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
+  public static ApiClientHeaderProvider.Builder defaultGrpcApiClientHeaderProviderBuilder() {
     return ApiClientHeaderProvider.newBuilder()
         .setGeneratedLibToken("gapic", GaxProperties.getLibraryVersion(SpannerStubSettings.class))
         .setTransportToken(
             GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion());
   }
 
-  /** Returns a new builder for this class. */
+  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
+  public static ApiClientHeaderProvider.Builder defaultHttpJsonApiClientHeaderProviderBuilder() {
+    return ApiClientHeaderProvider.newBuilder()
+        .setGeneratedLibToken("gapic", GaxProperties.getLibraryVersion(SpannerStubSettings.class))
+        .setTransportToken(
+            GaxHttpJsonProperties.getHttpJsonTokenName(),
+            GaxHttpJsonProperties.getHttpJsonVersion());
+  }
+
+  public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
+    return SpannerStubSettings.defaultGrpcApiClientHeaderProviderBuilder();
+  }
+
+  /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
     return Builder.createDefault();
+  }
+
+  /** Returns a new REST builder for this class. */
+  public static Builder newHttpJsonBuilder() {
+    return Builder.createHttpJsonDefault();
   }
 
   /** Returns a new builder for this class. */
@@ -356,6 +402,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     rollbackSettings = settingsBuilder.rollbackSettings().build();
     partitionQuerySettings = settingsBuilder.partitionQuerySettings().build();
     partitionReadSettings = settingsBuilder.partitionReadSettings().build();
+    batchWriteSettings = settingsBuilder.batchWriteSettings().build();
   }
 
   /** Builder for SpannerStubSettings. */
@@ -385,6 +432,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
         partitionQuerySettings;
     private final UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
         partitionReadSettings;
+    private final ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings;
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -476,6 +525,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       rollbackSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       partitionQuerySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       partitionReadSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      batchWriteSettings = ServerStreamingCallSettings.newBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -513,6 +563,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       rollbackSettings = settings.rollbackSettings.toBuilder();
       partitionQuerySettings = settings.partitionQuerySettings.toBuilder();
       partitionReadSettings = settings.partitionReadSettings.toBuilder();
+      batchWriteSettings = settings.batchWriteSettings.toBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -537,6 +588,19 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       builder.setTransportChannelProvider(defaultTransportChannelProvider());
       builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
       builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
+      builder.setEndpoint(getDefaultEndpoint());
+      builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
+      builder.setSwitchToMtlsEndpointAllowed(true);
+
+      return initDefaults(builder);
+    }
+
+    private static Builder createHttpJsonDefault() {
+      Builder builder = new Builder(((ClientContext) null));
+
+      builder.setTransportChannelProvider(defaultHttpJsonTransportProviderBuilder().build());
+      builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
+      builder.setInternalHeaderProvider(defaultHttpJsonApiClientHeaderProviderBuilder().build());
       builder.setEndpoint(getDefaultEndpoint());
       builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
       builder.setSwitchToMtlsEndpointAllowed(true);
@@ -619,6 +683,11 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
           .partitionReadSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
+
+      builder
+          .batchWriteSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
 
       return builder;
     }
@@ -720,6 +789,12 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     public UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
         partitionReadSettings() {
       return partitionReadSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to batchWrite. */
+    public ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings() {
+      return batchWriteSettings;
     }
 
     @Override

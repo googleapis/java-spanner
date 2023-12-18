@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,33 @@ public enum TypeAnnotationCode implements com.google.protobuf.ProtocolMessageEnu
    * <code>PG_NUMERIC = 2;</code>
    */
   PG_NUMERIC(2),
+  /**
+   *
+   *
+   * <pre>
+   * PostgreSQL compatible JSONB type. This annotation needs to be applied to
+   * [Type][google.spanner.v1.Type] instances having [JSON][google.spanner.v1.TypeCode.JSON]
+   * type code to specify that values of this type should be treated as
+   * PostgreSQL JSONB values. Currently this annotation is always needed for
+   * [JSON][google.spanner.v1.TypeCode.JSON] when a client interacts with PostgreSQL-enabled
+   * Spanner databases.
+   * </pre>
+   *
+   * <code>PG_JSONB = 3;</code>
+   */
+  PG_JSONB(3),
+  /**
+   *
+   *
+   * <pre>
+   * PostgreSQL compatible OID type. This annotation can be used by a client
+   * interacting with PostgreSQL-enabled Spanner database to specify that a
+   * value should be treated using the semantics of the OID type.
+   * </pre>
+   *
+   * <code>PG_OID = 4;</code>
+   */
+  PG_OID(4),
   UNRECOGNIZED(-1),
   ;
 
@@ -85,6 +112,33 @@ public enum TypeAnnotationCode implements com.google.protobuf.ProtocolMessageEnu
    * <code>PG_NUMERIC = 2;</code>
    */
   public static final int PG_NUMERIC_VALUE = 2;
+  /**
+   *
+   *
+   * <pre>
+   * PostgreSQL compatible JSONB type. This annotation needs to be applied to
+   * [Type][google.spanner.v1.Type] instances having [JSON][google.spanner.v1.TypeCode.JSON]
+   * type code to specify that values of this type should be treated as
+   * PostgreSQL JSONB values. Currently this annotation is always needed for
+   * [JSON][google.spanner.v1.TypeCode.JSON] when a client interacts with PostgreSQL-enabled
+   * Spanner databases.
+   * </pre>
+   *
+   * <code>PG_JSONB = 3;</code>
+   */
+  public static final int PG_JSONB_VALUE = 3;
+  /**
+   *
+   *
+   * <pre>
+   * PostgreSQL compatible OID type. This annotation can be used by a client
+   * interacting with PostgreSQL-enabled Spanner database to specify that a
+   * value should be treated using the semantics of the OID type.
+   * </pre>
+   *
+   * <code>PG_OID = 4;</code>
+   */
+  public static final int PG_OID_VALUE = 4;
 
   public final int getNumber() {
     if (this == UNRECOGNIZED) {
@@ -114,6 +168,10 @@ public enum TypeAnnotationCode implements com.google.protobuf.ProtocolMessageEnu
         return TYPE_ANNOTATION_CODE_UNSPECIFIED;
       case 2:
         return PG_NUMERIC;
+      case 3:
+        return PG_JSONB;
+      case 4:
+        return PG_OID;
       default:
         return null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.google.cloud.spanner.admin.database.v1;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.core.ApiFunction;
@@ -26,6 +27,7 @@ import com.google.api.core.BetaApi;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.ClientSettings;
@@ -61,6 +63,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -68,6 +72,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Generated;
@@ -90,6 +96,11 @@ import javax.annotation.Generated;
  * <p>For example, to set the total timeout of getDatabase to 30 seconds:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * DatabaseAdminSettings.Builder databaseAdminSettingsBuilder = DatabaseAdminSettings.newBuilder();
  * databaseAdminSettingsBuilder
  *     .getDatabaseSettings()
@@ -126,6 +137,17 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
   /** Returns the object with the settings used for calls to getDatabase. */
   public UnaryCallSettings<GetDatabaseRequest, Database> getDatabaseSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).getDatabaseSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateDatabase. */
+  public UnaryCallSettings<UpdateDatabaseRequest, Operation> updateDatabaseSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).updateDatabaseSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateDatabase. */
+  public OperationCallSettings<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).updateDatabaseOperationSettings();
   }
 
   /** Returns the object with the settings used for calls to updateDatabaseDdl. */
@@ -237,6 +259,13 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return ((DatabaseAdminStubSettings) getStubSettings()).listBackupOperationsSettings();
   }
 
+  /** Returns the object with the settings used for calls to listDatabaseRoles. */
+  public PagedCallSettings<
+          ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).listDatabaseRolesSettings();
+  }
+
   public static final DatabaseAdminSettings create(DatabaseAdminStubSettings stub)
       throws IOException {
     return new DatabaseAdminSettings.Builder(stub.toBuilder()).build();
@@ -262,9 +291,16 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return DatabaseAdminStubSettings.defaultCredentialsProviderBuilder();
   }
 
-  /** Returns a builder for the default ChannelProvider for this service. */
+  /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
     return DatabaseAdminStubSettings.defaultGrpcTransportProviderBuilder();
+  }
+
+  /** Returns a builder for the default REST ChannelProvider for this service. */
+  @BetaApi
+  public static InstantiatingHttpJsonChannelProvider.Builder
+      defaultHttpJsonTransportProviderBuilder() {
+    return DatabaseAdminStubSettings.defaultHttpJsonTransportProviderBuilder();
   }
 
   public static TransportChannelProvider defaultTransportChannelProvider() {
@@ -276,9 +312,15 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return DatabaseAdminStubSettings.defaultApiClientHeaderProviderBuilder();
   }
 
-  /** Returns a new builder for this class. */
+  /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
     return Builder.createDefault();
+  }
+
+  /** Returns a new REST builder for this class. */
+  @BetaApi
+  public static Builder newHttpJsonBuilder() {
+    return Builder.createHttpJsonDefault();
   }
 
   /** Returns a new builder for this class. */
@@ -318,6 +360,11 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
       return new Builder(DatabaseAdminStubSettings.newBuilder());
     }
 
+    @BetaApi
+    private static Builder createHttpJsonDefault() {
+      return new Builder(DatabaseAdminStubSettings.newHttpJsonBuilder());
+    }
+
     public DatabaseAdminStubSettings.Builder getStubSettingsBuilder() {
       return ((DatabaseAdminStubSettings.Builder) getStubSettings());
     }
@@ -355,6 +402,17 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     /** Returns the builder for the settings used for calls to getDatabase. */
     public UnaryCallSettings.Builder<GetDatabaseRequest, Database> getDatabaseSettings() {
       return getStubSettingsBuilder().getDatabaseSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateDatabase. */
+    public UnaryCallSettings.Builder<UpdateDatabaseRequest, Operation> updateDatabaseSettings() {
+      return getStubSettingsBuilder().updateDatabaseSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateDatabase. */
+    public OperationCallSettings.Builder<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+        updateDatabaseOperationSettings() {
+      return getStubSettingsBuilder().updateDatabaseOperationSettings();
     }
 
     /** Returns the builder for the settings used for calls to updateDatabaseDdl. */
@@ -467,6 +525,13 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
             ListBackupOperationsPagedResponse>
         listBackupOperationsSettings() {
       return getStubSettingsBuilder().listBackupOperationsSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to listDatabaseRoles. */
+    public PagedCallSettings.Builder<
+            ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
+        listDatabaseRolesSettings() {
+      return getStubSettingsBuilder().listDatabaseRolesSettings();
     }
 
     @Override

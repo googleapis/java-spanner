@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
+import com.google.api.gax.httpjson.longrunning.OperationsClient;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.AbstractFixedSizeCollection;
 import com.google.api.gax.paging.AbstractPage;
@@ -37,7 +38,6 @@ import com.google.iam.v1.SetIamPolicyRequest;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
-import com.google.longrunning.OperationsClient;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
@@ -51,6 +51,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
@@ -64,6 +65,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -71,6 +74,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -88,6 +93,11 @@ import javax.annotation.Generated;
  * calls that map to API methods. Sample code to get started:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
  *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
  *   Database response = databaseAdminClient.getDatabase(name);
@@ -123,6 +133,11 @@ import javax.annotation.Generated;
  * <p>To customize credentials:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * DatabaseAdminSettings databaseAdminSettings =
  *     DatabaseAdminSettings.newBuilder()
  *         .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials))
@@ -133,8 +148,27 @@ import javax.annotation.Generated;
  * <p>To customize the endpoint:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * DatabaseAdminSettings databaseAdminSettings =
  *     DatabaseAdminSettings.newBuilder().setEndpoint(myEndpoint).build();
+ * DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettings);
+ * }</pre>
+ *
+ * <p>To use REST (HTTP1.1/JSON) transport (instead of gRPC) for sending and receiving requests over
+ * the wire:
+ *
+ * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+ * DatabaseAdminSettings databaseAdminSettings =
+ *     DatabaseAdminSettings.newHttpJsonBuilder().build();
  * DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettings);
  * }</pre>
  *
@@ -144,7 +178,8 @@ import javax.annotation.Generated;
 public class DatabaseAdminClient implements BackgroundResource {
   private final DatabaseAdminSettings settings;
   private final DatabaseAdminStub stub;
-  private final OperationsClient operationsClient;
+  private final OperationsClient httpJsonOperationsClient;
+  private final com.google.longrunning.OperationsClient operationsClient;
 
   /** Constructs an instance of DatabaseAdminClient with default settings. */
   public static final DatabaseAdminClient create() throws IOException {
@@ -164,7 +199,6 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Constructs an instance of DatabaseAdminClient, using the given stub for making calls. This is
    * for advanced usage - prefer using create(DatabaseAdminSettings).
    */
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public static final DatabaseAdminClient create(DatabaseAdminStub stub) {
     return new DatabaseAdminClient(stub);
   }
@@ -177,21 +211,23 @@ public class DatabaseAdminClient implements BackgroundResource {
   protected DatabaseAdminClient(DatabaseAdminSettings settings) throws IOException {
     this.settings = settings;
     this.stub = ((DatabaseAdminStubSettings) settings.getStubSettings()).createStub();
-    this.operationsClient = OperationsClient.create(this.stub.getOperationsStub());
+    this.operationsClient =
+        com.google.longrunning.OperationsClient.create(this.stub.getOperationsStub());
+    this.httpJsonOperationsClient = OperationsClient.create(this.stub.getHttpJsonOperationsStub());
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   protected DatabaseAdminClient(DatabaseAdminStub stub) {
     this.settings = null;
     this.stub = stub;
-    this.operationsClient = OperationsClient.create(this.stub.getOperationsStub());
+    this.operationsClient =
+        com.google.longrunning.OperationsClient.create(this.stub.getOperationsStub());
+    this.httpJsonOperationsClient = OperationsClient.create(this.stub.getHttpJsonOperationsStub());
   }
 
   public final DatabaseAdminSettings getSettings() {
     return settings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public DatabaseAdminStub getStub() {
     return stub;
   }
@@ -200,8 +236,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * Returns the OperationsClient that can be used to query the status of a long-running operation
    * returned by another API method call.
    */
-  public final OperationsClient getOperationsClient() {
+  public final com.google.longrunning.OperationsClient getOperationsClient() {
     return operationsClient;
+  }
+
+  /**
+   * Returns the OperationsClient that can be used to query the status of a long-running operation
+   * returned by another API method call.
+   */
+  @BetaApi
+  public final OperationsClient getHttpJsonOperationsClient() {
+    return httpJsonOperationsClient;
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
@@ -211,6 +256,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
@@ -238,6 +288,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Database element : databaseAdminClient.listDatabases(parent).iterateAll()) {
@@ -262,6 +317,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabasesRequest request =
    *       ListDatabasesRequest.newBuilder()
@@ -289,6 +349,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabasesRequest request =
    *       ListDatabasesRequest.newBuilder()
@@ -317,6 +382,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabasesRequest request =
    *       ListDatabasesRequest.newBuilder()
@@ -326,7 +396,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .build();
    *   while (true) {
    *     ListDatabasesResponse response = databaseAdminClient.listDatabasesCallable().call(request);
-   *     for (Database element : response.getResponsesList()) {
+   *     for (Database element : response.getDatabasesList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -356,6 +426,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String createStatement = "createStatement744686547";
@@ -395,6 +470,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String createStatement = "createStatement744686547";
@@ -434,6 +514,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateDatabaseRequest request =
    *       CreateDatabaseRequest.newBuilder()
@@ -468,6 +553,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateDatabaseRequest request =
    *       CreateDatabaseRequest.newBuilder()
@@ -502,6 +592,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateDatabaseRequest request =
    *       CreateDatabaseRequest.newBuilder()
@@ -529,6 +624,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   Database response = databaseAdminClient.getDatabase(name);
@@ -552,6 +652,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String name = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   Database response = databaseAdminClient.getDatabase(name);
@@ -574,6 +679,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseRequest request =
    *       GetDatabaseRequest.newBuilder()
@@ -597,6 +707,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseRequest request =
    *       GetDatabaseRequest.newBuilder()
@@ -614,6 +729,235 @@ public class DatabaseAdminClient implements BackgroundResource {
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
   /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   Database database = Database.newBuilder().build();
+   *   FieldMask updateMask = FieldMask.newBuilder().build();
+   *   Database response = databaseAdminClient.updateDatabaseAsync(database, updateMask).get();
+   * }
+   * }</pre>
+   *
+   * @param database Required. The database to update. The `name` field of the database is of the
+   *     form `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
+   * @param updateMask Required. The list of fields to update. Currently, only
+   *     `enable_drop_protection` field can be updated.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Database, UpdateDatabaseMetadata> updateDatabaseAsync(
+      Database database, FieldMask updateMask) {
+    UpdateDatabaseRequest request =
+        UpdateDatabaseRequest.newBuilder().setDatabase(database).setUpdateMask(updateMask).build();
+    return updateDatabaseAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseRequest request =
+   *       UpdateDatabaseRequest.newBuilder()
+   *           .setDatabase(Database.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   Database response = databaseAdminClient.updateDatabaseAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<Database, UpdateDatabaseMetadata> updateDatabaseAsync(
+      UpdateDatabaseRequest request) {
+    return updateDatabaseOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseRequest request =
+   *       UpdateDatabaseRequest.newBuilder()
+   *           .setDatabase(Database.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   OperationFuture<Database, UpdateDatabaseMetadata> future =
+   *       databaseAdminClient.updateDatabaseOperationCallable().futureCall(request);
+   *   // Do something.
+   *   Database response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable() {
+    return stub.updateDatabaseOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates a Cloud Spanner database. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of updating the
+   * database. If the named database does not exist, returns `NOT_FOUND`.
+   *
+   * <p>While the operation is pending:
+   *
+   * <p>&#42; The database's [reconciling][google.spanner.admin.database.v1.Database.reconciling]
+   * field is set to true. &#42; Cancelling the operation is best-effort. If the cancellation
+   * succeeds, the operation metadata's
+   * [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time] is set, the
+   * updates are reverted, and the operation terminates with a `CANCELLED` status. &#42; New
+   * UpdateDatabase requests will return a `FAILED_PRECONDITION` error until the pending operation
+   * is done (returns successfully or with error). &#42; Reading the database via the API continues
+   * to give the pre-request values.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; The new values are in effect and readable via the API. &#42; The database's
+   * [reconciling][google.spanner.admin.database.v1.Database.reconciling] field becomes false.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`
+   * and can be used to track the database modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The
+   * [response][google.longrunning.Operation.response] field type is
+   * [Database][google.spanner.admin.database.v1.Database], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   UpdateDatabaseRequest request =
+   *       UpdateDatabaseRequest.newBuilder()
+   *           .setDatabase(Database.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       databaseAdminClient.updateDatabaseCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable() {
+    return stub.updateDatabaseCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
    * Updates the schema of a Cloud Spanner database by creating/altering/dropping tables, columns,
    * indexes, etc. The returned [long-running operation][google.longrunning.Operation] will have a
    * name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to
@@ -625,6 +969,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   List<String> statements = new ArrayList<>();
@@ -659,6 +1008,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   List<String> statements = new ArrayList<>();
@@ -693,6 +1047,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateDatabaseDdlRequest request =
    *       UpdateDatabaseDdlRequest.newBuilder()
@@ -725,6 +1084,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateDatabaseDdlRequest request =
    *       UpdateDatabaseDdlRequest.newBuilder()
@@ -757,6 +1121,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateDatabaseDdlRequest request =
    *       UpdateDatabaseDdlRequest.newBuilder()
@@ -784,6 +1153,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   databaseAdminClient.dropDatabase(database);
@@ -810,6 +1184,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   databaseAdminClient.dropDatabase(database);
@@ -833,6 +1212,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DropDatabaseRequest request =
    *       DropDatabaseRequest.newBuilder()
@@ -858,6 +1242,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DropDatabaseRequest request =
    *       DropDatabaseRequest.newBuilder()
@@ -882,6 +1271,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   GetDatabaseDdlResponse response = databaseAdminClient.getDatabaseDdl(database);
@@ -909,6 +1303,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   GetDatabaseDdlResponse response = databaseAdminClient.getDatabaseDdl(database);
@@ -934,6 +1333,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseDdlRequest request =
    *       GetDatabaseDdlRequest.newBuilder()
@@ -959,6 +1363,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetDatabaseDdlRequest request =
    *       GetDatabaseDdlRequest.newBuilder()
@@ -988,6 +1397,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy policy = Policy.newBuilder().build();
@@ -1023,6 +1437,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy policy = Policy.newBuilder().build();
@@ -1055,11 +1474,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
    *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
    *           .build();
    *   Policy response = databaseAdminClient.setIamPolicy(request);
    * }
@@ -1084,11 +1509,17 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   SetIamPolicyRequest request =
    *       SetIamPolicyRequest.newBuilder()
    *           .setResource(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
    *           .setPolicy(Policy.newBuilder().build())
+   *           .setUpdateMask(FieldMask.newBuilder().build())
    *           .build();
    *   ApiFuture<Policy> future = databaseAdminClient.setIamPolicyCallable().futureCall(request);
    *   // Do something.
@@ -1113,6 +1544,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
@@ -1144,6 +1580,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Policy response = databaseAdminClient.getIamPolicy(resource);
@@ -1172,6 +1613,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1202,6 +1648,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetIamPolicyRequest request =
    *       GetIamPolicyRequest.newBuilder()
@@ -1231,6 +1682,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ResourceName resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   List<String> permissions = new ArrayList<>();
@@ -1269,6 +1725,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String resource = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   List<String> permissions = new ArrayList<>();
@@ -1307,6 +1768,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
@@ -1337,6 +1803,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   TestIamPermissionsRequest request =
    *       TestIamPermissionsRequest.newBuilder()
@@ -1371,6 +1842,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   Backup backup = Backup.newBuilder().build();
@@ -1416,6 +1892,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   Backup backup = Backup.newBuilder().build();
@@ -1461,6 +1942,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateBackupRequest request =
    *       CreateBackupRequest.newBuilder()
@@ -1497,6 +1983,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateBackupRequest request =
    *       CreateBackupRequest.newBuilder()
@@ -1533,6 +2024,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CreateBackupRequest request =
    *       CreateBackupRequest.newBuilder()
@@ -1567,6 +2063,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String backupId = "backupId2121930365";
@@ -1620,6 +2121,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String backupId = "backupId2121930365";
@@ -1673,6 +2179,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String backupId = "backupId2121930365";
@@ -1726,6 +2237,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String backupId = "backupId2121930365";
@@ -1779,6 +2295,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CopyBackupRequest request =
    *       CopyBackupRequest.newBuilder()
@@ -1816,6 +2337,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CopyBackupRequest request =
    *       CopyBackupRequest.newBuilder()
@@ -1853,6 +2379,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   CopyBackupRequest request =
    *       CopyBackupRequest.newBuilder()
@@ -1879,6 +2410,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   Backup response = databaseAdminClient.getBackup(name);
@@ -1902,6 +2438,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   Backup response = databaseAdminClient.getBackup(name);
@@ -1924,6 +2465,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetBackupRequest request =
    *       GetBackupRequest.newBuilder()
@@ -1947,6 +2493,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   GetBackupRequest request =
    *       GetBackupRequest.newBuilder()
@@ -1969,6 +2520,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   Backup backup = Backup.newBuilder().build();
    *   FieldMask updateMask = FieldMask.newBuilder().build();
@@ -1998,6 +2554,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateBackupRequest request =
    *       UpdateBackupRequest.newBuilder()
@@ -2022,6 +2583,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   UpdateBackupRequest request =
    *       UpdateBackupRequest.newBuilder()
@@ -2045,6 +2611,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   BackupName name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]");
    *   databaseAdminClient.deleteBackup(name);
@@ -2068,6 +2639,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String name = BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString();
    *   databaseAdminClient.deleteBackup(name);
@@ -2090,6 +2666,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DeleteBackupRequest request =
    *       DeleteBackupRequest.newBuilder()
@@ -2113,6 +2694,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   DeleteBackupRequest request =
    *       DeleteBackupRequest.newBuilder()
@@ -2136,6 +2722,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Backup element : databaseAdminClient.listBackups(parent).iterateAll()) {
@@ -2164,6 +2755,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Backup element : databaseAdminClient.listBackups(parent).iterateAll()) {
@@ -2189,6 +2785,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupsRequest request =
    *       ListBackupsRequest.newBuilder()
@@ -2218,6 +2819,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupsRequest request =
    *       ListBackupsRequest.newBuilder()
@@ -2247,6 +2853,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupsRequest request =
    *       ListBackupsRequest.newBuilder()
@@ -2257,7 +2868,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *           .build();
    *   while (true) {
    *     ListBackupsResponse response = databaseAdminClient.listBackupsCallable().call(request);
-   *     for (Backup element : response.getResponsesList()) {
+   *     for (Backup element : response.getBackupsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -2294,6 +2905,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String databaseId = "databaseId1688905718";
@@ -2346,6 +2962,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   String databaseId = "databaseId1688905718";
@@ -2398,6 +3019,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String databaseId = "databaseId1688905718";
@@ -2450,6 +3076,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   String databaseId = "databaseId1688905718";
@@ -2502,6 +3133,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   RestoreDatabaseRequest request =
    *       RestoreDatabaseRequest.newBuilder()
@@ -2541,6 +3177,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   RestoreDatabaseRequest request =
    *       RestoreDatabaseRequest.newBuilder()
@@ -2580,6 +3221,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   RestoreDatabaseRequest request =
    *       RestoreDatabaseRequest.newBuilder()
@@ -2610,6 +3256,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent).iterateAll()) {
@@ -2642,6 +3293,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Operation element : databaseAdminClient.listDatabaseOperations(parent).iterateAll()) {
@@ -2672,6 +3328,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabaseOperationsRequest request =
    *       ListDatabaseOperationsRequest.newBuilder()
@@ -2706,6 +3367,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabaseOperationsRequest request =
    *       ListDatabaseOperationsRequest.newBuilder()
@@ -2740,6 +3406,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListDatabaseOperationsRequest request =
    *       ListDatabaseOperationsRequest.newBuilder()
@@ -2751,7 +3422,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *   while (true) {
    *     ListDatabaseOperationsResponse response =
    *         databaseAdminClient.listDatabaseOperationsCallable().call(request);
-   *     for (Operation element : response.getResponsesList()) {
+   *     for (Operation element : response.getOperationsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -2783,6 +3454,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
    *   for (Operation element : databaseAdminClient.listBackupOperations(parent).iterateAll()) {
@@ -2817,6 +3493,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
    *   for (Operation element : databaseAdminClient.listBackupOperations(parent).iterateAll()) {
@@ -2849,6 +3530,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupOperationsRequest request =
    *       ListBackupOperationsRequest.newBuilder()
@@ -2885,6 +3571,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupOperationsRequest request =
    *       ListBackupOperationsRequest.newBuilder()
@@ -2921,6 +3612,11 @@ public class DatabaseAdminClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
    *   ListBackupOperationsRequest request =
    *       ListBackupOperationsRequest.newBuilder()
@@ -2932,7 +3628,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    *   while (true) {
    *     ListBackupOperationsResponse response =
    *         databaseAdminClient.listBackupOperationsCallable().call(request);
-   *     for (Operation element : response.getResponsesList()) {
+   *     for (Operation element : response.getOperationsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -2948,6 +3644,173 @@ public class DatabaseAdminClient implements BackgroundResource {
   public final UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsResponse>
       listBackupOperationsCallable() {
     return stub.listBackupOperationsCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+   *   for (DatabaseRole element : databaseAdminClient.listDatabaseRoles(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The database whose roles should be listed. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseRolesPagedResponse listDatabaseRoles(DatabaseName parent) {
+    ListDatabaseRolesRequest request =
+        ListDatabaseRolesRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listDatabaseRoles(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   String parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
+   *   for (DatabaseRole element : databaseAdminClient.listDatabaseRoles(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The database whose roles should be listed. Values are of the form
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseRolesPagedResponse listDatabaseRoles(String parent) {
+    ListDatabaseRolesRequest request =
+        ListDatabaseRolesRequest.newBuilder().setParent(parent).build();
+    return listDatabaseRoles(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseRolesRequest request =
+   *       ListDatabaseRolesRequest.newBuilder()
+   *           .setParent(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   for (DatabaseRole element : databaseAdminClient.listDatabaseRoles(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListDatabaseRolesPagedResponse listDatabaseRoles(ListDatabaseRolesRequest request) {
+    return listDatabaseRolesPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseRolesRequest request =
+   *       ListDatabaseRolesRequest.newBuilder()
+   *           .setParent(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   ApiFuture<DatabaseRole> future =
+   *       databaseAdminClient.listDatabaseRolesPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (DatabaseRole element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesPagedCallable() {
+    return stub.listDatabaseRolesPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+   *   ListDatabaseRolesRequest request =
+   *       ListDatabaseRolesRequest.newBuilder()
+   *           .setParent(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .build();
+   *   while (true) {
+   *     ListDatabaseRolesResponse response =
+   *         databaseAdminClient.listDatabaseRolesCallable().call(request);
+   *     for (DatabaseRole element : response.getDatabaseRolesList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
+      listDatabaseRolesCallable() {
+    return stub.listDatabaseRolesCallable();
   }
 
   @Override
@@ -3290,6 +4153,86 @@ public class DatabaseAdminClient implements BackgroundResource {
     protected ListBackupOperationsFixedSizeCollection createCollection(
         List<ListBackupOperationsPage> pages, int collectionSize) {
       return new ListBackupOperationsFixedSizeCollection(pages, collectionSize);
+    }
+  }
+
+  public static class ListDatabaseRolesPagedResponse
+      extends AbstractPagedListResponse<
+          ListDatabaseRolesRequest,
+          ListDatabaseRolesResponse,
+          DatabaseRole,
+          ListDatabaseRolesPage,
+          ListDatabaseRolesFixedSizeCollection> {
+
+    public static ApiFuture<ListDatabaseRolesPagedResponse> createAsync(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ApiFuture<ListDatabaseRolesResponse> futureResponse) {
+      ApiFuture<ListDatabaseRolesPage> futurePage =
+          ListDatabaseRolesPage.createEmptyPage().createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          input -> new ListDatabaseRolesPagedResponse(input),
+          MoreExecutors.directExecutor());
+    }
+
+    private ListDatabaseRolesPagedResponse(ListDatabaseRolesPage page) {
+      super(page, ListDatabaseRolesFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListDatabaseRolesPage
+      extends AbstractPage<
+          ListDatabaseRolesRequest,
+          ListDatabaseRolesResponse,
+          DatabaseRole,
+          ListDatabaseRolesPage> {
+
+    private ListDatabaseRolesPage(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ListDatabaseRolesResponse response) {
+      super(context, response);
+    }
+
+    private static ListDatabaseRolesPage createEmptyPage() {
+      return new ListDatabaseRolesPage(null, null);
+    }
+
+    @Override
+    protected ListDatabaseRolesPage createPage(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ListDatabaseRolesResponse response) {
+      return new ListDatabaseRolesPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListDatabaseRolesPage> createPageAsync(
+        PageContext<ListDatabaseRolesRequest, ListDatabaseRolesResponse, DatabaseRole> context,
+        ApiFuture<ListDatabaseRolesResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListDatabaseRolesFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListDatabaseRolesRequest,
+          ListDatabaseRolesResponse,
+          DatabaseRole,
+          ListDatabaseRolesPage,
+          ListDatabaseRolesFixedSizeCollection> {
+
+    private ListDatabaseRolesFixedSizeCollection(
+        List<ListDatabaseRolesPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListDatabaseRolesFixedSizeCollection createEmptyCollection() {
+      return new ListDatabaseRolesFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListDatabaseRolesFixedSizeCollection createCollection(
+        List<ListDatabaseRolesPage> pages, int collectionSize) {
+      return new ListDatabaseRolesFixedSizeCollection(pages, collectionSize);
     }
   }
 }

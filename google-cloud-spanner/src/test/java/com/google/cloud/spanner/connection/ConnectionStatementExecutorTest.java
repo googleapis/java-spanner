@@ -29,6 +29,8 @@ import static org.mockito.Mockito.when;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.connection.PgTransactionMode.AccessMode;
+import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.protobuf.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
@@ -224,16 +226,29 @@ public class ConnectionStatementExecutorTest {
 
   @Test
   public void testStatementSetPgTransactionMode() {
-    subject.statementSetPgTransactionMode(PgTransactionMode.READ_ONLY_TRANSACTION);
+    PgTransactionMode readOnlyMode = new PgTransactionMode();
+    readOnlyMode.setAccessMode(AccessMode.READ_ONLY_TRANSACTION);
+    subject.statementSetPgTransactionMode(readOnlyMode);
     verify(connection).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
-    subject.statementSetPgTransactionMode(PgTransactionMode.READ_WRITE_TRANSACTION);
+
+    PgTransactionMode readWriteMode = new PgTransactionMode();
+    readWriteMode.setAccessMode(AccessMode.READ_WRITE_TRANSACTION);
+    subject.statementSetPgTransactionMode(readWriteMode);
     verify(connection).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }
 
   @Test
   public void testStatementSetPgTransactionModeNoOp() {
-    subject.statementSetPgTransactionMode(PgTransactionMode.ISOLATION_LEVEL_DEFAULT);
-    subject.statementSetPgTransactionMode(PgTransactionMode.ISOLATION_LEVEL_SERIALIZABLE);
+    PgTransactionMode noMode = new PgTransactionMode();
+    PgTransactionMode defaultMode = new PgTransactionMode();
+    defaultMode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_DEFAULT);
+    PgTransactionMode serializableMode = new PgTransactionMode();
+    serializableMode.setIsolationLevel(IsolationLevel.ISOLATION_LEVEL_SERIALIZABLE);
+
+    subject.statementSetPgTransactionMode(noMode);
+    subject.statementSetPgTransactionMode(defaultMode);
+    subject.statementSetPgTransactionMode(serializableMode);
+
     verify(connection, never()).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
     verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }

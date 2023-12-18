@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -387,6 +389,27 @@ public class MockSpannerImpl extends SpannerImplBase {
                   "Unrecognized response type %s for method PartitionRead, expected %s or %s",
                   response == null ? "null" : response.getClass().getName(),
                   PartitionResponse.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void batchWrite(
+      BatchWriteRequest request, StreamObserver<BatchWriteResponse> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof BatchWriteResponse) {
+      requests.add(request);
+      responseObserver.onNext(((BatchWriteResponse) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method BatchWrite, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  BatchWriteResponse.class.getName(),
                   Exception.class.getName())));
     }
   }

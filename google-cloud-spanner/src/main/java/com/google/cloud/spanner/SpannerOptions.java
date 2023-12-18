@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.core.InternalApi;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
@@ -32,6 +33,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -89,6 +91,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           "https://www.googleapis.com/auth/spanner.admin",
           "https://www.googleapis.com/auth/spanner.data");
   private static final int MAX_CHANNELS = 256;
+  @VisibleForTesting static final int DEFAULT_CHANNELS = 4;
+  // Set the default number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS when gRPC-GCP extension
+  // is enabled, to make sure there are sufficient channels available to move the sessions to a
+  // different channel if a network connection in a particular channel fails.
+  @VisibleForTesting static final int GRPC_GCP_ENABLED_DEFAULT_CHANNELS = 8;
   private final TransportChannelProvider channelProvider;
 
   @SuppressWarnings("rawtypes")
@@ -99,6 +106,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final int prefetchChunks;
   private final int numChannels;
   private final String transportChannelExecutorThreadNameFormat;
+  private final String databaseRole;
   private final ImmutableMap<String, String> sessionLabels;
   private final SpannerStubSettings spannerStubSettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
@@ -126,11 +134,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CallCredentialsProvider callCredentialsProvider;
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
+  private final boolean leaderAwareRoutingEnabled;
 
-  /**
-   * Interface that can be used to provide {@link CallCredentials} instead of {@link Credentials} to
-   * {@link SpannerOptions}.
-   */
+  /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
     /** Return the {@link CallCredentials} to use for a gRPC call. */
     CallCredentials getCallCredentials();
@@ -519,7 +525,30 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   @VisibleForTesting
   static CloseableExecutorProvider createDefaultAsyncExecutorProvider() {
-    return createAsyncExecutorProvider(8, 60L, TimeUnit.SECONDS);
+    return createAsyncExecutorProvider(
+        getDefaultAsyncExecutorProviderCoreThreadCount(), 60L, TimeUnit.SECONDS);
+  }
+
+  @VisibleForTesting
+  static int getDefaultAsyncExecutorProviderCoreThreadCount() {
+    String propertyName = "com.google.cloud.spanner.async_num_core_threads";
+    String propertyValue = System.getProperty(propertyName, "8");
+    try {
+      int corePoolSize = Integer.parseInt(propertyValue);
+      if (corePoolSize < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            String.format(
+                "The value for %s must be >=0. Invalid value: %s", propertyName, propertyValue));
+      }
+      return corePoolSize;
+    } catch (NumberFormatException exception) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          String.format(
+              "The %s system property must be a valid integer. The value %s could not be parsed as an integer.",
+              propertyName, propertyValue));
+    }
   }
 
   /**
@@ -564,6 +593,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             ? builder.sessionPoolOptions
             : SessionPoolOptions.newBuilder().build();
     prefetchChunks = builder.prefetchChunks;
+    databaseRole = builder.databaseRole;
     sessionLabels = builder.sessionLabels;
     try {
       spannerStubSettings = builder.spannerStubSettingsBuilder.build();
@@ -593,6 +623,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     callCredentialsProvider = builder.callCredentialsProvider;
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
+    leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
   }
 
   /**
@@ -656,10 +687,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private final ImmutableSet<String> allowedClientLibTokens =
         ImmutableSet.of(
             ServiceOptions.getGoogApiClientLibName(),
-            JDBC_API_CLIENT_LIB_TOKEN,
-            HIBERNATE_API_CLIENT_LIB_TOKEN,
-            LIQUIBASE_API_CLIENT_LIB_TOKEN,
-            PG_ADAPTER_CLIENT_LIB_TOKEN);
+            createCustomClientLibToken(JDBC_API_CLIENT_LIB_TOKEN),
+            createCustomClientLibToken(HIBERNATE_API_CLIENT_LIB_TOKEN),
+            createCustomClientLibToken(LIQUIBASE_API_CLIENT_LIB_TOKEN),
+            createCustomClientLibToken(PG_ADAPTER_CLIENT_LIB_TOKEN));
     private TransportChannelProvider channelProvider;
 
     @SuppressWarnings("rawtypes")
@@ -667,13 +698,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     private GrpcInterceptorProvider interceptorProvider;
 
-    /** By default, we create 4 channels per {@link SpannerOptions} */
-    private int numChannels = 4;
+    private Integer numChannels;
 
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
     private SessionPoolOptions sessionPoolOptions;
+    private String databaseRole;
     private ImmutableMap<String, String> sessionLabels;
     private SpannerStubSettings.Builder spannerStubSettingsBuilder =
         SpannerStubSettings.newBuilder();
@@ -693,6 +724,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private CloseableExecutorProvider asyncExecutorProvider;
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    private boolean leaderAwareRoutingEnabled = true;
+
+    private static String createCustomClientLibToken(String token) {
+      return token + " " + ServiceOptions.getGoogApiClientLibName();
+    }
 
     private Builder() {
       // Manually set retry and polling settings that work.
@@ -730,6 +766,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
+      this.databaseRole = options.databaseRole;
       this.sessionLabels = options.sessionLabels;
       this.spannerStubSettingsBuilder = options.spannerStubSettings.toBuilder();
       this.instanceAdminStubSettingsBuilder = options.instanceAdminStubSettings.toBuilder();
@@ -761,6 +798,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     protected Set<String> getAllowedClientLibTokens() {
       return allowedClientLibTokens;
+    }
+
+    @InternalApi
+    @Override
+    public SpannerOptions.Builder setClientLibToken(String clientLibToken) {
+      return super.setClientLibToken(
+          clientLibToken + " " + ServiceOptions.getGoogApiClientLibName());
     }
 
     /**
@@ -827,6 +871,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setSessionPoolOption(SessionPoolOptions sessionPoolOptions) {
       this.sessionPoolOptions = sessionPoolOptions;
+      return this;
+    }
+
+    /**
+     * Sets the database role that should be used for connections that are created by this instance.
+     * The database role that is used determines the access permissions that a connection has. This
+     * can for example be used to create connections that are only permitted to access certain
+     * tables.
+     */
+    public Builder setDatabaseRole(String databaseRole) {
+      this.databaseRole = databaseRole;
       return this;
     }
 
@@ -948,7 +1003,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets a timeout specifically for Partitioned DML statements executed through {@link
-     * DatabaseClient#executePartitionedUpdate(Statement)}. The default is 2 hours.
+     * DatabaseClient#executePartitionedUpdate(Statement, UpdateOption...)}. The default is 2 hours.
      */
     public Builder setPartitionedDmlTimeout(Duration timeout) {
       this.partitionedDmlTimeout = timeout;
@@ -972,12 +1027,25 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Disables automatic retries of administrative requests that fail if the <a
+     * href="https://cloud.google.com/spanner/quotas#administrative_limits">https://cloud.google.com/spanner/quotas#administrative_limits</a>
+     * have been exceeded. You should disable these retries if you intend to handle these errors in
+     * your application.
+     */
+    public Builder disableAdministrativeRequestRetries() {
+      this.retryAdministrativeRequestsSettings =
+          this.retryAdministrativeRequestsSettings.toBuilder().setMaxAttempts(1).build();
+      return this;
+    }
+
+    /**
      * Sets the retry settings for retrying administrative requests when the quote of administrative
      * requests per minute has been exceeded.
      */
     Builder setRetryAdministrativeRequestsSettings(
         RetrySettings retryAdministrativeRequestsSettings) {
-      this.retryAdministrativeRequestsSettings = retryAdministrativeRequestsSettings;
+      this.retryAdministrativeRequestsSettings =
+          Preconditions.checkNotNull(retryAdministrativeRequestsSettings);
       return this;
     }
 
@@ -1030,9 +1098,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets a {@link CallCredentialsProvider} that can deliver {@link CallCredentials} to use on a
-     * per-gRPC basis. Any credentials returned by this {@link CallCredentialsProvider} will have
-     * preference above any {@link Credentials} that may have been set on the {@link SpannerOptions}
-     * instance.
+     * per-gRPC basis.
      */
     public Builder setCallCredentialsProvider(CallCredentialsProvider callCredentialsProvider) {
       this.callCredentialsProvider = callCredentialsProvider;
@@ -1041,7 +1107,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Sets the compression to use for all gRPC calls. The compressor must be a valid name known in
-     * the {@link CompressorRegistry}.
+     * the {@link CompressorRegistry}. This will enable compression both from the client to the
+     * server and from the server to the client.
      *
      * <p>Supported values are:
      *
@@ -1107,8 +1174,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /** Enables gRPC-GCP extension with the default settings. */
     public Builder enableGrpcGcpExtension() {
-      this.grpcGcpExtensionEnabled = true;
-      return this;
+      return this.enableGrpcGcpExtension(null);
     }
 
     /**
@@ -1136,6 +1202,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Enable leader aware routing. Leader aware routing would route all requests in RW/PDML
+     * transactions to the leader region.
+     */
+    public Builder enableLeaderAwareRouting() {
+      this.leaderAwareRoutingEnabled = true;
+      return this;
+    }
+
+    /**
+     * Disable leader aware routing. Disabling leader aware routing would route all requests in
+     * RW/PDML transactions to any region.
+     */
+    public Builder disableLeaderAwareRouting() {
+      this.leaderAwareRoutingEnabled = false;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1151,6 +1235,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         // As we are using plain text, we should never send any credentials.
         this.setCredentials(NoCredentials.getInstance());
       }
+      if (this.numChannels == null) {
+        this.numChannels =
+            this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
+      }
+
       return new SpannerOptions(this);
     }
   }
@@ -1215,6 +1304,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return sessionPoolOptions;
   }
 
+  public String getDatabaseRole() {
+    return databaseRole;
+  }
+
   public Map<String, String> getSessionLabels() {
     return sessionLabels;
   }
@@ -1261,6 +1354,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public String getCompressorName() {
     return compressorName;
+  }
+
+  public boolean isLeaderAwareRoutingEnabled() {
+    return leaderAwareRoutingEnabled;
   }
 
   /** Returns the default query options to use for the specific database. */

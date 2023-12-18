@@ -19,6 +19,8 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.Type.StructField;
 import static com.google.common.testing.SerializableTester.reserializeAndAssert;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
@@ -148,6 +150,16 @@ public class TypeTest {
       @Override
       Type newType() {
         return Type.json();
+      }
+    }.test();
+  }
+
+  @Test
+  public void pgJsonb() {
+    new ScalarTypeTester(Code.PG_JSONB, TypeCode.JSON, TypeAnnotationCode.PG_JSONB) {
+      @Override
+      Type newType() {
+        return Type.pgJsonb();
       }
     }.test();
   }
@@ -307,6 +319,16 @@ public class TypeTest {
   }
 
   @Test
+  public void pgJsonbArray() {
+    new ArrayTypeTester(Code.PG_JSONB, TypeCode.JSON, TypeAnnotationCode.PG_JSONB, true) {
+      @Override
+      Type newElementType() {
+        return Type.pgJsonb();
+      }
+    }.test();
+  }
+
+  @Test
   public void bytesArray() {
     new ArrayTypeTester(Type.Code.BYTES, TypeCode.BYTES, true) {
       @Override
@@ -408,9 +430,7 @@ public class TypeTest {
   @Test
   public void parseErrorMissingTypeCode() {
     com.google.spanner.v1.Type proto = com.google.spanner.v1.Type.newBuilder().build();
-    IllegalArgumentException e =
-        assertThrows(IllegalArgumentException.class, () -> Type.fromProto(proto));
-    assertNotNull(e.getMessage());
+    assertEquals(Code.UNRECOGNIZED, Type.fromProto(proto).getCode());
   }
 
   @Test
@@ -420,6 +440,81 @@ public class TypeTest {
     IllegalArgumentException e =
         assertThrows(IllegalArgumentException.class, () -> Type.fromProto(proto));
     assertNotNull(e.getMessage());
+  }
+
+  @Test
+  public void testUnrecognized() {
+    Type unrecognized = Type.fromProto(com.google.spanner.v1.Type.newBuilder().build());
+    assertEquals("TYPE_CODE_UNSPECIFIED", unrecognized.toString());
+    assertEquals(unrecognized, Type.fromProto(com.google.spanner.v1.Type.newBuilder().build()));
+    assertNotEquals(unrecognized, Type.int64());
+  }
+
+  @Test
+  public void testUnrecognizedWithAnnotation() {
+    Type unrecognized =
+        Type.fromProto(
+            com.google.spanner.v1.Type.newBuilder()
+                .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                .build());
+    assertEquals("TYPE_CODE_UNSPECIFIED<PG_NUMERIC>", unrecognized.toString());
+    assertEquals(
+        unrecognized,
+        Type.fromProto(
+            com.google.spanner.v1.Type.newBuilder()
+                .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                .build()));
+    assertNotEquals(
+        unrecognized,
+        Type.fromProto(
+            com.google.spanner.v1.Type.newBuilder()
+                .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
+                .build()));
+    assertNotEquals(unrecognized, Type.int64());
+  }
+
+  @Test
+  public void testUnrecognizedArray() {
+    Type unrecognizedArray =
+        Type.fromProto(
+            com.google.spanner.v1.Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(com.google.spanner.v1.Type.newBuilder().build())
+                .build());
+    assertEquals("ARRAY<TYPE_CODE_UNSPECIFIED>", unrecognizedArray.toString());
+    assertEquals(
+        unrecognizedArray,
+        Type.fromProto(
+            com.google.spanner.v1.Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(com.google.spanner.v1.Type.newBuilder().build())
+                .build()));
+    assertNotEquals(unrecognizedArray, Type.array(Type.int64()));
+  }
+
+  @Test
+  public void testUnrecognizedArrayWithAnnotation() {
+    Type unrecognizedArray =
+        Type.fromProto(
+            com.google.spanner.v1.Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(
+                    com.google.spanner.v1.Type.newBuilder()
+                        .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                        .build())
+                .build());
+    assertEquals("ARRAY<TYPE_CODE_UNSPECIFIED<PG_NUMERIC>>", unrecognizedArray.toString());
+    assertEquals(
+        unrecognizedArray,
+        Type.fromProto(
+            com.google.spanner.v1.Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(
+                    com.google.spanner.v1.Type.newBuilder()
+                        .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                        .build())
+                .build()));
+    assertNotEquals(unrecognizedArray, Type.array(Type.int64()));
   }
 
   private static void assertProtoEquals(com.google.spanner.v1.Type proto, String expected) {

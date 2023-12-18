@@ -25,9 +25,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @InternalApi
 public class SpannerStatementParser extends AbstractStatementParser {
+
+  private static final Pattern THEN_RETURN_PATTERN =
+      Pattern.compile("[ `')\"]then return[ *`'(\"]");
+  private static final String THEN_STRING = "then";
+  private static final String RETURN_STRING = "return";
 
   public SpannerStatementParser() throws CompileException {
     super(
@@ -69,6 +75,8 @@ public class SpannerStatementParser extends AbstractStatementParser {
     char startQuote = 0;
     boolean lastCharWasEscapeChar = false;
     boolean isTripleQuoted = false;
+    boolean whitespaceBeforeOrAfterMultiLineComment = false;
+    int multiLineCommentStartIdx = -1;
     StringBuilder res = new StringBuilder(sql.length());
     int index = 0;
     while (index < sql.length()) {
@@ -112,6 +120,17 @@ public class SpannerStatementParser extends AbstractStatementParser {
         } else if (isInMultiLineComment) {
           if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
             isInMultiLineComment = false;
+            if (!whitespaceBeforeOrAfterMultiLineComment && (sql.length() > index + 2)) {
+              whitespaceBeforeOrAfterMultiLineComment =
+                  Character.isWhitespace(sql.charAt(index + 2));
+            }
+            // If the multiline comment does not have any whitespace before or after it, and it is
+            // neither at the start nor at the end of SQL string, append an extra space.
+            if (!whitespaceBeforeOrAfterMultiLineComment
+                && (multiLineCommentStartIdx != 0)
+                && (index != sql.length() - 2)) {
+              res.append(' ');
+            }
             index++;
           }
         } else {
@@ -121,6 +140,11 @@ public class SpannerStatementParser extends AbstractStatementParser {
             isInSingleLineComment = true;
           } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
             isInMultiLineComment = true;
+            if (index >= 1) {
+              whitespaceBeforeOrAfterMultiLineComment =
+                  Character.isWhitespace(sql.charAt(index - 1));
+            }
+            multiLineCommentStartIdx = index;
             index++;
           } else {
             if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE || c == BACKTICK_QUOTE) {
@@ -189,9 +213,6 @@ public class SpannerStatementParser extends AbstractStatementParser {
   @InternalApi
   @Override
   ParametersInfo convertPositionalParametersToNamedParametersInternal(char paramChar, String sql) {
-    final char SINGLE_QUOTE = '\'';
-    final char DOUBLE_QUOTE = '"';
-    final char BACKTICK_QUOTE = '`';
     boolean isInQuoted = false;
     char startQuote = 0;
     boolean lastCharWasEscapeChar = false;
@@ -249,5 +270,72 @@ public class SpannerStatementParser extends AbstractStatementParser {
           ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
     }
     return new ParametersInfo(paramIndex - 1, named.toString());
+  }
+
+  private boolean isReturning(String sql, int index) {
+    return (index >= 1)
+        && (index + 12 <= sql.length())
+        && THEN_RETURN_PATTERN.matcher(sql.substring(index - 1, index + 12)).matches();
+  }
+
+  @InternalApi
+  @Override
+  protected boolean checkReturningClauseInternal(String rawSql) {
+    Preconditions.checkNotNull(rawSql);
+    String sql = rawSql.toLowerCase();
+    // Do a pre-check to check if the SQL string definitely does not have a returning clause.
+    // If this check fails, do a more involved check to check for a returning clause.
+    if (!(sql.contains(THEN_STRING) && sql.contains(RETURN_STRING))) {
+      return false;
+    }
+    sql = sql.replaceAll("\\s+", " ");
+    final char SINGLE_QUOTE = '\'';
+    final char DOUBLE_QUOTE = '"';
+    final char BACKTICK_QUOTE = '`';
+    boolean isInQuoted = false;
+    char startQuote = 0;
+    boolean lastCharWasEscapeChar = false;
+    boolean isTripleQuoted = false;
+    for (int index = 0; index < sql.length(); index++) {
+      char c = sql.charAt(index);
+      if (isInQuoted) {
+        if (c == startQuote) {
+          if (lastCharWasEscapeChar) {
+            lastCharWasEscapeChar = false;
+          } else if (isTripleQuoted) {
+            if (sql.length() > index + 2
+                && sql.charAt(index + 1) == startQuote
+                && sql.charAt(index + 2) == startQuote) {
+              isInQuoted = false;
+              startQuote = 0;
+              isTripleQuoted = false;
+            }
+          } else {
+            isInQuoted = false;
+            startQuote = 0;
+          }
+        } else if (c == '\\') {
+          lastCharWasEscapeChar = true;
+        } else {
+          lastCharWasEscapeChar = false;
+        }
+      } else {
+        if (isReturning(sql, index)) {
+          return true;
+        } else {
+          if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE || c == BACKTICK_QUOTE) {
+            isInQuoted = true;
+            startQuote = c;
+            // check whether it is a triple-quote
+            if (sql.length() > index + 2
+                && sql.charAt(index + 1) == startQuote
+                && sql.charAt(index + 2) == startQuote) {
+              isTripleQuoted = true;
+            }
+          }
+        }
+      }
+    }
+    return false;
   }
 }

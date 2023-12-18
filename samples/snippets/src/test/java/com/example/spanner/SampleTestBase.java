@@ -23,16 +23,13 @@ import com.google.cloud.spanner.SpannerOptions;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-/**
- * Base class for sample integration tests.
- */
+/** Base class for sample integration tests. */
 public class SampleTestBase {
 
-  private static final String BASE_DATABASE_ID = System.getProperty(
-      "spanner.sample.database",
-      "sampledb"
-  );
+  private static final String BASE_DATABASE_ID =
+      System.getProperty("spanner.sample.database", "sampledb");
   private static final String BASE_BACKUP_ID = "samplebk";
+  private static final String BASE_INSTANCE_CONFIG_ID = "sampleconfig";
 
   protected static Spanner spanner;
   protected static DatabaseAdminClient databaseAdminClient;
@@ -47,15 +44,19 @@ public class SampleTestBase {
 
   @BeforeClass
   public static void beforeClass() {
-    final SpannerOptions options = SpannerOptions
+    final String serverUrl = "";
+    final SpannerOptions.Builder optionsBuilder = SpannerOptions
         .newBuilder()
-        .setAutoThrottleAdministrativeRequests()
-        .build();
+        .setAutoThrottleAdministrativeRequests();
+    if (!serverUrl.isEmpty()) {
+      optionsBuilder.setHost(serverUrl);
+    }
+    final SpannerOptions options = optionsBuilder.build();
     projectId = options.getProjectId();
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
     instanceAdminClient = spanner.getInstanceAdminClient();
-    idGenerator = new SampleIdGenerator(BASE_DATABASE_ID, BASE_BACKUP_ID);
+    idGenerator = new SampleIdGenerator(BASE_DATABASE_ID, BASE_BACKUP_ID, BASE_INSTANCE_CONFIG_ID);
   }
 
   @AfterClass
@@ -68,8 +69,11 @@ public class SampleTestBase {
         databaseAdminClient.dropDatabase(multiRegionalInstanceId, databaseId);
       } catch (Exception e) {
         System.out.println(
-            "Failed to drop database " + databaseId + " due to " + e.getMessage() + ", skipping..."
-        );
+            "Failed to drop database "
+                + databaseId
+                + " due to "
+                + e.getMessage()
+                + ", skipping...");
       }
     }
     for (String backupId : idGenerator.getBackupIds()) {
@@ -79,8 +83,20 @@ public class SampleTestBase {
         databaseAdminClient.deleteBackup(multiRegionalInstanceId, backupId);
       } catch (Exception e) {
         System.out.println(
-            "Failed to delete backup " + backupId + " due to " + e.getMessage() + ", skipping..."
-        );
+            "Failed to delete backup " + backupId + " due to " + e.getMessage() + ", skipping...");
+      }
+    }
+    for (String configId : idGenerator.getInstanceConfigIds()) {
+      try {
+        // If the config is not found, it is ignored (no exception is thrown)
+        instanceAdminClient.deleteInstanceConfig(configId);
+      } catch (Exception e) {
+        System.out.println(
+            "Failed to delete instance config "
+                + configId
+                + " due to "
+                + e.getMessage()
+                + ", skipping...");
       }
     }
     spanner.close();

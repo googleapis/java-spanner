@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.google.cloud.spanner.admin.database.v1.stub;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.gax.core.BackgroundResource;
@@ -52,6 +53,8 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
@@ -59,6 +62,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import javax.annotation.Generated;
 
 // AUTO-GENERATED DOCUMENTATION AND CLASS.
@@ -71,7 +76,11 @@ import javax.annotation.Generated;
 public abstract class DatabaseAdminStub implements BackgroundResource {
 
   public OperationsStub getOperationsStub() {
-    throw new UnsupportedOperationException("Not implemented: getOperationsStub()");
+    return null;
+  }
+
+  public com.google.api.gax.httpjson.longrunning.stub.OperationsStub getHttpJsonOperationsStub() {
+    return null;
   }
 
   public UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
@@ -94,6 +103,15 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
 
   public UnaryCallable<GetDatabaseRequest, Database> getDatabaseCallable() {
     throw new UnsupportedOperationException("Not implemented: getDatabaseCallable()");
+  }
+
+  public OperationCallable<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
+      updateDatabaseOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateDatabaseOperationCallable()");
+  }
+
+  public UnaryCallable<UpdateDatabaseRequest, Operation> updateDatabaseCallable() {
+    throw new UnsupportedOperationException("Not implemented: updateDatabaseCallable()");
   }
 
   public OperationCallable<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
@@ -193,6 +211,16 @@ public abstract class DatabaseAdminStub implements BackgroundResource {
   public UnaryCallable<ListBackupOperationsRequest, ListBackupOperationsResponse>
       listBackupOperationsCallable() {
     throw new UnsupportedOperationException("Not implemented: listBackupOperationsCallable()");
+  }
+
+  public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
+      listDatabaseRolesPagedCallable() {
+    throw new UnsupportedOperationException("Not implemented: listDatabaseRolesPagedCallable()");
+  }
+
+  public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesResponse>
+      listDatabaseRolesCallable() {
+    throw new UnsupportedOperationException("Not implemented: listDatabaseRolesCallable()");
   }
 
   @Override

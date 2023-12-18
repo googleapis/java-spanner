@@ -23,6 +23,12 @@ cd ${scriptDir}/..
 # include common functions
 source ${scriptDir}/common.sh
 
+# Kokoro integration test uses both JDK 11 and JDK 8. GraalVM dependencies
+# require JDK 11 to compile the classes touching GraalVM classes.
+if [ -n "${JAVA11_HOME}" ]; then
+  setJava "${JAVA11_HOME}"
+fi
+
 # Print out Maven & Java version
 mvn -version
 echo ${JOB_TYPE}
@@ -42,15 +48,27 @@ if [[ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" && "${GOOGLE_APPLICATION_CREDENTI
     export GOOGLE_APPLICATION_CREDENTIALS=$(realpath ${KOKORO_GFILE_DIR}/${GOOGLE_APPLICATION_CREDENTIALS})
 fi
 
+# Kokoro integration test uses both JDK 11 and JDK 8. We ensure the generated class files
+# are compatible with Java 8 when running tests.
+if [ -n "${JAVA8_HOME}" ]; then
+  setJava "${JAVA8_HOME}"
+fi
+
 RETURN_CODE=0
 set +e
 
 case ${JOB_TYPE} in
 test)
-    mvn test -B \
+    # Maven surefire plugin (unit tests) allows us to specify JVM to run the tests.
+    # https://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#jvm
+    # If we rely on certain things only available in newer JVM than Java 8, this
+    # tests detect the usage.
+    echo "SUREFIRE_JVM_OPT: ${SUREFIRE_JVM_OPT}"
+    mvn test -B -V \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
-      -Djava.net.preferIPv4Stack=true
+      -Djava.net.preferIPv4Stack=true \
+      ${SUREFIRE_JVM_OPT}
     RETURN_CODE=$?
     ;;
 lint)
@@ -61,7 +79,7 @@ javadoc)
     mvn javadoc:javadoc javadoc:test-javadoc
     RETURN_CODE=$?
     ;;
-integration)
+integration|integration-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
@@ -69,8 +87,53 @@ integration)
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.gce.config.project_id=gcloud-devel \
+      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests \
       -fae \
       verify
+    RETURN_CODE=$?
+    ;;
+integration-cloud-devel|integration-cloud-devel-directpath-enabled)
+    mvn -B ${INTEGRATION_TEST_ARGS} \
+      -ntp \
+      -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
+      -DtrimStackTrace=false \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-testing-east1 \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
+      -fae \
+      verify
+    RETURN_CODE=$?
+    ;;
+integration-cloud-staging|integration-cloud-staging-directpath-enabled)
+    mvn -B ${INTEGRATION_TEST_ARGS} \
+      -ntp \
+      -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
+      -DtrimStackTrace=false \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.gce.config.server_url=https://preprod-spanner.sandbox.googleapis.com \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-testing \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
+      -fae \
+      verify
+    RETURN_CODE=$?
+    ;;
+graalvm)
+    # Run Unit and Integration Tests with Native Image
+    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests
+    RETURN_CODE=$?
+    ;;
+graalvm17)
+    # Run Unit and Integration Tests with Native Image
+    mvn test -Pnative -Penable-integration-tests -Dspanner.gce.config.project_id=gcloud-devel -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests
     RETURN_CODE=$?
     ;;
 slowtests)
@@ -82,6 +145,7 @@ slowtests)
     -DtrimStackTrace=false \
     -Dclirr.skip=true \
     -Denforcer.skip=true \
+    -Dmaven.main.skip=true \
     -fae \
     verify
   RETURN_CODE=$?

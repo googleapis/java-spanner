@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,128 +45,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new Mutation();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private Mutation(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 1) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 1;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 2) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 2;
-              break;
-            }
-          case 26:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 3) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 3;
-              break;
-            }
-          case 34:
-            {
-              com.google.spanner.v1.Mutation.Write.Builder subBuilder = null;
-              if (operationCase_ == 4) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Write) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Write.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Write) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 4;
-              break;
-            }
-          case 42:
-            {
-              com.google.spanner.v1.Mutation.Delete.Builder subBuilder = null;
-              if (operationCase_ == 5) {
-                subBuilder = ((com.google.spanner.v1.Mutation.Delete) operation_).toBuilder();
-              }
-              operation_ =
-                  input.readMessage(
-                      com.google.spanner.v1.Mutation.Delete.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.Mutation.Delete) operation_);
-                operation_ = subBuilder.buildPartial();
-              }
-              operationCase_ = 5;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -218,6 +96,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -233,6 +112,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -248,6 +128,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -264,6 +145,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -384,7 +266,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
 
     private Write() {
       table_ = "";
-      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
       values_ = java.util.Collections.emptyList();
     }
 
@@ -392,82 +274,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new Write();
-    }
-
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-      return this.unknownFields;
-    }
-
-    private Write(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                table_ = s;
-                break;
-              }
-            case 18:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  columns_ = new com.google.protobuf.LazyStringArrayList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                columns_.add(s);
-                break;
-              }
-            case 26:
-              {
-                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                  values_ = new java.util.ArrayList<com.google.protobuf.ListValue>();
-                  mutable_bitField0_ |= 0x00000002;
-                }
-                values_.add(
-                    input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry));
-                break;
-              }
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          columns_ = columns_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          values_ = java.util.Collections.unmodifiableList(values_);
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -486,7 +292,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int TABLE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object table_;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object table_ = "";
     /**
      *
      *
@@ -535,12 +343,16 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int COLUMNS_FIELD_NUMBER = 2;
-    private com.google.protobuf.LazyStringList columns_;
+
+    @SuppressWarnings("serial")
+    private com.google.protobuf.LazyStringArrayList columns_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
     /**
      *
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -558,6 +370,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -575,6 +388,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -593,6 +407,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+     *
      * The list of columns must contain enough columns to allow
      * Cloud Spanner to derive values for all primary key columns in the
      * row(s) to be modified.
@@ -608,6 +423,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int VALUES_FIELD_NUMBER = 3;
+
+    @SuppressWarnings("serial")
     private java.util.List<com.google.protobuf.ListValue> values_;
     /**
      *
@@ -734,7 +551,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       for (int i = 0; i < values_.size(); i++) {
         output.writeMessage(3, values_.get(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -757,7 +574,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       for (int i = 0; i < values_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, values_.get(i));
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -775,7 +592,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (!getTable().equals(other.getTable())) return false;
       if (!getColumnsList().equals(other.getColumnsList())) return false;
       if (!getValuesList().equals(other.getValuesList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -796,7 +613,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         hash = (37 * hash) + VALUES_FIELD_NUMBER;
         hash = (53 * hash) + getValuesList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -928,34 +745,25 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
 
       // Construct using com.google.spanner.v1.Mutation.Write.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-          getValuesFieldBuilder();
-        }
       }
 
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         table_ = "";
-
-        columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
         if (valuesBuilder_ == null) {
           values_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
+          values_ = null;
           valuesBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -983,24 +791,35 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public com.google.spanner.v1.Mutation.Write buildPartial() {
         com.google.spanner.v1.Mutation.Write result =
             new com.google.spanner.v1.Mutation.Write(this);
-        int from_bitField0_ = bitField0_;
-        result.table_ = table_;
-        if (((bitField0_ & 0x00000001) != 0)) {
-          columns_ = columns_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000001);
+        buildPartialRepeatedFields(result);
+        if (bitField0_ != 0) {
+          buildPartial0(result);
         }
-        result.columns_ = columns_;
+        onBuilt();
+        return result;
+      }
+
+      private void buildPartialRepeatedFields(com.google.spanner.v1.Mutation.Write result) {
         if (valuesBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) != 0)) {
+          if (((bitField0_ & 0x00000004) != 0)) {
             values_ = java.util.Collections.unmodifiableList(values_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000004);
           }
           result.values_ = values_;
         } else {
           result.values_ = valuesBuilder_.build();
         }
-        onBuilt();
-        return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.Mutation.Write result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.table_ = table_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          columns_.makeImmutable();
+          result.columns_ = columns_;
+        }
       }
 
       @java.lang.Override
@@ -1052,12 +871,13 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (other == com.google.spanner.v1.Mutation.Write.getDefaultInstance()) return this;
         if (!other.getTable().isEmpty()) {
           table_ = other.table_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (!other.columns_.isEmpty()) {
           if (columns_.isEmpty()) {
             columns_ = other.columns_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ |= 0x00000002;
           } else {
             ensureColumnsIsMutable();
             columns_.addAll(other.columns_);
@@ -1068,7 +888,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           if (!other.values_.isEmpty()) {
             if (values_.isEmpty()) {
               values_ = other.values_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000004);
             } else {
               ensureValuesIsMutable();
               values_.addAll(other.values_);
@@ -1081,7 +901,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               valuesBuilder_.dispose();
               valuesBuilder_ = null;
               values_ = other.values_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000004);
               valuesBuilder_ =
                   com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                       ? getValuesFieldBuilder()
@@ -1091,7 +911,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             }
           }
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1106,17 +926,56 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.Mutation.Write parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  table_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+              case 18:
+                {
+                  java.lang.String s = input.readStringRequireUtf8();
+                  ensureColumnsIsMutable();
+                  columns_.add(s);
+                  break;
+                } // case 18
+              case 26:
+                {
+                  com.google.protobuf.ListValue m =
+                      input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
+                  if (valuesBuilder_ == null) {
+                    ensureValuesIsMutable();
+                    values_.add(m);
+                  } else {
+                    valuesBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 26
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.google.spanner.v1.Mutation.Write) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -1183,8 +1042,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (value == null) {
           throw new NullPointerException();
         }
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -1200,8 +1059,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearTable() {
-
         table_ = getDefaultInstance().getTable();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -1222,26 +1081,27 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         checkByteStringIsUtf8(value);
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
 
-      private com.google.protobuf.LazyStringList columns_ =
-          com.google.protobuf.LazyStringArrayList.EMPTY;
+      private com.google.protobuf.LazyStringArrayList columns_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
 
       private void ensureColumnsIsMutable() {
-        if (!((bitField0_ & 0x00000001) != 0)) {
+        if (!columns_.isModifiable()) {
           columns_ = new com.google.protobuf.LazyStringArrayList(columns_);
-          bitField0_ |= 0x00000001;
         }
+        bitField0_ |= 0x00000002;
       }
       /**
        *
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1252,13 +1112,15 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return A list containing the columns.
        */
       public com.google.protobuf.ProtocolStringList getColumnsList() {
-        return columns_.getUnmodifiableView();
+        columns_.makeImmutable();
+        return columns_;
       }
       /**
        *
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1276,6 +1138,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1294,6 +1157,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1312,6 +1176,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1329,6 +1194,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         ensureColumnsIsMutable();
         columns_.set(index, value);
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1337,6 +1203,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1353,6 +1220,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         }
         ensureColumnsIsMutable();
         columns_.add(value);
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1361,6 +1229,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1374,6 +1243,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public Builder addAllColumns(java.lang.Iterable<java.lang.String> values) {
         ensureColumnsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(values, columns_);
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1382,6 +1252,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1392,8 +1263,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearColumns() {
-        columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        ;
         onChanged();
         return this;
       }
@@ -1402,6 +1274,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        *
        * <pre>
        * The names of the columns in [table][google.spanner.v1.Mutation.Write.table] to be written.
+       *
        * The list of columns must contain enough columns to allow
        * Cloud Spanner to derive values for all primary key columns in the
        * row(s) to be modified.
@@ -1419,6 +1292,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         checkByteStringIsUtf8(value);
         ensureColumnsIsMutable();
         columns_.add(value);
+        bitField0_ |= 0x00000002;
         onChanged();
         return this;
       }
@@ -1427,9 +1301,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           java.util.Collections.emptyList();
 
       private void ensureValuesIsMutable() {
-        if (!((bitField0_ & 0x00000002) != 0)) {
+        if (!((bitField0_ & 0x00000004) != 0)) {
           values_ = new java.util.ArrayList<com.google.protobuf.ListValue>(values_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
         }
       }
 
@@ -1719,7 +1593,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public Builder clearValues() {
         if (valuesBuilder_ == null) {
           values_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000004);
           onChanged();
         } else {
           valuesBuilder_.clear();
@@ -1889,7 +1763,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
                   com.google.protobuf.ListValue,
                   com.google.protobuf.ListValue.Builder,
                   com.google.protobuf.ListValueOrBuilder>(
-                  values_, ((bitField0_ & 0x00000002) != 0), getParentForChildren(), isClean());
+                  values_, ((bitField0_ & 0x00000004) != 0), getParentForChildren(), isClean());
           values_ = null;
         }
         return valuesBuilder_;
@@ -1928,7 +1802,19 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new Write(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -2056,70 +1942,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       return new Delete();
     }
 
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-      return this.unknownFields;
-    }
-
-    private Delete(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 10:
-              {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                table_ = s;
-                break;
-              }
-            case 18:
-              {
-                com.google.spanner.v1.KeySet.Builder subBuilder = null;
-                if (keySet_ != null) {
-                  subBuilder = keySet_.toBuilder();
-                }
-                keySet_ =
-                    input.readMessage(com.google.spanner.v1.KeySet.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(keySet_);
-                  keySet_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.v1.MutationProto
           .internal_static_google_spanner_v1_Mutation_Delete_descriptor;
@@ -2136,7 +1958,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     public static final int TABLE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object table_;
+
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object table_ = "";
     /**
      *
      *
@@ -2242,7 +2066,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
-      return getKeySet();
+      return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2265,7 +2089,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (keySet_ != null) {
         output.writeMessage(2, getKeySet());
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -2280,7 +2104,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (keySet_ != null) {
         size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getKeySet());
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2300,7 +2124,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       if (hasKeySet()) {
         if (!getKeySet().equals(other.getKeySet())) return false;
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -2317,7 +2141,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         hash = (37 * hash) + KEY_SET_FIELD_NUMBER;
         hash = (53 * hash) + getKeySet().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2448,28 +2272,20 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
 
       // Construct using com.google.spanner.v1.Mutation.Delete.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
         table_ = "";
-
-        if (keySetBuilder_ == null) {
-          keySet_ = null;
-        } else {
-          keySet_ = null;
+        keySet_ = null;
+        if (keySetBuilder_ != null) {
+          keySetBuilder_.dispose();
           keySetBuilder_ = null;
         }
         return this;
@@ -2499,14 +2315,21 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public com.google.spanner.v1.Mutation.Delete buildPartial() {
         com.google.spanner.v1.Mutation.Delete result =
             new com.google.spanner.v1.Mutation.Delete(this);
-        result.table_ = table_;
-        if (keySetBuilder_ == null) {
-          result.keySet_ = keySet_;
-        } else {
-          result.keySet_ = keySetBuilder_.build();
+        if (bitField0_ != 0) {
+          buildPartial0(result);
         }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.Mutation.Delete result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.table_ = table_;
+        }
+        if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.keySet_ = keySetBuilder_ == null ? keySet_ : keySetBuilder_.build();
+        }
       }
 
       @java.lang.Override
@@ -2558,12 +2381,13 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (other == com.google.spanner.v1.Mutation.Delete.getDefaultInstance()) return this;
         if (!other.getTable().isEmpty()) {
           table_ = other.table_;
+          bitField0_ |= 0x00000001;
           onChanged();
         }
         if (other.hasKeySet()) {
           mergeKeySet(other.getKeySet());
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -2578,19 +2402,47 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.Mutation.Delete parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10:
+                {
+                  table_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 10
+              case 18:
+                {
+                  input.readMessage(getKeySetFieldBuilder().getBuilder(), extensionRegistry);
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.google.spanner.v1.Mutation.Delete) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
+
+      private int bitField0_;
 
       private java.lang.Object table_ = "";
       /**
@@ -2653,8 +2505,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         if (value == null) {
           throw new NullPointerException();
         }
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -2670,8 +2522,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return This builder for chaining.
        */
       public Builder clearTable() {
-
         table_ = getDefaultInstance().getTable();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
@@ -2692,8 +2544,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         checkByteStringIsUtf8(value);
-
         table_ = value;
+        bitField0_ |= 0x00000001;
         onChanged();
         return this;
       }
@@ -2722,7 +2574,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * @return Whether the keySet field is set.
        */
       public boolean hasKeySet() {
-        return keySetBuilder_ != null || keySet_ != null;
+        return ((bitField0_ & 0x00000002) != 0);
       }
       /**
        *
@@ -2769,11 +2621,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             throw new NullPointerException();
           }
           keySet_ = value;
-          onChanged();
         } else {
           keySetBuilder_.setMessage(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -2794,11 +2646,11 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       public Builder setKeySet(com.google.spanner.v1.KeySet.Builder builderForValue) {
         if (keySetBuilder_ == null) {
           keySet_ = builderForValue.build();
-          onChanged();
         } else {
           keySetBuilder_.setMessage(builderForValue.build());
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -2818,17 +2670,18 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        */
       public Builder mergeKeySet(com.google.spanner.v1.KeySet value) {
         if (keySetBuilder_ == null) {
-          if (keySet_ != null) {
-            keySet_ =
-                com.google.spanner.v1.KeySet.newBuilder(keySet_).mergeFrom(value).buildPartial();
+          if (((bitField0_ & 0x00000002) != 0)
+              && keySet_ != null
+              && keySet_ != com.google.spanner.v1.KeySet.getDefaultInstance()) {
+            getKeySetBuilder().mergeFrom(value);
           } else {
             keySet_ = value;
           }
-          onChanged();
         } else {
           keySetBuilder_.mergeFrom(value);
         }
-
+        bitField0_ |= 0x00000002;
+        onChanged();
         return this;
       }
       /**
@@ -2847,14 +2700,13 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * </code>
        */
       public Builder clearKeySet() {
-        if (keySetBuilder_ == null) {
-          keySet_ = null;
-          onChanged();
-        } else {
-          keySet_ = null;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        keySet_ = null;
+        if (keySetBuilder_ != null) {
+          keySetBuilder_.dispose();
           keySetBuilder_ = null;
         }
-
+        onChanged();
         return this;
       }
       /**
@@ -2873,7 +2725,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
        * </code>
        */
       public com.google.spanner.v1.KeySet.Builder getKeySetBuilder() {
-
+        bitField0_ |= 0x00000002;
         onChanged();
         return getKeySetFieldBuilder().getBuilder();
       }
@@ -2964,7 +2816,19 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new Delete(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -2984,6 +2848,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int operationCase_ = 0;
+
+  @SuppressWarnings("serial")
   private java.lang.Object operation_;
 
   public enum OperationCase
@@ -3155,6 +3021,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
+   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -3175,6 +3042,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
+   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -3198,6 +3066,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
    * its column values are overwritten with the ones provided. Any
    * column values not explicitly written are preserved.
+   *
    * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
    * NULL` columns in the table must be given a value. This holds true
    * even when the row already exists and will therefore actually be updated.
@@ -3222,6 +3091,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
+   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -3244,6 +3114,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
+   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -3269,6 +3140,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
    * deleted, and the column values provided are inserted
    * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
    * explicitly written become `NULL`.
+   *
    * In an interleaved table, if you create the child table with the
    * `ON DELETE CASCADE` annotation, then replacing a parent row
    * also deletes the child rows. Otherwise, you must delete the
@@ -3368,7 +3240,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     if (operationCase_ == 5) {
       output.writeMessage(5, (com.google.spanner.v1.Mutation.Delete) operation_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -3402,7 +3274,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               5, (com.google.spanner.v1.Mutation.Delete) operation_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -3437,7 +3309,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -3472,7 +3344,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -3601,22 +3473,31 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.Mutation.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
+      if (insertBuilder_ != null) {
+        insertBuilder_.clear();
+      }
+      if (updateBuilder_ != null) {
+        updateBuilder_.clear();
+      }
+      if (insertOrUpdateBuilder_ != null) {
+        insertOrUpdateBuilder_.clear();
+      }
+      if (replaceBuilder_ != null) {
+        replaceBuilder_.clear();
+      }
+      if (deleteBuilder_ != null) {
+        deleteBuilder_.clear();
+      }
       operationCase_ = 0;
       operation_ = null;
       return this;
@@ -3645,44 +3526,36 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.Mutation buildPartial() {
       com.google.spanner.v1.Mutation result = new com.google.spanner.v1.Mutation(this);
-      if (operationCase_ == 1) {
-        if (insertBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = insertBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (operationCase_ == 2) {
-        if (updateBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = updateBuilder_.build();
-        }
-      }
-      if (operationCase_ == 3) {
-        if (insertOrUpdateBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = insertOrUpdateBuilder_.build();
-        }
-      }
-      if (operationCase_ == 4) {
-        if (replaceBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = replaceBuilder_.build();
-        }
-      }
-      if (operationCase_ == 5) {
-        if (deleteBuilder_ == null) {
-          result.operation_ = operation_;
-        } else {
-          result.operation_ = deleteBuilder_.build();
-        }
-      }
-      result.operationCase_ = operationCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.Mutation result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.Mutation result) {
+      result.operationCase_ = operationCase_;
+      result.operation_ = this.operation_;
+      if (operationCase_ == 1 && insertBuilder_ != null) {
+        result.operation_ = insertBuilder_.build();
+      }
+      if (operationCase_ == 2 && updateBuilder_ != null) {
+        result.operation_ = updateBuilder_.build();
+      }
+      if (operationCase_ == 3 && insertOrUpdateBuilder_ != null) {
+        result.operation_ = insertOrUpdateBuilder_.build();
+      }
+      if (operationCase_ == 4 && replaceBuilder_ != null) {
+        result.operation_ = replaceBuilder_.build();
+      }
+      if (operationCase_ == 5 && deleteBuilder_ != null) {
+        result.operation_ = deleteBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -3761,7 +3634,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             break;
           }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -3776,17 +3649,61 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.Mutation parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getInsertFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 1;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getUpdateFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 2;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getInsertOrUpdateFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 3;
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(getReplaceFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 4;
+                break;
+              } // case 34
+            case 42:
+              {
+                input.readMessage(getDeleteFieldBuilder().getBuilder(), extensionRegistry);
+                operationCase_ = 5;
+                break;
+              } // case 42
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.Mutation) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -3803,6 +3720,8 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.v1.Mutation.Write,
@@ -3920,8 +3839,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 1) {
           insertBuilder_.mergeFrom(value);
+        } else {
+          insertBuilder_.setMessage(value);
         }
-        insertBuilder_.setMessage(value);
       }
       operationCase_ = 1;
       return this;
@@ -4017,7 +3937,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 1;
       onChanged();
-      ;
       return insertBuilder_;
     }
 
@@ -4137,8 +4056,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 2) {
           updateBuilder_.mergeFrom(value);
+        } else {
+          updateBuilder_.setMessage(value);
         }
-        updateBuilder_.setMessage(value);
       }
       operationCase_ = 2;
       return this;
@@ -4234,7 +4154,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 2;
       onChanged();
-      ;
       return updateBuilder_;
     }
 
@@ -4250,6 +4169,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4270,6 +4190,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4300,6 +4221,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4327,6 +4249,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4351,6 +4274,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4374,8 +4298,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 3) {
           insertOrUpdateBuilder_.mergeFrom(value);
+        } else {
+          insertOrUpdateBuilder_.setMessage(value);
         }
-        insertOrUpdateBuilder_.setMessage(value);
       }
       operationCase_ = 3;
       return this;
@@ -4387,6 +4312,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4417,6 +4343,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4434,6 +4361,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4459,6 +4387,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * Like [insert][google.spanner.v1.Mutation.insert], except that if the row already exists, then
      * its column values are overwritten with the ones provided. Any
      * column values not explicitly written are preserved.
+     *
      * When using [insert_or_update][google.spanner.v1.Mutation.insert_or_update], just as when using [insert][google.spanner.v1.Mutation.insert], all `NOT
      * NULL` columns in the table must be given a value. This holds true
      * even when the row already exists and will therefore actually be updated.
@@ -4487,7 +4416,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 3;
       onChanged();
-      ;
       return insertOrUpdateBuilder_;
     }
 
@@ -4504,6 +4432,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4526,6 +4455,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4558,6 +4488,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4587,6 +4518,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4613,6 +4545,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4637,8 +4570,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 4) {
           replaceBuilder_.mergeFrom(value);
+        } else {
+          replaceBuilder_.setMessage(value);
         }
-        replaceBuilder_.setMessage(value);
       }
       operationCase_ = 4;
       return this;
@@ -4651,6 +4585,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4683,6 +4618,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4702,6 +4638,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4729,6 +4666,7 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
      * deleted, and the column values provided are inserted
      * instead. Unlike [insert_or_update][google.spanner.v1.Mutation.insert_or_update], this means any values not
      * explicitly written become `NULL`.
+     *
      * In an interleaved table, if you create the child table with the
      * `ON DELETE CASCADE` annotation, then replacing a parent row
      * also deletes the child rows. Otherwise, you must delete the
@@ -4758,7 +4696,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 4;
       onChanged();
-      ;
       return replaceBuilder_;
     }
 
@@ -4878,8 +4815,9 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (operationCase_ == 5) {
           deleteBuilder_.mergeFrom(value);
+        } else {
+          deleteBuilder_.setMessage(value);
         }
-        deleteBuilder_.setMessage(value);
       }
       operationCase_ = 5;
       return this;
@@ -4975,7 +4913,6 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
       }
       operationCase_ = 5;
       onChanged();
-      ;
       return deleteBuilder_;
     }
 
@@ -5011,7 +4948,18 @@ public final class Mutation extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Mutation(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

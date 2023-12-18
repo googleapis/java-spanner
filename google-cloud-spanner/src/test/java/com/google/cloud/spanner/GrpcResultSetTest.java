@@ -22,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -38,8 +40,10 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Transaction;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -48,14 +52,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.GrpcResultSet}. */
+/** Unit tests for {@link com.google.cloud.spanner.AbstractResultSet.GrpcResultSet}. */
 @RunWith(JUnit4.class)
 public class GrpcResultSetTest {
 
   private AbstractResultSet.GrpcResultSet resultSet;
   private SpannerRpc.ResultStreamConsumer consumer;
   private AbstractResultSet.GrpcStreamIterator stream;
+  private final Duration streamWaitTimeout = Duration.ofNanos(1L);
 
   private static class NoOpListener implements AbstractResultSet.Listener {
     @Override
@@ -77,6 +83,11 @@ public class GrpcResultSetTest {
     stream.setCall(
         new SpannerRpc.StreamingCall() {
           @Override
+          public ApiCallContext getCallContext() {
+            return GrpcCallContext.createDefault().withStreamWaitTimeout(streamWaitTimeout);
+          }
+
+          @Override
           public void cancel(@Nullable String message) {}
 
           @Override
@@ -89,6 +100,14 @@ public class GrpcResultSetTest {
 
   public AbstractResultSet.GrpcResultSet resultSetWithMode(QueryMode queryMode) {
     return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+  }
+
+  @Test
+  public void testStreamTimeout() {
+    // We don't add any results to the stream. That means that it will time out after 1ns.
+    SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+    assertTrue(exception.getMessage(), exception.getMessage().contains("stream wait timeout"));
   }
 
   @Test
@@ -517,7 +536,10 @@ public class GrpcResultSetTest {
         Value.float64(1.0),
         Value.float64(null),
         Value.bytes(ByteArray.fromBase64("abcd")),
+        Value.bytesFromBase64(
+            Base64.getEncoder().encodeToString("test".getBytes(StandardCharsets.UTF_8))),
         Value.bytes(null),
+        Value.bytesFromBase64(null),
         Value.timestamp(Timestamp.ofTimeSecondsAndNanos(1, 2)),
         Value.timestamp(null),
         Value.date(Date.fromYearMonthDay(2017, 4, 17)),
@@ -528,6 +550,14 @@ public class GrpcResultSetTest {
         Value.boolArray((boolean[]) null),
         Value.int64Array(new long[] {1, 2, 3}),
         Value.int64Array((long[]) null),
+        Value.float64Array(new double[] {1.1, 2.2, 3.3}),
+        Value.float64Array((double[]) null),
+        Value.bytesArray(Arrays.asList(ByteArray.fromBase64("abcd"), null)),
+        Value.bytesArrayFromBase64(
+            Arrays.asList(
+                Base64.getEncoder().encodeToString("test".getBytes(StandardCharsets.UTF_8)), null)),
+        Value.bytesArray(null),
+        Value.bytesArrayFromBase64(null),
         Value.timestampArray(ImmutableList.of(Timestamp.MAX_VALUE, Timestamp.MAX_VALUE)),
         Value.timestampArray(null),
         Value.dateArray(
@@ -717,6 +747,25 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getPgJsonb() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.pgJsonb()))))
+            .addValues(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#f00\"}").toProto())
+            .addValues(Value.pgJsonb("{}").toProto())
+            .addValues(Value.pgJsonb("[]").toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals("{\"color\":\"red\",\"value\":\"#f00\"}", resultSet.getPgJsonb(0));
+    assertTrue(resultSet.next());
+    assertEquals("{}", resultSet.getPgJsonb(0));
+    assertTrue(resultSet.next());
+    assertEquals("[]", resultSet.getPgJsonb(0));
+  }
+
+  @Test
   public void getBooleanArray() {
     boolean[] boolArray = {true, true, false};
     consumer.onPartialResultSet(
@@ -837,5 +886,24 @@ public class GrpcResultSetTest {
 
     assertTrue(resultSet.next());
     assertEquals(jsonList, resultSet.getJsonList(0));
+  }
+
+  @Test
+  public void getPgJsonbList() {
+    List<String> jsonList = new ArrayList<>();
+    jsonList.add("{\"color\":\"red\",\"value\":\"#f00\"}");
+    jsonList.add("{\"special\":\"%😃∮πρότερονแผ่นดินฮั่นเสื่อมሰማይᚻᛖ\"}");
+    jsonList.add("[]");
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.pgJsonb())))))
+            .addValues(Value.pgJsonbArray(jsonList).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals(jsonList, resultSet.getPgJsonbList(0));
   }
 }

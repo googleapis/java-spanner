@@ -17,7 +17,9 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.spanner.v1.ResultSetStats;
 
 /**
  * Context for a single attempt of a locking read-write transaction. This type of transaction is the
@@ -43,7 +45,7 @@ import com.google.cloud.spanner.Options.UpdateOption;
  * <p>Conceptually, a read-write transaction consists of zero or more reads or SQL queries followed
  * by a commit.
  *
- * <h3>Semantics</h3>
+ * <h2>Semantics</h2>
  *
  * <p>Cloud Spanner can commit the transaction if all read locks it acquired are still valid at
  * commit time, and it is able to acquire write locks for all writes. Cloud Spanner can abort the
@@ -54,7 +56,7 @@ import com.google.cloud.spanner.Options.UpdateOption;
  * transaction's locks were held for. It is an error to use Cloud Spanner locks for any sort of
  * mutual exclusion other than between Cloud Spanner transactions themselves.
  *
- * <h3>Retrying Aborted Transactions</h3>
+ * <h2>Retrying Aborted Transactions</h2>
  *
  * <p>When a transaction aborts, the application can choose to retry the whole transaction again. To
  * maximize the chances of successfully committing the retry, the client should execute the retry in
@@ -70,7 +72,7 @@ import com.google.cloud.spanner.Options.UpdateOption;
  * <p>Application code does not need to retry explicitly; {@link TransactionRunner} will
  * automatically retry a transaction if an attempt results in an abort.
  *
- * <h3>Idle Transactions</h3>
+ * <h2>Idle Transactions</h2>
  *
  * <p>A transaction is considered idle if it has no outstanding reads or SQL queries and has not
  * started a read or SQL query within the last 10 seconds. Idle transactions can be aborted by Cloud
@@ -80,7 +82,7 @@ import com.google.cloud.spanner.Options.UpdateOption;
  * <p>If this behavior is undesirable, periodically executing a simple SQL query in the transaction
  * (e.g., {@code SELECT 1}) prevents the transaction from becoming idle.
  *
- * @see Session#readWriteTransaction()
+ * @see DatabaseClient#readWriteTransaction(TransactionOption...)
  * @see TransactionRunner
  */
 public interface TransactionContext extends ReadContext {
@@ -109,22 +111,55 @@ public interface TransactionContext extends ReadContext {
   }
 
   /**
-   * Executes the DML statement(s) and returns the number of rows modified. For non-DML statements,
-   * it will result in an {@code IllegalArgumentException}. The effects of the DML statement will be
-   * visible to subsequent operations in the transaction.
+   * Executes the DML statement (which can be a simple DML statement or DML statement with a
+   * returning clause) and returns the number of rows modified. For non-DML statements, it will
+   * result in an {@code IllegalArgumentException}. The effects of the DML statement will be visible
+   * to subsequent operations in the transaction.
    */
   long executeUpdate(Statement statement, UpdateOption... options);
 
   /**
-   * Same as {@link #executeUpdate(Statement)}, but is guaranteed to be non-blocking. If multiple
-   * asynchronous update statements are submitted to the same read/write transaction, the statements
-   * are guaranteed to be submitted to Cloud Spanner in the order that they were submitted in the
-   * client. This does however not guarantee that an asynchronous update statement will see the
-   * results of all previously submitted statements, as the execution of the statements can be
-   * parallel. If you rely on the results of a previous statement, you should block until the result
-   * of that statement is known and has been returned to the client.
+   * Same as {@link #executeUpdate(Statement,UpdateOption...)}, but is guaranteed to be
+   * non-blocking. If multiple asynchronous update statements are submitted to the same read/write
+   * transaction, the statements are guaranteed to be submitted to Cloud Spanner in the order that
+   * they were submitted in the client. This does however not guarantee that an asynchronous update
+   * statement will see the results of all previously submitted statements, as the execution of the
+   * statements can be parallel. If you rely on the results of a previous statement, you should
+   * block until the result of that statement is known and has been returned to the client.
    */
   ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options);
+
+  /**
+   * Analyzes a DML statement and returns query plan and/or execution statistics information.
+   *
+   * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan for
+   * the statement. {@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes
+   * the DML statement, returns the modified row count and execution statistics, and the effects of
+   * the DML statement will be visible to subsequent operations in the transaction.
+   *
+   * @deprecated Use {@link #analyzeUpdateStatement(Statement, QueryAnalyzeMode, UpdateOption...)}
+   *     instead to get both statement plan and parameter metadata
+   */
+  @Deprecated
+  default ResultSetStats analyzeUpdate(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * Analyzes a DML statement and returns query plan and statement parameter metadata and optionally
+   * execution statistics information.
+   *
+   * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan and
+   * parameter metadata for the statement. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes the DML statement,
+   * returns the modified row count and execution statistics, and the effects of the DML statement
+   * will be visible to subsequent operations in the transaction.
+   */
+  default ResultSet analyzeUpdateStatement(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * Executes a list of DML statements in a single request. The statements will be executed in order
@@ -144,13 +179,13 @@ public interface TransactionContext extends ReadContext {
   long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options);
 
   /**
-   * Same as {@link #batchUpdate(Iterable)}, but is guaranteed to be non-blocking. If multiple
-   * asynchronous update statements are submitted to the same read/write transaction, the statements
-   * are guaranteed to be submitted to Cloud Spanner in the order that they were submitted in the
-   * client. This does however not guarantee that an asynchronous update statement will see the
-   * results of all previously submitted statements, as the execution of the statements can be
-   * parallel. If you rely on the results of a previous statement, you should block until the result
-   * of that statement is known and has been returned to the client.
+   * Same as {@link #batchUpdate(Iterable, UpdateOption...)}, but is guaranteed to be non-blocking.
+   * If multiple asynchronous update statements are submitted to the same read/write transaction,
+   * the statements are guaranteed to be submitted to Cloud Spanner in the order that they were
+   * submitted in the client. This does however not guarantee that an asynchronous update statement
+   * will see the results of all previously submitted statements, as the execution of the statements
+   * can be parallel. If you rely on the results of a previous statement, you should block until the
+   * result of that statement is known and has been returned to the client.
    */
   ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> statements, UpdateOption... options);
 }

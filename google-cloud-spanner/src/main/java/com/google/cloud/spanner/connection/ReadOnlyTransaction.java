@@ -19,17 +19,26 @@ package com.google.cloud.spanner.connection;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.spanner.v1.SpannerGrpc;
+import java.util.concurrent.Callable;
 
 /**
  * Transaction that is used when a {@link Connection} is in read-only mode or when the transaction
@@ -37,12 +46,15 @@ import com.google.common.base.Preconditions;
  */
 class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   private final DatabaseClient dbClient;
+  private final BatchClient batchClient;
   private final TimestampBound readOnlyStaleness;
   private com.google.cloud.spanner.ReadOnlyTransaction transaction;
+  private BatchReadOnlyTransaction batchReadOnlyTransaction;
   private UnitOfWorkState state = UnitOfWorkState.STARTED;
 
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, ReadOnlyTransaction> {
     private DatabaseClient dbClient;
+    private BatchClient batchClient;
     private TimestampBound readOnlyStaleness;
 
     private Builder() {}
@@ -50,6 +62,11 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     Builder setDatabaseClient(DatabaseClient client) {
       Preconditions.checkNotNull(client);
       this.dbClient = client;
+      return this;
+    }
+
+    Builder setBatchClient(BatchClient batchClient) {
+      this.batchClient = Preconditions.checkNotNull(batchClient);
       return this;
     }
 
@@ -62,6 +79,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     @Override
     ReadOnlyTransaction build() {
       Preconditions.checkState(dbClient != null, "No DatabaseClient client specified");
+      Preconditions.checkState(batchClient != null, "No BatchClient client specified");
       Preconditions.checkState(readOnlyStaleness != null, "No ReadOnlyStaleness specified");
       return new ReadOnlyTransaction(this);
     }
@@ -71,9 +89,11 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
     return new Builder();
   }
 
-  private ReadOnlyTransaction(Builder builder) {
+  @VisibleForTesting
+  ReadOnlyTransaction(Builder builder) {
     super(builder);
     this.dbClient = builder.dbClient;
+    this.batchClient = builder.batchClient;
     this.readOnlyStaleness = builder.readOnlyStaleness;
   }
 
@@ -93,7 +113,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  void checkValidTransaction() {
+  void checkOrCreateValidTransaction(ParsedStatement statement, CallType callType) {
     if (transaction == null) {
       transaction = dbClient.readOnlyTransaction(readOnlyStaleness);
     }
@@ -151,46 +171,103 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
+  public ApiFuture<ResultSet> partitionQueryAsync(
+      CallType callType,
+      ParsedStatement query,
+      PartitionOptions partitionOptions,
+      QueryOption... options) {
+    // Batch-read-only transactions are safe to use for both normal queries and partitioned queries.
+    // We therefore just use the batch transaction as the 'normal' transaction if the first
+    // statement in the transaction is to partition a query.
+    // Using a batch-read-only transaction for every read-only transaction is not efficient, as
+    // these transactions use a session that is created synchronously only for this transaction.
+    if (transaction == null) {
+      batchReadOnlyTransaction = batchClient.batchReadOnlyTransaction(readOnlyStaleness);
+      transaction = batchReadOnlyTransaction;
+    } else if (batchReadOnlyTransaction == null) {
+      batchReadOnlyTransaction =
+          batchClient.batchReadOnlyTransaction(
+              TimestampBound.ofReadTimestamp(transaction.getReadTimestamp()));
+    }
+    Callable<ResultSet> callable =
+        () -> partitionQuery(batchReadOnlyTransaction, partitionOptions, query, options);
+    return executeStatementAsync(
+        callType,
+        query,
+        callable,
+        ImmutableList.of(SpannerGrpc.getExecuteSqlMethod(), SpannerGrpc.getCommitMethod()));
+  }
+
+  @Override
+  public ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "DDL statements are not allowed for read-only transactions");
   }
 
   @Override
-  public ApiFuture<Long> executeUpdateAsync(ParsedStatement update, UpdateOption... options) {
+  public ApiFuture<Long> executeUpdateAsync(
+      CallType callType, ParsedStatement update, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Update statements are not allowed for read-only transactions");
   }
 
   @Override
+  public ApiFuture<ResultSet> analyzeUpdateAsync(
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION,
+        "Analyzing updates is not allowed for read-only transactions");
+  }
+
+  @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, UpdateOption... options) {
+      CallType callType, Iterable<ParsedStatement> updates, UpdateOption... options) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Batch updates are not allowed for read-only transactions.");
   }
 
   @Override
-  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Mutations are not allowed for read-only transactions");
   }
 
   @Override
-  public ApiFuture<Void> commitAsync() {
-    if (this.transaction != null) {
-      this.transaction.close();
-    }
+  public ApiFuture<Void> commitAsync(CallType callType) {
+    closeTransactions();
     this.state = UnitOfWorkState.COMMITTED;
     return ApiFutures.immediateFuture(null);
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync() {
+  public ApiFuture<Void> rollbackAsync(CallType callType) {
+    closeTransactions();
+    this.state = UnitOfWorkState.ROLLED_BACK;
+    return ApiFutures.immediateFuture(null);
+  }
+
+  private void closeTransactions() {
     if (this.transaction != null) {
       this.transaction.close();
     }
-    this.state = UnitOfWorkState.ROLLED_BACK;
-    return ApiFutures.immediateFuture(null);
+    if (this.batchReadOnlyTransaction != null) {
+      this.batchReadOnlyTransaction.close();
+    }
+  }
+
+  @Override
+  String getUnitOfWorkName() {
+    return "read-only transaction";
+  }
+
+  Savepoint savepoint(String name) {
+    // Read-only transactions do not keep track of the executed statements as they also do not take
+    // any locks. There is therefore no savepoint positions that must be rolled back to.
+    return Savepoint.of(name);
+  }
+
+  void rollbackToSavepoint(Savepoint savepoint) {
+    // no-op for read-only transactions
   }
 }

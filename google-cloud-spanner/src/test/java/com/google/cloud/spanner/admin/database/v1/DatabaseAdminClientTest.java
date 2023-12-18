@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.google.cloud.spanner.admin.database.v1;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -31,6 +32,7 @@ import com.google.api.gax.rpc.InvalidArgumentException;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.resourcenames.ResourceName;
 import com.google.common.collect.Lists;
+import com.google.iam.v1.AuditConfig;
 import com.google.iam.v1.Binding;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
@@ -52,6 +54,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
@@ -67,12 +70,15 @@ import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseRolesResponse;
 import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreInfo;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import io.grpc.StatusRuntimeException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -227,6 +233,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -284,6 +292,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -341,6 +351,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -387,6 +399,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -417,6 +431,65 @@ public class DatabaseAdminClientTest {
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
+    }
+  }
+
+  @Test
+  public void updateDatabaseTest() throws Exception {
+    Database expectedResponse =
+        Database.newBuilder()
+            .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("updateDatabaseTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    Database database = Database.newBuilder().build();
+    FieldMask updateMask = FieldMask.newBuilder().build();
+
+    Database actualResponse = client.updateDatabaseAsync(database, updateMask).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    UpdateDatabaseRequest actualRequest = ((UpdateDatabaseRequest) actualRequests.get(0));
+
+    Assert.assertEquals(database, actualRequest.getDatabase());
+    Assert.assertEquals(updateMask, actualRequest.getUpdateMask());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void updateDatabaseExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      Database database = Database.newBuilder().build();
+      FieldMask updateMask = FieldMask.newBuilder().build();
+      client.updateDatabaseAsync(database, updateMask).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
     }
   }
 
@@ -656,6 +729,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
@@ -699,6 +773,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
@@ -742,6 +817,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
@@ -782,6 +858,7 @@ public class DatabaseAdminClientTest {
         Policy.newBuilder()
             .setVersion(351608024)
             .addAllBindings(new ArrayList<Binding>())
+            .addAllAuditConfigs(new ArrayList<AuditConfig>())
             .setEtag(ByteString.EMPTY)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
@@ -1598,6 +1675,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1658,6 +1737,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1718,6 +1799,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1778,6 +1861,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1999,6 +2084,94 @@ public class DatabaseAdminClientTest {
     try {
       String parent = "parent-995424086";
       client.listBackupOperations(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listDatabaseRolesTest() throws Exception {
+    DatabaseRole responsesElement = DatabaseRole.newBuilder().build();
+    ListDatabaseRolesResponse expectedResponse =
+        ListDatabaseRolesResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllDatabaseRoles(Arrays.asList(responsesElement))
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+
+    ListDatabaseRolesPagedResponse pagedListResponse = client.listDatabaseRoles(parent);
+
+    List<DatabaseRole> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getDatabaseRolesList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListDatabaseRolesRequest actualRequest = ((ListDatabaseRolesRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listDatabaseRolesExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      client.listDatabaseRoles(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listDatabaseRolesTest2() throws Exception {
+    DatabaseRole responsesElement = DatabaseRole.newBuilder().build();
+    ListDatabaseRolesResponse expectedResponse =
+        ListDatabaseRolesResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllDatabaseRoles(Arrays.asList(responsesElement))
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    String parent = "parent-995424086";
+
+    ListDatabaseRolesPagedResponse pagedListResponse = client.listDatabaseRoles(parent);
+
+    List<DatabaseRole> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getDatabaseRolesList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListDatabaseRolesRequest actualRequest = ((ListDatabaseRolesRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listDatabaseRolesExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      client.listDatabaseRoles(parent);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.

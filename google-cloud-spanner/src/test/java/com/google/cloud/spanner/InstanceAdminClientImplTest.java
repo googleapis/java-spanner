@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -27,6 +26,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Identity;
 import com.google.cloud.Role;
+import com.google.cloud.spanner.InstanceConfigInfo.InstanceConfigField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
 import com.google.common.collect.ImmutableList;
@@ -36,10 +36,15 @@ import com.google.common.io.BaseEncoding;
 import com.google.iam.v1.Binding;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.TestIamPermissionsResponse;
+import com.google.longrunning.Operation;
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.instance.v1.AutoscalingConfig;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +54,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.InstanceAdminClientImpl}. */
+/** Unit tests for {@link com.google.cloud.spanner.InstanceAdminClientImpl}. */
 @RunWith(JUnit4.class)
 public class InstanceAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
@@ -59,6 +64,7 @@ public class InstanceAdminClientImplTest {
   private static final String CONFIG_ID = "my-config";
   private static final String CONFIG_NAME = "projects/my-project/instanceConfigs/my-config";
   private static final String CONFIG_NAME2 = "projects/my-project/instanceConfigs/my-config2";
+  private static final String BASE_CONFIG = "projects/my-project/instanceConfigs/my-base-config";
 
   @Mock SpannerRpc rpc;
   @Mock DatabaseAdminClient dbClient;
@@ -70,11 +76,134 @@ public class InstanceAdminClientImplTest {
     client = new InstanceAdminClientImpl(PROJECT_ID, rpc, dbClient);
   }
 
+  private List<com.google.spanner.admin.instance.v1.ReplicaInfo> getAllReplicas() {
+    return Arrays.asList(
+        com.google.spanner.admin.instance.v1.ReplicaInfo.newBuilder()
+            .setLocation("Replica Location 1")
+            .setType(com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.READ_WRITE)
+            .setDefaultLeaderLocation(true)
+            .build(),
+        com.google.spanner.admin.instance.v1.ReplicaInfo.newBuilder()
+            .setLocation("Replica Location 2")
+            .setType(com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.READ_ONLY)
+            .setDefaultLeaderLocation(false)
+            .build(),
+        com.google.spanner.admin.instance.v1.ReplicaInfo.newBuilder()
+            .setLocation("Replica Location 3")
+            .setType(com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.WITNESS)
+            .setDefaultLeaderLocation(false)
+            .build());
+  }
+
+  private com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfigProto() {
+    return com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
+        .setName(CONFIG_NAME)
+        .setBaseConfig(BASE_CONFIG)
+        .addAllReplicas(getAllReplicas())
+        .build();
+  }
+
+  @Test
+  public void createInstanceConfig() {
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, CreateInstanceConfigMetadata>
+        rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                "createInstanceConfig",
+                getInstanceConfigProto(),
+                CreateInstanceConfigMetadata.getDefaultInstance());
+    when(rpc.createInstanceConfig(
+            "projects/" + PROJECT_ID, CONFIG_ID, getInstanceConfigProto(), false))
+        .thenReturn(rawOperationFuture);
+
+    InstanceConfigInfo instanceConfigInfo =
+        InstanceConfigInfo.fromProto(getInstanceConfigProto(), client);
+
+    OperationFuture<com.google.cloud.spanner.InstanceConfig, CreateInstanceConfigMetadata> op =
+        client.createInstanceConfig(instanceConfigInfo, Options.validateOnly(false));
+    assertThat(op.isDone()).isTrue();
+  }
+
+  @Test
+  public void updateInstanceConfig() throws Exception {
+    com.google.spanner.admin.instance.v1.InstanceConfig instanceConfig =
+        com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
+            .setName(CONFIG_NAME)
+            .setDisplayName(CONFIG_NAME)
+            .build();
+    OperationFuture<
+            com.google.spanner.admin.instance.v1.InstanceConfig, UpdateInstanceConfigMetadata>
+        rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                "updateInstanceConfig",
+                getInstanceConfigProto(),
+                UpdateInstanceConfigMetadata.getDefaultInstance());
+    when(rpc.updateInstanceConfig(
+            instanceConfig, false, FieldMask.newBuilder().addPaths("display_name").build()))
+        .thenReturn(rawOperationFuture);
+    InstanceConfigInfo instanceConfigInfo =
+        InstanceConfigInfo.newBuilder(InstanceConfigId.of(CONFIG_NAME))
+            .setDisplayName(CONFIG_NAME)
+            .build();
+    OperationFuture<com.google.cloud.spanner.InstanceConfig, UpdateInstanceConfigMetadata> op =
+        client.updateInstanceConfig(
+            instanceConfigInfo,
+            ImmutableList.of(InstanceConfigField.DISPLAY_NAME),
+            Options.validateOnly(false));
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(CONFIG_NAME);
+  }
+
   @Test
   public void getInstanceConfig() {
     when(rpc.getInstanceConfig(CONFIG_NAME))
         .thenReturn(InstanceConfig.newBuilder().setName(CONFIG_NAME).build());
     assertThat(client.getInstanceConfig(CONFIG_ID).getId().getName()).isEqualTo(CONFIG_NAME);
+  }
+
+  @Test
+  public void dropInstanceConfig() {
+    client.deleteInstanceConfig(CONFIG_ID);
+    verify(rpc).deleteInstanceConfig(CONFIG_NAME, null, null);
+  }
+
+  public Operation getInstanceConfigOperation(String instanceConfigId, Integer operationId) {
+    InstanceConfig instanceConfig =
+        com.google.spanner.admin.instance.v1.InstanceConfig.newBuilder()
+            .setName(instanceConfigId)
+            .setBaseConfig(BASE_CONFIG)
+            .addAllReplicas(getAllReplicas())
+            .build();
+
+    CreateInstanceConfigMetadata metadata =
+        CreateInstanceConfigMetadata.newBuilder().setInstanceConfig(instanceConfig).build();
+
+    final String operationName =
+        String.format(
+            "projects/%s/instanceConfigs/%s/operations/%d",
+            PROJECT_ID, instanceConfigId, operationId);
+    return com.google.longrunning.Operation.newBuilder()
+        .setMetadata(Any.pack(metadata))
+        .setResponse(Any.pack(instanceConfig))
+        .setDone(false)
+        .setName(operationName)
+        .build();
+  }
+
+  @Test
+  public void listInstanceConfigOperations() {
+    String nextToken = "token";
+    Operation operation1 = getInstanceConfigOperation("custom-instance-config-1", 1);
+    Operation operation2 = getInstanceConfigOperation("custom-instance-config-2", 2);
+    when(rpc.listInstanceConfigOperations(1, null, null))
+        .thenReturn(new Paginated<>(ImmutableList.of(operation1), nextToken));
+    when(rpc.listInstanceConfigOperations(1, null, nextToken))
+        .thenReturn(new Paginated<>(ImmutableList.of(operation2), ""));
+    List<Operation> operations =
+        Lists.newArrayList(client.listInstanceConfigOperations(Options.pageSize(1)).iterateAll());
+    assertThat(operations.get(0).getName()).isEqualTo(operation1.getName());
+    assertThat(operations.get(1).getName()).isEqualTo(operation2.getName());
+    assertThat(operations.size()).isEqualTo(2);
   }
 
   @Test
@@ -110,6 +239,26 @@ public class InstanceAdminClientImplTest {
         .setConfig(CONFIG_NAME)
         .setName(INSTANCE_NAME)
         .setProcessingUnits(10)
+        .build();
+  }
+
+  private AutoscalingConfig getAutoscalingConfigProto() {
+    return AutoscalingConfig.newBuilder()
+        .setAutoscalingLimits(
+            AutoscalingConfig.AutoscalingLimits.newBuilder().setMinNodes(2).setMaxNodes(10))
+        .setAutoscalingTargets(
+            AutoscalingConfig.AutoscalingTargets.newBuilder()
+                .setHighPriorityCpuUtilizationPercent(65)
+                .setStorageUtilizationPercent(95))
+        .build();
+  }
+
+  private com.google.spanner.admin.instance.v1.Instance getAutoscalingInstanceProto() {
+
+    return com.google.spanner.admin.instance.v1.Instance.newBuilder()
+        .setConfig(CONFIG_NAME)
+        .setName(INSTANCE_NAME)
+        .setAutoscalingConfig(getAutoscalingConfigProto())
         .build();
   }
 
@@ -165,21 +314,26 @@ public class InstanceAdminClientImplTest {
   }
 
   @Test
-  public void testCreateInstanceWithBothNodeCountAndProcessingUnits() throws Exception {
-    try {
-      client.createInstance(
-          InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
-              .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
-              .setNodeCount(1)
-              .setProcessingUnits(100)
-              .build());
-      fail("missing expected exception");
-    } catch (IllegalArgumentException e) {
-      assertTrue(
-          e.getMessage()
-              .contains(
-                  "Only one of nodeCount and processingUnits can be set when creating a new instance"));
-    }
+  public void testCreateInstanceWithAutoscalingConfig() throws Exception {
+    OperationFuture<com.google.spanner.admin.instance.v1.Instance, CreateInstanceMetadata>
+        rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                "createInstance",
+                getAutoscalingInstanceProto(),
+                CreateInstanceMetadata.getDefaultInstance());
+    when(rpc.createInstance("projects/" + PROJECT_ID, INSTANCE_ID, getAutoscalingInstanceProto()))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<Instance, CreateInstanceMetadata> operation =
+        client.createInstance(
+            InstanceInfo.newBuilder(InstanceId.of(PROJECT_ID, INSTANCE_ID))
+                .setInstanceConfigId(InstanceConfigId.of(PROJECT_ID, CONFIG_ID))
+                .setAutoscalingConfig(getAutoscalingInstanceProto().getAutoscalingConfig())
+                .build());
+    assertTrue(operation.isDone());
+    Instance instance = operation.get();
+    assertEquals(INSTANCE_NAME, instance.getId().getName());
+    assertEquals(
+        getAutoscalingInstanceProto().getAutoscalingConfig(), instance.getAutoscalingConfig());
   }
 
   @Test
@@ -188,6 +342,15 @@ public class InstanceAdminClientImplTest {
     Instance instance = client.getInstance(INSTANCE_ID);
     assertEquals(INSTANCE_NAME, instance.getId().getName());
     assertEquals(1000, instance.getProcessingUnits());
+  }
+
+  @Test
+  public void testGetAutoscalingInstance() {
+    when(rpc.getInstance(INSTANCE_NAME)).thenReturn(getAutoscalingInstanceProto());
+    Instance instance = client.getInstance(INSTANCE_ID);
+    assertEquals(INSTANCE_NAME, instance.getId().getName());
+    assertEquals(
+        getAutoscalingInstanceProto().getAutoscalingConfig(), instance.getAutoscalingConfig());
   }
 
   @Test
@@ -250,7 +413,96 @@ public class InstanceAdminClientImplTest {
     when(rpc.updateInstance(
             instance,
             FieldMask.newBuilder()
-                .addAllPaths(Arrays.asList("display_name", "processing_units", "labels"))
+                .addAllPaths(
+                    Arrays.asList(
+                        "display_name", "autoscaling_config", "processing_units", "labels"))
+                .build()))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<Instance, UpdateInstanceMetadata> operation =
+        client.updateInstance(instanceInfo);
+    assertTrue(operation.isDone());
+    assertEquals(INSTANCE_NAME, operation.get().getId().getName());
+  }
+
+  @Test
+  public void testEnableInstanceAutoscaling() throws Exception {
+    com.google.spanner.admin.instance.v1.Instance instance =
+        com.google.spanner.admin.instance.v1.Instance.newBuilder()
+            .setName(INSTANCE_NAME)
+            .setConfig(CONFIG_NAME)
+            .setAutoscalingConfig(getAutoscalingConfigProto())
+            .build();
+    OperationFuture<com.google.spanner.admin.instance.v1.Instance, UpdateInstanceMetadata>
+        rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                "updateInstance",
+                getAutoscalingInstanceProto(),
+                UpdateInstanceMetadata.getDefaultInstance());
+    when(rpc.updateInstance(
+            instance, FieldMask.newBuilder().addPaths("autoscaling_config").build()))
+        .thenReturn(rawOperationFuture);
+    InstanceInfo instanceInfo =
+        InstanceInfo.newBuilder(InstanceId.of(INSTANCE_NAME))
+            .setInstanceConfigId(InstanceConfigId.of(CONFIG_NAME))
+            .setAutoscalingConfig(getAutoscalingConfigProto())
+            .build();
+    OperationFuture<Instance, UpdateInstanceMetadata> operationWithFieldMask =
+        client.updateInstance(instanceInfo, InstanceInfo.InstanceField.AUTOSCALING_CONFIG);
+    assertTrue(operationWithFieldMask.isDone());
+    assertEquals(INSTANCE_NAME, operationWithFieldMask.get().getId().getName());
+
+    when(rpc.updateInstance(
+            instance,
+            FieldMask.newBuilder()
+                .addAllPaths(Arrays.asList("display_name", "autoscaling_config", "labels"))
+                .build()))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<Instance, UpdateInstanceMetadata> operation =
+        client.updateInstance(instanceInfo);
+    assertTrue(operation.isDone());
+    assertEquals(INSTANCE_NAME, operation.get().getId().getName());
+  }
+
+  @Test
+  public void testDisableInstanceAutoscaling() throws Exception {
+    com.google.spanner.admin.instance.v1.Instance instance =
+        com.google.spanner.admin.instance.v1.Instance.newBuilder()
+            .setName(INSTANCE_NAME)
+            .setConfig(CONFIG_NAME)
+            .setProcessingUnits(10)
+            .build();
+    OperationFuture<com.google.spanner.admin.instance.v1.Instance, UpdateInstanceMetadata>
+        rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                "updateInstance",
+                getInstanceProtoWithProcessingUnits(),
+                UpdateInstanceMetadata.getDefaultInstance());
+    when(rpc.updateInstance(
+            instance,
+            FieldMask.newBuilder()
+                .addPaths("autoscaling_config")
+                .addPaths("processing_units")
+                .build()))
+        .thenReturn(rawOperationFuture);
+    InstanceInfo instanceInfo =
+        InstanceInfo.newBuilder(InstanceId.of(INSTANCE_NAME))
+            .setInstanceConfigId(InstanceConfigId.of(CONFIG_NAME))
+            .setProcessingUnits(10)
+            .build();
+    OperationFuture<Instance, UpdateInstanceMetadata> operationWithFieldMask =
+        client.updateInstance(
+            instanceInfo,
+            InstanceInfo.InstanceField.AUTOSCALING_CONFIG,
+            InstanceInfo.InstanceField.PROCESSING_UNITS);
+    assertTrue(operationWithFieldMask.isDone());
+    assertEquals(INSTANCE_NAME, operationWithFieldMask.get().getId().getName());
+
+    when(rpc.updateInstance(
+            instance,
+            FieldMask.newBuilder()
+                .addAllPaths(
+                    Arrays.asList(
+                        "display_name", "autoscaling_config", "processing_units", "labels"))
                 .build()))
         .thenReturn(rawOperationFuture);
     OperationFuture<Instance, UpdateInstanceMetadata> operation =
@@ -279,7 +531,8 @@ public class InstanceAdminClientImplTest {
     when(rpc.updateInstance(
             instance,
             FieldMask.newBuilder()
-                .addAllPaths(Arrays.asList("display_name", "node_count", "labels"))
+                .addAllPaths(
+                    Arrays.asList("display_name", "autoscaling_config", "node_count", "labels"))
                 .build()))
         .thenReturn(rawOperationFuture);
     InstanceInfo instanceInfo =
@@ -295,18 +548,56 @@ public class InstanceAdminClientImplTest {
   }
 
   @Test
+  public void testUpdateInstanceWithNodeCountAndProcessingUnitsAndAutoscalingConfig()
+      throws Exception {
+    com.google.spanner.admin.instance.v1.Instance instance =
+        com.google.spanner.admin.instance.v1.Instance.newBuilder()
+            .setName(INSTANCE_NAME)
+            .setConfig(CONFIG_NAME)
+            .setNodeCount(3)
+            .setProcessingUnits(3000)
+            .setAutoscalingConfig(getAutoscalingConfigProto())
+            .build();
+    OperationFuture<com.google.spanner.admin.instance.v1.Instance, UpdateInstanceMetadata>
+        rawOperationFuture =
+            OperationFutureUtil.immediateOperationFuture(
+                "updateInstance",
+                getAutoscalingInstanceProto(),
+                UpdateInstanceMetadata.getDefaultInstance());
+    // autoscaling_config should take precedence over node_count or processing_units when
+    // autoscaling_config is not null and no specific field mask is set by the caller.
+    when(rpc.updateInstance(
+            instance,
+            FieldMask.newBuilder()
+                .addAllPaths(Arrays.asList("display_name", "autoscaling_config", "labels"))
+                .build()))
+        .thenReturn(rawOperationFuture);
+    InstanceInfo instanceInfo =
+        InstanceInfo.newBuilder(InstanceId.of(INSTANCE_NAME))
+            .setInstanceConfigId(InstanceConfigId.of(CONFIG_NAME))
+            .setNodeCount(3)
+            .setProcessingUnits(3000)
+            .setAutoscalingConfig(getAutoscalingConfigProto())
+            .build();
+    OperationFuture<Instance, UpdateInstanceMetadata> operationWithFieldMask =
+        client.updateInstance(instanceInfo);
+    assertTrue(operationWithFieldMask.isDone());
+    assertEquals(INSTANCE_NAME, operationWithFieldMask.get().getId().getName());
+  }
+
+  @Test
   public void testListInstances() {
     String nextToken = "token";
     String filter = "env:dev";
     when(rpc.listInstances(1, null, filter))
-        .thenReturn(new Paginated<>(ImmutableList.of(getInstanceProto()), nextToken));
+        .thenReturn(new Paginated<>(ImmutableList.of(getAutoscalingInstanceProto()), nextToken));
     when(rpc.listInstances(1, nextToken, filter))
         .thenReturn(new Paginated<>(ImmutableList.of(getAnotherInstanceProto()), ""));
     List<Instance> instances =
         Lists.newArrayList(
             client.listInstances(Options.pageSize(1), Options.filter(filter)).iterateAll());
     assertEquals(INSTANCE_NAME, instances.get(0).getId().getName());
-    assertEquals(1000, instances.get(0).getProcessingUnits());
+    assertEquals(getAutoscalingConfigProto(), instances.get(0).getAutoscalingConfig());
     assertEquals(INSTANCE_NAME2, instances.get(1).getId().getName());
     assertEquals(2000, instances.get(1).getProcessingUnits());
     assertEquals(2, instances.size());

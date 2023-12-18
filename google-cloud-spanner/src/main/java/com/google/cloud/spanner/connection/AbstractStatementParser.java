@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Internal class for the Spanner Connection API.
@@ -57,7 +59,12 @@ public abstract class AbstractStatementParser {
               Dialect.POSTGRESQL,
               PostgreSQLStatementParser.class);
 
-  /** Get an instance of {@link AbstractStatementParser} for the specified dialect. */
+  /**
+   * Get an instance of {@link AbstractStatementParser} for the specified dialect.
+   *
+   * @param dialect
+   * @return
+   */
   public static AbstractStatementParser getInstance(Dialect dialect) {
     synchronized (lock) {
       if (!INSTANCES.containsKey(dialect)) {
@@ -86,8 +93,7 @@ public abstract class AbstractStatementParser {
    */
 
   /** Begins a transaction. */
-  static final ParsedStatement BEGIN_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+  static final ParsedStatement BEGIN_STATEMENT;
 
   /**
    * Create a COMMIT statement to use with the {@link #commit()} method to allow it to be cancelled,
@@ -99,14 +105,10 @@ public abstract class AbstractStatementParser {
    * #commit()} method is called directly, we do not have a {@link ParsedStatement}, and the method
    * uses this statement instead in order to use the same logic as the other statements.
    */
-  static final ParsedStatement COMMIT_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("COMMIT"));
+  static final ParsedStatement COMMIT_STATEMENT;
 
   /** The {@link Statement} and {@link Callable} for rollbacks */
-  static final ParsedStatement ROLLBACK_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("ROLLBACK"));
+  static final ParsedStatement ROLLBACK_STATEMENT;
 
   /**
    * Create a RUN BATCH statement to use with the {@link #executeBatchUpdate(Iterable)} method to
@@ -119,9 +121,22 @@ public abstract class AbstractStatementParser {
    * and the method uses this statement instead in order to use the same logic as the other
    * statements.
    */
-  static final ParsedStatement RUN_BATCH_STATEMENT =
-      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
-          .parse(Statement.of("RUN BATCH"));
+  static final ParsedStatement RUN_BATCH_STATEMENT;
+
+  static {
+    try {
+      BEGIN_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("BEGIN"));
+      COMMIT_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("COMMIT"));
+      ROLLBACK_STATEMENT = getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("ROLLBACK"));
+      RUN_BATCH_STATEMENT =
+          getInstance(Dialect.GOOGLE_STANDARD_SQL).parse(Statement.of("RUN BATCH"));
+
+    } catch (Throwable ex) {
+      Logger logger = Logger.getLogger(AbstractStatementParser.class.getName());
+      logger.log(Level.SEVERE, "Static initialization failure.", ex);
+      throw ex;
+    }
+  }
 
   /** The type of statement that has been recognized by the parser. */
   @InternalApi
@@ -140,6 +155,7 @@ public abstract class AbstractStatementParser {
     private final ClientSideStatementImpl clientSideStatement;
     private final Statement statement;
     private final String sqlWithoutComments;
+    private final boolean returningClause;
 
     private static ParsedStatement clientSideStatement(
         ClientSideStatementImpl clientSideStatement,
@@ -155,11 +171,13 @@ public abstract class AbstractStatementParser {
     private static ParsedStatement query(
         Statement statement, String sqlWithoutComments, QueryOptions defaultQueryOptions) {
       return new ParsedStatement(
-          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions);
+          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions, false);
     }
 
-    private static ParsedStatement update(Statement statement, String sqlWithoutComments) {
-      return new ParsedStatement(StatementType.UPDATE, statement, sqlWithoutComments);
+    private static ParsedStatement update(
+        Statement statement, String sqlWithoutComments, boolean returningClause) {
+      return new ParsedStatement(
+          StatementType.UPDATE, statement, sqlWithoutComments, returningClause);
     }
 
     private static ParsedStatement unknown(Statement statement, String sqlWithoutComments) {
@@ -176,23 +194,34 @@ public abstract class AbstractStatementParser {
       this.clientSideStatement = clientSideStatement;
       this.statement = statement;
       this.sqlWithoutComments = sqlWithoutComments;
-    }
-
-    private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
-      this(type, statement, sqlWithoutComments, null);
+      this.returningClause = false;
     }
 
     private ParsedStatement(
         StatementType type,
         Statement statement,
         String sqlWithoutComments,
-        QueryOptions defaultQueryOptions) {
+        boolean returningClause) {
+      this(type, statement, sqlWithoutComments, null, returningClause);
+    }
+
+    private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
+      this(type, statement, sqlWithoutComments, null, false);
+    }
+
+    private ParsedStatement(
+        StatementType type,
+        Statement statement,
+        String sqlWithoutComments,
+        QueryOptions defaultQueryOptions,
+        boolean returningClause) {
       Preconditions.checkNotNull(type);
       Preconditions.checkNotNull(statement);
       this.type = type;
       this.clientSideStatement = null;
       this.statement = mergeQueryOptions(statement, defaultQueryOptions);
       this.sqlWithoutComments = sqlWithoutComments;
+      this.returningClause = returningClause;
     }
 
     @Override
@@ -213,15 +242,21 @@ public abstract class AbstractStatementParser {
           && Objects.equals(this.sqlWithoutComments, o.sqlWithoutComments);
     }
 
-    /** Returns the type of statement that was recognized by the parser. */
+    /** @return the type of statement that was recognized by the parser. */
     @InternalApi
     public StatementType getType() {
       return type;
     }
 
+    /** @return whether the statement has a returning clause or not. */
+    @InternalApi
+    public boolean hasReturningClause() {
+      return this.returningClause;
+    }
+
     /**
-     * Returns true if the statement is a query that will return a {@link
-     * com.google.cloud.spanner.ResultSet}.
+     * @return true if the statement is a query that will return a {@link
+     *     com.google.cloud.spanner.ResultSet}.
      */
     @InternalApi
     public boolean isQuery() {
@@ -239,8 +274,8 @@ public abstract class AbstractStatementParser {
     }
 
     /**
-     * Returns true if the statement is a DML statement or a client side statement that will return
-     * an update count.
+     * @return true if the statement is a DML statement or a client side statement that will return
+     *     an update count.
      */
     @InternalApi
     public boolean isUpdate() {
@@ -257,7 +292,7 @@ public abstract class AbstractStatementParser {
       return false;
     }
 
-    /** Returns true if the statement is a DDL statement. */
+    /** @return true if the statement is a DDL statement. */
     @InternalApi
     public boolean isDdl() {
       switch (type) {
@@ -273,8 +308,8 @@ public abstract class AbstractStatementParser {
     }
 
     /**
-     * Returns the {@link ClientSideStatementType} of this statement. This method may only be called
-     * on statements of type {@link StatementType#CLIENT_SIDE}.
+     * @return the {@link ClientSideStatementType} of this statement. This method may only be called
+     *     on statements of type {@link StatementType#CLIENT_SIDE}.
      */
     @InternalApi
     public ClientSideStatementType getClientSideStatementType() {
@@ -306,7 +341,7 @@ public abstract class AbstractStatementParser {
           .build();
     }
 
-    /** Returns the SQL statement with all comments removed from the SQL string. */
+    /** @return the SQL statement with all comments removed from the SQL string. */
     @InternalApi
     public String getSqlWithoutComments() {
       return sqlWithoutComments;
@@ -320,7 +355,8 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  static final Set<String> ddlStatements = ImmutableSet.of("CREATE", "DROP", "ALTER");
+  static final Set<String> ddlStatements =
+      ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE", "GRANT", "REVOKE");
   static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH", "SHOW");
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
@@ -354,7 +390,7 @@ public abstract class AbstractStatementParser {
     } else if (isQuery(sql)) {
       return ParsedStatement.query(statement, sql, defaultQueryOptions);
     } else if (isUpdateStatement(sql)) {
-      return ParsedStatement.update(statement, sql);
+      return ParsedStatement.update(statement, sql, checkReturningClause(sql));
     } else if (isDdlStatement(sql)) {
       return ParsedStatement.ddl(statement, sql);
     }
@@ -459,6 +495,10 @@ public abstract class AbstractStatementParser {
   static final char SLASH = '/';
   static final char ASTERISK = '*';
   static final char DOLLAR = '$';
+  static final char SPACE = ' ';
+  static final char CLOSE_PARENTHESIS = ')';
+  static final char COMMA = ',';
+  static final char UNDERSCORE = '_';
 
   /**
    * Removes comments from and trims the given sql statement using the dialect of this parser.
@@ -469,6 +509,12 @@ public abstract class AbstractStatementParser {
   @InternalApi
   abstract String removeCommentsAndTrimInternal(String sql);
 
+  /**
+   * Removes comments from and trims the given sql statement using the dialect of this parser.
+   *
+   * @param sql The sql statement to remove comments from and to trim.
+   * @return the sql statement without the comments and leading and trailing spaces.
+   */
   @InternalApi
   public String removeCommentsAndTrim(String sql) {
     return removeCommentsAndTrimInternal(sql);
@@ -493,6 +539,22 @@ public abstract class AbstractStatementParser {
    * Converts all positional parameters (?) in the given sql string into named parameters. The
    * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
    * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
+   * parameters. The input SQL string may not contain any comments, except for PostgreSQL-dialect
+   * SQL strings.
+   *
+   * @param sql The sql string that should be converted
+   * @return A {@link ParametersInfo} object containing a string with named parameters instead of
+   *     positional parameters and the number of parameters.
+   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
+   */
+  @InternalApi
+  abstract ParametersInfo convertPositionalParametersToNamedParametersInternal(
+      char paramChar, String sql);
+
+  /**
+   * Converts all positional parameters (?) in the given sql string into named parameters. The
+   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
+   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
    * parameters. The input SQL string may not contain any comments. There is an exception case if
    * the statement starts with a GSQL comment which forces it to be interpreted as a GoogleSql
    * statement.
@@ -502,10 +564,6 @@ public abstract class AbstractStatementParser {
    *     positional parameters and the number of parameters.
    * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
    */
-  @InternalApi
-  abstract ParametersInfo convertPositionalParametersToNamedParametersInternal(
-      char paramChar, String sql);
-
   @InternalApi
   public ParametersInfo convertPositionalParametersToNamedParameters(char paramChar, String sql) {
     return convertPositionalParametersToNamedParametersInternal(paramChar, sql);
@@ -520,5 +578,27 @@ public abstract class AbstractStatementParser {
       }
     }
     return res;
+  }
+
+  /**
+   * Checks if the given SQL string contains a Returning clause. This method is used only in case of
+   * a DML statement.
+   *
+   * @param sql The sql string without comments that has to be evaluated.
+   * @return A boolean indicating whether the sql string has a Returning clause or not.
+   */
+  @InternalApi
+  protected abstract boolean checkReturningClauseInternal(String sql);
+
+  /**
+   * Checks if the given SQL string contains a Returning clause. This method is used only in case of
+   * a DML statement.
+   *
+   * @param sql The sql string without comments that has to be evaluated.
+   * @return A boolean indicating whether the sql string has a Returning clause or not.
+   */
+  @InternalApi
+  public boolean checkReturningClause(String sql) {
+    return checkReturningClauseInternal(sql);
   }
 }

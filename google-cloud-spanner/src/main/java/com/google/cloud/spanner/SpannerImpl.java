@@ -66,6 +66,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String COMMIT = "CloudSpannerOperation.Commit";
   static final String QUERY = "CloudSpannerOperation.ExecuteStreamingQuery";
   static final String READ = "CloudSpannerOperation.ExecuteStreamingRead";
+  static final String BATCH_WRITE = "CloudSpannerOperation.BatchWrite";
 
   private static final Object CLIENT_ID_LOCK = new Object();
 
@@ -221,6 +222,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         SessionPool pool =
             SessionPool.createPool(
                 getOptions(), SpannerImpl.this.getSessionClient(db), labelValues);
+        pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
         dbClients.put(db, dbClient);
         return dbClient;

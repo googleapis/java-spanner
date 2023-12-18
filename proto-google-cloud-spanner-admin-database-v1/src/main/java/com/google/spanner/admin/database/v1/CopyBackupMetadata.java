@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,94 +49,6 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     return new CopyBackupMetadata();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private CopyBackupMetadata(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-          case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              sourceBackup_ = s;
-              break;
-            }
-          case 26:
-            {
-              com.google.spanner.admin.database.v1.OperationProgress.Builder subBuilder = null;
-              if (progress_ != null) {
-                subBuilder = progress_.toBuilder();
-              }
-              progress_ =
-                  input.readMessage(
-                      com.google.spanner.admin.database.v1.OperationProgress.parser(),
-                      extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(progress_);
-                progress_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 34:
-            {
-              com.google.protobuf.Timestamp.Builder subBuilder = null;
-              if (cancelTime_ != null) {
-                subBuilder = cancelTime_.toBuilder();
-              }
-              cancelTime_ =
-                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(cancelTime_);
-                cancelTime_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.BackupProto
         .internal_static_google_spanner_admin_database_v1_CopyBackupMetadata_descriptor;
@@ -153,7 +65,9 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
-  private volatile java.lang.Object name_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object name_ = "";
   /**
    *
    *
@@ -206,7 +120,9 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
   }
 
   public static final int SOURCE_BACKUP_FIELD_NUMBER = 2;
-  private volatile java.lang.Object sourceBackup_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object sourceBackup_ = "";
   /**
    *
    *
@@ -306,7 +222,9 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.OperationProgressOrBuilder getProgressOrBuilder() {
-    return getProgress();
+    return progress_ == null
+        ? com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()
+        : progress_;
   }
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 4;
@@ -385,7 +303,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCancelTimeOrBuilder() {
-    return getCancelTime();
+    return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -414,7 +332,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     if (cancelTime_ != null) {
       output.writeMessage(4, getCancelTime());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -435,7 +353,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     if (cancelTime_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getCancelTime());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -461,7 +379,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     if (hasCancelTime()) {
       if (!getCancelTime().equals(other.getCancelTime())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -484,7 +402,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       hash = (37 * hash) + CANCEL_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getCancelTime().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -615,36 +533,26 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     }
 
     // Construct using com.google.spanner.admin.database.v1.CopyBackupMetadata.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       name_ = "";
-
       sourceBackup_ = "";
-
-      if (progressBuilder_ == null) {
-        progress_ = null;
-      } else {
-        progress_ = null;
+      progress_ = null;
+      if (progressBuilder_ != null) {
+        progressBuilder_.dispose();
         progressBuilder_ = null;
       }
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-      } else {
-        cancelTime_ = null;
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
       return this;
@@ -674,20 +582,27 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     public com.google.spanner.admin.database.v1.CopyBackupMetadata buildPartial() {
       com.google.spanner.admin.database.v1.CopyBackupMetadata result =
           new com.google.spanner.admin.database.v1.CopyBackupMetadata(this);
-      result.name_ = name_;
-      result.sourceBackup_ = sourceBackup_;
-      if (progressBuilder_ == null) {
-        result.progress_ = progress_;
-      } else {
-        result.progress_ = progressBuilder_.build();
-      }
-      if (cancelTimeBuilder_ == null) {
-        result.cancelTime_ = cancelTime_;
-      } else {
-        result.cancelTime_ = cancelTimeBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.CopyBackupMetadata result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.name_ = name_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.sourceBackup_ = sourceBackup_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.progress_ = progressBuilder_ == null ? progress_ : progressBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.cancelTime_ = cancelTimeBuilder_ == null ? cancelTime_ : cancelTimeBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -738,10 +653,12 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getSourceBackup().isEmpty()) {
         sourceBackup_ = other.sourceBackup_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (other.hasProgress()) {
@@ -750,7 +667,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       if (other.hasCancelTime()) {
         mergeCancelTime(other.getCancelTime());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -765,20 +682,59 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.CopyBackupMetadata parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                name_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                sourceBackup_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getProgressFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(getCancelTimeFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.database.v1.CopyBackupMetadata) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object name_ = "";
     /**
@@ -847,8 +803,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       if (value == null) {
         throw new NullPointerException();
       }
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -866,8 +822,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * @return This builder for chaining.
      */
     public Builder clearName() {
-
       name_ = getDefaultInstance().getName();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -890,8 +846,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -963,8 +919,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
       if (value == null) {
         throw new NullPointerException();
       }
-
       sourceBackup_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -982,8 +938,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * @return This builder for chaining.
      */
     public Builder clearSourceBackup() {
-
       sourceBackup_ = getDefaultInstance().getSourceBackup();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1006,8 +962,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       sourceBackup_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1031,7 +987,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * @return Whether the progress field is set.
      */
     public boolean hasProgress() {
-      return progressBuilder_ != null || progress_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1070,11 +1026,11 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
           throw new NullPointerException();
         }
         progress_ = value;
-        onChanged();
       } else {
         progressBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1091,11 +1047,11 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
         com.google.spanner.admin.database.v1.OperationProgress.Builder builderForValue) {
       if (progressBuilder_ == null) {
         progress_ = builderForValue.build();
-        onChanged();
       } else {
         progressBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1110,19 +1066,19 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      */
     public Builder mergeProgress(com.google.spanner.admin.database.v1.OperationProgress value) {
       if (progressBuilder_ == null) {
-        if (progress_ != null) {
-          progress_ =
-              com.google.spanner.admin.database.v1.OperationProgress.newBuilder(progress_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && progress_ != null
+            && progress_
+                != com.google.spanner.admin.database.v1.OperationProgress.getDefaultInstance()) {
+          getProgressBuilder().mergeFrom(value);
         } else {
           progress_ = value;
         }
-        onChanged();
       } else {
         progressBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1136,14 +1092,13 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
      */
     public Builder clearProgress() {
-      if (progressBuilder_ == null) {
-        progress_ = null;
-        onChanged();
-      } else {
-        progress_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      progress_ = null;
+      if (progressBuilder_ != null) {
+        progressBuilder_.dispose();
         progressBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1157,7 +1112,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
      */
     public com.google.spanner.admin.database.v1.OperationProgress.Builder getProgressBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getProgressFieldBuilder().getBuilder();
     }
@@ -1236,7 +1191,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * @return Whether the cancelTime field is set.
      */
     public boolean hasCancelTime() {
-      return cancelTimeBuilder_ != null || cancelTime_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1295,11 +1250,11 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
           throw new NullPointerException();
         }
         cancelTime_ = value;
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1325,11 +1280,11 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
     public Builder setCancelTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (cancelTimeBuilder_ == null) {
         cancelTime_ = builderForValue.build();
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1354,17 +1309,18 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      */
     public Builder mergeCancelTime(com.google.protobuf.Timestamp value) {
       if (cancelTimeBuilder_ == null) {
-        if (cancelTime_ != null) {
-          cancelTime_ =
-              com.google.protobuf.Timestamp.newBuilder(cancelTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && cancelTime_ != null
+            && cancelTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCancelTimeBuilder().mergeFrom(value);
         } else {
           cancelTime_ = value;
         }
-        onChanged();
       } else {
         cancelTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1388,14 +1344,13 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * <code>.google.protobuf.Timestamp cancel_time = 4;</code>
      */
     public Builder clearCancelTime() {
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-        onChanged();
-      } else {
-        cancelTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1419,7 +1374,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      * <code>.google.protobuf.Timestamp cancel_time = 4;</code>
      */
     public com.google.protobuf.Timestamp.Builder getCancelTimeBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }
@@ -1521,7 +1476,18 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new CopyBackupMetadata(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

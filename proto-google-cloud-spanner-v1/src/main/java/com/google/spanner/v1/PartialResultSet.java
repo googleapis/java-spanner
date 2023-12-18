@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,103 +48,6 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new PartialResultSet();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private PartialResultSet(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.spanner.v1.ResultSetMetadata.Builder subBuilder = null;
-              if (metadata_ != null) {
-                subBuilder = metadata_.toBuilder();
-              }
-              metadata_ =
-                  input.readMessage(
-                      com.google.spanner.v1.ResultSetMetadata.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(metadata_);
-                metadata_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 18:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                values_ = new java.util.ArrayList<com.google.protobuf.Value>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              values_.add(input.readMessage(com.google.protobuf.Value.parser(), extensionRegistry));
-              break;
-            }
-          case 24:
-            {
-              chunkedValue_ = input.readBool();
-              break;
-            }
-          case 34:
-            {
-              resumeToken_ = input.readBytes();
-              break;
-            }
-          case 42:
-            {
-              com.google.spanner.v1.ResultSetStats.Builder subBuilder = null;
-              if (stats_ != null) {
-                subBuilder = stats_.toBuilder();
-              }
-              stats_ =
-                  input.readMessage(
-                      com.google.spanner.v1.ResultSetStats.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(stats_);
-                stats_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        values_ = java.util.Collections.unmodifiableList(values_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -210,10 +113,14 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    */
   @java.lang.Override
   public com.google.spanner.v1.ResultSetMetadataOrBuilder getMetadataOrBuilder() {
-    return getMetadata();
+    return metadata_ == null
+        ? com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()
+        : metadata_;
   }
 
   public static final int VALUES_FIELD_NUMBER = 2;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.protobuf.Value> values_;
   /**
    *
@@ -224,13 +131,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    * large rows and/or large values. Every N complete values defines a
    * row, where N is equal to the number of entries in
    * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+   *
    * Most values are encoded based on type as described
    * [here][google.spanner.v1.TypeCode].
+   *
    * It is possible that the last value in values is "chunked",
    * meaning that the rest of the value is sent in subsequent
    * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
    * field. Two or more chunked values can be merged to form a
    * complete value as follows:
+   *
    *   * `bool/number/null`: cannot be chunked
    *   * `string`: concatenate the strings
    *   * `list`: concatenate the lists. If the last element in a list is a
@@ -239,27 +149,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *   * `object`: concatenate the (field name, field value) pairs. If a
    *     field name is duplicated, then apply these rules recursively
    *     to merge the field values.
+   *
    * Some examples of merging:
+   *
    *     # Strings are concatenated.
    *     "foo", "bar" =&gt; "foobar"
+   *
    *     # Lists of non-strings are concatenated.
    *     [2, 3], [4] =&gt; [2, 3, 4]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are strings.
    *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are lists. Recursively, the last and first elements
    *     # of the inner lists are merged because they are strings.
    *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+   *
    *     # Non-overlapping object fields are combined.
    *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+   *
    *     # Overlapping object fields are merged.
    *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+   *
    *     # Examples of merging objects containing lists of strings.
    *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+   *
    * For a more complete example, suppose a streaming SQL query is
    * yielding a result set whose rows contain a single string
    * field. The following `PartialResultSet`s might be yielded:
+   *
    *     {
    *       "metadata": { ... }
    *       "values": ["Hello", "W"]
@@ -275,6 +195,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *       "values": ["d"]
    *       "resume_token": "Zx1B..."
    *     }
+   *
    * This sequence of `PartialResultSet`s encodes two rows, one
    * containing the field value `"Hello"`, and a second containing the
    * field value `"World" = "W" + "orl" + "d"`.
@@ -295,13 +216,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    * large rows and/or large values. Every N complete values defines a
    * row, where N is equal to the number of entries in
    * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+   *
    * Most values are encoded based on type as described
    * [here][google.spanner.v1.TypeCode].
+   *
    * It is possible that the last value in values is "chunked",
    * meaning that the rest of the value is sent in subsequent
    * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
    * field. Two or more chunked values can be merged to form a
    * complete value as follows:
+   *
    *   * `bool/number/null`: cannot be chunked
    *   * `string`: concatenate the strings
    *   * `list`: concatenate the lists. If the last element in a list is a
@@ -310,27 +234,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *   * `object`: concatenate the (field name, field value) pairs. If a
    *     field name is duplicated, then apply these rules recursively
    *     to merge the field values.
+   *
    * Some examples of merging:
+   *
    *     # Strings are concatenated.
    *     "foo", "bar" =&gt; "foobar"
+   *
    *     # Lists of non-strings are concatenated.
    *     [2, 3], [4] =&gt; [2, 3, 4]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are strings.
    *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are lists. Recursively, the last and first elements
    *     # of the inner lists are merged because they are strings.
    *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+   *
    *     # Non-overlapping object fields are combined.
    *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+   *
    *     # Overlapping object fields are merged.
    *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+   *
    *     # Examples of merging objects containing lists of strings.
    *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+   *
    * For a more complete example, suppose a streaming SQL query is
    * yielding a result set whose rows contain a single string
    * field. The following `PartialResultSet`s might be yielded:
+   *
    *     {
    *       "metadata": { ... }
    *       "values": ["Hello", "W"]
@@ -346,6 +280,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *       "values": ["d"]
    *       "resume_token": "Zx1B..."
    *     }
+   *
    * This sequence of `PartialResultSet`s encodes two rows, one
    * containing the field value `"Hello"`, and a second containing the
    * field value `"World" = "W" + "orl" + "d"`.
@@ -366,13 +301,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    * large rows and/or large values. Every N complete values defines a
    * row, where N is equal to the number of entries in
    * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+   *
    * Most values are encoded based on type as described
    * [here][google.spanner.v1.TypeCode].
+   *
    * It is possible that the last value in values is "chunked",
    * meaning that the rest of the value is sent in subsequent
    * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
    * field. Two or more chunked values can be merged to form a
    * complete value as follows:
+   *
    *   * `bool/number/null`: cannot be chunked
    *   * `string`: concatenate the strings
    *   * `list`: concatenate the lists. If the last element in a list is a
@@ -381,27 +319,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *   * `object`: concatenate the (field name, field value) pairs. If a
    *     field name is duplicated, then apply these rules recursively
    *     to merge the field values.
+   *
    * Some examples of merging:
+   *
    *     # Strings are concatenated.
    *     "foo", "bar" =&gt; "foobar"
+   *
    *     # Lists of non-strings are concatenated.
    *     [2, 3], [4] =&gt; [2, 3, 4]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are strings.
    *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are lists. Recursively, the last and first elements
    *     # of the inner lists are merged because they are strings.
    *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+   *
    *     # Non-overlapping object fields are combined.
    *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+   *
    *     # Overlapping object fields are merged.
    *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+   *
    *     # Examples of merging objects containing lists of strings.
    *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+   *
    * For a more complete example, suppose a streaming SQL query is
    * yielding a result set whose rows contain a single string
    * field. The following `PartialResultSet`s might be yielded:
+   *
    *     {
    *       "metadata": { ... }
    *       "values": ["Hello", "W"]
@@ -417,6 +365,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *       "values": ["d"]
    *       "resume_token": "Zx1B..."
    *     }
+   *
    * This sequence of `PartialResultSet`s encodes two rows, one
    * containing the field value `"Hello"`, and a second containing the
    * field value `"World" = "W" + "orl" + "d"`.
@@ -437,13 +386,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    * large rows and/or large values. Every N complete values defines a
    * row, where N is equal to the number of entries in
    * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+   *
    * Most values are encoded based on type as described
    * [here][google.spanner.v1.TypeCode].
+   *
    * It is possible that the last value in values is "chunked",
    * meaning that the rest of the value is sent in subsequent
    * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
    * field. Two or more chunked values can be merged to form a
    * complete value as follows:
+   *
    *   * `bool/number/null`: cannot be chunked
    *   * `string`: concatenate the strings
    *   * `list`: concatenate the lists. If the last element in a list is a
@@ -452,27 +404,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *   * `object`: concatenate the (field name, field value) pairs. If a
    *     field name is duplicated, then apply these rules recursively
    *     to merge the field values.
+   *
    * Some examples of merging:
+   *
    *     # Strings are concatenated.
    *     "foo", "bar" =&gt; "foobar"
+   *
    *     # Lists of non-strings are concatenated.
    *     [2, 3], [4] =&gt; [2, 3, 4]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are strings.
    *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are lists. Recursively, the last and first elements
    *     # of the inner lists are merged because they are strings.
    *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+   *
    *     # Non-overlapping object fields are combined.
    *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+   *
    *     # Overlapping object fields are merged.
    *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+   *
    *     # Examples of merging objects containing lists of strings.
    *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+   *
    * For a more complete example, suppose a streaming SQL query is
    * yielding a result set whose rows contain a single string
    * field. The following `PartialResultSet`s might be yielded:
+   *
    *     {
    *       "metadata": { ... }
    *       "values": ["Hello", "W"]
@@ -488,6 +450,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *       "values": ["d"]
    *       "resume_token": "Zx1B..."
    *     }
+   *
    * This sequence of `PartialResultSet`s encodes two rows, one
    * containing the field value `"Hello"`, and a second containing the
    * field value `"World" = "W" + "orl" + "d"`.
@@ -508,13 +471,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    * large rows and/or large values. Every N complete values defines a
    * row, where N is equal to the number of entries in
    * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+   *
    * Most values are encoded based on type as described
    * [here][google.spanner.v1.TypeCode].
+   *
    * It is possible that the last value in values is "chunked",
    * meaning that the rest of the value is sent in subsequent
    * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
    * field. Two or more chunked values can be merged to form a
    * complete value as follows:
+   *
    *   * `bool/number/null`: cannot be chunked
    *   * `string`: concatenate the strings
    *   * `list`: concatenate the lists. If the last element in a list is a
@@ -523,27 +489,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *   * `object`: concatenate the (field name, field value) pairs. If a
    *     field name is duplicated, then apply these rules recursively
    *     to merge the field values.
+   *
    * Some examples of merging:
+   *
    *     # Strings are concatenated.
    *     "foo", "bar" =&gt; "foobar"
+   *
    *     # Lists of non-strings are concatenated.
    *     [2, 3], [4] =&gt; [2, 3, 4]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are strings.
    *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+   *
    *     # Lists are concatenated, but the last and first elements are merged
    *     # because they are lists. Recursively, the last and first elements
    *     # of the inner lists are merged because they are strings.
    *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+   *
    *     # Non-overlapping object fields are combined.
    *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+   *
    *     # Overlapping object fields are merged.
    *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+   *
    *     # Examples of merging objects containing lists of strings.
    *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+   *
    * For a more complete example, suppose a streaming SQL query is
    * yielding a result set whose rows contain a single string
    * field. The following `PartialResultSet`s might be yielded:
+   *
    *     {
    *       "metadata": { ... }
    *       "values": ["Hello", "W"]
@@ -559,6 +535,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    *       "values": ["d"]
    *       "resume_token": "Zx1B..."
    *     }
+   *
    * This sequence of `PartialResultSet`s encodes two rows, one
    * containing the field value `"Hello"`, and a second containing the
    * field value `"World" = "W" + "orl" + "d"`.
@@ -572,7 +549,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int CHUNKED_VALUE_FIELD_NUMBER = 3;
-  private boolean chunkedValue_;
+  private boolean chunkedValue_ = false;
   /**
    *
    *
@@ -592,7 +569,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
   }
 
   public static final int RESUME_TOKEN_FIELD_NUMBER = 4;
-  private com.google.protobuf.ByteString resumeToken_;
+  private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -671,7 +648,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
    */
   @java.lang.Override
   public com.google.spanner.v1.ResultSetStatsOrBuilder getStatsOrBuilder() {
-    return getStats();
+    return stats_ == null ? com.google.spanner.v1.ResultSetStats.getDefaultInstance() : stats_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -703,7 +680,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     if (stats_ != null) {
       output.writeMessage(5, getStats());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -727,7 +704,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     if (stats_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(5, getStats());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -753,7 +730,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     if (hasStats()) {
       if (!getStats().equals(other.getStats())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -780,7 +757,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       hash = (37 * hash) + STATS_FIELD_NUMBER;
       hash = (53 * hash) + getStats().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -911,44 +888,33 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     }
 
     // Construct using com.google.spanner.v1.PartialResultSet.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getValuesFieldBuilder();
-      }
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (metadataBuilder_ == null) {
-        metadata_ = null;
-      } else {
-        metadata_ = null;
+      bitField0_ = 0;
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
         metadataBuilder_ = null;
       }
       if (valuesBuilder_ == null) {
         values_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        values_ = null;
         valuesBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000002);
       chunkedValue_ = false;
-
       resumeToken_ = com.google.protobuf.ByteString.EMPTY;
-
-      if (statsBuilder_ == null) {
-        stats_ = null;
-      } else {
-        stats_ = null;
+      stats_ = null;
+      if (statsBuilder_ != null) {
+        statsBuilder_.dispose();
         statsBuilder_ = null;
       }
       return this;
@@ -978,30 +944,40 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public com.google.spanner.v1.PartialResultSet buildPartial() {
       com.google.spanner.v1.PartialResultSet result =
           new com.google.spanner.v1.PartialResultSet(this);
-      int from_bitField0_ = bitField0_;
-      if (metadataBuilder_ == null) {
-        result.metadata_ = metadata_;
-      } else {
-        result.metadata_ = metadataBuilder_.build();
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.PartialResultSet result) {
       if (valuesBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)) {
+        if (((bitField0_ & 0x00000002) != 0)) {
           values_ = java.util.Collections.unmodifiableList(values_);
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.values_ = values_;
       } else {
         result.values_ = valuesBuilder_.build();
       }
-      result.chunkedValue_ = chunkedValue_;
-      result.resumeToken_ = resumeToken_;
-      if (statsBuilder_ == null) {
-        result.stats_ = stats_;
-      } else {
-        result.stats_ = statsBuilder_.build();
+    }
+
+    private void buildPartial0(com.google.spanner.v1.PartialResultSet result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.metadata_ = metadataBuilder_ == null ? metadata_ : metadataBuilder_.build();
       }
-      onBuilt();
-      return result;
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.chunkedValue_ = chunkedValue_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.resumeToken_ = resumeToken_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.stats_ = statsBuilder_ == null ? stats_ : statsBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -1056,7 +1032,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         if (!other.values_.isEmpty()) {
           if (values_.isEmpty()) {
             values_ = other.values_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureValuesIsMutable();
             values_.addAll(other.values_);
@@ -1069,7 +1045,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             valuesBuilder_.dispose();
             valuesBuilder_ = null;
             values_ = other.values_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
             valuesBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                     ? getValuesFieldBuilder()
@@ -1088,7 +1064,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       if (other.hasStats()) {
         mergeStats(other.getStats());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1103,17 +1079,67 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.PartialResultSet parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getMetadataFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                com.google.protobuf.Value m =
+                    input.readMessage(com.google.protobuf.Value.parser(), extensionRegistry);
+                if (valuesBuilder_ == null) {
+                  ensureValuesIsMutable();
+                  values_.add(m);
+                } else {
+                  valuesBuilder_.addMessage(m);
+                }
+                break;
+              } // case 18
+            case 24:
+              {
+                chunkedValue_ = input.readBool();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+            case 34:
+              {
+                resumeToken_ = input.readBytes();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+            case 42:
+              {
+                input.readMessage(getStatsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 42
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.PartialResultSet) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1138,7 +1164,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return Whether the metadata field is set.
      */
     public boolean hasMetadata() {
-      return metadataBuilder_ != null || metadata_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -1177,11 +1203,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
           throw new NullPointerException();
         }
         metadata_ = value;
-        onChanged();
       } else {
         metadataBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1197,11 +1223,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder setMetadata(com.google.spanner.v1.ResultSetMetadata.Builder builderForValue) {
       if (metadataBuilder_ == null) {
         metadata_ = builderForValue.build();
-        onChanged();
       } else {
         metadataBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1216,19 +1242,18 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      */
     public Builder mergeMetadata(com.google.spanner.v1.ResultSetMetadata value) {
       if (metadataBuilder_ == null) {
-        if (metadata_ != null) {
-          metadata_ =
-              com.google.spanner.v1.ResultSetMetadata.newBuilder(metadata_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && metadata_ != null
+            && metadata_ != com.google.spanner.v1.ResultSetMetadata.getDefaultInstance()) {
+          getMetadataBuilder().mergeFrom(value);
         } else {
           metadata_ = value;
         }
-        onChanged();
       } else {
         metadataBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -1242,14 +1267,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
     public Builder clearMetadata() {
-      if (metadataBuilder_ == null) {
-        metadata_ = null;
-        onChanged();
-      } else {
-        metadata_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      metadata_ = null;
+      if (metadataBuilder_ != null) {
+        metadataBuilder_.dispose();
         metadataBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1263,7 +1287,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetMetadata metadata = 1;</code>
      */
     public com.google.spanner.v1.ResultSetMetadata.Builder getMetadataBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getMetadataFieldBuilder().getBuilder();
     }
@@ -1316,9 +1340,9 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     private java.util.List<com.google.protobuf.Value> values_ = java.util.Collections.emptyList();
 
     private void ensureValuesIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!((bitField0_ & 0x00000002) != 0)) {
         values_ = new java.util.ArrayList<com.google.protobuf.Value>(values_);
-        bitField0_ |= 0x00000001;
+        bitField0_ |= 0x00000002;
       }
     }
 
@@ -1337,13 +1361,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1352,27 +1379,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1388,6 +1425,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1411,13 +1449,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1426,27 +1467,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1462,6 +1513,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1485,13 +1537,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1500,27 +1555,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1536,6 +1601,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1559,13 +1625,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1574,27 +1643,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1610,6 +1689,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1639,13 +1719,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1654,27 +1737,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1690,6 +1783,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1716,13 +1810,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1731,27 +1828,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1767,6 +1874,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1796,13 +1904,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1811,27 +1922,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1847,6 +1968,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1876,13 +1998,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1891,27 +2016,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -1927,6 +2062,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -1953,13 +2089,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -1968,27 +2107,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2004,6 +2153,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2030,13 +2180,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2045,27 +2198,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2081,6 +2244,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2107,13 +2271,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2122,27 +2289,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2158,6 +2335,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2168,7 +2346,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder clearValues() {
       if (valuesBuilder_ == null) {
         values_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
       } else {
         valuesBuilder_.clear();
@@ -2184,13 +2362,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2199,27 +2380,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2235,6 +2426,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2261,13 +2453,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2276,27 +2471,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2312,6 +2517,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2331,13 +2537,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2346,27 +2555,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2382,6 +2601,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2405,13 +2625,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2420,27 +2643,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2456,6 +2689,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2479,13 +2713,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2494,27 +2731,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2530,6 +2777,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2549,13 +2797,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2564,27 +2815,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2600,6 +2861,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2620,13 +2882,16 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * large rows and/or large values. Every N complete values defines a
      * row, where N is equal to the number of entries in
      * [metadata.row_type.fields][google.spanner.v1.StructType.fields].
+     *
      * Most values are encoded based on type as described
      * [here][google.spanner.v1.TypeCode].
+     *
      * It is possible that the last value in values is "chunked",
      * meaning that the rest of the value is sent in subsequent
      * `PartialResultSet`(s). This is denoted by the [chunked_value][google.spanner.v1.PartialResultSet.chunked_value]
      * field. Two or more chunked values can be merged to form a
      * complete value as follows:
+     *
      *   * `bool/number/null`: cannot be chunked
      *   * `string`: concatenate the strings
      *   * `list`: concatenate the lists. If the last element in a list is a
@@ -2635,27 +2900,37 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *   * `object`: concatenate the (field name, field value) pairs. If a
      *     field name is duplicated, then apply these rules recursively
      *     to merge the field values.
+     *
      * Some examples of merging:
+     *
      *     # Strings are concatenated.
      *     "foo", "bar" =&gt; "foobar"
+     *
      *     # Lists of non-strings are concatenated.
      *     [2, 3], [4] =&gt; [2, 3, 4]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are strings.
      *     ["a", "b"], ["c", "d"] =&gt; ["a", "bc", "d"]
+     *
      *     # Lists are concatenated, but the last and first elements are merged
      *     # because they are lists. Recursively, the last and first elements
      *     # of the inner lists are merged because they are strings.
      *     ["a", ["b", "c"]], [["d"], "e"] =&gt; ["a", ["b", "cd"], "e"]
+     *
      *     # Non-overlapping object fields are combined.
      *     {"a": "1"}, {"b": "2"} =&gt; {"a": "1", "b": 2"}
+     *
      *     # Overlapping object fields are merged.
      *     {"a": "1"}, {"a": "2"} =&gt; {"a": "12"}
+     *
      *     # Examples of merging objects containing lists of strings.
      *     {"a": ["1"]}, {"a": ["2"]} =&gt; {"a": ["12"]}
+     *
      * For a more complete example, suppose a streaming SQL query is
      * yielding a result set whose rows contain a single string
      * field. The following `PartialResultSet`s might be yielded:
+     *
      *     {
      *       "metadata": { ... }
      *       "values": ["Hello", "W"]
@@ -2671,6 +2946,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      *       "values": ["d"]
      *       "resume_token": "Zx1B..."
      *     }
+     *
      * This sequence of `PartialResultSet`s encodes two rows, one
      * containing the field value `"Hello"`, and a second containing the
      * field value `"World" = "W" + "orl" + "d"`.
@@ -2693,7 +2969,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
                 com.google.protobuf.Value,
                 com.google.protobuf.Value.Builder,
                 com.google.protobuf.ValueOrBuilder>(
-                values_, ((bitField0_ & 0x00000001) != 0), getParentForChildren(), isClean());
+                values_, ((bitField0_ & 0x00000002) != 0), getParentForChildren(), isClean());
         values_ = null;
       }
       return valuesBuilder_;
@@ -2734,6 +3010,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder setChunkedValue(boolean value) {
 
       chunkedValue_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -2751,7 +3028,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearChunkedValue() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       chunkedValue_ = false;
       onChanged();
       return this;
@@ -2797,8 +3074,8 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
       if (value == null) {
         throw new NullPointerException();
       }
-
       resumeToken_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -2818,7 +3095,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return This builder for chaining.
      */
     public Builder clearResumeToken() {
-
+      bitField0_ = (bitField0_ & ~0x00000008);
       resumeToken_ = getDefaultInstance().getResumeToken();
       onChanged();
       return this;
@@ -2847,7 +3124,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * @return Whether the stats field is set.
      */
     public boolean hasStats() {
-      return statsBuilder_ != null || stats_ != null;
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      *
@@ -2892,11 +3169,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
           throw new NullPointerException();
         }
         stats_ = value;
-        onChanged();
       } else {
         statsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2916,11 +3193,11 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
     public Builder setStats(com.google.spanner.v1.ResultSetStats.Builder builderForValue) {
       if (statsBuilder_ == null) {
         stats_ = builderForValue.build();
-        onChanged();
       } else {
         statsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2939,19 +3216,18 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      */
     public Builder mergeStats(com.google.spanner.v1.ResultSetStats value) {
       if (statsBuilder_ == null) {
-        if (stats_ != null) {
-          stats_ =
-              com.google.spanner.v1.ResultSetStats.newBuilder(stats_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000010) != 0)
+            && stats_ != null
+            && stats_ != com.google.spanner.v1.ResultSetStats.getDefaultInstance()) {
+          getStatsBuilder().mergeFrom(value);
         } else {
           stats_ = value;
         }
-        onChanged();
       } else {
         statsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000010;
+      onChanged();
       return this;
     }
     /**
@@ -2969,14 +3245,13 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
     public Builder clearStats() {
-      if (statsBuilder_ == null) {
-        stats_ = null;
-        onChanged();
-      } else {
-        stats_ = null;
+      bitField0_ = (bitField0_ & ~0x00000010);
+      stats_ = null;
+      if (statsBuilder_ != null) {
+        statsBuilder_.dispose();
         statsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2994,7 +3269,7 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
      * <code>.google.spanner.v1.ResultSetStats stats = 5;</code>
      */
     public com.google.spanner.v1.ResultSetStats.Builder getStatsBuilder() {
-
+      bitField0_ |= 0x00000010;
       onChanged();
       return getStatsFieldBuilder().getBuilder();
     }
@@ -3082,7 +3357,18 @@ public final class PartialResultSet extends com.google.protobuf.GeneratedMessage
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PartialResultSet(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

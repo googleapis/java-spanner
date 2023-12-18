@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,24 +22,37 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * The response for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml]. Contains a list
- * of [ResultSet][google.spanner.v1.ResultSet] messages, one for each DML statement that has successfully
- * executed, in the same order as the statements in the request. If a statement
- * fails, the status in the response body identifies the cause of the failure.
+ * The response for
+ * [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml]. Contains a list
+ * of [ResultSet][google.spanner.v1.ResultSet] messages, one for each DML
+ * statement that has successfully executed, in the same order as the statements
+ * in the request. If a statement fails, the status in the response body
+ * identifies the cause of the failure.
+ *
  * To check for DML statements that failed, use the following approach:
- * 1. Check the status in the response message. The [google.rpc.Code][google.rpc.Code] enum
+ *
+ * 1. Check the status in the response message. The
+ * [google.rpc.Code][google.rpc.Code] enum
  *    value `OK` indicates that all statements were executed successfully.
  * 2. If the status was not `OK`, check the number of result sets in the
- *    response. If the response contains `N` [ResultSet][google.spanner.v1.ResultSet] messages, then
- *    statement `N+1` in the request failed.
+ *    response. If the response contains `N`
+ *    [ResultSet][google.spanner.v1.ResultSet] messages, then statement `N+1` in
+ *    the request failed.
+ *
  * Example 1:
+ *
  * * Request: 5 DML statements, all executed successfully.
- * * Response: 5 [ResultSet][google.spanner.v1.ResultSet] messages, with the status `OK`.
+ * * Response: 5 [ResultSet][google.spanner.v1.ResultSet] messages, with the
+ * status `OK`.
+ *
  * Example 2:
+ *
  * * Request: 5 DML statements. The third statement has a syntax error.
- * * Response: 2 [ResultSet][google.spanner.v1.ResultSet] messages, and a syntax error (`INVALID_ARGUMENT`)
- *   status. The number of [ResultSet][google.spanner.v1.ResultSet] messages indicates that the third
- *   statement failed, and the fourth and fifth statements were not executed.
+ * * Response: 2 [ResultSet][google.spanner.v1.ResultSet] messages, and a syntax
+ * error (`INVALID_ARGUMENT`)
+ *   status. The number of [ResultSet][google.spanner.v1.ResultSet] messages
+ *   indicates that the third statement failed, and the fourth and fifth
+ *   statements were not executed.
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.ExecuteBatchDmlResponse}
@@ -64,76 +77,6 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     return new ExecuteBatchDmlResponse();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private ExecuteBatchDmlResponse(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                resultSets_ = new java.util.ArrayList<com.google.spanner.v1.ResultSet>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              resultSets_.add(
-                  input.readMessage(com.google.spanner.v1.ResultSet.parser(), extensionRegistry));
-              break;
-            }
-          case 18:
-            {
-              com.google.rpc.Status.Builder subBuilder = null;
-              if (status_ != null) {
-                subBuilder = status_.toBuilder();
-              }
-              status_ = input.readMessage(com.google.rpc.Status.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(status_);
-                status_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        resultSets_ = java.util.Collections.unmodifiableList(resultSets_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_ExecuteBatchDmlResponse_descriptor;
@@ -150,17 +93,22 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
   }
 
   public static final int RESULT_SETS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.v1.ResultSet> resultSets_;
   /**
    *
    *
    * <pre>
-   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-   * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-   * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-   * the number of rows modified by the statement.
-   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-   * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+   * request that ran successfully, in the same order as the statements in the
+   * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+   * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+   * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+   * modified by the statement.
+   *
+   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+   * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
    * </pre>
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -173,12 +121,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-   * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-   * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-   * the number of rows modified by the statement.
-   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-   * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+   * request that ran successfully, in the same order as the statements in the
+   * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+   * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+   * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+   * modified by the statement.
+   *
+   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+   * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
    * </pre>
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -192,12 +143,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-   * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-   * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-   * the number of rows modified by the statement.
-   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-   * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+   * request that ran successfully, in the same order as the statements in the
+   * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+   * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+   * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+   * modified by the statement.
+   *
+   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+   * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
    * </pre>
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -210,12 +164,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-   * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-   * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-   * the number of rows modified by the statement.
-   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-   * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+   * request that ran successfully, in the same order as the statements in the
+   * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+   * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+   * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+   * modified by the statement.
+   *
+   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+   * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
    * </pre>
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -228,12 +185,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-   * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-   * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-   * the number of rows modified by the statement.
-   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-   * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+   * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+   * request that ran successfully, in the same order as the statements in the
+   * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+   * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+   * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+   * modified by the statement.
+   *
+   * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+   * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
    * </pre>
    *
    * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -289,7 +249,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    */
   @java.lang.Override
   public com.google.rpc.StatusOrBuilder getStatusOrBuilder() {
-    return getStatus();
+    return status_ == null ? com.google.rpc.Status.getDefaultInstance() : status_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -312,7 +272,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     if (status_ != null) {
       output.writeMessage(2, getStatus());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -327,7 +287,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     if (status_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getStatus());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -348,7 +308,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     if (hasStatus()) {
       if (!getStatus().equals(other.getStatus())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -367,7 +327,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + getStatus().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -471,24 +431,37 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
    *
    *
    * <pre>
-   * The response for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml]. Contains a list
-   * of [ResultSet][google.spanner.v1.ResultSet] messages, one for each DML statement that has successfully
-   * executed, in the same order as the statements in the request. If a statement
-   * fails, the status in the response body identifies the cause of the failure.
+   * The response for
+   * [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml]. Contains a list
+   * of [ResultSet][google.spanner.v1.ResultSet] messages, one for each DML
+   * statement that has successfully executed, in the same order as the statements
+   * in the request. If a statement fails, the status in the response body
+   * identifies the cause of the failure.
+   *
    * To check for DML statements that failed, use the following approach:
-   * 1. Check the status in the response message. The [google.rpc.Code][google.rpc.Code] enum
+   *
+   * 1. Check the status in the response message. The
+   * [google.rpc.Code][google.rpc.Code] enum
    *    value `OK` indicates that all statements were executed successfully.
    * 2. If the status was not `OK`, check the number of result sets in the
-   *    response. If the response contains `N` [ResultSet][google.spanner.v1.ResultSet] messages, then
-   *    statement `N+1` in the request failed.
+   *    response. If the response contains `N`
+   *    [ResultSet][google.spanner.v1.ResultSet] messages, then statement `N+1` in
+   *    the request failed.
+   *
    * Example 1:
+   *
    * * Request: 5 DML statements, all executed successfully.
-   * * Response: 5 [ResultSet][google.spanner.v1.ResultSet] messages, with the status `OK`.
+   * * Response: 5 [ResultSet][google.spanner.v1.ResultSet] messages, with the
+   * status `OK`.
+   *
    * Example 2:
+   *
    * * Request: 5 DML statements. The third statement has a syntax error.
-   * * Response: 2 [ResultSet][google.spanner.v1.ResultSet] messages, and a syntax error (`INVALID_ARGUMENT`)
-   *   status. The number of [ResultSet][google.spanner.v1.ResultSet] messages indicates that the third
-   *   statement failed, and the fourth and fifth statements were not executed.
+   * * Response: 2 [ResultSet][google.spanner.v1.ResultSet] messages, and a syntax
+   * error (`INVALID_ARGUMENT`)
+   *   status. The number of [ResultSet][google.spanner.v1.ResultSet] messages
+   *   indicates that the third statement failed, and the fourth and fifth
+   *   statements were not executed.
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.ExecuteBatchDmlResponse}
@@ -513,34 +486,26 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     }
 
     // Construct using com.google.spanner.v1.ExecuteBatchDmlResponse.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getResultSetsFieldBuilder();
-      }
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (resultSetsBuilder_ == null) {
         resultSets_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        resultSets_ = null;
         resultSetsBuilder_.clear();
       }
-      if (statusBuilder_ == null) {
-        status_ = null;
-      } else {
-        status_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      status_ = null;
+      if (statusBuilder_ != null) {
+        statusBuilder_.dispose();
         statusBuilder_ = null;
       }
       return this;
@@ -570,7 +535,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     public com.google.spanner.v1.ExecuteBatchDmlResponse buildPartial() {
       com.google.spanner.v1.ExecuteBatchDmlResponse result =
           new com.google.spanner.v1.ExecuteBatchDmlResponse(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(com.google.spanner.v1.ExecuteBatchDmlResponse result) {
       if (resultSetsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           resultSets_ = java.util.Collections.unmodifiableList(resultSets_);
@@ -580,13 +553,13 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
       } else {
         result.resultSets_ = resultSetsBuilder_.build();
       }
-      if (statusBuilder_ == null) {
-        result.status_ = status_;
-      } else {
-        result.status_ = statusBuilder_.build();
+    }
+
+    private void buildPartial0(com.google.spanner.v1.ExecuteBatchDmlResponse result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.status_ = statusBuilder_ == null ? status_ : statusBuilder_.build();
       }
-      onBuilt();
-      return result;
     }
 
     @java.lang.Override
@@ -664,7 +637,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
       if (other.hasStatus()) {
         mergeStatus(other.getStatus());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -679,17 +652,49 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.ExecuteBatchDmlResponse parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                com.google.spanner.v1.ResultSet m =
+                    input.readMessage(com.google.spanner.v1.ResultSet.parser(), extensionRegistry);
+                if (resultSetsBuilder_ == null) {
+                  ensureResultSetsIsMutable();
+                  resultSets_.add(m);
+                } else {
+                  resultSetsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getStatusFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.ExecuteBatchDmlResponse) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -715,12 +720,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -736,12 +744,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -757,12 +768,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -778,12 +792,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -805,12 +822,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -830,12 +850,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -857,12 +880,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -884,12 +910,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -908,12 +937,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -933,12 +965,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -958,12 +993,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -982,12 +1020,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -1006,12 +1047,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -1023,12 +1067,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -1044,12 +1091,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -1066,12 +1116,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -1084,12 +1137,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -1102,12 +1158,15 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      *
      *
      * <pre>
-     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the request that ran successfully,
-     * in the same order as the statements in the request. Each [ResultSet][google.spanner.v1.ResultSet] does
-     * not contain any rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each [ResultSet][google.spanner.v1.ResultSet] contain
-     * the number of rows modified by the statement.
-     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response contains valid
-     * [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
+     * One [ResultSet][google.spanner.v1.ResultSet] for each statement in the
+     * request that ran successfully, in the same order as the statements in the
+     * request. Each [ResultSet][google.spanner.v1.ResultSet] does not contain any
+     * rows. The [ResultSetStats][google.spanner.v1.ResultSetStats] in each
+     * [ResultSet][google.spanner.v1.ResultSet] contain the number of rows
+     * modified by the statement.
+     *
+     * Only the first [ResultSet][google.spanner.v1.ResultSet] in the response
+     * contains valid [ResultSetMetadata][google.spanner.v1.ResultSetMetadata].
      * </pre>
      *
      * <code>repeated .google.spanner.v1.ResultSet result_sets = 1;</code>
@@ -1150,7 +1209,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      * @return Whether the status field is set.
      */
     public boolean hasStatus() {
-      return statusBuilder_ != null || status_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -1187,11 +1246,11 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
           throw new NullPointerException();
         }
         status_ = value;
-        onChanged();
       } else {
         statusBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1207,11 +1266,11 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
     public Builder setStatus(com.google.rpc.Status.Builder builderForValue) {
       if (statusBuilder_ == null) {
         status_ = builderForValue.build();
-        onChanged();
       } else {
         statusBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1226,16 +1285,18 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      */
     public Builder mergeStatus(com.google.rpc.Status value) {
       if (statusBuilder_ == null) {
-        if (status_ != null) {
-          status_ = com.google.rpc.Status.newBuilder(status_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && status_ != null
+            && status_ != com.google.rpc.Status.getDefaultInstance()) {
+          getStatusBuilder().mergeFrom(value);
         } else {
           status_ = value;
         }
-        onChanged();
       } else {
         statusBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1249,14 +1310,13 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      * <code>.google.rpc.Status status = 2;</code>
      */
     public Builder clearStatus() {
-      if (statusBuilder_ == null) {
-        status_ = null;
-        onChanged();
-      } else {
-        status_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      status_ = null;
+      if (statusBuilder_ != null) {
+        statusBuilder_.dispose();
         statusBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1270,7 +1330,7 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
      * <code>.google.rpc.Status status = 2;</code>
      */
     public com.google.rpc.Status.Builder getStatusBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getStatusFieldBuilder().getBuilder();
     }
@@ -1347,7 +1407,18 @@ public final class ExecuteBatchDmlResponse extends com.google.protobuf.Generated
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ExecuteBatchDmlResponse(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

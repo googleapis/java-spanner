@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,72 +47,6 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
     return new RestoreInfo();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private RestoreInfo(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 8:
-            {
-              int rawValue = input.readEnum();
-
-              sourceType_ = rawValue;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.admin.database.v1.BackupInfo.Builder subBuilder = null;
-              if (sourceInfoCase_ == 2) {
-                subBuilder =
-                    ((com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_).toBuilder();
-              }
-              sourceInfo_ =
-                  input.readMessage(
-                      com.google.spanner.admin.database.v1.BackupInfo.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_);
-                sourceInfo_ = subBuilder.buildPartial();
-              }
-              sourceInfoCase_ = 2;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_RestoreInfo_descriptor;
@@ -129,6 +63,8 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int sourceInfoCase_ = 0;
+
+  @SuppressWarnings("serial")
   private java.lang.Object sourceInfo_;
 
   public enum SourceInfoCase
@@ -173,7 +109,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int SOURCE_TYPE_FIELD_NUMBER = 1;
-  private int sourceType_;
+  private int sourceType_ = 0;
   /**
    *
    *
@@ -202,9 +138,8 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.RestoreSourceType getSourceType() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.RestoreSourceType result =
-        com.google.spanner.admin.database.v1.RestoreSourceType.valueOf(sourceType_);
+        com.google.spanner.admin.database.v1.RestoreSourceType.forNumber(sourceType_);
     return result == null
         ? com.google.spanner.admin.database.v1.RestoreSourceType.UNRECOGNIZED
         : result;
@@ -285,7 +220,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
     if (sourceInfoCase_ == 2) {
       output.writeMessage(2, (com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -303,7 +238,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               2, (com.google.spanner.admin.database.v1.BackupInfo) sourceInfo_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -328,7 +263,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -349,7 +284,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -478,24 +413,20 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.admin.database.v1.RestoreInfo.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       sourceType_ = 0;
-
+      if (backupInfoBuilder_ != null) {
+        backupInfoBuilder_.clear();
+      }
       sourceInfoCase_ = 0;
       sourceInfo_ = null;
       return this;
@@ -525,17 +456,27 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.database.v1.RestoreInfo buildPartial() {
       com.google.spanner.admin.database.v1.RestoreInfo result =
           new com.google.spanner.admin.database.v1.RestoreInfo(this);
-      result.sourceType_ = sourceType_;
-      if (sourceInfoCase_ == 2) {
-        if (backupInfoBuilder_ == null) {
-          result.sourceInfo_ = sourceInfo_;
-        } else {
-          result.sourceInfo_ = backupInfoBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.sourceInfoCase_ = sourceInfoCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.RestoreInfo result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.sourceType_ = sourceType_;
+      }
+    }
+
+    private void buildPartialOneofs(com.google.spanner.admin.database.v1.RestoreInfo result) {
+      result.sourceInfoCase_ = sourceInfoCase_;
+      result.sourceInfo_ = this.sourceInfo_;
+      if (sourceInfoCase_ == 2 && backupInfoBuilder_ != null) {
+        result.sourceInfo_ = backupInfoBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -598,7 +539,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
             break;
           }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -613,17 +554,43 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.RestoreInfo parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8:
+              {
+                sourceType_ = input.readEnum();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+            case 18:
+              {
+                input.readMessage(getBackupInfoFieldBuilder().getBuilder(), extensionRegistry);
+                sourceInfoCase_ = 2;
+                break;
+              } // case 18
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.admin.database.v1.RestoreInfo) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -640,6 +607,8 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private int sourceType_ = 0;
     /**
@@ -670,8 +639,8 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setSourceTypeValue(int value) {
-
       sourceType_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -688,9 +657,8 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.database.v1.RestoreSourceType getSourceType() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.RestoreSourceType result =
-          com.google.spanner.admin.database.v1.RestoreSourceType.valueOf(sourceType_);
+          com.google.spanner.admin.database.v1.RestoreSourceType.forNumber(sourceType_);
       return result == null
           ? com.google.spanner.admin.database.v1.RestoreSourceType.UNRECOGNIZED
           : result;
@@ -711,7 +679,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000001;
       sourceType_ = value.getNumber();
       onChanged();
       return this;
@@ -728,7 +696,7 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearSourceType() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       sourceType_ = 0;
       onChanged();
       return this;
@@ -852,8 +820,9 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (sourceInfoCase_ == 2) {
           backupInfoBuilder_.mergeFrom(value);
+        } else {
+          backupInfoBuilder_.setMessage(value);
         }
-        backupInfoBuilder_.setMessage(value);
       }
       sourceInfoCase_ = 2;
       return this;
@@ -949,7 +918,6 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
       }
       sourceInfoCase_ = 2;
       onChanged();
-      ;
       return backupInfoBuilder_;
     }
 
@@ -985,7 +953,18 @@ public final class RestoreInfo extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RestoreInfo(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

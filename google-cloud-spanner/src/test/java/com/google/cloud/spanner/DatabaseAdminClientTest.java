@@ -754,13 +754,13 @@ public class DatabaseAdminClientTest {
 
   @Test
   public void getAndSetIAMPolicy() {
-    Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID);
+    Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1);
     assertThat(policy).isEqualTo(Policy.newBuilder().build());
     Policy newPolicy =
         Policy.newBuilder().addIdentity(Role.editor(), Identity.user("joe@example.com")).build();
     Policy returnedPolicy = client.setDatabaseIAMPolicy(INSTANCE_ID, DB_ID, newPolicy);
     assertThat(returnedPolicy).isEqualTo(newPolicy);
-    assertThat(client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID)).isEqualTo(newPolicy);
+    assertThat(client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 1)).isEqualTo(newPolicy);
   }
 
   @Test
@@ -934,5 +934,32 @@ public class DatabaseAdminClientTest {
     Database database = client.getDatabase(INSTANCE_ID, DB_ID);
     assertEquals(DB_ID, database.getId().getDatabase());
     assertEquals(2, mockDatabaseAdmin.countRequestsOfType(GetDatabaseRequest.class));
+  }
+
+  @Test
+  public void testRetriesDisabledForOperationOnAdminMethodQuotaPerMinutePerProjectExceeded() {
+    ErrorInfo info =
+        ErrorInfo.newBuilder()
+            .putMetadata("quota_limit", "AdminMethodQuotaPerMinutePerProject")
+            .build();
+    Metadata.Key<ErrorInfo> key =
+        Metadata.Key.of(
+            info.getDescriptorForType().getFullName() + Metadata.BINARY_HEADER_SUFFIX,
+            ProtoLiteUtils.metadataMarshaller(info));
+    Metadata trailers = new Metadata();
+    trailers.put(key, info);
+    mockDatabaseAdmin.addException(
+        Status.RESOURCE_EXHAUSTED.withDescription("foo").asRuntimeException(trailers));
+    mockDatabaseAdmin.clearRequests();
+
+    Spanner spannerWithoutRetries =
+        spanner.getOptions().toBuilder().disableAdministrativeRequestRetries().build().getService();
+    AdminRequestsPerMinuteExceededException exception =
+        assertThrows(
+            AdminRequestsPerMinuteExceededException.class,
+            () -> spannerWithoutRetries.getDatabaseAdminClient().getDatabase(INSTANCE_ID, DB_ID));
+    assertEquals(ErrorCode.RESOURCE_EXHAUSTED, exception.getErrorCode());
+    // There should be only one request on the server, as the request was not retried.
+    assertEquals(1, mockDatabaseAdmin.countRequestsOfType(GetDatabaseRequest.class));
   }
 }

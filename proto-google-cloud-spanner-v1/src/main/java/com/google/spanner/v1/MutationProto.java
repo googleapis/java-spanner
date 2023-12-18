@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,21 +51,21 @@ public final class MutationProto {
       "\n google/spanner/v1/mutation.proto\022\021goog"
           + "le.spanner.v1\032\037google/api/field_behavior"
           + ".proto\032\034google/protobuf/struct.proto\032\034go"
-          + "ogle/spanner/v1/keys.proto\"\325\003\n\010Mutation\022"
+          + "ogle/spanner/v1/keys.proto\"\330\003\n\010Mutation\022"
           + "3\n\006insert\030\001 \001(\0132!.google.spanner.v1.Muta"
           + "tion.WriteH\000\0223\n\006update\030\002 \001(\0132!.google.sp"
           + "anner.v1.Mutation.WriteH\000\022=\n\020insert_or_u"
           + "pdate\030\003 \001(\0132!.google.spanner.v1.Mutation"
           + ".WriteH\000\0224\n\007replace\030\004 \001(\0132!.google.spann"
           + "er.v1.Mutation.WriteH\000\0224\n\006delete\030\005 \001(\0132\""
-          + ".google.spanner.v1.Mutation.DeleteH\000\032X\n\005"
-          + "Write\022\022\n\005table\030\001 \001(\tB\003\340A\002\022\017\n\007columns\030\002 \003"
-          + "(\t\022*\n\006values\030\003 \003(\0132\032.google.protobuf.Lis"
-          + "tValue\032M\n\006Delete\022\022\n\005table\030\001 \001(\tB\003\340A\002\022/\n\007"
-          + "key_set\030\002 \001(\0132\031.google.spanner.v1.KeySet"
-          + "B\003\340A\002B\013\n\toperationB\263\001\n\025com.google.spanne"
-          + "r.v1B\rMutationProtoP\001Z8google.golang.org"
-          + "/genproto/googleapis/spanner/v1;spanner\252"
+          + ".google.spanner.v1.Mutation.DeleteH\000\032Y\n\005"
+          + "Write\022\023\n\005table\030\001 \001(\tB\004\342A\001\002\022\017\n\007columns\030\002 "
+          + "\003(\t\022*\n\006values\030\003 \003(\0132\032.google.protobuf.Li"
+          + "stValue\032O\n\006Delete\022\023\n\005table\030\001 \001(\tB\004\342A\001\002\0220"
+          + "\n\007key_set\030\002 \001(\0132\031.google.spanner.v1.KeyS"
+          + "etB\004\342A\001\002B\013\n\toperationB\260\001\n\025com.google.spa"
+          + "nner.v1B\rMutationProtoP\001Z5cloud.google.c"
+          + "om/go/spanner/apiv1/spannerpb;spannerpb\252"
           + "\002\027Google.Cloud.Spanner.V1\312\002\027Google\\Cloud"
           + "\\Spanner\\V1\352\002\032Google::Cloud::Spanner::V1"
           + "b\006proto3"

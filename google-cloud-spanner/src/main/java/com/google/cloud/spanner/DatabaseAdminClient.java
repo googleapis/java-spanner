@@ -28,6 +28,7 @@ import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -136,7 +137,7 @@ public interface DatabaseAdminClient {
    * Database db = op.waitFor().getResult();
    * }</pre>
    *
-   * @see also #createDatabase(String, String, Iterable)
+   * @see #createDatabase(String, String, Iterable)
    */
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       Database database, Iterable<String> statements) throws SpannerException;
@@ -339,6 +340,9 @@ public interface DatabaseAdminClient {
   /** Lists long-running database operations on the specified instance. */
   Page<Operation> listDatabaseOperations(String instanceId, ListOption... options);
 
+  /** Lists database roles on the specified database. */
+  Page<DatabaseRole> listDatabaseRoles(String instanceId, String databaseId, ListOption... options);
+
   /** Lists long-running backup operations on the specified instance. */
   Page<Operation> listBackupOperations(String instanceId, ListOption... options);
 
@@ -354,6 +358,47 @@ public interface DatabaseAdminClient {
    * }</pre>
    */
   Database getDatabase(String instanceId, String databaseId) throws SpannerException;
+
+  /**
+   * Updates a Cloud Spanner database. The returned {@code Operation} can be used to track the
+   * progress of the update. Throws SpannerException if the Cloud Spanner database does not exist.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <ul>
+   *   <li>Cancelling the operation is best effort and may or may not succeed.
+   *   <li>All other attempts to modify the database are rejected.
+   *   <li>Reading the database via the API continues to give the pre-request field values.
+   * </ul>
+   *
+   * Upon completion of the returned operation:
+   *
+   * <ul>
+   *   <li>The database's new fields are readable via the API.
+   * </ul>
+   *
+   * <p>Example of updating a database.
+   *
+   * <pre>{@code
+   * String projectId = my_project_id;
+   * String instanceId = my_instance_id;
+   * String databaseId = my_database_id;
+   * Database databaseToUpdate = databaseAdminClient.newDatabaseBuilder(
+   *         DatabaseId.of(projectId, instanceId, databaseId))
+   *      .enableDropProtection().build();
+   * OperationFuture<Database, UpdateDatabaseMetadata> op = databaseAdminClient.updateDatabase(
+   *           databaseToUpdate, DatabaseField.DROP_PROTECTION);
+   * Database updateDatabase = op.get(5, TimeUnit.MINUTES);
+   * }</pre>
+   *
+   * @param database The database to update to. The current field values of the database will be
+   *     updated to the values specified in this parameter.
+   * @param fieldsToUpdate The fields that should be updated. Only these fields will have their
+   *     values updated to the values specified in {@param database}, even if there are other fields
+   *     specified in {@param database}.
+   */
+  OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
+      Database database, DatabaseInfo.DatabaseField... fieldsToUpdate) throws SpannerException;
 
   /**
    * Gets the current state of a Cloud Spanner database backup.
@@ -491,8 +536,24 @@ public interface DatabaseAdminClient {
   /** Gets the specified long-running operation. */
   Operation getOperation(String name);
 
-  /** Returns the IAM policy for the given database. */
-  Policy getDatabaseIAMPolicy(String instanceId, String databaseId);
+  /**
+   * Returns the IAM policy for the given database.
+   *
+   * <p>Version specifies the format used to create the policy, valid values are 0, 1, and 3.
+   * Requests specifying an invalid value will be rejected. Requests for policies with any
+   * conditional role bindings must specify version 3. Policies with no conditional role bindings
+   * may specify any valid value or leave the field unset.
+   *
+   * <p>The policy in the response might use the policy version that you specified, or it might use
+   * a lower policy version. For example, if you specify version 3, but the policy has no
+   * conditional role bindings, the response uses version 1.
+   *
+   * <p>To learn which resources support conditions in their IAM policies, see the
+   *
+   * @see <a href="https://cloud.google.com/iam/help/conditions/resource-policies">IAM
+   *     documentation</a>.
+   */
+  Policy getDatabaseIAMPolicy(String instanceId, String databaseId, int version);
 
   /**
    * Updates the IAM policy for the given database and returns the resulting policy. It is highly

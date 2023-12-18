@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.google.cloud.spanner.v1;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.api.core.BetaApi;
 import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.paging.AbstractFixedSizeCollection;
 import com.google.api.gax.paging.AbstractPage;
@@ -33,6 +32,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -73,6 +74,11 @@ import javax.annotation.Generated;
  * calls that map to API methods. Sample code to get started:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * try (SpannerClient spannerClient = SpannerClient.create()) {
  *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
  *   Session response = spannerClient.createSession(database);
@@ -108,6 +114,11 @@ import javax.annotation.Generated;
  * <p>To customize credentials:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * SpannerSettings spannerSettings =
  *     SpannerSettings.newBuilder()
  *         .setCredentialsProvider(FixedCredentialsProvider.create(myCredentials))
@@ -118,7 +129,25 @@ import javax.annotation.Generated;
  * <p>To customize the endpoint:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * SpannerSettings spannerSettings = SpannerSettings.newBuilder().setEndpoint(myEndpoint).build();
+ * SpannerClient spannerClient = SpannerClient.create(spannerSettings);
+ * }</pre>
+ *
+ * <p>To use REST (HTTP1.1/JSON) transport (instead of gRPC) for sending and receiving requests over
+ * the wire:
+ *
+ * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+ * SpannerSettings spannerSettings = SpannerSettings.newHttpJsonBuilder().build();
  * SpannerClient spannerClient = SpannerClient.create(spannerSettings);
  * }</pre>
  *
@@ -146,7 +175,6 @@ public class SpannerClient implements BackgroundResource {
    * Constructs an instance of SpannerClient, using the given stub for making calls. This is for
    * advanced usage - prefer using create(SpannerSettings).
    */
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public static final SpannerClient create(SpannerStub stub) {
     return new SpannerClient(stub);
   }
@@ -160,7 +188,6 @@ public class SpannerClient implements BackgroundResource {
     this.stub = ((SpannerStubSettings) settings.getStubSettings()).createStub();
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   protected SpannerClient(SpannerStub stub) {
     this.settings = null;
     this.stub = stub;
@@ -170,7 +197,6 @@ public class SpannerClient implements BackgroundResource {
     return settings;
   }
 
-  @BetaApi("A restructuring of stub classes is planned, so this may break in the future")
   public SpannerStub getStub() {
     return stub;
   }
@@ -196,6 +222,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   Session response = spannerClient.createSession(database);
@@ -234,6 +265,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   Session response = spannerClient.createSession(database);
@@ -269,6 +305,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   CreateSessionRequest request =
    *       CreateSessionRequest.newBuilder()
@@ -307,6 +348,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   CreateSessionRequest request =
    *       CreateSessionRequest.newBuilder()
@@ -333,6 +379,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   int sessionCount = 185691686;
@@ -368,6 +419,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   int sessionCount = 185691686;
@@ -402,6 +458,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   BatchCreateSessionsRequest request =
    *       BatchCreateSessionsRequest.newBuilder()
@@ -430,6 +491,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   BatchCreateSessionsRequest request =
    *       BatchCreateSessionsRequest.newBuilder()
@@ -457,6 +523,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
    *   Session response = spannerClient.getSession(name);
@@ -480,6 +551,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
    *   Session response = spannerClient.getSession(name);
@@ -502,6 +578,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   GetSessionRequest request =
    *       GetSessionRequest.newBuilder()
@@ -527,6 +608,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   GetSessionRequest request =
    *       GetSessionRequest.newBuilder()
@@ -550,6 +636,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
    *   for (Session element : spannerClient.listSessions(database).iterateAll()) {
@@ -576,6 +667,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString();
    *   for (Session element : spannerClient.listSessions(database).iterateAll()) {
@@ -599,6 +695,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ListSessionsRequest request =
    *       ListSessionsRequest.newBuilder()
@@ -627,6 +728,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ListSessionsRequest request =
    *       ListSessionsRequest.newBuilder()
@@ -655,6 +761,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ListSessionsRequest request =
    *       ListSessionsRequest.newBuilder()
@@ -665,7 +776,7 @@ public class SpannerClient implements BackgroundResource {
    *           .build();
    *   while (true) {
    *     ListSessionsResponse response = spannerClient.listSessionsCallable().call(request);
-   *     for (Session element : response.getResponsesList()) {
+   *     for (Session element : response.getSessionsList()) {
    *       // doThingsWith(element);
    *     }
    *     String nextPageToken = response.getNextPageToken();
@@ -690,6 +801,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   SessionName name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
    *   spannerClient.deleteSession(name);
@@ -713,6 +829,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String name = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
    *   spannerClient.deleteSession(name);
@@ -735,6 +856,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   DeleteSessionRequest request =
    *       DeleteSessionRequest.newBuilder()
@@ -760,6 +886,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   DeleteSessionRequest request =
    *       DeleteSessionRequest.newBuilder()
@@ -792,6 +923,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ExecuteSqlRequest request =
    *       ExecuteSqlRequest.newBuilder()
@@ -806,6 +942,8 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
    * }
@@ -834,6 +972,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ExecuteSqlRequest request =
    *       ExecuteSqlRequest.newBuilder()
@@ -848,6 +991,8 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
    *   // Do something.
@@ -869,6 +1014,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ExecuteSqlRequest request =
    *       ExecuteSqlRequest.newBuilder()
@@ -883,6 +1033,8 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream =
    *       spannerClient.executeStreamingSqlCallable().call(request);
@@ -913,6 +1065,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ExecuteBatchDmlRequest request =
    *       ExecuteBatchDmlRequest.newBuilder()
@@ -950,6 +1107,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ExecuteBatchDmlRequest request =
    *       ExecuteBatchDmlRequest.newBuilder()
@@ -989,6 +1151,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ReadRequest request =
    *       ReadRequest.newBuilder()
@@ -1003,6 +1170,8 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.read(request);
    * }
@@ -1032,6 +1201,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ReadRequest request =
    *       ReadRequest.newBuilder()
@@ -1046,6 +1220,8 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
    *   // Do something.
@@ -1067,6 +1243,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   ReadRequest request =
    *       ReadRequest.newBuilder()
@@ -1081,6 +1262,8 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
+   *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
    *   for (PartialResultSet response : stream) {
@@ -1102,6 +1285,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
    *   TransactionOptions options = TransactionOptions.newBuilder().build();
@@ -1131,6 +1319,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String session =
    *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
@@ -1158,6 +1351,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   BeginTransactionRequest request =
    *       BeginTransactionRequest.newBuilder()
@@ -1186,6 +1384,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   BeginTransactionRequest request =
    *       BeginTransactionRequest.newBuilder()
@@ -1222,6 +1425,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
    *   ByteString transactionId = ByteString.EMPTY;
@@ -1265,6 +1473,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
    *   TransactionOptions singleUseTransaction = TransactionOptions.newBuilder().build();
@@ -1314,6 +1527,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String session =
    *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
@@ -1358,6 +1576,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String session =
    *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
@@ -1408,6 +1631,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   CommitRequest request =
    *       CommitRequest.newBuilder()
@@ -1446,6 +1674,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   CommitRequest request =
    *       CommitRequest.newBuilder()
@@ -1478,6 +1711,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   SessionName session = SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]");
    *   ByteString transactionId = ByteString.EMPTY;
@@ -1511,6 +1749,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   String session =
    *       SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString();
@@ -1542,6 +1785,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   RollbackRequest request =
    *       RollbackRequest.newBuilder()
@@ -1573,6 +1821,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   RollbackRequest request =
    *       RollbackRequest.newBuilder()
@@ -1606,6 +1859,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   PartitionQueryRequest request =
    *       PartitionQueryRequest.newBuilder()
@@ -1644,6 +1902,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   PartitionQueryRequest request =
    *       PartitionQueryRequest.newBuilder()
@@ -1683,6 +1946,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   PartitionReadRequest request =
    *       PartitionReadRequest.newBuilder()
@@ -1723,6 +1991,11 @@ public class SpannerClient implements BackgroundResource {
    * <p>Sample code:
    *
    * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
    * try (SpannerClient spannerClient = SpannerClient.create()) {
    *   PartitionReadRequest request =
    *       PartitionReadRequest.newBuilder()
@@ -1744,6 +2017,49 @@ public class SpannerClient implements BackgroundResource {
    */
   public final UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable() {
     return stub.partitionReadCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Batches the supplied mutation groups in a collection of efficient transactions. All mutations
+   * in a group are committed atomically. However, mutations across groups can be committed
+   * non-atomically in an unspecified order and thus, they must be independent of each other.
+   * Partial failure is possible, i.e., some groups may have been committed successfully, while some
+   * may have failed. The results of individual batches are streamed into the response as the
+   * batches are applied.
+   *
+   * <p>BatchWrite requests are not replay protected, meaning that each mutation group may be
+   * applied more than once. Replays of non-idempotent mutations may have undesirable effects. For
+   * example, replays of an insert mutation may produce an already exists error or if you use
+   * generated or commit timestamp-based keys, it may result in additional rows being added to the
+   * mutation's table. We recommend structuring your mutation groups to be idempotent to avoid this
+   * issue.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   BatchWriteRequest request =
+   *       BatchWriteRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+   *           .build();
+   *   ServerStream<BatchWriteResponse> stream = spannerClient.batchWriteCallable().call(request);
+   *   for (BatchWriteResponse response : stream) {
+   *     // Do something when a response is received.
+   *   }
+   * }
+   * }</pre>
+   */
+  public final ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
+    return stub.batchWriteCallable();
   }
 
   @Override

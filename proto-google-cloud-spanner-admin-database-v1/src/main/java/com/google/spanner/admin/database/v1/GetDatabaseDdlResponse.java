@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,69 +38,13 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
   }
 
   private GetDatabaseDdlResponse() {
-    statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new GetDatabaseDdlResponse();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private GetDatabaseDdlResponse(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                statements_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              statements_.add(s);
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        statements_ = statements_.getUnmodifiableView();
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -119,7 +63,10 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
   }
 
   public static final int STATEMENTS_FIELD_NUMBER = 1;
-  private com.google.protobuf.LazyStringList statements_;
+
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList statements_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -200,7 +147,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     for (int i = 0; i < statements_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, statements_.getRaw(i));
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -217,7 +164,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       size += dataSize;
       size += 1 * getStatementsList().size();
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -234,7 +181,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
         (com.google.spanner.admin.database.v1.GetDatabaseDdlResponse) obj;
 
     if (!getStatementsList().equals(other.getStatementsList())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -249,7 +196,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       hash = (37 * hash) + STATEMENTS_FIELD_NUMBER;
       hash = (53 * hash) + getStatementsList().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -379,24 +326,17 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     }
 
     // Construct using com.google.spanner.admin.database.v1.GetDatabaseDdlResponse.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      bitField0_ = 0;
+      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       return this;
     }
 
@@ -424,14 +364,19 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     public com.google.spanner.admin.database.v1.GetDatabaseDdlResponse buildPartial() {
       com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result =
           new com.google.spanner.admin.database.v1.GetDatabaseDdlResponse(this);
-      int from_bitField0_ = bitField0_;
-      if (((bitField0_ & 0x00000001) != 0)) {
-        statements_ = statements_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000001);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.statements_ = statements_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.GetDatabaseDdlResponse result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        statements_.makeImmutable();
+        result.statements_ = statements_;
+      }
     }
 
     @java.lang.Override
@@ -483,14 +428,14 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       if (!other.statements_.isEmpty()) {
         if (statements_.isEmpty()) {
           statements_ = other.statements_;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ |= 0x00000001;
         } else {
           ensureStatementsIsMutable();
           statements_.addAll(other.statements_);
         }
         onChanged();
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -505,31 +450,51 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.GetDatabaseDdlResponse parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureStatementsIsMutable();
+                statements_.add(s);
+                break;
+              } // case 10
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.database.v1.GetDatabaseDdlResponse) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
     private int bitField0_;
 
-    private com.google.protobuf.LazyStringList statements_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList statements_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureStatementsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!statements_.isModifiable()) {
         statements_ = new com.google.protobuf.LazyStringArrayList(statements_);
-        bitField0_ |= 0x00000001;
       }
+      bitField0_ |= 0x00000001;
     }
     /**
      *
@@ -544,7 +509,8 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
      * @return A list containing the statements.
      */
     public com.google.protobuf.ProtocolStringList getStatementsList() {
-      return statements_.getUnmodifiableView();
+      statements_.makeImmutable();
+      return statements_;
     }
     /**
      *
@@ -613,6 +579,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       }
       ensureStatementsIsMutable();
       statements_.set(index, value);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -635,6 +602,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       }
       ensureStatementsIsMutable();
       statements_.add(value);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -654,6 +622,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     public Builder addAllStatements(java.lang.Iterable<java.lang.String> values) {
       ensureStatementsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, statements_);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -670,8 +639,9 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
      * @return This builder for chaining.
      */
     public Builder clearStatements() {
-      statements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000001);
+      ;
       onChanged();
       return this;
     }
@@ -695,6 +665,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       checkByteStringIsUtf8(value);
       ensureStatementsIsMutable();
       statements_.add(value);
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -731,7 +702,18 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new GetDatabaseDdlResponse(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

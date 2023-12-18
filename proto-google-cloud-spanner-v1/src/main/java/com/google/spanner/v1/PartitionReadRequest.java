@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,136 +41,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     session_ = "";
     table_ = "";
     index_ = "";
-    columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new PartitionReadRequest();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private PartitionReadRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              session_ = s;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
-              if (transaction_ != null) {
-                subBuilder = transaction_.toBuilder();
-              }
-              transaction_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(transaction_);
-                transaction_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              table_ = s;
-              break;
-            }
-          case 34:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              index_ = s;
-              break;
-            }
-          case 42:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                columns_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              columns_.add(s);
-              break;
-            }
-          case 50:
-            {
-              com.google.spanner.v1.KeySet.Builder subBuilder = null;
-              if (keySet_ != null) {
-                subBuilder = keySet_.toBuilder();
-              }
-              keySet_ = input.readMessage(com.google.spanner.v1.KeySet.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(keySet_);
-                keySet_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 74:
-            {
-              com.google.spanner.v1.PartitionOptions.Builder subBuilder = null;
-              if (partitionOptions_ != null) {
-                subBuilder = partitionOptions_.toBuilder();
-              }
-              partitionOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.PartitionOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(partitionOptions_);
-                partitionOptions_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        columns_ = columns_.getUnmodifiableView();
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -189,7 +66,9 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object session_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object session_ = "";
   /**
    *
    *
@@ -289,11 +168,15 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
-    return getTransaction();
+    return transaction_ == null
+        ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
+        : transaction_;
   }
 
   public static final int TABLE_FIELD_NUMBER = 3;
-  private volatile java.lang.Object table_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object table_ = "";
   /**
    *
    *
@@ -342,14 +225,19 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int INDEX_FIELD_NUMBER = 4;
-  private volatile java.lang.Object index_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object index_ = "";
   /**
    *
    *
    * <pre>
-   * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-   * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-   * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+   * If non-empty, the name of an index on
+   * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+   * instead of the table primary key when interpreting
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+   * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+   * for further information.
    * </pre>
    *
    * <code>string index = 4;</code>
@@ -372,9 +260,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-   * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-   * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+   * If non-empty, the name of an index on
+   * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+   * instead of the table primary key when interpreting
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+   * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+   * for further information.
    * </pre>
    *
    * <code>string index = 4;</code>
@@ -395,13 +286,16 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int COLUMNS_FIELD_NUMBER = 5;
-  private com.google.protobuf.LazyStringList columns_;
+
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList columns_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -415,8 +309,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -430,8 +324,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -446,8 +340,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -466,9 +360,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-   * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+   * primary keys of the rows in
+   * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -486,9 +384,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-   * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+   * primary keys of the rows in
+   * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -506,9 +408,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-   * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+   * primary keys of the rows in
+   * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -517,7 +423,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    */
   @java.lang.Override
   public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
-    return getKeySet();
+    return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
   }
 
   public static final int PARTITION_OPTIONS_FIELD_NUMBER = 9;
@@ -565,7 +471,9 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    */
   @java.lang.Override
   public com.google.spanner.v1.PartitionOptionsOrBuilder getPartitionOptionsOrBuilder() {
-    return getPartitionOptions();
+    return partitionOptions_ == null
+        ? com.google.spanner.v1.PartitionOptions.getDefaultInstance()
+        : partitionOptions_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -603,7 +511,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     if (partitionOptions_ != null) {
       output.writeMessage(9, getPartitionOptions());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -638,7 +546,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     if (partitionOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(9, getPartitionOptions());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -670,7 +578,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     if (hasPartitionOptions()) {
       if (!getPartitionOptions().equals(other.getPartitionOptions())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -703,7 +611,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       hash = (37 * hash) + PARTITION_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getPartitionOptions().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -832,46 +740,33 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     }
 
     // Construct using com.google.spanner.v1.PartitionReadRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       session_ = "";
-
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-      } else {
-        transaction_ = null;
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
       table_ = "";
-
       index_ = "";
-
-      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
-      if (keySetBuilder_ == null) {
-        keySet_ = null;
-      } else {
-        keySet_ = null;
+      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      keySet_ = null;
+      if (keySetBuilder_ != null) {
+        keySetBuilder_.dispose();
         keySetBuilder_ = null;
       }
-      if (partitionOptionsBuilder_ == null) {
-        partitionOptions_ = null;
-      } else {
-        partitionOptions_ = null;
+      partitionOptions_ = null;
+      if (partitionOptionsBuilder_ != null) {
+        partitionOptionsBuilder_.dispose();
         partitionOptionsBuilder_ = null;
       }
       return this;
@@ -901,32 +796,39 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     public com.google.spanner.v1.PartitionReadRequest buildPartial() {
       com.google.spanner.v1.PartitionReadRequest result =
           new com.google.spanner.v1.PartitionReadRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.session_ = session_;
-      if (transactionBuilder_ == null) {
-        result.transaction_ = transaction_;
-      } else {
-        result.transaction_ = transactionBuilder_.build();
-      }
-      result.table_ = table_;
-      result.index_ = index_;
-      if (((bitField0_ & 0x00000001) != 0)) {
-        columns_ = columns_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000001);
-      }
-      result.columns_ = columns_;
-      if (keySetBuilder_ == null) {
-        result.keySet_ = keySet_;
-      } else {
-        result.keySet_ = keySetBuilder_.build();
-      }
-      if (partitionOptionsBuilder_ == null) {
-        result.partitionOptions_ = partitionOptions_;
-      } else {
-        result.partitionOptions_ = partitionOptionsBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.PartitionReadRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.session_ = session_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transaction_ =
+            transactionBuilder_ == null ? transaction_ : transactionBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.table_ = table_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.index_ = index_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        columns_.makeImmutable();
+        result.columns_ = columns_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.keySet_ = keySetBuilder_ == null ? keySet_ : keySetBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.partitionOptions_ =
+            partitionOptionsBuilder_ == null ? partitionOptions_ : partitionOptionsBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -976,6 +878,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       if (other == com.google.spanner.v1.PartitionReadRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasTransaction()) {
@@ -983,16 +886,18 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       }
       if (!other.getTable().isEmpty()) {
         table_ = other.table_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       if (!other.getIndex().isEmpty()) {
         index_ = other.index_;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       if (!other.columns_.isEmpty()) {
         if (columns_.isEmpty()) {
           columns_ = other.columns_;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ |= 0x00000010;
         } else {
           ensureColumnsIsMutable();
           columns_.addAll(other.columns_);
@@ -1005,7 +910,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       if (other.hasPartitionOptions()) {
         mergePartitionOptions(other.getPartitionOptions());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1020,17 +925,75 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.PartitionReadRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                session_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                table_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            case 34:
+              {
+                index_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+            case 42:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureColumnsIsMutable();
+                columns_.add(s);
+                break;
+              } // case 42
+            case 50:
+              {
+                input.readMessage(getKeySetFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
+            case 74:
+              {
+                input.readMessage(
+                    getPartitionOptionsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 74
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.PartitionReadRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1103,8 +1066,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1122,8 +1085,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearSession() {
-
       session_ = getDefaultInstance().getSession();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -1146,8 +1109,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1171,7 +1134,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return Whether the transaction field is set.
      */
     public boolean hasTransaction() {
-      return transactionBuilder_ != null || transaction_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -1210,11 +1173,11 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
           throw new NullPointerException();
         }
         transaction_ = value;
-        onChanged();
       } else {
         transactionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1231,11 +1194,11 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
         com.google.spanner.v1.TransactionSelector.Builder builderForValue) {
       if (transactionBuilder_ == null) {
         transaction_ = builderForValue.build();
-        onChanged();
       } else {
         transactionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1250,19 +1213,18 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      */
     public Builder mergeTransaction(com.google.spanner.v1.TransactionSelector value) {
       if (transactionBuilder_ == null) {
-        if (transaction_ != null) {
-          transaction_ =
-              com.google.spanner.v1.TransactionSelector.newBuilder(transaction_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && transaction_ != null
+            && transaction_ != com.google.spanner.v1.TransactionSelector.getDefaultInstance()) {
+          getTransactionBuilder().mergeFrom(value);
         } else {
           transaction_ = value;
         }
-        onChanged();
       } else {
         transactionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1276,14 +1238,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public Builder clearTransaction() {
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-        onChanged();
-      } else {
-        transaction_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1297,7 +1258,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public com.google.spanner.v1.TransactionSelector.Builder getTransactionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
@@ -1408,8 +1369,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       table_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1425,8 +1386,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearTable() {
-
       table_ = getDefaultInstance().getTable();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1447,8 +1408,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       table_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1458,9 +1419,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1482,9 +1446,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1506,9 +1473,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1520,8 +1490,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       index_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1529,9 +1499,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1539,8 +1512,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearIndex() {
-
       index_ = getDefaultInstance().getIndex();
+      bitField0_ = (bitField0_ & ~0x00000008);
       onChanged();
       return this;
     }
@@ -1548,9 +1521,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1563,27 +1539,27 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       index_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
 
-    private com.google.protobuf.LazyStringList columns_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList columns_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureColumnsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!columns_.isModifiable()) {
         columns_ = new com.google.protobuf.LazyStringArrayList(columns_);
-        bitField0_ |= 0x00000001;
       }
+      bitField0_ |= 0x00000010;
     }
     /**
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1591,14 +1567,15 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return A list containing the columns.
      */
     public com.google.protobuf.ProtocolStringList getColumnsList() {
-      return columns_.getUnmodifiableView();
+      columns_.makeImmutable();
+      return columns_;
     }
     /**
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1612,8 +1589,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1628,8 +1605,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1644,8 +1621,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1660,6 +1637,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       }
       ensureColumnsIsMutable();
       columns_.set(index, value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1667,8 +1645,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1682,6 +1660,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       }
       ensureColumnsIsMutable();
       columns_.add(value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1689,8 +1668,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1701,6 +1680,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     public Builder addAllColumns(java.lang.Iterable<java.lang.String> values) {
       ensureColumnsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, columns_);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1708,8 +1688,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1717,8 +1697,9 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearColumns() {
-      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000010);
+      ;
       onChanged();
       return this;
     }
@@ -1726,8 +1707,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1742,6 +1723,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       checkByteStringIsUtf8(value);
       ensureColumnsIsMutable();
       columns_.add(value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1757,9 +1739,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1769,16 +1755,20 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return Whether the keySet field is set.
      */
     public boolean hasKeySet() {
-      return keySetBuilder_ != null || keySet_ != null;
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      *
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1799,9 +1789,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1814,11 +1808,11 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
           throw new NullPointerException();
         }
         keySet_ = value;
-        onChanged();
       } else {
         keySetBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1826,9 +1820,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1838,11 +1836,11 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     public Builder setKeySet(com.google.spanner.v1.KeySet.Builder builderForValue) {
       if (keySetBuilder_ == null) {
         keySet_ = builderForValue.build();
-        onChanged();
       } else {
         keySetBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1850,9 +1848,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1861,17 +1863,18 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      */
     public Builder mergeKeySet(com.google.spanner.v1.KeySet value) {
       if (keySetBuilder_ == null) {
-        if (keySet_ != null) {
-          keySet_ =
-              com.google.spanner.v1.KeySet.newBuilder(keySet_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000020) != 0)
+            && keySet_ != null
+            && keySet_ != com.google.spanner.v1.KeySet.getDefaultInstance()) {
+          getKeySetBuilder().mergeFrom(value);
         } else {
           keySet_ = value;
         }
-        onChanged();
       } else {
         keySetBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1879,9 +1882,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1889,14 +1896,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearKeySet() {
-      if (keySetBuilder_ == null) {
-        keySet_ = null;
-        onChanged();
-      } else {
-        keySet_ = null;
+      bitField0_ = (bitField0_ & ~0x00000020);
+      keySet_ = null;
+      if (keySetBuilder_ != null) {
+        keySetBuilder_.dispose();
         keySetBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1904,9 +1910,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1914,7 +1924,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public com.google.spanner.v1.KeySet.Builder getKeySetBuilder() {
-
+      bitField0_ |= 0x00000020;
       onChanged();
       return getKeySetFieldBuilder().getBuilder();
     }
@@ -1923,9 +1933,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1944,9 +1958,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1988,7 +2006,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return Whether the partitionOptions field is set.
      */
     public boolean hasPartitionOptions() {
-      return partitionOptionsBuilder_ != null || partitionOptions_ != null;
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      *
@@ -2025,11 +2043,11 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
           throw new NullPointerException();
         }
         partitionOptions_ = value;
-        onChanged();
       } else {
         partitionOptionsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000040;
+      onChanged();
       return this;
     }
     /**
@@ -2045,11 +2063,11 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
         com.google.spanner.v1.PartitionOptions.Builder builderForValue) {
       if (partitionOptionsBuilder_ == null) {
         partitionOptions_ = builderForValue.build();
-        onChanged();
       } else {
         partitionOptionsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000040;
+      onChanged();
       return this;
     }
     /**
@@ -2063,19 +2081,18 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      */
     public Builder mergePartitionOptions(com.google.spanner.v1.PartitionOptions value) {
       if (partitionOptionsBuilder_ == null) {
-        if (partitionOptions_ != null) {
-          partitionOptions_ =
-              com.google.spanner.v1.PartitionOptions.newBuilder(partitionOptions_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000040) != 0)
+            && partitionOptions_ != null
+            && partitionOptions_ != com.google.spanner.v1.PartitionOptions.getDefaultInstance()) {
+          getPartitionOptionsBuilder().mergeFrom(value);
         } else {
           partitionOptions_ = value;
         }
-        onChanged();
       } else {
         partitionOptionsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000040;
+      onChanged();
       return this;
     }
     /**
@@ -2088,14 +2105,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.v1.PartitionOptions partition_options = 9;</code>
      */
     public Builder clearPartitionOptions() {
-      if (partitionOptionsBuilder_ == null) {
-        partitionOptions_ = null;
-        onChanged();
-      } else {
-        partitionOptions_ = null;
+      bitField0_ = (bitField0_ & ~0x00000040);
+      partitionOptions_ = null;
+      if (partitionOptionsBuilder_ != null) {
+        partitionOptionsBuilder_.dispose();
         partitionOptionsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2108,7 +2124,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * <code>.google.spanner.v1.PartitionOptions partition_options = 9;</code>
      */
     public com.google.spanner.v1.PartitionOptions.Builder getPartitionOptionsBuilder() {
-
+      bitField0_ |= 0x00000040;
       onChanged();
       return getPartitionOptionsFieldBuilder().getBuilder();
     }
@@ -2188,7 +2204,18 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PartitionReadRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

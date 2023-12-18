@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.admin.instance.v1;
 
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
@@ -24,6 +25,7 @@ import com.google.api.core.BetaApi;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.ClientSettings;
@@ -39,17 +41,24 @@ import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
@@ -74,6 +83,11 @@ import javax.annotation.Generated;
  * <p>For example, to set the total timeout of getInstanceConfig to 30 seconds:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * InstanceAdminSettings.Builder instanceAdminSettingsBuilder = InstanceAdminSettings.newBuilder();
  * instanceAdminSettingsBuilder
  *     .getInstanceConfigSettings()
@@ -100,6 +114,44 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
   /** Returns the object with the settings used for calls to getInstanceConfig. */
   public UnaryCallSettings<GetInstanceConfigRequest, InstanceConfig> getInstanceConfigSettings() {
     return ((InstanceAdminStubSettings) getStubSettings()).getInstanceConfigSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createInstanceConfig. */
+  public UnaryCallSettings<CreateInstanceConfigRequest, Operation> createInstanceConfigSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).createInstanceConfigSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createInstanceConfig. */
+  public OperationCallSettings<
+          CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+      createInstanceConfigOperationSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).createInstanceConfigOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateInstanceConfig. */
+  public UnaryCallSettings<UpdateInstanceConfigRequest, Operation> updateInstanceConfigSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).updateInstanceConfigSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateInstanceConfig. */
+  public OperationCallSettings<
+          UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+      updateInstanceConfigOperationSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).updateInstanceConfigOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to deleteInstanceConfig. */
+  public UnaryCallSettings<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).deleteInstanceConfigSettings();
+  }
+
+  /** Returns the object with the settings used for calls to listInstanceConfigOperations. */
+  public PagedCallSettings<
+          ListInstanceConfigOperationsRequest,
+          ListInstanceConfigOperationsResponse,
+          ListInstanceConfigOperationsPagedResponse>
+      listInstanceConfigOperationsSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).listInstanceConfigOperationsSettings();
   }
 
   /** Returns the object with the settings used for calls to listInstances. */
@@ -181,9 +233,16 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     return InstanceAdminStubSettings.defaultCredentialsProviderBuilder();
   }
 
-  /** Returns a builder for the default ChannelProvider for this service. */
+  /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
     return InstanceAdminStubSettings.defaultGrpcTransportProviderBuilder();
+  }
+
+  /** Returns a builder for the default REST ChannelProvider for this service. */
+  @BetaApi
+  public static InstantiatingHttpJsonChannelProvider.Builder
+      defaultHttpJsonTransportProviderBuilder() {
+    return InstanceAdminStubSettings.defaultHttpJsonTransportProviderBuilder();
   }
 
   public static TransportChannelProvider defaultTransportChannelProvider() {
@@ -195,9 +254,15 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     return InstanceAdminStubSettings.defaultApiClientHeaderProviderBuilder();
   }
 
-  /** Returns a new builder for this class. */
+  /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
     return Builder.createDefault();
+  }
+
+  /** Returns a new REST builder for this class. */
+  @BetaApi
+  public static Builder newHttpJsonBuilder() {
+    return Builder.createHttpJsonDefault();
   }
 
   /** Returns a new builder for this class. */
@@ -237,6 +302,11 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
       return new Builder(InstanceAdminStubSettings.newBuilder());
     }
 
+    @BetaApi
+    private static Builder createHttpJsonDefault() {
+      return new Builder(InstanceAdminStubSettings.newHttpJsonBuilder());
+    }
+
     public InstanceAdminStubSettings.Builder getStubSettingsBuilder() {
       return ((InstanceAdminStubSettings.Builder) getStubSettings());
     }
@@ -266,6 +336,47 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     public UnaryCallSettings.Builder<GetInstanceConfigRequest, InstanceConfig>
         getInstanceConfigSettings() {
       return getStubSettingsBuilder().getInstanceConfigSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createInstanceConfig. */
+    public UnaryCallSettings.Builder<CreateInstanceConfigRequest, Operation>
+        createInstanceConfigSettings() {
+      return getStubSettingsBuilder().createInstanceConfigSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createInstanceConfig. */
+    public OperationCallSettings.Builder<
+            CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
+        createInstanceConfigOperationSettings() {
+      return getStubSettingsBuilder().createInstanceConfigOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstanceConfig. */
+    public UnaryCallSettings.Builder<UpdateInstanceConfigRequest, Operation>
+        updateInstanceConfigSettings() {
+      return getStubSettingsBuilder().updateInstanceConfigSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstanceConfig. */
+    public OperationCallSettings.Builder<
+            UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
+        updateInstanceConfigOperationSettings() {
+      return getStubSettingsBuilder().updateInstanceConfigOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to deleteInstanceConfig. */
+    public UnaryCallSettings.Builder<DeleteInstanceConfigRequest, Empty>
+        deleteInstanceConfigSettings() {
+      return getStubSettingsBuilder().deleteInstanceConfigSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to listInstanceConfigOperations. */
+    public PagedCallSettings.Builder<
+            ListInstanceConfigOperationsRequest,
+            ListInstanceConfigOperationsResponse,
+            ListInstanceConfigOperationsPagedResponse>
+        listInstanceConfigOperationsSettings() {
+      return getStubSettingsBuilder().listInstanceConfigOperationsSettings();
     }
 
     /** Returns the builder for the settings used for calls to listInstances. */

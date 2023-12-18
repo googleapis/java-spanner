@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ package com.google.spanner.v1;
  * This message is used to select the transaction in which a
  * [Read][google.spanner.v1.Spanner.Read] or
  * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] call runs.
- * See [TransactionOptions][google.spanner.v1.TransactionOptions] for more information about transactions.
+ *
+ * See [TransactionOptions][google.spanner.v1.TransactionOptions] for more
+ * information about transactions.
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.TransactionSelector}
@@ -48,86 +50,6 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     return new TransactionSelector();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private TransactionSelector(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
-              if (selectorCase_ == 1) {
-                subBuilder = ((com.google.spanner.v1.TransactionOptions) selector_).toBuilder();
-              }
-              selector_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions) selector_);
-                selector_ = subBuilder.buildPartial();
-              }
-              selectorCase_ = 1;
-              break;
-            }
-          case 18:
-            {
-              selectorCase_ = 2;
-              selector_ = input.readBytes();
-              break;
-            }
-          case 26:
-            {
-              com.google.spanner.v1.TransactionOptions.Builder subBuilder = null;
-              if (selectorCase_ == 3) {
-                subBuilder = ((com.google.spanner.v1.TransactionOptions) selector_).toBuilder();
-              }
-              selector_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions) selector_);
-                selector_ = subBuilder.buildPartial();
-              }
-              selectorCase_ = 3;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.TransactionProto
         .internal_static_google_spanner_v1_TransactionSelector_descriptor;
@@ -144,6 +66,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
   }
 
   private int selectorCase_ = 0;
+
+  @SuppressWarnings("serial")
   private java.lang.Object selector_;
 
   public enum SelectorCase
@@ -292,7 +216,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    * <pre>
    * Begin a new transaction and execute this read or SQL query in
    * it. The transaction ID of the new transaction is returned in
-   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+   * which is a [Transaction][google.spanner.v1.Transaction].
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -309,7 +234,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    * <pre>
    * Begin a new transaction and execute this read or SQL query in
    * it. The transaction ID of the new transaction is returned in
-   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+   * which is a [Transaction][google.spanner.v1.Transaction].
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -329,7 +255,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    * <pre>
    * Begin a new transaction and execute this read or SQL query in
    * it. The transaction ID of the new transaction is returned in
-   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+   * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+   * which is a [Transaction][google.spanner.v1.Transaction].
    * </pre>
    *
    * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -365,7 +292,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     if (selectorCase_ == 3) {
       output.writeMessage(3, (com.google.spanner.v1.TransactionOptions) selector_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -389,7 +316,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               3, (com.google.spanner.v1.TransactionOptions) selector_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -419,7 +346,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -446,7 +373,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -553,7 +480,9 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
    * This message is used to select the transaction in which a
    * [Read][google.spanner.v1.Spanner.Read] or
    * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] call runs.
-   * See [TransactionOptions][google.spanner.v1.TransactionOptions] for more information about transactions.
+   *
+   * See [TransactionOptions][google.spanner.v1.TransactionOptions] for more
+   * information about transactions.
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.TransactionSelector}
@@ -578,22 +507,22 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     }
 
     // Construct using com.google.spanner.v1.TransactionSelector.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
+      if (singleUseBuilder_ != null) {
+        singleUseBuilder_.clear();
+      }
+      if (beginBuilder_ != null) {
+        beginBuilder_.clear();
+      }
       selectorCase_ = 0;
       selector_ = null;
       return this;
@@ -623,26 +552,27 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
     public com.google.spanner.v1.TransactionSelector buildPartial() {
       com.google.spanner.v1.TransactionSelector result =
           new com.google.spanner.v1.TransactionSelector(this);
-      if (selectorCase_ == 1) {
-        if (singleUseBuilder_ == null) {
-          result.selector_ = selector_;
-        } else {
-          result.selector_ = singleUseBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (selectorCase_ == 2) {
-        result.selector_ = selector_;
-      }
-      if (selectorCase_ == 3) {
-        if (beginBuilder_ == null) {
-          result.selector_ = selector_;
-        } else {
-          result.selector_ = beginBuilder_.build();
-        }
-      }
-      result.selectorCase_ = selectorCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.TransactionSelector result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.TransactionSelector result) {
+      result.selectorCase_ = selectorCase_;
+      result.selector_ = this.selector_;
+      if (selectorCase_ == 1 && singleUseBuilder_ != null) {
+        result.selector_ = singleUseBuilder_.build();
+      }
+      if (selectorCase_ == 3 && beginBuilder_ != null) {
+        result.selector_ = beginBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -711,7 +641,7 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             break;
           }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -726,17 +656,49 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.TransactionSelector parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getSingleUseFieldBuilder().getBuilder(), extensionRegistry);
+                selectorCase_ = 1;
+                break;
+              } // case 10
+            case 18:
+              {
+                selector_ = input.readBytes();
+                selectorCase_ = 2;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getBeginFieldBuilder().getBuilder(), extensionRegistry);
+                selectorCase_ = 3;
+                break;
+              } // case 26
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.TransactionSelector) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -753,6 +715,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.v1.TransactionOptions,
@@ -875,8 +839,9 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       } else {
         if (selectorCase_ == 1) {
           singleUseBuilder_.mergeFrom(value);
+        } else {
+          singleUseBuilder_.setMessage(value);
         }
-        singleUseBuilder_.setMessage(value);
       }
       selectorCase_ = 1;
       return this;
@@ -976,7 +941,6 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
       selectorCase_ = 1;
       onChanged();
-      ;
       return singleUseBuilder_;
     }
 
@@ -1063,7 +1027,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1080,7 +1045,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1107,7 +1073,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1131,7 +1098,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1152,7 +1120,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1173,8 +1142,9 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       } else {
         if (selectorCase_ == 3) {
           beginBuilder_.mergeFrom(value);
+        } else {
+          beginBuilder_.setMessage(value);
         }
-        beginBuilder_.setMessage(value);
       }
       selectorCase_ = 3;
       return this;
@@ -1185,7 +1155,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1212,7 +1183,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1226,7 +1198,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1248,7 +1221,8 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
      * <pre>
      * Begin a new transaction and execute this read or SQL query in
      * it. The transaction ID of the new transaction is returned in
-     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction], which is a [Transaction][google.spanner.v1.Transaction].
+     * [ResultSetMetadata.transaction][google.spanner.v1.ResultSetMetadata.transaction],
+     * which is a [Transaction][google.spanner.v1.Transaction].
      * </pre>
      *
      * <code>.google.spanner.v1.TransactionOptions begin = 3;</code>
@@ -1274,7 +1248,6 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
       }
       selectorCase_ = 3;
       onChanged();
-      ;
       return beginBuilder_;
     }
 
@@ -1310,7 +1283,18 @@ public final class TransactionSelector extends com.google.protobuf.GeneratedMess
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TransactionSelector(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,120 +42,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     config_ = "";
     displayName_ = "";
     state_ = 0;
-    endpointUris_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new Instance();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private Instance(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              name_ = s;
-              break;
-            }
-          case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              config_ = s;
-              break;
-            }
-          case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              displayName_ = s;
-              break;
-            }
-          case 40:
-            {
-              nodeCount_ = input.readInt32();
-              break;
-            }
-          case 48:
-            {
-              int rawValue = input.readEnum();
-
-              state_ = rawValue;
-              break;
-            }
-          case 58:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                labels_ =
-                    com.google.protobuf.MapField.newMapField(LabelsDefaultEntryHolder.defaultEntry);
-                mutable_bitField0_ |= 0x00000001;
-              }
-              com.google.protobuf.MapEntry<java.lang.String, java.lang.String> labels__ =
-                  input.readMessage(
-                      LabelsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              labels_.getMutableMap().put(labels__.getKey(), labels__.getValue());
-              break;
-            }
-          case 66:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                endpointUris_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              endpointUris_.add(s);
-              break;
-            }
-          case 72:
-            {
-              processingUnits_ = input.readInt32();
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        endpointUris_ = endpointUris_.getUnmodifiableView();
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -348,7 +241,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
-  private volatile java.lang.Object name_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object name_ = "";
   /**
    *
    *
@@ -403,7 +298,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int CONFIG_FIELD_NUMBER = 2;
-  private volatile java.lang.Object config_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object config_ = "";
   /**
    *
    *
@@ -462,7 +359,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int DISPLAY_NAME_FIELD_NUMBER = 3;
-  private volatile java.lang.Object displayName_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object displayName_ = "";
   /**
    *
    *
@@ -513,16 +412,23 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int NODE_COUNT_FIELD_NUMBER = 5;
-  private int nodeCount_;
+  private int nodeCount_ = 0;
   /**
    *
    *
    * <pre>
-   * Required. The number of nodes allocated to this instance. This may be zero
-   * in API responses for instances that are not yet in state `READY`.
+   * The number of nodes allocated to this instance. At most one of either
+   * node_count or processing_units should be present in the message.
+   *
+   * Users can set the node_count field to specify the target number of nodes
+   * allocated to the instance.
+   *
+   * This may be zero in API responses for instances that are not yet in state
+   * `READY`.
+   *
    * See [the
-   * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-   * for more information about nodes.
+   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+   * for more information about nodes and processing units.
    * </pre>
    *
    * <code>int32 node_count = 5;</code>
@@ -535,14 +441,23 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PROCESSING_UNITS_FIELD_NUMBER = 9;
-  private int processingUnits_;
+  private int processingUnits_ = 0;
   /**
    *
    *
    * <pre>
    * The number of processing units allocated to this instance. At most one of
-   * processing_units or node_count should be present in the message. This may
-   * be zero in API responses for instances that are not yet in state `READY`.
+   * processing_units or node_count should be present in the message.
+   *
+   * Users can set the processing_units field to specify the target number of
+   * processing units allocated to the instance.
+   *
+   * This may be zero in API responses for instances that are not yet in state
+   * `READY`.
+   *
+   * See [the
+   * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+   * for more information about nodes and processing units.
    * </pre>
    *
    * <code>int32 processing_units = 9;</code>
@@ -554,17 +469,83 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     return processingUnits_;
   }
 
+  public static final int AUTOSCALING_CONFIG_FIELD_NUMBER = 17;
+  private com.google.spanner.admin.instance.v1.AutoscalingConfig autoscalingConfig_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, node_count and processing_units
+   * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the autoscalingConfig field is set.
+   */
+  @java.lang.Override
+  public boolean hasAutoscalingConfig() {
+    return autoscalingConfig_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, node_count and processing_units
+   * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The autoscalingConfig.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfig getAutoscalingConfig() {
+    return autoscalingConfig_ == null
+        ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+        : autoscalingConfig_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The autoscaling configuration. Autoscaling is enabled if this
+   * field is set. When autoscaling is enabled, node_count and processing_units
+   * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+   * allocated to the instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder
+      getAutoscalingConfigOrBuilder() {
+    return autoscalingConfig_ == null
+        ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+        : autoscalingConfig_;
+  }
+
   public static final int STATE_FIELD_NUMBER = 6;
-  private int state_;
+  private int state_ = 0;
   /**
    *
    *
    * <pre>
    * Output only. The current instance state. For
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-   * either omitted or set to `CREATING`. For
-   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-   * either omitted or set to `READY`.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+   * the state must be either omitted or set to `CREATING`. For
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+   * the state must be either omitted or set to `READY`.
    * </pre>
    *
    * <code>
@@ -582,10 +563,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Output only. The current instance state. For
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-   * either omitted or set to `CREATING`. For
-   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-   * either omitted or set to `READY`.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+   * the state must be either omitted or set to `CREATING`. For
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+   * the state must be either omitted or set to `READY`.
    * </pre>
    *
    * <code>
@@ -596,9 +577,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.Instance.State getState() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.instance.v1.Instance.State result =
-        com.google.spanner.admin.instance.v1.Instance.State.valueOf(state_);
+        com.google.spanner.admin.instance.v1.Instance.State.forNumber(state_);
     return result == null
         ? com.google.spanner.admin.instance.v1.Instance.State.UNRECOGNIZED
         : result;
@@ -617,6 +597,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
             "");
   }
 
+  @SuppressWarnings("serial")
   private com.google.protobuf.MapField<java.lang.String, java.lang.String> labels_;
 
   private com.google.protobuf.MapField<java.lang.String, java.lang.String> internalGetLabels() {
@@ -639,12 +620,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -658,7 +642,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public boolean containsLabels(java.lang.String key) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     return internalGetLabels().getMap().containsKey(key);
   }
@@ -678,12 +662,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -708,12 +695,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -725,9 +715,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * <code>map&lt;string, string&gt; labels = 7;</code>
    */
   @java.lang.Override
-  public java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue) {
+  public /* nullable */ java.lang.String getLabelsOrDefault(
+      java.lang.String key,
+      /* nullable */
+      java.lang.String defaultValue) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
     return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -742,12 +735,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
-   *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+   *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
-   *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+   *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. And so you are advised to use an
    * internal label representation, such as JSON, which doesn't rely upon
@@ -761,7 +757,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public java.lang.String getLabelsOrThrow(java.lang.String key) {
     if (key == null) {
-      throw new java.lang.NullPointerException();
+      throw new NullPointerException("map key");
     }
     java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
     if (!map.containsKey(key)) {
@@ -771,7 +767,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ENDPOINT_URIS_FIELD_NUMBER = 8;
-  private com.google.protobuf.LazyStringList endpointUris_;
+
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList endpointUris_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -831,6 +830,104 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     return endpointUris_.getByteString(index);
   }
 
+  public static final int CREATE_TIME_FIELD_NUMBER = 11;
+  private com.google.protobuf.Timestamp createTime_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the createTime field is set.
+   */
+  @java.lang.Override
+  public boolean hasCreateTime() {
+    return createTime_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The createTime.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getCreateTime() {
+    return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was created.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
+    return createTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : createTime_;
+  }
+
+  public static final int UPDATE_TIME_FIELD_NUMBER = 12;
+  private com.google.protobuf.Timestamp updateTime_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the updateTime field is set.
+   */
+  @java.lang.Override
+  public boolean hasUpdateTime() {
+    return updateTime_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The updateTime.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getUpdateTime() {
+    return updateTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : updateTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The time at which the instance was most recently updated.
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getUpdateTimeOrBuilder() {
+    return updateTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : updateTime_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -869,7 +966,16 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (processingUnits_ != 0) {
       output.writeInt32(9, processingUnits_);
     }
-    unknownFields.writeTo(output);
+    if (createTime_ != null) {
+      output.writeMessage(11, getCreateTime());
+    }
+    if (updateTime_ != null) {
+      output.writeMessage(12, getUpdateTime());
+    }
+    if (autoscalingConfig_ != null) {
+      output.writeMessage(17, getAutoscalingConfig());
+    }
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -915,7 +1021,16 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (processingUnits_ != 0) {
       size += com.google.protobuf.CodedOutputStream.computeInt32Size(9, processingUnits_);
     }
-    size += unknownFields.getSerializedSize();
+    if (createTime_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getCreateTime());
+    }
+    if (updateTime_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(12, getUpdateTime());
+    }
+    if (autoscalingConfig_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(17, getAutoscalingConfig());
+    }
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -936,10 +1051,22 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     if (!getDisplayName().equals(other.getDisplayName())) return false;
     if (getNodeCount() != other.getNodeCount()) return false;
     if (getProcessingUnits() != other.getProcessingUnits()) return false;
+    if (hasAutoscalingConfig() != other.hasAutoscalingConfig()) return false;
+    if (hasAutoscalingConfig()) {
+      if (!getAutoscalingConfig().equals(other.getAutoscalingConfig())) return false;
+    }
     if (state_ != other.state_) return false;
     if (!internalGetLabels().equals(other.internalGetLabels())) return false;
     if (!getEndpointUrisList().equals(other.getEndpointUrisList())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (hasCreateTime() != other.hasCreateTime()) return false;
+    if (hasCreateTime()) {
+      if (!getCreateTime().equals(other.getCreateTime())) return false;
+    }
+    if (hasUpdateTime() != other.hasUpdateTime()) return false;
+    if (hasUpdateTime()) {
+      if (!getUpdateTime().equals(other.getUpdateTime())) return false;
+    }
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -960,6 +1087,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + getNodeCount();
     hash = (37 * hash) + PROCESSING_UNITS_FIELD_NUMBER;
     hash = (53 * hash) + getProcessingUnits();
+    if (hasAutoscalingConfig()) {
+      hash = (37 * hash) + AUTOSCALING_CONFIG_FIELD_NUMBER;
+      hash = (53 * hash) + getAutoscalingConfig().hashCode();
+    }
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
     if (!internalGetLabels().getMap().isEmpty()) {
@@ -970,7 +1101,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + ENDPOINT_URIS_FIELD_NUMBER;
       hash = (53 * hash) + getEndpointUrisList().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    if (hasCreateTime()) {
+      hash = (37 * hash) + CREATE_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getCreateTime().hashCode();
+    }
+    if (hasUpdateTime()) {
+      hash = (37 * hash) + UPDATE_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getUpdateTime().hashCode();
+    }
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -1119,37 +1258,39 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.admin.instance.v1.Instance.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       name_ = "";
-
       config_ = "";
-
       displayName_ = "";
-
       nodeCount_ = 0;
-
       processingUnits_ = 0;
-
+      autoscalingConfig_ = null;
+      if (autoscalingConfigBuilder_ != null) {
+        autoscalingConfigBuilder_.dispose();
+        autoscalingConfigBuilder_ = null;
+      }
       state_ = 0;
-
       internalGetMutableLabels().clear();
-      endpointUris_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000002);
+      endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      createTime_ = null;
+      if (createTimeBuilder_ != null) {
+        createTimeBuilder_.dispose();
+        createTimeBuilder_ = null;
+      }
+      updateTime_ = null;
+      if (updateTimeBuilder_ != null) {
+        updateTimeBuilder_.dispose();
+        updateTimeBuilder_ = null;
+      }
       return this;
     }
 
@@ -1177,22 +1318,53 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.instance.v1.Instance buildPartial() {
       com.google.spanner.admin.instance.v1.Instance result =
           new com.google.spanner.admin.instance.v1.Instance(this);
-      int from_bitField0_ = bitField0_;
-      result.name_ = name_;
-      result.config_ = config_;
-      result.displayName_ = displayName_;
-      result.nodeCount_ = nodeCount_;
-      result.processingUnits_ = processingUnits_;
-      result.state_ = state_;
-      result.labels_ = internalGetLabels();
-      result.labels_.makeImmutable();
-      if (((bitField0_ & 0x00000002) != 0)) {
-        endpointUris_ = endpointUris_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000002);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.endpointUris_ = endpointUris_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.instance.v1.Instance result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.name_ = name_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.config_ = config_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.displayName_ = displayName_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.nodeCount_ = nodeCount_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.processingUnits_ = processingUnits_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.autoscalingConfig_ =
+            autoscalingConfigBuilder_ == null
+                ? autoscalingConfig_
+                : autoscalingConfigBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.state_ = state_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.labels_ = internalGetLabels();
+        result.labels_.makeImmutable();
+      }
+      if (((from_bitField0_ & 0x00000100) != 0)) {
+        endpointUris_.makeImmutable();
+        result.endpointUris_ = endpointUris_;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.createTime_ = createTimeBuilder_ == null ? createTime_ : createTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000400) != 0)) {
+        result.updateTime_ = updateTimeBuilder_ == null ? updateTime_ : updateTimeBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -1242,14 +1414,17 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (other == com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()) return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getConfig().isEmpty()) {
         config_ = other.config_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (!other.getDisplayName().isEmpty()) {
         displayName_ = other.displayName_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       if (other.getNodeCount() != 0) {
@@ -1258,21 +1433,31 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (other.getProcessingUnits() != 0) {
         setProcessingUnits(other.getProcessingUnits());
       }
+      if (other.hasAutoscalingConfig()) {
+        mergeAutoscalingConfig(other.getAutoscalingConfig());
+      }
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
       internalGetMutableLabels().mergeFrom(other.internalGetLabels());
+      bitField0_ |= 0x00000080;
       if (!other.endpointUris_.isEmpty()) {
         if (endpointUris_.isEmpty()) {
           endpointUris_ = other.endpointUris_;
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ |= 0x00000100;
         } else {
           ensureEndpointUrisIsMutable();
           endpointUris_.addAll(other.endpointUris_);
         }
         onChanged();
       }
-      this.mergeUnknownFields(other.unknownFields);
+      if (other.hasCreateTime()) {
+        mergeCreateTime(other.getCreateTime());
+      }
+      if (other.hasUpdateTime()) {
+        mergeUpdateTime(other.getUpdateTime());
+      }
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1287,17 +1472,105 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.instance.v1.Instance parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                name_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                config_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                displayName_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            case 40:
+              {
+                nodeCount_ = input.readInt32();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 40
+            case 48:
+              {
+                state_ = input.readEnum();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 48
+            case 58:
+              {
+                com.google.protobuf.MapEntry<java.lang.String, java.lang.String> labels__ =
+                    input.readMessage(
+                        LabelsDefaultEntryHolder.defaultEntry.getParserForType(),
+                        extensionRegistry);
+                internalGetMutableLabels()
+                    .getMutableMap()
+                    .put(labels__.getKey(), labels__.getValue());
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 58
+            case 66:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureEndpointUrisIsMutable();
+                endpointUris_.add(s);
+                break;
+              } // case 66
+            case 72:
+              {
+                processingUnits_ = input.readInt32();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 72
+            case 90:
+              {
+                input.readMessage(getCreateTimeFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000200;
+                break;
+              } // case 90
+            case 98:
+              {
+                input.readMessage(getUpdateTimeFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 98
+            case 138:
+              {
+                input.readMessage(
+                    getAutoscalingConfigFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 138
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.admin.instance.v1.Instance) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1373,8 +1646,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1393,8 +1666,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearName() {
-
       name_ = getDefaultInstance().getName();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -1418,8 +1691,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       name_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1500,8 +1773,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       config_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1522,8 +1795,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearConfig() {
-
       config_ = getDefaultInstance().getConfig();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1549,8 +1822,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       config_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1619,8 +1892,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       displayName_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1637,8 +1910,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearDisplayName() {
-
       displayName_ = getDefaultInstance().getDisplayName();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1660,8 +1933,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       displayName_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1671,11 +1944,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The number of nodes allocated to this instance. This may be zero
-     * in API responses for instances that are not yet in state `READY`.
+     * The number of nodes allocated to this instance. At most one of either
+     * node_count or processing_units should be present in the message.
+     *
+     * Users can set the node_count field to specify the target number of nodes
+     * allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
+     *
      * See [the
-     * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-     * for more information about nodes.
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 node_count = 5;</code>
@@ -1690,11 +1970,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The number of nodes allocated to this instance. This may be zero
-     * in API responses for instances that are not yet in state `READY`.
+     * The number of nodes allocated to this instance. At most one of either
+     * node_count or processing_units should be present in the message.
+     *
+     * Users can set the node_count field to specify the target number of nodes
+     * allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
+     *
      * See [the
-     * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-     * for more information about nodes.
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 node_count = 5;</code>
@@ -1705,6 +1992,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public Builder setNodeCount(int value) {
 
       nodeCount_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1712,11 +2000,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The number of nodes allocated to this instance. This may be zero
-     * in API responses for instances that are not yet in state `READY`.
+     * The number of nodes allocated to this instance. At most one of either
+     * node_count or processing_units should be present in the message.
+     *
+     * Users can set the node_count field to specify the target number of nodes
+     * allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
+     *
      * See [the
-     * documentation](https://cloud.google.com/spanner/docs/instances#node_count)
-     * for more information about nodes.
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 node_count = 5;</code>
@@ -1724,7 +2019,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearNodeCount() {
-
+      bitField0_ = (bitField0_ & ~0x00000008);
       nodeCount_ = 0;
       onChanged();
       return this;
@@ -1736,8 +2031,17 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of processing units allocated to this instance. At most one of
-     * processing_units or node_count should be present in the message. This may
-     * be zero in API responses for instances that are not yet in state `READY`.
+     * processing_units or node_count should be present in the message.
+     *
+     * Users can set the processing_units field to specify the target number of
+     * processing units allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
+     *
+     * See [the
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 processing_units = 9;</code>
@@ -1753,8 +2057,17 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of processing units allocated to this instance. At most one of
-     * processing_units or node_count should be present in the message. This may
-     * be zero in API responses for instances that are not yet in state `READY`.
+     * processing_units or node_count should be present in the message.
+     *
+     * Users can set the processing_units field to specify the target number of
+     * processing units allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
+     *
+     * See [the
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 processing_units = 9;</code>
@@ -1765,6 +2078,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public Builder setProcessingUnits(int value) {
 
       processingUnits_ = value;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1773,8 +2087,17 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * The number of processing units allocated to this instance. At most one of
-     * processing_units or node_count should be present in the message. This may
-     * be zero in API responses for instances that are not yet in state `READY`.
+     * processing_units or node_count should be present in the message.
+     *
+     * Users can set the processing_units field to specify the target number of
+     * processing units allocated to the instance.
+     *
+     * This may be zero in API responses for instances that are not yet in state
+     * `READY`.
+     *
+     * See [the
+     * documentation](https://cloud.google.com/spanner/docs/compute-capacity)
+     * for more information about nodes and processing units.
      * </pre>
      *
      * <code>int32 processing_units = 9;</code>
@@ -1782,10 +2105,244 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearProcessingUnits() {
-
+      bitField0_ = (bitField0_ & ~0x00000010);
       processingUnits_ = 0;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.admin.instance.v1.AutoscalingConfig autoscalingConfig_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>
+        autoscalingConfigBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the autoscalingConfig field is set.
+     */
+    public boolean hasAutoscalingConfig() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The autoscalingConfig.
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig getAutoscalingConfig() {
+      if (autoscalingConfigBuilder_ == null) {
+        return autoscalingConfig_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+            : autoscalingConfig_;
+      } else {
+        return autoscalingConfigBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig value) {
+      if (autoscalingConfigBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        autoscalingConfig_ = value;
+      } else {
+        autoscalingConfigBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder builderForValue) {
+      if (autoscalingConfigBuilder_ == null) {
+        autoscalingConfig_ = builderForValue.build();
+      } else {
+        autoscalingConfigBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeAutoscalingConfig(
+        com.google.spanner.admin.instance.v1.AutoscalingConfig value) {
+      if (autoscalingConfigBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0)
+            && autoscalingConfig_ != null
+            && autoscalingConfig_
+                != com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()) {
+          getAutoscalingConfigBuilder().mergeFrom(value);
+        } else {
+          autoscalingConfig_ = value;
+        }
+      } else {
+        autoscalingConfigBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearAutoscalingConfig() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      autoscalingConfig_ = null;
+      if (autoscalingConfigBuilder_ != null) {
+        autoscalingConfigBuilder_.dispose();
+        autoscalingConfigBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder
+        getAutoscalingConfigBuilder() {
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return getAutoscalingConfigFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder
+        getAutoscalingConfigOrBuilder() {
+      if (autoscalingConfigBuilder_ != null) {
+        return autoscalingConfigBuilder_.getMessageOrBuilder();
+      } else {
+        return autoscalingConfig_ == null
+            ? com.google.spanner.admin.instance.v1.AutoscalingConfig.getDefaultInstance()
+            : autoscalingConfig_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The autoscaling configuration. Autoscaling is enabled if this
+     * field is set. When autoscaling is enabled, node_count and processing_units
+     * are treated as OUTPUT_ONLY fields and reflect the current compute capacity
+     * allocated to the instance.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.admin.instance.v1.AutoscalingConfig autoscaling_config = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.instance.v1.AutoscalingConfig,
+            com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+            com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>
+        getAutoscalingConfigFieldBuilder() {
+      if (autoscalingConfigBuilder_ == null) {
+        autoscalingConfigBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.instance.v1.AutoscalingConfig,
+                com.google.spanner.admin.instance.v1.AutoscalingConfig.Builder,
+                com.google.spanner.admin.instance.v1.AutoscalingConfigOrBuilder>(
+                getAutoscalingConfig(), getParentForChildren(), isClean());
+        autoscalingConfig_ = null;
+      }
+      return autoscalingConfigBuilder_;
     }
 
     private int state_ = 0;
@@ -1794,10 +2351,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -1815,10 +2372,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -1829,8 +2386,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setStateValue(int value) {
-
       state_ = value;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -1839,10 +2396,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -1853,9 +2410,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.instance.v1.Instance.State getState() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.instance.v1.Instance.State result =
-          com.google.spanner.admin.instance.v1.Instance.State.valueOf(state_);
+          com.google.spanner.admin.instance.v1.Instance.State.forNumber(state_);
       return result == null
           ? com.google.spanner.admin.instance.v1.Instance.State.UNRECOGNIZED
           : result;
@@ -1865,10 +2421,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -1882,7 +2438,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000040;
       state_ = value.getNumber();
       onChanged();
       return this;
@@ -1892,10 +2448,10 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Output only. The current instance state. For
-     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance], the state must be
-     * either omitted or set to `CREATING`. For
-     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance], the state must be
-     * either omitted or set to `READY`.
+     * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance],
+     * the state must be either omitted or set to `CREATING`. For
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance],
+     * the state must be either omitted or set to `READY`.
      * </pre>
      *
      * <code>
@@ -1905,7 +2461,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearState() {
-
+      bitField0_ = (bitField0_ & ~0x00000040);
       state_ = 0;
       onChanged();
       return this;
@@ -1922,14 +2478,14 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
 
     private com.google.protobuf.MapField<java.lang.String, java.lang.String>
         internalGetMutableLabels() {
-      onChanged();
-      ;
       if (labels_ == null) {
         labels_ = com.google.protobuf.MapField.newMapField(LabelsDefaultEntryHolder.defaultEntry);
       }
       if (!labels_.isMutable()) {
         labels_ = labels_.copy();
       }
+      bitField0_ |= 0x00000080;
+      onChanged();
       return labels_;
     }
 
@@ -1946,12 +2502,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
+     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
+     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
+     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -1965,7 +2524,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public boolean containsLabels(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       return internalGetLabels().getMap().containsKey(key);
     }
@@ -1985,12 +2544,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
+     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
+     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
+     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2015,12 +2577,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
+     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
+     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
+     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2032,10 +2597,12 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * <code>map&lt;string, string&gt; labels = 7;</code>
      */
     @java.lang.Override
-    public java.lang.String getLabelsOrDefault(
-        java.lang.String key, java.lang.String defaultValue) {
+    public /* nullable */ java.lang.String getLabelsOrDefault(
+        java.lang.String key,
+        /* nullable */
+        java.lang.String defaultValue) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
@@ -2050,12 +2617,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
+     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
+     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
+     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2069,7 +2639,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public java.lang.String getLabelsOrThrow(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       java.util.Map<java.lang.String, java.lang.String> map = internalGetLabels().getMap();
       if (!map.containsKey(key)) {
@@ -2079,6 +2649,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     }
 
     public Builder clearLabels() {
+      bitField0_ = (bitField0_ & ~0x00000080);
       internalGetMutableLabels().getMutableMap().clear();
       return this;
     }
@@ -2092,12 +2663,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
+     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
+     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
+     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2110,7 +2684,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder removeLabels(java.lang.String key) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       internalGetMutableLabels().getMutableMap().remove(key);
       return this;
@@ -2118,6 +2692,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     /** Use alternate mutation accessors instead. */
     @java.lang.Deprecated
     public java.util.Map<java.lang.String, java.lang.String> getMutableLabels() {
+      bitField0_ |= 0x00000080;
       return internalGetMutableLabels().getMutableMap();
     }
     /**
@@ -2130,12 +2705,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
+     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
+     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
+     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2148,12 +2726,13 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder putLabels(java.lang.String key, java.lang.String value) {
       if (key == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map key");
       }
       if (value == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException("map value");
       }
       internalGetMutableLabels().getMutableMap().put(key, value);
+      bitField0_ |= 0x00000080;
       return this;
     }
     /**
@@ -2166,12 +2745,15 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * resources. They can be used to control how resource metrics are aggregated.
      * And they can be used as arguments to policy management rules (e.g. route,
      * firewall, load balancing, etc.).
+     *
      *  * Label keys must be between 1 and 63 characters long and must conform to
-     *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
+     *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
      *  * Label values must be between 0 and 63 characters long and must conform
-     *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
+     *    to the regular expression `[a-z0-9_-]{0,63}`.
      *  * No more than 64 labels can be associated with a given resource.
+     *
      * See https://goo.gl/xmQnxf for more information on and examples of labels.
+     *
      * If you plan to use labels in your own code, please note that additional
      * characters may be allowed in the future. And so you are advised to use an
      * internal label representation, such as JSON, which doesn't rely upon
@@ -2184,17 +2766,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder putAllLabels(java.util.Map<java.lang.String, java.lang.String> values) {
       internalGetMutableLabels().getMutableMap().putAll(values);
+      bitField0_ |= 0x00000080;
       return this;
     }
 
-    private com.google.protobuf.LazyStringList endpointUris_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList endpointUris_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureEndpointUrisIsMutable() {
-      if (!((bitField0_ & 0x00000002) != 0)) {
+      if (!endpointUris_.isModifiable()) {
         endpointUris_ = new com.google.protobuf.LazyStringArrayList(endpointUris_);
-        bitField0_ |= 0x00000002;
       }
+      bitField0_ |= 0x00000100;
     }
     /**
      *
@@ -2208,7 +2791,8 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return A list containing the endpointUris.
      */
     public com.google.protobuf.ProtocolStringList getEndpointUrisList() {
-      return endpointUris_.getUnmodifiableView();
+      endpointUris_.makeImmutable();
+      return endpointUris_;
     }
     /**
      *
@@ -2273,6 +2857,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.set(index, value);
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2294,6 +2879,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       }
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2312,6 +2898,7 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllEndpointUris(java.lang.Iterable<java.lang.String> values) {
       ensureEndpointUrisIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, endpointUris_);
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2327,8 +2914,9 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearEndpointUris() {
-      endpointUris_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000002);
+      endpointUris_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000100);
+      ;
       onChanged();
       return this;
     }
@@ -2351,8 +2939,411 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureEndpointUrisIsMutable();
       endpointUris_.add(value);
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
+    }
+
+    private com.google.protobuf.Timestamp createTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        createTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the createTime field is set.
+     */
+    public boolean hasCreateTime() {
+      return ((bitField0_ & 0x00000200) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The createTime.
+     */
+    public com.google.protobuf.Timestamp getCreateTime() {
+      if (createTimeBuilder_ == null) {
+        return createTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : createTime_;
+      } else {
+        return createTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setCreateTime(com.google.protobuf.Timestamp value) {
+      if (createTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        createTime_ = value;
+      } else {
+        createTimeBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setCreateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (createTimeBuilder_ == null) {
+        createTime_ = builderForValue.build();
+      } else {
+        createTimeBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeCreateTime(com.google.protobuf.Timestamp value) {
+      if (createTimeBuilder_ == null) {
+        if (((bitField0_ & 0x00000200) != 0)
+            && createTime_ != null
+            && createTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCreateTimeBuilder().mergeFrom(value);
+        } else {
+          createTime_ = value;
+        }
+      } else {
+        createTimeBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearCreateTime() {
+      bitField0_ = (bitField0_ & ~0x00000200);
+      createTime_ = null;
+      if (createTimeBuilder_ != null) {
+        createTimeBuilder_.dispose();
+        createTimeBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.Timestamp.Builder getCreateTimeBuilder() {
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return getCreateTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getCreateTimeOrBuilder() {
+      if (createTimeBuilder_ != null) {
+        return createTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return createTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : createTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was created.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp create_time = 11 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getCreateTimeFieldBuilder() {
+      if (createTimeBuilder_ == null) {
+        createTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getCreateTime(), getParentForChildren(), isClean());
+        createTime_ = null;
+      }
+      return createTimeBuilder_;
+    }
+
+    private com.google.protobuf.Timestamp updateTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        updateTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the updateTime field is set.
+     */
+    public boolean hasUpdateTime() {
+      return ((bitField0_ & 0x00000400) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The updateTime.
+     */
+    public com.google.protobuf.Timestamp getUpdateTime() {
+      if (updateTimeBuilder_ == null) {
+        return updateTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : updateTime_;
+      } else {
+        return updateTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setUpdateTime(com.google.protobuf.Timestamp value) {
+      if (updateTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        updateTime_ = value;
+      } else {
+        updateTimeBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setUpdateTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (updateTimeBuilder_ == null) {
+        updateTime_ = builderForValue.build();
+      } else {
+        updateTimeBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeUpdateTime(com.google.protobuf.Timestamp value) {
+      if (updateTimeBuilder_ == null) {
+        if (((bitField0_ & 0x00000400) != 0)
+            && updateTime_ != null
+            && updateTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getUpdateTimeBuilder().mergeFrom(value);
+        } else {
+          updateTime_ = value;
+        }
+      } else {
+        updateTimeBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearUpdateTime() {
+      bitField0_ = (bitField0_ & ~0x00000400);
+      updateTime_ = null;
+      if (updateTimeBuilder_ != null) {
+        updateTimeBuilder_.dispose();
+        updateTimeBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.Timestamp.Builder getUpdateTimeBuilder() {
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return getUpdateTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getUpdateTimeOrBuilder() {
+      if (updateTimeBuilder_ != null) {
+        return updateTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return updateTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : updateTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The time at which the instance was most recently updated.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp update_time = 12 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getUpdateTimeFieldBuilder() {
+      if (updateTimeBuilder_ == null) {
+        updateTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getUpdateTime(), getParentForChildren(), isClean());
+        updateTime_ = null;
+      }
+      return updateTimeBuilder_;
     }
 
     @java.lang.Override
@@ -2387,7 +3378,18 @@ public final class Instance extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Instance(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

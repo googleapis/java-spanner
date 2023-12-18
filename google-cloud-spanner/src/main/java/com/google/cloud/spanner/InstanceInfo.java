@@ -19,9 +19,11 @@ package com.google.cloud.spanner;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.cloud.FieldSelector;
+import com.google.cloud.Timestamp;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -34,13 +36,16 @@ public class InstanceInfo {
     DISPLAY_NAME("display_name"),
     NODE_COUNT("node_count"),
     PROCESSING_UNITS("processing_units"),
+    AUTOSCALING_CONFIG("autoscaling_config"),
     LABELS("labels");
 
     static InstanceField[] defaultFieldsToUpdate(InstanceInfo info) {
-      if (info.getNodeCount() > 0) {
-        return new InstanceField[] {DISPLAY_NAME, NODE_COUNT, LABELS};
+      if (info.getAutoscalingConfig() != null) {
+        return new InstanceField[] {DISPLAY_NAME, AUTOSCALING_CONFIG, LABELS};
+      } else if (info.getNodeCount() > 0) {
+        return new InstanceField[] {DISPLAY_NAME, AUTOSCALING_CONFIG, NODE_COUNT, LABELS};
       } else {
-        return new InstanceField[] {DISPLAY_NAME, PROCESSING_UNITS, LABELS};
+        return new InstanceField[] {DISPLAY_NAME, AUTOSCALING_CONFIG, PROCESSING_UNITS, LABELS};
       }
     }
 
@@ -77,19 +82,37 @@ public class InstanceInfo {
 
     public abstract Builder setDisplayName(String displayName);
 
+    Builder setUpdateTime(Timestamp updateTime) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    Builder setCreateTime(Timestamp createTime) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
     /**
-     * Sets the number of nodes for the instance. Exactly one of processing units or node count must
-     * be set when creating a new instance.
+     * Sets the number of nodes for the instance. Exactly one of processing units, node count or
+     * autoscaling config must be set when creating a new instance.
      */
     public abstract Builder setNodeCount(int nodeCount);
 
     /**
-     * Sets the number of processing units for the instance. Exactly one of processing units or node
-     * count must be set when creating a new instance. Processing units must be between 1 and 999
-     * (inclusive) when creating a new instance with node count = 0. Processing units from 1000 and
-     * up must always be a multiple of 1000 (that is equal to an integer number of nodes).
+     * Sets the number of processing units for the instance. Exactly one of processing units, node
+     * count, or autoscaling config must be set when creating a new instance. Processing units must
+     * be between 1 and 999 (inclusive) when creating a new instance with node count = 0. Processing
+     * units from 1000 and up must always be a multiple of 1000 (that is equal to an integer number
+     * of nodes).
      */
     public Builder setProcessingUnits(int processingUnits) {
+      throw new UnsupportedOperationException("Unimplemented");
+    }
+
+    /**
+     * Sets the autoscaling config for the instance, which will enable the autoscaling for this
+     * instance. Exactly one of processing units, node count, or autoscaling config must be set when
+     * creating a new instance.
+     */
+    public Builder setAutoscalingConfig(AutoscalingConfig autoscalingConfig) {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
@@ -108,8 +131,11 @@ public class InstanceInfo {
     private String displayName;
     private int nodeCount;
     private int processingUnits;
+    private AutoscalingConfig autoscalingConfig;
     private State state;
     private Map<String, String> labels;
+    private Timestamp updateTime;
+    private Timestamp createTime;
 
     BuilderImpl(InstanceId id) {
       this.id = id;
@@ -122,8 +148,11 @@ public class InstanceInfo {
       this.displayName = instance.displayName;
       this.nodeCount = instance.nodeCount;
       this.processingUnits = instance.processingUnits;
+      this.autoscalingConfig = instance.autoscalingConfig;
       this.state = instance.state;
       this.labels = new HashMap<>(instance.labels);
+      this.updateTime = instance.updateTime;
+      this.createTime = instance.createTime;
     }
 
     @Override
@@ -139,6 +168,18 @@ public class InstanceInfo {
     }
 
     @Override
+    Builder setUpdateTime(Timestamp updateTime) {
+      this.updateTime = updateTime;
+      return this;
+    }
+
+    @Override
+    Builder setCreateTime(Timestamp createTime) {
+      this.createTime = createTime;
+      return this;
+    }
+
+    @Override
     public BuilderImpl setNodeCount(int nodeCount) {
       this.nodeCount = nodeCount;
       return this;
@@ -147,6 +188,12 @@ public class InstanceInfo {
     @Override
     public BuilderImpl setProcessingUnits(int processingUnits) {
       this.processingUnits = processingUnits;
+      return this;
+    }
+
+    @Override
+    public BuilderImpl setAutoscalingConfig(AutoscalingConfig autoscalingConfig) {
+      this.autoscalingConfig = autoscalingConfig;
       return this;
     }
 
@@ -179,8 +226,11 @@ public class InstanceInfo {
   private final String displayName;
   private final int nodeCount;
   private final int processingUnits;
+  private final AutoscalingConfig autoscalingConfig;
   private final State state;
   private final ImmutableMap<String, String> labels;
+  private final Timestamp updateTime;
+  private final Timestamp createTime;
 
   InstanceInfo(BuilderImpl builder) {
     this.id = builder.id;
@@ -188,8 +238,11 @@ public class InstanceInfo {
     this.displayName = builder.displayName;
     this.nodeCount = builder.nodeCount;
     this.processingUnits = builder.processingUnits;
+    this.autoscalingConfig = builder.autoscalingConfig;
     this.state = builder.state;
     this.labels = ImmutableMap.copyOf(builder.labels);
+    this.updateTime = builder.updateTime;
+    this.createTime = builder.createTime;
   }
 
   /** Returns the identifier of the instance. */
@@ -207,6 +260,14 @@ public class InstanceInfo {
     return displayName;
   }
 
+  public Timestamp getUpdateTime() {
+    return updateTime;
+  }
+
+  public Timestamp getCreateTime() {
+    return createTime;
+  }
+
   /** Returns the node count of the instance. */
   public int getNodeCount() {
     return nodeCount;
@@ -215,6 +276,11 @@ public class InstanceInfo {
   /** Returns the number of processing units of the instance. */
   public int getProcessingUnits() {
     return processingUnits;
+  }
+
+  /** Returns the autoscaling config of the instance. */
+  public AutoscalingConfig getAutoscalingConfig() {
+    return autoscalingConfig;
   }
 
   /** Returns the current state of the instance. */
@@ -239,8 +305,11 @@ public class InstanceInfo {
         .add("displayName", displayName)
         .add("nodeCount", nodeCount)
         .add("processingUnits", processingUnits)
+        .add("autoscaling_config", autoscalingConfig)
         .add("state", state)
         .add("labels", labels)
+        .add("createTime", createTime)
+        .add("updateTime", updateTime)
         .toString();
   }
 
@@ -258,13 +327,26 @@ public class InstanceInfo {
         && Objects.equals(displayName, that.displayName)
         && nodeCount == that.nodeCount
         && processingUnits == that.processingUnits
+        && Objects.equals(autoscalingConfig, that.autoscalingConfig)
         && state == that.state
-        && Objects.equals(labels, that.labels);
+        && Objects.equals(labels, that.labels)
+        && Objects.equals(updateTime, that.updateTime)
+        && Objects.equals(createTime, that.createTime);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, configId, displayName, nodeCount, processingUnits, state, labels);
+    return Objects.hash(
+        id,
+        configId,
+        displayName,
+        nodeCount,
+        processingUnits,
+        autoscalingConfig,
+        state,
+        labels,
+        updateTime,
+        createTime);
   }
 
   com.google.spanner.admin.instance.v1.Instance toProto() {
@@ -279,6 +361,9 @@ public class InstanceInfo {
     }
     if (getInstanceConfigId() != null) {
       builder.setConfig(getInstanceConfigId().getName());
+    }
+    if (getAutoscalingConfig() != null) {
+      builder.setAutoscalingConfig(getAutoscalingConfig());
     }
     return builder.build();
   }

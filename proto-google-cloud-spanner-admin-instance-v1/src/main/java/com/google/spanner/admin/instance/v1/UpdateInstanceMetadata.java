@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,109 +44,6 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new UpdateInstanceMetadata();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private UpdateInstanceMetadata(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.spanner.admin.instance.v1.Instance.Builder subBuilder = null;
-              if (instance_ != null) {
-                subBuilder = instance_.toBuilder();
-              }
-              instance_ =
-                  input.readMessage(
-                      com.google.spanner.admin.instance.v1.Instance.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(instance_);
-                instance_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 18:
-            {
-              com.google.protobuf.Timestamp.Builder subBuilder = null;
-              if (startTime_ != null) {
-                subBuilder = startTime_.toBuilder();
-              }
-              startTime_ =
-                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(startTime_);
-                startTime_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 26:
-            {
-              com.google.protobuf.Timestamp.Builder subBuilder = null;
-              if (cancelTime_ != null) {
-                subBuilder = cancelTime_.toBuilder();
-              }
-              cancelTime_ =
-                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(cancelTime_);
-                cancelTime_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 34:
-            {
-              com.google.protobuf.Timestamp.Builder subBuilder = null;
-              if (endTime_ != null) {
-                subBuilder = endTime_.toBuilder();
-              }
-              endTime_ =
-                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(endTime_);
-                endTime_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -209,7 +106,9 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.InstanceOrBuilder getInstanceOrBuilder() {
-    return getInstance();
+    return instance_ == null
+        ? com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()
+        : instance_;
   }
 
   public static final int START_TIME_FIELD_NUMBER = 2;
@@ -218,7 +117,8 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+   * The time at which
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
    * request was received.
    * </pre>
    *
@@ -234,7 +134,8 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+   * The time at which
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
    * request was received.
    * </pre>
    *
@@ -250,7 +151,8 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
    *
    *
    * <pre>
-   * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+   * The time at which
+   * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
    * request was received.
    * </pre>
    *
@@ -258,7 +160,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getStartTimeOrBuilder() {
-    return getStartTime();
+    return startTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : startTime_;
   }
 
   public static final int CANCEL_TIME_FIELD_NUMBER = 3;
@@ -310,7 +212,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getCancelTimeOrBuilder() {
-    return getCancelTime();
+    return cancelTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : cancelTime_;
   }
 
   public static final int END_TIME_FIELD_NUMBER = 4;
@@ -356,7 +258,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getEndTimeOrBuilder() {
-    return getEndTime();
+    return endTime_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : endTime_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -385,7 +287,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     if (endTime_ != null) {
       output.writeMessage(4, getEndTime());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -406,7 +308,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     if (endTime_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(4, getEndTime());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -438,7 +340,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     if (hasEndTime()) {
       if (!getEndTime().equals(other.getEndTime())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -465,7 +367,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
       hash = (37 * hash) + END_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getEndTime().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -596,44 +498,34 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     }
 
     // Construct using com.google.spanner.admin.instance.v1.UpdateInstanceMetadata.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
-      if (instanceBuilder_ == null) {
-        instance_ = null;
-      } else {
-        instance_ = null;
+      bitField0_ = 0;
+      instance_ = null;
+      if (instanceBuilder_ != null) {
+        instanceBuilder_.dispose();
         instanceBuilder_ = null;
       }
-      if (startTimeBuilder_ == null) {
-        startTime_ = null;
-      } else {
-        startTime_ = null;
+      startTime_ = null;
+      if (startTimeBuilder_ != null) {
+        startTimeBuilder_.dispose();
         startTimeBuilder_ = null;
       }
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-      } else {
-        cancelTime_ = null;
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
-      if (endTimeBuilder_ == null) {
-        endTime_ = null;
-      } else {
-        endTime_ = null;
+      endTime_ = null;
+      if (endTimeBuilder_ != null) {
+        endTimeBuilder_.dispose();
         endTimeBuilder_ = null;
       }
       return this;
@@ -663,28 +555,27 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     public com.google.spanner.admin.instance.v1.UpdateInstanceMetadata buildPartial() {
       com.google.spanner.admin.instance.v1.UpdateInstanceMetadata result =
           new com.google.spanner.admin.instance.v1.UpdateInstanceMetadata(this);
-      if (instanceBuilder_ == null) {
-        result.instance_ = instance_;
-      } else {
-        result.instance_ = instanceBuilder_.build();
-      }
-      if (startTimeBuilder_ == null) {
-        result.startTime_ = startTime_;
-      } else {
-        result.startTime_ = startTimeBuilder_.build();
-      }
-      if (cancelTimeBuilder_ == null) {
-        result.cancelTime_ = cancelTime_;
-      } else {
-        result.cancelTime_ = cancelTimeBuilder_.build();
-      }
-      if (endTimeBuilder_ == null) {
-        result.endTime_ = endTime_;
-      } else {
-        result.endTime_ = endTimeBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.instance.v1.UpdateInstanceMetadata result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.instance_ = instanceBuilder_ == null ? instance_ : instanceBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.startTime_ = startTimeBuilder_ == null ? startTime_ : startTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.cancelTime_ = cancelTimeBuilder_ == null ? cancelTime_ : cancelTimeBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.endTime_ = endTimeBuilder_ == null ? endTime_ : endTimeBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -745,7 +636,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
       if (other.hasEndTime()) {
         mergeEndTime(other.getEndTime());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -760,20 +651,59 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.instance.v1.UpdateInstanceMetadata parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getInstanceFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getStartTimeFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getCancelTimeFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(getEndTimeFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.instance.v1.UpdateInstanceMetadata) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.spanner.admin.instance.v1.Instance instance_;
     private com.google.protobuf.SingleFieldBuilderV3<
@@ -793,7 +723,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * @return Whether the instance field is set.
      */
     public boolean hasInstance() {
-      return instanceBuilder_ != null || instance_ != null;
+      return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      *
@@ -830,11 +760,11 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         instance_ = value;
-        onChanged();
       } else {
         instanceBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -850,11 +780,11 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
         com.google.spanner.admin.instance.v1.Instance.Builder builderForValue) {
       if (instanceBuilder_ == null) {
         instance_ = builderForValue.build();
-        onChanged();
       } else {
         instanceBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -868,19 +798,18 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      */
     public Builder mergeInstance(com.google.spanner.admin.instance.v1.Instance value) {
       if (instanceBuilder_ == null) {
-        if (instance_ != null) {
-          instance_ =
-              com.google.spanner.admin.instance.v1.Instance.newBuilder(instance_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000001) != 0)
+            && instance_ != null
+            && instance_ != com.google.spanner.admin.instance.v1.Instance.getDefaultInstance()) {
+          getInstanceBuilder().mergeFrom(value);
         } else {
           instance_ = value;
         }
-        onChanged();
       } else {
         instanceBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000001;
+      onChanged();
       return this;
     }
     /**
@@ -893,14 +822,13 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * <code>.google.spanner.admin.instance.v1.Instance instance = 1;</code>
      */
     public Builder clearInstance() {
-      if (instanceBuilder_ == null) {
-        instance_ = null;
-        onChanged();
-      } else {
-        instance_ = null;
+      bitField0_ = (bitField0_ & ~0x00000001);
+      instance_ = null;
+      if (instanceBuilder_ != null) {
+        instanceBuilder_.dispose();
         instanceBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -913,7 +841,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * <code>.google.spanner.admin.instance.v1.Instance instance = 1;</code>
      */
     public com.google.spanner.admin.instance.v1.Instance.Builder getInstanceBuilder() {
-
+      bitField0_ |= 0x00000001;
       onChanged();
       return getInstanceFieldBuilder().getBuilder();
     }
@@ -971,7 +899,8 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
@@ -980,13 +909,14 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * @return Whether the startTime field is set.
      */
     public boolean hasStartTime() {
-      return startTimeBuilder_ != null || startTime_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
@@ -1005,7 +935,8 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
@@ -1017,18 +948,19 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         startTime_ = value;
-        onChanged();
       } else {
         startTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
@@ -1037,18 +969,19 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     public Builder setStartTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (startTimeBuilder_ == null) {
         startTime_ = builderForValue.build();
-        onChanged();
       } else {
         startTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
@@ -1056,52 +989,54 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      */
     public Builder mergeStartTime(com.google.protobuf.Timestamp value) {
       if (startTimeBuilder_ == null) {
-        if (startTime_ != null) {
-          startTime_ =
-              com.google.protobuf.Timestamp.newBuilder(startTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && startTime_ != null
+            && startTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getStartTimeBuilder().mergeFrom(value);
         } else {
           startTime_ = value;
         }
-        onChanged();
       } else {
         startTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp start_time = 2;</code>
      */
     public Builder clearStartTime() {
-      if (startTimeBuilder_ == null) {
-        startTime_ = null;
-        onChanged();
-      } else {
-        startTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      startTime_ = null;
+      if (startTimeBuilder_ != null) {
+        startTimeBuilder_.dispose();
         startTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp start_time = 2;</code>
      */
     public com.google.protobuf.Timestamp.Builder getStartTimeBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getStartTimeFieldBuilder().getBuilder();
     }
@@ -1109,7 +1044,8 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
@@ -1126,7 +1062,8 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      *
      *
      * <pre>
-     * The time at which [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
+     * The time at which
+     * [UpdateInstance][google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance]
      * request was received.
      * </pre>
      *
@@ -1169,7 +1106,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * @return Whether the cancelTime field is set.
      */
     public boolean hasCancelTime() {
-      return cancelTimeBuilder_ != null || cancelTime_ != null;
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      *
@@ -1210,11 +1147,11 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         cancelTime_ = value;
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1231,11 +1168,11 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     public Builder setCancelTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (cancelTimeBuilder_ == null) {
         cancelTime_ = builderForValue.build();
-        onChanged();
       } else {
         cancelTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1251,17 +1188,18 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      */
     public Builder mergeCancelTime(com.google.protobuf.Timestamp value) {
       if (cancelTimeBuilder_ == null) {
-        if (cancelTime_ != null) {
-          cancelTime_ =
-              com.google.protobuf.Timestamp.newBuilder(cancelTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000004) != 0)
+            && cancelTime_ != null
+            && cancelTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getCancelTimeBuilder().mergeFrom(value);
         } else {
           cancelTime_ = value;
         }
-        onChanged();
       } else {
         cancelTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000004;
+      onChanged();
       return this;
     }
     /**
@@ -1276,14 +1214,13 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * <code>.google.protobuf.Timestamp cancel_time = 3;</code>
      */
     public Builder clearCancelTime() {
-      if (cancelTimeBuilder_ == null) {
-        cancelTime_ = null;
-        onChanged();
-      } else {
-        cancelTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000004);
+      cancelTime_ = null;
+      if (cancelTimeBuilder_ != null) {
+        cancelTimeBuilder_.dispose();
         cancelTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1298,7 +1235,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * <code>.google.protobuf.Timestamp cancel_time = 3;</code>
      */
     public com.google.protobuf.Timestamp.Builder getCancelTimeBuilder() {
-
+      bitField0_ |= 0x00000004;
       onChanged();
       return getCancelTimeFieldBuilder().getBuilder();
     }
@@ -1368,7 +1305,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * @return Whether the endTime field is set.
      */
     public boolean hasEndTime() {
-      return endTimeBuilder_ != null || endTime_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1403,11 +1340,11 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
           throw new NullPointerException();
         }
         endTime_ = value;
-        onChanged();
       } else {
         endTimeBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1422,11 +1359,11 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
     public Builder setEndTime(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (endTimeBuilder_ == null) {
         endTime_ = builderForValue.build();
-        onChanged();
       } else {
         endTimeBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1440,17 +1377,18 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      */
     public Builder mergeEndTime(com.google.protobuf.Timestamp value) {
       if (endTimeBuilder_ == null) {
-        if (endTime_ != null) {
-          endTime_ =
-              com.google.protobuf.Timestamp.newBuilder(endTime_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && endTime_ != null
+            && endTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getEndTimeBuilder().mergeFrom(value);
         } else {
           endTime_ = value;
         }
-        onChanged();
       } else {
         endTimeBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1463,14 +1401,13 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * <code>.google.protobuf.Timestamp end_time = 4;</code>
      */
     public Builder clearEndTime() {
-      if (endTimeBuilder_ == null) {
-        endTime_ = null;
-        onChanged();
-      } else {
-        endTime_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      endTime_ = null;
+      if (endTimeBuilder_ != null) {
+        endTimeBuilder_.dispose();
         endTimeBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1483,7 +1420,7 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
      * <code>.google.protobuf.Timestamp end_time = 4;</code>
      */
     public com.google.protobuf.Timestamp.Builder getEndTimeBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getEndTimeFieldBuilder().getBuilder();
     }
@@ -1561,7 +1498,18 @@ public final class UpdateInstanceMetadata extends com.google.protobuf.GeneratedM
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UpdateInstanceMetadata(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

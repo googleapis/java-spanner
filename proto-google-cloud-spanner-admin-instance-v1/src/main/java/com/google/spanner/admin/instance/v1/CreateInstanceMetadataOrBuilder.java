@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,8 @@ public interface CreateInstanceMetadataOrBuilder
    *
    * <pre>
    * The time at which the
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance] request was
-   * received.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance]
+   * request was received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp start_time = 2;</code>
@@ -77,8 +77,8 @@ public interface CreateInstanceMetadataOrBuilder
    *
    * <pre>
    * The time at which the
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance] request was
-   * received.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance]
+   * request was received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp start_time = 2;</code>
@@ -91,8 +91,8 @@ public interface CreateInstanceMetadataOrBuilder
    *
    * <pre>
    * The time at which the
-   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance] request was
-   * received.
+   * [CreateInstance][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance]
+   * request was received.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp start_time = 2;</code>

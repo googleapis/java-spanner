@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.util.Locale;
 import java.util.Objects;
 import org.threeten.bp.Duration;
 
@@ -49,8 +51,22 @@ public class SessionPoolOptions {
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
   private final ActionOnSessionLeak actionOnSessionLeak;
-  private final long initialWaitForSessionTimeoutMillis;
+  private final boolean trackStackTraceOfSessionCheckout;
+  private final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions;
+
+  /**
+   * Use {@link #acquireSessionTimeout} instead to specify the total duration to wait while
+   * acquiring session for a transaction.
+   */
+  @Deprecated private final long initialWaitForSessionTimeoutMillis;
+
   private final boolean autoDetectDialect;
+  private final Duration waitForMinSessions;
+  private final Duration acquireSessionTimeout;
+  private final Position releaseToPosition;
+
+  /** Property for allowing mocking of session maintenance clock. */
+  private final Clock poolMaintainerClock;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -64,11 +80,17 @@ public class SessionPoolOptions {
     this.actionOnExhaustion = builder.actionOnExhaustion;
     this.actionOnSessionNotFound = builder.actionOnSessionNotFound;
     this.actionOnSessionLeak = builder.actionOnSessionLeak;
+    this.trackStackTraceOfSessionCheckout = builder.trackStackTraceOfSessionCheckout;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
     this.loopFrequency = builder.loopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
+    this.waitForMinSessions = builder.waitForMinSessions;
+    this.acquireSessionTimeout = builder.acquireSessionTimeout;
+    this.releaseToPosition = builder.releaseToPosition;
+    this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
+    this.poolMaintainerClock = builder.poolMaintainerClock;
   }
 
   @Override
@@ -86,11 +108,19 @@ public class SessionPoolOptions {
         && Objects.equals(this.actionOnSessionNotFound, other.actionOnSessionNotFound)
         && Objects.equals(this.actionOnSessionLeak, other.actionOnSessionLeak)
         && Objects.equals(
+            this.trackStackTraceOfSessionCheckout, other.trackStackTraceOfSessionCheckout)
+        && Objects.equals(
             this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
         && Objects.equals(this.loopFrequency, other.loopFrequency)
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
-        && Objects.equals(this.autoDetectDialect, other.autoDetectDialect);
+        && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
+        && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
+        && Objects.equals(this.acquireSessionTimeout, other.acquireSessionTimeout)
+        && Objects.equals(this.releaseToPosition, other.releaseToPosition)
+        && Objects.equals(
+            this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
+        && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
   }
 
   @Override
@@ -104,11 +134,17 @@ public class SessionPoolOptions {
         this.actionOnExhaustion,
         this.actionOnSessionNotFound,
         this.actionOnSessionLeak,
+        this.trackStackTraceOfSessionCheckout,
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
         this.keepAliveIntervalMinutes,
         this.removeInactiveSessionAfter,
-        this.autoDetectDialect);
+        this.autoDetectDialect,
+        this.waitForMinSessions,
+        this.acquireSessionTimeout,
+        this.releaseToPosition,
+        this.inactiveTransactionRemovalOptions,
+        this.poolMaintainerClock);
   }
 
   public Builder toBuilder() {
@@ -171,6 +207,25 @@ public class SessionPoolOptions {
     return autoDetectDialect;
   }
 
+  InactiveTransactionRemovalOptions getInactiveTransactionRemovalOptions() {
+    return inactiveTransactionRemovalOptions;
+  }
+
+  boolean closeInactiveTransactions() {
+    return inactiveTransactionRemovalOptions.actionOnInactiveTransaction
+        == ActionOnInactiveTransaction.CLOSE;
+  }
+
+  boolean warnAndCloseInactiveTransactions() {
+    return inactiveTransactionRemovalOptions.actionOnInactiveTransaction
+        == ActionOnInactiveTransaction.WARN_AND_CLOSE;
+  }
+
+  boolean warnInactiveTransactions() {
+    return inactiveTransactionRemovalOptions.actionOnInactiveTransaction
+        == ActionOnInactiveTransaction.WARN;
+  }
+
   @VisibleForTesting
   long getInitialWaitForSessionTimeoutMillis() {
     return initialWaitForSessionTimeoutMillis;
@@ -184,6 +239,28 @@ public class SessionPoolOptions {
   @VisibleForTesting
   boolean isFailOnSessionLeak() {
     return actionOnSessionLeak == ActionOnSessionLeak.FAIL;
+  }
+
+  @VisibleForTesting
+  Clock getPoolMaintainerClock() {
+    return poolMaintainerClock;
+  }
+
+  public boolean isTrackStackTraceOfSessionCheckout() {
+    return trackStackTraceOfSessionCheckout;
+  }
+
+  Duration getWaitForMinSessions() {
+    return waitForMinSessions;
+  }
+
+  @VisibleForTesting
+  Duration getAcquireSessionTimeout() {
+    return acquireSessionTimeout;
+  }
+
+  Position getReleaseToPosition() {
+    return releaseToPosition;
   }
 
   public static Builder newBuilder() {
@@ -203,6 +280,135 @@ public class SessionPoolOptions {
   private enum ActionOnSessionLeak {
     WARN,
     FAIL
+  }
+
+  @VisibleForTesting
+  enum ActionOnInactiveTransaction {
+    WARN,
+    WARN_AND_CLOSE,
+    CLOSE
+  }
+
+  /** Configuration options for task to clean up inactive transactions. */
+  static class InactiveTransactionRemovalOptions {
+
+    /** Option to set the behaviour when there are inactive transactions. */
+    private ActionOnInactiveTransaction actionOnInactiveTransaction;
+
+    /**
+     * Frequency for closing inactive transactions. Between two consecutive task executions, it's
+     * ensured that the duration is greater or equal to this duration.
+     */
+    private Duration executionFrequency;
+
+    /**
+     * Long-running transactions will be cleaned up if utilisation is greater than the below value.
+     */
+    private double usedSessionsRatioThreshold;
+
+    /**
+     * A transaction is considered to be idle if it has not been used for a duration greater than
+     * the below value.
+     */
+    private Duration idleTimeThreshold;
+
+    InactiveTransactionRemovalOptions(final Builder builder) {
+      this.actionOnInactiveTransaction = builder.actionOnInactiveTransaction;
+      this.idleTimeThreshold = builder.idleTimeThreshold;
+      this.executionFrequency = builder.executionFrequency;
+      this.usedSessionsRatioThreshold = builder.usedSessionsRatioThreshold;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof InactiveTransactionRemovalOptions)) {
+        return false;
+      }
+      InactiveTransactionRemovalOptions other = (InactiveTransactionRemovalOptions) o;
+      return Objects.equals(this.actionOnInactiveTransaction, other.actionOnInactiveTransaction)
+          && Objects.equals(this.idleTimeThreshold, other.idleTimeThreshold)
+          && Objects.equals(this.executionFrequency, other.executionFrequency)
+          && Objects.equals(this.usedSessionsRatioThreshold, other.usedSessionsRatioThreshold);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          this.actionOnInactiveTransaction,
+          this.idleTimeThreshold,
+          this.executionFrequency,
+          this.usedSessionsRatioThreshold);
+    }
+
+    Duration getExecutionFrequency() {
+      return executionFrequency;
+    }
+
+    double getUsedSessionsRatioThreshold() {
+      return usedSessionsRatioThreshold;
+    }
+
+    Duration getIdleTimeThreshold() {
+      return idleTimeThreshold;
+    }
+
+    static InactiveTransactionRemovalOptions.Builder newBuilder() {
+      return new Builder();
+    }
+
+    static class Builder {
+      private ActionOnInactiveTransaction actionOnInactiveTransaction =
+          ActionOnInactiveTransaction.WARN;
+      private Duration executionFrequency = Duration.ofMinutes(2);
+      private double usedSessionsRatioThreshold = 0.95;
+      private Duration idleTimeThreshold = Duration.ofMinutes(60L);
+
+      public Builder() {}
+
+      InactiveTransactionRemovalOptions build() {
+        validate();
+        return new InactiveTransactionRemovalOptions(this);
+      }
+
+      private void validate() {
+        Preconditions.checkArgument(
+            executionFrequency.toMillis() > 0,
+            "Execution frequency %s should be positive",
+            executionFrequency.toMillis());
+        Preconditions.checkArgument(
+            idleTimeThreshold.toMillis() > 0,
+            "Idle Time Threshold duration %s should be positive",
+            idleTimeThreshold.toMillis());
+      }
+
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setActionOnInactiveTransaction(
+          final ActionOnInactiveTransaction actionOnInactiveTransaction) {
+        this.actionOnInactiveTransaction = actionOnInactiveTransaction;
+        return this;
+      }
+
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setExecutionFrequency(
+          final Duration executionFrequency) {
+        this.executionFrequency = executionFrequency;
+        return this;
+      }
+
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setUsedSessionsRatioThreshold(
+          final double usedSessionsRatioThreshold) {
+        this.usedSessionsRatioThreshold = usedSessionsRatioThreshold;
+        return this;
+      }
+
+      @VisibleForTesting
+      InactiveTransactionRemovalOptions.Builder setIdleTimeThreshold(
+          final Duration idleTimeThreshold) {
+        this.idleTimeThreshold = idleTimeThreshold;
+        return this;
+      }
+    }
   }
 
   /** Builder for creating SessionPoolOptions. */
@@ -225,10 +431,41 @@ public class SessionPoolOptions {
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
     private ActionOnSessionLeak actionOnSessionLeak = ActionOnSessionLeak.WARN;
+    /**
+     * Capture the call stack of the thread that checked out a session of the pool. This will
+     * pre-create a {@link com.google.cloud.spanner.SessionPool.LeakedSessionException} already when
+     * a session is checked out. This can be disabled by users, for example if their monitoring
+     * systems log the pre-created exception. If disabled, the {@link
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException} will only be created when an
+     * actual session leak is detected. The stack trace of the exception will in that case not
+     * contain the call stack of when the session was checked out.
+     */
+    private boolean trackStackTraceOfSessionCheckout = true;
+
+    private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
+    private Duration waitForMinSessions = Duration.ZERO;
+    private Duration acquireSessionTimeout = Duration.ofSeconds(60);
+    private Position releaseToPosition = getReleaseToPositionFromSystemProperty();
+
+    private Clock poolMaintainerClock;
+
+    private static Position getReleaseToPositionFromSystemProperty() {
+      // NOTE: This System property is a beta feature. Support for it can be removed in the future.
+      String key = "com.google.cloud.spanner.session_pool_release_to_position";
+      if (System.getProperties().containsKey(key)) {
+        try {
+          return Position.valueOf(System.getProperty(key).toUpperCase(Locale.ENGLISH));
+        } catch (Throwable ignore) {
+          // fallthrough and return the default.
+        }
+      }
+      return Position.FIRST;
+    }
 
     public Builder() {}
 
@@ -243,10 +480,15 @@ public class SessionPoolOptions {
       this.initialWaitForSessionTimeoutMillis = options.initialWaitForSessionTimeoutMillis;
       this.actionOnSessionNotFound = options.actionOnSessionNotFound;
       this.actionOnSessionLeak = options.actionOnSessionLeak;
+      this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
       this.loopFrequency = options.loopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
+      this.waitForMinSessions = options.waitForMinSessions;
+      this.acquireSessionTimeout = options.acquireSessionTimeout;
+      this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
+      this.poolMaintainerClock = options.poolMaintainerClock;
     }
 
     /**
@@ -303,6 +545,12 @@ public class SessionPoolOptions {
       return this;
     }
 
+    Builder setInactiveTransactionRemovalOptions(
+        InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions) {
+      this.inactiveTransactionRemovalOptions = inactiveTransactionRemovalOptions;
+      return this;
+    }
+
     public Builder setRemoveInactiveSessionAfter(Duration duration) {
       this.removeInactiveSessionAfter = duration;
       return this;
@@ -331,9 +579,77 @@ public class SessionPoolOptions {
     /**
      * If all sessions are in use and there is no more room for creating new sessions, block for a
      * session to become available. Default behavior is same.
+     *
+     * <p>By default the requests are blocked for 60s and will fail with a `SpannerException` with
+     * error code `ResourceExhausted` if this timeout is exceeded. If you wish to block for a
+     * different period use the option {@link Builder#setAcquireSessionTimeout(Duration)} ()}
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
+      return this;
+    }
+
+    /**
+     * If there are inactive transactions, log warning messages with the origin of such transactions
+     * to aid debugging. A transaction is classified as inactive if it executes for more than a
+     * system defined duration.
+     *
+     * <p>This option won't change the state of the transactions. It only generates warning logs
+     * that can be used for debugging.
+     *
+     * @return this builder for chaining
+     */
+    public Builder setWarnIfInactiveTransactions() {
+      this.inactiveTransactionRemovalOptions =
+          InactiveTransactionRemovalOptions.newBuilder()
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN)
+              .build();
+      return this;
+    }
+
+    /**
+     * If there are inactive transactions, release the resources consumed by such transactions. A
+     * transaction is classified as inactive if it executes for more than a system defined duration.
+     * The option would also produce necessary warning logs through which it can be debugged as to
+     * what resources were released due to this option.
+     *
+     * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
+     * warnings about long-running transactions.
+     *
+     * @return this builder for chaining
+     */
+    public Builder setWarnAndCloseIfInactiveTransactions() {
+      this.inactiveTransactionRemovalOptions =
+          InactiveTransactionRemovalOptions.newBuilder()
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
+              .build();
+      return this;
+    }
+
+    /**
+     * If there are inactive transactions, release the resources consumed by such transactions. A
+     * transaction is classified as inactive if it executes for more than a system defined duration.
+     *
+     * <p>Use the option {@link Builder#setWarnIfInactiveTransactions()} if you only want to log
+     * warnings about long-running sessions.
+     *
+     * <p>Use the option {@link Builder#setWarnAndCloseIfInactiveTransactions()} if you want to log
+     * warnings along with closing the long-running transactions.
+     *
+     * @return this builder for chaining
+     */
+    @VisibleForTesting
+    Builder setCloseIfInactiveTransactions() {
+      this.inactiveTransactionRemovalOptions =
+          InactiveTransactionRemovalOptions.newBuilder()
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.CLOSE)
+              .build();
+      return this;
+    }
+
+    @VisibleForTesting
+    Builder setPoolMaintainerClock(Clock poolMaintainerClock) {
+      this.poolMaintainerClock = poolMaintainerClock;
       return this;
     }
 
@@ -383,6 +699,21 @@ public class SessionPoolOptions {
     }
 
     /**
+     * Sets whether the session pool should capture the call stack trace when a session is checked
+     * out of the pool. This will internally prepare a {@link
+     * com.google.cloud.spanner.SessionPool.LeakedSessionException} that will only be thrown if the
+     * session is actually leaked. This makes it easier to debug session leaks, as the stack trace
+     * of the thread that checked out the session will be available in the exception.
+     *
+     * <p>Some monitoring tools might log these exceptions even though they are not thrown. This
+     * option can be used to suppress the creation and logging of these exceptions.
+     */
+    public Builder setTrackStackTraceOfSessionCheckout(boolean trackStackTraceOfSessionCheckout) {
+      this.trackStackTraceOfSessionCheckout = trackStackTraceOfSessionCheckout;
+      return this;
+    }
+
+    /**
      * @deprecated This configuration value is no longer in use. The session pool does not prepare
      *     any sessions for read/write transactions. Instead, a transaction will automatically be
      *     started by the first statement that is executed by a transaction by including a
@@ -391,6 +722,45 @@ public class SessionPoolOptions {
      */
     public Builder setWriteSessionsFraction(float writeSessionsFraction) {
       this.writeSessionsFraction = writeSessionsFraction;
+      return this;
+    }
+
+    /**
+     * If greater than zero, waits for the session pool to have at least {@link
+     * SessionPoolOptions#minSessions} before returning the database client to the caller. Note that
+     * this check is only done during the session pool creation. This is usually done asynchronously
+     * in order to provide the client back to the caller as soon as possible. We don't recommend
+     * using this option unless you are executing benchmarks and want to guarantee the session pool
+     * has min sessions in the pool before continuing.
+     *
+     * <p>Defaults to zero (initialization is done asynchronously).
+     */
+    public Builder setWaitForMinSessions(Duration waitForMinSessions) {
+      this.waitForMinSessions = waitForMinSessions;
+      return this;
+    }
+
+    /**
+     * If greater than zero, we wait for said duration when no sessions are available in the {@link
+     * SessionPool}. The default is a 60s timeout. Set the value to null to disable the timeout.
+     */
+    public Builder setAcquireSessionTimeout(Duration acquireSessionTimeout) {
+      try {
+        if (acquireSessionTimeout != null) {
+          Preconditions.checkArgument(
+              acquireSessionTimeout.toMillis() > 0,
+              "acquireSessionTimeout should be greater than 0 ns");
+        }
+      } catch (ArithmeticException ex) {
+        throw new IllegalArgumentException(
+            "acquireSessionTimeout in millis should be lesser than Long.MAX_VALUE");
+      }
+      this.acquireSessionTimeout = acquireSessionTimeout;
+      return this;
+    }
+
+    Builder setReleaseToPosition(Position releaseToPosition) {
+      this.releaseToPosition = Preconditions.checkNotNull(releaseToPosition);
       return this;
     }
 

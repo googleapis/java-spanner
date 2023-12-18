@@ -5,25 +5,46 @@ jobs:
   checkstyle:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v1
         with:
           java-version: 8
       - name: Run checkstyle
         run: mvn -P lint --quiet --batch-mode checkstyle:check
         working-directory: samples/snippets
+  compile-java8:
+    name: "compile (8)"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v3
+      with:
+        # Java 11 to generate class file targeting  Java 8
+        java-version: 11
+        distribution: temurin
+    - name: Compile Spanner
+      run: mvn clean install -Dclirr.skip=true
+    - uses: actions/setup-java@v3
+      with:
+        java-version: 8
+        distribution: temurin
+    - name: Compile samples
+      run: mvn compile
+      working-directory: samples
+
   compile:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11]
+        java: [11, 17]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v3
       with:
         java-version: ${{matrix.java}}
+        distribution: temurin
     - name: Compile Spanner
-      run: mvn clean install
+      run: mvn clean install -Dclirr.skip=true
     - name: Compile samples
       run: mvn compile
       working-directory: samples

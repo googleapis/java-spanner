@@ -18,7 +18,9 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -27,6 +29,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Identity;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -49,9 +52,12 @@ import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
+import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -67,6 +73,7 @@ import org.mockito.Mock;
 public class DatabaseAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";
+  private static final String INSTANCE_ID_2 = "my-instance-2";
   private static final String INSTANCE_NAME = "projects/my-project/instances/my-instance";
   private static final String DB_ID = "my-db";
   private static final String DB_NAME = "projects/my-project/instances/my-instance/databases/my-db";
@@ -74,6 +81,8 @@ public class DatabaseAdminClientImplTest {
       "projects/my-project/instances/my-instance/databases/my-db2";
   private static final String BK_ID = "my-bk";
   private static final String SOURCE_BK = "my-source-bk";
+  private static final String DB_ROLE = "dummy-role";
+  private static final String DB_ROLE2 = "dummy-role-2";
   private static final String BK_NAME = "projects/my-project/instances/my-instance/backups/my-bk";
   private static final String BK_NAME2 = "projects/my-project/instances/my-instance/backups/my-bk2";
   private static final Timestamp EARLIEST_VERSION_TIME = Timestamp.now();
@@ -100,6 +109,14 @@ public class DatabaseAdminClientImplTest {
         .setVersionRetentionPeriod(VERSION_RETENTION_PERIOD)
         .setDatabaseDialect(DIALECT)
         .build();
+  }
+
+  private DatabaseRole getDatabaseRoleProto() {
+    return DatabaseRole.newBuilder().setName(DB_ROLE).build();
+  }
+
+  private DatabaseRole getAnotherDatabaseRoleProto() {
+    return DatabaseRole.newBuilder().setName(DB_ROLE2).build();
   }
 
   private Database getEncryptedDatabaseProto() {
@@ -235,6 +252,24 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
+  public void updateDatabase() throws Exception {
+    com.google.cloud.spanner.Database database =
+        client.newDatabaseBuilder(DatabaseId.of(DB_NAME)).enableDropProtection().build();
+    Database databaseProto = database.toProto();
+    OperationFuture<Database, UpdateDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "updateDatabase", databaseProto, UpdateDatabaseMetadata.getDefaultInstance());
+    when(rpc.updateDatabase(
+            databaseProto, DatabaseField.toFieldMask(DatabaseField.DROP_PROTECTION)))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, UpdateDatabaseMetadata> op =
+        client.updateDatabase(database, DatabaseField.DROP_PROTECTION);
+    assertTrue(op.isDone());
+    assertEquals(op.get().getId().getName(), DB_NAME);
+    assertTrue(op.get().isDropProtectionEnabled());
+  }
+
+  @Test
   public void dropDatabase() {
     client.dropDatabase(INSTANCE_ID, DB_ID);
     verify(rpc).dropDatabase(DB_NAME);
@@ -294,8 +329,59 @@ public class DatabaseAdminClientImplTest {
   }
 
   @Test
+  public void listDatabaseRoles() {
+    String pageToken = "token";
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseRoleProto()), pageToken));
+    when(rpc.listDatabaseRoles(DB_NAME, 1, pageToken))
+        .thenReturn(new Paginated<>(ImmutableList.of(getAnotherDatabaseRoleProto()), ""));
+
+    ArrayList<com.google.cloud.spanner.DatabaseRole> databaseRoles =
+        Lists.newArrayList(
+            client.listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1)).iterateAll());
+    assertThat(databaseRoles.get(0).getName()).isEqualTo(DB_ROLE);
+    assertThat(databaseRoles.get(1).getName()).isEqualTo(DB_ROLE2);
+    assertThat(databaseRoles.size()).isEqualTo(2);
+  }
+
+  @Test
+  public void listDatabaseRolesError() {
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () -> client.listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1)));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains("with pageToken <null>");
+  }
+
+  @Test
+  public void listDatabaseRolesErrorWithToken() {
+    String pageToken = "token";
+    when(rpc.listDatabaseRoles(DB_NAME, 1, null))
+        .thenReturn(new Paginated<>(ImmutableList.of(getDatabaseRoleProto()), pageToken));
+    when(rpc.listDatabaseRoles(DB_NAME, 1, pageToken))
+        .thenThrow(
+            SpannerExceptionFactory.newSpannerException(ErrorCode.INVALID_ARGUMENT, "Test error"));
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                Lists.newArrayList(
+                    client
+                        .listDatabaseRoles(INSTANCE_ID, DB_ID, Options.pageSize(1))
+                        .iterateAll()));
+    assertThat(e.getMessage()).contains(INSTANCE_NAME);
+    // Assert that the call was done without a page token.
+    assertThat(e.getMessage()).contains(String.format("with pageToken %s", pageToken));
+  }
+
+  @Test
   public void getDatabaseIAMPolicy() {
-    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME))
+    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME, null))
         .thenReturn(
             Policy.newBuilder()
                 .addBindings(
@@ -304,11 +390,11 @@ public class DatabaseAdminClientImplTest {
                         .setRole("roles/viewer")
                         .build())
                 .build());
-    com.google.cloud.Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID);
+    com.google.cloud.Policy policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 0);
     assertThat(policy.getBindings())
         .containsExactly(Role.viewer(), Sets.newHashSet(Identity.user("joe@example.com")));
 
-    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME))
+    when(rpc.getDatabaseAdminIAMPolicy(DB_NAME, null))
         .thenReturn(
             Policy.newBuilder()
                 .addBindings(
@@ -317,7 +403,7 @@ public class DatabaseAdminClientImplTest {
                         .setRole("roles/viewer")
                         .build())
                 .build());
-    policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID);
+    policy = client.getDatabaseIAMPolicy(INSTANCE_ID, DB_ID, 0);
     assertThat(policy.getBindings())
         .containsExactly(
             Role.viewer(),
@@ -493,6 +579,41 @@ public class DatabaseAdminClientImplTest {
     final com.google.cloud.spanner.Backup requestBackup =
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+    BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
+
+    when(rpc.copyBackup(sourceBackupId, requestBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(sourceBackupId, requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void copyBackupWithBackupObject_onDifferentInstances()
+      throws ExecutionException, InterruptedException {
+    Backup testProto =
+        Backup.newBuilder()
+            .setName(BK_NAME)
+            .setDatabase("projects/my-project/instances/my-instance-2/databases/my-db")
+            .setState(Backup.State.READY)
+            .build();
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", testProto, CopyBackupMetadata.getDefaultInstance());
+    final Timestamp expireTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final Timestamp versionTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID_2, BK_ID))
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
             .build();

@@ -66,6 +66,7 @@ import java.util.concurrent.TimeUnit;
  * Example code for using the Cloud Spanner PostgreSQL interface.
  */
 public class PgSpannerSample {
+  // [START spanner_postgresql_insert_data]
   static final List<Singer> SINGERS =
       Arrays.asList(
           new Singer(1, "Marc", "Richards"),
@@ -80,6 +81,7 @@ public class PgSpannerSample {
           new Album(2, 1, "Green"),
           new Album(2, 2, "Forever Hold Your Peace"),
           new Album(2, 3, "Terrified"));
+  // [END spanner_postgresql_insert_data]
 
   /** Class to contain performance sample data. */
   static class Performance {
@@ -201,6 +203,7 @@ public class PgSpannerSample {
       // Initiate the request which returns an OperationFuture.
       Database db = op.get();
       System.out.println("Created database [" + db.getId() + "]");
+      createTableUsingDdl(dbAdminClient, id);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -652,6 +655,7 @@ public class PgSpannerSample {
   // [END spanner_postgresql_dml_getting_started_update]
 
   // [START spanner_postgresql_create_table_using_ddl]
+  // [START spanner_postgresql_create_database]
   static void createTableUsingDdl(DatabaseAdminClient dbAdminClient, DatabaseId id) {
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         dbAdminClient.updateDatabaseDdl(
@@ -663,6 +667,8 @@ public class PgSpannerSample {
                     + "  FirstName  character varying(1024),"
                     + "  LastName   character varying(1024),"
                     + "  SingerInfo bytea,"
+                    + "  FullName character varying(2048) GENERATED "
+                    + "  ALWAYS AS (FirstName || ' ' || LastName) STORED,"
                     + "  PRIMARY KEY (SingerId)"
                     + ")",
                 "CREATE TABLE Albums ("
@@ -685,6 +691,7 @@ public class PgSpannerSample {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
+  // [END spanner_postgresql_create_database]
   // [END spanner_postgresql_create_table_using_ddl]
 
   // [START spanner_postgresql_read_stale_data]
@@ -1319,7 +1326,7 @@ public class PgSpannerSample {
       String command,
       DatabaseId database) {
     switch (command) {
-      case "createpgdatabase":
+      case "createdatabase":
         createPostgreSqlDatabase(dbAdminClient, database);
         break;
       case "write":
@@ -1467,7 +1474,7 @@ public class PgSpannerSample {
     System.err.println("    PgSpannerExample <command> <instance_id> <database_id>");
     System.err.println();
     System.err.println("Examples:");
-    System.err.println("    PgSpannerExample createpgdatabase my-instance example-db");
+    System.err.println("    PgSpannerExample createdatabase my-instance example-db");
     System.err.println("    PgSpannerExample write my-instance example-db");
     System.err.println("    PgSpannerExample delete my-instance example-db");
     System.err.println("    PgSpannerExample query my-instance example-db");

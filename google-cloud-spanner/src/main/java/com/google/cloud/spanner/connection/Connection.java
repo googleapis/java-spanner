@@ -29,6 +29,8 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
@@ -37,7 +39,9 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ResultSetStats;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -562,6 +566,29 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets whether this connection should delay the actual start of a read/write transaction until
+   * the first write operation is observed on that transaction. All read operations that are
+   * executed before the first write operation in the transaction will be executed as if the
+   * connection was in auto-commit mode. This can reduce locking, especially for transactions that
+   * execute a large number of reads before any writes, at the expense of a lower transaction
+   * isolation.
+   *
+   * <p>NOTE: This will make read/write transactions non-serializable.
+   */
+  default void setDelayTransactionStartUntilFirstWrite(
+      boolean delayTransactionStartUntilFirstWrite) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * @return true if this connection delays the actual start of a read/write transaction until the
+   *     first write operation on that transaction.
+   */
+  default boolean isDelayTransactionStartUntilFirstWrite() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Commits the current transaction of this connection. All mutations that have been buffered
    * during the current transaction will be written to the database.
    *
@@ -711,6 +738,61 @@ public interface Connection extends AutoCloseable {
    */
   ApiFuture<Void> rollbackAsync();
 
+  /** Returns the current savepoint support for this connection. */
+  SavepointSupport getSavepointSupport();
+
+  /** Sets how savepoints should be supported on this connection. */
+  void setSavepointSupport(SavepointSupport savepointSupport);
+
+  /**
+   * Creates a savepoint with the given name.
+   *
+   * <p>The uniqueness constraints on a savepoint name depends on the database dialect that is used:
+   *
+   * <ul>
+   *   <li>{@link Dialect#GOOGLE_STANDARD_SQL} requires that savepoint names are unique within a
+   *       transaction. The name of a savepoint that has been released or destroyed because the
+   *       transaction has rolled back to a savepoint that was defined before that savepoint can be
+   *       re-used within the transaction.
+   *   <li>{@link Dialect#POSTGRESQL} follows the rules for savepoint names in PostgreSQL. This
+   *       means that multiple savepoints in one transaction can have the same name, but only the
+   *       last savepoint with a given name is visible. See <a
+   *       href="https://www.postgresql.org/docs/current/sql-savepoint.html">PostgreSQL savepoint
+   *       documentation</a> for more information.
+   * </ul>
+   *
+   * @param name the name of the savepoint to create
+   * @throws SpannerException if a savepoint with the same name already exists and the dialect that
+   *     is used is {@link Dialect#GOOGLE_STANDARD_SQL}
+   * @throws SpannerException if there is no transaction on this connection
+   * @throws SpannerException if internal retries have been disabled for this connection
+   */
+  void savepoint(String name);
+
+  /**
+   * Releases the savepoint with the given name. The savepoint and all later savepoints will be
+   * removed from the current transaction and can no longer be used.
+   *
+   * @param name the name of the savepoint to release
+   * @throws SpannerException if no savepoint with the given name exists
+   */
+  void releaseSavepoint(String name);
+
+  /**
+   * Rolls back to the given savepoint. Rolling back to a savepoint undoes all changes and releases
+   * all internal locks that have been taken by the transaction after the savepoint. Rolling back to
+   * a savepoint does not remove the savepoint from the transaction, and it is possible to roll back
+   * to the same savepoint multiple times. All savepoints that have been defined after the given
+   * savepoint are removed from the transaction.
+   *
+   * @param name the name of the savepoint to roll back to.
+   * @throws SpannerException if no savepoint with the given name exists.
+   * @throws AbortedDueToConcurrentModificationException if rolling back to the savepoint failed
+   *     because another transaction has modified the data that has been read or modified by this
+   *     transaction
+   */
+  void rollbackToSavepoint(String name);
+
   /**
    * @return <code>true</code> if this connection has a transaction (that has not necessarily
    *     started). This method will only return false when the {@link Connection} is in autocommit
@@ -855,8 +937,8 @@ public interface Connection extends AutoCloseable {
    * state. The returned value depends on the type of statement:
    *
    * <ul>
-   *   <li>Queries will return a {@link ResultSet}
-   *   <li>DML statements will return an update count
+   *   <li>Queries and DML statements with returning clause will return a {@link ResultSet}.
+   *   <li>Simple DML statements will return an update count
    *   <li>DDL statements will return a {@link ResultType#NO_RESULT}
    *   <li>Connection and transaction statements (SET AUTOCOMMIT=TRUE|FALSE, SHOW AUTOCOMMIT, SET
    *       TRANSACTION READ ONLY, etc) will return either a {@link ResultSet} or {@link
@@ -870,12 +952,41 @@ public interface Connection extends AutoCloseable {
 
   /**
    * Executes the given statement if allowed in the current {@link TransactionMode} and connection
+   * state, and if the result that would be returned is in the set of allowed result types. The
+   * statement will not be sent to Cloud Spanner if the result type would not be allowed. This
+   * method can be used by drivers that must limit the type of statements that are allowed for a
+   * given method, e.g. for the {@link java.sql.Statement#executeQuery(String)} and {@link
+   * java.sql.Statement#executeUpdate(String)} methods.
+   *
+   * <p>The returned value depends on the type of statement:
+   *
+   * <ul>
+   *   <li>Queries and DML statements with returning clause will return a {@link ResultSet}.
+   *   <li>Simple DML statements will return an update count
+   *   <li>DDL statements will return a {@link ResultType#NO_RESULT}
+   *   <li>Connection and transaction statements (SET AUTOCOMMIT=TRUE|FALSE, SHOW AUTOCOMMIT, SET
+   *       TRANSACTION READ ONLY, etc) will return either a {@link ResultSet} or {@link
+   *       ResultType#NO_RESULT}, depending on the type of statement (SHOW or SET)
+   * </ul>
+   *
+   * @param statement The statement to execute
+   * @param allowedResultTypes The result types that this method may return. The statement will not
+   *     be sent to Cloud Spanner if the statement would return a result that is not one of the
+   *     types in this set.
+   * @return the result of the statement
+   */
+  default StatementResult execute(Statement statement, Set<ResultType> allowedResultTypes) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Executes the given statement if allowed in the current {@link TransactionMode} and connection
    * state asynchronously. The returned value depends on the type of statement:
    *
    * <ul>
-   *   <li>Queries will return an {@link AsyncResultSet}
-   *   <li>DML statements will return an {@link ApiFuture} with an update count that is done when
-   *       the DML statement has been applied successfully, or that throws an {@link
+   *   <li>Queries and DML statements with returning clause will return an {@link AsyncResultSet}.
+   *   <li>Simple DML statements will return an {@link ApiFuture} with an update count that is done
+   *       when the DML statement has been applied successfully, or that throws an {@link
    *       ExecutionException} if the DML statement failed.
    *   <li>DDL statements will return an {@link ApiFuture} containing a {@link Void} that is done
    *       when the DDL statement has been applied successfully, or that throws an {@link
@@ -893,36 +1004,39 @@ public interface Connection extends AutoCloseable {
   AsyncStatementResult executeAsync(Statement statement);
 
   /**
-   * Executes the given statement as a query and returns the result as a {@link ResultSet}. This
-   * method blocks and waits for a response from Spanner. If the statement does not contain a valid
-   * query, the method will throw a {@link SpannerException}.
+   * Executes the given statement (a query or a DML statement with returning clause) and returns the
+   * result as a {@link ResultSet}. This method blocks and waits for a response from Spanner. If the
+   * statement does not contain a valid query or a DML statement with returning clause, the method
+   * will throw a {@link SpannerException}.
    *
-   * @param query The query statement to execute
+   * @param query The query statement or DML statement with returning clause to execute
    * @param options the options to configure the query
-   * @return a {@link ResultSet} with the results of the query
+   * @return a {@link ResultSet} with the results of the statement
    */
   ResultSet executeQuery(Statement query, QueryOption... options);
 
   /**
-   * Executes the given statement asynchronously as a query and returns the result as an {@link
-   * AsyncResultSet}. This method is guaranteed to be non-blocking. If the statement does not
-   * contain a valid query, the method will throw a {@link SpannerException}.
+   * Executes the given statement (a query or a DML statement with returning clause) asynchronously
+   * and returns the result as an {@link AsyncResultSet}. This method is guaranteed to be
+   * non-blocking. If the statement does not contain a valid query or a DML statement with returning
+   * clause, the method will throw a {@link SpannerException}.
    *
    * <p>See {@link AsyncResultSet#setCallback(java.util.concurrent.Executor,
    * com.google.cloud.spanner.AsyncResultSet.ReadyCallback)} for more information on how to consume
-   * the results of the query asynchronously.
+   * the results of the statement asynchronously.
    *
    * <p>It is also possible to consume the returned {@link AsyncResultSet} in the same way as a
    * normal {@link ResultSet}, i.e. in a while-loop calling {@link AsyncResultSet#next()}.
    *
-   * @param query The query statement to execute
+   * @param query The query statement or DML statement with returning clause to execute
    * @param options the options to configure the query
-   * @return an {@link AsyncResultSet} with the results of the query
+   * @return an {@link AsyncResultSet} with the results of the statement
    */
   AsyncResultSet executeQueryAsync(Statement query, QueryOption... options);
 
   /**
-   * Analyzes a query and returns query plan and/or query execution statistics information.
+   * Analyzes a query or a DML statement and returns query plan and/or query execution statistics
+   * information.
    *
    * <p>The query plan and query statistics information is contained in {@link
    * com.google.spanner.v1.ResultSetStats} that can be accessed by calling {@link
@@ -949,8 +1063,91 @@ public interface Connection extends AutoCloseable {
   ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode);
 
   /**
-   * Executes the given statement as a DML statement. If the statement does not contain a valid DML
-   * statement, the method will throw a {@link SpannerException}.
+   * Enable data boost for partitioned queries. See also {@link #partitionQuery(Statement,
+   * PartitionOptions, QueryOption...)}
+   */
+  void setDataBoostEnabled(boolean dataBoostEnabled);
+
+  /**
+   * Returns whether data boost is enabled for partitioned queries. See also {@link
+   * #partitionQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  boolean isDataBoostEnabled();
+
+  /**
+   * Sets whether this connection should always use partitioned queries when a query is executed on
+   * this connection. Setting this flag to <code>true</code> and then executing a query that cannot
+   * be partitioned, or executing a query in a read/write transaction, will cause an error. Use this
+   * flag in combination with {@link #setDataBoostEnabled(boolean)} to force all queries on this
+   * connection to use data boost.
+   */
+  void setAutoPartitionMode(boolean autoPartitionMode);
+
+  /** Returns whether this connection will execute all queries as partitioned queries. */
+  boolean isAutoPartitionMode();
+
+  /**
+   * Sets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
+  void setMaxPartitions(int maxPartitions);
+
+  /**
+   * Gets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
+  int getMaxPartitions();
+
+  /**
+   * Partitions the given query, so it can be executed in parallel. This method returns a {@link
+   * ResultSet} with a string-representation of the partitions that were created. These strings can
+   * be used to execute a partition either on this connection or an any other connection (on this
+   * host or an any other host) by calling the method {@link #runPartition(String)}. This method
+   * will automatically enable data boost for the query if {@link #isDataBoostEnabled()} returns
+   * true.
+   */
+  ResultSet partitionQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
+
+  /**
+   * Executes the given partition of a query. The encodedPartitionId should be a string that was
+   * returned by {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)}.
+   */
+  ResultSet runPartition(String encodedPartitionId);
+
+  /**
+   * Sets the maximum degree of parallelism that is used when executing a partitioned query using
+   * {@link #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}. The method will use
+   * up to <code>maxThreads</code> to execute and retrieve the results from Cloud Spanner. Set this
+   * value to <code>0</code>> to use the number of available processors as returned by {@link
+   * Runtime#availableProcessors()}.
+   */
+  void setMaxPartitionedParallelism(int maxThreads);
+
+  /**
+   * Returns the maximum degree of parallelism that is used for {@link
+   * #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  int getMaxPartitionedParallelism();
+
+  /**
+   * Executes the given query as a partitioned query. The query will first be partitioned using the
+   * {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)} method. Each of the
+   * partitions will then be executed in the background, and the results will be merged into a
+   * single result set.
+   *
+   * <p>This method will use <code>maxPartitionedParallelism</code> threads to execute the
+   * partitioned query. Set this variable to a higher/lower value to increase/decrease the degree of
+   * parallelism used for execution.
+   */
+  PartitionedQueryResultSet runPartitionedQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
+
+  /**
+   * Executes the given statement as a simple DML statement. If the statement does not contain a
+   * valid DML statement, the method will throw a {@link SpannerException}.
    *
    * @param update The update statement to execute
    * @return the number of records that were inserted/updated/deleted by this statement
@@ -958,8 +1155,40 @@ public interface Connection extends AutoCloseable {
   long executeUpdate(Statement update);
 
   /**
-   * Executes the given statement asynchronously as a DML statement. If the statement does not
-   * contain a valid DML statement, the method will throw a {@link SpannerException}.
+   * Analyzes a DML statement and returns query plan and/or execution statistics information.
+   *
+   * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan for
+   * the statement. {@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} executes
+   * the DML statement, returns the modified row count and execution statistics, and the effects of
+   * the DML statement will be visible to subsequent operations in the transaction.
+   *
+   * @deprecated Use {@link #analyzeUpdateStatement(Statement, QueryAnalyzeMode, UpdateOption...)}
+   *     instead
+   */
+  @Deprecated
+  default ResultSetStats analyzeUpdate(Statement update, QueryAnalyzeMode analyzeMode) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Analyzes a DML statement and returns execution plan, undeclared parameters and optionally
+   * execution statistics information.
+   *
+   * <p>{@link com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PLAN} only returns the plan and
+   * undeclared parameters for the statement. {@link
+   * com.google.cloud.spanner.ReadContext.QueryAnalyzeMode#PROFILE} also executes the DML statement,
+   * returns the modified row count and execution statistics, and the effects of the DML statement
+   * will be visible to subsequent operations in the transaction.
+   */
+  default ResultSet analyzeUpdateStatement(
+      Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Executes the given statement asynchronously as a simple DML statement. If the statement does
+   * not contain a simple DML statement, the method will throw a {@link SpannerException}. A DML
+   * statement with returning clause will throw a {@link SpannerException}.
    *
    * <p>This method is guaranteed to be non-blocking.
    *
@@ -970,8 +1199,9 @@ public interface Connection extends AutoCloseable {
   ApiFuture<Long> executeUpdateAsync(Statement update);
 
   /**
-   * Executes a list of DML statements in a single request. The statements will be executed in order
-   * and the semantics is the same as if each statement is executed by {@link
+   * Executes a list of DML statements (can be simple DML statements or DML statements with
+   * returning clause) in a single request. The statements will be executed in order and the
+   * semantics is the same as if each statement is executed by {@link
    * Connection#executeUpdate(Statement)} in a loop. This method returns an array of long integers,
    * each representing the number of rows modified by each statement.
    *
@@ -992,8 +1222,9 @@ public interface Connection extends AutoCloseable {
   long[] executeBatchUpdate(Iterable<Statement> updates);
 
   /**
-   * Executes a list of DML statements in a single request. The statements will be executed in order
-   * and the semantics is the same as if each statement is executed by {@link
+   * Executes a list of DML statements (can be simple DML statements or DML statements with
+   * returning clause) in a single request. The statements will be executed in order and the
+   * semantics is the same as if each statement is executed by {@link
    * Connection#executeUpdate(Statement)} in a loop. This method returns an {@link ApiFuture} that
    * contains an array of long integers, each representing the number of rows modified by each
    * statement.

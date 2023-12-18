@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,11 +53,13 @@ public interface SessionOrBuilder
    *
    * <pre>
    * The labels for the session.
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
    *  * No more than 64 labels can be associated with a given session.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * </pre>
    *
@@ -69,11 +71,13 @@ public interface SessionOrBuilder
    *
    * <pre>
    * The labels for the session.
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
    *  * No more than 64 labels can be associated with a given session.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * </pre>
    *
@@ -88,11 +92,13 @@ public interface SessionOrBuilder
    *
    * <pre>
    * The labels for the session.
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
    *  * No more than 64 labels can be associated with a given session.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * </pre>
    *
@@ -104,27 +110,35 @@ public interface SessionOrBuilder
    *
    * <pre>
    * The labels for the session.
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
    *  * No more than 64 labels can be associated with a given session.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * </pre>
    *
    * <code>map&lt;string, string&gt; labels = 2;</code>
    */
-  java.lang.String getLabelsOrDefault(java.lang.String key, java.lang.String defaultValue);
+  /* nullable */
+  java.lang.String getLabelsOrDefault(
+      java.lang.String key,
+      /* nullable */
+      java.lang.String defaultValue);
   /**
    *
    *
    * <pre>
    * The labels for the session.
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z]([-a-z0-9]*[a-z0-9])?`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
    *  * No more than 64 labels can be associated with a given session.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
    * </pre>
    *
@@ -213,4 +227,29 @@ public interface SessionOrBuilder
    * </code>
    */
   com.google.protobuf.TimestampOrBuilder getApproximateLastUseTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The creatorRole.
+   */
+  java.lang.String getCreatorRole();
+  /**
+   *
+   *
+   * <pre>
+   * The database role which created this session.
+   * </pre>
+   *
+   * <code>string creator_role = 5;</code>
+   *
+   * @return The bytes for creatorRole.
+   */
+  com.google.protobuf.ByteString getCreatorRoleBytes();
 }

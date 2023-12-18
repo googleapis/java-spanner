@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.google.api.core.BetaApi;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.ClientSettings;
@@ -34,6 +35,8 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -76,6 +79,11 @@ import javax.annotation.Generated;
  * <p>For example, to set the total timeout of createSession to 30 seconds:
  *
  * <pre>{@code
+ * // This snippet has been automatically generated and should be regarded as a code template only.
+ * // It will require modifications to work:
+ * // - It may require correct/in-range values for request initialization.
+ * // - It may require specifying regional endpoints when creating the service client as shown in
+ * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
  * SpannerSettings.Builder spannerSettingsBuilder = SpannerSettings.newBuilder();
  * spannerSettingsBuilder
  *     .createSessionSettings()
@@ -171,6 +179,11 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     return ((SpannerStubSettings) getStubSettings()).partitionReadSettings();
   }
 
+  /** Returns the object with the settings used for calls to batchWrite. */
+  public ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteSettings() {
+    return ((SpannerStubSettings) getStubSettings()).batchWriteSettings();
+  }
+
   public static final SpannerSettings create(SpannerStubSettings stub) throws IOException {
     return new SpannerSettings.Builder(stub.toBuilder()).build();
   }
@@ -195,9 +208,16 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     return SpannerStubSettings.defaultCredentialsProviderBuilder();
   }
 
-  /** Returns a builder for the default ChannelProvider for this service. */
+  /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
     return SpannerStubSettings.defaultGrpcTransportProviderBuilder();
+  }
+
+  /** Returns a builder for the default REST ChannelProvider for this service. */
+  @BetaApi
+  public static InstantiatingHttpJsonChannelProvider.Builder
+      defaultHttpJsonTransportProviderBuilder() {
+    return SpannerStubSettings.defaultHttpJsonTransportProviderBuilder();
   }
 
   public static TransportChannelProvider defaultTransportChannelProvider() {
@@ -209,9 +229,15 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     return SpannerStubSettings.defaultApiClientHeaderProviderBuilder();
   }
 
-  /** Returns a new builder for this class. */
+  /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
     return Builder.createDefault();
+  }
+
+  /** Returns a new REST builder for this class. */
+  @BetaApi
+  public static Builder newHttpJsonBuilder() {
+    return Builder.createHttpJsonDefault();
   }
 
   /** Returns a new builder for this class. */
@@ -249,6 +275,11 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
 
     private static Builder createDefault() {
       return new Builder(SpannerStubSettings.newBuilder());
+    }
+
+    @BetaApi
+    private static Builder createHttpJsonDefault() {
+      return new Builder(SpannerStubSettings.newHttpJsonBuilder());
     }
 
     public SpannerStubSettings.Builder getStubSettingsBuilder() {
@@ -349,6 +380,12 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     public UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
         partitionReadSettings() {
       return getStubSettingsBuilder().partitionReadSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to batchWrite. */
+    public ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings() {
+      return getStubSettingsBuilder().batchWriteSettings();
     }
 
     @Override

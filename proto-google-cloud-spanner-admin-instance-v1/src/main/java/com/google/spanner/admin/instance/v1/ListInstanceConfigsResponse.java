@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ package com.google.spanner.admin.instance.v1;
  *
  *
  * <pre>
- * The response for [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
+ * The response for
+ * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.ListInstanceConfigsResponse}
@@ -48,72 +49,6 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
     return new ListInstanceConfigsResponse();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private ListInstanceConfigsResponse(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                instanceConfigs_ =
-                    new java.util.ArrayList<com.google.spanner.admin.instance.v1.InstanceConfig>();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              instanceConfigs_.add(
-                  input.readMessage(
-                      com.google.spanner.admin.instance.v1.InstanceConfig.parser(),
-                      extensionRegistry));
-              break;
-            }
-          case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              nextPageToken_ = s;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        instanceConfigs_ = java.util.Collections.unmodifiableList(instanceConfigs_);
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
         .internal_static_google_spanner_admin_instance_v1_ListInstanceConfigsResponse_descriptor;
@@ -130,6 +65,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
   }
 
   public static final int INSTANCE_CONFIGS_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
   private java.util.List<com.google.spanner.admin.instance.v1.InstanceConfig> instanceConfigs_;
   /**
    *
@@ -201,14 +138,16 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
   }
 
   public static final int NEXT_PAGE_TOKEN_FIELD_NUMBER = 2;
-  private volatile java.lang.Object nextPageToken_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object nextPageToken_ = "";
   /**
    *
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs] call to
-   * fetch more of the matching instance configurations.
+   * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs]
+   * call to fetch more of the matching instance configurations.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -232,8 +171,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs] call to
-   * fetch more of the matching instance configurations.
+   * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs]
+   * call to fetch more of the matching instance configurations.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -273,7 +212,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextPageToken_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, nextPageToken_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -288,7 +227,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextPageToken_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, nextPageToken_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -306,7 +245,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
 
     if (!getInstanceConfigsList().equals(other.getInstanceConfigsList())) return false;
     if (!getNextPageToken().equals(other.getNextPageToken())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -323,7 +262,7 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
     }
     hash = (37 * hash) + NEXT_PAGE_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getNextPageToken().hashCode();
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -428,7 +367,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * The response for [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
+   * The response for
+   * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.ListInstanceConfigsResponse}
@@ -453,32 +393,24 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
     }
 
     // Construct using com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getInstanceConfigsFieldBuilder();
-      }
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       if (instanceConfigsBuilder_ == null) {
         instanceConfigs_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000001);
       } else {
+        instanceConfigs_ = null;
         instanceConfigsBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000001);
       nextPageToken_ = "";
-
       return this;
     }
 
@@ -507,7 +439,16 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
     public com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse buildPartial() {
       com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse result =
           new com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse(this);
-      int from_bitField0_ = bitField0_;
+      buildPartialRepeatedFields(result);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
+      onBuilt();
+      return result;
+    }
+
+    private void buildPartialRepeatedFields(
+        com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse result) {
       if (instanceConfigsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
           instanceConfigs_ = java.util.Collections.unmodifiableList(instanceConfigs_);
@@ -517,9 +458,14 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
       } else {
         result.instanceConfigs_ = instanceConfigsBuilder_.build();
       }
-      result.nextPageToken_ = nextPageToken_;
-      onBuilt();
-      return result;
+    }
+
+    private void buildPartial0(
+        com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.nextPageToken_ = nextPageToken_;
+      }
     }
 
     @java.lang.Override
@@ -599,9 +545,10 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
       }
       if (!other.getNextPageToken().isEmpty()) {
         nextPageToken_ = other.nextPageToken_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -616,19 +563,51 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                com.google.spanner.admin.instance.v1.InstanceConfig m =
+                    input.readMessage(
+                        com.google.spanner.admin.instance.v1.InstanceConfig.parser(),
+                        extensionRegistry);
+                if (instanceConfigsBuilder_ == null) {
+                  ensureInstanceConfigsIsMutable();
+                  instanceConfigs_.add(m);
+                } else {
+                  instanceConfigsBuilder_.addMessage(m);
+                }
+                break;
+              } // case 10
+            case 18:
+              {
+                nextPageToken_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse)
-                e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1002,8 +981,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs] call to
-     * fetch more of the matching instance configurations.
+     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs]
+     * call to fetch more of the matching instance configurations.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1026,8 +1005,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs] call to
-     * fetch more of the matching instance configurations.
+     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs]
+     * call to fetch more of the matching instance configurations.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1050,8 +1029,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs] call to
-     * fetch more of the matching instance configurations.
+     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs]
+     * call to fetch more of the matching instance configurations.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1063,8 +1042,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
       if (value == null) {
         throw new NullPointerException();
       }
-
       nextPageToken_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1073,8 +1052,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs] call to
-     * fetch more of the matching instance configurations.
+     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs]
+     * call to fetch more of the matching instance configurations.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1082,8 +1061,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
      * @return This builder for chaining.
      */
     public Builder clearNextPageToken() {
-
       nextPageToken_ = getDefaultInstance().getNextPageToken();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1092,8 +1071,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs] call to
-     * fetch more of the matching instance configurations.
+     * [ListInstanceConfigs][google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigs]
+     * call to fetch more of the matching instance configurations.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1106,8 +1085,8 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       nextPageToken_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1146,7 +1125,18 @@ public final class ListInstanceConfigsResponse extends com.google.protobuf.Gener
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ListInstanceConfigsResponse(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

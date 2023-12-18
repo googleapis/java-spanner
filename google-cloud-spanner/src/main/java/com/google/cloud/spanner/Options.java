@@ -32,12 +32,20 @@ public final class Options implements Serializable {
   public enum RpcPriority {
     LOW(Priority.PRIORITY_LOW),
     MEDIUM(Priority.PRIORITY_MEDIUM),
-    HIGH(Priority.PRIORITY_HIGH);
+    HIGH(Priority.PRIORITY_HIGH),
+    UNSPECIFIED(Priority.PRIORITY_UNSPECIFIED);
 
     private final Priority proto;
 
     RpcPriority(Priority proto) {
       this.proto = Preconditions.checkNotNull(proto);
+    }
+
+    public static RpcPriority fromProto(Priority proto) {
+      for (RpcPriority e : RpcPriority.values()) {
+        if (e.proto.equals(proto)) return e;
+      }
+      return RpcPriority.UNSPECIFIED;
     }
   }
 
@@ -51,6 +59,22 @@ public final class Options implements Serializable {
   public interface ReadQueryUpdateTransactionOption
       extends ReadOption, QueryOption, UpdateOption, TransactionOption {}
 
+  /**
+   * Marker interface to mark options applicable to Create, Update and Delete operations in admin
+   * API.
+   */
+  public interface CreateUpdateDeleteAdminApiOption
+      extends CreateAdminApiOption, UpdateAdminApiOption, DeleteAdminApiOption {}
+
+  /** Marker interface to mark options applicable to Create operations in admin API. */
+  public interface CreateAdminApiOption extends AdminApiOption {}
+
+  /** Marker interface to mark options applicable to Delete operations in admin API. */
+  public interface DeleteAdminApiOption extends AdminApiOption {}
+
+  /** Marker interface to mark options applicable to Update operations in admin API. */
+  public interface UpdateAdminApiOption extends AdminApiOption {}
+
   /** Marker interface to mark options applicable to query operation. */
   public interface QueryOption {}
 
@@ -63,11 +87,25 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
 
+  /** Marker interface to mark options applicable to operations in admin API. */
+  public interface AdminApiOption {}
+
   /** Specifying this instructs the transaction to request {@link CommitStats} from the backend. */
   public static TransactionOption commitStats() {
     return COMMIT_STATS_OPTION;
   }
 
+  /**
+   * Specifying this instructs the transaction to request Optimistic Lock from the backend. In this
+   * concurrency mode, operations during the execution phase, i.e., reads and queries, are performed
+   * without acquiring locks, and transactional consistency is ensured by running a validation
+   * process in the commit phase (when any needed locks are acquired). The validation process
+   * succeeds only if there are no conflicting committed transactions (that committed mutations to
+   * the read data at a commit timestamp after the read timestamp).
+   */
+  public static TransactionOption optimisticLock() {
+    return OPTIMISTIC_LOCK_OPTION;
+  }
   /**
    * Specifying this will cause the read to yield at most this many rows. This should be greater
    * than 0.
@@ -117,6 +155,14 @@ public final class Options implements Serializable {
   }
 
   /**
+   * If this is for PartitionedRead or PartitionedQuery and this field is set to `true`, the request
+   * will be executed via Spanner independent compute resources.
+   */
+  public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
+    return new DataBoostQueryOption(dataBoostEnabled);
+  }
+
+  /**
    * Specifying this will cause the list operation to start fetching the record from this onwards.
    */
   public static ListOption pageToken(String pageToken) {
@@ -151,6 +197,33 @@ public final class Options implements Serializable {
     return new FilterOption(filter);
   }
 
+  /**
+   * Specifying this will help in optimistic concurrency control as a way to help prevent
+   * simultaneous deletes of an instance config from overwriting each other. Operations that support
+   * this option are:
+   *
+   * <ul>
+   *   <li>{@link InstanceAdminClient#deleteInstanceConfig}
+   * </ul>
+   */
+  public static DeleteAdminApiOption etag(String etag) {
+    return new EtagOption(etag);
+  }
+
+  /**
+   * Specifying this will not actually execute a request, and provide the same response. Operations
+   * that support this option are:
+   *
+   * <ul>
+   *   <li>{@link InstanceAdminClient#createInstanceConfig}
+   *   <li>{@link InstanceAdminClient#updateInstanceConfig}
+   *   <li>{@link InstanceAdminClient#deleteInstanceConfig}
+   * </ul>
+   */
+  public static CreateUpdateDeleteAdminApiOption validateOnly(Boolean validateOnly) {
+    return new ValidateOnlyOption(validateOnly);
+  }
+
   /** Option to request {@link CommitStats} for read/write transactions. */
   static final class CommitStatsOption extends InternalOption implements TransactionOption {
     @Override
@@ -160,6 +233,16 @@ public final class Options implements Serializable {
   }
 
   static final CommitStatsOption COMMIT_STATS_OPTION = new CommitStatsOption();
+
+  /** Option to request Optimistic Concurrency Control for read/write transactions. */
+  static final class OptimisticLockOption extends InternalOption implements TransactionOption {
+    @Override
+    void appendToOptions(Options options) {
+      options.withOptimisticLock = true;
+    }
+  }
+
+  static final OptimisticLockOption OPTIMISTIC_LOCK_OPTION = new OptimisticLockOption();
 
   /** Option pertaining to flow control. */
   static final class FlowControlOption extends InternalOption implements ReadAndQueryOption {
@@ -215,6 +298,33 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class EtagOption extends InternalOption implements DeleteAdminApiOption {
+    private final String etag;
+
+    EtagOption(String etag) {
+      this.etag = etag;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.etag = etag;
+    }
+  }
+
+  static final class ValidateOnlyOption extends InternalOption
+      implements CreateUpdateDeleteAdminApiOption {
+    private final Boolean validateOnly;
+
+    ValidateOnlyOption(Boolean validateOnly) {
+      this.validateOnly = validateOnly;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.validateOnly = validateOnly;
+    }
+  }
+
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
@@ -224,6 +334,10 @@ public final class Options implements Serializable {
   private String filter;
   private RpcPriority priority;
   private String tag;
+  private String etag;
+  private Boolean validateOnly;
+  private Boolean withOptimisticLock;
+  private Boolean dataBoostEnabled;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -296,6 +410,34 @@ public final class Options implements Serializable {
     return tag;
   }
 
+  boolean hasEtag() {
+    return etag != null;
+  }
+
+  String etag() {
+    return etag;
+  }
+
+  boolean hasValidateOnly() {
+    return validateOnly != null;
+  }
+
+  Boolean validateOnly() {
+    return validateOnly;
+  }
+
+  Boolean withOptimisticLock() {
+    return withOptimisticLock;
+  }
+
+  boolean hasDataBoostEnabled() {
+    return dataBoostEnabled != null;
+  }
+
+  Boolean dataBoostEnabled() {
+    return dataBoostEnabled;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -322,6 +464,18 @@ public final class Options implements Serializable {
     }
     if (tag != null) {
       b.append("tag: ").append(tag).append(' ');
+    }
+    if (etag != null) {
+      b.append("etag: ").append(etag).append(' ');
+    }
+    if (validateOnly != null) {
+      b.append("validateOnly: ").append(validateOnly).append(' ');
+    }
+    if (withOptimisticLock != null) {
+      b.append("withOptimisticLock: ").append(withOptimisticLock).append(' ');
+    }
+    if (dataBoostEnabled != null) {
+      b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
     }
     return b.toString();
   }
@@ -354,7 +508,11 @@ public final class Options implements Serializable {
         && Objects.equals(pageToken(), that.pageToken())
         && Objects.equals(filter(), that.filter())
         && Objects.equals(priority(), that.priority())
-        && Objects.equals(tag(), that.tag());
+        && Objects.equals(tag(), that.tag())
+        && Objects.equals(etag(), that.etag())
+        && Objects.equals(validateOnly(), that.validateOnly())
+        && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
+        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled());
   }
 
   @Override
@@ -386,6 +544,18 @@ public final class Options implements Serializable {
     }
     if (tag != null) {
       result = 31 * result + tag.hashCode();
+    }
+    if (etag != null) {
+      result = 31 * result + etag.hashCode();
+    }
+    if (validateOnly != null) {
+      result = 31 * result + validateOnly.hashCode();
+    }
+    if (withOptimisticLock != null) {
+      result = 31 * result + withOptimisticLock.hashCode();
+    }
+    if (dataBoostEnabled != null) {
+      result = 31 * result + dataBoostEnabled.hashCode();
     }
     return result;
   }
@@ -440,6 +610,16 @@ public final class Options implements Serializable {
     return listOptions;
   }
 
+  static Options fromAdminApiOptions(AdminApiOption... options) {
+    Options adminApiOptions = new Options();
+    for (AdminApiOption option : options) {
+      if (option instanceof InternalOption) {
+        ((InternalOption) option).appendToOptions(adminApiOptions);
+      }
+    }
+    return adminApiOptions;
+  }
+
   private abstract static class InternalOption {
     abstract void appendToOptions(Options options);
   }
@@ -454,6 +634,20 @@ public final class Options implements Serializable {
     @Override
     void appendToOptions(Options options) {
       options.limit = limit;
+    }
+  }
+
+  static final class DataBoostQueryOption extends InternalOption implements ReadAndQueryOption {
+
+    private final Boolean dataBoostEnabled;
+
+    DataBoostQueryOption(Boolean dataBoostEnabled) {
+      this.dataBoostEnabled = dataBoostEnabled;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.dataBoostEnabled = dataBoostEnabled;
     }
   }
 

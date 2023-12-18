@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
@@ -24,10 +25,12 @@ import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.spanner.v1.BatchWriteResponse;
 import io.opencensus.common.Scope;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
@@ -56,6 +59,12 @@ class DatabaseClientImpl implements DatabaseClient {
   @Override
   public Dialect getDialect() {
     return pool.getDialect();
+  }
+
+  @Override
+  @Nullable
+  public String getDatabaseRole() {
+    return pool.getDatabaseRole();
   }
 
   @Override
@@ -91,6 +100,21 @@ class DatabaseClientImpl implements DatabaseClient {
     try (Scope s = tracer.withSpan(span)) {
       return runWithSessionRetry(
           session -> session.writeAtLeastOnceWithOptions(mutations, options));
+    } catch (RuntimeException e) {
+      TraceUtil.setWithFailure(span, e);
+      throw e;
+    } finally {
+      span.end(TraceUtil.END_SPAN_OPTIONS);
+    }
+  }
+
+  @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
+      throws SpannerException {
+    Span span = tracer.spanBuilder(READ_WRITE_TRANSACTION).startSpan();
+    try (Scope s = tracer.withSpan(span)) {
+      return runWithSessionRetry(session -> session.batchWriteAtLeastOnce(mutationGroups, options));
     } catch (RuntimeException e) {
       TraceUtil.setWithFailure(span, e);
       throw e;

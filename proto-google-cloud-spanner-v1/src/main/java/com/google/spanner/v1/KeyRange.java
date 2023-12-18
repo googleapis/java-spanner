@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,64 +23,91 @@ package com.google.spanner.v1;
  *
  * <pre>
  * KeyRange represents a range of rows in a table or index.
+ *
  * A range has a start key and an end key. These keys can be open or
  * closed, indicating if the range includes rows with that key.
+ *
  * Keys are represented by lists, where the ith value in the list
  * corresponds to the ith component of the table or index primary key.
  * Individual values are encoded as described
  * [here][google.spanner.v1.TypeCode].
+ *
  * For example, consider the following table definition:
+ *
  *     CREATE TABLE UserEvents (
  *       UserName STRING(MAX),
  *       EventDate STRING(10)
  *     ) PRIMARY KEY(UserName, EventDate);
+ *
  * The following keys name rows in this table:
+ *
  *     ["Bob", "2014-09-23"]
  *     ["Alfred", "2015-06-12"]
+ *
  * Since the `UserEvents` table's `PRIMARY KEY` clause names two
  * columns, each `UserEvents` key has two elements; the first is the
  * `UserName`, and the second is the `EventDate`.
+ *
  * Key ranges with multiple components are interpreted
  * lexicographically by component using the table or index key's declared
  * sort order. For example, the following range returns all events for
  * user `"Bob"` that occurred in the year 2015:
+ *
  *     "start_closed": ["Bob", "2015-01-01"]
  *     "end_closed": ["Bob", "2015-12-31"]
+ *
  * Start and end keys can omit trailing key components. This affects the
  * inclusion and exclusion of rows that exactly match the provided key
  * components: if the key is closed, then rows that exactly match the
  * provided components are included; if the key is open, then rows
  * that exactly match are not included.
+ *
  * For example, the following range includes all events for `"Bob"` that
  * occurred during and after the year 2000:
+ *
  *     "start_closed": ["Bob", "2000-01-01"]
  *     "end_closed": ["Bob"]
+ *
  * The next example retrieves all events for `"Bob"`:
+ *
  *     "start_closed": ["Bob"]
  *     "end_closed": ["Bob"]
+ *
  * To retrieve events before the year 2000:
+ *
  *     "start_closed": ["Bob"]
  *     "end_open": ["Bob", "2000-01-01"]
+ *
  * The following range includes all rows in the table:
+ *
  *     "start_closed": []
  *     "end_closed": []
+ *
  * This range returns all users whose `UserName` begins with any
  * character from A to C:
+ *
  *     "start_closed": ["A"]
  *     "end_open": ["D"]
+ *
  * This range returns all users whose `UserName` begins with B:
+ *
  *     "start_closed": ["B"]
  *     "end_open": ["C"]
+ *
  * Key ranges honor column sort order. For example, suppose a table is
  * defined as follows:
+ *
  *     CREATE TABLE DescendingSortedTable {
  *       Key INT64,
  *       ...
  *     ) PRIMARY KEY(Key DESC);
+ *
  * The following range retrieves all rows with key values between 1
  * and 100 inclusive:
+ *
  *     "start_closed": ["100"]
  *     "end_closed": ["1"]
+ *
  * Note that 100 is passed as the start, and 1 is passed as the end,
  * because `Key` is a descending column in the schema.
  * </pre>
@@ -105,108 +132,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     return new KeyRange();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private KeyRange(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (startKeyTypeCase_ == 1) {
-                subBuilder = ((com.google.protobuf.ListValue) startKeyType_).toBuilder();
-              }
-              startKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) startKeyType_);
-                startKeyType_ = subBuilder.buildPartial();
-              }
-              startKeyTypeCase_ = 1;
-              break;
-            }
-          case 18:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (startKeyTypeCase_ == 2) {
-                subBuilder = ((com.google.protobuf.ListValue) startKeyType_).toBuilder();
-              }
-              startKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) startKeyType_);
-                startKeyType_ = subBuilder.buildPartial();
-              }
-              startKeyTypeCase_ = 2;
-              break;
-            }
-          case 26:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (endKeyTypeCase_ == 3) {
-                subBuilder = ((com.google.protobuf.ListValue) endKeyType_).toBuilder();
-              }
-              endKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) endKeyType_);
-                endKeyType_ = subBuilder.buildPartial();
-              }
-              endKeyTypeCase_ = 3;
-              break;
-            }
-          case 34:
-            {
-              com.google.protobuf.ListValue.Builder subBuilder = null;
-              if (endKeyTypeCase_ == 4) {
-                subBuilder = ((com.google.protobuf.ListValue) endKeyType_).toBuilder();
-              }
-              endKeyType_ =
-                  input.readMessage(com.google.protobuf.ListValue.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.protobuf.ListValue) endKeyType_);
-                endKeyType_ = subBuilder.buildPartial();
-              }
-              endKeyTypeCase_ = 4;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.KeysProto.internal_static_google_spanner_v1_KeyRange_descriptor;
   }
@@ -221,6 +146,8 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int startKeyTypeCase_ = 0;
+
+  @SuppressWarnings("serial")
   private java.lang.Object startKeyType_;
 
   public enum StartKeyTypeCase
@@ -268,6 +195,8 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int endKeyTypeCase_ = 0;
+
+  @SuppressWarnings("serial")
   private java.lang.Object endKeyType_;
 
   public enum EndKeyTypeCase
@@ -556,7 +485,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     if (endKeyTypeCase_ == 4) {
       output.writeMessage(4, (com.google.protobuf.ListValue) endKeyType_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -585,7 +514,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               4, (com.google.protobuf.ListValue) endKeyType_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -622,7 +551,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -657,7 +586,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -761,64 +690,91 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * KeyRange represents a range of rows in a table or index.
+   *
    * A range has a start key and an end key. These keys can be open or
    * closed, indicating if the range includes rows with that key.
+   *
    * Keys are represented by lists, where the ith value in the list
    * corresponds to the ith component of the table or index primary key.
    * Individual values are encoded as described
    * [here][google.spanner.v1.TypeCode].
+   *
    * For example, consider the following table definition:
+   *
    *     CREATE TABLE UserEvents (
    *       UserName STRING(MAX),
    *       EventDate STRING(10)
    *     ) PRIMARY KEY(UserName, EventDate);
+   *
    * The following keys name rows in this table:
+   *
    *     ["Bob", "2014-09-23"]
    *     ["Alfred", "2015-06-12"]
+   *
    * Since the `UserEvents` table's `PRIMARY KEY` clause names two
    * columns, each `UserEvents` key has two elements; the first is the
    * `UserName`, and the second is the `EventDate`.
+   *
    * Key ranges with multiple components are interpreted
    * lexicographically by component using the table or index key's declared
    * sort order. For example, the following range returns all events for
    * user `"Bob"` that occurred in the year 2015:
+   *
    *     "start_closed": ["Bob", "2015-01-01"]
    *     "end_closed": ["Bob", "2015-12-31"]
+   *
    * Start and end keys can omit trailing key components. This affects the
    * inclusion and exclusion of rows that exactly match the provided key
    * components: if the key is closed, then rows that exactly match the
    * provided components are included; if the key is open, then rows
    * that exactly match are not included.
+   *
    * For example, the following range includes all events for `"Bob"` that
    * occurred during and after the year 2000:
+   *
    *     "start_closed": ["Bob", "2000-01-01"]
    *     "end_closed": ["Bob"]
+   *
    * The next example retrieves all events for `"Bob"`:
+   *
    *     "start_closed": ["Bob"]
    *     "end_closed": ["Bob"]
+   *
    * To retrieve events before the year 2000:
+   *
    *     "start_closed": ["Bob"]
    *     "end_open": ["Bob", "2000-01-01"]
+   *
    * The following range includes all rows in the table:
+   *
    *     "start_closed": []
    *     "end_closed": []
+   *
    * This range returns all users whose `UserName` begins with any
    * character from A to C:
+   *
    *     "start_closed": ["A"]
    *     "end_open": ["D"]
+   *
    * This range returns all users whose `UserName` begins with B:
+   *
    *     "start_closed": ["B"]
    *     "end_open": ["C"]
+   *
    * Key ranges honor column sort order. For example, suppose a table is
    * defined as follows:
+   *
    *     CREATE TABLE DescendingSortedTable {
    *       Key INT64,
    *       ...
    *     ) PRIMARY KEY(Key DESC);
+   *
    * The following range retrieves all rows with key values between 1
    * and 100 inclusive:
+   *
    *     "start_closed": ["100"]
    *     "end_closed": ["1"]
+   *
    * Note that 100 is passed as the start, and 1 is passed as the end,
    * because `Key` is a descending column in the schema.
    * </pre>
@@ -843,22 +799,28 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.KeyRange.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
+      if (startClosedBuilder_ != null) {
+        startClosedBuilder_.clear();
+      }
+      if (startOpenBuilder_ != null) {
+        startOpenBuilder_.clear();
+      }
+      if (endClosedBuilder_ != null) {
+        endClosedBuilder_.clear();
+      }
+      if (endOpenBuilder_ != null) {
+        endOpenBuilder_.clear();
+      }
       startKeyTypeCase_ = 0;
       startKeyType_ = null;
       endKeyTypeCase_ = 0;
@@ -888,38 +850,35 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.KeyRange buildPartial() {
       com.google.spanner.v1.KeyRange result = new com.google.spanner.v1.KeyRange(this);
-      if (startKeyTypeCase_ == 1) {
-        if (startClosedBuilder_ == null) {
-          result.startKeyType_ = startKeyType_;
-        } else {
-          result.startKeyType_ = startClosedBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (startKeyTypeCase_ == 2) {
-        if (startOpenBuilder_ == null) {
-          result.startKeyType_ = startKeyType_;
-        } else {
-          result.startKeyType_ = startOpenBuilder_.build();
-        }
-      }
-      if (endKeyTypeCase_ == 3) {
-        if (endClosedBuilder_ == null) {
-          result.endKeyType_ = endKeyType_;
-        } else {
-          result.endKeyType_ = endClosedBuilder_.build();
-        }
-      }
-      if (endKeyTypeCase_ == 4) {
-        if (endOpenBuilder_ == null) {
-          result.endKeyType_ = endKeyType_;
-        } else {
-          result.endKeyType_ = endOpenBuilder_.build();
-        }
-      }
-      result.startKeyTypeCase_ = startKeyTypeCase_;
-      result.endKeyTypeCase_ = endKeyTypeCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.KeyRange result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.KeyRange result) {
+      result.startKeyTypeCase_ = startKeyTypeCase_;
+      result.startKeyType_ = this.startKeyType_;
+      if (startKeyTypeCase_ == 1 && startClosedBuilder_ != null) {
+        result.startKeyType_ = startClosedBuilder_.build();
+      }
+      if (startKeyTypeCase_ == 2 && startOpenBuilder_ != null) {
+        result.startKeyType_ = startOpenBuilder_.build();
+      }
+      result.endKeyTypeCase_ = endKeyTypeCase_;
+      result.endKeyType_ = this.endKeyType_;
+      if (endKeyTypeCase_ == 3 && endClosedBuilder_ != null) {
+        result.endKeyType_ = endClosedBuilder_.build();
+      }
+      if (endKeyTypeCase_ == 4 && endOpenBuilder_ != null) {
+        result.endKeyType_ = endOpenBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -999,7 +958,7 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
             break;
           }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1014,17 +973,55 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.KeyRange parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getStartClosedFieldBuilder().getBuilder(), extensionRegistry);
+                startKeyTypeCase_ = 1;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getStartOpenFieldBuilder().getBuilder(), extensionRegistry);
+                startKeyTypeCase_ = 2;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getEndClosedFieldBuilder().getBuilder(), extensionRegistry);
+                endKeyTypeCase_ = 3;
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(getEndOpenFieldBuilder().getBuilder(), extensionRegistry);
+                endKeyTypeCase_ = 4;
+                break;
+              } // case 34
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.KeyRange) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1055,6 +1052,8 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.ListValue,
@@ -1172,8 +1171,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (startKeyTypeCase_ == 1) {
           startClosedBuilder_.mergeFrom(value);
+        } else {
+          startClosedBuilder_.setMessage(value);
         }
-        startClosedBuilder_.setMessage(value);
       }
       startKeyTypeCase_ = 1;
       return this;
@@ -1267,7 +1267,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       startKeyTypeCase_ = 1;
       onChanged();
-      ;
       return startClosedBuilder_;
     }
 
@@ -1387,8 +1386,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (startKeyTypeCase_ == 2) {
           startOpenBuilder_.mergeFrom(value);
+        } else {
+          startOpenBuilder_.setMessage(value);
         }
-        startOpenBuilder_.setMessage(value);
       }
       startKeyTypeCase_ = 2;
       return this;
@@ -1482,7 +1482,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       startKeyTypeCase_ = 2;
       onChanged();
-      ;
       return startOpenBuilder_;
     }
 
@@ -1601,8 +1600,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (endKeyTypeCase_ == 3) {
           endClosedBuilder_.mergeFrom(value);
+        } else {
+          endClosedBuilder_.setMessage(value);
         }
-        endClosedBuilder_.setMessage(value);
       }
       endKeyTypeCase_ = 3;
       return this;
@@ -1696,7 +1696,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       endKeyTypeCase_ = 3;
       onChanged();
-      ;
       return endClosedBuilder_;
     }
 
@@ -1815,8 +1814,9 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       } else {
         if (endKeyTypeCase_ == 4) {
           endOpenBuilder_.mergeFrom(value);
+        } else {
+          endOpenBuilder_.setMessage(value);
         }
-        endOpenBuilder_.setMessage(value);
       }
       endKeyTypeCase_ = 4;
       return this;
@@ -1910,7 +1910,6 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
       }
       endKeyTypeCase_ = 4;
       onChanged();
-      ;
       return endOpenBuilder_;
     }
 
@@ -1946,7 +1945,18 @@ public final class KeyRange extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new KeyRange(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

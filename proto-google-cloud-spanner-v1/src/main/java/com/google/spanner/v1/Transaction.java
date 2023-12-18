@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,68 +47,6 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     return new Transaction();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private Transaction(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              id_ = input.readBytes();
-              break;
-            }
-          case 18:
-            {
-              com.google.protobuf.Timestamp.Builder subBuilder = null;
-              if (readTimestamp_ != null) {
-                subBuilder = readTimestamp_.toBuilder();
-              }
-              readTimestamp_ =
-                  input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(readTimestamp_);
-                readTimestamp_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.TransactionProto
         .internal_static_google_spanner_v1_Transaction_descriptor;
@@ -125,7 +63,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int ID_FIELD_NUMBER = 1;
-  private com.google.protobuf.ByteString id_;
+  private com.google.protobuf.ByteString id_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -135,6 +73,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
    * [Commit][google.spanner.v1.Spanner.Commit], or
    * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
+   *
    * Single-use read-only transactions do not have IDs, because
    * single-use transactions do not support multiple requests.
    * </pre>
@@ -157,6 +96,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * For snapshot read-only transactions, the read timestamp chosen
    * for the transaction. Not returned by default: see
    * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+   *
    * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
    * Example: `"2014-10-02T15:01:23.045123456Z"`.
    * </pre>
@@ -176,6 +116,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * For snapshot read-only transactions, the read timestamp chosen
    * for the transaction. Not returned by default: see
    * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+   *
    * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
    * Example: `"2014-10-02T15:01:23.045123456Z"`.
    * </pre>
@@ -197,6 +138,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    * For snapshot read-only transactions, the read timestamp chosen
    * for the transaction. Not returned by default: see
    * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+   *
    * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
    * Example: `"2014-10-02T15:01:23.045123456Z"`.
    * </pre>
@@ -205,7 +147,9 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.protobuf.TimestampOrBuilder getReadTimestampOrBuilder() {
-    return getReadTimestamp();
+    return readTimestamp_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : readTimestamp_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -228,7 +172,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     if (readTimestamp_ != null) {
       output.writeMessage(2, getReadTimestamp());
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -243,7 +187,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     if (readTimestamp_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getReadTimestamp());
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -263,7 +207,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     if (hasReadTimestamp()) {
       if (!getReadTimestamp().equals(other.getReadTimestamp())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -280,7 +224,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + READ_TIMESTAMP_FIELD_NUMBER;
       hash = (53 * hash) + getReadTimestamp().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -408,28 +352,20 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.Transaction.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       id_ = com.google.protobuf.ByteString.EMPTY;
-
-      if (readTimestampBuilder_ == null) {
-        readTimestamp_ = null;
-      } else {
-        readTimestamp_ = null;
+      readTimestamp_ = null;
+      if (readTimestampBuilder_ != null) {
+        readTimestampBuilder_.dispose();
         readTimestampBuilder_ = null;
       }
       return this;
@@ -458,14 +394,22 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.Transaction buildPartial() {
       com.google.spanner.v1.Transaction result = new com.google.spanner.v1.Transaction(this);
-      result.id_ = id_;
-      if (readTimestampBuilder_ == null) {
-        result.readTimestamp_ = readTimestamp_;
-      } else {
-        result.readTimestamp_ = readTimestampBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.Transaction result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.id_ = id_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.readTimestamp_ =
+            readTimestampBuilder_ == null ? readTimestamp_ : readTimestampBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -519,7 +463,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       if (other.hasReadTimestamp()) {
         mergeReadTimestamp(other.getReadTimestamp());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -534,19 +478,47 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.Transaction parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                id_ = input.readBytes();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getReadTimestampFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.Transaction) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private com.google.protobuf.ByteString id_ = com.google.protobuf.ByteString.EMPTY;
     /**
@@ -558,6 +530,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
      * [Commit][google.spanner.v1.Spanner.Commit], or
      * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
+     *
      * Single-use read-only transactions do not have IDs, because
      * single-use transactions do not support multiple requests.
      * </pre>
@@ -579,6 +552,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
      * [Commit][google.spanner.v1.Spanner.Commit], or
      * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
+     *
      * Single-use read-only transactions do not have IDs, because
      * single-use transactions do not support multiple requests.
      * </pre>
@@ -592,8 +566,8 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       id_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -606,6 +580,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql],
      * [Commit][google.spanner.v1.Spanner.Commit], or
      * [Rollback][google.spanner.v1.Spanner.Rollback] calls.
+     *
      * Single-use read-only transactions do not have IDs, because
      * single-use transactions do not support multiple requests.
      * </pre>
@@ -615,7 +590,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearId() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       id_ = getDefaultInstance().getId();
       onChanged();
       return this;
@@ -634,6 +609,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -643,7 +619,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the readTimestamp field is set.
      */
     public boolean hasReadTimestamp() {
-      return readTimestampBuilder_ != null || readTimestamp_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -652,6 +628,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -676,6 +653,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -688,11 +666,11 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         readTimestamp_ = value;
-        onChanged();
       } else {
         readTimestampBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -702,6 +680,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -711,11 +690,11 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
     public Builder setReadTimestamp(com.google.protobuf.Timestamp.Builder builderForValue) {
       if (readTimestampBuilder_ == null) {
         readTimestamp_ = builderForValue.build();
-        onChanged();
       } else {
         readTimestampBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -725,6 +704,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -733,19 +713,18 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeReadTimestamp(com.google.protobuf.Timestamp value) {
       if (readTimestampBuilder_ == null) {
-        if (readTimestamp_ != null) {
-          readTimestamp_ =
-              com.google.protobuf.Timestamp.newBuilder(readTimestamp_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && readTimestamp_ != null
+            && readTimestamp_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getReadTimestampBuilder().mergeFrom(value);
         } else {
           readTimestamp_ = value;
         }
-        onChanged();
       } else {
         readTimestampBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -755,6 +734,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -762,14 +742,13 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.protobuf.Timestamp read_timestamp = 2;</code>
      */
     public Builder clearReadTimestamp() {
-      if (readTimestampBuilder_ == null) {
-        readTimestamp_ = null;
-        onChanged();
-      } else {
-        readTimestamp_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      readTimestamp_ = null;
+      if (readTimestampBuilder_ != null) {
+        readTimestampBuilder_.dispose();
         readTimestampBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -779,6 +758,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -786,7 +766,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.protobuf.Timestamp read_timestamp = 2;</code>
      */
     public com.google.protobuf.Timestamp.Builder getReadTimestampBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getReadTimestampFieldBuilder().getBuilder();
     }
@@ -797,6 +777,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -819,6 +800,7 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
      * For snapshot read-only transactions, the read timestamp chosen
      * for the transaction. Not returned by default: see
      * [TransactionOptions.ReadOnly.return_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.return_read_timestamp].
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -874,7 +856,18 @@ public final class Transaction extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Transaction(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

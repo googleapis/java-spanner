@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.NoCredentials;
@@ -129,12 +130,18 @@ public class ChannelUsageTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
+                    // Verify that the compressor name header is set.
+                    assertEquals(
+                        "gzip",
+                        headers.get(
+                            Metadata.Key.of(
+                                "x-response-encoding", Metadata.ASCII_STRING_MARSHALLER)));
                     Attributes attributes = call.getAttributes();
                     @SuppressWarnings({"unchecked", "deprecation"})
                     Attributes.Key<InetSocketAddress> key =
                         (Attributes.Key<InetSocketAddress>)
                             attributes.keys().stream()
-                                .filter(k -> k.toString().equals("remote-addr"))
+                                .filter(k -> k.equals(TRANSPORT_ATTR_REMOTE_ADDR))
                                 .findFirst()
                                 .orElse(null);
                     if (key != null) {
@@ -178,6 +185,7 @@ public class ChannelUsageTest {
                   return input;
                 })
             .setNumChannels(numChannels)
+            .setCompressorName("gzip")
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(numChannels * 2)

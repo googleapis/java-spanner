@@ -8,10 +8,9 @@ branchProtectionRules:
     requiresCodeOwnerReviews: true
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
-      - dependencies (8)
-      - dependencies (11)
+      - dependencies (17)
       - lint
-      - clirr
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -26,9 +25,9 @@ branchProtectionRules:
     requiresCodeOwnerReviews: true
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
-      - dependencies (8)
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -41,9 +40,9 @@ branchProtectionRules:
     requiresCodeOwnerReviews: true
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
-      - dependencies (8)
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -56,9 +55,9 @@ branchProtectionRules:
     requiresCodeOwnerReviews: true
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
-      - dependencies (8)
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -72,7 +71,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
-      - clirr
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -84,10 +83,38 @@ branchProtectionRules:
     requiresCodeOwnerReviews: true
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
-      - dependencies (8)
-      - dependencies (11)
       - lint
-      - clirr
+      - javadoc
+      - units (8)
+      - units (11)
+      - 'Kokoro - Test: Integration'
+      - cla/google
+      - checkstyle
+      - compile (8)
+      - compile (11)
+  - pattern: 6.23.x
+    isAdminEnforced: true
+    requiredApprovingReviewCount: 1
+    requiresCodeOwnerReviews: true
+    requiresStrictStatusChecks: false
+    requiredStatusCheckContexts:
+      - lint
+      - javadoc
+      - units (8)
+      - units (11)
+      - 'Kokoro - Test: Integration'
+      - cla/google
+      - checkstyle
+      - compile (8)
+      - compile (11)
+  - pattern: 6.33.x
+    isAdminEnforced: true
+    requiredApprovingReviewCount: 1
+    requiresCodeOwnerReviews: true
+    requiresStrictStatusChecks: false
+    requiredStatusCheckContexts:
+      - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'

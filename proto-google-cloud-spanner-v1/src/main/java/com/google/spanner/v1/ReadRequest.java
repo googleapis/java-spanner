@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     session_ = "";
     table_ = "";
     index_ = "";
-    columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
     resumeToken_ = com.google.protobuf.ByteString.EMPTY;
     partitionToken_ = com.google.protobuf.ByteString.EMPTY;
   }
@@ -51,144 +51,6 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new ReadRequest();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private ReadRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              session_ = s;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.TransactionSelector.Builder subBuilder = null;
-              if (transaction_ != null) {
-                subBuilder = transaction_.toBuilder();
-              }
-              transaction_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionSelector.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(transaction_);
-                transaction_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              table_ = s;
-              break;
-            }
-          case 34:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              index_ = s;
-              break;
-            }
-          case 42:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                columns_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              columns_.add(s);
-              break;
-            }
-          case 50:
-            {
-              com.google.spanner.v1.KeySet.Builder subBuilder = null;
-              if (keySet_ != null) {
-                subBuilder = keySet_.toBuilder();
-              }
-              keySet_ = input.readMessage(com.google.spanner.v1.KeySet.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(keySet_);
-                keySet_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 64:
-            {
-              limit_ = input.readInt64();
-              break;
-            }
-          case 74:
-            {
-              resumeToken_ = input.readBytes();
-              break;
-            }
-          case 82:
-            {
-              partitionToken_ = input.readBytes();
-              break;
-            }
-          case 90:
-            {
-              com.google.spanner.v1.RequestOptions.Builder subBuilder = null;
-              if (requestOptions_ != null) {
-                subBuilder = requestOptions_.toBuilder();
-              }
-              requestOptions_ =
-                  input.readMessage(
-                      com.google.spanner.v1.RequestOptions.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(requestOptions_);
-                requestOptions_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        columns_ = columns_.getUnmodifiableView();
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -207,7 +69,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int SESSION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object session_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object session_ = "";
   /**
    *
    *
@@ -307,11 +171,15 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.TransactionSelectorOrBuilder getTransactionOrBuilder() {
-    return getTransaction();
+    return transaction_ == null
+        ? com.google.spanner.v1.TransactionSelector.getDefaultInstance()
+        : transaction_;
   }
 
   public static final int TABLE_FIELD_NUMBER = 3;
-  private volatile java.lang.Object table_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object table_ = "";
   /**
    *
    *
@@ -360,14 +228,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int INDEX_FIELD_NUMBER = 4;
-  private volatile java.lang.Object index_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object index_ = "";
   /**
    *
    *
    * <pre>
-   * If non-empty, the name of an index on [table][google.spanner.v1.ReadRequest.table]. This index is
-   * used instead of the table primary key when interpreting [key_set][google.spanner.v1.ReadRequest.key_set]
-   * and sorting result rows. See [key_set][google.spanner.v1.ReadRequest.key_set] for further information.
+   * If non-empty, the name of an index on
+   * [table][google.spanner.v1.ReadRequest.table]. This index is used instead of
+   * the table primary key when interpreting
+   * [key_set][google.spanner.v1.ReadRequest.key_set] and sorting result rows.
+   * See [key_set][google.spanner.v1.ReadRequest.key_set] for further
+   * information.
    * </pre>
    *
    * <code>string index = 4;</code>
@@ -390,9 +263,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * If non-empty, the name of an index on [table][google.spanner.v1.ReadRequest.table]. This index is
-   * used instead of the table primary key when interpreting [key_set][google.spanner.v1.ReadRequest.key_set]
-   * and sorting result rows. See [key_set][google.spanner.v1.ReadRequest.key_set] for further information.
+   * If non-empty, the name of an index on
+   * [table][google.spanner.v1.ReadRequest.table]. This index is used instead of
+   * the table primary key when interpreting
+   * [key_set][google.spanner.v1.ReadRequest.key_set] and sorting result rows.
+   * See [key_set][google.spanner.v1.ReadRequest.key_set] for further
+   * information.
    * </pre>
    *
    * <code>string index = 4;</code>
@@ -413,13 +289,16 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int COLUMNS_FIELD_NUMBER = 5;
-  private com.google.protobuf.LazyStringList columns_;
+
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList columns_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
    * <pre>
-   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-   * this request.
+   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -433,8 +312,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-   * this request.
+   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -448,8 +327,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-   * this request.
+   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -464,8 +343,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    *
    * <pre>
-   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-   * this request.
+   * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -484,13 +363,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-   * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-   * index keys in [index][google.spanner.v1.ReadRequest.index].
-   * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-   * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-   * empty, rows will be yielded in an unspecified order.
+   * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+   * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+   * If [index][google.spanner.v1.ReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+   * in [index][google.spanner.v1.ReadRequest.index].
+   *
+   * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+   * field is empty, rows are yielded in table primary key order (if
+   * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+   * not empty, rows will be yielded in an unspecified order.
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -508,13 +393,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-   * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-   * index keys in [index][google.spanner.v1.ReadRequest.index].
-   * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-   * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-   * empty, rows will be yielded in an unspecified order.
+   * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+   * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+   * If [index][google.spanner.v1.ReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+   * in [index][google.spanner.v1.ReadRequest.index].
+   *
+   * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+   * field is empty, rows are yielded in table primary key order (if
+   * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+   * not empty, rows will be yielded in an unspecified order.
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -532,13 +423,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-   * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-   * index keys in [index][google.spanner.v1.ReadRequest.index].
-   * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-   * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-   * empty, rows will be yielded in an unspecified order.
+   * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+   * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+   * If [index][google.spanner.v1.ReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+   * in [index][google.spanner.v1.ReadRequest.index].
+   *
+   * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+   * field is empty, rows are yielded in table primary key order (if
+   * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+   * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+   * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+   * not empty, rows will be yielded in an unspecified order.
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -547,11 +444,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.KeySetOrBuilder getKeySetOrBuilder() {
-    return getKeySet();
+    return keySet_ == null ? com.google.spanner.v1.KeySet.getDefaultInstance() : keySet_;
   }
 
   public static final int LIMIT_FIELD_NUMBER = 8;
-  private long limit_;
+  private long limit_ = 0L;
   /**
    *
    *
@@ -571,16 +468,16 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int RESUME_TOKEN_FIELD_NUMBER = 9;
-  private com.google.protobuf.ByteString resumeToken_;
+  private com.google.protobuf.ByteString resumeToken_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
    * <pre>
    * If this request is resuming a previously interrupted read,
    * `resume_token` should be copied from the last
-   * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the interruption. Doing this
-   * enables the new read to resume where the last read left off. The
-   * rest of the request parameters must exactly match the request
+   * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the
+   * interruption. Doing this enables the new read to resume where the last read
+   * left off. The rest of the request parameters must exactly match the request
    * that yielded this token.
    * </pre>
    *
@@ -594,7 +491,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PARTITION_TOKEN_FIELD_NUMBER = 10;
-  private com.google.protobuf.ByteString partitionToken_;
+  private com.google.protobuf.ByteString partitionToken_ = com.google.protobuf.ByteString.EMPTY;
   /**
    *
    *
@@ -659,7 +556,81 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder() {
-    return getRequestOptions();
+    return requestOptions_ == null
+        ? com.google.spanner.v1.RequestOptions.getDefaultInstance()
+        : requestOptions_;
+  }
+
+  public static final int DIRECTED_READ_OPTIONS_FIELD_NUMBER = 14;
+  private com.google.spanner.v1.DirectedReadOptions directedReadOptions_;
+  /**
+   *
+   *
+   * <pre>
+   * Directed read options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+   *
+   * @return Whether the directedReadOptions field is set.
+   */
+  @java.lang.Override
+  public boolean hasDirectedReadOptions() {
+    return directedReadOptions_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Directed read options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+   *
+   * @return The directedReadOptions.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.DirectedReadOptions getDirectedReadOptions() {
+    return directedReadOptions_ == null
+        ? com.google.spanner.v1.DirectedReadOptions.getDefaultInstance()
+        : directedReadOptions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Directed read options for this request.
+   * </pre>
+   *
+   * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.DirectedReadOptionsOrBuilder getDirectedReadOptionsOrBuilder() {
+    return directedReadOptions_ == null
+        ? com.google.spanner.v1.DirectedReadOptions.getDefaultInstance()
+        : directedReadOptions_;
+  }
+
+  public static final int DATA_BOOST_ENABLED_FIELD_NUMBER = 15;
+  private boolean dataBoostEnabled_ = false;
+  /**
+   *
+   *
+   * <pre>
+   * If this is for a partitioned read and this field is set to `true`, the
+   * request is executed with Spanner Data Boost independent compute resources.
+   *
+   * If the field is set to `true` but the request does not set
+   * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+   * </pre>
+   *
+   * <code>bool data_boost_enabled = 15;</code>
+   *
+   * @return The dataBoostEnabled.
+   */
+  @java.lang.Override
+  public boolean getDataBoostEnabled() {
+    return dataBoostEnabled_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -706,7 +677,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (requestOptions_ != null) {
       output.writeMessage(11, getRequestOptions());
     }
-    unknownFields.writeTo(output);
+    if (directedReadOptions_ != null) {
+      output.writeMessage(14, getDirectedReadOptions());
+    }
+    if (dataBoostEnabled_ != false) {
+      output.writeBool(15, dataBoostEnabled_);
+    }
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -750,7 +727,14 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(11, getRequestOptions());
     }
-    size += unknownFields.getSerializedSize();
+    if (directedReadOptions_ != null) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(14, getDirectedReadOptions());
+    }
+    if (dataBoostEnabled_ != false) {
+      size += com.google.protobuf.CodedOutputStream.computeBoolSize(15, dataBoostEnabled_);
+    }
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -784,7 +768,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (hasDirectedReadOptions() != other.hasDirectedReadOptions()) return false;
+    if (hasDirectedReadOptions()) {
+      if (!getDirectedReadOptions().equals(other.getDirectedReadOptions())) return false;
+    }
+    if (getDataBoostEnabled() != other.getDataBoostEnabled()) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -823,7 +812,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    if (hasDirectedReadOptions()) {
+      hash = (37 * hash) + DIRECTED_READ_OPTIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getDirectedReadOptions().hashCode();
+    }
+    hash = (37 * hash) + DATA_BOOST_ENABLED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDataBoostEnabled());
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -952,54 +947,44 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.ReadRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       session_ = "";
-
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-      } else {
-        transaction_ = null;
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
       table_ = "";
-
       index_ = "";
-
-      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
-      if (keySetBuilder_ == null) {
-        keySet_ = null;
-      } else {
-        keySet_ = null;
+      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      keySet_ = null;
+      if (keySetBuilder_ != null) {
+        keySetBuilder_.dispose();
         keySetBuilder_ = null;
       }
       limit_ = 0L;
-
       resumeToken_ = com.google.protobuf.ByteString.EMPTY;
-
       partitionToken_ = com.google.protobuf.ByteString.EMPTY;
-
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-      } else {
-        requestOptions_ = null;
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
+      directedReadOptions_ = null;
+      if (directedReadOptionsBuilder_ != null) {
+        directedReadOptionsBuilder_.dispose();
+        directedReadOptionsBuilder_ = null;
+      }
+      dataBoostEnabled_ = false;
       return this;
     }
 
@@ -1026,35 +1011,57 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.ReadRequest buildPartial() {
       com.google.spanner.v1.ReadRequest result = new com.google.spanner.v1.ReadRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.session_ = session_;
-      if (transactionBuilder_ == null) {
-        result.transaction_ = transaction_;
-      } else {
-        result.transaction_ = transactionBuilder_.build();
-      }
-      result.table_ = table_;
-      result.index_ = index_;
-      if (((bitField0_ & 0x00000001) != 0)) {
-        columns_ = columns_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000001);
-      }
-      result.columns_ = columns_;
-      if (keySetBuilder_ == null) {
-        result.keySet_ = keySet_;
-      } else {
-        result.keySet_ = keySetBuilder_.build();
-      }
-      result.limit_ = limit_;
-      result.resumeToken_ = resumeToken_;
-      result.partitionToken_ = partitionToken_;
-      if (requestOptionsBuilder_ == null) {
-        result.requestOptions_ = requestOptions_;
-      } else {
-        result.requestOptions_ = requestOptionsBuilder_.build();
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.ReadRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.session_ = session_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.transaction_ =
+            transactionBuilder_ == null ? transaction_ : transactionBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.table_ = table_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.index_ = index_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        columns_.makeImmutable();
+        result.columns_ = columns_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.keySet_ = keySetBuilder_ == null ? keySet_ : keySetBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.limit_ = limit_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.resumeToken_ = resumeToken_;
+      }
+      if (((from_bitField0_ & 0x00000100) != 0)) {
+        result.partitionToken_ = partitionToken_;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.requestOptions_ =
+            requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000400) != 0)) {
+        result.directedReadOptions_ =
+            directedReadOptionsBuilder_ == null
+                ? directedReadOptions_
+                : directedReadOptionsBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000800) != 0)) {
+        result.dataBoostEnabled_ = dataBoostEnabled_;
+      }
     }
 
     @java.lang.Override
@@ -1104,6 +1111,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (other == com.google.spanner.v1.ReadRequest.getDefaultInstance()) return this;
       if (!other.getSession().isEmpty()) {
         session_ = other.session_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.hasTransaction()) {
@@ -1111,16 +1119,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getTable().isEmpty()) {
         table_ = other.table_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       if (!other.getIndex().isEmpty()) {
         index_ = other.index_;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
       if (!other.columns_.isEmpty()) {
         if (columns_.isEmpty()) {
           columns_ = other.columns_;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ |= 0x00000010;
         } else {
           ensureColumnsIsMutable();
           columns_.addAll(other.columns_);
@@ -1142,7 +1152,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      if (other.hasDirectedReadOptions()) {
+        mergeDirectedReadOptions(other.getDirectedReadOptions());
+      }
+      if (other.getDataBoostEnabled() != false) {
+        setDataBoostEnabled(other.getDataBoostEnabled());
+      }
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1157,17 +1173,105 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.ReadRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                session_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getTransactionFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                table_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            case 34:
+              {
+                index_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+            case 42:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureColumnsIsMutable();
+                columns_.add(s);
+                break;
+              } // case 42
+            case 50:
+              {
+                input.readMessage(getKeySetFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
+            case 64:
+              {
+                limit_ = input.readInt64();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 64
+            case 74:
+              {
+                resumeToken_ = input.readBytes();
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 74
+            case 82:
+              {
+                partitionToken_ = input.readBytes();
+                bitField0_ |= 0x00000100;
+                break;
+              } // case 82
+            case 90:
+              {
+                input.readMessage(getRequestOptionsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000200;
+                break;
+              } // case 90
+            case 114:
+              {
+                input.readMessage(
+                    getDirectedReadOptionsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000400;
+                break;
+              } // case 114
+            case 120:
+              {
+                dataBoostEnabled_ = input.readBool();
+                bitField0_ |= 0x00000800;
+                break;
+              } // case 120
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.ReadRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -1240,8 +1344,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1259,8 +1363,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearSession() {
-
       session_ = getDefaultInstance().getSession();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -1283,8 +1387,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       session_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1308,7 +1412,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the transaction field is set.
      */
     public boolean hasTransaction() {
-      return transactionBuilder_ != null || transaction_ != null;
+      return ((bitField0_ & 0x00000002) != 0);
     }
     /**
      *
@@ -1347,11 +1451,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         transaction_ = value;
-        onChanged();
       } else {
         transactionBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1368,11 +1472,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         com.google.spanner.v1.TransactionSelector.Builder builderForValue) {
       if (transactionBuilder_ == null) {
         transaction_ = builderForValue.build();
-        onChanged();
       } else {
         transactionBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1387,19 +1491,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeTransaction(com.google.spanner.v1.TransactionSelector value) {
       if (transactionBuilder_ == null) {
-        if (transaction_ != null) {
-          transaction_ =
-              com.google.spanner.v1.TransactionSelector.newBuilder(transaction_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000002) != 0)
+            && transaction_ != null
+            && transaction_ != com.google.spanner.v1.TransactionSelector.getDefaultInstance()) {
+          getTransactionBuilder().mergeFrom(value);
         } else {
           transaction_ = value;
         }
-        onChanged();
       } else {
         transactionBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000002;
+      onChanged();
       return this;
     }
     /**
@@ -1413,14 +1516,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public Builder clearTransaction() {
-      if (transactionBuilder_ == null) {
-        transaction_ = null;
-        onChanged();
-      } else {
-        transaction_ = null;
+      bitField0_ = (bitField0_ & ~0x00000002);
+      transaction_ = null;
+      if (transactionBuilder_ != null) {
+        transactionBuilder_.dispose();
         transactionBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1434,7 +1536,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.TransactionSelector transaction = 2;</code>
      */
     public com.google.spanner.v1.TransactionSelector.Builder getTransactionBuilder() {
-
+      bitField0_ |= 0x00000002;
       onChanged();
       return getTransactionFieldBuilder().getBuilder();
     }
@@ -1545,8 +1647,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       table_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1562,8 +1664,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearTable() {
-
       table_ = getDefaultInstance().getTable();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1584,8 +1686,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       table_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1595,9 +1697,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.ReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.ReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.ReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.ReadRequest.table]. This index is used instead of
+     * the table primary key when interpreting
+     * [key_set][google.spanner.v1.ReadRequest.key_set] and sorting result rows.
+     * See [key_set][google.spanner.v1.ReadRequest.key_set] for further
+     * information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1619,9 +1724,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.ReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.ReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.ReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.ReadRequest.table]. This index is used instead of
+     * the table primary key when interpreting
+     * [key_set][google.spanner.v1.ReadRequest.key_set] and sorting result rows.
+     * See [key_set][google.spanner.v1.ReadRequest.key_set] for further
+     * information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1643,9 +1751,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.ReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.ReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.ReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.ReadRequest.table]. This index is used instead of
+     * the table primary key when interpreting
+     * [key_set][google.spanner.v1.ReadRequest.key_set] and sorting result rows.
+     * See [key_set][google.spanner.v1.ReadRequest.key_set] for further
+     * information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1657,8 +1768,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       index_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1666,9 +1777,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.ReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.ReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.ReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.ReadRequest.table]. This index is used instead of
+     * the table primary key when interpreting
+     * [key_set][google.spanner.v1.ReadRequest.key_set] and sorting result rows.
+     * See [key_set][google.spanner.v1.ReadRequest.key_set] for further
+     * information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1676,8 +1790,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearIndex() {
-
       index_ = getDefaultInstance().getIndex();
+      bitField0_ = (bitField0_ & ~0x00000008);
       onChanged();
       return this;
     }
@@ -1685,9 +1799,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.ReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.ReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.ReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.ReadRequest.table]. This index is used instead of
+     * the table primary key when interpreting
+     * [key_set][google.spanner.v1.ReadRequest.key_set] and sorting result rows.
+     * See [key_set][google.spanner.v1.ReadRequest.key_set] for further
+     * information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1700,27 +1817,27 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       index_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
 
-    private com.google.protobuf.LazyStringList columns_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList columns_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureColumnsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!columns_.isModifiable()) {
         columns_ = new com.google.protobuf.LazyStringArrayList(columns_);
-        bitField0_ |= 0x00000001;
       }
+      bitField0_ |= 0x00000010;
     }
     /**
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1728,14 +1845,15 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return A list containing the columns.
      */
     public com.google.protobuf.ProtocolStringList getColumnsList() {
-      return columns_.getUnmodifiableView();
+      columns_.makeImmutable();
+      return columns_;
     }
     /**
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1749,8 +1867,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1765,8 +1883,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1781,8 +1899,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1797,6 +1915,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       ensureColumnsIsMutable();
       columns_.set(index, value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1804,8 +1923,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1819,6 +1938,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       ensureColumnsIsMutable();
       columns_.add(value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1826,8 +1946,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1838,6 +1958,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllColumns(java.lang.Iterable<java.lang.String> values) {
       ensureColumnsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, columns_);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1845,8 +1966,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1854,8 +1975,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearColumns() {
-      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000010);
+      ;
       onChanged();
       return this;
     }
@@ -1863,8 +1985,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      *
      * <pre>
-     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be returned for each row matching
-     * this request.
+     * Required. The columns of [table][google.spanner.v1.ReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -1879,6 +2001,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureColumnsIsMutable();
       columns_.add(value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1894,13 +2017,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1910,20 +2039,26 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the keySet field is set.
      */
     public boolean hasKeySet() {
-      return keySetBuilder_ != null || keySet_ != null;
+      return ((bitField0_ & 0x00000020) != 0);
     }
     /**
      *
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1944,13 +2079,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1963,11 +2104,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         keySet_ = value;
-        onChanged();
       } else {
         keySetBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -1975,13 +2116,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1991,11 +2138,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder setKeySet(com.google.spanner.v1.KeySet.Builder builderForValue) {
       if (keySetBuilder_ == null) {
         keySet_ = builderForValue.build();
-        onChanged();
       } else {
         keySetBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -2003,13 +2150,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -2018,17 +2171,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeKeySet(com.google.spanner.v1.KeySet value) {
       if (keySetBuilder_ == null) {
-        if (keySet_ != null) {
-          keySet_ =
-              com.google.spanner.v1.KeySet.newBuilder(keySet_).mergeFrom(value).buildPartial();
+        if (((bitField0_ & 0x00000020) != 0)
+            && keySet_ != null
+            && keySet_ != com.google.spanner.v1.KeySet.getDefaultInstance()) {
+          getKeySetBuilder().mergeFrom(value);
         } else {
           keySet_ = value;
         }
-        onChanged();
       } else {
         keySetBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000020;
+      onChanged();
       return this;
     }
     /**
@@ -2036,13 +2190,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -2050,14 +2210,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public Builder clearKeySet() {
-      if (keySetBuilder_ == null) {
-        keySet_ = null;
-        onChanged();
-      } else {
-        keySet_ = null;
+      bitField0_ = (bitField0_ & ~0x00000020);
+      keySet_ = null;
+      if (keySetBuilder_ != null) {
+        keySetBuilder_.dispose();
         keySetBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2065,13 +2224,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -2079,7 +2244,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.KeySet key_set = 6 [(.google.api.field_behavior) = REQUIRED];</code>
      */
     public com.google.spanner.v1.KeySet.Builder getKeySetBuilder() {
-
+      bitField0_ |= 0x00000020;
       onChanged();
       return getKeySetFieldBuilder().getBuilder();
     }
@@ -2088,13 +2253,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -2113,13 +2284,19 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to be yielded, unless [index][google.spanner.v1.ReadRequest.index]
-     * is present. If [index][google.spanner.v1.ReadRequest.index] is present, then [key_set][google.spanner.v1.ReadRequest.key_set] instead names
-     * index keys in [index][google.spanner.v1.ReadRequest.index].
-     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is empty, rows are yielded
-     * in table primary key order (if [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
-     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the [partition_token][google.spanner.v1.ReadRequest.partition_token] field is not
-     * empty, rows will be yielded in an unspecified order.
+     * primary keys of the rows in [table][google.spanner.v1.ReadRequest.table] to
+     * be yielded, unless [index][google.spanner.v1.ReadRequest.index] is present.
+     * If [index][google.spanner.v1.ReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.ReadRequest.key_set] instead names index keys
+     * in [index][google.spanner.v1.ReadRequest.index].
+     *
+     * If the [partition_token][google.spanner.v1.ReadRequest.partition_token]
+     * field is empty, rows are yielded in table primary key order (if
+     * [index][google.spanner.v1.ReadRequest.index] is empty) or index key order
+     * (if [index][google.spanner.v1.ReadRequest.index] is non-empty).  If the
+     * [partition_token][google.spanner.v1.ReadRequest.partition_token] field is
+     * not empty, rows will be yielded in an unspecified order.
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -2178,6 +2355,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder setLimit(long value) {
 
       limit_ = value;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2195,7 +2373,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearLimit() {
-
+      bitField0_ = (bitField0_ & ~0x00000040);
       limit_ = 0L;
       onChanged();
       return this;
@@ -2208,9 +2386,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * If this request is resuming a previously interrupted read,
      * `resume_token` should be copied from the last
-     * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the interruption. Doing this
-     * enables the new read to resume where the last read left off. The
-     * rest of the request parameters must exactly match the request
+     * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the
+     * interruption. Doing this enables the new read to resume where the last read
+     * left off. The rest of the request parameters must exactly match the request
      * that yielded this token.
      * </pre>
      *
@@ -2228,9 +2406,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * If this request is resuming a previously interrupted read,
      * `resume_token` should be copied from the last
-     * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the interruption. Doing this
-     * enables the new read to resume where the last read left off. The
-     * rest of the request parameters must exactly match the request
+     * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the
+     * interruption. Doing this enables the new read to resume where the last read
+     * left off. The rest of the request parameters must exactly match the request
      * that yielded this token.
      * </pre>
      *
@@ -2243,8 +2421,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       resumeToken_ = value;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -2254,9 +2432,9 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * If this request is resuming a previously interrupted read,
      * `resume_token` should be copied from the last
-     * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the interruption. Doing this
-     * enables the new read to resume where the last read left off. The
-     * rest of the request parameters must exactly match the request
+     * [PartialResultSet][google.spanner.v1.PartialResultSet] yielded before the
+     * interruption. Doing this enables the new read to resume where the last read
+     * left off. The rest of the request parameters must exactly match the request
      * that yielded this token.
      * </pre>
      *
@@ -2265,7 +2443,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearResumeToken() {
-
+      bitField0_ = (bitField0_ & ~0x00000080);
       resumeToken_ = getDefaultInstance().getResumeToken();
       onChanged();
       return this;
@@ -2309,8 +2487,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       partitionToken_ = value;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -2329,7 +2507,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearPartitionToken() {
-
+      bitField0_ = (bitField0_ & ~0x00000100);
       partitionToken_ = getDefaultInstance().getPartitionToken();
       onChanged();
       return this;
@@ -2353,7 +2531,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the requestOptions field is set.
      */
     public boolean hasRequestOptions() {
-      return requestOptionsBuilder_ != null || requestOptions_ != null;
+      return ((bitField0_ & 0x00000200) != 0);
     }
     /**
      *
@@ -2390,11 +2568,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
           throw new NullPointerException();
         }
         requestOptions_ = value;
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000200;
+      onChanged();
       return this;
     }
     /**
@@ -2409,11 +2587,11 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder setRequestOptions(com.google.spanner.v1.RequestOptions.Builder builderForValue) {
       if (requestOptionsBuilder_ == null) {
         requestOptions_ = builderForValue.build();
-        onChanged();
       } else {
         requestOptionsBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000200;
+      onChanged();
       return this;
     }
     /**
@@ -2427,19 +2605,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeRequestOptions(com.google.spanner.v1.RequestOptions value) {
       if (requestOptionsBuilder_ == null) {
-        if (requestOptions_ != null) {
-          requestOptions_ =
-              com.google.spanner.v1.RequestOptions.newBuilder(requestOptions_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000200) != 0)
+            && requestOptions_ != null
+            && requestOptions_ != com.google.spanner.v1.RequestOptions.getDefaultInstance()) {
+          getRequestOptionsBuilder().mergeFrom(value);
         } else {
           requestOptions_ = value;
         }
-        onChanged();
       } else {
         requestOptionsBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000200;
+      onChanged();
       return this;
     }
     /**
@@ -2452,14 +2629,13 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
      */
     public Builder clearRequestOptions() {
-      if (requestOptionsBuilder_ == null) {
-        requestOptions_ = null;
-        onChanged();
-      } else {
-        requestOptions_ = null;
+      bitField0_ = (bitField0_ & ~0x00000200);
+      requestOptions_ = null;
+      if (requestOptionsBuilder_ != null) {
+        requestOptionsBuilder_.dispose();
         requestOptionsBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -2472,7 +2648,7 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 11;</code>
      */
     public com.google.spanner.v1.RequestOptions.Builder getRequestOptionsBuilder() {
-
+      bitField0_ |= 0x00000200;
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
@@ -2520,6 +2696,256 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       return requestOptionsBuilder_;
     }
 
+    private com.google.spanner.v1.DirectedReadOptions directedReadOptions_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.DirectedReadOptions,
+            com.google.spanner.v1.DirectedReadOptions.Builder,
+            com.google.spanner.v1.DirectedReadOptionsOrBuilder>
+        directedReadOptionsBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     *
+     * @return Whether the directedReadOptions field is set.
+     */
+    public boolean hasDirectedReadOptions() {
+      return ((bitField0_ & 0x00000400) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     *
+     * @return The directedReadOptions.
+     */
+    public com.google.spanner.v1.DirectedReadOptions getDirectedReadOptions() {
+      if (directedReadOptionsBuilder_ == null) {
+        return directedReadOptions_ == null
+            ? com.google.spanner.v1.DirectedReadOptions.getDefaultInstance()
+            : directedReadOptions_;
+      } else {
+        return directedReadOptionsBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     */
+    public Builder setDirectedReadOptions(com.google.spanner.v1.DirectedReadOptions value) {
+      if (directedReadOptionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        directedReadOptions_ = value;
+      } else {
+        directedReadOptionsBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     */
+    public Builder setDirectedReadOptions(
+        com.google.spanner.v1.DirectedReadOptions.Builder builderForValue) {
+      if (directedReadOptionsBuilder_ == null) {
+        directedReadOptions_ = builderForValue.build();
+      } else {
+        directedReadOptionsBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     */
+    public Builder mergeDirectedReadOptions(com.google.spanner.v1.DirectedReadOptions value) {
+      if (directedReadOptionsBuilder_ == null) {
+        if (((bitField0_ & 0x00000400) != 0)
+            && directedReadOptions_ != null
+            && directedReadOptions_
+                != com.google.spanner.v1.DirectedReadOptions.getDefaultInstance()) {
+          getDirectedReadOptionsBuilder().mergeFrom(value);
+        } else {
+          directedReadOptions_ = value;
+        }
+      } else {
+        directedReadOptionsBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     */
+    public Builder clearDirectedReadOptions() {
+      bitField0_ = (bitField0_ & ~0x00000400);
+      directedReadOptions_ = null;
+      if (directedReadOptionsBuilder_ != null) {
+        directedReadOptionsBuilder_.dispose();
+        directedReadOptionsBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     */
+    public com.google.spanner.v1.DirectedReadOptions.Builder getDirectedReadOptionsBuilder() {
+      bitField0_ |= 0x00000400;
+      onChanged();
+      return getDirectedReadOptionsFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     */
+    public com.google.spanner.v1.DirectedReadOptionsOrBuilder getDirectedReadOptionsOrBuilder() {
+      if (directedReadOptionsBuilder_ != null) {
+        return directedReadOptionsBuilder_.getMessageOrBuilder();
+      } else {
+        return directedReadOptions_ == null
+            ? com.google.spanner.v1.DirectedReadOptions.getDefaultInstance()
+            : directedReadOptions_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Directed read options for this request.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.DirectedReadOptions directed_read_options = 14;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.v1.DirectedReadOptions,
+            com.google.spanner.v1.DirectedReadOptions.Builder,
+            com.google.spanner.v1.DirectedReadOptionsOrBuilder>
+        getDirectedReadOptionsFieldBuilder() {
+      if (directedReadOptionsBuilder_ == null) {
+        directedReadOptionsBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.v1.DirectedReadOptions,
+                com.google.spanner.v1.DirectedReadOptions.Builder,
+                com.google.spanner.v1.DirectedReadOptionsOrBuilder>(
+                getDirectedReadOptions(), getParentForChildren(), isClean());
+        directedReadOptions_ = null;
+      }
+      return directedReadOptionsBuilder_;
+    }
+
+    private boolean dataBoostEnabled_;
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request is executed with Spanner Data Boost independent compute resources.
+     *
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @return The dataBoostEnabled.
+     */
+    @java.lang.Override
+    public boolean getDataBoostEnabled() {
+      return dataBoostEnabled_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request is executed with Spanner Data Boost independent compute resources.
+     *
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @param value The dataBoostEnabled to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDataBoostEnabled(boolean value) {
+
+      dataBoostEnabled_ = value;
+      bitField0_ |= 0x00000800;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * If this is for a partitioned read and this field is set to `true`, the
+     * request is executed with Spanner Data Boost independent compute resources.
+     *
+     * If the field is set to `true` but the request does not set
+     * `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>bool data_boost_enabled = 15;</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearDataBoostEnabled() {
+      bitField0_ = (bitField0_ & ~0x00000800);
+      dataBoostEnabled_ = false;
+      onChanged();
+      return this;
+    }
+
     @java.lang.Override
     public final Builder setUnknownFields(final com.google.protobuf.UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
@@ -2552,7 +2978,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ReadRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

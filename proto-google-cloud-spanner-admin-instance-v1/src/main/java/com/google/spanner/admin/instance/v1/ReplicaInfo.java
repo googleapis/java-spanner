@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,67 +38,6 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new ReplicaInfo();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private ReplicaInfo(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              location_ = s;
-              break;
-            }
-          case 16:
-            {
-              int rawValue = input.readEnum();
-
-              type_ = rawValue;
-              break;
-            }
-          case 24:
-            {
-              defaultLeaderLocation_ = input.readBool();
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -143,6 +82,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-write replicas support both reads and writes. These replicas:
+     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Can vote whether to commit a write.
@@ -158,6 +98,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-only replicas only support reads (not writes). Read-only replicas:
+     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Do not participate in voting to commit writes.
@@ -173,6 +114,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Witness replicas don't support reads but do participate in voting to
      * commit writes. Witness replicas:
+     *
      * * Do not maintain a full copy of data.
      * * Do not serve reads.
      * * Vote whether to commit writes.
@@ -200,6 +142,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-write replicas support both reads and writes. These replicas:
+     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Can vote whether to commit a write.
@@ -215,6 +158,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Read-only replicas only support reads (not writes). Read-only replicas:
+     *
      * * Maintain a full copy of your data.
      * * Serve reads.
      * * Do not participate in voting to commit writes.
@@ -230,6 +174,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Witness replicas don't support reads but do participate in voting to
      * commit writes. Witness replicas:
+     *
      * * Do not maintain a full copy of data.
      * * Do not serve reads.
      * * Vote whether to commit writes.
@@ -326,7 +271,9 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int LOCATION_FIELD_NUMBER = 1;
-  private volatile java.lang.Object location_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object location_ = "";
   /**
    *
    *
@@ -375,7 +322,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int TYPE_FIELD_NUMBER = 2;
-  private int type_;
+  private int type_ = 0;
   /**
    *
    *
@@ -404,16 +351,15 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType getType() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType result =
-        com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.valueOf(type_);
+        com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.forNumber(type_);
     return result == null
         ? com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.UNRECOGNIZED
         : result;
   }
 
   public static final int DEFAULT_LEADER_LOCATION_FIELD_NUMBER = 3;
-  private boolean defaultLeaderLocation_;
+  private boolean defaultLeaderLocation_ = false;
   /**
    *
    *
@@ -458,7 +404,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     if (defaultLeaderLocation_ != false) {
       output.writeBool(3, defaultLeaderLocation_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -478,7 +424,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     if (defaultLeaderLocation_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(3, defaultLeaderLocation_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -497,7 +443,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     if (!getLocation().equals(other.getLocation())) return false;
     if (type_ != other.type_) return false;
     if (getDefaultLeaderLocation() != other.getDefaultLeaderLocation()) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -514,7 +460,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + type_;
     hash = (37 * hash) + DEFAULT_LEADER_LOCATION_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDefaultLeaderLocation());
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -635,28 +581,19 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.admin.instance.v1.ReplicaInfo.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       location_ = "";
-
       type_ = 0;
-
       defaultLeaderLocation_ = false;
-
       return this;
     }
 
@@ -684,11 +621,24 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     public com.google.spanner.admin.instance.v1.ReplicaInfo buildPartial() {
       com.google.spanner.admin.instance.v1.ReplicaInfo result =
           new com.google.spanner.admin.instance.v1.ReplicaInfo(this);
-      result.location_ = location_;
-      result.type_ = type_;
-      result.defaultLeaderLocation_ = defaultLeaderLocation_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.instance.v1.ReplicaInfo result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.location_ = location_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.type_ = type_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.defaultLeaderLocation_ = defaultLeaderLocation_;
+      }
     }
 
     @java.lang.Override
@@ -739,6 +689,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
         return this;
       if (!other.getLocation().isEmpty()) {
         location_ = other.location_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.type_ != 0) {
@@ -747,7 +698,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
       if (other.getDefaultLeaderLocation() != false) {
         setDefaultLeaderLocation(other.getDefaultLeaderLocation());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -762,19 +713,53 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.instance.v1.ReplicaInfo parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                location_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 16:
+              {
+                type_ = input.readEnum();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+            case 24:
+              {
+                defaultLeaderLocation_ = input.readBool();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 24
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.admin.instance.v1.ReplicaInfo) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object location_ = "";
     /**
@@ -837,8 +822,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       location_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -854,8 +839,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearLocation() {
-
       location_ = getDefaultInstance().getLocation();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -876,8 +861,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       location_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -911,8 +896,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setTypeValue(int value) {
-
       type_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -929,9 +914,8 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType getType() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType result =
-          com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.valueOf(type_);
+          com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.forNumber(type_);
       return result == null
           ? com.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType.UNRECOGNIZED
           : result;
@@ -952,7 +936,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000002;
       type_ = value.getNumber();
       onChanged();
       return this;
@@ -969,7 +953,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearType() {
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       type_ = 0;
       onChanged();
       return this;
@@ -1012,6 +996,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
     public Builder setDefaultLeaderLocation(boolean value) {
 
       defaultLeaderLocation_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1030,7 +1015,7 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearDefaultLeaderLocation() {
-
+      bitField0_ = (bitField0_ & ~0x00000004);
       defaultLeaderLocation_ = false;
       onChanged();
       return this;
@@ -1068,7 +1053,18 @@ public final class ReplicaInfo extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ReplicaInfo(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

@@ -19,9 +19,11 @@ package com.google.cloud.spanner;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.Policy;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ListOption;
 import com.google.longrunning.Operation;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import java.util.Map;
 
@@ -62,6 +64,18 @@ public class Instance extends InstanceInfo {
     }
 
     @Override
+    Builder setUpdateTime(Timestamp updateTime) {
+      infoBuilder.setUpdateTime(updateTime);
+      return this;
+    }
+
+    @Override
+    Builder setCreateTime(Timestamp createTime) {
+      infoBuilder.setCreateTime(createTime);
+      return this;
+    }
+
+    @Override
     public Builder setNodeCount(int nodeCount) {
       infoBuilder.setNodeCount(nodeCount);
       return this;
@@ -70,6 +84,12 @@ public class Instance extends InstanceInfo {
     @Override
     public Builder setProcessingUnits(int processingUnits) {
       infoBuilder.setProcessingUnits(processingUnits);
+      return this;
+    }
+
+    @Override
+    public Builder setAutoscalingConfig(AutoscalingConfig autoscalingConfig) {
+      infoBuilder.setAutoscalingConfig(autoscalingConfig);
       return this;
     }
 
@@ -205,6 +225,9 @@ public class Instance extends InstanceInfo {
             .setInstanceConfigId(InstanceConfigId.of(proto.getConfig()))
             .setDisplayName(proto.getDisplayName())
             .setNodeCount(proto.getNodeCount())
+            .setCreateTime(Timestamp.fromProto(proto.getCreateTime()))
+            .setUpdateTime(Timestamp.fromProto(proto.getUpdateTime()))
+            .setAutoscalingConfig(proto.getAutoscalingConfig())
             .setProcessingUnits(proto.getProcessingUnits());
     State state;
     switch (proto.getState()) {

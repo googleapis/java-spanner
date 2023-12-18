@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,129 +23,176 @@ package com.google.spanner.v1;
  *
  * <pre>
  * Transactions:
+ *
  * Each session can have at most one active transaction at a time (note that
  * standalone reads and queries use a transaction internally and do count
  * towards the one transaction limit). After the active transaction is
  * completed, the session can immediately be re-used for the next transaction.
  * It is not necessary to create a new session for each transaction.
- * Transaction Modes:
+ *
+ * Transaction modes:
+ *
  * Cloud Spanner supports three transaction modes:
+ *
  *   1. Locking read-write. This type of transaction is the only way
  *      to write data into Cloud Spanner. These transactions rely on
  *      pessimistic locking and, if necessary, two-phase commit.
  *      Locking read-write transactions may abort, requiring the
  *      application to retry.
- *   2. Snapshot read-only. This transaction type provides guaranteed
- *      consistency across several reads, but does not allow
- *      writes. Snapshot read-only transactions can be configured to
- *      read at timestamps in the past. Snapshot read-only
- *      transactions do not need to be committed.
+ *
+ *   2. Snapshot read-only. Snapshot read-only transactions provide guaranteed
+ *      consistency across several reads, but do not allow
+ *      writes. Snapshot read-only transactions can be configured to read at
+ *      timestamps in the past, or configured to perform a strong read
+ *      (where Spanner will select a timestamp such that the read is
+ *      guaranteed to see the effects of all transactions that have committed
+ *      before the start of the read). Snapshot read-only transactions do not
+ *      need to be committed.
+ *
+ *      Queries on change streams must be performed with the snapshot read-only
+ *      transaction mode, specifying a strong read. Please see
+ *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong]
+ *      for more details.
+ *
  *   3. Partitioned DML. This type of transaction is used to execute
  *      a single Partitioned DML statement. Partitioned DML partitions
  *      the key space and runs the DML statement over each partition
  *      in parallel using separate, internal transactions that commit
  *      independently. Partitioned DML transactions do not need to be
  *      committed.
+ *
  * For transactions that only read, snapshot read-only transactions
  * provide simpler semantics and are almost always faster. In
  * particular, read-only transactions do not take locks, so they do
  * not conflict with read-write transactions. As a consequence of not
  * taking locks, they also do not abort, so retry loops are not needed.
- * Transactions may only read/write data in a single database. They
- * may, however, read/write data in different tables within that
+ *
+ * Transactions may only read-write data in a single database. They
+ * may, however, read-write data in different tables within that
  * database.
- * Locking Read-Write Transactions:
+ *
+ * Locking read-write transactions:
+ *
  * Locking transactions may be used to atomically read-modify-write
  * data anywhere in a database. This type of transaction is externally
  * consistent.
+ *
  * Clients should attempt to minimize the amount of time a transaction
  * is active. Faster transactions commit with higher probability
  * and cause less contention. Cloud Spanner attempts to keep read locks
  * active as long as the transaction continues to do reads, and the
  * transaction has not been terminated by
  * [Commit][google.spanner.v1.Spanner.Commit] or
- * [Rollback][google.spanner.v1.Spanner.Rollback].  Long periods of
+ * [Rollback][google.spanner.v1.Spanner.Rollback]. Long periods of
  * inactivity at the client may cause Cloud Spanner to release a
  * transaction's locks and abort it.
+ *
  * Conceptually, a read-write transaction consists of zero or more
  * reads or SQL statements followed by
  * [Commit][google.spanner.v1.Spanner.Commit]. At any time before
  * [Commit][google.spanner.v1.Spanner.Commit], the client can send a
  * [Rollback][google.spanner.v1.Spanner.Rollback] request to abort the
  * transaction.
+ *
  * Semantics:
+ *
  * Cloud Spanner can commit the transaction if all read locks it acquired
  * are still valid at commit time, and it is able to acquire write
  * locks for all writes. Cloud Spanner can abort the transaction for any
  * reason. If a commit attempt returns `ABORTED`, Cloud Spanner guarantees
  * that the transaction has not modified any user data in Cloud Spanner.
+ *
  * Unless the transaction commits, Cloud Spanner makes no guarantees about
  * how long the transaction's locks were held for. It is an error to
  * use Cloud Spanner locks for any sort of mutual exclusion other than
  * between Cloud Spanner transactions themselves.
- * Retrying Aborted Transactions:
+ *
+ * Retrying aborted transactions:
+ *
  * When a transaction aborts, the application can choose to retry the
  * whole transaction again. To maximize the chances of successfully
  * committing the retry, the client should execute the retry in the
  * same session as the original attempt. The original session's lock
  * priority increases with each consecutive abort, meaning that each
  * attempt has a slightly better chance of success than the previous.
+ *
  * Under some circumstances (for example, many transactions attempting to
  * modify the same row(s)), a transaction can abort many times in a
  * short period before successfully committing. Thus, it is not a good
  * idea to cap the number of retries a transaction can attempt;
  * instead, it is better to limit the total amount of time spent
  * retrying.
- * Idle Transactions:
+ *
+ * Idle transactions:
+ *
  * A transaction is considered idle if it has no outstanding reads or
  * SQL queries and has not started a read or SQL query within the last 10
  * seconds. Idle transactions can be aborted by Cloud Spanner so that they
  * don't hold on to locks indefinitely. If an idle transaction is aborted, the
  * commit will fail with error `ABORTED`.
+ *
  * If this behavior is undesirable, periodically executing a simple
  * SQL query in the transaction (for example, `SELECT 1`) prevents the
  * transaction from becoming idle.
- * Snapshot Read-Only Transactions:
+ *
+ * Snapshot read-only transactions:
+ *
  * Snapshot read-only transactions provides a simpler method than
  * locking read-write transactions for doing several consistent
  * reads. However, this type of transaction does not support writes.
+ *
  * Snapshot transactions do not take locks. Instead, they work by
  * choosing a Cloud Spanner timestamp, then executing all reads at that
  * timestamp. Since they do not acquire locks, they do not block
  * concurrent read-write transactions.
+ *
  * Unlike locking read-write transactions, snapshot read-only
  * transactions never abort. They can fail if the chosen read
  * timestamp is garbage collected; however, the default garbage
  * collection policy is generous enough that most applications do not
  * need to worry about this in practice.
+ *
  * Snapshot read-only transactions do not need to call
  * [Commit][google.spanner.v1.Spanner.Commit] or
  * [Rollback][google.spanner.v1.Spanner.Rollback] (and in fact are not
  * permitted to do so).
+ *
  * To execute a snapshot transaction, the client specifies a timestamp
  * bound, which tells Cloud Spanner how to choose a read timestamp.
+ *
  * The types of timestamp bound are:
+ *
  *   - Strong (the default).
  *   - Bounded staleness.
  *   - Exact staleness.
+ *
  * If the Cloud Spanner database to be read is geographically distributed,
  * stale read-only transactions can execute more quickly than strong
- * or read-write transaction, because they are able to execute far
+ * or read-write transactions, because they are able to execute far
  * from the leader replica.
+ *
  * Each type of timestamp bound is discussed in detail below.
- * Strong:
- * Strong reads are guaranteed to see the effects of all transactions
+ *
+ * Strong: Strong reads are guaranteed to see the effects of all transactions
  * that have committed before the start of the read. Furthermore, all
  * rows yielded by a single read are consistent with each other -- if
  * any part of the read observes a transaction, all parts of the read
  * see the transaction.
+ *
  * Strong reads are not repeatable: two consecutive strong read-only
  * transactions might return inconsistent results if there are
  * concurrent writes. If consistency across reads is required, the
  * reads should be executed within a transaction or at an exact read
  * timestamp.
- * See [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
- * Exact Staleness:
+ *
+ * Queries on change streams (see below for more details) must also specify
+ * the strong read timestamp bound.
+ *
+ * See
+ * [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
+ *
+ * Exact staleness:
+ *
  * These timestamp bounds execute reads at a user-specified
  * timestamp. Reads at a timestamp are guaranteed to see a consistent
  * prefix of the global transaction history: they observe
@@ -154,38 +201,54 @@ package com.google.spanner.v1;
  * transactions with a larger commit timestamp. They will block until
  * all conflicting transactions that may be assigned commit timestamps
  * &lt;= the read timestamp have finished.
+ *
  * The timestamp can either be expressed as an absolute Cloud Spanner commit
  * timestamp or a staleness relative to the current time.
+ *
  * These modes do not require a "negotiation phase" to pick a
  * timestamp. As a result, they execute slightly faster than the
  * equivalent boundedly stale concurrency modes. On the other hand,
  * boundedly stale reads usually return fresher results.
- * See [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp] and
+ *
+ * See
+ * [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp]
+ * and
  * [TransactionOptions.ReadOnly.exact_staleness][google.spanner.v1.TransactionOptions.ReadOnly.exact_staleness].
- * Bounded Staleness:
+ *
+ * Bounded staleness:
+ *
  * Bounded staleness modes allow Cloud Spanner to pick the read timestamp,
  * subject to a user-provided staleness bound. Cloud Spanner chooses the
  * newest timestamp within the staleness bound that allows execution
  * of the reads at the closest available replica without blocking.
+ *
  * All rows yielded are consistent with each other -- if any part of
  * the read observes a transaction, all parts of the read see the
  * transaction. Boundedly stale reads are not repeatable: two stale
  * reads, even if they use the same staleness bound, can execute at
  * different timestamps and thus return inconsistent results.
+ *
  * Boundedly stale reads execute in two phases: the first phase
  * negotiates a timestamp among all replicas needed to serve the
  * read. In the second phase, reads are executed at the negotiated
  * timestamp.
+ *
  * As a result of the two phase execution, bounded staleness reads are
  * usually a little slower than comparable exact staleness
  * reads. However, they are typically able to return fresher
  * results, and are more likely to execute at the closest replica.
+ *
  * Because the timestamp negotiation requires up-front knowledge of
  * which rows will be read, it can only be used with single-use
  * read-only transactions.
- * See [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness] and
+ *
+ * See
+ * [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness]
+ * and
  * [TransactionOptions.ReadOnly.min_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.min_read_timestamp].
- * Old Read Timestamps and Garbage Collection:
+ *
+ * Old read timestamps and garbage collection:
+ *
  * Cloud Spanner continuously garbage collects deleted and overwritten data
  * in the background to reclaim storage space. This process is known
  * as "version GC". By default, version GC reclaims versions after they
@@ -194,27 +257,68 @@ package com.google.spanner.v1;
  * restriction also applies to in-progress reads and/or SQL queries whose
  * timestamp become too old while executing. Reads and SQL queries with
  * too-old read timestamps fail with the error `FAILED_PRECONDITION`.
- * Partitioned DML Transactions:
+ *
+ * You can configure and extend the `VERSION_RETENTION_PERIOD` of a
+ * database up to a period as long as one week, which allows Cloud Spanner
+ * to perform reads up to one week in the past.
+ *
+ * Querying change Streams:
+ *
+ * A Change Stream is a schema object that can be configured to watch data
+ * changes on the entire database, a set of tables, or a set of columns
+ * in a database.
+ *
+ * When a change stream is created, Spanner automatically defines a
+ * corresponding SQL Table-Valued Function (TVF) that can be used to query
+ * the change records in the associated change stream using the
+ * ExecuteStreamingSql API. The name of the TVF for a change stream is
+ * generated from the name of the change stream: READ_&lt;change_stream_name&gt;.
+ *
+ * All queries on change stream TVFs must be executed using the
+ * ExecuteStreamingSql API with a single-use read-only transaction with a
+ * strong read-only timestamp_bound. The change stream TVF allows users to
+ * specify the start_timestamp and end_timestamp for the time range of
+ * interest. All change records within the retention period is accessible
+ * using the strong read-only timestamp_bound. All other TransactionOptions
+ * are invalid for change stream queries.
+ *
+ * In addition, if TransactionOptions.read_only.return_read_timestamp is set
+ * to true, a special value of 2^63 - 2 will be returned in the
+ * [Transaction][google.spanner.v1.Transaction] message that describes the
+ * transaction, instead of a valid read timestamp. This special value should be
+ * discarded and not used for any subsequent queries.
+ *
+ * Please see https://cloud.google.com/spanner/docs/change-streams
+ * for more details on how to query the change stream TVFs.
+ *
+ * Partitioned DML transactions:
+ *
  * Partitioned DML transactions are used to execute DML statements with a
  * different execution strategy that provides different, and often better,
  * scalability properties for large, table-wide operations than DML in a
  * ReadWrite transaction. Smaller scoped statements, such as an OLTP workload,
  * should prefer using ReadWrite transactions.
+ *
  * Partitioned DML partitions the keyspace and runs the DML statement on each
  * partition in separate, internal transactions. These transactions commit
  * automatically when complete, and run independently from one another.
+ *
  * To reduce lock contention, this execution strategy only acquires read locks
  * on rows that match the WHERE clause of the statement. Additionally, the
  * smaller per-partition transactions hold locks for less time.
+ *
  * That said, Partitioned DML is not a drop-in replacement for standard DML used
  * in ReadWrite transactions.
+ *
  *  - The DML statement must be fully-partitionable. Specifically, the statement
  *    must be expressible as the union of many statements which each access only
  *    a single row of the table.
+ *
  *  - The statement is not applied atomically to all rows of the table. Rather,
  *    the statement is applied atomically to partitions of the table, in
  *    independent transactions. Secondary index rows are updated atomically
  *    with the base table rows.
+ *
  *  - Partitioned DML does not guarantee exactly-once execution semantics
  *    against a partition. The statement will be applied at least once to each
  *    partition. It is strongly recommended that the DML statement should be
@@ -222,19 +326,23 @@ package com.google.spanner.v1;
  *    dangerous to run a statement such as
  *    `UPDATE table SET column = column + 1` as it could be run multiple times
  *    against some rows.
+ *
  *  - The partitions are committed automatically - there is no support for
  *    Commit or Rollback. If the call returns an error, or if the client issuing
  *    the ExecuteSql call dies, it is possible that some rows had the statement
  *    executed on them successfully. It is also possible that statement was
  *    never executed against other rows.
+ *
  *  - Partitioned DML transactions may only contain the execution of a single
  *    DML statement via ExecuteSql or ExecuteStreamingSql.
+ *
  *  - If any error is encountered during the execution of the partitioned DML
  *    operation (for instance, a UNIQUE INDEX violation, division by zero, or a
  *    value that cannot be stored due to schema constraints), then the
  *    operation is stopped at that point and an error is returned. It is
  *    possible that at this point, some partitions have been committed (or even
  *    committed multiple times), and other partitions have not been run at all.
+ *
  * Given the above, Partitioned DML is good fit for large, database-wide,
  * operations that are idempotent, such as deleting old rows from a very large
  * table.
@@ -260,103 +368,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     return new TransactionOptions();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private TransactionOptions(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              com.google.spanner.v1.TransactionOptions.ReadWrite.Builder subBuilder = null;
-              if (modeCase_ == 1) {
-                subBuilder =
-                    ((com.google.spanner.v1.TransactionOptions.ReadWrite) mode_).toBuilder();
-              }
-              mode_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.ReadWrite.parser(),
-                      extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions.ReadWrite) mode_);
-                mode_ = subBuilder.buildPartial();
-              }
-              modeCase_ = 1;
-              break;
-            }
-          case 18:
-            {
-              com.google.spanner.v1.TransactionOptions.ReadOnly.Builder subBuilder = null;
-              if (modeCase_ == 2) {
-                subBuilder =
-                    ((com.google.spanner.v1.TransactionOptions.ReadOnly) mode_).toBuilder();
-              }
-              mode_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.ReadOnly.parser(),
-                      extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom((com.google.spanner.v1.TransactionOptions.ReadOnly) mode_);
-                mode_ = subBuilder.buildPartial();
-              }
-              modeCase_ = 2;
-              break;
-            }
-          case 26:
-            {
-              com.google.spanner.v1.TransactionOptions.PartitionedDml.Builder subBuilder = null;
-              if (modeCase_ == 3) {
-                subBuilder =
-                    ((com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_).toBuilder();
-              }
-              mode_ =
-                  input.readMessage(
-                      com.google.spanner.v1.TransactionOptions.PartitionedDml.parser(),
-                      extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(
-                    (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_);
-                mode_ = subBuilder.buildPartial();
-              }
-              modeCase_ = 3;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.TransactionProto
         .internal_static_google_spanner_v1_TransactionOptions_descriptor;
@@ -375,7 +386,33 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
   public interface ReadWriteOrBuilder
       extends
       // @@protoc_insertion_point(interface_extends:google.spanner.v1.TransactionOptions.ReadWrite)
-      com.google.protobuf.MessageOrBuilder {}
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The enum numeric value on the wire for readLockMode.
+     */
+    int getReadLockModeValue();
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The readLockMode.
+     */
+    com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode();
+  }
   /**
    *
    *
@@ -396,54 +433,14 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       super(builder);
     }
 
-    private ReadWrite() {}
+    private ReadWrite() {
+      readLockMode_ = 0;
+    }
 
     @java.lang.Override
     @SuppressWarnings({"unused"})
     protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
       return new ReadWrite();
-    }
-
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-      return this.unknownFields;
-    }
-
-    private ReadWrite(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -461,6 +458,219 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               com.google.spanner.v1.TransactionOptions.ReadWrite.Builder.class);
     }
 
+    /**
+     *
+     *
+     * <pre>
+     * `ReadLockMode` is used to set the read lock mode for read-write
+     * transactions.
+     * </pre>
+     *
+     * Protobuf enum {@code google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode}
+     */
+    public enum ReadLockMode implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       *
+       *
+       * <pre>
+       * Default value.
+       *
+       * If the value is not specified, the pessimistic read lock is used.
+       * </pre>
+       *
+       * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
+       */
+      READ_LOCK_MODE_UNSPECIFIED(0),
+      /**
+       *
+       *
+       * <pre>
+       * Pessimistic lock mode.
+       *
+       * Read locks are acquired immediately on read.
+       * </pre>
+       *
+       * <code>PESSIMISTIC = 1;</code>
+       */
+      PESSIMISTIC(1),
+      /**
+       *
+       *
+       * <pre>
+       * Optimistic lock mode.
+       *
+       * Locks for reads within the transaction are not acquired on read.
+       * Instead the locks are acquired on a commit to validate that
+       * read/queried data has not changed since the transaction started.
+       * </pre>
+       *
+       * <code>OPTIMISTIC = 2;</code>
+       */
+      OPTIMISTIC(2),
+      UNRECOGNIZED(-1),
+      ;
+
+      /**
+       *
+       *
+       * <pre>
+       * Default value.
+       *
+       * If the value is not specified, the pessimistic read lock is used.
+       * </pre>
+       *
+       * <code>READ_LOCK_MODE_UNSPECIFIED = 0;</code>
+       */
+      public static final int READ_LOCK_MODE_UNSPECIFIED_VALUE = 0;
+      /**
+       *
+       *
+       * <pre>
+       * Pessimistic lock mode.
+       *
+       * Read locks are acquired immediately on read.
+       * </pre>
+       *
+       * <code>PESSIMISTIC = 1;</code>
+       */
+      public static final int PESSIMISTIC_VALUE = 1;
+      /**
+       *
+       *
+       * <pre>
+       * Optimistic lock mode.
+       *
+       * Locks for reads within the transaction are not acquired on read.
+       * Instead the locks are acquired on a commit to validate that
+       * read/queried data has not changed since the transaction started.
+       * </pre>
+       *
+       * <code>OPTIMISTIC = 2;</code>
+       */
+      public static final int OPTIMISTIC_VALUE = 2;
+
+      public final int getNumber() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalArgumentException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ReadLockMode valueOf(int value) {
+        return forNumber(value);
+      }
+
+      /**
+       * @param value The numeric wire value of the corresponding enum entry.
+       * @return The enum associated with the given numeric wire value.
+       */
+      public static ReadLockMode forNumber(int value) {
+        switch (value) {
+          case 0:
+            return READ_LOCK_MODE_UNSPECIFIED;
+          case 1:
+            return PESSIMISTIC;
+          case 2:
+            return OPTIMISTIC;
+          default:
+            return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ReadLockMode> internalGetValueMap() {
+        return internalValueMap;
+      }
+
+      private static final com.google.protobuf.Internal.EnumLiteMap<ReadLockMode> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<ReadLockMode>() {
+            public ReadLockMode findValueByNumber(int number) {
+              return ReadLockMode.forNumber(number);
+            }
+          };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalStateException(
+              "Can't get the descriptor of an unrecognized enum value.");
+        }
+        return getDescriptor().getValues().get(ordinal());
+      }
+
+      public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+        return getDescriptor();
+      }
+
+      public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+        return com.google.spanner.v1.TransactionOptions.ReadWrite.getDescriptor()
+            .getEnumTypes()
+            .get(0);
+      }
+
+      private static final ReadLockMode[] VALUES = values();
+
+      public static ReadLockMode valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+        }
+        if (desc.getIndex() == -1) {
+          return UNRECOGNIZED;
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private ReadLockMode(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode)
+    }
+
+    public static final int READ_LOCK_MODE_FIELD_NUMBER = 1;
+    private int readLockMode_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The enum numeric value on the wire for readLockMode.
+     */
+    @java.lang.Override
+    public int getReadLockModeValue() {
+      return readLockMode_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Read lock mode for the transaction.
+     * </pre>
+     *
+     * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;</code>
+     *
+     * @return The readLockMode.
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode() {
+      com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode result =
+          com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.forNumber(readLockMode_);
+      return result == null
+          ? com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.UNRECOGNIZED
+          : result;
+    }
+
     private byte memoizedIsInitialized = -1;
 
     @java.lang.Override
@@ -475,7 +685,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-      unknownFields.writeTo(output);
+      if (readLockMode_
+          != com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .READ_LOCK_MODE_UNSPECIFIED
+              .getNumber()) {
+        output.writeEnum(1, readLockMode_);
+      }
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -484,7 +700,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (size != -1) return size;
 
       size = 0;
-      size += unknownFields.getSerializedSize();
+      if (readLockMode_
+          != com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .READ_LOCK_MODE_UNSPECIFIED
+              .getNumber()) {
+        size += com.google.protobuf.CodedOutputStream.computeEnumSize(1, readLockMode_);
+      }
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -500,7 +722,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       com.google.spanner.v1.TransactionOptions.ReadWrite other =
           (com.google.spanner.v1.TransactionOptions.ReadWrite) obj;
 
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (readLockMode_ != other.readLockMode_) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -511,7 +734,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (37 * hash) + READ_LOCK_MODE_FIELD_NUMBER;
+      hash = (53 * hash) + readLockMode_;
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -643,22 +868,17 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
 
       // Construct using com.google.spanner.v1.TransactionOptions.ReadWrite.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
+        readLockMode_ = 0;
         return this;
       }
 
@@ -686,8 +906,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public com.google.spanner.v1.TransactionOptions.ReadWrite buildPartial() {
         com.google.spanner.v1.TransactionOptions.ReadWrite result =
             new com.google.spanner.v1.TransactionOptions.ReadWrite(this);
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.TransactionOptions.ReadWrite result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.readLockMode_ = readLockMode_;
+        }
       }
 
       @java.lang.Override
@@ -738,7 +968,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public Builder mergeFrom(com.google.spanner.v1.TransactionOptions.ReadWrite other) {
         if (other == com.google.spanner.v1.TransactionOptions.ReadWrite.getDefaultInstance())
           return this;
-        this.mergeUnknownFields(other.unknownFields);
+        if (other.readLockMode_ != 0) {
+          setReadLockModeValue(other.getReadLockModeValue());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -753,18 +986,138 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.TransactionOptions.ReadWrite parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8:
+                {
+                  readLockMode_ = input.readEnum();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 8
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage =
-              (com.google.spanner.v1.TransactionOptions.ReadWrite) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
+          onChanged();
+        } // finally
+        return this;
+      }
+
+      private int bitField0_;
+
+      private int readLockMode_ = 0;
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @return The enum numeric value on the wire for readLockMode.
+       */
+      @java.lang.Override
+      public int getReadLockModeValue() {
+        return readLockMode_;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @param value The enum numeric value on the wire for readLockMode to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReadLockModeValue(int value) {
+        readLockMode_ = value;
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @return The readLockMode.
+       */
+      @java.lang.Override
+      public com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode getReadLockMode() {
+        com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode result =
+            com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.forNumber(
+                readLockMode_);
+        return result == null
+            ? com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode.UNRECOGNIZED
+            : result;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @param value The readLockMode to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReadLockMode(
+          com.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode value) {
+        if (value == null) {
+          throw new NullPointerException();
         }
+        bitField0_ |= 0x00000001;
+        readLockMode_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       *
+       *
+       * <pre>
+       * Read lock mode for the transaction.
+       * </pre>
+       *
+       * <code>.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode read_lock_mode = 1;
+       * </code>
+       *
+       * @return This builder for chaining.
+       */
+      public Builder clearReadLockMode() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        readLockMode_ = 0;
+        onChanged();
         return this;
       }
 
@@ -801,7 +1154,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new ReadWrite(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -851,48 +1216,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return new PartitionedDml();
     }
 
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-      return this.unknownFields;
-    }
-
-    private PartitionedDml(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_PartitionedDml_descriptor;
@@ -922,7 +1245,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
 
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -931,7 +1254,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (size != -1) return size;
 
       size = 0;
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -947,7 +1270,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       com.google.spanner.v1.TransactionOptions.PartitionedDml other =
           (com.google.spanner.v1.TransactionOptions.PartitionedDml) obj;
 
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -958,7 +1281,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -1090,17 +1413,10 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
 
       // Construct using com.google.spanner.v1.TransactionOptions.PartitionedDml.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
       @java.lang.Override
@@ -1185,7 +1501,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public Builder mergeFrom(com.google.spanner.v1.TransactionOptions.PartitionedDml other) {
         if (other == com.google.spanner.v1.TransactionOptions.PartitionedDml.getDefaultInstance())
           return this;
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -1200,18 +1516,31 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.TransactionOptions.PartitionedDml parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage =
-              (com.google.spanner.v1.TransactionOptions.PartitionedDml) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -1248,7 +1577,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new PartitionedDml(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -1304,10 +1645,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+     *
      * This is useful for requesting fresher data than some previous
      * read, or data that is fresh enough to observe the effects of some
      * previously committed transaction whose timestamp is known.
+     *
      * Note that this option can only be used in single-use transactions.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1322,10 +1666,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+     *
      * This is useful for requesting fresher data than some previous
      * read, or data that is fresh enough to observe the effects of some
      * previously committed transaction whose timestamp is known.
+     *
      * Note that this option can only be used in single-use transactions.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1340,10 +1687,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+     *
      * This is useful for requesting fresher data than some previous
      * read, or data that is fresh enough to observe the effects of some
      * previously committed transaction whose timestamp is known.
+     *
      * Note that this option can only be used in single-use transactions.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1362,9 +1712,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * Cloud Spanner chooses the exact timestamp, this mode works even if
      * the client's local clock is substantially skewed from Cloud Spanner
      * commit timestamps.
+     *
      * Useful for reading the freshest data available at a nearby
      * replica, while bounding the possible staleness if the local
      * replica has fallen behind.
+     *
      * Note that this option can only be used in single-use
      * transactions.
      * </pre>
@@ -1384,9 +1736,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * Cloud Spanner chooses the exact timestamp, this mode works even if
      * the client's local clock is substantially skewed from Cloud Spanner
      * commit timestamps.
+     *
      * Useful for reading the freshest data available at a nearby
      * replica, while bounding the possible staleness if the local
      * replica has fallen behind.
+     *
      * Note that this option can only be used in single-use
      * transactions.
      * </pre>
@@ -1406,9 +1760,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * Cloud Spanner chooses the exact timestamp, this mode works even if
      * the client's local clock is substantially skewed from Cloud Spanner
      * commit timestamps.
+     *
      * Useful for reading the freshest data available at a nearby
      * replica, while bounding the possible staleness if the local
      * replica has fallen behind.
+     *
      * Note that this option can only be used in single-use
      * transactions.
      * </pre>
@@ -1426,9 +1782,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * the same timestamp always returns the same data. If the
      * timestamp is in the future, the read will block until the
      * specified timestamp, modulo the read's deadline.
+     *
      * Useful for large scale consistent reads such as mapreduces, or
      * for coordinating many reads against a consistent snapshot of the
      * data.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1447,9 +1805,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * the same timestamp always returns the same data. If the
      * timestamp is in the future, the read will block until the
      * specified timestamp, modulo the read's deadline.
+     *
      * Useful for large scale consistent reads such as mapreduces, or
      * for coordinating many reads against a consistent snapshot of the
      * data.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1468,9 +1828,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * the same timestamp always returns the same data. If the
      * timestamp is in the future, the read will block until the
      * specified timestamp, modulo the read's deadline.
+     *
      * Useful for large scale consistent reads such as mapreduces, or
      * for coordinating many reads against a consistent snapshot of the
      * data.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1485,11 +1847,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <pre>
      * Executes all reads at a timestamp that is `exact_staleness`
      * old. The timestamp is chosen soon after the read is started.
+     *
      * Guarantees that all writes that have committed more than the
      * specified number of seconds ago are visible. Because Cloud Spanner
      * chooses the exact timestamp, this mode works even if the client's
      * local clock is substantially skewed from Cloud Spanner commit
      * timestamps.
+     *
      * Useful for reading at nearby replicas without the distributed
      * timestamp negotiation overhead of `max_staleness`.
      * </pre>
@@ -1505,11 +1869,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <pre>
      * Executes all reads at a timestamp that is `exact_staleness`
      * old. The timestamp is chosen soon after the read is started.
+     *
      * Guarantees that all writes that have committed more than the
      * specified number of seconds ago are visible. Because Cloud Spanner
      * chooses the exact timestamp, this mode works even if the client's
      * local clock is substantially skewed from Cloud Spanner commit
      * timestamps.
+     *
      * Useful for reading at nearby replicas without the distributed
      * timestamp negotiation overhead of `max_staleness`.
      * </pre>
@@ -1525,11 +1891,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <pre>
      * Executes all reads at a timestamp that is `exact_staleness`
      * old. The timestamp is chosen soon after the read is started.
+     *
      * Guarantees that all writes that have committed more than the
      * specified number of seconds ago are visible. Because Cloud Spanner
      * chooses the exact timestamp, this mode works even if the client's
      * local clock is substantially skewed from Cloud Spanner commit
      * timestamps.
+     *
      * Useful for reading at nearby replicas without the distributed
      * timestamp negotiation overhead of `max_staleness`.
      * </pre>
@@ -1543,7 +1911,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * If true, the Cloud Spanner-selected read timestamp is included in
-     * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+     * the [Transaction][google.spanner.v1.Transaction] message that describes
+     * the transaction.
      * </pre>
      *
      * <code>bool return_read_timestamp = 6;</code>
@@ -1552,8 +1921,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      */
     boolean getReturnReadTimestamp();
 
-    public com.google.spanner.v1.TransactionOptions.ReadOnly.TimestampBoundCase
-        getTimestampBoundCase();
+    com.google.spanner.v1.TransactionOptions.ReadOnly.TimestampBoundCase getTimestampBoundCase();
   }
   /**
    *
@@ -1582,119 +1950,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return new ReadOnly();
     }
 
-    @java.lang.Override
-    public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-      return this.unknownFields;
-    }
-
-    private ReadOnly(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8:
-              {
-                timestampBoundCase_ = 1;
-                timestampBound_ = input.readBool();
-                break;
-              }
-            case 18:
-              {
-                com.google.protobuf.Timestamp.Builder subBuilder = null;
-                if (timestampBoundCase_ == 2) {
-                  subBuilder = ((com.google.protobuf.Timestamp) timestampBound_).toBuilder();
-                }
-                timestampBound_ =
-                    input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom((com.google.protobuf.Timestamp) timestampBound_);
-                  timestampBound_ = subBuilder.buildPartial();
-                }
-                timestampBoundCase_ = 2;
-                break;
-              }
-            case 26:
-              {
-                com.google.protobuf.Duration.Builder subBuilder = null;
-                if (timestampBoundCase_ == 3) {
-                  subBuilder = ((com.google.protobuf.Duration) timestampBound_).toBuilder();
-                }
-                timestampBound_ =
-                    input.readMessage(com.google.protobuf.Duration.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom((com.google.protobuf.Duration) timestampBound_);
-                  timestampBound_ = subBuilder.buildPartial();
-                }
-                timestampBoundCase_ = 3;
-                break;
-              }
-            case 34:
-              {
-                com.google.protobuf.Timestamp.Builder subBuilder = null;
-                if (timestampBoundCase_ == 4) {
-                  subBuilder = ((com.google.protobuf.Timestamp) timestampBound_).toBuilder();
-                }
-                timestampBound_ =
-                    input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom((com.google.protobuf.Timestamp) timestampBound_);
-                  timestampBound_ = subBuilder.buildPartial();
-                }
-                timestampBoundCase_ = 4;
-                break;
-              }
-            case 42:
-              {
-                com.google.protobuf.Duration.Builder subBuilder = null;
-                if (timestampBoundCase_ == 5) {
-                  subBuilder = ((com.google.protobuf.Duration) timestampBound_).toBuilder();
-                }
-                timestampBound_ =
-                    input.readMessage(com.google.protobuf.Duration.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom((com.google.protobuf.Duration) timestampBound_);
-                  timestampBound_ = subBuilder.buildPartial();
-                }
-                timestampBoundCase_ = 5;
-                break;
-              }
-            case 48:
-              {
-                returnReadTimestamp_ = input.readBool();
-                break;
-              }
-            default:
-              {
-                if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
-
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.v1.TransactionProto
           .internal_static_google_spanner_v1_TransactionOptions_ReadOnly_descriptor;
@@ -1711,6 +1966,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     private int timestampBoundCase_ = 0;
+
+    @SuppressWarnings("serial")
     private java.lang.Object timestampBound_;
 
     public enum TimestampBoundCase
@@ -1809,10 +2066,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+     *
      * This is useful for requesting fresher data than some previous
      * read, or data that is fresh enough to observe the effects of some
      * previously committed transaction whose timestamp is known.
+     *
      * Note that this option can only be used in single-use transactions.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1830,10 +2090,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+     *
      * This is useful for requesting fresher data than some previous
      * read, or data that is fresh enough to observe the effects of some
      * previously committed transaction whose timestamp is known.
+     *
      * Note that this option can only be used in single-use transactions.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1854,10 +2117,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+     *
      * This is useful for requesting fresher data than some previous
      * read, or data that is fresh enough to observe the effects of some
      * previously committed transaction whose timestamp is known.
+     *
      * Note that this option can only be used in single-use transactions.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1883,9 +2149,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * Cloud Spanner chooses the exact timestamp, this mode works even if
      * the client's local clock is substantially skewed from Cloud Spanner
      * commit timestamps.
+     *
      * Useful for reading the freshest data available at a nearby
      * replica, while bounding the possible staleness if the local
      * replica has fallen behind.
+     *
      * Note that this option can only be used in single-use
      * transactions.
      * </pre>
@@ -1908,9 +2176,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * Cloud Spanner chooses the exact timestamp, this mode works even if
      * the client's local clock is substantially skewed from Cloud Spanner
      * commit timestamps.
+     *
      * Useful for reading the freshest data available at a nearby
      * replica, while bounding the possible staleness if the local
      * replica has fallen behind.
+     *
      * Note that this option can only be used in single-use
      * transactions.
      * </pre>
@@ -1936,9 +2206,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * Cloud Spanner chooses the exact timestamp, this mode works even if
      * the client's local clock is substantially skewed from Cloud Spanner
      * commit timestamps.
+     *
      * Useful for reading the freshest data available at a nearby
      * replica, while bounding the possible staleness if the local
      * replica has fallen behind.
+     *
      * Note that this option can only be used in single-use
      * transactions.
      * </pre>
@@ -1963,9 +2235,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * the same timestamp always returns the same data. If the
      * timestamp is in the future, the read will block until the
      * specified timestamp, modulo the read's deadline.
+     *
      * Useful for large scale consistent reads such as mapreduces, or
      * for coordinating many reads against a consistent snapshot of the
      * data.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -1987,9 +2261,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * the same timestamp always returns the same data. If the
      * timestamp is in the future, the read will block until the
      * specified timestamp, modulo the read's deadline.
+     *
      * Useful for large scale consistent reads such as mapreduces, or
      * for coordinating many reads against a consistent snapshot of the
      * data.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -2014,9 +2290,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * the same timestamp always returns the same data. If the
      * timestamp is in the future, the read will block until the
      * specified timestamp, modulo the read's deadline.
+     *
      * Useful for large scale consistent reads such as mapreduces, or
      * for coordinating many reads against a consistent snapshot of the
      * data.
+     *
      * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
      * Example: `"2014-10-02T15:01:23.045123456Z"`.
      * </pre>
@@ -2038,11 +2316,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <pre>
      * Executes all reads at a timestamp that is `exact_staleness`
      * old. The timestamp is chosen soon after the read is started.
+     *
      * Guarantees that all writes that have committed more than the
      * specified number of seconds ago are visible. Because Cloud Spanner
      * chooses the exact timestamp, this mode works even if the client's
      * local clock is substantially skewed from Cloud Spanner commit
      * timestamps.
+     *
      * Useful for reading at nearby replicas without the distributed
      * timestamp negotiation overhead of `max_staleness`.
      * </pre>
@@ -2061,11 +2341,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <pre>
      * Executes all reads at a timestamp that is `exact_staleness`
      * old. The timestamp is chosen soon after the read is started.
+     *
      * Guarantees that all writes that have committed more than the
      * specified number of seconds ago are visible. Because Cloud Spanner
      * chooses the exact timestamp, this mode works even if the client's
      * local clock is substantially skewed from Cloud Spanner commit
      * timestamps.
+     *
      * Useful for reading at nearby replicas without the distributed
      * timestamp negotiation overhead of `max_staleness`.
      * </pre>
@@ -2087,11 +2369,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      * <pre>
      * Executes all reads at a timestamp that is `exact_staleness`
      * old. The timestamp is chosen soon after the read is started.
+     *
      * Guarantees that all writes that have committed more than the
      * specified number of seconds ago are visible. Because Cloud Spanner
      * chooses the exact timestamp, this mode works even if the client's
      * local clock is substantially skewed from Cloud Spanner commit
      * timestamps.
+     *
      * Useful for reading at nearby replicas without the distributed
      * timestamp negotiation overhead of `max_staleness`.
      * </pre>
@@ -2107,13 +2391,14 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     public static final int RETURN_READ_TIMESTAMP_FIELD_NUMBER = 6;
-    private boolean returnReadTimestamp_;
+    private boolean returnReadTimestamp_ = false;
     /**
      *
      *
      * <pre>
      * If true, the Cloud Spanner-selected read timestamp is included in
-     * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+     * the [Transaction][google.spanner.v1.Transaction] message that describes
+     * the transaction.
      * </pre>
      *
      * <code>bool return_read_timestamp = 6;</code>
@@ -2157,7 +2442,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (returnReadTimestamp_ != false) {
         output.writeBool(6, returnReadTimestamp_);
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -2194,7 +2479,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       if (returnReadTimestamp_ != false) {
         size += com.google.protobuf.CodedOutputStream.computeBoolSize(6, returnReadTimestamp_);
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -2231,7 +2516,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         case 0:
         default:
       }
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -2268,7 +2553,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         case 0:
         default:
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -2399,24 +2684,29 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
 
       // Construct using com.google.spanner.v1.TransactionOptions.ReadOnly.newBuilder()
-      private Builder() {
-        maybeForceBuilderInitialization();
-      }
+      private Builder() {}
 
       private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
       }
 
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        bitField0_ = 0;
+        if (minReadTimestampBuilder_ != null) {
+          minReadTimestampBuilder_.clear();
+        }
+        if (maxStalenessBuilder_ != null) {
+          maxStalenessBuilder_.clear();
+        }
+        if (readTimestampBuilder_ != null) {
+          readTimestampBuilder_.clear();
+        }
+        if (exactStalenessBuilder_ != null) {
+          exactStalenessBuilder_.clear();
+        }
         returnReadTimestamp_ = false;
-
         timestampBoundCase_ = 0;
         timestampBound_ = null;
         return this;
@@ -2446,41 +2736,36 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public com.google.spanner.v1.TransactionOptions.ReadOnly buildPartial() {
         com.google.spanner.v1.TransactionOptions.ReadOnly result =
             new com.google.spanner.v1.TransactionOptions.ReadOnly(this);
-        if (timestampBoundCase_ == 1) {
-          result.timestampBound_ = timestampBound_;
+        if (bitField0_ != 0) {
+          buildPartial0(result);
         }
-        if (timestampBoundCase_ == 2) {
-          if (minReadTimestampBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = minReadTimestampBuilder_.build();
-          }
-        }
-        if (timestampBoundCase_ == 3) {
-          if (maxStalenessBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = maxStalenessBuilder_.build();
-          }
-        }
-        if (timestampBoundCase_ == 4) {
-          if (readTimestampBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = readTimestampBuilder_.build();
-          }
-        }
-        if (timestampBoundCase_ == 5) {
-          if (exactStalenessBuilder_ == null) {
-            result.timestampBound_ = timestampBound_;
-          } else {
-            result.timestampBound_ = exactStalenessBuilder_.build();
-          }
-        }
-        result.returnReadTimestamp_ = returnReadTimestamp_;
-        result.timestampBoundCase_ = timestampBoundCase_;
+        buildPartialOneofs(result);
         onBuilt();
         return result;
+      }
+
+      private void buildPartial0(com.google.spanner.v1.TransactionOptions.ReadOnly result) {
+        int from_bitField0_ = bitField0_;
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.returnReadTimestamp_ = returnReadTimestamp_;
+        }
+      }
+
+      private void buildPartialOneofs(com.google.spanner.v1.TransactionOptions.ReadOnly result) {
+        result.timestampBoundCase_ = timestampBoundCase_;
+        result.timestampBound_ = this.timestampBound_;
+        if (timestampBoundCase_ == 2 && minReadTimestampBuilder_ != null) {
+          result.timestampBound_ = minReadTimestampBuilder_.build();
+        }
+        if (timestampBoundCase_ == 3 && maxStalenessBuilder_ != null) {
+          result.timestampBound_ = maxStalenessBuilder_.build();
+        }
+        if (timestampBoundCase_ == 4 && readTimestampBuilder_ != null) {
+          result.timestampBound_ = readTimestampBuilder_.build();
+        }
+        if (timestampBoundCase_ == 5 && exactStalenessBuilder_ != null) {
+          result.timestampBound_ = exactStalenessBuilder_.build();
+        }
       }
 
       @java.lang.Override
@@ -2565,7 +2850,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               break;
             }
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -2580,18 +2865,69 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.google.spanner.v1.TransactionOptions.ReadOnly parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8:
+                {
+                  timestampBound_ = input.readBool();
+                  timestampBoundCase_ = 1;
+                  break;
+                } // case 8
+              case 18:
+                {
+                  input.readMessage(
+                      getMinReadTimestampFieldBuilder().getBuilder(), extensionRegistry);
+                  timestampBoundCase_ = 2;
+                  break;
+                } // case 18
+              case 26:
+                {
+                  input.readMessage(getMaxStalenessFieldBuilder().getBuilder(), extensionRegistry);
+                  timestampBoundCase_ = 3;
+                  break;
+                } // case 26
+              case 34:
+                {
+                  input.readMessage(getReadTimestampFieldBuilder().getBuilder(), extensionRegistry);
+                  timestampBoundCase_ = 4;
+                  break;
+                } // case 34
+              case 42:
+                {
+                  input.readMessage(
+                      getExactStalenessFieldBuilder().getBuilder(), extensionRegistry);
+                  timestampBoundCase_ = 5;
+                  break;
+                } // case 42
+              case 48:
+                {
+                  returnReadTimestamp_ = input.readBool();
+                  bitField0_ |= 0x00000020;
+                  break;
+                } // case 48
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage =
-              (com.google.spanner.v1.TransactionOptions.ReadOnly) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
 
@@ -2608,6 +2944,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         onChanged();
         return this;
       }
+
+      private int bitField0_;
 
       /**
        *
@@ -2656,6 +2994,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * @return This builder for chaining.
        */
       public Builder setStrong(boolean value) {
+
         timestampBoundCase_ = 1;
         timestampBound_ = value;
         onChanged();
@@ -2692,10 +3031,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2713,10 +3055,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2744,10 +3089,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2772,10 +3120,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2797,10 +3148,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2823,8 +3177,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 2) {
             minReadTimestampBuilder_.mergeFrom(value);
+          } else {
+            minReadTimestampBuilder_.setMessage(value);
           }
-          minReadTimestampBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 2;
         return this;
@@ -2834,10 +3189,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2865,10 +3223,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2883,10 +3244,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2909,10 +3273,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * Executes all reads at a timestamp &gt;= `min_read_timestamp`.
+       *
        * This is useful for requesting fresher data than some previous
        * read, or data that is fresh enough to observe the effects of some
        * previously committed transaction whose timestamp is known.
+       *
        * Note that this option can only be used in single-use transactions.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -2940,7 +3307,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 2;
         onChanged();
-        ;
         return minReadTimestampBuilder_;
       }
 
@@ -2959,9 +3325,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -2984,9 +3352,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3019,9 +3389,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3051,9 +3423,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3080,9 +3454,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3105,8 +3481,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 3) {
             maxStalenessBuilder_.mergeFrom(value);
+          } else {
+            maxStalenessBuilder_.setMessage(value);
           }
-          maxStalenessBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 3;
         return this;
@@ -3121,9 +3498,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3156,9 +3535,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3178,9 +3559,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3208,9 +3591,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * Cloud Spanner chooses the exact timestamp, this mode works even if
        * the client's local clock is substantially skewed from Cloud Spanner
        * commit timestamps.
+       *
        * Useful for reading the freshest data available at a nearby
        * replica, while bounding the possible staleness if the local
        * replica has fallen behind.
+       *
        * Note that this option can only be used in single-use
        * transactions.
        * </pre>
@@ -3238,7 +3623,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 3;
         onChanged();
-        ;
         return maxStalenessBuilder_;
       }
 
@@ -3256,9 +3640,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3280,9 +3666,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3314,9 +3702,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3345,9 +3735,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3373,9 +3765,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3398,8 +3792,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 4) {
             readTimestampBuilder_.mergeFrom(value);
+          } else {
+            readTimestampBuilder_.setMessage(value);
           }
-          readTimestampBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 4;
         return this;
@@ -3413,9 +3808,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3447,9 +3844,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3468,9 +3867,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3497,9 +3898,11 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * the same timestamp always returns the same data. If the
        * timestamp is in the future, the read will block until the
        * specified timestamp, modulo the read's deadline.
+       *
        * Useful for large scale consistent reads such as mapreduces, or
        * for coordinating many reads against a consistent snapshot of the
        * data.
+       *
        * A timestamp in RFC3339 UTC &#92;"Zulu&#92;" format, accurate to nanoseconds.
        * Example: `"2014-10-02T15:01:23.045123456Z"`.
        * </pre>
@@ -3527,7 +3930,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 4;
         onChanged();
-        ;
         return readTimestampBuilder_;
       }
 
@@ -3542,11 +3944,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3565,11 +3969,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3598,11 +4004,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3628,11 +4036,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3655,11 +4065,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3682,8 +4094,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         } else {
           if (timestampBoundCase_ == 5) {
             exactStalenessBuilder_.mergeFrom(value);
+          } else {
+            exactStalenessBuilder_.setMessage(value);
           }
-          exactStalenessBuilder_.setMessage(value);
         }
         timestampBoundCase_ = 5;
         return this;
@@ -3694,11 +4107,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3727,11 +4142,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3747,11 +4164,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3775,11 +4194,13 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * <pre>
        * Executes all reads at a timestamp that is `exact_staleness`
        * old. The timestamp is chosen soon after the read is started.
+       *
        * Guarantees that all writes that have committed more than the
        * specified number of seconds ago are visible. Because Cloud Spanner
        * chooses the exact timestamp, this mode works even if the client's
        * local clock is substantially skewed from Cloud Spanner commit
        * timestamps.
+       *
        * Useful for reading at nearby replicas without the distributed
        * timestamp negotiation overhead of `max_staleness`.
        * </pre>
@@ -3807,7 +4228,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         }
         timestampBoundCase_ = 5;
         onChanged();
-        ;
         return exactStalenessBuilder_;
       }
 
@@ -3817,7 +4237,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * If true, the Cloud Spanner-selected read timestamp is included in
-       * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+       * the [Transaction][google.spanner.v1.Transaction] message that describes
+       * the transaction.
        * </pre>
        *
        * <code>bool return_read_timestamp = 6;</code>
@@ -3833,7 +4254,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * If true, the Cloud Spanner-selected read timestamp is included in
-       * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+       * the [Transaction][google.spanner.v1.Transaction] message that describes
+       * the transaction.
        * </pre>
        *
        * <code>bool return_read_timestamp = 6;</code>
@@ -3844,6 +4266,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       public Builder setReturnReadTimestamp(boolean value) {
 
         returnReadTimestamp_ = value;
+        bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
@@ -3852,7 +4275,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        *
        * <pre>
        * If true, the Cloud Spanner-selected read timestamp is included in
-       * the [Transaction][google.spanner.v1.Transaction] message that describes the transaction.
+       * the [Transaction][google.spanner.v1.Transaction] message that describes
+       * the transaction.
        * </pre>
        *
        * <code>bool return_read_timestamp = 6;</code>
@@ -3860,7 +4284,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
        * @return This builder for chaining.
        */
       public Builder clearReturnReadTimestamp() {
-
+        bitField0_ = (bitField0_ & ~0x00000020);
         returnReadTimestamp_ = false;
         onChanged();
         return this;
@@ -3899,7 +4323,19 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
               com.google.protobuf.CodedInputStream input,
               com.google.protobuf.ExtensionRegistryLite extensionRegistry)
               throws com.google.protobuf.InvalidProtocolBufferException {
-            return new ReadOnly(input, extensionRegistry);
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
           }
         };
 
@@ -3919,6 +4355,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
   }
 
   private int modeCase_ = 0;
+
+  @SuppressWarnings("serial")
   private java.lang.Object mode_;
 
   public enum ModeCase
@@ -3974,6 +4412,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Transaction may write.
+   *
    * Authorization to begin a read-write transaction requires
    * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
    * on the `session` resource.
@@ -3992,6 +4431,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Transaction may write.
+   *
    * Authorization to begin a read-write transaction requires
    * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
    * on the `session` resource.
@@ -4013,6 +4453,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Transaction may write.
+   *
    * Authorization to begin a read-write transaction requires
    * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
    * on the `session` resource.
@@ -4034,6 +4475,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Partitioned DML transaction.
+   *
    * Authorization to begin a Partitioned DML transaction requires
    * `spanner.databases.beginPartitionedDmlTransaction` permission
    * on the `session` resource.
@@ -4052,6 +4494,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Partitioned DML transaction.
+   *
    * Authorization to begin a Partitioned DML transaction requires
    * `spanner.databases.beginPartitionedDmlTransaction` permission
    * on the `session` resource.
@@ -4073,6 +4516,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Partitioned DML transaction.
+   *
    * Authorization to begin a Partitioned DML transaction requires
    * `spanner.databases.beginPartitionedDmlTransaction` permission
    * on the `session` resource.
@@ -4095,6 +4539,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Transaction will not write.
+   *
    * Authorization to begin a read-only transaction requires
    * `spanner.databases.beginReadOnlyTransaction` permission
    * on the `session` resource.
@@ -4113,6 +4558,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Transaction will not write.
+   *
    * Authorization to begin a read-only transaction requires
    * `spanner.databases.beginReadOnlyTransaction` permission
    * on the `session` resource.
@@ -4134,6 +4580,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Transaction will not write.
+   *
    * Authorization to begin a read-only transaction requires
    * `spanner.databases.beginReadOnlyTransaction` permission
    * on the `session` resource.
@@ -4172,7 +4619,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     if (modeCase_ == 3) {
       output.writeMessage(3, (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -4196,7 +4643,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               3, (com.google.spanner.v1.TransactionOptions.PartitionedDml) mode_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -4225,7 +4672,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -4252,7 +4699,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -4357,129 +4804,176 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * Transactions:
+   *
    * Each session can have at most one active transaction at a time (note that
    * standalone reads and queries use a transaction internally and do count
    * towards the one transaction limit). After the active transaction is
    * completed, the session can immediately be re-used for the next transaction.
    * It is not necessary to create a new session for each transaction.
-   * Transaction Modes:
+   *
+   * Transaction modes:
+   *
    * Cloud Spanner supports three transaction modes:
+   *
    *   1. Locking read-write. This type of transaction is the only way
    *      to write data into Cloud Spanner. These transactions rely on
    *      pessimistic locking and, if necessary, two-phase commit.
    *      Locking read-write transactions may abort, requiring the
    *      application to retry.
-   *   2. Snapshot read-only. This transaction type provides guaranteed
-   *      consistency across several reads, but does not allow
-   *      writes. Snapshot read-only transactions can be configured to
-   *      read at timestamps in the past. Snapshot read-only
-   *      transactions do not need to be committed.
+   *
+   *   2. Snapshot read-only. Snapshot read-only transactions provide guaranteed
+   *      consistency across several reads, but do not allow
+   *      writes. Snapshot read-only transactions can be configured to read at
+   *      timestamps in the past, or configured to perform a strong read
+   *      (where Spanner will select a timestamp such that the read is
+   *      guaranteed to see the effects of all transactions that have committed
+   *      before the start of the read). Snapshot read-only transactions do not
+   *      need to be committed.
+   *
+   *      Queries on change streams must be performed with the snapshot read-only
+   *      transaction mode, specifying a strong read. Please see
+   *      [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong]
+   *      for more details.
+   *
    *   3. Partitioned DML. This type of transaction is used to execute
    *      a single Partitioned DML statement. Partitioned DML partitions
    *      the key space and runs the DML statement over each partition
    *      in parallel using separate, internal transactions that commit
    *      independently. Partitioned DML transactions do not need to be
    *      committed.
+   *
    * For transactions that only read, snapshot read-only transactions
    * provide simpler semantics and are almost always faster. In
    * particular, read-only transactions do not take locks, so they do
    * not conflict with read-write transactions. As a consequence of not
    * taking locks, they also do not abort, so retry loops are not needed.
-   * Transactions may only read/write data in a single database. They
-   * may, however, read/write data in different tables within that
+   *
+   * Transactions may only read-write data in a single database. They
+   * may, however, read-write data in different tables within that
    * database.
-   * Locking Read-Write Transactions:
+   *
+   * Locking read-write transactions:
+   *
    * Locking transactions may be used to atomically read-modify-write
    * data anywhere in a database. This type of transaction is externally
    * consistent.
+   *
    * Clients should attempt to minimize the amount of time a transaction
    * is active. Faster transactions commit with higher probability
    * and cause less contention. Cloud Spanner attempts to keep read locks
    * active as long as the transaction continues to do reads, and the
    * transaction has not been terminated by
    * [Commit][google.spanner.v1.Spanner.Commit] or
-   * [Rollback][google.spanner.v1.Spanner.Rollback].  Long periods of
+   * [Rollback][google.spanner.v1.Spanner.Rollback]. Long periods of
    * inactivity at the client may cause Cloud Spanner to release a
    * transaction's locks and abort it.
+   *
    * Conceptually, a read-write transaction consists of zero or more
    * reads or SQL statements followed by
    * [Commit][google.spanner.v1.Spanner.Commit]. At any time before
    * [Commit][google.spanner.v1.Spanner.Commit], the client can send a
    * [Rollback][google.spanner.v1.Spanner.Rollback] request to abort the
    * transaction.
+   *
    * Semantics:
+   *
    * Cloud Spanner can commit the transaction if all read locks it acquired
    * are still valid at commit time, and it is able to acquire write
    * locks for all writes. Cloud Spanner can abort the transaction for any
    * reason. If a commit attempt returns `ABORTED`, Cloud Spanner guarantees
    * that the transaction has not modified any user data in Cloud Spanner.
+   *
    * Unless the transaction commits, Cloud Spanner makes no guarantees about
    * how long the transaction's locks were held for. It is an error to
    * use Cloud Spanner locks for any sort of mutual exclusion other than
    * between Cloud Spanner transactions themselves.
-   * Retrying Aborted Transactions:
+   *
+   * Retrying aborted transactions:
+   *
    * When a transaction aborts, the application can choose to retry the
    * whole transaction again. To maximize the chances of successfully
    * committing the retry, the client should execute the retry in the
    * same session as the original attempt. The original session's lock
    * priority increases with each consecutive abort, meaning that each
    * attempt has a slightly better chance of success than the previous.
+   *
    * Under some circumstances (for example, many transactions attempting to
    * modify the same row(s)), a transaction can abort many times in a
    * short period before successfully committing. Thus, it is not a good
    * idea to cap the number of retries a transaction can attempt;
    * instead, it is better to limit the total amount of time spent
    * retrying.
-   * Idle Transactions:
+   *
+   * Idle transactions:
+   *
    * A transaction is considered idle if it has no outstanding reads or
    * SQL queries and has not started a read or SQL query within the last 10
    * seconds. Idle transactions can be aborted by Cloud Spanner so that they
    * don't hold on to locks indefinitely. If an idle transaction is aborted, the
    * commit will fail with error `ABORTED`.
+   *
    * If this behavior is undesirable, periodically executing a simple
    * SQL query in the transaction (for example, `SELECT 1`) prevents the
    * transaction from becoming idle.
-   * Snapshot Read-Only Transactions:
+   *
+   * Snapshot read-only transactions:
+   *
    * Snapshot read-only transactions provides a simpler method than
    * locking read-write transactions for doing several consistent
    * reads. However, this type of transaction does not support writes.
+   *
    * Snapshot transactions do not take locks. Instead, they work by
    * choosing a Cloud Spanner timestamp, then executing all reads at that
    * timestamp. Since they do not acquire locks, they do not block
    * concurrent read-write transactions.
+   *
    * Unlike locking read-write transactions, snapshot read-only
    * transactions never abort. They can fail if the chosen read
    * timestamp is garbage collected; however, the default garbage
    * collection policy is generous enough that most applications do not
    * need to worry about this in practice.
+   *
    * Snapshot read-only transactions do not need to call
    * [Commit][google.spanner.v1.Spanner.Commit] or
    * [Rollback][google.spanner.v1.Spanner.Rollback] (and in fact are not
    * permitted to do so).
+   *
    * To execute a snapshot transaction, the client specifies a timestamp
    * bound, which tells Cloud Spanner how to choose a read timestamp.
+   *
    * The types of timestamp bound are:
+   *
    *   - Strong (the default).
    *   - Bounded staleness.
    *   - Exact staleness.
+   *
    * If the Cloud Spanner database to be read is geographically distributed,
    * stale read-only transactions can execute more quickly than strong
-   * or read-write transaction, because they are able to execute far
+   * or read-write transactions, because they are able to execute far
    * from the leader replica.
+   *
    * Each type of timestamp bound is discussed in detail below.
-   * Strong:
-   * Strong reads are guaranteed to see the effects of all transactions
+   *
+   * Strong: Strong reads are guaranteed to see the effects of all transactions
    * that have committed before the start of the read. Furthermore, all
    * rows yielded by a single read are consistent with each other -- if
    * any part of the read observes a transaction, all parts of the read
    * see the transaction.
+   *
    * Strong reads are not repeatable: two consecutive strong read-only
    * transactions might return inconsistent results if there are
    * concurrent writes. If consistency across reads is required, the
    * reads should be executed within a transaction or at an exact read
    * timestamp.
-   * See [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
-   * Exact Staleness:
+   *
+   * Queries on change streams (see below for more details) must also specify
+   * the strong read timestamp bound.
+   *
+   * See
+   * [TransactionOptions.ReadOnly.strong][google.spanner.v1.TransactionOptions.ReadOnly.strong].
+   *
+   * Exact staleness:
+   *
    * These timestamp bounds execute reads at a user-specified
    * timestamp. Reads at a timestamp are guaranteed to see a consistent
    * prefix of the global transaction history: they observe
@@ -4488,38 +4982,54 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * transactions with a larger commit timestamp. They will block until
    * all conflicting transactions that may be assigned commit timestamps
    * &lt;= the read timestamp have finished.
+   *
    * The timestamp can either be expressed as an absolute Cloud Spanner commit
    * timestamp or a staleness relative to the current time.
+   *
    * These modes do not require a "negotiation phase" to pick a
    * timestamp. As a result, they execute slightly faster than the
    * equivalent boundedly stale concurrency modes. On the other hand,
    * boundedly stale reads usually return fresher results.
-   * See [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp] and
+   *
+   * See
+   * [TransactionOptions.ReadOnly.read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.read_timestamp]
+   * and
    * [TransactionOptions.ReadOnly.exact_staleness][google.spanner.v1.TransactionOptions.ReadOnly.exact_staleness].
-   * Bounded Staleness:
+   *
+   * Bounded staleness:
+   *
    * Bounded staleness modes allow Cloud Spanner to pick the read timestamp,
    * subject to a user-provided staleness bound. Cloud Spanner chooses the
    * newest timestamp within the staleness bound that allows execution
    * of the reads at the closest available replica without blocking.
+   *
    * All rows yielded are consistent with each other -- if any part of
    * the read observes a transaction, all parts of the read see the
    * transaction. Boundedly stale reads are not repeatable: two stale
    * reads, even if they use the same staleness bound, can execute at
    * different timestamps and thus return inconsistent results.
+   *
    * Boundedly stale reads execute in two phases: the first phase
    * negotiates a timestamp among all replicas needed to serve the
    * read. In the second phase, reads are executed at the negotiated
    * timestamp.
+   *
    * As a result of the two phase execution, bounded staleness reads are
    * usually a little slower than comparable exact staleness
    * reads. However, they are typically able to return fresher
    * results, and are more likely to execute at the closest replica.
+   *
    * Because the timestamp negotiation requires up-front knowledge of
    * which rows will be read, it can only be used with single-use
    * read-only transactions.
-   * See [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness] and
+   *
+   * See
+   * [TransactionOptions.ReadOnly.max_staleness][google.spanner.v1.TransactionOptions.ReadOnly.max_staleness]
+   * and
    * [TransactionOptions.ReadOnly.min_read_timestamp][google.spanner.v1.TransactionOptions.ReadOnly.min_read_timestamp].
-   * Old Read Timestamps and Garbage Collection:
+   *
+   * Old read timestamps and garbage collection:
+   *
    * Cloud Spanner continuously garbage collects deleted and overwritten data
    * in the background to reclaim storage space. This process is known
    * as "version GC". By default, version GC reclaims versions after they
@@ -4528,27 +5038,68 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    * restriction also applies to in-progress reads and/or SQL queries whose
    * timestamp become too old while executing. Reads and SQL queries with
    * too-old read timestamps fail with the error `FAILED_PRECONDITION`.
-   * Partitioned DML Transactions:
+   *
+   * You can configure and extend the `VERSION_RETENTION_PERIOD` of a
+   * database up to a period as long as one week, which allows Cloud Spanner
+   * to perform reads up to one week in the past.
+   *
+   * Querying change Streams:
+   *
+   * A Change Stream is a schema object that can be configured to watch data
+   * changes on the entire database, a set of tables, or a set of columns
+   * in a database.
+   *
+   * When a change stream is created, Spanner automatically defines a
+   * corresponding SQL Table-Valued Function (TVF) that can be used to query
+   * the change records in the associated change stream using the
+   * ExecuteStreamingSql API. The name of the TVF for a change stream is
+   * generated from the name of the change stream: READ_&lt;change_stream_name&gt;.
+   *
+   * All queries on change stream TVFs must be executed using the
+   * ExecuteStreamingSql API with a single-use read-only transaction with a
+   * strong read-only timestamp_bound. The change stream TVF allows users to
+   * specify the start_timestamp and end_timestamp for the time range of
+   * interest. All change records within the retention period is accessible
+   * using the strong read-only timestamp_bound. All other TransactionOptions
+   * are invalid for change stream queries.
+   *
+   * In addition, if TransactionOptions.read_only.return_read_timestamp is set
+   * to true, a special value of 2^63 - 2 will be returned in the
+   * [Transaction][google.spanner.v1.Transaction] message that describes the
+   * transaction, instead of a valid read timestamp. This special value should be
+   * discarded and not used for any subsequent queries.
+   *
+   * Please see https://cloud.google.com/spanner/docs/change-streams
+   * for more details on how to query the change stream TVFs.
+   *
+   * Partitioned DML transactions:
+   *
    * Partitioned DML transactions are used to execute DML statements with a
    * different execution strategy that provides different, and often better,
    * scalability properties for large, table-wide operations than DML in a
    * ReadWrite transaction. Smaller scoped statements, such as an OLTP workload,
    * should prefer using ReadWrite transactions.
+   *
    * Partitioned DML partitions the keyspace and runs the DML statement on each
    * partition in separate, internal transactions. These transactions commit
    * automatically when complete, and run independently from one another.
+   *
    * To reduce lock contention, this execution strategy only acquires read locks
    * on rows that match the WHERE clause of the statement. Additionally, the
    * smaller per-partition transactions hold locks for less time.
+   *
    * That said, Partitioned DML is not a drop-in replacement for standard DML used
    * in ReadWrite transactions.
+   *
    *  - The DML statement must be fully-partitionable. Specifically, the statement
    *    must be expressible as the union of many statements which each access only
    *    a single row of the table.
+   *
    *  - The statement is not applied atomically to all rows of the table. Rather,
    *    the statement is applied atomically to partitions of the table, in
    *    independent transactions. Secondary index rows are updated atomically
    *    with the base table rows.
+   *
    *  - Partitioned DML does not guarantee exactly-once execution semantics
    *    against a partition. The statement will be applied at least once to each
    *    partition. It is strongly recommended that the DML statement should be
@@ -4556,19 +5107,23 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
    *    dangerous to run a statement such as
    *    `UPDATE table SET column = column + 1` as it could be run multiple times
    *    against some rows.
+   *
    *  - The partitions are committed automatically - there is no support for
    *    Commit or Rollback. If the call returns an error, or if the client issuing
    *    the ExecuteSql call dies, it is possible that some rows had the statement
    *    executed on them successfully. It is also possible that statement was
    *    never executed against other rows.
+   *
    *  - Partitioned DML transactions may only contain the execution of a single
    *    DML statement via ExecuteSql or ExecuteStreamingSql.
+   *
    *  - If any error is encountered during the execution of the partitioned DML
    *    operation (for instance, a UNIQUE INDEX violation, division by zero, or a
    *    value that cannot be stored due to schema constraints), then the
    *    operation is stopped at that point and an error is returned. It is
    *    possible that at this point, some partitions have been committed (or even
    *    committed multiple times), and other partitions have not been run at all.
+   *
    * Given the above, Partitioned DML is good fit for large, database-wide,
    * operations that are idempotent, such as deleting old rows from a very large
    * table.
@@ -4596,22 +5151,25 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     }
 
     // Construct using com.google.spanner.v1.TransactionOptions.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
+      if (readWriteBuilder_ != null) {
+        readWriteBuilder_.clear();
+      }
+      if (partitionedDmlBuilder_ != null) {
+        partitionedDmlBuilder_.clear();
+      }
+      if (readOnlyBuilder_ != null) {
+        readOnlyBuilder_.clear();
+      }
       modeCase_ = 0;
       mode_ = null;
       return this;
@@ -4641,30 +5199,30 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
     public com.google.spanner.v1.TransactionOptions buildPartial() {
       com.google.spanner.v1.TransactionOptions result =
           new com.google.spanner.v1.TransactionOptions(this);
-      if (modeCase_ == 1) {
-        if (readWriteBuilder_ == null) {
-          result.mode_ = mode_;
-        } else {
-          result.mode_ = readWriteBuilder_.build();
-        }
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      if (modeCase_ == 3) {
-        if (partitionedDmlBuilder_ == null) {
-          result.mode_ = mode_;
-        } else {
-          result.mode_ = partitionedDmlBuilder_.build();
-        }
-      }
-      if (modeCase_ == 2) {
-        if (readOnlyBuilder_ == null) {
-          result.mode_ = mode_;
-        } else {
-          result.mode_ = readOnlyBuilder_.build();
-        }
-      }
-      result.modeCase_ = modeCase_;
+      buildPartialOneofs(result);
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.TransactionOptions result) {
+      int from_bitField0_ = bitField0_;
+    }
+
+    private void buildPartialOneofs(com.google.spanner.v1.TransactionOptions result) {
+      result.modeCase_ = modeCase_;
+      result.mode_ = this.mode_;
+      if (modeCase_ == 1 && readWriteBuilder_ != null) {
+        result.mode_ = readWriteBuilder_.build();
+      }
+      if (modeCase_ == 3 && partitionedDmlBuilder_ != null) {
+        result.mode_ = partitionedDmlBuilder_.build();
+      }
+      if (modeCase_ == 2 && readOnlyBuilder_ != null) {
+        result.mode_ = readOnlyBuilder_.build();
+      }
     }
 
     @java.lang.Override
@@ -4733,7 +5291,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
             break;
           }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -4748,17 +5306,49 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.TransactionOptions parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                input.readMessage(getReadWriteFieldBuilder().getBuilder(), extensionRegistry);
+                modeCase_ = 1;
+                break;
+              } // case 10
+            case 18:
+              {
+                input.readMessage(getReadOnlyFieldBuilder().getBuilder(), extensionRegistry);
+                modeCase_ = 2;
+                break;
+              } // case 18
+            case 26:
+              {
+                input.readMessage(getPartitionedDmlFieldBuilder().getBuilder(), extensionRegistry);
+                modeCase_ = 3;
+                break;
+              } // case 26
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.TransactionOptions) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -4776,6 +5366,8 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       return this;
     }
 
+    private int bitField0_;
+
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.v1.TransactionOptions.ReadWrite,
             com.google.spanner.v1.TransactionOptions.ReadWrite.Builder,
@@ -4786,6 +5378,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4804,6 +5397,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4832,6 +5426,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4857,6 +5452,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4880,6 +5476,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4903,8 +5500,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 1) {
           readWriteBuilder_.mergeFrom(value);
+        } else {
+          readWriteBuilder_.setMessage(value);
         }
-        readWriteBuilder_.setMessage(value);
       }
       modeCase_ = 1;
       return this;
@@ -4914,6 +5512,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4942,6 +5541,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4957,6 +5557,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -4980,6 +5581,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction may write.
+     *
      * Authorization to begin a read-write transaction requires
      * `spanner.databases.beginOrRollbackReadWriteTransaction` permission
      * on the `session` resource.
@@ -5008,7 +5610,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       modeCase_ = 1;
       onChanged();
-      ;
       return readWriteBuilder_;
     }
 
@@ -5022,6 +5623,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5040,6 +5642,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5068,6 +5671,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5094,6 +5698,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5117,6 +5722,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5142,8 +5748,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 3) {
           partitionedDmlBuilder_.mergeFrom(value);
+        } else {
+          partitionedDmlBuilder_.setMessage(value);
         }
-        partitionedDmlBuilder_.setMessage(value);
       }
       modeCase_ = 3;
       return this;
@@ -5153,6 +5760,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5181,6 +5789,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5197,6 +5806,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5221,6 +5831,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Partitioned DML transaction.
+     *
      * Authorization to begin a Partitioned DML transaction requires
      * `spanner.databases.beginPartitionedDmlTransaction` permission
      * on the `session` resource.
@@ -5249,7 +5860,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       modeCase_ = 3;
       onChanged();
-      ;
       return partitionedDmlBuilder_;
     }
 
@@ -5263,6 +5873,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5281,6 +5892,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5309,6 +5921,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5334,6 +5947,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5357,6 +5971,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5380,8 +5995,9 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       } else {
         if (modeCase_ == 2) {
           readOnlyBuilder_.mergeFrom(value);
+        } else {
+          readOnlyBuilder_.setMessage(value);
         }
-        readOnlyBuilder_.setMessage(value);
       }
       modeCase_ = 2;
       return this;
@@ -5391,6 +6007,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5419,6 +6036,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5434,6 +6052,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5457,6 +6076,7 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * Transaction will not write.
+     *
      * Authorization to begin a read-only transaction requires
      * `spanner.databases.beginReadOnlyTransaction` permission
      * on the `session` resource.
@@ -5485,7 +6105,6 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
       }
       modeCase_ = 2;
       onChanged();
-      ;
       return readOnlyBuilder_;
     }
 
@@ -5521,7 +6140,18 @@ public final class TransactionOptions extends com.google.protobuf.GeneratedMessa
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TransactionOptions(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

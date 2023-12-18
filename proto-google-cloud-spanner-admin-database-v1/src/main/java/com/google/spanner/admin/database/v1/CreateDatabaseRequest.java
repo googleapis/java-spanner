@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   private CreateDatabaseRequest() {
     parent_ = "";
     createStatement_ = "";
-    extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    extraStatements_ = com.google.protobuf.LazyStringArrayList.emptyList();
     databaseDialect_ = 0;
   }
 
@@ -48,100 +48,6 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new CreateDatabaseRequest();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private CreateDatabaseRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              parent_ = s;
-              break;
-            }
-          case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              createStatement_ = s;
-              break;
-            }
-          case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                extraStatements_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              extraStatements_.add(s);
-              break;
-            }
-          case 34:
-            {
-              com.google.spanner.admin.database.v1.EncryptionConfig.Builder subBuilder = null;
-              if (encryptionConfig_ != null) {
-                subBuilder = encryptionConfig_.toBuilder();
-              }
-              encryptionConfig_ =
-                  input.readMessage(
-                      com.google.spanner.admin.database.v1.EncryptionConfig.parser(),
-                      extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(encryptionConfig_);
-                encryptionConfig_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-          case 40:
-            {
-              int rawValue = input.readEnum();
-
-              databaseDialect_ = rawValue;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        extraStatements_ = extraStatements_.getUnmodifiableView();
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -160,7 +66,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   }
 
   public static final int PARENT_FIELD_NUMBER = 1;
-  private volatile java.lang.Object parent_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object parent_ = "";
   /**
    *
    *
@@ -215,7 +123,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   }
 
   public static final int CREATE_STATEMENT_FIELD_NUMBER = 2;
-  private volatile java.lang.Object createStatement_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object createStatement_ = "";
   /**
    *
    *
@@ -272,7 +182,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   }
 
   public static final int EXTRA_STATEMENTS_FIELD_NUMBER = 3;
-  private com.google.protobuf.LazyStringList extraStatements_;
+
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList extraStatements_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
@@ -402,11 +315,13 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
   @java.lang.Override
   public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
       getEncryptionConfigOrBuilder() {
-    return getEncryptionConfig();
+    return encryptionConfig_ == null
+        ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
+        : encryptionConfig_;
   }
 
   public static final int DATABASE_DIALECT_FIELD_NUMBER = 5;
-  private int databaseDialect_;
+  private int databaseDialect_ = 0;
   /**
    *
    *
@@ -439,9 +354,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.admin.database.v1.DatabaseDialect result =
-        com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+        com.google.spanner.admin.database.v1.DatabaseDialect.forNumber(databaseDialect_);
     return result == null
         ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
         : result;
@@ -478,7 +392,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
             .getNumber()) {
       output.writeEnum(5, databaseDialect_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -509,7 +423,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
             .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(5, databaseDialect_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -533,7 +447,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       if (!getEncryptionConfig().equals(other.getEncryptionConfig())) return false;
     }
     if (databaseDialect_ != other.databaseDialect_) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -558,7 +472,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
     hash = (37 * hash) + DATABASE_DIALECT_FIELD_NUMBER;
     hash = (53 * hash) + databaseDialect_;
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -688,36 +602,25 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
 
     // Construct using com.google.spanner.admin.database.v1.CreateDatabaseRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       parent_ = "";
-
       createStatement_ = "";
-
-      extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-      } else {
-        encryptionConfig_ = null;
+      extraStatements_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
       databaseDialect_ = 0;
-
       return this;
     }
 
@@ -745,22 +648,32 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public com.google.spanner.admin.database.v1.CreateDatabaseRequest buildPartial() {
       com.google.spanner.admin.database.v1.CreateDatabaseRequest result =
           new com.google.spanner.admin.database.v1.CreateDatabaseRequest(this);
-      int from_bitField0_ = bitField0_;
-      result.parent_ = parent_;
-      result.createStatement_ = createStatement_;
-      if (((bitField0_ & 0x00000001) != 0)) {
-        extraStatements_ = extraStatements_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000001);
+      if (bitField0_ != 0) {
+        buildPartial0(result);
       }
-      result.extraStatements_ = extraStatements_;
-      if (encryptionConfigBuilder_ == null) {
-        result.encryptionConfig_ = encryptionConfig_;
-      } else {
-        result.encryptionConfig_ = encryptionConfigBuilder_.build();
-      }
-      result.databaseDialect_ = databaseDialect_;
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.database.v1.CreateDatabaseRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.parent_ = parent_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.createStatement_ = createStatement_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        extraStatements_.makeImmutable();
+        result.extraStatements_ = extraStatements_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.encryptionConfig_ =
+            encryptionConfigBuilder_ == null ? encryptionConfig_ : encryptionConfigBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.databaseDialect_ = databaseDialect_;
+      }
     }
 
     @java.lang.Override
@@ -811,16 +724,18 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         return this;
       if (!other.getParent().isEmpty()) {
         parent_ = other.parent_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (!other.getCreateStatement().isEmpty()) {
         createStatement_ = other.createStatement_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (!other.extraStatements_.isEmpty()) {
         if (extraStatements_.isEmpty()) {
           extraStatements_ = other.extraStatements_;
-          bitField0_ = (bitField0_ & ~0x00000001);
+          bitField0_ |= 0x00000004;
         } else {
           ensureExtraStatementsIsMutable();
           extraStatements_.addAll(other.extraStatements_);
@@ -833,7 +748,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       if (other.databaseDialect_ != 0) {
         setDatabaseDialectValue(other.getDatabaseDialectValue());
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -848,18 +763,63 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.database.v1.CreateDatabaseRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                parent_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 18:
+              {
+                createStatement_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureExtraStatementsIsMutable();
+                extraStatements_.add(s);
+                break;
+              } // case 26
+            case 34:
+              {
+                input.readMessage(
+                    getEncryptionConfigFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+            case 40:
+              {
+                databaseDialect_ = input.readEnum();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 40
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.database.v1.CreateDatabaseRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
 
@@ -935,8 +895,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       if (value == null) {
         throw new NullPointerException();
       }
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -955,8 +915,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearParent() {
-
       parent_ = getDefaultInstance().getParent();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -980,8 +940,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -1059,8 +1019,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       if (value == null) {
         throw new NullPointerException();
       }
-
       createStatement_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1080,8 +1040,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearCreateStatement() {
-
       createStatement_ = getDefaultInstance().getCreateStatement();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1106,20 +1066,20 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       createStatement_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
 
-    private com.google.protobuf.LazyStringList extraStatements_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList extraStatements_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureExtraStatementsIsMutable() {
-      if (!((bitField0_ & 0x00000001) != 0)) {
+      if (!extraStatements_.isModifiable()) {
         extraStatements_ = new com.google.protobuf.LazyStringArrayList(extraStatements_);
-        bitField0_ |= 0x00000001;
       }
+      bitField0_ |= 0x00000004;
     }
     /**
      *
@@ -1136,7 +1096,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return A list containing the extraStatements.
      */
     public com.google.protobuf.ProtocolStringList getExtraStatementsList() {
-      return extraStatements_.getUnmodifiableView();
+      extraStatements_.makeImmutable();
+      return extraStatements_;
     }
     /**
      *
@@ -1213,6 +1174,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       ensureExtraStatementsIsMutable();
       extraStatements_.set(index, value);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1237,6 +1199,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       }
       ensureExtraStatementsIsMutable();
       extraStatements_.add(value);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1258,6 +1221,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public Builder addAllExtraStatements(java.lang.Iterable<java.lang.String> values) {
       ensureExtraStatementsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, extraStatements_);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1276,8 +1240,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearExtraStatements() {
-      extraStatements_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000001);
+      extraStatements_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000004);
+      ;
       onChanged();
       return this;
     }
@@ -1303,6 +1268,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       checkByteStringIsUtf8(value);
       ensureExtraStatementsIsMutable();
       extraStatements_.add(value);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1329,7 +1295,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return Whether the encryptionConfig field is set.
      */
     public boolean hasEncryptionConfig() {
-      return encryptionConfigBuilder_ != null || encryptionConfig_ != null;
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      *
@@ -1375,11 +1341,11 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
           throw new NullPointerException();
         }
         encryptionConfig_ = value;
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1399,11 +1365,11 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         com.google.spanner.admin.database.v1.EncryptionConfig.Builder builderForValue) {
       if (encryptionConfigBuilder_ == null) {
         encryptionConfig_ = builderForValue.build();
-        onChanged();
       } else {
         encryptionConfigBuilder_.setMessage(builderForValue.build());
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1422,19 +1388,19 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     public Builder mergeEncryptionConfig(
         com.google.spanner.admin.database.v1.EncryptionConfig value) {
       if (encryptionConfigBuilder_ == null) {
-        if (encryptionConfig_ != null) {
-          encryptionConfig_ =
-              com.google.spanner.admin.database.v1.EncryptionConfig.newBuilder(encryptionConfig_)
-                  .mergeFrom(value)
-                  .buildPartial();
+        if (((bitField0_ & 0x00000008) != 0)
+            && encryptionConfig_ != null
+            && encryptionConfig_
+                != com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()) {
+          getEncryptionConfigBuilder().mergeFrom(value);
         } else {
           encryptionConfig_ = value;
         }
-        onChanged();
       } else {
         encryptionConfigBuilder_.mergeFrom(value);
       }
-
+      bitField0_ |= 0x00000008;
+      onChanged();
       return this;
     }
     /**
@@ -1451,14 +1417,13 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     public Builder clearEncryptionConfig() {
-      if (encryptionConfigBuilder_ == null) {
-        encryptionConfig_ = null;
-        onChanged();
-      } else {
-        encryptionConfig_ = null;
+      bitField0_ = (bitField0_ & ~0x00000008);
+      encryptionConfig_ = null;
+      if (encryptionConfigBuilder_ != null) {
+        encryptionConfigBuilder_.dispose();
         encryptionConfigBuilder_ = null;
       }
-
+      onChanged();
       return this;
     }
     /**
@@ -1476,7 +1441,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      */
     public com.google.spanner.admin.database.v1.EncryptionConfig.Builder
         getEncryptionConfigBuilder() {
-
+      bitField0_ |= 0x00000008;
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
     }
@@ -1566,8 +1531,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder setDatabaseDialectValue(int value) {
-
       databaseDialect_ = value;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1586,9 +1551,8 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      */
     @java.lang.Override
     public com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.admin.database.v1.DatabaseDialect result =
-          com.google.spanner.admin.database.v1.DatabaseDialect.valueOf(databaseDialect_);
+          com.google.spanner.admin.database.v1.DatabaseDialect.forNumber(databaseDialect_);
       return result == null
           ? com.google.spanner.admin.database.v1.DatabaseDialect.UNRECOGNIZED
           : result;
@@ -1611,7 +1575,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000010;
       databaseDialect_ = value.getNumber();
       onChanged();
       return this;
@@ -1630,7 +1594,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * @return This builder for chaining.
      */
     public Builder clearDatabaseDialect() {
-
+      bitField0_ = (bitField0_ & ~0x00000010);
       databaseDialect_ = 0;
       onChanged();
       return this;
@@ -1668,7 +1632,18 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new CreateDatabaseRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,8 @@ public interface ListInstanceConfigsRequestOrBuilder
    * <pre>
    * If non-empty, `page_token` should contain a
    * [next_page_token][google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token]
-   * from a previous [ListInstanceConfigsResponse][google.spanner.admin.instance.v1.ListInstanceConfigsResponse].
+   * from a previous
+   * [ListInstanceConfigsResponse][google.spanner.admin.instance.v1.ListInstanceConfigsResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -90,7 +91,8 @@ public interface ListInstanceConfigsRequestOrBuilder
    * <pre>
    * If non-empty, `page_token` should contain a
    * [next_page_token][google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token]
-   * from a previous [ListInstanceConfigsResponse][google.spanner.admin.instance.v1.ListInstanceConfigsResponse].
+   * from a previous
+   * [ListInstanceConfigsResponse][google.spanner.admin.instance.v1.ListInstanceConfigsResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>

@@ -25,10 +25,15 @@ import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 @InternalApi
 public class PostgreSQLStatementParser extends AbstractStatementParser {
+  private static final Pattern RETURNING_PATTERN = Pattern.compile("returning[ '(\"*]");
+  private static final Pattern AS_RETURNING_PATTERN = Pattern.compile("[ ')\"]as returning[ '(\"]");
+  private static final String RETURNING_STRING = "returning";
+
   PostgreSQLStatementParser() throws CompileException {
     super(
         Collections.unmodifiableSet(
@@ -65,6 +70,8 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     Preconditions.checkNotNull(sql);
     boolean isInSingleLineComment = false;
     int multiLineCommentLevel = 0;
+    boolean whitespaceBeforeOrAfterMultiLineComment = false;
+    int multiLineCommentStartIdx = -1;
     StringBuilder res = new StringBuilder(sql.length());
     int index = 0;
     while (index < sql.length()) {
@@ -78,6 +85,19 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       } else if (multiLineCommentLevel > 0) {
         if (sql.length() > index + 1 && c == ASTERISK && sql.charAt(index + 1) == SLASH) {
           multiLineCommentLevel--;
+          if (multiLineCommentLevel == 0) {
+            if (!whitespaceBeforeOrAfterMultiLineComment && (sql.length() > index + 2)) {
+              whitespaceBeforeOrAfterMultiLineComment =
+                  Character.isWhitespace(sql.charAt(index + 2));
+            }
+            // If the multiline comment does not have any whitespace before or after it, and it is
+            // neither at the start nor at the end of SQL string, append an extra space.
+            if (!whitespaceBeforeOrAfterMultiLineComment
+                && (multiLineCommentStartIdx != 0)
+                && (index != sql.length() - 2)) {
+              res.append(' ');
+            }
+          }
           index++;
         } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
@@ -92,6 +112,10 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           continue;
         } else if (sql.length() > index + 1 && c == SLASH && sql.charAt(index + 1) == ASTERISK) {
           multiLineCommentLevel++;
+          if (index >= 1) {
+            whitespaceBeforeOrAfterMultiLineComment = Character.isWhitespace(sql.charAt(index - 1));
+          }
+          multiLineCommentStartIdx = index;
           index += 2;
           continue;
         } else {
@@ -120,7 +144,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       if (c == DOLLAR) {
         return tag.toString();
       }
-      if (!Character.isJavaIdentifierPart(c)) {
+      if (!isValidIdentifierChar(c)) {
         break;
       }
       tag.append(c);
@@ -160,9 +184,8 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
    * Note: This is an internal API and breaking changes can be made without prior notice.
    *
    * <p>Returns the PostgreSQL-style query parameters ($1, $2, ...) in the given SQL string. The
-   * SQL-string is assumed to not contain any comments. Use {@link #removeCommentsAndTrim(String)}
-   * to remove all comments before calling this method. Occurrences of query-parameter like strings
-   * inside quoted identifiers or string literals are ignored.
+   * SQL-string is allowed to contain comments. Occurrences of query-parameter like strings inside
+   * quoted identifiers or string literals are ignored.
    *
    * <p>The following example will return a set containing ("$1", "$2"). <code>
    * select col1, col2, "col$4"
@@ -171,7 +194,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
    * and not col3=$1 and col4='$3'
    * </code>
    *
-   * @param sql the SQL-string to check for parameters. Must not contain comments.
+   * @param sql the SQL-string to check for parameters.
    * @return A set containing all the parameters in the SQL-string.
    */
   @InternalApi
@@ -209,10 +232,54 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
         return skipQuoted(
             sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
       }
+    } else if (currentChar == HYPHEN
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == HYPHEN) {
+      return skipSingleLineComment(sql, currentIndex, result);
+    } else if (currentChar == SLASH
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == ASTERISK) {
+      return skipMultiLineComment(sql, currentIndex, result);
     }
 
     appendIfNotNull(result, currentChar);
     return currentIndex + 1;
+  }
+
+  static int skipSingleLineComment(String sql, int currentIndex, @Nullable StringBuilder result) {
+    int endIndex = sql.indexOf('\n', currentIndex + 2);
+    if (endIndex == -1) {
+      endIndex = sql.length();
+    } else {
+      // Include the newline character.
+      endIndex++;
+    }
+    appendIfNotNull(result, sql.substring(currentIndex, endIndex));
+    return endIndex;
+  }
+
+  static int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    // Current position is start + '/*'.length().
+    int pos = startIndex + 2;
+    // PostgreSQL allows comments to be nested. That is, the following is allowed:
+    // '/* test /* inner comment */ still a comment */'
+    int level = 1;
+    while (pos < sql.length()) {
+      if (sql.charAt(pos) == SLASH && sql.length() > (pos + 1) && sql.charAt(pos + 1) == ASTERISK) {
+        level++;
+      }
+      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
+        level--;
+        if (level == 0) {
+          pos += 2;
+          appendIfNotNull(result, sql.substring(startIndex, pos));
+          return pos;
+        }
+      }
+      pos++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex));
+    return sql.length();
   }
 
   private int skipQuoted(
@@ -226,7 +293,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       char startQuote,
       String dollarTag,
       @Nullable StringBuilder result) {
-    boolean lastCharWasEscapeChar = false;
     int currentIndex = startIndex + 1;
     while (currentIndex < sql.length()) {
       char currentChar = sql.charAt(currentIndex);
@@ -238,8 +304,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
             appendIfNotNull(result, currentChar, dollarTag, currentChar);
             return currentIndex + tag.length() + 2;
           }
-        } else if (lastCharWasEscapeChar) {
-          lastCharWasEscapeChar = false;
         } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
           // This is an escaped quote (e.g. 'foo''bar')
           appendIfNotNull(result, currentChar);
@@ -250,8 +314,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           appendIfNotNull(result, currentChar);
           return currentIndex + 1;
         }
-      } else {
-        lastCharWasEscapeChar = currentChar == '\\';
       }
       currentIndex++;
       appendIfNotNull(result, currentChar);
@@ -266,10 +328,89 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     }
   }
 
+  private static void appendIfNotNull(@Nullable StringBuilder result, String suffix) {
+    if (result != null) {
+      result.append(suffix);
+    }
+  }
+
   private void appendIfNotNull(
       @Nullable StringBuilder result, char prefix, String tag, char suffix) {
     if (result != null) {
       result.append(prefix).append(tag).append(suffix);
     }
+  }
+
+  private boolean isValidIdentifierFirstChar(char c) {
+    return Character.isLetter(c) || c == UNDERSCORE;
+  }
+
+  private boolean isValidIdentifierChar(char c) {
+    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
+  }
+
+  private boolean checkCharPrecedingReturning(char ch) {
+    return (ch == SPACE)
+        || (ch == SINGLE_QUOTE)
+        || (ch == CLOSE_PARENTHESIS)
+        || (ch == DOUBLE_QUOTE)
+        || (ch == DOLLAR);
+  }
+
+  private boolean checkCharPrecedingSubstrWithReturning(char ch) {
+    return (ch == SPACE)
+        || (ch == SINGLE_QUOTE)
+        || (ch == CLOSE_PARENTHESIS)
+        || (ch == DOUBLE_QUOTE)
+        || (ch == COMMA);
+  }
+
+  private boolean isReturning(String sql, int index) {
+    // RETURNING is a reserved keyword in PG, but requires a
+    // leading AS to be used as column label, to avoid ambiguity.
+    // We thus check for cases which do not have a leading AS.
+    // (https://www.postgresql.org/docs/current/sql-keywords-appendix.html)
+    if (index >= 1) {
+      if (((index + 10 <= sql.length())
+          && RETURNING_PATTERN.matcher(sql.substring(index, index + 10)).matches()
+          && !((index >= 4)
+              && AS_RETURNING_PATTERN.matcher(sql.substring(index - 4, index + 10)).matches()))) {
+        if (checkCharPrecedingReturning(sql.charAt(index - 1))) {
+          return true;
+        }
+        // Check for cases where returning clause is part of a substring which starts with an
+        // invalid first character of an identifier.
+        // For example,
+        // insert into t select 2returning *;
+        int ind = index - 1;
+        while ((ind >= 0) && !checkCharPrecedingSubstrWithReturning(sql.charAt(ind))) {
+          ind--;
+        }
+        return !isValidIdentifierFirstChar(sql.charAt(ind + 1));
+      }
+    }
+    return false;
+  }
+
+  @InternalApi
+  @Override
+  protected boolean checkReturningClauseInternal(String rawSql) {
+    Preconditions.checkNotNull(rawSql);
+    String sql = rawSql.toLowerCase();
+    // Do a pre-check to check if the SQL string definitely does not have a returning clause.
+    // If this check fails, do a more involved check to check for a returning clause.
+    if (!sql.contains(RETURNING_STRING)) {
+      return false;
+    }
+    sql = sql.replaceAll("\\s+", " ");
+    int index = 0;
+    while (index < sql.length()) {
+      if (isReturning(sql, index)) {
+        return true;
+      } else {
+        index = skip(sql, index, null);
+      }
+    }
+    return false;
   }
 }

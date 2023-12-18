@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ package com.google.spanner.admin.instance.v1;
  *
  *
  * <pre>
- * The request for [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
+ * The request for
+ * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancesRequest}
@@ -49,74 +50,6 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     return new ListInstancesRequest();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private ListInstancesRequest(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              parent_ = s;
-              break;
-            }
-          case 16:
-            {
-              pageSize_ = input.readInt32();
-              break;
-            }
-          case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              pageToken_ = s;
-              break;
-            }
-          case 34:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              filter_ = s;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
         .internal_static_google_spanner_admin_instance_v1_ListInstancesRequest_descriptor;
@@ -133,7 +66,9 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int PARENT_FIELD_NUMBER = 1;
-  private volatile java.lang.Object parent_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object parent_ = "";
   /**
    *
    *
@@ -188,7 +123,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int PAGE_SIZE_FIELD_NUMBER = 2;
-  private int pageSize_;
+  private int pageSize_ = 0;
   /**
    *
    *
@@ -207,14 +142,17 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int PAGE_TOKEN_FIELD_NUMBER = 3;
-  private volatile java.lang.Object pageToken_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object pageToken_ = "";
   /**
    *
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token] from a
-   * previous [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+   * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token]
+   * from a previous
+   * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -238,8 +176,9 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token] from a
-   * previous [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+   * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token]
+   * from a previous
+   * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -260,17 +199,22 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
   }
 
   public static final int FILTER_FIELD_NUMBER = 4;
-  private volatile java.lang.Object filter_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object filter_ = "";
   /**
    *
    *
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
+   *
    *   * `name`
    *   * `display_name`
    *   * `labels.key` where key is the name of a label
+   *
    * Some examples of using filters are:
+   *
    *   * `name:*` --&gt; The instance has a name.
    *   * `name:Howl` --&gt; The instance's name contains the string "howl".
    *   * `name:HOWL` --&gt; Equivalent to above.
@@ -305,10 +249,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
    * <pre>
    * An expression for filtering the results of the request. Filter rules are
    * case insensitive. The fields eligible for filtering are:
+   *
    *   * `name`
    *   * `display_name`
    *   * `labels.key` where key is the name of a label
+   *
    * Some examples of using filters are:
+   *
    *   * `name:*` --&gt; The instance has a name.
    *   * `name:Howl` --&gt; The instance's name contains the string "howl".
    *   * `name:HOWL` --&gt; Equivalent to above.
@@ -364,7 +311,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(filter_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, filter_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -385,7 +332,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(filter_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, filter_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -405,7 +352,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     if (getPageSize() != other.getPageSize()) return false;
     if (!getPageToken().equals(other.getPageToken())) return false;
     if (!getFilter().equals(other.getFilter())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -424,7 +371,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     hash = (53 * hash) + getPageToken().hashCode();
     hash = (37 * hash) + FILTER_FIELD_NUMBER;
     hash = (53 * hash) + getFilter().hashCode();
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -529,7 +476,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The request for [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
+   * The request for
+   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancesRequest}
@@ -554,30 +502,20 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     }
 
     // Construct using com.google.spanner.admin.instance.v1.ListInstancesRequest.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       parent_ = "";
-
       pageSize_ = 0;
-
       pageToken_ = "";
-
       filter_ = "";
-
       return this;
     }
 
@@ -605,12 +543,27 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     public com.google.spanner.admin.instance.v1.ListInstancesRequest buildPartial() {
       com.google.spanner.admin.instance.v1.ListInstancesRequest result =
           new com.google.spanner.admin.instance.v1.ListInstancesRequest(this);
-      result.parent_ = parent_;
-      result.pageSize_ = pageSize_;
-      result.pageToken_ = pageToken_;
-      result.filter_ = filter_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.admin.instance.v1.ListInstancesRequest result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.parent_ = parent_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.pageSize_ = pageSize_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.pageToken_ = pageToken_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.filter_ = filter_;
+      }
     }
 
     @java.lang.Override
@@ -661,6 +614,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
         return this;
       if (!other.getParent().isEmpty()) {
         parent_ = other.parent_;
+        bitField0_ |= 0x00000001;
         onChanged();
       }
       if (other.getPageSize() != 0) {
@@ -668,13 +622,15 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
       }
       if (!other.getPageToken().isEmpty()) {
         pageToken_ = other.pageToken_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
       if (!other.getFilter().isEmpty()) {
         filter_ = other.filter_;
+        bitField0_ |= 0x00000008;
         onChanged();
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -689,20 +645,59 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.admin.instance.v1.ListInstancesRequest parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 10:
+              {
+                parent_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
+            case 16:
+              {
+                pageSize_ = input.readInt32();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 16
+            case 26:
+              {
+                pageToken_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            case 34:
+              {
+                filter_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage =
-            (com.google.spanner.admin.instance.v1.ListInstancesRequest) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private java.lang.Object parent_ = "";
     /**
@@ -774,8 +769,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -794,8 +789,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearParent() {
-
       parent_ = getDefaultInstance().getParent();
+      bitField0_ = (bitField0_ & ~0x00000001);
       onChanged();
       return this;
     }
@@ -819,8 +814,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       parent_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -858,6 +853,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
     public Builder setPageSize(int value) {
 
       pageSize_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -874,7 +870,7 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearPageSize() {
-
+      bitField0_ = (bitField0_ & ~0x00000002);
       pageSize_ = 0;
       onChanged();
       return this;
@@ -886,8 +882,9 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token] from a
-     * previous [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token]
+     * from a previous
+     * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -910,8 +907,9 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token] from a
-     * previous [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token]
+     * from a previous
+     * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -934,8 +932,9 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token] from a
-     * previous [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token]
+     * from a previous
+     * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -947,8 +946,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       pageToken_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -957,8 +956,9 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token] from a
-     * previous [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token]
+     * from a previous
+     * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -966,8 +966,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearPageToken() {
-
       pageToken_ = getDefaultInstance().getPageToken();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -976,8 +976,9 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token] from a
-     * previous [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+     * [next_page_token][google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token]
+     * from a previous
+     * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -990,8 +991,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       pageToken_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1003,10 +1004,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1040,10 +1044,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1077,10 +1084,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1102,8 +1112,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
       if (value == null) {
         throw new NullPointerException();
       }
-
       filter_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1113,10 +1123,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1134,8 +1147,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearFilter() {
-
       filter_ = getDefaultInstance().getFilter();
+      bitField0_ = (bitField0_ & ~0x00000008);
       onChanged();
       return this;
     }
@@ -1145,10 +1158,13 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
      * <pre>
      * An expression for filtering the results of the request. Filter rules are
      * case insensitive. The fields eligible for filtering are:
+     *
      *   * `name`
      *   * `display_name`
      *   * `labels.key` where key is the name of a label
+     *
      * Some examples of using filters are:
+     *
      *   * `name:*` --&gt; The instance has a name.
      *   * `name:Howl` --&gt; The instance's name contains the string "howl".
      *   * `name:HOWL` --&gt; Equivalent to above.
@@ -1171,8 +1187,8 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       filter_ = value;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1209,7 +1225,18 @@ public final class ListInstancesRequest extends com.google.protobuf.GeneratedMes
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ListInstancesRequest(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

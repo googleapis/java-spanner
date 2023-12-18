@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,69 +49,6 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     return new RequestOptions();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
-  private RequestOptions(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 8:
-            {
-              int rawValue = input.readEnum();
-
-              priority_ = rawValue;
-              break;
-            }
-          case 18:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              requestTag_ = s;
-              break;
-            }
-          case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              transactionTag_ = s;
-              break;
-            }
-          default:
-            {
-              if (!parseUnknownField(input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_RequestOptions_descriptor;
@@ -133,8 +70,10 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * The relative priority for requests. Note that priority is not applicable
    * for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
+   *
    * The priority acts as a hint to the Cloud Spanner scheduler and does not
    * guarantee priority or order of execution. For example:
+   *
    * * Some parts of a write operation always execute at `PRIORITY_HIGH`,
    *   regardless of the specified priority. This may cause you to see an
    *   increase in high priority workload even when executing a low priority
@@ -320,7 +259,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int PRIORITY_FIELD_NUMBER = 1;
-  private int priority_;
+  private int priority_ = 0;
   /**
    *
    *
@@ -349,14 +288,15 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
    */
   @java.lang.Override
   public com.google.spanner.v1.RequestOptions.Priority getPriority() {
-    @SuppressWarnings("deprecation")
     com.google.spanner.v1.RequestOptions.Priority result =
-        com.google.spanner.v1.RequestOptions.Priority.valueOf(priority_);
+        com.google.spanner.v1.RequestOptions.Priority.forNumber(priority_);
     return result == null ? com.google.spanner.v1.RequestOptions.Priority.UNRECOGNIZED : result;
   }
 
   public static final int REQUEST_TAG_FIELD_NUMBER = 2;
-  private volatile java.lang.Object requestTag_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object requestTag_ = "";
   /**
    *
    *
@@ -423,7 +363,9 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
   }
 
   public static final int TRANSACTION_TAG_FIELD_NUMBER = 3;
-  private volatile java.lang.Object transactionTag_;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object transactionTag_ = "";
   /**
    *
    *
@@ -515,7 +457,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionTag_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, transactionTag_);
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -534,7 +476,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(transactionTag_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, transactionTag_);
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -552,7 +494,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     if (priority_ != other.priority_) return false;
     if (!getRequestTag().equals(other.getRequestTag())) return false;
     if (!getTransactionTag().equals(other.getTransactionTag())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -569,7 +511,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     hash = (53 * hash) + getRequestTag().hashCode();
     hash = (37 * hash) + TRANSACTION_TAG_FIELD_NUMBER;
     hash = (53 * hash) + getTransactionTag().hashCode();
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -697,28 +639,19 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.v1.RequestOptions.newBuilder()
-    private Builder() {
-      maybeForceBuilderInitialization();
-    }
+    private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {}
     }
 
     @java.lang.Override
     public Builder clear() {
       super.clear();
+      bitField0_ = 0;
       priority_ = 0;
-
       requestTag_ = "";
-
       transactionTag_ = "";
-
       return this;
     }
 
@@ -745,11 +678,24 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
     @java.lang.Override
     public com.google.spanner.v1.RequestOptions buildPartial() {
       com.google.spanner.v1.RequestOptions result = new com.google.spanner.v1.RequestOptions(this);
-      result.priority_ = priority_;
-      result.requestTag_ = requestTag_;
-      result.transactionTag_ = transactionTag_;
+      if (bitField0_ != 0) {
+        buildPartial0(result);
+      }
       onBuilt();
       return result;
+    }
+
+    private void buildPartial0(com.google.spanner.v1.RequestOptions result) {
+      int from_bitField0_ = bitField0_;
+      if (((from_bitField0_ & 0x00000001) != 0)) {
+        result.priority_ = priority_;
+      }
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.requestTag_ = requestTag_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.transactionTag_ = transactionTag_;
+      }
     }
 
     @java.lang.Override
@@ -802,13 +748,15 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
       }
       if (!other.getRequestTag().isEmpty()) {
         requestTag_ = other.requestTag_;
+        bitField0_ |= 0x00000002;
         onChanged();
       }
       if (!other.getTransactionTag().isEmpty()) {
         transactionTag_ = other.transactionTag_;
+        bitField0_ |= 0x00000004;
         onChanged();
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -823,19 +771,53 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.google.spanner.v1.RequestOptions parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8:
+              {
+                priority_ = input.readEnum();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 8
+            case 18:
+              {
+                requestTag_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
+            case 26:
+              {
+                transactionTag_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000004;
+                break;
+              } // case 26
+            default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.google.spanner.v1.RequestOptions) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
+
+    private int bitField0_;
 
     private int priority_ = 0;
     /**
@@ -866,8 +848,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder setPriorityValue(int value) {
-
       priority_ = value;
+      bitField0_ |= 0x00000001;
       onChanged();
       return this;
     }
@@ -884,9 +866,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      */
     @java.lang.Override
     public com.google.spanner.v1.RequestOptions.Priority getPriority() {
-      @SuppressWarnings("deprecation")
       com.google.spanner.v1.RequestOptions.Priority result =
-          com.google.spanner.v1.RequestOptions.Priority.valueOf(priority_);
+          com.google.spanner.v1.RequestOptions.Priority.forNumber(priority_);
       return result == null ? com.google.spanner.v1.RequestOptions.Priority.UNRECOGNIZED : result;
     }
     /**
@@ -905,7 +886,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
+      bitField0_ |= 0x00000001;
       priority_ = value.getNumber();
       onChanged();
       return this;
@@ -922,7 +903,7 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearPriority() {
-
+      bitField0_ = (bitField0_ & ~0x00000001);
       priority_ = 0;
       onChanged();
       return this;
@@ -1016,8 +997,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       requestTag_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1042,8 +1023,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearRequestTag() {
-
       requestTag_ = getDefaultInstance().getRequestTag();
+      bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
     }
@@ -1073,8 +1054,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       requestTag_ = value;
+      bitField0_ |= 0x00000002;
       onChanged();
       return this;
     }
@@ -1170,8 +1151,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-
       transactionTag_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1197,8 +1178,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearTransactionTag() {
-
       transactionTag_ = getDefaultInstance().getTransactionTag();
+      bitField0_ = (bitField0_ & ~0x00000004);
       onChanged();
       return this;
     }
@@ -1229,8 +1210,8 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-
       transactionTag_ = value;
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
@@ -1267,7 +1248,18 @@ public final class RequestOptions extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RequestOptions(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 

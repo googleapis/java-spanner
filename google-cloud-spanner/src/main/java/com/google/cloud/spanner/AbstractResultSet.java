@@ -24,7 +24,10 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.client.util.BackOff;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -32,12 +35,14 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.NullValue;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -55,11 +60,14 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -67,11 +75,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.threeten.bp.Duration;
 
 /** Implementation of {@link ResultSet}. */
 abstract class AbstractResultSet<R> extends AbstractStructReader implements ResultSet {
   private static final Tracer tracer = Tracing.getTracer();
+  private static final com.google.protobuf.Value NULL_VALUE =
+      com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
 
   interface Listener {
     /**
@@ -92,6 +105,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   static class GrpcResultSet extends AbstractResultSet<List<Object>> {
     private final GrpcValueIterator iterator;
     private final Listener listener;
+    private ResultSetMetadata metadata;
     private GrpcStruct currRow;
     private SpannerException error;
     private ResultSetStats statistics;
@@ -116,7 +130,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       }
       try {
         if (currRow == null) {
-          ResultSetMetadata metadata = iterator.getMetadata();
+          metadata = iterator.getMetadata();
           if (metadata.hasTransaction()) {
             listener.onTransactionMetadata(
                 metadata.getTransaction(), iterator.isWithBeginTransaction());
@@ -143,6 +157,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Nullable
     public ResultSetStats getStats() {
       return statistics;
+    }
+
+    @Override
+    public ResultSetMetadata getMetadata() {
+      checkState(metadata != null, "next() call required");
+      return metadata;
     }
 
     @Override
@@ -346,6 +366,79 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
+  static final class LazyByteArray implements Serializable {
+    private static final Base64.Encoder ENCODER = Base64.getEncoder();
+    private static final Base64.Decoder DECODER = Base64.getDecoder();
+    private final String base64String;
+    private transient AbstractLazyInitializer<ByteArray> byteArray;
+
+    LazyByteArray(@Nonnull String base64String) {
+      this.base64String = Preconditions.checkNotNull(base64String);
+      this.byteArray = defaultInitializer();
+    }
+
+    LazyByteArray(@Nonnull ByteArray byteArray) {
+      this.base64String =
+          ENCODER.encodeToString(Preconditions.checkNotNull(byteArray).toByteArray());
+      this.byteArray =
+          new AbstractLazyInitializer<ByteArray>() {
+            @Override
+            protected ByteArray initialize() {
+              return byteArray;
+            }
+          };
+    }
+
+    private AbstractLazyInitializer<ByteArray> defaultInitializer() {
+      return new AbstractLazyInitializer<ByteArray>() {
+        @Override
+        protected ByteArray initialize() {
+          return ByteArray.copyFrom(DECODER.decode(base64String));
+        }
+      };
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      byteArray = defaultInitializer();
+    }
+
+    ByteArray getByteArray() {
+      try {
+        return byteArray.get();
+      } catch (Throwable t) {
+        throw SpannerExceptionFactory.asSpannerException(t);
+      }
+    }
+
+    String getBase64String() {
+      return base64String;
+    }
+
+    @Override
+    public String toString() {
+      return getBase64String();
+    }
+
+    @Override
+    public int hashCode() {
+      return base64String.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof LazyByteArray) {
+        return lazyByteArraysEqual((LazyByteArray) o);
+      }
+      return false;
+    }
+
+    private boolean lazyByteArraysEqual(LazyByteArray other) {
+      return Objects.equals(getBase64String(), other.getBase64String());
+    }
+  }
+
   static class GrpcStruct extends Struct implements Serializable {
     private final Type type;
     private final List<Object> rowData;
@@ -384,8 +477,15 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case JSON:
             builder.set(fieldName).to(Value.json((String) value));
             break;
+          case PG_JSONB:
+            builder.set(fieldName).to(Value.pgJsonb((String) value));
+            break;
           case BYTES:
-            builder.set(fieldName).to((ByteArray) value);
+            builder
+                .set(fieldName)
+                .to(
+                    Value.bytesFromBase64(
+                        value == null ? null : ((LazyByteArray) value).getBase64String()));
             break;
           case TIMESTAMP:
             builder.set(fieldName).to((Timestamp) value);
@@ -417,8 +517,21 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               case JSON:
                 builder.set(fieldName).toJsonArray((Iterable<String>) value);
                 break;
+              case PG_JSONB:
+                builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
+                break;
               case BYTES:
-                builder.set(fieldName).toBytesArray((Iterable<ByteArray>) value);
+                builder
+                    .set(fieldName)
+                    .toBytesArrayFromBase64(
+                        value == null
+                            ? null
+                            : ((List<LazyByteArray>) value)
+                                .stream()
+                                    .map(
+                                        element ->
+                                            element == null ? null : element.getBase64String())
+                                    .collect(Collectors.toList()));
                 break;
               case TIMESTAMP:
                 builder.set(fieldName).toTimestampArray((Iterable<Timestamp>) value);
@@ -491,15 +604,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return new BigDecimal(proto.getStringValue());
         case PG_NUMERIC:
-          checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return proto.getStringValue();
         case STRING:
         case JSON:
+        case PG_JSONB:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return proto.getStringValue();
         case BYTES:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
-          return ByteArray.fromBase64(proto.getStringValue());
+          return new LazyByteArray(proto.getStringValue());
         case TIMESTAMP:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return Timestamp.parseTimestamp(proto.getStringValue());
@@ -514,6 +626,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.LIST_VALUE);
           ListValue structValue = proto.getListValue();
           return decodeStructValue(fieldType, structValue);
+        case UNRECOGNIZED:
+          return proto;
         default:
           throw new AssertionError("Unhandled type code: " + fieldType.getCode());
       }
@@ -534,88 +648,24 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     static Object decodeArrayValue(Type elementType, ListValue listValue) {
       switch (elementType.getCode()) {
-        case BOOL:
-          // Use a view: element conversion is virtually free.
-          return Lists.transform(
-              listValue.getValuesList(),
-              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getBoolValue());
         case INT64:
           // For int64/float64 types, use custom containers.  These avoid wrapper object
           // creation for non-null arrays.
           return new Int64Array(listValue);
         case FLOAT64:
           return new Float64Array(listValue);
+        case BOOL:
         case NUMERIC:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : new BigDecimal(value.getStringValue()));
-            }
-            return list;
-          }
         case PG_NUMERIC:
-          return Lists.transform(
-              listValue.getValuesList(),
-              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
         case STRING:
         case JSON:
-          return Lists.transform(
-              listValue.getValuesList(),
-              input -> input.getKindCase() == KindCase.NULL_VALUE ? null : input.getStringValue());
+        case PG_JSONB:
         case BYTES:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : ByteArray.fromBase64(value.getStringValue()));
-            }
-            return list;
-          }
         case TIMESTAMP:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : Timestamp.parseTimestamp(value.getStringValue()));
-            }
-            return list;
-          }
         case DATE:
-          {
-            // Materialize list: element conversion is expensive and should happen only once.
-            ArrayList<Object> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              list.add(
-                  value.getKindCase() == KindCase.NULL_VALUE
-                      ? null
-                      : Date.parseDate(value.getStringValue()));
-            }
-            return list;
-          }
-
         case STRUCT:
-          {
-            ArrayList<Struct> list = new ArrayList<>(listValue.getValuesCount());
-            for (com.google.protobuf.Value value : listValue.getValuesList()) {
-              if (value.getKindCase() == KindCase.NULL_VALUE) {
-                list.add(null);
-              } else {
-                ListValue structValue = value.getListValue();
-                list.add(decodeStructValue(elementType, structValue));
-              }
-            }
-            return list;
-          }
+          return Lists.transform(
+              listValue.getValuesList(), input -> decodeValue(elementType, input));
         default:
           throw new AssertionError("Unhandled type code: " + elementType.getCode());
       }
@@ -680,8 +730,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
+    protected String getPgJsonbInternal(int columnIndex) {
+      return (String) rowData.get(columnIndex);
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
-      return (ByteArray) rowData.get(columnIndex);
+      return getLazyBytesInternal(columnIndex).getByteArray();
+    }
+
+    LazyByteArray getLazyBytesInternal(int columnIndex) {
+      return (LazyByteArray) rowData.get(columnIndex);
     }
 
     @Override
@@ -692,6 +751,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     protected Date getDateInternal(int columnIndex) {
       return (Date) rowData.get(columnIndex);
+    }
+
+    protected com.google.protobuf.Value getProtoValueInternal(int columnIndex) {
+      return (com.google.protobuf.Value) rowData.get(columnIndex);
     }
 
     @Override
@@ -715,14 +778,19 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.string(isNull ? null : getStringInternal(columnIndex));
         case JSON:
           return Value.json(isNull ? null : getJsonInternal(columnIndex));
+        case PG_JSONB:
+          return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
         case BYTES:
-          return Value.bytes(isNull ? null : getBytesInternal(columnIndex));
+          return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
         case TIMESTAMP:
           return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:
           return Value.date(isNull ? null : getDateInternal(columnIndex));
         case STRUCT:
           return Value.struct(isNull ? null : getStructInternal(columnIndex));
+        case UNRECOGNIZED:
+          return Value.unrecognized(
+              isNull ? NULL_VALUE : getProtoValueInternal(columnIndex), columnType);
         case ARRAY:
           final Type elementType = columnType.getArrayElementType();
           switch (elementType.getCode()) {
@@ -740,6 +808,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
             case JSON:
               return Value.jsonArray(isNull ? null : getJsonListInternal(columnIndex));
+            case PG_JSONB:
+              return Value.pgJsonbArray(isNull ? null : getPgJsonbListInternal(columnIndex));
             case BYTES:
               return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
             case TIMESTAMP:
@@ -816,15 +886,22 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
 
     @Override
-    @SuppressWarnings("unchecked") // We know ARRAY<String> produces a List<String>.
+    @SuppressWarnings("unchecked") // We know ARRAY<JSON> produces a List<String>.
     protected List<String> getJsonListInternal(int columnIndex) {
       return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
     }
 
     @Override
-    @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<ByteArray>.
+    @SuppressWarnings("unchecked") // We know ARRAY<JSONB> produces a List<String>.
+    protected List<String> getPgJsonbListInternal(int columnIndex) {
+      return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<LazyByteArray>.
     protected List<ByteArray> getBytesListInternal(int columnIndex) {
-      return Collections.unmodifiableList((List<ByteArray>) rowData.get(columnIndex));
+      return Lists.transform(
+          (List<LazyByteArray>) rowData.get(columnIndex), l -> l == null ? null : l.getByteArray());
     }
 
     @Override
@@ -872,6 +949,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
     private SpannerRpc.StreamingCall call;
     private volatile boolean withBeginTransaction;
+    private TimeUnit streamWaitTimeoutUnit;
+    private long streamWaitTimeoutValue;
     private SpannerException error;
 
     @VisibleForTesting
@@ -893,6 +972,22 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
       this.call = call;
       this.withBeginTransaction = withBeginTransaction;
+      ApiCallContext callContext = call.getCallContext();
+      Duration streamWaitTimeout = callContext == null ? null : callContext.getStreamWaitTimeout();
+      if (streamWaitTimeout != null) {
+        // Determine the timeout unit to use. This reduces the precision to seconds if the timeout
+        // value is more than 1 second, which is lower than the precision that would normally be
+        // used by the stream watchdog (which uses a precision of 10 seconds by default).
+        if (streamWaitTimeout.getSeconds() > 0L) {
+          streamWaitTimeoutValue = streamWaitTimeout.getSeconds();
+          streamWaitTimeoutUnit = TimeUnit.SECONDS;
+        } else if (streamWaitTimeout.getNano() > 0) {
+          streamWaitTimeoutValue = streamWaitTimeout.getNano();
+          streamWaitTimeoutUnit = TimeUnit.NANOSECONDS;
+        }
+        // Note that if the stream-wait-timeout is zero, we won't set a timeout at all.
+        // That is consistent with ApiCallContext#withStreamWaitTimeout(Duration.ZERO).
+      }
     }
 
     @Override
@@ -911,11 +1006,15 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     protected final PartialResultSet computeNext() {
       PartialResultSet next;
       try {
-        // TODO: Ideally honor io.grpc.Context while blocking here.  In practice,
-        //       cancellation/deadline results in an error being delivered to "stream", which
-        //       should mean that we do not block significantly longer afterwards, but it would
-        //       be more robust to use poll() with a timeout.
-        next = stream.take();
+        if (streamWaitTimeoutUnit != null) {
+          next = stream.poll(streamWaitTimeoutValue, streamWaitTimeoutUnit);
+          if (next == null) {
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.DEADLINE_EXCEEDED, "stream wait timeout");
+          }
+        } else {
+          next = stream.take();
+        }
       } catch (InterruptedException e) {
         // Treat interrupt as a request to cancel the read.
         throw SpannerExceptionFactory.propagateInterrupt(e);
@@ -986,10 +1085,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @VisibleForTesting
   abstract static class ResumableStreamIterator extends AbstractIterator<PartialResultSet>
       implements CloseableIterator<PartialResultSet> {
-    private static final RetrySettings STREAMING_RETRY_SETTINGS =
+    private static final RetrySettings DEFAULT_STREAMING_RETRY_SETTINGS =
         SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings();
+    private final RetrySettings streamingRetrySettings;
+    private final Set<Code> retryableCodes;
     private static final Logger logger = Logger.getLogger(ResumableStreamIterator.class.getName());
-    private final BackOff backOff = newBackOff();
+    private final BackOff backOff;
     private final LinkedList<PartialResultSet> buffer = new LinkedList<>();
     private final int maxBufferSize;
     private final Span span;
@@ -1003,24 +1104,58 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
      */
     private boolean safeToRetry = true;
 
-    protected ResumableStreamIterator(int maxBufferSize, String streamName, Span parent) {
+    protected ResumableStreamIterator(
+        int maxBufferSize,
+        String streamName,
+        Span parent,
+        RetrySettings streamingRetrySettings,
+        Set<Code> retryableCodes) {
       checkArgument(maxBufferSize >= 0);
       this.maxBufferSize = maxBufferSize;
       this.span = tracer.spanBuilderWithExplicitParent(streamName, parent).startSpan();
+      this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
+      this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
+      this.backOff = newBackOff();
     }
 
-    private static ExponentialBackOff newBackOff() {
+    private ExponentialBackOff newBackOff() {
+      if (Objects.equals(streamingRetrySettings, DEFAULT_STREAMING_RETRY_SETTINGS)) {
+        return new ExponentialBackOff.Builder()
+            .setMultiplier(streamingRetrySettings.getRetryDelayMultiplier())
+            .setInitialIntervalMillis(
+                Math.max(10, (int) streamingRetrySettings.getInitialRetryDelay().toMillis()))
+            .setMaxIntervalMillis(
+                Math.max(1000, (int) streamingRetrySettings.getMaxRetryDelay().toMillis()))
+            .setMaxElapsedTimeMillis(
+                Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
+            .build();
+      }
       return new ExponentialBackOff.Builder()
-          .setMultiplier(STREAMING_RETRY_SETTINGS.getRetryDelayMultiplier())
+          .setMultiplier(streamingRetrySettings.getRetryDelayMultiplier())
+          // All of these values must be > 0.
           .setInitialIntervalMillis(
-              Math.max(10, (int) STREAMING_RETRY_SETTINGS.getInitialRetryDelay().toMillis()))
+              Math.max(
+                  1,
+                  (int)
+                      Math.min(
+                          streamingRetrySettings.getInitialRetryDelay().toMillis(),
+                          Integer.MAX_VALUE)))
           .setMaxIntervalMillis(
-              Math.max(1000, (int) STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis()))
-          .setMaxElapsedTimeMillis(Integer.MAX_VALUE) // Prevent Backoff.STOP from getting returned.
+              Math.max(
+                  1,
+                  (int)
+                      Math.min(
+                          streamingRetrySettings.getMaxRetryDelay().toMillis(), Integer.MAX_VALUE)))
+          .setMaxElapsedTimeMillis(
+              Math.max(
+                  1,
+                  (int)
+                      Math.min(
+                          streamingRetrySettings.getTotalTimeout().toMillis(), Integer.MAX_VALUE)))
           .build();
     }
 
-    private static void backoffSleep(Context context, BackOff backoff) throws SpannerException {
+    private void backoffSleep(Context context, BackOff backoff) throws SpannerException {
       backoffSleep(context, nextBackOffMillis(backoff));
     }
 
@@ -1032,7 +1167,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       }
     }
 
-    private static void backoffSleep(Context context, long backoffMillis) throws SpannerException {
+    private void backoffSleep(Context context, long backoffMillis) throws SpannerException {
       tracer
           .getCurrentSpan()
           .addAnnotation(
@@ -1049,7 +1184,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       try {
         if (backoffMillis == BackOff.STOP) {
           // Highly unlikely but we handle it just in case.
-          backoffMillis = STREAMING_RETRY_SETTINGS.getMaxRetryDelay().toMillis();
+          backoffMillis = streamingRetrySettings.getMaxRetryDelay().toMillis();
         }
         if (latch.await(backoffMillis, TimeUnit.MILLISECONDS)) {
           // Woken by context cancellation.
@@ -1137,11 +1272,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return null;
             }
           }
-        } catch (SpannerException e) {
-          if (safeToRetry && e.isRetryable()) {
+        } catch (SpannerException spannerException) {
+          if (safeToRetry && isRetryable(spannerException)) {
             span.addAnnotation(
-                "Stream broken. Safe to retry", TraceUtil.getExceptionAnnotations(e));
-            logger.log(Level.FINE, "Retryable exception, will sleep and retry", e);
+                "Stream broken. Safe to retry",
+                TraceUtil.getExceptionAnnotations(spannerException));
+            logger.log(Level.FINE, "Retryable exception, will sleep and retry", spannerException);
             // Truncate any items in the buffer before the last retry token.
             while (!buffer.isEmpty() && buffer.getLast().getResumeToken().isEmpty()) {
               buffer.removeLast();
@@ -1149,7 +1285,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             assert buffer.isEmpty() || buffer.getLast().getResumeToken().equals(resumeToken);
             stream = null;
             try (Scope s = tracer.withSpan(span)) {
-              long delay = e.getRetryDelayInMillis();
+              long delay = spannerException.getRetryDelayInMillis();
               if (delay != -1) {
                 backoffSleep(context, delay);
               } else {
@@ -1160,14 +1296,20 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
             continue;
           }
           span.addAnnotation("Stream broken. Not safe to retry");
-          TraceUtil.setWithFailure(span, e);
-          throw e;
+          TraceUtil.setWithFailure(span, spannerException);
+          throw spannerException;
         } catch (RuntimeException e) {
           span.addAnnotation("Stream broken. Not safe to retry");
           TraceUtil.setWithFailure(span, e);
           throw e;
         }
       }
+    }
+
+    boolean isRetryable(SpannerException spannerException) {
+      return spannerException.isRetryable()
+          || retryableCodes.contains(
+              GrpcStatusCode.of(spannerException.getErrorCode().getGrpcStatusCode()).getCode());
     }
   }
 
@@ -1353,6 +1495,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected String getPgJsonbInternal(int columnIndex) {
+    return currRow().getPgJsonbInternal(columnIndex);
+  }
+
+  @Override
   protected ByteArray getBytesInternal(int columnIndex) {
     return currRow().getBytesInternal(columnIndex);
   }
@@ -1414,6 +1561,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
 
   @Override
   protected List<String> getJsonListInternal(int columnIndex) {
+    return currRow().getJsonListInternal(columnIndex);
+  }
+
+  @Override
+  protected List<String> getPgJsonbListInternal(int columnIndex) {
     return currRow().getJsonListInternal(columnIndex);
   }
 
