@@ -1,4 +1,4 @@
-package com.example.spanner;
+package com.example.spanner.v2;
 
 //[START spanner_create_instance]
 import com.google.api.gax.longrunning.OperationFuture;
@@ -11,7 +11,7 @@ import com.google.spanner.admin.instance.v1.ProjectName;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-class CreateInstanceAutogenerationExample {
+class CreateInstanceSample {
 
   static void createInstance() throws IOException {
     // TODO(developer): Replace these variables before running the sample.

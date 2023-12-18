@@ -1,4 +1,4 @@
-package com.example.spanner;
+package com.example.spanner.v2;
 
 //[START spanner_create_database_with_default_leader]
 
@@ -13,7 +13,7 @@ import com.google.spanner.admin.database.v1.Database;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-public class CreateDatabaseAutogenerationSample {
+public class CreateDatabaseWithDefaultLeaderSample {
 
   static void createDatabaseWithDefaultLeader() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
