@@ -338,10 +338,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                               SpannerInterceptorProvider.createDefault()))
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
-              .setHeaderProvider(headerProviderWithUserAgent)
-              // Attempts direct access to spanner service over gRPC to improve throughput,
-              // whether the attempt is allowed is totally controlled by service owner.
-              .setAttemptDirectPath(true);
+              .setHeaderProvider(headerProviderWithUserAgent);
 
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
