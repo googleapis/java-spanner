@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
+import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
@@ -740,6 +741,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -786,6 +788,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -832,6 +835,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -892,6 +896,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())
@@ -952,6 +957,7 @@ public class InstanceAdminClientTest {
             .setDisplayName("displayName1714148973")
             .setNodeCount(1539922066)
             .setProcessingUnits(-329117885)
+            .setAutoscalingConfig(AutoscalingConfig.newBuilder().build())
             .putAllLabels(new HashMap<String, String>())
             .addAllEndpointUris(new ArrayList<String>())
             .setCreateTime(Timestamp.newBuilder().build())

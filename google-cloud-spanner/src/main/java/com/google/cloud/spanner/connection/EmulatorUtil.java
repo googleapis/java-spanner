@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.InstanceConfigId;
 import com.google.cloud.spanner.InstanceInfo;
@@ -41,8 +42,10 @@ class EmulatorUtil {
    *
    * @param spanner a {@link Spanner} instance that connects to an emulator instance
    * @param databaseId the id of the instance and the database to create
+   * @param dialect the {@link Dialect} to use for the database to create
    */
-  static void maybeCreateInstanceAndDatabase(Spanner spanner, DatabaseId databaseId) {
+  static void maybeCreateInstanceAndDatabase(
+      Spanner spanner, DatabaseId databaseId, Dialect dialect) {
     Preconditions.checkArgument(
         NoCredentials.getInstance().equals(spanner.getOptions().getCredentials()));
     try {
@@ -70,7 +73,8 @@ class EmulatorUtil {
           .getDatabaseAdminClient()
           .createDatabase(
               databaseId.getInstanceId().getInstance(),
-              databaseId.getDatabase(),
+              dialect.createDatabaseStatementFor(databaseId.getDatabase()),
+              dialect,
               ImmutableList.of())
           .get();
     } catch (ExecutionException executionException) {

@@ -65,7 +65,7 @@ public class BeginPgTransactionTest {
             "start work isolation level serializable")) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
 
       verify(connection, times(index)).beginTransaction();
       verify(connection, never()).setTransactionMode(any());
@@ -89,7 +89,7 @@ public class BeginPgTransactionTest {
             "start work read only")) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
 
       verify(connection, times(index)).beginTransaction();
       verify(connection, times(index)).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
@@ -114,7 +114,7 @@ public class BeginPgTransactionTest {
             "start work read write")) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
 
       verify(connection, times(index)).beginTransaction();
       verify(connection, times(index)).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
@@ -140,7 +140,7 @@ public class BeginPgTransactionTest {
             "begin read write  ,   \nisolation level default\n\t,read only")) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
 
       verify(connection, times(index)).beginTransaction();
       verify(connection, times(index)).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
@@ -173,7 +173,7 @@ public class BeginPgTransactionTest {
             "begin not deferrable read write  ,   \nisolation level default\n\t,read only")) {
       ParsedStatement statement = parser.parse(Statement.of(sql));
       assertEquals(sql, StatementType.CLIENT_SIDE, statement.getType());
-      statement.getClientSideStatement().execute(executor, sql);
+      statement.getClientSideStatement().execute(executor, statement);
 
       verify(connection, times(index)).beginTransaction();
       verify(connection, times(index)).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);

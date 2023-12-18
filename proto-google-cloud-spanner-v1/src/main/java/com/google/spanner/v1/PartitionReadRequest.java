@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,18 +41,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     session_ = "";
     table_ = "";
     index_ = "";
-    columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
     return new PartitionReadRequest();
-  }
-
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
@@ -237,9 +232,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-   * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-   * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+   * If non-empty, the name of an index on
+   * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+   * instead of the table primary key when interpreting
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+   * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+   * for further information.
    * </pre>
    *
    * <code>string index = 4;</code>
@@ -262,9 +260,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-   * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-   * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+   * If non-empty, the name of an index on
+   * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+   * instead of the table primary key when interpreting
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+   * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+   * for further information.
    * </pre>
    *
    * <code>string index = 4;</code>
@@ -287,13 +288,14 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
   public static final int COLUMNS_FIELD_NUMBER = 5;
 
   @SuppressWarnings("serial")
-  private com.google.protobuf.LazyStringList columns_;
+  private com.google.protobuf.LazyStringArrayList columns_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
   /**
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -307,8 +309,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -322,8 +324,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -338,8 +340,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    *
    * <pre>
-   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-   * this request.
+   * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+   * returned for each row matching this request.
    * </pre>
    *
    * <code>repeated string columns = 5;</code>
@@ -358,9 +360,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-   * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+   * primary keys of the rows in
+   * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -378,9 +384,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-   * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+   * primary keys of the rows in
+   * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -398,9 +408,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
    *
    * <pre>
    * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-   * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+   * primary keys of the rows in
+   * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+   * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+   * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
    * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+   *
    * It is not an error for the `key_set` to name rows that do not
    * exist in the database. Read yields nothing for nonexistent rows.
    * </pre>
@@ -744,8 +758,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       }
       table_ = "";
       index_ = "";
-      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      bitField0_ = (bitField0_ & ~0x00000010);
+      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
       keySet_ = null;
       if (keySetBuilder_ != null) {
         keySetBuilder_.dispose();
@@ -783,20 +796,11 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     public com.google.spanner.v1.PartitionReadRequest buildPartial() {
       com.google.spanner.v1.PartitionReadRequest result =
           new com.google.spanner.v1.PartitionReadRequest(this);
-      buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
       onBuilt();
       return result;
-    }
-
-    private void buildPartialRepeatedFields(com.google.spanner.v1.PartitionReadRequest result) {
-      if (((bitField0_ & 0x00000010) != 0)) {
-        columns_ = columns_.getUnmodifiableView();
-        bitField0_ = (bitField0_ & ~0x00000010);
-      }
-      result.columns_ = columns_;
     }
 
     private void buildPartial0(com.google.spanner.v1.PartitionReadRequest result) {
@@ -813,6 +817,10 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.index_ = index_;
+      }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        columns_.makeImmutable();
+        result.columns_ = columns_;
       }
       if (((from_bitField0_ & 0x00000020) != 0)) {
         result.keySet_ = keySetBuilder_ == null ? keySet_ : keySetBuilder_.build();
@@ -889,7 +897,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       if (!other.columns_.isEmpty()) {
         if (columns_.isEmpty()) {
           columns_ = other.columns_;
-          bitField0_ = (bitField0_ & ~0x00000010);
+          bitField0_ |= 0x00000010;
         } else {
           ensureColumnsIsMutable();
           columns_.addAll(other.columns_);
@@ -1411,9 +1419,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1435,9 +1446,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1459,9 +1473,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1482,9 +1499,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1501,9 +1521,12 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * If non-empty, the name of an index on [table][google.spanner.v1.PartitionReadRequest.table]. This index is
-     * used instead of the table primary key when interpreting [key_set][google.spanner.v1.PartitionReadRequest.key_set]
-     * and sorting result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set] for further information.
+     * If non-empty, the name of an index on
+     * [table][google.spanner.v1.PartitionReadRequest.table]. This index is used
+     * instead of the table primary key when interpreting
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] and sorting
+     * result rows. See [key_set][google.spanner.v1.PartitionReadRequest.key_set]
+     * for further information.
      * </pre>
      *
      * <code>string index = 4;</code>
@@ -1522,21 +1545,21 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       return this;
     }
 
-    private com.google.protobuf.LazyStringList columns_ =
-        com.google.protobuf.LazyStringArrayList.EMPTY;
+    private com.google.protobuf.LazyStringArrayList columns_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
 
     private void ensureColumnsIsMutable() {
-      if (!((bitField0_ & 0x00000010) != 0)) {
+      if (!columns_.isModifiable()) {
         columns_ = new com.google.protobuf.LazyStringArrayList(columns_);
-        bitField0_ |= 0x00000010;
       }
+      bitField0_ |= 0x00000010;
     }
     /**
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1544,14 +1567,15 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return A list containing the columns.
      */
     public com.google.protobuf.ProtocolStringList getColumnsList() {
-      return columns_.getUnmodifiableView();
+      columns_.makeImmutable();
+      return columns_;
     }
     /**
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1565,8 +1589,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1581,8 +1605,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1597,8 +1621,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1613,6 +1637,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       }
       ensureColumnsIsMutable();
       columns_.set(index, value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1620,8 +1645,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1635,6 +1660,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       }
       ensureColumnsIsMutable();
       columns_.add(value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1642,8 +1668,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1654,6 +1680,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
     public Builder addAllColumns(java.lang.Iterable<java.lang.String> values) {
       ensureColumnsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, columns_);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1661,8 +1688,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1670,8 +1697,9 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      * @return This builder for chaining.
      */
     public Builder clearColumns() {
-      columns_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
       bitField0_ = (bitField0_ & ~0x00000010);
+      ;
       onChanged();
       return this;
     }
@@ -1679,8 +1707,8 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      *
      * <pre>
-     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be returned for each row matching
-     * this request.
+     * The columns of [table][google.spanner.v1.PartitionReadRequest.table] to be
+     * returned for each row matching this request.
      * </pre>
      *
      * <code>repeated string columns = 5;</code>
@@ -1695,6 +1723,7 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
       checkByteStringIsUtf8(value);
       ensureColumnsIsMutable();
       columns_.add(value);
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1710,9 +1739,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1729,9 +1762,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1752,9 +1789,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1779,9 +1820,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1803,9 +1848,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1833,9 +1882,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1857,9 +1910,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1876,9 +1933,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>
@@ -1897,9 +1958,13 @@ public final class PartitionReadRequest extends com.google.protobuf.GeneratedMes
      *
      * <pre>
      * Required. `key_set` identifies the rows to be yielded. `key_set` names the
-     * primary keys of the rows in [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless [index][google.spanner.v1.PartitionReadRequest.index]
-     * is present. If [index][google.spanner.v1.PartitionReadRequest.index] is present, then [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
+     * primary keys of the rows in
+     * [table][google.spanner.v1.PartitionReadRequest.table] to be yielded, unless
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present. If
+     * [index][google.spanner.v1.PartitionReadRequest.index] is present, then
+     * [key_set][google.spanner.v1.PartitionReadRequest.key_set] instead names
      * index keys in [index][google.spanner.v1.PartitionReadRequest.index].
+     *
      * It is not an error for the `key_set` to name rows that do not
      * exist in the database. Read yields nothing for nonexistent rows.
      * </pre>

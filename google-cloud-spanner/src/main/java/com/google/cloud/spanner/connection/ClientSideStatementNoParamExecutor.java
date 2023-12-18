@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import java.lang.reflect.Method;
 
@@ -42,7 +43,7 @@ class ClientSideStatementNoParamExecutor implements ClientSideStatementExecutor 
   }
 
   @Override
-  public StatementResult execute(ConnectionStatementExecutor connection, String statement)
+  public StatementResult execute(ConnectionStatementExecutor connection, ParsedStatement statement)
       throws Exception {
     return (StatementResult) method.invoke(connection);
   }

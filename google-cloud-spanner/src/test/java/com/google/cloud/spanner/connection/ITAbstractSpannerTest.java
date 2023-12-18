@@ -184,11 +184,11 @@ public abstract class ITAbstractSpannerTest {
   private static final String DEFAULT_KEY_FILE = null;
   public static Database database;
 
-  protected static String getKeyFile() {
+  public static String getKeyFile() {
     return System.getProperty(GceTestEnvConfig.GCE_CREDENTIALS_FILE, DEFAULT_KEY_FILE);
   }
 
-  protected static boolean hasValidKeyFile() {
+  public static boolean hasValidKeyFile() {
     return getKeyFile() != null && Files.exists(Paths.get(getKeyFile()));
   }
 

@@ -43,6 +43,7 @@ import com.google.api.gax.rpc.OperationCallable;
 import com.google.api.gax.rpc.ResponseObserver;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
@@ -154,6 +155,8 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -231,6 +234,10 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
+  private final RetrySettings executeQueryRetrySettings;
+  private final Set<Code> executeQueryRetryableCodes;
+  private final RetrySettings readRetrySettings;
+  private final Set<Code> readRetryableCodes;
   private final SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
   private final InstanceAdminStub instanceAdminStub;
@@ -370,6 +377,14 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setStreamWatchdogProvider(watchdogProvider)
                     .setTracerFactory(options.getApiTracerFactory())
                     .build());
+        this.readRetrySettings =
+            options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
+        this.readRetryableCodes =
+            options.getSpannerStubSettings().streamingReadSettings().getRetryableCodes();
+        this.executeQueryRetrySettings =
+            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
+        this.executeQueryRetryableCodes =
+            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
         partitionedDmlRetrySettings =
             options
                 .getSpannerStubSettings()
@@ -474,6 +489,10 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
+      this.readRetrySettings = null;
+      this.readRetryableCodes = null;
+      this.executeQueryRetrySettings = null;
+      this.executeQueryRetryableCodes = null;
       this.partitionedDmlStub = null;
       this.databaseAdminStubSettings = null;
       this.spannerWatchdog = null;
@@ -1588,6 +1607,16 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public RetrySettings getReadRetrySettings() {
+    return readRetrySettings;
+  }
+
+  @Override
+  public Set<Code> getReadRetryableCodes() {
+    return readRetryableCodes;
+  }
+
+  @Override
   public StreamingCall read(
       ReadRequest request,
       ResultStreamConsumer consumer,
@@ -1598,20 +1627,17 @@ public class GapicSpannerRpc implements SpannerRpc {
             options, request.getSession(), request, SpannerGrpc.getReadMethod(), routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.streamingReadCallable().call(request, responseObserver, context);
-    final StreamController controller = responseObserver.getController();
-    return new StreamingCall() {
-      @Override
-      public void request(int numMessage) {
-        controller.request(numMessage);
-      }
+    return new GrpcStreamingCall(context, responseObserver.getController());
+  }
 
-      // TODO(hzyi): streamController currently does not support cancel with message. Add
-      // this in gax and update this method later
-      @Override
-      public void cancel(String message) {
-        controller.cancel();
-      }
-    };
+  @Override
+  public RetrySettings getExecuteQueryRetrySettings() {
+    return executeQueryRetrySettings;
+  }
+
+  @Override
+  public Set<Code> getExecuteQueryRetryableCodes() {
+    return executeQueryRetryableCodes;
   }
 
   @Override
@@ -1663,6 +1689,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      BatchWriteRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context =
+        newCallContext(options, request.getSession(), request, SpannerGrpc.getBatchWriteMethod());
+    return spannerStub.batchWriteCallable().call(request, context);
+  }
+
+  @Override
   public StreamingCall executeQuery(
       ExecuteSqlRequest request,
       ResultStreamConsumer consumer,
@@ -1675,22 +1709,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             SpannerGrpc.getExecuteStreamingSqlMethod(),
             routeToLeader);
+
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
-    final StreamController controller = responseObserver.getController();
-    return new StreamingCall() {
-      @Override
-      public void request(int numMessage) {
-        controller.request(numMessage);
-      }
-
-      // TODO(hzyi): streamController currently does not support cancel with message. Add
-      // this in gax and update this method later
-      @Override
-      public void cancel(String message) {
-        controller.cancel();
-      }
-    };
+    return new GrpcStreamingCall(context, responseObserver.getController());
   }
 
   @Override
@@ -1957,6 +1979,31 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public boolean isClosed() {
     return rpcIsClosed;
+  }
+
+  private static final class GrpcStreamingCall implements StreamingCall {
+    private final ApiCallContext callContext;
+    private final StreamController controller;
+
+    GrpcStreamingCall(ApiCallContext callContext, StreamController controller) {
+      this.callContext = callContext;
+      this.controller = controller;
+    }
+
+    @Override
+    public ApiCallContext getCallContext() {
+      return callContext;
+    }
+
+    @Override
+    public void request(int numMessages) {
+      controller.request(numMessages);
+    }
+
+    @Override
+    public void cancel(@Nullable String message) {
+      controller.cancel();
+    }
   }
 
   /**

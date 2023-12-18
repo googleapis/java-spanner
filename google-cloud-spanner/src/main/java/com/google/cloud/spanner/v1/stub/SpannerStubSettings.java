@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -141,6 +143,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   private final UnaryCallSettings<RollbackRequest, Empty> rollbackSettings;
   private final UnaryCallSettings<PartitionQueryRequest, PartitionResponse> partitionQuerySettings;
   private final UnaryCallSettings<PartitionReadRequest, PartitionResponse> partitionReadSettings;
+  private final ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse>
+      batchWriteSettings;
 
   private static final PagedListDescriptor<ListSessionsRequest, ListSessionsResponse, Session>
       LIST_SESSIONS_PAGE_STR_DESC =
@@ -274,6 +278,11 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     return partitionReadSettings;
   }
 
+  /** Returns the object with the settings used for calls to batchWrite. */
+  public ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteSettings() {
+    return batchWriteSettings;
+  }
+
   public SpannerStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
@@ -393,6 +402,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     rollbackSettings = settingsBuilder.rollbackSettings().build();
     partitionQuerySettings = settingsBuilder.partitionQuerySettings().build();
     partitionReadSettings = settingsBuilder.partitionReadSettings().build();
+    batchWriteSettings = settingsBuilder.batchWriteSettings().build();
   }
 
   /** Builder for SpannerStubSettings. */
@@ -422,6 +432,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
         partitionQuerySettings;
     private final UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
         partitionReadSettings;
+    private final ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings;
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -513,6 +525,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       rollbackSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       partitionQuerySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       partitionReadSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      batchWriteSettings = ServerStreamingCallSettings.newBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -550,6 +563,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       rollbackSettings = settings.rollbackSettings.toBuilder();
       partitionQuerySettings = settings.partitionQuerySettings.toBuilder();
       partitionReadSettings = settings.partitionReadSettings.toBuilder();
+      batchWriteSettings = settings.batchWriteSettings.toBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -670,6 +684,11 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
+      builder
+          .batchWriteSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_0_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
+
       return builder;
     }
 
@@ -770,6 +789,12 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     public UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
         partitionReadSettings() {
       return partitionReadSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to batchWrite. */
+    public ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings() {
+      return batchWriteSettings;
     }
 
     @Override

@@ -16,7 +16,7 @@ jobs:
           - 9020:9020
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: stCarolas/setup-maven@v4
       with:
         maven-version: 3.8.1
@@ -24,13 +24,13 @@ jobs:
     - uses: actions/setup-java@v3
       with:
         java-version: 11
-        distribution: zulu
+        distribution: temurin
     - name: Compiling main library
       run: .kokoro/build.sh
     - uses: actions/setup-java@v3
       with:
         java-version: 8
-        distribution: zulu
+        distribution: temurin
     - name: Running tests
       run: |
         mvn -V -B -Dspanner.testenv.instance="" -Penable-integration-tests \

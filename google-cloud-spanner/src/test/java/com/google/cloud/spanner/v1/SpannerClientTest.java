@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,15 @@ import com.google.protobuf.Value;
 import com.google.rpc.Status;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -554,6 +557,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -575,6 +579,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
     Assert.assertEquals(request.getQueryOptions(), actualRequest.getQueryOptions());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
@@ -601,6 +606,7 @@ public class SpannerClientTest {
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.executeSql(request);
@@ -634,6 +640,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -665,6 +672,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -766,6 +774,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -786,6 +795,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getResumeToken(), actualRequest.getResumeToken());
     Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
@@ -812,6 +822,7 @@ public class SpannerClientTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.read(request);
@@ -845,6 +856,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -876,6 +888,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -1357,6 +1370,62 @@ public class SpannerClientTest {
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
+    }
+  }
+
+  @Test
+  public void batchWriteTest() throws Exception {
+    BatchWriteResponse expectedResponse =
+        BatchWriteResponse.newBuilder()
+            .addAllIndexes(new ArrayList<Integer>())
+            .setStatus(Status.newBuilder().build())
+            .setCommitTimestamp(Timestamp.newBuilder().build())
+            .build();
+    mockSpanner.addResponse(expectedResponse);
+    BatchWriteRequest request =
+        BatchWriteRequest.newBuilder()
+            .setSession(
+                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+            .setRequestOptions(RequestOptions.newBuilder().build())
+            .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+            .build();
+
+    MockStreamObserver<BatchWriteResponse> responseObserver = new MockStreamObserver<>();
+
+    ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> callable =
+        client.batchWriteCallable();
+    callable.serverStreamingCall(request, responseObserver);
+
+    List<BatchWriteResponse> actualResponses = responseObserver.future().get();
+    Assert.assertEquals(1, actualResponses.size());
+    Assert.assertEquals(expectedResponse, actualResponses.get(0));
+  }
+
+  @Test
+  public void batchWriteExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockSpanner.addException(exception);
+    BatchWriteRequest request =
+        BatchWriteRequest.newBuilder()
+            .setSession(
+                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+            .setRequestOptions(RequestOptions.newBuilder().build())
+            .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+            .build();
+
+    MockStreamObserver<BatchWriteResponse> responseObserver = new MockStreamObserver<>();
+
+    ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> callable =
+        client.batchWriteCallable();
+    callable.serverStreamingCall(request, responseObserver);
+
+    try {
+      List<BatchWriteResponse> actualResponses = responseObserver.future().get();
+      Assert.fail("No exception thrown");
+    } catch (ExecutionException e) {
+      Assert.assertTrue(e.getCause() instanceof InvalidArgumentException);
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
     }
   }
 }

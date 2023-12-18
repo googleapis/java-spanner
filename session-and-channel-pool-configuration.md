@@ -281,3 +281,84 @@ This will cause the following to happen internally in the client library:
 1. The `TransactionRunner` will automatically commit the transaction if the supplied user code
    finished without any errors. The `Commit` RPC that is invoked uses a thread from the default gRPC
    thread pool.
+
+### Session Leak
+A `DatabaseClient` object of the Client Library has a limit on the number of maximum sessions. For example the 
+default value of `MaxSessions` in the Java Client Library is 400. You can configure these values at the time of 
+creating a `Spanner` instance by setting custom `SessionPoolOptions`. When all the sessions are checked 
+out of the session pool, every new transaction has to wait until a session is returned to the pool. 
+If a session is never returned to the pool (hence causing a session leak), the transactions will have to wait 
+indefinitely and your application will be blocked.
+
+#### Common Root Causes
+The most common reason for session leaks in the Java client library are:
+1. Not closing a `ResultSet` that is returned by `executeQuery`. Always put `ResultSet` objects in a try-with-resources block, or take other measures to ensure that the `ResultSet` is always closed.
+2. Not closing a `ReadOnlyTransaction` when you no longer need it. Always put `ReadOnlyTransaction` objects in a try-with-resources block, or take other measures to ensure that the `ReadOnlyTransaction` is always closed.
+3. Not closing a `TransactionManager` when you no longer need it. Always put `TransactionManager` objects in a try-with-resources block, or take other measures to ensure that the `TransactionManager` is always closed.
+
+As shown in the example below, the `try-with-resources` block releases the session after it is complete. 
+If you don't use `try-with-resources` block, unless you explicitly call the `close()` method on all resources 
+such as `ResultSet`, the session is not released back to the pool.
+
+```java
+DatabaseClient client =
+    spanner.getDatabaseClient(DatabaseId.of("my-project", "my-instance", "my-database"));
+try (ResultSet resultSet =
+    client.singleUse().executeQuery(Statement.of("select col1, col2 from my_table"))) {
+  while (resultSet.next()) {
+    // use the results.
+  }
+}
+```
+
+#### Debugging and Resolving Session Leaks
+
+##### Logging
+Enabled by default, the logging option shares warn logs when you have exhausted >95% of your session pool. 
+This could mean two things, either you need to increase the max sessions in your session pool (as the number 
+of queries run using the client side database object is greater than your session pool can serve) or you may 
+have a session leak.
+
+To help debug which transactions may be causing this session leak, the logs will also contain stack traces of 
+transactions which have been running longer than expected. The logs are pushed to a destination based on 
+how the log exporter is configured for the host application.
+
+``` java
+final SessionPoolOptions sessionPoolOptions = 
+   SessionPoolOptions.newBuilder().setWarnIfInactiveTransactions().build()
+
+final Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+final DatabaseClient client = spanner.getDatabaseClient(databaseId);
+
+// Example Log message to warn presence of long running transactions
+// Detected long-running session <session-info>. To automatically remove long-running sessions, set SessionOption ActionOnInactiveTransaction 
+// to WARN_AND_CLOSE by invoking setWarnAndCloseIfInactiveTransactions() method. <Stack Trace and information on session>
+
+```
+##### Automatically clean inactive transactions
+When the option to automatically clean inactive transactions is enabled, the client library will automatically spot 
+problematic transactions that are running for extremely long periods of time (thus causing session leaks) and close them. 
+The session will be removed from the pool and be replaced by a new session. To dig deeper into which transactions are being 
+closed, you can check the logs to see the stack trace of the transactions which might be causing these leaks and further 
+debug them.
+
+``` java
+final SessionPoolOptions sessionPoolOptions = 
+   SessionPoolOptions.newBuilder().setWarnAndCloseIfInactiveTransactions().build()
+
+final Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setSessionPoolOption(sessionPoolOptions)
+            .build()
+            .getService();
+final DatabaseClient client = spanner.getDatabaseClient(databaseId);
+
+// Example Log message for when transaction is recycled
+// Removing long-running session <Stack Trace and information on session>
+```
+
+

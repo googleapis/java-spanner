@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,8 +202,8 @@ public interface CommitRequestOrBuilder
    *
    * <pre>
    * If `true`, then statistics related to the transaction will be included in
-   * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
-   * `false`.
+   * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats].
+   * Default value is `false`.
    * </pre>
    *
    * <code>bool return_commit_stats = 5;</code>
@@ -247,5 +247,5 @@ public interface CommitRequestOrBuilder
    */
   com.google.spanner.v1.RequestOptionsOrBuilder getRequestOptionsOrBuilder();
 
-  public com.google.spanner.v1.CommitRequest.TransactionCase getTransactionCase();
+  com.google.spanner.v1.CommitRequest.TransactionCase getTransactionCase();
 }

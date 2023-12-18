@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.DDL
 import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.SELECT;
 import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.UPDATE;
 import static com.google.cloud.spanner.connection.AbstractConnectionImplTest.expectSpannerException;
+import static com.google.cloud.spanner.connection.ConnectionImpl.checkResultTypeAllowed;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
@@ -42,6 +44,9 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.DatabaseClient;
@@ -70,6 +75,7 @@ import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStalene
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
+import com.google.common.collect.ImmutableSet;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
@@ -365,7 +371,13 @@ public class ConnectionImplTest {
                 };
               }
             });
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient);
+    BatchClient batchClient = mock(BatchClient.class);
+    BatchReadOnlyTransaction batchReadOnlyTransaction = mock(BatchReadOnlyTransaction.class);
+    when(batchClient.batchReadOnlyTransaction(any(TimestampBound.class)))
+        .thenReturn(batchReadOnlyTransaction);
+    when(batchClient.batchReadOnlyTransaction(any(BatchTransactionId.class)))
+        .thenReturn(batchReadOnlyTransaction);
+    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, batchClient);
   }
 
   @Test
@@ -397,6 +409,145 @@ public class ConnectionImplTest {
       StatementResult res = subject.execute(Statement.of("set autocommit = false"));
       assertThat(res.getResultType(), is(equalTo(ResultType.NO_RESULT)));
       assertThat(subject.isAutocommit(), is(false));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToTrue_inAutoCommitAndNotInTransaction_noop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+
+      subject.setAutocommit(true);
+
+      assertTrue(subject.isAutocommit());
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToTrue_inAutoCommitAndInTransaction_noop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+      subject.execute(Statement.of("begin transaction"));
+
+      subject.setAutocommit(true);
+
+      assertTrue(subject.isAutocommit());
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_inAutoCommitAndNotInTransaction_autocommitModeChanged() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+
+      subject.setAutocommit(false);
+
+      assertFalse(subject.isAutocommit());
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_inAutoCommitAndInTransaction_throwsException() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertThat(subject.isAutocommit(), is(true));
+      subject.execute(Statement.of("begin transaction"));
+
+      SpannerException exception =
+          assertThrows(SpannerException.class, () -> subject.setAutocommit(false));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(
+          exception
+              .getMessage()
+              .contains("Cannot set autocommit while in a temporary transaction"));
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_notInAutoCommitAndTransactionNotStarted_noop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+
+      subject.setAutocommit(false);
+
+      assertFalse(subject.isAutocommit());
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToFalse_notInAutoCommitAndTransactionStarted_noop() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+      subject.executeQuery(Statement.of(SELECT));
+
+      subject.setAutocommit(false);
+
+      assertFalse(subject.isAutocommit());
+    }
+  }
+
+  @Test
+  public void
+      testSetAutocommitToTrue_notInAutoCommitAndTransactionNotStarted_autocommitModeChanged() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+
+      subject.setAutocommit(true);
+
+      assertTrue(subject.isAutocommit());
+    }
+  }
+
+  @Test
+  public void testSetAutocommitToTrue_notInAutoCommitAndTransactionStarted_throwsException() {
+    try (ConnectionImpl subject =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI + ";autocommit=false")
+                .build())) {
+      assertThat(subject.isAutocommit(), is(false));
+      subject.executeQuery(Statement.of(SELECT));
+
+      SpannerException exception =
+          assertThrows(SpannerException.class, () -> subject.setAutocommit(true));
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+      assertTrue(
+          exception.getMessage().contains("Cannot set autocommit while a transaction is active"));
     }
   }
 
@@ -1377,9 +1528,10 @@ public class ConnectionImplTest {
             any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl impl =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1485,9 +1637,10 @@ public class ConnectionImplTest {
             any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1524,7 +1677,8 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
       assertFalse(connection.isAutocommit());
 
       assertNull(connection.getTransactionTag());
@@ -1565,7 +1719,8 @@ public class ConnectionImplTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient)) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
       assertTrue(connection.isAutocommit());
 
       try {
@@ -1593,9 +1748,10 @@ public class ConnectionImplTest {
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     when(unitOfWork.rollbackAsync(any())).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork createNewUnitOfWork() {
+          UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {
@@ -1609,5 +1765,116 @@ public class ConnectionImplTest {
       }
       assertNull(connection.getTransactionTag());
     }
+  }
+
+  @Test
+  public void testCheckResultTypeAllowed() {
+    AbstractStatementParser parser =
+        AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL);
+    String query = "select * from foo";
+    String dml = "update foo set bar=1 where true";
+    String dmlReturning = "insert into foo (id, value) values (1, 'One') then return id";
+    String ddl = "create table foo";
+    String set = "set readonly=true";
+    String show = "show variable readonly";
+    String start = "start batch dml";
+
+    // null means all statements should be allowed.
+    ImmutableSet<ResultType> allowedResultTypes = null;
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of();
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.RESULT_SET);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.UPDATE_COUNT);
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.NO_RESULT);
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.RESULT_SET, ResultType.UPDATE_COUNT);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, ddl, allowedResultTypes);
+    assertThrowResultNotAllowed(parser, set, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, start, allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.RESULT_SET, ResultType.NO_RESULT);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dml, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes = ImmutableSet.of(ResultType.UPDATE_COUNT, ResultType.NO_RESULT);
+    assertThrowResultNotAllowed(parser, query, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, dmlReturning, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    assertThrowResultNotAllowed(parser, show, allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+
+    allowedResultTypes =
+        ImmutableSet.of(ResultType.RESULT_SET, ResultType.UPDATE_COUNT, ResultType.NO_RESULT);
+    checkResultTypeAllowed(parser.parse(Statement.of(query)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dml)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(dmlReturning)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(ddl)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(set)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(show)), allowedResultTypes);
+    checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
+  }
+
+  private void assertThrowResultNotAllowed(
+      AbstractStatementParser parser, String sql, ImmutableSet<ResultType> allowedResultTypes) {
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () -> checkResultTypeAllowed(parser.parse(Statement.of(sql)), allowedResultTypes));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .contains(
+                "Only statements that return a result of one of the following types are allowed"));
   }
 }
