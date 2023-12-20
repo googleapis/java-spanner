@@ -93,10 +93,7 @@
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api.grpc</groupId>
-      <artifactId>grpc-google-cloud-spanner-executor-v1</artifactId>
+      <version>1.4.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -171,7 +168,7 @@
           </descriptors>
           <archive>
             <manifest>
-              <mainClass>com.google.cloud.spanner.executor.WorkerProxy</mainClass>
+              <mainClass>com.google.cloud.executor.spanner.WorkerProxy</mainClass>
             </manifest>
           </archive>
         </configuration>
