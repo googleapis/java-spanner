@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -358,7 +357,8 @@ public class SessionPoolOptions {
     }
 
     static class Builder {
-      private ActionOnInactiveTransaction actionOnInactiveTransaction;
+      private ActionOnInactiveTransaction actionOnInactiveTransaction =
+          ActionOnInactiveTransaction.WARN;
       private Duration executionFrequency = Duration.ofMinutes(2);
       private double usedSessionsRatioThreshold = 0.95;
       private Duration idleTimeThreshold = Duration.ofMinutes(60L);
@@ -599,7 +599,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
-    Builder setWarnIfInactiveTransactions() {
+    public Builder setWarnIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN)
@@ -618,7 +618,7 @@ public class SessionPoolOptions {
      *
      * @return this builder for chaining
      */
-    Builder setWarnAndCloseIfInactiveTransactions() {
+    public Builder setWarnAndCloseIfInactiveTransactions() {
       this.inactiveTransactionRemovalOptions =
           InactiveTransactionRemovalOptions.newBuilder()
               .setActionOnInactiveTransaction(ActionOnInactiveTransaction.WARN_AND_CLOSE)
