@@ -1,12 +1,13 @@
 package com.example.spanner.v2;
 
-//[START spanner_create_instance]
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +36,8 @@ class CreateInstanceSample {
         Instance.newBuilder()
             .setDisplayName(displayName)
             .setNodeCount(nodeCount)
-            .setConfig(projectId + "/instanceConfigs/regional-us-central1")
+            .setConfig(
+                InstanceConfigName.of(projectId, "regional-us-central1").toString())
             .build();
     OperationFuture<Instance, CreateInstanceMetadata> operation =
         instanceAdminClient.createInstanceAsync(
@@ -53,9 +55,10 @@ class CreateInstanceSample {
       System.out.printf(
           "Error: Creating instance %s failed with error message %s%n",
           instance.getName(), e.getMessage());
+      throw SpannerExceptionFactory.asSpannerException(e);
     } catch (InterruptedException e) {
       System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+      throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
 }
-//[END spanner_create_instance]

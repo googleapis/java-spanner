@@ -148,6 +148,7 @@
             <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
             <spanner.test.key.name>cmek-test-key</spanner.test.key.name>
             <spanner.sample.database>mysample</spanner.sample.database>
+            <spanner.sample.instance>mysample-instance</spanner.sample.instance>
             <spanner.quickstart.database>quick-db</spanner.quickstart.database>
           </systemPropertyVariables>
         </configuration>

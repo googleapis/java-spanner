@@ -1,7 +1,6 @@
 package com.example.spanner.v2;
 
 import com.example.spanner.SampleIdGenerator;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
@@ -15,6 +14,9 @@ import org.junit.BeforeClass;
  * Base class for sample integration intests using auto-generated admin clients.
  */
 public class SampleTestBaseV2 {
+
+  private static final String BASE_INSTANCE_ID =
+      System.getProperty("spanner.sample.instance", "mysample-instance");
 
   private static final String BASE_DATABASE_ID =
       System.getProperty("spanner.sample.database", "sampledb");
@@ -49,11 +51,27 @@ public class SampleTestBaseV2 {
     projectId = options.getProjectId();
     databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettingsBuilder.build());
     instanceAdminClient = InstanceAdminClient.create(instanceAdminSettingBuilder.build());
-    idGenerator = new SampleIdGenerator(BASE_DATABASE_ID, BASE_BACKUP_ID, BASE_INSTANCE_CONFIG_ID);
+    idGenerator = new SampleIdGenerator(
+        BASE_DATABASE_ID, BASE_BACKUP_ID, BASE_INSTANCE_CONFIG_ID, BASE_INSTANCE_ID);
   }
 
   @AfterClass
   public static void afterClass() {
+    for (String instanceId : idGenerator.getInstanceIds()) {
+      System.out.println("Trying to drop " + instanceId);
+      try {
+        // If the database is not found, it is ignored (no exception is thrown)
+        instanceAdminClient.deleteInstance(getInstanceName(projectId, instanceId));
+      } catch (Exception e) {
+        System.out.println(
+            "Failed to drop instance "
+                + instanceId
+                + " due to "
+                + e.getMessage()
+                + ", skipping...");
+      }
+    }
+
     for (String databaseId : idGenerator.getDatabaseIds()) {
       System.out.println("Trying to drop " + databaseId);
       try {
@@ -110,7 +128,7 @@ public class SampleTestBaseV2 {
         "projects/%s/instances/%s/backups/%s", projectId, instanceId, backupId);
   }
 
-  public String getInstanceName(final String projectId, final String instanceId) {
+  static String getInstanceName(final String projectId, final String instanceId) {
     return String.format("projects/%s/instances/%s", projectId, instanceId);
   }
 }
