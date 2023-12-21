@@ -34,10 +34,9 @@ public class SampleTestBaseV2 {
 
   @BeforeClass
   public static void beforeClass() throws IOException {
-    final String serverUrl = "staging-wrenchworks.sandbox.googleapis.com:443";
-    final SpannerOptions.Builder optionsBuilder = SpannerOptions
-        .newBuilder()
-        .setAutoThrottleAdministrativeRequests();
+    final String serverUrl = "";
+    final SpannerOptions.Builder optionsBuilder =
+        SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests();
     final SpannerOptions options = optionsBuilder.build();
     final DatabaseAdminSettings.Builder databaseAdminSettingsBuilder = DatabaseAdminSettings.newBuilder();
     final InstanceAdminSettings.Builder instanceAdminSettingBuilder = InstanceAdminSettings.newBuilder();
@@ -99,15 +98,19 @@ public class SampleTestBaseV2 {
     }
   }
 
-  private static String getDatabaseName(final String projectId,
+  static String getDatabaseName(final String projectId,
       final String instanceId, final String databaseId) {
     return String.format(
         "projects/%s/instances/%s/databases/%s", projectId, instanceId, databaseId);
   }
 
-  private static String getBackupName(final String projectId,
+  static String getBackupName(final String projectId,
       final String instanceId, final String backupId) {
     return String.format(
         "projects/%s/instances/%s/backups/%s", projectId, instanceId, backupId);
+  }
+
+  public String getInstanceName(final String projectId, final String instanceId) {
+    return String.format("projects/%s/instances/%s", projectId, instanceId);
   }
 }
