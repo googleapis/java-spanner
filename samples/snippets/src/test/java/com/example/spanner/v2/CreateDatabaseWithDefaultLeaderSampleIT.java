@@ -30,8 +30,7 @@ public class CreateDatabaseWithDefaultLeaderSampleIT extends SampleTestBaseV2 {
     // Runs sample
     final String out = SampleRunner.runSample(() ->
         CreateDatabaseWithDefaultLeaderSample.createDatabaseWithDefaultLeader(
-            projectId,
-            multiRegionalInstanceId,
+            getInstanceName(projectId, multiRegionalInstanceId),
             databaseId,
             defaultLeader
         )
