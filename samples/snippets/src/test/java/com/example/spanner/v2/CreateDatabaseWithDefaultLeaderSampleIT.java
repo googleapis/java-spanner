@@ -17,6 +17,7 @@ public class CreateDatabaseWithDefaultLeaderSampleIT extends SampleTestBaseV2 {
     final String databaseId = idGenerator.generateDatabaseId();
 
     // Finds possible default leader
+
     final String instanceConfigId = instanceAdminClient.getInstance(
         InstanceName.of(projectId, multiRegionalInstanceId)).getConfig();
     final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigId);
