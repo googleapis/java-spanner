@@ -39,8 +39,8 @@ public class SampleIdGenerator {
   private final String baseInstanceConfigId;
   private final String baseInstanceId;
 
-  public SampleIdGenerator(
-      String baseDatabaseId, String baseBackupId, String baseInstanceConfigId, String baseInstanceId) {
+  public SampleIdGenerator(String baseDatabaseId, String baseBackupId,
+      String baseInstanceConfigId, String baseInstanceId) {
     this.baseDatabaseId = baseDatabaseId;
     this.baseBackupId = baseBackupId;
     this.baseInstanceConfigId = baseInstanceConfigId;
@@ -59,6 +59,7 @@ public class SampleIdGenerator {
     instanceIds.add(instanceId);
     return instanceId;
   }
+
   public String generateDatabaseId() {
     final String databaseId =
         (baseDatabaseId + "-" + UUID.randomUUID().toString().replaceAll("-", ""))
