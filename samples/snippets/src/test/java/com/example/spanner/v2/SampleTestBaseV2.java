@@ -1,9 +1,12 @@
 package com.example.spanner.v2;
 
 import com.example.spanner.SampleIdGenerator;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import java.io.IOException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -31,17 +34,22 @@ public class SampleTestBaseV2 {
 
   @BeforeClass
   public static void beforeClass() throws IOException {
-    final String serverUrl = "";
+    final String serverUrl = "staging-wrenchworks.sandbox.googleapis.com:443";
     final SpannerOptions.Builder optionsBuilder = SpannerOptions
         .newBuilder()
         .setAutoThrottleAdministrativeRequests();
-    if (!serverUrl.isEmpty()) {
-      optionsBuilder.setHost(serverUrl);
-    }
     final SpannerOptions options = optionsBuilder.build();
+    final DatabaseAdminSettings.Builder databaseAdminSettingsBuilder = DatabaseAdminSettings.newBuilder();
+    final InstanceAdminSettings.Builder instanceAdminSettingBuilder = InstanceAdminSettings.newBuilder();
+
+    if (!serverUrl.isEmpty()) {
+      databaseAdminSettingsBuilder.setEndpoint(serverUrl);
+      instanceAdminSettingBuilder.setEndpoint(serverUrl);
+    }
+
     projectId = options.getProjectId();
-    databaseAdminClient = DatabaseAdminClient.create();
-    instanceAdminClient = InstanceAdminClient.create();
+    databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettingsBuilder.build());
+    instanceAdminClient = InstanceAdminClient.create(instanceAdminSettingBuilder.build());
     idGenerator = new SampleIdGenerator(BASE_DATABASE_ID, BASE_BACKUP_ID, BASE_INSTANCE_CONFIG_ID);
   }
 
