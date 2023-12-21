@@ -56,8 +56,10 @@ public class SampleTestBaseV2 {
     final SpannerOptions.Builder optionsBuilder =
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests();
     final SpannerOptions options = optionsBuilder.build();
-    final DatabaseAdminSettings.Builder databaseAdminSettingsBuilder = DatabaseAdminSettings.newBuilder();
-    final InstanceAdminSettings.Builder instanceAdminSettingBuilder = InstanceAdminSettings.newBuilder();
+    final DatabaseAdminSettings.Builder databaseAdminSettingsBuilder =
+        DatabaseAdminSettings.newBuilder();
+    final InstanceAdminSettings.Builder instanceAdminSettingBuilder =
+        InstanceAdminSettings.newBuilder();
 
     if (!serverUrl.isEmpty()) {
       databaseAdminSettingsBuilder.setEndpoint(serverUrl);
