@@ -18,7 +18,6 @@ package com.example.spanner.v2;
 
 //[START spanner_create_instance]
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
@@ -72,10 +71,8 @@ class CreateInstanceExample {
       System.out.printf(
           "Error: Creating instance %s failed with error message %s%n",
           instance.getName(), e.getMessage());
-      throw SpannerExceptionFactory.asSpannerException(e);
     } catch (InterruptedException e) {
       System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
-      throw SpannerExceptionFactory.propagateInterrupt(e);
     }
   }
 }
