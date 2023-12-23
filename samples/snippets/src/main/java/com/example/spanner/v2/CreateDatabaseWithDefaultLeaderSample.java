@@ -47,7 +47,7 @@ public class CreateDatabaseWithDefaultLeaderSample {
           databaseAdminClient.createDatabaseAsync(
               CreateDatabaseRequest.newBuilder()
                   .setParent(instanceName)
-                  .setCreateStatement("CREATE DATABASE " + "`" + databaseId + "`")
+                  .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
                   .addAllExtraStatements(
                       ImmutableList.of("CREATE TABLE Singers ("
                               + "  SingerId   INT64 NOT NULL,"
