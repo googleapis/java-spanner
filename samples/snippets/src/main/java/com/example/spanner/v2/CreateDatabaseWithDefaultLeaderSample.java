@@ -32,7 +32,7 @@ public class CreateDatabaseWithDefaultLeaderSample {
 
   static void createDatabaseWithDefaultLeader() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    final String instanceName = "my-instance-name";
+    final String instanceName = "projects/my-project/instances/my-instance-id";
     final String databaseId = "my-database-name";
     final String defaultLeader = "my-default-leader";
     createDatabaseWithDefaultLeader(instanceName, databaseId, defaultLeader);
