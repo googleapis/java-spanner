@@ -16,6 +16,7 @@
 
 package com.example.spanner.v2;
 
+//[START spanner_create_instance]
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
@@ -28,7 +29,7 @@ import com.google.spanner.admin.instance.v1.ProjectName;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-class CreateInstanceSample {
+class CreateInstanceExample {
 
   static void createInstance() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
@@ -78,3 +79,4 @@ class CreateInstanceSample {
     }
   }
 }
+//[END spanner_create_instance]
