@@ -16,6 +16,8 @@
 
 package com.example.spanner.v2;
 
+//[START spanner_create_database_with_default_leader]
+
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
@@ -75,3 +77,4 @@ public class CreateDatabaseWithDefaultLeaderSample {
     }
   }
 }
+//[END spanner_create_database_with_default_leader]
