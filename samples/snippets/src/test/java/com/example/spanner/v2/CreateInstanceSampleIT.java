@@ -32,7 +32,7 @@ public class CreateInstanceSampleIT extends SampleTestBaseV2 {
 
     // Runs sample
     final String out = SampleRunner.runSample(() ->
-        CreateInstanceSample.createInstance(projectId, instanceId)
+        CreateInstanceExample.createInstance(projectId, instanceId)
     );
 
     assertTrue(
