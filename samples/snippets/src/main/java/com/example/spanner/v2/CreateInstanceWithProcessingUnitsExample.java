@@ -19,27 +19,28 @@ package com.example.spanner.v2;
 //[START spanner_create_instance_with_processing_units]
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.InstanceInfo;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.Instance;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
+import com.google.spanner.admin.instance.v1.ProjectName;
+import java.io.IOException;
 
 class CreateInstanceWithProcessingUnitsExample {
 
-  static void createInstance() {
+  static void createInstance() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     createInstance(projectId, instanceId);
   }
 
-  static void createInstance(String projectId, String instanceId) {
-    Spanner spanner = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
-    InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
+  static void createInstance(String projectId, String instanceId) throws IOException {
+    InstanceAdminSettings instanceAdminSettings =
+        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
+    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
 
     // Set Instance configuration.
     String configId = "regional-us-central1";
@@ -50,27 +51,33 @@ class CreateInstanceWithProcessingUnitsExample {
     try {
       // Creates a new instance
       System.out.printf("Creating instance %s.%n", instanceId);
-      OperationFuture<Instance, CreateInstanceMetadata> operation =
-          instanceAdminClient.createInstance(InstanceInfo
-              .newBuilder(InstanceId.of(projectId, instanceId))
-              .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
-              .setProcessingUnits(processingUnits)
+      Instance instance =
+          Instance.newBuilder()
               .setDisplayName(displayName)
-              .build());
+              .setProcessingUnits(processingUnits)
+              .setConfig(
+                  InstanceConfigName.of(projectId, configId).toString())
+              .build();
+      OperationFuture<Instance, CreateInstanceMetadata> operation =
+          instanceAdminClient.createInstanceAsync(
+              CreateInstanceRequest.newBuilder()
+                  .setParent(ProjectName.of(projectId).toString())
+                  .setInstanceId(instanceId)
+                  .setInstance(instance)
+                  .build());
 
       // Wait for the createInstance operation to finish.
       System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
       Instance createdInstance = operation.get();
 
-      System.out.printf("Created instance %s.%n", createdInstance.getId().getInstance());
+      System.out.printf("Created instance %s.%n", createdInstance.getName());
 
-      Instance instance = instanceAdminClient.getInstance(instanceId);
-      System.out.printf("Instance %s has %d processing units.%n", instance.getId().getInstance(),
-          instance.getProcessingUnits());
+      Instance instanceResult = instanceAdminClient.getInstance(instanceId);
+      System.out.printf("Instance %s has %d processing units.%n", instanceResult.getName(),
+          instanceResult.getProcessingUnits());
     } catch (Exception e) {
       System.out.printf("Error: %s.%n", e.getMessage());
     }
-    spanner.close();
   }
 }
 //[END spanner_create_instance_with_processing_units]

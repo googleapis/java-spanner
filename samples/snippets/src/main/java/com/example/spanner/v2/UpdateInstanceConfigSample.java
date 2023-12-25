@@ -18,55 +18,54 @@ package com.example.spanner.v2;
 
 // [START spanner_update_instance_config]
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfig;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceConfigInfo;
-import com.google.cloud.spanner.InstanceConfigInfo.InstanceConfigField;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 class UpdateInstanceConfigSample {
-  static void updateInstanceConfig() {
+  static void updateInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
-    String instanceConfigId = "custom-instance-config";
-    updateInstanceConfig(projectId, instanceConfigId);
+    String instanceConfigName = "projects/my-project/instanceConfigs/custom-instance-config";
+    updateInstanceConfig(projectId, instanceConfigName);
   }
 
-  static void updateInstanceConfig(String projectId, String instanceConfigId) {
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-      InstanceConfigInfo instanceConfigInfo =
-          InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
-              .setDisplayName("updated custom instance config")
-              .addLabel("updated", "true")
-              .build();
-      final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
-          instanceAdminClient.updateInstanceConfig(
-              instanceConfigInfo,
-              ImmutableList.of(InstanceConfigField.DISPLAY_NAME, InstanceConfigField.LABELS));
-      try {
-        System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigId);
-        InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
-        System.out.printf(
-            "Updated instance configuration %s with new display name %s\n",
-            instanceConfig.getId(), instanceConfig.getDisplayName());
-      } catch (ExecutionException | TimeoutException e) {
-        System.out.printf(
-            "Error: Updating instance config %s failed with error message %s\n",
-            instanceConfigInfo.getId(), e.getMessage());
-        e.printStackTrace();
-      } catch (InterruptedException e) {
-        System.out.println(
-            "Error: Waiting for updateInstanceConfig operation to finish was interrupted");
-      }
+  static void updateInstanceConfig(String projectId, String instanceConfigName) throws IOException {
+    final InstanceAdminSettings instanceAdminSettings =
+        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
+    final com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient =
+        com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(instanceAdminSettings);
+    final InstanceConfig instanceConfig =
+        InstanceConfig.newBuilder()
+            .setName(instanceConfigName)
+            .setDisplayName("updated custom instance config")
+            .putLabels("updated", "true").build();
+    final UpdateInstanceConfigRequest updateInstanceConfigRequest =
+        UpdateInstanceConfigRequest.newBuilder().setInstanceConfig(instanceConfig).setUpdateMask(
+            FieldMask.newBuilder().addAllPaths(ImmutableList.of("display_name", "labels")).build()).build();
+    final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
+        instanceAdminClient.updateInstanceConfigAsync(updateInstanceConfigRequest);
+    try {
+      System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigName);
+      InstanceConfig instanceConfigResult = operation.get(5, TimeUnit.MINUTES);
+      System.out.printf(
+          "Updated instance configuration %s with new display name %s\n",
+          instanceConfigResult.getName(), instanceConfig.getDisplayName());
+    } catch (ExecutionException | TimeoutException e) {
+      System.out.printf(
+          "Error: Updating instance config %s failed with error message %s\n",
+          instanceConfig.getName(), e.getMessage());
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      System.out.println(
+          "Error: Waiting for updateInstanceConfig operation to finish was interrupted");
     }
   }
 }

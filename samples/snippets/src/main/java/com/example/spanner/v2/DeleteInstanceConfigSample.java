@@ -17,32 +17,35 @@
 package com.example.spanner.v2;
 
 // [START spanner_delete_instance_config]
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
+import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import java.io.IOException;
 
 class DeleteInstanceConfigSample {
-  static void deleteInstanceConfig() {
+  static void deleteInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
-    String instanceConfigId = "custom-user-config";
+    String instanceConfigId = "projects/my-project/instanceConfigs/custom-user-config";
     deleteInstanceConfig(projectId, instanceConfigId);
   }
 
-  static void deleteInstanceConfig(String projectId, String instanceConfigId) {
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-      try {
-        System.out.printf("Deleting %s...\n", instanceConfigId);
-        instanceAdminClient.deleteInstanceConfig(instanceConfigId);
-        System.out.printf("Deleted instance configuration %s\n", instanceConfigId);
-      } catch (SpannerException e) {
-        System.out.printf(
-            "Error: Deleting instance configuration %s failed with error message: %s\n",
-            instanceConfigId, e.getMessage());
-      }
+  static void deleteInstanceConfig(String projectId, String instanceConfigId) throws IOException {
+    final InstanceAdminSettings instanceAdminSettings =
+        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
+    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
+    final DeleteInstanceConfigRequest request =
+        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigId).build();
+
+    try {
+      System.out.printf("Deleting %s...\n", instanceConfigId);
+      instanceAdminClient.deleteInstanceConfig(request);
+      System.out.printf("Deleted instance configuration %s\n", instanceConfigId);
+    } catch (SpannerException e) {
+      System.out.printf(
+          "Error: Deleting instance configuration %s failed with error message: %s\n",
+          instanceConfigId, e.getMessage());
     }
   }
 }

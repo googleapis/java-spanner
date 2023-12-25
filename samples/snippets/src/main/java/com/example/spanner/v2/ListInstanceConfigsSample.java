@@ -18,34 +18,27 @@ package com.example.spanner.v2;
 
 //[START spanner_list_instance_configs]
 
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfig;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.spanner.admin.instance.v1.InstanceConfig;
+import java.io.IOException;
 
 public class ListInstanceConfigsSample {
 
-  static void listInstanceConfigs() {
+  static void listInstanceConfigs() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     listInstanceConfigs(projectId);
   }
 
-  static void listInstanceConfigs(String projectId) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
-      final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-
-      for (InstanceConfig instanceConfig : instanceAdminClient.listInstanceConfigs().iterateAll()) {
-        System.out.printf(
-            "Available leader options for instance config %s: %s%n",
-            instanceConfig.getId(),
-            instanceConfig.getLeaderOptions()
-        );
-      }
+  static void listInstanceConfigs(String projectId) throws IOException {
+    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
+    for (InstanceConfig instanceConfig :
+        instanceAdminClient.listInstanceConfigs(projectId).iterateAll()) {
+      System.out.printf(
+          "Available leader options for instance config %s: %s%n",
+          instanceConfig.getName(),
+          instanceConfig.getLeaderOptionsList()
+      );
     }
   }
 }
