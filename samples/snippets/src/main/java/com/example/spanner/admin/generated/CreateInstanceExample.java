@@ -38,10 +38,7 @@ class CreateInstanceExample {
   }
 
   static void createInstance(String projectId, String instanceId) throws IOException {
-    InstanceAdminSettings instanceAdminSettings =
-        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
-    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
-
+    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
 
     // Set Instance configuration.
     int nodeCount = 2;
