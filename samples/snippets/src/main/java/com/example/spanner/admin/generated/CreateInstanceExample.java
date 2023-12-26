@@ -17,15 +17,8 @@
 package com.example.spanner.admin.generated;
 
 //[START spanner_create_instance]
-<<<<<<< HEAD
 
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-=======
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
->>>>>>> 6087d7f2 (chore: rename file path.)
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
