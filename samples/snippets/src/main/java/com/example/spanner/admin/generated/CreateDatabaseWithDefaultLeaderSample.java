@@ -18,12 +18,10 @@ package com.example.spanner.admin.generated;
 
 //[START spanner_create_database_with_default_leader]
 
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import java.io.IOException;
@@ -44,7 +42,7 @@ public class CreateDatabaseWithDefaultLeaderSample {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
 
     try {
-      OperationFuture<Database, CreateDatabaseMetadata> op1 =
+      Database createdDatabase =
           databaseAdminClient.createDatabaseAsync(
               CreateDatabaseRequest.newBuilder()
                   .setParent(instanceName)
@@ -64,8 +62,7 @@ public class CreateDatabaseWithDefaultLeaderSample {
                               + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE",
                           "ALTER DATABASE " + "`" + databaseId + "`"
                               + " SET OPTIONS ( default_leader = '" + defaultLeader + "' )"))
-                  .build());
-      Database createdDatabase = op1.get();
+                  .build()).get();
       System.out.println("Created database [" + createdDatabase.getName() + "]");
       System.out.println("\tDefault leader: " + createdDatabase.getDefaultLeader());
     } catch (ExecutionException e) {

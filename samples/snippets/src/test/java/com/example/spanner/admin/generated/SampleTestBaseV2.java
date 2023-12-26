@@ -23,6 +23,7 @@ import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -38,6 +39,7 @@ public class SampleTestBaseV2 {
       System.getProperty("spanner.sample.database", "sampledb");
   private static final String BASE_BACKUP_ID = "samplebk";
   private static final String BASE_INSTANCE_CONFIG_ID = "sampleconfig";
+  private static final int AWAIT_TERMINATION_SECONDS = 10;
 
   protected static String projectId;
   protected static final String instanceId = System.getProperty("spanner.test.instance");
@@ -74,7 +76,7 @@ public class SampleTestBaseV2 {
   }
 
   @AfterClass
-  public static void afterClass() {
+  public static void afterClass() throws InterruptedException {
     for (String instanceId : idGenerator.getInstanceIds()) {
       System.out.println("Trying to drop " + instanceId);
       try {
@@ -132,6 +134,12 @@ public class SampleTestBaseV2 {
                 + ", skipping...");
       }
     }
+
+    databaseAdminClient.close();
+    instanceAdminClient.close();
+
+    databaseAdminClient.awaitTermination(AWAIT_TERMINATION_SECONDS, TimeUnit.SECONDS);
+    instanceAdminClient.awaitTermination(AWAIT_TERMINATION_SECONDS, TimeUnit.SECONDS);
   }
 
   static String getDatabaseName(final String projectId,
