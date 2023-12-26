@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.example.spanner.v2;
+package com.example.spanner.admin.generated;
 
 //[START spanner_create_database_with_default_leader]
 
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
@@ -69,7 +70,7 @@ public class CreateDatabaseWithDefaultLeaderSample {
       System.out.println("\tDefault leader: " + createdDatabase.getDefaultLeader());
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
-      throw SpannerExceptionFactory.asSpannerException(e);
+      throw (SpannerException) e.getCause();
     } catch (InterruptedException e) {
       // Throw when a thread is waiting, sleeping, or otherwise occupied,
       // and the thread is interrupted, either before or during the activity.

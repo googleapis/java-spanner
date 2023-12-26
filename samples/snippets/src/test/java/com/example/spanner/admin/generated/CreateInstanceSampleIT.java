@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.spanner.v2;
+package com.example.spanner.admin.generated;
 
 import static org.junit.Assert.assertTrue;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.spanner.v2;
+package com.example.spanner.admin.generated;
 
 //[START spanner_create_instance]
 import com.google.api.gax.longrunning.OperationFuture;
