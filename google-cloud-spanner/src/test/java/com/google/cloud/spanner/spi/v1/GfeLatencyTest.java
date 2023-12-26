@@ -34,6 +34,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.ForwardingServerCall;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.ServerCall;
@@ -311,11 +312,8 @@ public class GfeLatencyTest {
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
-        .setChannelConfigurator(
-            input -> {
-              input.usePlaintext();
-              return input;
-            })
+        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+        .disableDirectPath()
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)

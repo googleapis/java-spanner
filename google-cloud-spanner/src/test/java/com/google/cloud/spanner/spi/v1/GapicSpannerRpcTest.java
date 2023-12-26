@@ -63,6 +63,7 @@ import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
 import io.grpc.Contexts;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.grpc.MethodDescriptor;
@@ -641,11 +642,8 @@ public class GapicSpannerRpcTest {
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
-        .setChannelConfigurator(
-            input -> {
-              input.usePlaintext();
-              return input;
-            })
+        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+        .disableDirectPath()
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)
