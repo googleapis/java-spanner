@@ -18,7 +18,6 @@ package com.example.spanner.v2;
 
 // [START spanner_update_instance_config]
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.InstanceConfig;

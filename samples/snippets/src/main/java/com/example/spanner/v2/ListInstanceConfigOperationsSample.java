@@ -18,7 +18,6 @@ package com.example.spanner.v2;
 
 // [START spanner_list_instance_config_operations]
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;

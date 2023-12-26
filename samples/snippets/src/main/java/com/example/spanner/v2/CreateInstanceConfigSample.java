@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ package com.example.spanner.v2;
 // [START spanner_create_instance_config]
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
-import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.InstanceConfig;

@@ -19,7 +19,6 @@ package com.example.spanner.v2;
 //[START spanner_get_instance_config]
 
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import java.io.IOException;
 

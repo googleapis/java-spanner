@@ -20,7 +20,6 @@ package com.example.spanner.v2;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
@@ -38,9 +37,7 @@ class CreateInstanceWithProcessingUnitsExample {
   }
 
   static void createInstance(String projectId, String instanceId) throws IOException {
-    InstanceAdminSettings instanceAdminSettings =
-        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
-    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
+    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
 
     // Set Instance configuration.
     String configId = "regional-us-central1";
@@ -71,10 +68,8 @@ class CreateInstanceWithProcessingUnitsExample {
       Instance createdInstance = operation.get();
 
       System.out.printf("Created instance %s.%n", createdInstance.getName());
-
-      Instance instanceResult = instanceAdminClient.getInstance(instanceId);
-      System.out.printf("Instance %s has %d processing units.%n", instanceResult.getName(),
-          instanceResult.getProcessingUnits());
+      System.out.printf("Instance %s has %d processing units.%n", createdInstance.getName(),
+          createdInstance.getProcessingUnits());
     } catch (Exception e) {
       System.out.printf("Error: %s.%n", e.getMessage());
     }
