@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.55.0](https://github.com/googleapis/java-spanner/compare/v6.54.0...v6.55.0) (2023-12-01)
+
+
+### Features
+
+* Add java sample for managed autoscaler ([#2709](https://github.com/googleapis/java-spanner/issues/2709)) ([9ea4f4f](https://github.com/googleapis/java-spanner/commit/9ea4f4fe2925410b3defb4e53f3f0a328cc2e738))
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.30.0 ([#2703](https://github.com/googleapis/java-spanner/issues/2703)) ([961aa78](https://github.com/googleapis/java-spanner/commit/961aa7894be41ff87f1b460aa374ee2ed75a163b))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.20.0 ([#2746](https://github.com/googleapis/java-spanner/issues/2746)) ([12bcabb](https://github.com/googleapis/java-spanner/commit/12bcabbf1ef82b19524400ebe280d9986bf70ea7))
+* Update dependency commons-io:commons-io to v2.15.1 ([#2745](https://github.com/googleapis/java-spanner/issues/2745)) ([b9d9571](https://github.com/googleapis/java-spanner/commit/b9d9571dcc2d1d004cd785d79e45754c0ce63a51))
+
 ## [6.54.0](https://github.com/googleapis/java-spanner/compare/v6.53.0...v6.54.0) (2023-11-15)
 
 
