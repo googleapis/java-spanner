@@ -30,28 +30,38 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class CreateInstanceConfigSample {
   static void createInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String projectId = "my-project";
-    String baseInstanceConfig = "my-base-instance-config";
+    String projectId = "projects/my-project";
+    String baseInstanceConfig = "nam11";
     String instanceConfigId = "custom-instance-config4";
-    createInstanceConfig(projectId, baseInstanceConfig, instanceConfigId);
+    String instanceConfigName = "projects/my-project/instanceConfigs/custom-instance-config4";
+    createInstanceConfig(projectId, baseInstanceConfig, instanceConfigId, instanceConfigName);
   }
 
   static void createInstanceConfig(
-      String projectId, String baseInstanceConfig, String instanceConfigName) throws IOException {
-    InstanceAdminSettings instanceAdminSettings =
-        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
-    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
+      String projectId, String baseInstanceConfig, String instanceConfigId, String instanceConfigName) throws IOException {
+    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
     final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
-    final List<ReplicaInfo> readOnlyReplicas = ImmutableList.of(baseConfig.getOptionalReplicas(0));
+
+    /**
+     * The replicas for the custom instance configuration must include all the replicas of the base
+     * configuration, in addition to at least one from the list of optional replicas of the base
+     * configuration.
+     */
+    final List<ReplicaInfo> replicas =
+        Stream.concat(baseConfig.getReplicasList().stream(),
+            baseConfig.getOptionalReplicasList().stream().limit(1)).collect(Collectors.toList());
     final InstanceConfig instanceConfig =
         InstanceConfig.newBuilder().setName(instanceConfigName).setBaseConfig(baseInstanceConfig)
-            .setDisplayName(instanceConfigName).addAllReplicas(readOnlyReplicas).build();
+            .setDisplayName(instanceConfigId).addAllReplicas(replicas).build();
     final CreateInstanceConfigRequest createInstanceConfigRequest =
-        CreateInstanceConfigRequest.newBuilder().setInstanceConfig(instanceConfig).build();
+        CreateInstanceConfigRequest.newBuilder().setParent(projectId)
+            .setInstanceConfigId(instanceConfigId).setInstanceConfig(instanceConfig).build();
     final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
         instanceAdminClient.createInstanceConfigAsync(createInstanceConfigRequest);
     try {

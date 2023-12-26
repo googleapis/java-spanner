@@ -26,14 +26,14 @@ public class ListInstanceConfigsSample {
 
   static void listInstanceConfigs() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    final String projectId = "my-project";
-    listInstanceConfigs(projectId);
+    String projectName = "projects/my-project";
+    listInstanceConfigs(projectName);
   }
 
-  static void listInstanceConfigs(String projectId) throws IOException {
+  static void listInstanceConfigs(String projectName) throws IOException {
     final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
     for (InstanceConfig instanceConfig :
-        instanceAdminClient.listInstanceConfigs(projectId).iterateAll()) {
+        instanceAdminClient.listInstanceConfigs(projectName).iterateAll()) {
       System.out.printf(
           "Available leader options for instance config %s: %s%n",
           instanceConfig.getName(),

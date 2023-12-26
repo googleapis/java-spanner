@@ -26,15 +26,12 @@ import java.io.IOException;
 class DeleteInstanceConfigSample {
   static void deleteInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String projectId = "my-project";
     String instanceConfigId = "projects/my-project/instanceConfigs/custom-user-config";
-    deleteInstanceConfig(projectId, instanceConfigId);
+    deleteInstanceConfig(instanceConfigId);
   }
 
-  static void deleteInstanceConfig(String projectId, String instanceConfigId) throws IOException {
-    final InstanceAdminSettings instanceAdminSettings =
-        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
-    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
+  static void deleteInstanceConfig(String instanceConfigId) throws IOException {
+    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
     final DeleteInstanceConfigRequest request =
         DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigId).build();
 

@@ -27,15 +27,12 @@ public class GetInstanceConfigSample {
 
   static void getInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    final String projectId = "my-project";
     final String instanceConfigName = "nam6";
-    getInstanceConfig(projectId, instanceConfigName);
+    getInstanceConfig(instanceConfigName);
   }
 
-  static void getInstanceConfig(String projectId, String instanceConfigName) throws IOException {
-    final InstanceAdminSettings instanceAdminSettings =
-        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
-    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create(instanceAdminSettings);
+  static void getInstanceConfig(String instanceConfigName) throws IOException {
+    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
 
     final InstanceConfig instanceConfig = instanceAdminClient.getInstanceConfig(instanceConfigName);
 

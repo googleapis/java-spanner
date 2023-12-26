@@ -32,16 +32,13 @@ import java.util.concurrent.TimeoutException;
 class UpdateInstanceConfigSample {
   static void updateInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String projectId = "my-project";
     String instanceConfigName = "projects/my-project/instanceConfigs/custom-instance-config";
-    updateInstanceConfig(projectId, instanceConfigName);
+    updateInstanceConfig(instanceConfigName);
   }
 
-  static void updateInstanceConfig(String projectId, String instanceConfigName) throws IOException {
-    final InstanceAdminSettings instanceAdminSettings =
-        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
+  static void updateInstanceConfig(String instanceConfigName) throws IOException {
     final com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient =
-        com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(instanceAdminSettings);
+        com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create();
     final InstanceConfig instanceConfig =
         InstanceConfig.newBuilder()
             .setName(instanceConfigName)

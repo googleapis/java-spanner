@@ -28,22 +28,18 @@ import java.io.IOException;
 public class ListInstanceConfigOperationsSample {
   static void listInstanceConfigOperations() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String projectId = "my-project";
-    listInstanceConfigOperations(projectId);
+    String projectName = "projects/my-project";
+    listInstanceConfigOperations(projectName);
   }
 
-  static void listInstanceConfigOperations(String projectId) throws IOException {
-    final InstanceAdminSettings instanceAdminSettings =
-        InstanceAdminSettings.newBuilder().setQuotaProjectId(projectId).build();
-    final InstanceAdminClient instanceAdminClient =
-        InstanceAdminClient.create(instanceAdminSettings);
-
+  static void listInstanceConfigOperations(String projectName) throws IOException {
+    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
     try {
       System.out.printf(
           "Getting list of instance config operations for project %s...\n",
-          projectId);
+          projectName);
       final ListInstanceConfigOperationsRequest request =
-          ListInstanceConfigOperationsRequest.newBuilder().setFilter("(metadata.@type=type.googleapis.com/"
+          ListInstanceConfigOperationsRequest.newBuilder().setParent(projectName).setFilter("(metadata.@type=type.googleapis.com/"
               + "google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)").build();
       final Iterable<Operation> instanceConfigOperations =
           instanceAdminClient.listInstanceConfigOperations(request).iterateAll();
@@ -54,6 +50,9 @@ public class ListInstanceConfigOperationsSample {
             "Create instance config operation for %s is %d%% completed.\n",
             metadata.getInstanceConfig().getName(), metadata.getProgress().getProgressPercent());
       }
+      System.out.printf(
+          "Obtained list of instance config operations for project %s...\n",
+          projectName);
     } catch (InvalidProtocolBufferException e) {
       System.out.printf(
           "Error: Listing instance config operations failed with error message %s\n",

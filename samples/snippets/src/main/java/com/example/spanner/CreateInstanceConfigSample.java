@@ -47,9 +47,9 @@ class CreateInstanceConfigSample {
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
       final InstanceConfig baseConfig = instanceAdminClient.getInstanceConfig(baseInstanceConfig);
-      List<ReplicaInfo> readOnlyReplicas =
+      final List<ReplicaInfo> readOnlyReplicas =
           ImmutableList.of(baseConfig.getOptionalReplicas().get(0));
-      InstanceConfigInfo instanceConfigInfo =
+      final InstanceConfigInfo instanceConfigInfo =
           InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId), baseConfig)
               .setDisplayName(instanceConfigId)
               .addReadOnlyReplicas(readOnlyReplicas)

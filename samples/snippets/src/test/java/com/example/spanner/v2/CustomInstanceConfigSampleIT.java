@@ -34,30 +34,45 @@ public class CustomInstanceConfigSampleIT extends SampleTestBaseV2 {
     final String out1 =
         SampleRunner.runSample(
             () ->
-                CreateInstanceConfigSample.createInstanceConfig(
-                    projectId, instanceConfigName, customInstanceConfigId));
+                CreateInstanceConfigSample.createInstanceConfig(getProjectName(projectId),
+                    getInstanceConfigName(projectId, instanceConfigName), customInstanceConfigId,
+                    getInstanceConfigName(projectId, customInstanceConfigId)));
     assertTrue(out1.contains("Created instance configuration"));
 
-    // List the instance config operations.
+    // Fetch the instance config that was created above.
     final String out2 =
         SampleRunner.runSample(
-            () ->
-                ListInstanceConfigOperationsSample.listInstanceConfigOperations(projectId));
-    assertTrue(out2.contains("List instance config operation"));
+            () -> GetInstanceConfigSample.getInstanceConfig(
+                getInstanceConfigName(projectId, instanceConfigName)));
+    assertTrue(out2.contains("Available leader options for instance config"));
 
-    // Update display name to a randomly generated instance config id.
+    // Fetch the instance config that was created above.
     final String out3 =
         SampleRunner.runSample(
-            () ->
-                UpdateInstanceConfigSample.updateInstanceConfig(
-                    projectId, customInstanceConfigId));
-    assertTrue(out3.contains("Updated instance configuration"));
+            () -> ListInstanceConfigsSample.listInstanceConfigs(getProjectName(projectId)));
+    assertTrue(out3.contains("Available leader options for instance config"));
 
-    // Delete the created instance config.
+    // List the instance config operations.
     final String out4 =
         SampleRunner.runSample(
             () ->
-                DeleteInstanceConfigSample.deleteInstanceConfig(projectId, customInstanceConfigId));
-    assertTrue(out4.contains("Deleted instance configuration"));
+                ListInstanceConfigOperationsSample.listInstanceConfigOperations(getProjectName(projectId)));
+    assertTrue(out4.contains("Obtained list of instance config operations"));
+
+    // Update display name to a randomly generated instance config id.
+    final String out5 =
+        SampleRunner.runSample(
+            () ->
+                UpdateInstanceConfigSample.updateInstanceConfig(
+                    getInstanceConfigName(projectId, customInstanceConfigId)));
+    assertTrue(out5.contains("Updated instance configuration"));
+
+    // Delete the created instance config.
+    final String out6 =
+        SampleRunner.runSample(
+            () ->
+                DeleteInstanceConfigSample.deleteInstanceConfig(
+                    getInstanceConfigName(projectId, customInstanceConfigId)));
+    assertTrue(out6.contains("Deleted instance configuration"));
   }
 }
