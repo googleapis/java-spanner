@@ -623,6 +623,9 @@ abstract class AbstractReadContext
     if (options.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(options.dataBoostEnabled());
     }
+    if (options.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(options.directedReadOptions());
+    }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
@@ -810,6 +813,9 @@ abstract class AbstractReadContext
     }
     if (readOptions.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
+    }
+    if (readOptions.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(readOptions.directedReadOptions());
     }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
