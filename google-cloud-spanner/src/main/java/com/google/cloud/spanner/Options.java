@@ -237,7 +237,6 @@ public final class Options implements Serializable {
     return new DirectedReadOption(directedReadOptions);
   }
 
-
   /** Option to request {@link CommitStats} for read/write transactions. */
   static final class CommitStatsOption extends InternalOption implements TransactionOption {
     @Override
@@ -245,6 +244,7 @@ public final class Options implements Serializable {
       options.withCommitStats = true;
     }
   }
+
   static final CommitStatsOption COMMIT_STATS_OPTION = new CommitStatsOption();
 
   /** Option to request Optimistic Concurrency Control for read/write transactions. */
@@ -343,8 +343,7 @@ public final class Options implements Serializable {
 
     DirectedReadOption(DirectedReadOptions directedReadOptions) {
       this.directedReadOptions =
-          Preconditions.checkNotNull(
-              directedReadOptions, "DirectedReadOptions cannot be null");
+          Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
       ;
     }
 
