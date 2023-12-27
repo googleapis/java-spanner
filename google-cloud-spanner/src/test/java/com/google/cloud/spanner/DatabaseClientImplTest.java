@@ -2890,7 +2890,8 @@ public class DatabaseClientImplTest {
                           .setOptimizerVersion("1")
                           .setOptimizerStatisticsPackage("custom-package")
                           .build())
-                  .build());
+                  .build(),
+              Options.directedRead(DIRECTED_READ_OPTIONS1));
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
         while (rs.next()) {}
@@ -2909,6 +2910,7 @@ public class DatabaseClientImplTest {
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerStatisticsPackage())
           .isEqualTo("custom-package");
+      assertThat(executeSqlRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS1);
     }
   }
 
