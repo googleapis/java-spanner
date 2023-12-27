@@ -83,6 +83,7 @@ import org.threeten.bp.Duration;
 public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final long serialVersionUID = 2789571558532701170L;
   private static SpannerEnvironment environment = SpannerEnvironmentImpl.INSTANCE;
+  private static boolean enableOpenTelemetryTraces = false;
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
@@ -142,6 +143,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean leaderAwareRoutingEnabled;
   private final boolean attemptDirectPath;
   private final DirectedReadOptions directedReadOptions;
+  private final OpenTelemetry openTelemetry;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -633,6 +635,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
     attemptDirectPath = builder.attemptDirectPath;
     directedReadOptions = builder.directedReadOptions;
+    openTelemetry = builder.openTelemetry;
   }
 
   /**
@@ -736,6 +739,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean leaderAwareRoutingEnabled = true;
     private boolean attemptDirectPath = true;
     private DirectedReadOptions directedReadOptions;
+    private OpenTelemetry openTelemetry;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1241,6 +1245,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Sets opentelemetry object. */
+    public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
+      this.openTelemetry = openTelemetry;
+      return this;
+    }
+
     /**
      * Enable leader aware routing. Leader aware routing would route all requests in RW/PDML
      * transactions to the leader region.
@@ -1323,6 +1333,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     } else {
       return OpenTelemetry.noop();
     }
+  }
+
+  public static void enableOpenTelemetryTraces() {
+    SpannerOptions.enableOpenTelemetryTraces = true;
+  }
+
+  public static boolean isEnabledOpenTelemetryTraces() {
+    return SpannerOptions.enableOpenTelemetryTraces;
   }
 
   @Override
@@ -1423,6 +1441,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @BetaApi
   public boolean isAttemptDirectPath() {
     return attemptDirectPath;
+  }
+  
+  public OpenTelemetry getInjectedOpenTelemetry() {
+    if (this.openTelemetry != null) {
+      return this.openTelemetry;
+    } else {
+      return GlobalOpenTelemetry.get();
+    }
   }
 
   /** Returns the default query options to use for the specific database. */

@@ -16,9 +16,15 @@
 package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerRpcMetrics;
 import com.google.common.collect.ImmutableList;
 import io.grpc.ClientInterceptor;
+import io.opentelemetry.api.OpenTelemetry;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,21 +35,29 @@ import java.util.logging.Logger;
  */
 @InternalApi("Exposed for testing")
 public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
-
-  private static final List<ClientInterceptor> defaultInterceptors =
-      ImmutableList.of(
-          new SpannerErrorInterceptor(),
-          new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER),
-          new HeaderInterceptor());
-
   private final List<ClientInterceptor> clientInterceptors;
 
   private SpannerInterceptorProvider(List<ClientInterceptor> clientInterceptors) {
     this.clientInterceptors = clientInterceptors;
   }
 
+  @ObsoleteApi("This method does not have OpenTelemetry support")
   public static SpannerInterceptorProvider createDefault() {
-    return new SpannerInterceptorProvider(defaultInterceptors);
+    List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
+    defaultInterceptorList.add(new SpannerErrorInterceptor());
+    defaultInterceptorList.add(
+        new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
+    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(OpenTelemetry.noop())));
+    return new SpannerInterceptorProvider(defaultInterceptorList);
+  }
+
+  public static SpannerInterceptorProvider createDefault(SpannerOptions spannerOptions) {
+    List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
+    defaultInterceptorList.add(new SpannerErrorInterceptor());
+    defaultInterceptorList.add(
+        new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
+    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(spannerOptions.getInjectedOpenTelemetry())));
+    return new SpannerInterceptorProvider(defaultInterceptorList);
   }
 
   static SpannerInterceptorProvider create(GrpcInterceptorProvider provider) {
