@@ -66,8 +66,11 @@ class HeaderInterceptor implements ClientInterceptor {
 
   private static final Logger LOGGER = Logger.getLogger(HeaderInterceptor.class.getName());
   private static final Level LEVEL = Level.INFO;
+  private final SpannerRpcMetrics spannerRpcMetrics;
 
-  HeaderInterceptor() {}
+  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
+    this.spannerRpcMetrics = spannerRpcMetrics;
+  }
 
   private class SpannerProperties {
     String projectId;
@@ -115,14 +118,14 @@ class HeaderInterceptor implements ClientInterceptor {
           measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
           measureMap.record(tagContext);
 
-          SpannerRpcMetrics.recordGfeLatency(latency, attributes);
-          SpannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
+          spannerRpcMetrics.recordGfeLatency(latency, attributes);
+          spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
         } catch (NumberFormatException e) {
           LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
         }
       }
     } else {
-      SpannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
+      spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
       measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
     }
   }

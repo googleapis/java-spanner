@@ -39,7 +39,6 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -149,6 +148,10 @@ public class SpannerRpcMetricsTest {
             .start();
     optionsMap.put(SpannerRpc.Option.CHANNEL_HINT, 1L);
     inMemoryMetricReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
+    GlobalOpenTelemetry.resetForTest();
+    OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).buildAndRegisterGlobal();
     spanner = createSpannerOptions(address, server, inMemoryMetricReader).getService();
     databaseClient = spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
 
@@ -227,11 +230,7 @@ public class SpannerRpcMetricsTest {
 
   private static SpannerOptions createSpannerOptions(
       InetSocketAddress address, Server server, InMemoryMetricReader inMemoryMetricReader) {
-    SdkMeterProvider sdkMeterProvider =
-        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
-    GlobalOpenTelemetry.resetForTest();
-    OpenTelemetry openTelemetry =
-        OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).buildAndRegisterGlobal();
+
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")

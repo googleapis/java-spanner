@@ -16,7 +16,6 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.InternalApi;
-import com.google.cloud.spanner.spi.v1.SpannerMetrics;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -27,19 +26,16 @@ import java.util.List;
 
 @InternalApi
 public class SpannerRpcMetrics {
-  private static LongHistogram gfeLatencies = null;
-  private static LongCounter gfeHeaderMissingCount = null;
-  private static final List<Long> RPC_MILLIS_BUCKET_BOUNDARIES =
-      Arrays.asList(
-          1L, 2L, 3L, 4L, 5L, 6L, 8L, 10L, 13L, 16L, 20L, 25L, 30L, 40L, 50L, 65L, 80L, 100L, 130L,
-          160L, 200L, 250L, 300L, 400L, 500L, 650L, 800L, 1000L, 2000L, 5000L, 10000L, 20000L,
-          50000L, 100000L);
+  private final LongHistogram gfeLatencies;
+  private final LongCounter gfeHeaderMissingCount;
 
-  static void initializeRPCMetrics(OpenTelemetry openTelemetry) {
-    if (openTelemetry == null || !SpannerMetrics.isRPCMetricsEnabled()) {
-      return;
-    }
+  public SpannerRpcMetrics(OpenTelemetry openTelemetry) {
     Meter meter = openTelemetry.getMeter(MetricRegistryConstants.Scope);
+    List<Long> RPC_MILLIS_BUCKET_BOUNDARIES =
+        Arrays.asList(
+            1L, 2L, 3L, 4L, 5L, 6L, 8L, 10L, 13L, 16L, 20L, 25L, 30L, 40L, 50L, 65L, 80L, 100L,
+            130L, 160L, 200L, 250L, 300L, 400L, 500L, 650L, 800L, 1000L, 2000L, 5000L, 10000L,
+            20000L, 50000L, 100000L);
     gfeLatencies =
         meter
             .histogramBuilder(MetricRegistryConstants.SPANNER_GFE_LATENCY)
@@ -57,14 +53,14 @@ public class SpannerRpcMetrics {
   }
 
   @InternalApi
-  public static void recordGfeLatency(long value, Attributes attributes) {
+  public void recordGfeLatency(long value, Attributes attributes) {
     if (gfeLatencies != null) {
       gfeLatencies.record(value, attributes);
     }
   }
 
   @InternalApi
-  public static void recordGfeHeaderMissingCount(long value, Attributes attributes) {
+  public void recordGfeHeaderMissingCount(long value, Attributes attributes) {
     if (gfeHeaderMissingCount != null) {
       gfeHeaderMissingCount.add(value, attributes);
     }
