@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RE
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_FROM_TABLE;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_RESULTSET;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
@@ -179,13 +180,6 @@ public class DatabaseClientImplTest {
                   .addReplicaSelections(
                       ReplicaSelection.newBuilder().setLocation("us-west1").build()))
           .build();
-  private static final DirectedReadOptions DIRECTED_READ_OPTIONS2 =
-      DirectedReadOptions.newBuilder()
-          .setIncludeReplicas(
-              IncludeReplicas.newBuilder()
-                  .addReplicaSelections(
-                      ReplicaSelection.newBuilder().setLocation("us-east1").build()))
-          .build();
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
@@ -203,6 +197,8 @@ public class DatabaseClientImplTest {
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT1_FROM_TABLE, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
     executor = Executors.newSingleThreadExecutor();
@@ -2911,6 +2907,47 @@ public class DatabaseClientImplTest {
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerStatisticsPackage())
           .isEqualTo("custom-package");
       assertThat(executeSqlRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS1);
+    }
+  }
+
+  @Test
+  public void testBackendPartitionReadOptions() {
+    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .build()
+            .getService()) {
+      BatchClient client =
+          spanner.getBatchClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      BatchReadOnlyTransaction transaction =
+          client.batchReadOnlyTransaction(TimestampBound.strong());
+      List<Partition> partitions =
+          transaction.partitionRead(
+              PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
+              "FOO",
+              KeySet.all(),
+              Lists.newArrayList("1"),
+              Options.directedRead(DIRECTED_READ_OPTIONS1));
+      try (ResultSet rs = transaction.execute(partitions.get(0))) {
+        // Just iterate over the results to execute the query.
+        while (rs.next()) {}
+      } finally {
+        transaction.cleanup();
+      }
+      // Check if the last query executed is a DeleteSessionRequest and the second last query
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version and
+      // statistics package.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assert requests.size() >= 2 : "required to have at least 2 requests";
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ReadRequest.class);
+      ReadRequest readRequest = (ReadRequest) requests.get(requests.size() - 2);
+      assertThat(readRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS1);
     }
   }
 
