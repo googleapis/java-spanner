@@ -26,25 +26,25 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.BatchWriteResponse;
-import io.opencensus.trace.Tracing;
 import javax.annotation.Nullable;
 
 class DatabaseClientImpl implements DatabaseClient {
   private static final String READ_WRITE_TRANSACTION = "CloudSpanner.ReadWriteTransaction";
   private static final String READ_ONLY_TRANSACTION = "CloudSpanner.ReadOnlyTransaction";
   private static final String PARTITION_DML_TRANSACTION = "CloudSpanner.PartitionDMLTransaction";
-  private static final TraceWrapper tracer = new TraceWrapper(Tracing.getTracer());
+  private final TraceWrapper tracer;
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
 
   @VisibleForTesting
-  DatabaseClientImpl(SessionPool pool) {
-    this("", pool);
+  DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
+    this("", pool, tracer);
   }
 
-  DatabaseClientImpl(String clientId, SessionPool pool) {
+  DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
     this.clientId = clientId;
     this.pool = pool;
+    this.tracer = tracer;
   }
 
   @VisibleForTesting
@@ -198,9 +198,8 @@ class DatabaseClientImpl implements DatabaseClient {
       return getSession().readWriteTransaction(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
-      throw e;
-    } finally {
       span.end();
+      throw e;
     }
   }
 

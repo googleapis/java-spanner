@@ -17,7 +17,6 @@
     <site.installationModule>google-cloud-spanner</site.installationModule>
     <opencensus.version>0.31.1</opencensus.version>
     <opentelemetry.version>1.32.0</opentelemetry.version>
-    <graalvm.version>22.3.3</graalvm.version>
     <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
     <spanner.testenv.instance>projects/gcloud-devel/instances/spanner-testing-east1</spanner.testenv.instance>
     <spanner.gce.config.project_id>gcloud-devel</spanner.gce.config.project_id>
@@ -405,7 +404,6 @@
       <version>2.2</version>
       <scope>test</scope>
     </dependency>
-
     <!-- Benchmarking dependencies -->
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
@@ -419,7 +417,6 @@
       <version>1.37</version>
       <scope>test</scope>
     </dependency>
-
     <!-- OpenTelemetry test dependencies -->
     <dependency>
       <groupId>io.opentelemetry</groupId>
@@ -445,9 +442,7 @@
       <version>${opentelemetry.version}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
-
   <profiles>
     <profile>
       <id>java9</id>

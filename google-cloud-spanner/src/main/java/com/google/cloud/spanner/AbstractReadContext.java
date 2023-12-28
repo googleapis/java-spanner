@@ -54,8 +54,6 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opencensus.trace.Tracing;
-import io.opentelemetry.context.Context;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -71,10 +69,8 @@ abstract class AbstractReadContext
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractReadContext> {
     private SessionImpl session;
     private SpannerRpc rpc;
-    private ISpan span =
-        new DualSpan(
-            Tracing.getTracer().getCurrentSpan(),
-            io.opentelemetry.api.trace.Span.fromContext(Context.current()));
+    private ISpan span;
+    private TraceWrapper tracer;
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
     private DirectedReadOptions defaultDirectedReadOption;
@@ -100,6 +96,11 @@ abstract class AbstractReadContext
 
     B setSpan(ISpan span) {
       this.span = span;
+      return self();
+    }
+
+    B setTracer(TraceWrapper tracer) {
+      this.tracer = tracer;
       return self();
     }
 
@@ -395,10 +396,7 @@ abstract class AbstractReadContext
           span.addAnnotation(
               "Transaction Creation Done",
               ImmutableMap.of(
-                  "Id",
-                  transaction.getId().toStringUtf8(),
-                  "Timestamp",
-                  Timestamp.fromProto(transaction.getReadTimestamp()).toString()));
+                  "Id", transaction.getId().toStringUtf8(), "Timestamp", timestamp.toString()));
 
         } catch (SpannerException e) {
           span.addAnnotation("Transaction Creation Failed", e);
@@ -413,6 +411,7 @@ abstract class AbstractReadContext
   final SpannerRpc rpc;
   final ExecutorProvider executorProvider;
   ISpan span;
+  TraceWrapper tracer;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
@@ -445,6 +444,7 @@ abstract class AbstractReadContext
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
     this.clock = builder.clock;
+    this.tracer = builder.tracer;
   }
 
   @Override
@@ -702,6 +702,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.QUERY,
             span,
+            tracer,
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
@@ -847,6 +848,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.READ,
             span,
+            tracer,
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
           @Override

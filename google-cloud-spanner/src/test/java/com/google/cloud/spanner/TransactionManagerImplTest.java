@@ -46,7 +46,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
-import io.opencensus.trace.Span;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -81,9 +81,12 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
+    SpannerOptions.enableOpenTelemetryTraces();
     manager =
         new TransactionManagerImpl(
-            session, new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+            session,
+            new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),
+            mock(TraceWrapper.class));
   }
 
   @Test
@@ -203,6 +206,7 @@ public class TransactionManagerImplTest {
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
     when(options.getDatabaseRole()).thenReturn("role");
+    when(options.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
@@ -265,6 +269,7 @@ public class TransactionManagerImplTest {
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
     when(options.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
+    when(options.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));

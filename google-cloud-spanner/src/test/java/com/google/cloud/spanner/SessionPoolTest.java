@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.METRIC_PREFIX;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
@@ -67,7 +69,6 @@ import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
-import com.google.cloud.spanner.spi.v1.SpannerMetrics;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
@@ -85,7 +86,7 @@ import com.google.spanner.v1.RollbackRequest;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
-import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -137,11 +138,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Mock SpannerImpl client;
   @Mock SessionClient sessionClient;
   @Mock SpannerOptions spannerOptions;
+  @Mock ISpan span;
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   SessionPool pool;
   SessionPoolOptions options;
   private String sessionName = String.format("%s/sessions/s", db.getName());
   private String TEST_DATABASE_ROLE = "my-role";
+
+  private final TraceWrapper tracer =
+      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
 
   @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {
@@ -149,12 +154,23 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool() {
-    return SessionPool.createPool(options, new TestExecutorFactory(), client.getSessionClient(db));
+    return SessionPool.createPool(
+        options,
+        new TestExecutorFactory(),
+        client.getSessionClient(db),
+        tracer,
+        OpenTelemetry.noop());
   }
 
   private SessionPool createPool(Clock clock) {
     return SessionPool.createPool(
-        options, new TestExecutorFactory(), client.getSessionClient(db), clock, Position.RANDOM);
+        options,
+        new TestExecutorFactory(),
+        client.getSessionClient(db),
+        clock,
+        Position.RANDOM,
+        tracer,
+        OpenTelemetry.noop());
   }
 
   private SessionPool createPool(
@@ -167,8 +183,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         clock,
         Position.RANDOM,
         metricRegistry,
+        tracer,
         labelValues,
-        null,
+        OpenTelemetry.noop(),
         null);
   }
 
@@ -186,6 +203,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         clock,
         Position.RANDOM,
         metricRegistry,
+        tracer,
         labelValues,
         openTelemetry,
         attributes);
@@ -207,6 +225,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Before
   public void setUp() {
     initMocks(this);
+    SpannerOptions.enableOpenTelemetryTraces();
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
     when(sessionClient.getSpanner()).thenReturn(client);
@@ -1419,15 +1438,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               .setSession(closedSession)
               .setOptions(Options.fromTransactionOptions())
               .setRpc(rpc)
+              .setTracer(tracer)
+              .setSpan(span)
               .build();
       when(closedSession.asyncClose())
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
       when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
+      when(closedSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(
-          new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+          new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
       final SessionImpl openSession = mock(SessionImpl.class);
@@ -1440,9 +1462,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(openTransactionContext);
       when(openSession.beginTransactionAsync(any(), eq(true)))
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
+      when(openSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
       openTransactionRunner.setSpan(
-          new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+          new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
       ResultSet openResultSet = mock(ResultSet.class);
@@ -1496,7 +1519,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(spannerOptions.getDatabaseRole()).thenReturn("role");
       when(spanner.getOptions()).thenReturn(spannerOptions);
       SessionPool pool =
-          SessionPool.createPool(options, new TestExecutorFactory(), spanner.getSessionClient(db));
+          SessionPool.createPool(
+              options,
+              new TestExecutorFactory(),
+              spanner.getSessionClient(db),
+              tracer,
+              OpenTelemetry.noop());
       try (PooledSessionFuture readWriteSession = pool.getSession()) {
         TransactionRunner runner = readWriteSession.readWriteTransaction();
         try {
@@ -1595,7 +1623,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, tracer);
     assertThat(impl.write(mutations)).isNotNull();
   }
 
@@ -1637,7 +1665,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, tracer);
     assertThat(impl.writeAtLeastOnce(mutations)).isNotNull();
   }
 
@@ -1676,13 +1704,13 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
     assertThat(impl.executePartitionedUpdate(statement)).isEqualTo(1L);
   }
 
   @SuppressWarnings("rawtypes")
   @Test
-  public void testSessionMetrics() throws Exception {
+  public void testOpenCensusSessionMetrics() throws Exception {
     // Create a session pool with max 2 session and a low timeout for waiting for a session.
     options =
         SessionPoolOptions.newBuilder()
@@ -1712,42 +1740,42 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(record.getMetrics().size()).isEqualTo(6);
 
     List<PointWithFunction> maxInUseSessions =
-        record.getMetrics().get(MetricRegistryConstants.MAX_IN_USE_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + MAX_IN_USE_SESSIONS);
     assertThat(maxInUseSessions.size()).isEqualTo(1);
     assertThat(maxInUseSessions.get(0).value()).isEqualTo(2L);
     assertThat(maxInUseSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(maxInUseSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> getSessionsTimeouts =
-        record.getMetrics().get(MetricRegistryConstants.GET_SESSION_TIMEOUTS);
+        record.getMetrics().get(METRIC_PREFIX + GET_SESSION_TIMEOUTS);
     assertThat(getSessionsTimeouts.size()).isEqualTo(1);
     assertThat(getSessionsTimeouts.get(0).value()).isAtMost(1L);
     assertThat(getSessionsTimeouts.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(getSessionsTimeouts.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> numAcquiredSessions =
-        record.getMetrics().get(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
     assertThat(numAcquiredSessions.size()).isEqualTo(1);
     assertThat(numAcquiredSessions.get(0).value()).isEqualTo(2L);
     assertThat(numAcquiredSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(numAcquiredSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> numReleasedSessions =
-        record.getMetrics().get(MetricRegistryConstants.NUM_RELEASED_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
     assertThat(numReleasedSessions.size()).isEqualTo(1);
     assertThat(numReleasedSessions.get(0).value()).isEqualTo(0);
     assertThat(numReleasedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(numReleasedSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> maxAllowedSessions =
-        record.getMetrics().get(MetricRegistryConstants.MAX_ALLOWED_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + MAX_ALLOWED_SESSIONS);
     assertThat(maxAllowedSessions.size()).isEqualTo(1);
     assertThat(maxAllowedSessions.get(0).value()).isEqualTo(options.getMaxSessions());
     assertThat(maxAllowedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(maxAllowedSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> numSessionsInPool =
-        record.getMetrics().get(MetricRegistryConstants.NUM_SESSIONS_IN_POOL);
+        record.getMetrics().get(METRIC_PREFIX + NUM_SESSIONS_IN_POOL);
     assertThat(numSessionsInPool.size()).isEqualTo(4);
     PointWithFunction beingPrepared = numSessionsInPool.get(0);
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
@@ -1802,19 +1830,19 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     executor.shutdown();
 
     session1.close();
-    numAcquiredSessions = record.getMetrics().get(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS);
+    numAcquiredSessions = record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
     assertThat(numAcquiredSessions.size()).isEqualTo(1);
     assertThat(numAcquiredSessions.get(0).value()).isEqualTo(3L);
 
-    numReleasedSessions = record.getMetrics().get(MetricRegistryConstants.NUM_RELEASED_SESSIONS);
+    numReleasedSessions = record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
     assertThat(numReleasedSessions.size()).isEqualTo(1);
     assertThat(numReleasedSessions.get(0).value()).isEqualTo(3L);
 
-    maxInUseSessions = record.getMetrics().get(MetricRegistryConstants.MAX_IN_USE_SESSIONS);
+    maxInUseSessions = record.getMetrics().get(METRIC_PREFIX + MAX_IN_USE_SESSIONS);
     assertThat(maxInUseSessions.size()).isEqualTo(1);
     assertThat(maxInUseSessions.get(0).value()).isEqualTo(2L);
 
-    numSessionsInPool = record.getMetrics().get(MetricRegistryConstants.NUM_SESSIONS_IN_POOL);
+    numSessionsInPool = record.getMetrics().get(METRIC_PREFIX + NUM_SESSIONS_IN_POOL);
     assertThat(numSessionsInPool.size()).isEqualTo(4);
     beingPrepared = numSessionsInPool.get(0);
     assertThat(beingPrepared.value()).isEqualTo(0L);
@@ -1827,7 +1855,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void testInitOpenTelemetryMetricsCollection_NullOpenTelemetry_shouldNotThrowException() {
+  public void testOpenCensusMetricsDisable() {
+    SpannerOptions.disableOpenCensusMetrics();
     // Create a session pool with max 2 session and a low timeout for waiting for a session.
     options =
         SessionPoolOptions.newBuilder()
@@ -1838,19 +1867,29 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .build();
     FakeClock clock = new FakeClock();
     clock.currentTimeMillis = System.currentTimeMillis();
+    FakeMetricRegistry metricRegistry = new FakeMetricRegistry();
+    List<LabelValue> labelValues =
+        Arrays.asList(
+            LabelValue.create("client1"),
+            LabelValue.create("database1"),
+            LabelValue.create("instance1"),
+            LabelValue.create("1.0.0"));
 
     setupMockSessionCreation();
-    pool =
-        createPool(
-            clock,
-            Metrics.getMetricRegistry(),
-            SPANNER_DEFAULT_LABEL_VALUES,
-            null,
-            mock(Attributes.class));
+    pool = createPool(clock, metricRegistry, labelValues);
+    PooledSessionFuture session1 = pool.getSession();
+    PooledSessionFuture session2 = pool.getSession();
+    session1.get();
+    session2.get();
+
+    MetricsRecord record = metricRegistry.pollRecord();
+    assertThat(record.getMetrics().size()).isEqualTo(0);
+    SpannerOptions.enableOpenCensusMetrics();
   }
 
   @Test
   public void testOpenTelemetrySessionMetrics() throws Exception {
+    SpannerOptions.enableOpenTelemetryMetrics();
     // Create a session pool with max 2 session and a low timeout for waiting for a session.
     if (minSessions == 1) {
       options =
@@ -1863,7 +1902,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       FakeClock clock = new FakeClock();
       clock.currentTimeMillis = System.currentTimeMillis();
 
-      SpannerMetrics.enableSessionMetrics();
       InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
       SdkMeterProvider sdkMeterProvider =
           SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
@@ -1946,6 +1984,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_IN_USE, 2);
       verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_AVAILABLE, 1);
     }
+
+    SpannerOptions.disableOpenTelemetryMetrics();
   }
 
   private static void verifyMetricData(

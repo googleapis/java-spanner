@@ -56,7 +56,14 @@ import org.threeten.bp.Instant;
 /** Default implementation of the Cloud Spanner interface. */
 class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private static final Logger logger = Logger.getLogger(SpannerImpl.class.getName());
-  static final TraceWrapper tracer = new TraceWrapper(Tracing.getTracer());
+  final TraceWrapper tracer =
+      new TraceWrapper(
+          Tracing.getTracer(),
+          this.getOptions()
+              .getOpenTelemetry()
+              .getTracer(
+                  MetricRegistryConstants.Instrumentation_Scope,
+                  GaxProperties.getLibraryVersion(this.getOptions().getClass())));
 
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";
   static final String BATCH_CREATE_SESSIONS = "CloudSpannerOperation.BatchCreateSessions";
@@ -149,6 +156,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     return getOptions().getDefaultQueryOptions(databaseId);
   }
 
+  TraceWrapper getTracer() {
+    return this.tracer;
+  }
+
   /**
    * Returns the {@link ExecutorProvider} to use for async methods that need a background executor.
    */
@@ -225,13 +236,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         attributesBuilder.put("client_id", clientId);
         attributesBuilder.put("database", db.getDatabase());
         attributesBuilder.put("instance_id", db.getInstanceId().getName());
-        attributesBuilder.put(
-            "library_version", GaxProperties.getLibraryVersion(getOptions().getClass()));
 
         SessionPool pool =
             SessionPool.createPool(
                 getOptions(),
                 SpannerImpl.this.getSessionClient(db),
+                this.tracer,
                 labelValues,
                 attributesBuilder.build());
         pool.maybeWaitOnMinSessions();
@@ -244,7 +254,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @VisibleForTesting
   DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return new DatabaseClientImpl(clientId, pool);
+    return new DatabaseClientImpl(clientId, pool, tracer);
   }
 
   @Override

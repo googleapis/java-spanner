@@ -16,6 +16,7 @@
 package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.core.ObsoleteApi;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import io.opencensus.stats.Aggregation;
@@ -100,8 +101,10 @@ public class SpannerRpcViews {
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
   public static void registerGfeLatencyAndHeaderMissingCountViews() {
-    viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
-    viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    if (SpannerOptions.isEnabledOpenCensusMetrics()) {
+      viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
+      viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    }
   }
 
   /**
@@ -115,7 +118,9 @@ public class SpannerRpcViews {
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
   public static void registerGfeLatencyView() {
-    viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
+    if (SpannerOptions.isEnabledOpenCensusMetrics()) {
+      viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
+    }
   }
 
   /**
@@ -129,6 +134,8 @@ public class SpannerRpcViews {
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
   public static void registerGfeHeaderMissingCountView() {
-    viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    if (SpannerOptions.isEnabledOpenCensusMetrics()) {
+      viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    }
   }
 }

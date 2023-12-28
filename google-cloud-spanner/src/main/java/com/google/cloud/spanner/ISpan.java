@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import io.opencensus.trace.Status;
 import java.util.Map;
 
 interface ISpan {
@@ -40,7 +39,7 @@ interface ISpan {
 
   void setStatus(Throwable e);
 
-  void setStatus(Status status);
+  void setStatus(ErrorCode errorCode);
 
   void end();
 }

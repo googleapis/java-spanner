@@ -65,16 +65,19 @@ class MetricRegistryConstants {
   /** Unit to represent counts. */
   static final String COUNT = "1";
 
+  static final String Instrumentation_Scope = "cloud.google.com/java";
+
+  static final String METRIC_PREFIX = "cloud.google.com/java/";
+
   // The Metric name and description
-  static final String MAX_IN_USE_SESSIONS = "cloud.google.com/java/spanner/max_in_use_sessions";
-  static final String MAX_ALLOWED_SESSIONS = "cloud.google.com/java/spanner/max_allowed_sessions";
-  static final String GET_SESSION_TIMEOUTS = "cloud.google.com/java/spanner/get_session_timeouts";
-  static final String NUM_ACQUIRED_SESSIONS = "cloud.google.com/java/spanner/num_acquired_sessions";
-  static final String NUM_RELEASED_SESSIONS = "cloud.google.com/java/spanner/num_released_sessions";
-  static final String NUM_SESSIONS_IN_POOL = "cloud.google.com/java/spanner/num_sessions_in_pool";
-  static final String NUM_SESSIONS_IN_USE = "cloud.google.com/java/spanner/num_in_use_sessions";
-  static final String NUM_SESSIONS_AVAILABLE =
-      "cloud.google.com/java/spanner/num_available_sessions";
+  static final String MAX_IN_USE_SESSIONS = "spanner/max_in_use_sessions";
+  static final String MAX_ALLOWED_SESSIONS = "spanner/max_allowed_sessions";
+  static final String GET_SESSION_TIMEOUTS = "spanner/get_session_timeouts";
+  static final String NUM_ACQUIRED_SESSIONS = "spanner/num_acquired_sessions";
+  static final String NUM_RELEASED_SESSIONS = "spanner/num_released_sessions";
+  static final String NUM_SESSIONS_IN_POOL = "spanner/num_sessions_in_pool";
+  static final String NUM_SESSIONS_IN_USE = "spanner/num_in_use_sessions";
+  static final String NUM_SESSIONS_AVAILABLE = "spanner/num_available_sessions";
   static final String SESSIONS_TYPE = "session_type";
 
   static final String MAX_IN_USE_SESSIONS_DESCRIPTION =
@@ -89,12 +92,10 @@ class MetricRegistryConstants {
       "The number of sessions released by the user and pool maintainer.";
   static final String NUM_SESSIONS_IN_POOL_DESCRIPTION = "The number of sessions in the pool.";
 
-  static final String Scope = "cloud.google.com/java/spanner";
-  static final String SPANNER_GFE_LATENCY = "cloud.google.com/java/spanner/gfe_latency";
+  static final String SPANNER_GFE_LATENCY = "spanner/gfe_latency";
   static final String SPANNER_GFE_LATENCY_DESCRIPTION =
       "Latency between Google's network receiving an RPC and reading back the first byte of the response";
-  static final String SPANNER_GFE_HEADER_MISSING_COUNT =
-      "cloud.google.com/java/spanner/gfe_header_missing_count";
+  static final String SPANNER_GFE_HEADER_MISSING_COUNT = "spanner/gfe_header_missing_count";
   static final String SPANNER_GFE_HEADER_MISSING_COUNT_DESCRIPTION =
       "Number of RPC responses received without the server-timing header, most likely means that the RPC never reached Google's network";
   static final String MILLISECOND = "ms";

@@ -49,7 +49,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
-import io.opencensus.trace.Span;
+import io.opentelemetry.api.OpenTelemetry;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collections;
@@ -81,6 +81,7 @@ public class SessionImplTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    SpannerOptions.enableOpenTelemetryTraces();
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
@@ -91,6 +92,7 @@ public class SessionImplTest {
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
     when(spannerOptions.getSessionPoolOptions()).thenReturn(mock(SessionPoolOptions.class));
+    when(spannerOptions.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);
     String dbName = "projects/p1/instances/i1/databases/d1";
@@ -129,8 +131,7 @@ public class SessionImplTest {
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
     session = spanner.getSessionClient(db).createSession();
     ((SessionImpl) session)
-        .setCurrentSpan(
-            new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+        .setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     // We expect the same options, "options", on all calls on "session".
     options = optionsCaptor.getValue();
   }

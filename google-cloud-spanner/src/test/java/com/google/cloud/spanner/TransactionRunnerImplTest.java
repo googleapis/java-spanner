@@ -59,7 +59,8 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
-import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
@@ -96,12 +97,16 @@ public class TransactionRunnerImplTest {
   private TransactionRunnerImpl transactionRunner;
   private boolean firstRun;
   private boolean usedInlinedBegin;
+  private TraceWrapper tracer;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    SpannerOptions.enableOpenTelemetryTraces();
+    tracer = new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
     firstRun = true;
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
+    when(session.getTracer()).thenReturn(tracer);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
         .thenAnswer(
             invocation -> {
@@ -129,8 +134,7 @@ public class TransactionRunnerImplTest {
                     .build()));
     when(rpc.rollbackAsync(Mockito.any(RollbackRequest.class), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
-    transactionRunner.setSpan(
-        new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+    transactionRunner.setSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
   }
 
   @SuppressWarnings("unchecked")
@@ -146,6 +150,7 @@ public class TransactionRunnerImplTest {
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
     when(options.getDatabaseRole()).thenReturn("role");
+    when(options.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
@@ -281,6 +286,7 @@ public class TransactionRunnerImplTest {
     when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
     when(spanner.getOptions()).thenReturn(options);
+    when(spanner.getTracer()).thenReturn(tracer);
     SessionPoolOptions sessionPoolOptions = SessionPoolOptions.newBuilder().build();
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
 
@@ -294,10 +300,9 @@ public class TransactionRunnerImplTest {
             throw new IllegalStateException();
           }
         };
-    session.setCurrentSpan(
-        new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+    session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
-    runner.setSpan(new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+    runner.setSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     assertThat(usedInlinedBegin).isFalse();
     runner.run(
         transaction -> {
@@ -321,6 +326,8 @@ public class TransactionRunnerImplTest {
             .setTransactionId(ByteString.copyFromUtf8(UUID.randomUUID().toString()))
             .setOptions(Options.fromTransactionOptions())
             .setRpc(rpc)
+            .setTracer(session.getTracer())
+            .setSpan(session.getTracer().getCurrentSpan())
             .build();
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);
     when(session.beginTransactionAsync(true))
@@ -328,7 +335,7 @@ public class TransactionRunnerImplTest {
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
-    runner.setSpan(new DualSpan(mock(Span.class), mock(io.opentelemetry.api.trace.Span.class)));
+    runner.setSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()
             .addResultSets(

@@ -39,6 +39,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -64,13 +65,13 @@ public class SpannerRpcMetricsTest {
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
   private static InetSocketAddress address;
-  private static Spanner spanner;
+  private static Spanner spannerWithOpenTelemetry;
   private static DatabaseClient databaseClient;
   private static final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
   private static MockSpannerServiceImpl mockSpannerNoHeader;
   private static Server serverNoHeader;
   private static InetSocketAddress addressNoHeader;
-  private static Spanner spannerNoHeader;
+  private static Spanner spannerNoHeaderNoOpenTelemetry;
   private static DatabaseClient databaseClientNoHeader;
   private static String instanceId = "fake-instance";
   private static String databaseId = "fake-database";
@@ -109,10 +110,12 @@ public class SpannerRpcMetricsTest {
 
   private static InMemoryMetricReader inMemoryMetricReader;
 
+  private static InMemoryMetricReader inMemoryMetricReaderInjected;
+
   @BeforeClass
   public static void startServer() throws IOException {
     assumeFalse(EmulatorSpannerHelper.isUsingEmulator());
-    SpannerMetrics.enableRPCMetrics();
+    SpannerOptions.enableOpenTelemetryMetrics();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(
@@ -152,8 +155,19 @@ public class SpannerRpcMetricsTest {
         SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
     GlobalOpenTelemetry.resetForTest();
     OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).buildAndRegisterGlobal();
-    spanner = createSpannerOptions(address, server, inMemoryMetricReader).getService();
-    databaseClient = spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+
+    inMemoryMetricReaderInjected = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProviderInjected =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReaderInjected).build();
+
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderInjected).build();
+
+    spannerWithOpenTelemetry =
+        createSpannerOptionsWithOpenTelemetry(address, server, openTelemetry).getService();
+    databaseClient =
+        spannerWithOpenTelemetry.getDatabaseClient(
+            DatabaseId.of(projectId, instanceId, databaseId));
 
     mockSpannerNoHeader = new MockSpannerServiceImpl();
     mockSpannerNoHeader.setAbortProbability(0.0D);
@@ -167,22 +181,24 @@ public class SpannerRpcMetricsTest {
             .addService(mockSpannerNoHeader)
             .build()
             .start();
-    spannerNoHeader =
-        createSpannerOptions(addressNoHeader, serverNoHeader, inMemoryMetricReader).getService();
+    spannerNoHeaderNoOpenTelemetry =
+        createSpannerOptions(addressNoHeader, serverNoHeader).getService();
     databaseClientNoHeader =
-        spannerNoHeader.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+        spannerNoHeaderNoOpenTelemetry.getDatabaseClient(
+            DatabaseId.of(projectId, instanceId, databaseId));
   }
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
-    if (spanner != null) {
-      spanner.close();
+    SpannerOptions.disableOpenTelemetryMetrics();
+    if (spannerWithOpenTelemetry != null) {
+      spannerWithOpenTelemetry.close();
       server.shutdown();
       server.awaitTermination();
     }
 
-    if (spannerNoHeader != null) {
-      spannerNoHeader.close();
+    if (spannerNoHeaderNoOpenTelemetry != null) {
+      spannerNoHeaderNoOpenTelemetry.close();
       serverNoHeader.shutdown();
       serverNoHeader.awaitTermination();
     }
@@ -195,26 +211,26 @@ public class SpannerRpcMetricsTest {
   }
 
   @Test
-  public void testGfeLatencyExecuteSql() throws InterruptedException {
+  public void testGfeLatencyExecuteSqlWithInjectedOpenTelemetry() throws InterruptedException {
     databaseClient
         .readWriteTransaction()
         .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
 
     double latency =
         getGfeLatencyMetric(
-            getMetricData("cloud.google.com/java/spanner/gfe_latency"),
+            getMetricData("spanner/gfe_latency", inMemoryMetricReaderInjected),
             "google.spanner.v1.Spanner/ExecuteSql");
     assertEquals(fakeServerTiming.get(), latency, 0);
   }
 
   @Test
-  public void testGfeMissingHeaderExecuteSql() throws InterruptedException {
+  public void testGfeMissingHeaderExecuteSqlWithGlobalOpenTelemetry() throws InterruptedException {
     databaseClient
         .readWriteTransaction()
         .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
     long count =
         getHeaderLatencyMetric(
-            getMetricData("cloud.google.com/java/spanner/gfe_header_missing_count"),
+            getMetricData("spanner/gfe_header_missing_count", inMemoryMetricReaderInjected),
             "google.spanner.v1.Spanner/ExecuteSql");
     assertEquals(0, count);
 
@@ -223,13 +239,29 @@ public class SpannerRpcMetricsTest {
         .run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
     long count1 =
         getHeaderLatencyMetric(
-            getMetricData("cloud.google.com/java/spanner/gfe_header_missing_count"),
+            getMetricData("spanner/gfe_header_missing_count", inMemoryMetricReader),
             "google.spanner.v1.Spanner/ExecuteSql");
     assertEquals(1, count1);
   }
 
-  private static SpannerOptions createSpannerOptions(
-      InetSocketAddress address, Server server, InMemoryMetricReader inMemoryMetricReader) {
+  private static SpannerOptions createSpannerOptionsWithOpenTelemetry(
+      InetSocketAddress address, Server server, OpenTelemetry openTelemetry) {
+
+    String endpoint = address.getHostString() + ":" + server.getPort();
+    return SpannerOptions.newBuilder()
+        .setProjectId("[PROJECT]")
+        .setChannelConfigurator(
+            input -> {
+              input.usePlaintext();
+              return input;
+            })
+        .setHost("http://" + endpoint)
+        .setCredentials(NoCredentials.getInstance())
+        .setOpenTelemetry(openTelemetry)
+        .build();
+  }
+
+  private static SpannerOptions createSpannerOptions(InetSocketAddress address, Server server) {
 
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
@@ -260,7 +292,7 @@ public class SpannerRpcMetricsTest {
         .getMax();
   }
 
-  private MetricData getMetricData(String metricName) {
+  private MetricData getMetricData(String metricName, InMemoryMetricReader inMemoryMetricReader) {
     Collection<MetricData> metricDataCollection = inMemoryMetricReader.collectAllMetrics();
     Collection<MetricData> metricDataFiltered =
         metricDataCollection.stream()

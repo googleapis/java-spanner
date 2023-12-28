@@ -30,7 +30,13 @@ public class SpannerRpcMetrics {
   private final LongCounter gfeHeaderMissingCount;
 
   public SpannerRpcMetrics(OpenTelemetry openTelemetry) {
-    Meter meter = openTelemetry.getMeter(MetricRegistryConstants.Scope);
+    if (!SpannerOptions.isEnabledOpenTelemetryMetrics()) {
+      gfeLatencies = null;
+      gfeHeaderMissingCount = null;
+      return;
+    }
+
+    Meter meter = openTelemetry.getMeter(MetricRegistryConstants.Instrumentation_Scope);
     List<Long> RPC_MILLIS_BUCKET_BOUNDARIES =
         Arrays.asList(
             1L, 2L, 3L, 4L, 5L, 6L, 8L, 10L, 13L, 16L, 20L, 25L, 30L, 40L, 50L, 65L, 80L, 100L,
