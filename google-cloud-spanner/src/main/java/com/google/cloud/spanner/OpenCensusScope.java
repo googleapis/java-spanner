@@ -18,23 +18,18 @@ package com.google.cloud.spanner;
 
 import io.opencensus.common.Scope;
 
-class DualScope implements IScope {
+class OpenCensusScope implements IScope {
 
   private final Scope openCensusScope;
-  private final io.opentelemetry.context.Scope openTelemetryScope;
 
-  public DualScope(Scope openCensusScope, io.opentelemetry.context.Scope openTelemetryScope) {
+  OpenCensusScope(Scope openCensusScope) {
     this.openCensusScope = openCensusScope;
-    this.openTelemetryScope = openTelemetryScope;
   }
 
   @Override
   public void close() {
     if (openCensusScope != null) {
       openCensusScope.close();
-    }
-    if (openTelemetryScope != null) {
-      openTelemetryScope.close();
     }
   }
 }

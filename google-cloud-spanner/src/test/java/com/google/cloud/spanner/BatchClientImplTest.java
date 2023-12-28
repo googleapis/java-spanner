@@ -35,6 +35,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Before;
@@ -66,6 +67,7 @@ public final class BatchClientImplTest {
   @Before
   public void setUp() {
     initMocks(this);
+    SpannerOptions.enableOpenTelemetryTraces();
     DatabaseId db = DatabaseId.of(DB_NAME);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
@@ -74,6 +76,7 @@ public final class BatchClientImplTest {
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spannerOptions.getSpannerRpcV1()).thenReturn(gapicRpc);
     when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
+    when(spannerOptions.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);

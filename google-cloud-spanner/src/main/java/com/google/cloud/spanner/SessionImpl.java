@@ -43,7 +43,6 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
-import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,7 +56,7 @@ import org.threeten.bp.Instant;
  * users need not be aware of the actual session management, pooling and handling.
  */
 class SessionImpl implements Session {
-  private static final TraceWrapper tracer = new TraceWrapper(Tracing.getTracer());
+  private final TraceWrapper tracer;
 
   /** Keep track of running transactions on this session per thread. */
   static final ThreadLocal<Boolean> hasPendingTransaction = ThreadLocal.withInitial(() -> false);
@@ -100,6 +99,7 @@ class SessionImpl implements Session {
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;
+    this.tracer = spanner.getTracer();
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
@@ -254,6 +254,7 @@ class SessionImpl implements Session {
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
+            .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
@@ -274,6 +275,7 @@ class SessionImpl implements Session {
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
+            .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .buildSingleUseReadOnlyTransaction());
   }
@@ -294,6 +296,7 @@ class SessionImpl implements Session {
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
+            .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
@@ -310,7 +313,7 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    return new TransactionManagerImpl(this, currentSpan, options);
+    return new TransactionManagerImpl(this, currentSpan, tracer, options);
   }
 
   @Override
@@ -410,6 +413,7 @@ class SessionImpl implements Session {
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
         .setSpan(currentSpan)
+        .setTracer(tracer)
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
         .setClock(poolMaintainerClock == null ? new Clock() : poolMaintainerClock)
         .build();
@@ -431,5 +435,9 @@ class SessionImpl implements Session {
 
   boolean hasReadyTransaction() {
     return readyTransactionId != null;
+  }
+
+  TraceWrapper getTracer() {
+    return tracer;
   }
 }

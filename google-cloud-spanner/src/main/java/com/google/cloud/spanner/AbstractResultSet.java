@@ -49,7 +49,6 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
-import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -77,7 +76,6 @@ import org.threeten.bp.Duration;
 
 /** Implementation of {@link ResultSet}. */
 abstract class AbstractResultSet<R> extends AbstractStructReader implements ResultSet {
-  private static final TraceWrapper tracer = new TraceWrapper(Tracing.getTracer());
   private static final com.google.protobuf.Value NULL_VALUE =
       com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
 
@@ -1089,6 +1087,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private final LinkedList<PartialResultSet> buffer = new LinkedList<>();
     private final int maxBufferSize;
     private final ISpan span;
+    private final TraceWrapper tracer;
     private CloseableIterator<PartialResultSet> stream;
     private ByteString resumeToken;
     private boolean finished;
@@ -1103,10 +1102,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         int maxBufferSize,
         String streamName,
         ISpan parent,
+        TraceWrapper tracer,
         RetrySettings streamingRetrySettings,
         Set<Code> retryableCodes) {
       checkArgument(maxBufferSize >= 0);
       this.maxBufferSize = maxBufferSize;
+      this.tracer = tracer;
       this.span = tracer.spanBuilderWithExplicitParent(streamName, parent);
       this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
       this.retryableCodes = Preconditions.checkNotNull(retryableCodes);

@@ -125,16 +125,17 @@ class SessionClient implements AutoCloseable {
     public void run() {
       List<SessionImpl> sessions;
       int remainingSessionsToCreate = sessionCount;
-      ISpan span = SpannerImpl.tracer.spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS);
-      try (IScope s = SpannerImpl.tracer.withSpan(span)) {
-        SpannerImpl.tracer
+      ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS);
+      try (IScope s = spanner.getTracer().withSpan(span)) {
+        spanner
+            .getTracer()
             .getCurrentSpan()
             .addAnnotation(String.format("Creating %d sessions", sessionCount));
         while (remainingSessionsToCreate > 0) {
           try {
             sessions = internalBatchCreateSessions(remainingSessionsToCreate, channelHint);
           } catch (Throwable t) {
-            SpannerImpl.tracer.getCurrentSpan().setStatus(t);
+            spanner.getTracer().getCurrentSpan().setStatus(t);
             consumer.onSessionCreateFailure(t, remainingSessionsToCreate);
             break;
           }
@@ -204,8 +205,8 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    ISpan span = SpannerImpl.tracer.spanBuilder(SpannerImpl.CREATE_SESSION);
-    try (IScope s = SpannerImpl.tracer.withSpan(span)) {
+    ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_SESSION);
+    try (IScope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.Session session =
           spanner
               .getRpc()
@@ -288,12 +289,13 @@ class SessionClient implements AutoCloseable {
   private List<SessionImpl> internalBatchCreateSessions(
       final int sessionCount, final long channelHint) throws SpannerException {
     final Map<SpannerRpc.Option, ?> options = optionMap(SessionOption.channelHint(channelHint));
-    ISpan parent = SpannerImpl.tracer.getCurrentSpan();
+    ISpan parent = spanner.getTracer().getCurrentSpan();
     ISpan span =
-        SpannerImpl.tracer.spanBuilderWithExplicitParent(
-            SpannerImpl.BATCH_CREATE_SESSIONS_REQUEST, parent);
+        spanner
+            .getTracer()
+            .spanBuilderWithExplicitParent(SpannerImpl.BATCH_CREATE_SESSIONS_REQUEST, parent);
     span.addAnnotation(String.format("Requesting %d sessions", sessionCount));
-    try (IScope s = SpannerImpl.tracer.withSpan(span)) {
+    try (IScope s = spanner.getTracer().withSpan(span)) {
       List<com.google.spanner.v1.Session> sessions =
           spanner
               .getRpc()

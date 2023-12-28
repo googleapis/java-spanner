@@ -20,11 +20,10 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.base.Preconditions;
-import io.opencensus.trace.Tracing;
 
 /** Implementation of {@link TransactionManager}. */
 final class TransactionManagerImpl implements TransactionManager, SessionTransaction {
-  private static final TraceWrapper tracer = new TraceWrapper(Tracing.getTracer());
+  private final TraceWrapper tracer;
 
   private final SessionImpl session;
   private ISpan span;
@@ -33,9 +32,11 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, ISpan span, TransactionOption... options) {
+  TransactionManagerImpl(
+      SessionImpl session, ISpan span, TraceWrapper tracer, TransactionOption... options) {
     this.session = session;
     this.span = span;
+    this.tracer = tracer;
     this.options = Options.fromTransactionOptions(options);
   }
 

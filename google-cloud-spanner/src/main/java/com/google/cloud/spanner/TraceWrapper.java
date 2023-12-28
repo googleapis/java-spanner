@@ -16,73 +16,100 @@
 
 package com.google.cloud.spanner;
 
+import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opentelemetry.context.Context;
 
 class TraceWrapper {
 
-  private Tracer openCensusTracer;
+  private final Tracer openCensusTracer;
+  private final io.opentelemetry.api.trace.Tracer openTelemetryTracer;
 
-  TraceWrapper(Tracer openCensusTracer) {
+  TraceWrapper(Tracer openCensusTracer, io.opentelemetry.api.trace.Tracer openTelemetryTracer) {
+    this.openTelemetryTracer = openTelemetryTracer;
     this.openCensusTracer = openCensusTracer;
   }
 
   ISpan spanBuilder(String spanName) {
-    return new DualSpan(
-        openCensusTracer.spanBuilder(spanName).startSpan(),
-        SpannerOptions.getOpenTelemetry()
-            .getTracer(MetricRegistryConstants.Scope)
-            .spanBuilder(spanName)
-            .startSpan());
+    if (SpannerOptions.isEnabledOpenTelemetryTraces()) {
+      return new OpenTelemetrySpan(openTelemetryTracer.spanBuilder(spanName).startSpan());
+    } else {
+      return new OpenCensusSpan(openCensusTracer.spanBuilder(spanName).startSpan());
+    }
   }
 
   ISpan spanBuilderWithExplicitParent(String spanName, ISpan parentSpan) {
-    DualSpan dualParentSpan;
-    if (!(parentSpan instanceof DualSpan)) {
-      dualParentSpan = new DualSpan(null, null);
+    if (SpannerOptions.isEnabledOpenTelemetryTraces()) {
+      OpenTelemetrySpan otParentSpan;
+      if (!(parentSpan instanceof OpenTelemetrySpan)) {
+        otParentSpan = new OpenTelemetrySpan(null);
+      } else {
+        otParentSpan = (OpenTelemetrySpan) parentSpan;
+      }
+
+      io.opentelemetry.api.trace.Span otSpan;
+
+      if (otParentSpan.getOpenTelemetrySpan() != null)
+        otSpan =
+            openTelemetryTracer
+                .spanBuilder(spanName)
+                .setParent(Context.current().with(otParentSpan.getOpenTelemetrySpan()))
+                .startSpan();
+      else otSpan = openTelemetryTracer.spanBuilder(spanName).startSpan();
+
+      return new OpenTelemetrySpan(otSpan);
+
     } else {
-      dualParentSpan = (DualSpan) parentSpan;
+      OpenCensusSpan parentOcSpan;
+      if (!(parentSpan instanceof OpenCensusSpan)) {
+        parentOcSpan = new OpenCensusSpan(null);
+      } else {
+        parentOcSpan = (OpenCensusSpan) parentSpan;
+      }
+      Span ocSpan =
+          openCensusTracer
+              .spanBuilderWithExplicitParent(spanName, parentOcSpan.getOpenCensusSpan())
+              .startSpan();
+
+      return new OpenCensusSpan(ocSpan);
     }
-    Span ocSpan =
-        openCensusTracer
-            .spanBuilderWithExplicitParent(spanName, dualParentSpan.getOpenCensusSpan())
-            .startSpan();
-
-    io.opentelemetry.api.trace.Span otSpan;
-
-    if (dualParentSpan.getOpenTelemetrySpan() != null)
-      otSpan =
-          SpannerOptions.getOpenTelemetry()
-              .getTracer(MetricRegistryConstants.Scope)
-              .spanBuilder(spanName)
-              .setParent(Context.current().with(dualParentSpan.getOpenTelemetrySpan()))
-              .startSpan();
-    else
-      otSpan =
-          SpannerOptions.getOpenTelemetry()
-              .getTracer(MetricRegistryConstants.Scope)
-              .spanBuilder(spanName)
-              .startSpan();
-
-    return new DualSpan(ocSpan, otSpan);
   }
 
   ISpan getCurrentSpan() {
-    return new DualSpan(
-        openCensusTracer.getCurrentSpan(),
-        io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current()));
+    if (SpannerOptions.isEnabledOpenTelemetryTraces()) {
+      return new OpenTelemetrySpan(
+          io.opentelemetry.api.trace.Span.fromContext(io.opentelemetry.context.Context.current()));
+    } else {
+      return new OpenCensusSpan(openCensusTracer.getCurrentSpan());
+    }
+  }
+
+  ISpan getBlankSpan() {
+    if (SpannerOptions.isEnabledOpenTelemetryTraces()) {
+      return new OpenTelemetrySpan(io.opentelemetry.api.trace.Span.getInvalid());
+    } else {
+      return new OpenCensusSpan(BlankSpan.INSTANCE);
+    }
   }
 
   IScope withSpan(ISpan span) {
-    DualSpan dualSpan;
-    if (!(span instanceof DualSpan)) {
-      dualSpan = new DualSpan(null, null);
+    if (SpannerOptions.isEnabledOpenTelemetryTraces()) {
+      OpenTelemetrySpan openTelemetrySpan;
+      if (!(span instanceof OpenTelemetrySpan)) {
+        openTelemetrySpan = new OpenTelemetrySpan(null);
+      } else {
+        openTelemetrySpan = (OpenTelemetrySpan) span;
+      }
+      return new OpenTelemetryScope(openTelemetrySpan.getOpenTelemetrySpan().makeCurrent());
     } else {
-      dualSpan = (DualSpan) span;
+      OpenCensusSpan openCensusSpan;
+      if (!(span instanceof OpenCensusSpan)) {
+        openCensusSpan = new OpenCensusSpan(null);
+      } else {
+        openCensusSpan = (OpenCensusSpan) span;
+      }
+      return new OpenCensusScope(openCensusTracer.withSpan(openCensusSpan.getOpenCensusSpan()));
     }
-    return new DualScope(
-        openCensusTracer.withSpan(dualSpan.getOpenCensusSpan()),
-        dualSpan.getOpenTelemetrySpan().makeCurrent());
   }
 }

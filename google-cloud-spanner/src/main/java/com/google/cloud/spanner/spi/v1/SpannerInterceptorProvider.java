@@ -18,12 +18,11 @@ package com.google.cloud.spanner.spi.v1;
 import com.google.api.core.InternalApi;
 import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerRpcMetrics;
 import com.google.common.collect.ImmutableList;
 import io.grpc.ClientInterceptor;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -47,17 +46,18 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
     defaultInterceptorList.add(new SpannerErrorInterceptor());
     defaultInterceptorList.add(
         new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
-    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(OpenTelemetry.noop())));
-    return new SpannerInterceptorProvider(defaultInterceptorList);
+    defaultInterceptorList.add(
+        new HeaderInterceptor(new SpannerRpcMetrics(GlobalOpenTelemetry.get())));
+    return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
 
-  public static SpannerInterceptorProvider createDefault(SpannerOptions spannerOptions) {
+  public static SpannerInterceptorProvider createDefault(OpenTelemetry openTelemetry) {
     List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
     defaultInterceptorList.add(new SpannerErrorInterceptor());
     defaultInterceptorList.add(
         new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
-    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(spannerOptions.getInjectedOpenTelemetry())));
-    return new SpannerInterceptorProvider(defaultInterceptorList);
+    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry)));
+    return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
 
   static SpannerInterceptorProvider create(GrpcInterceptorProvider provider) {

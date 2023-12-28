@@ -22,103 +22,21 @@ import io.opencensus.trace.AttributeValue;
 import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Status;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.StatusCode;
 import java.util.HashMap;
 import java.util.Map;
 
-class DualSpan implements ISpan {
+public class OpenCensusSpan implements ISpan {
 
   static final EndSpanOptions END_SPAN_OPTIONS =
       EndSpanOptions.builder().setSampleToLocalSpanStore(true).build();
   private final Span openCensusSpan;
-  private final io.opentelemetry.api.trace.Span openTelemetrySpan;
 
-  public DualSpan(Span openCensusSpan, io.opentelemetry.api.trace.Span openTelemetrySpan) {
+  public OpenCensusSpan(Span openCensusSpan) {
     this.openCensusSpan = openCensusSpan;
-    this.openTelemetrySpan = openTelemetrySpan;
   }
 
   Span getOpenCensusSpan() {
     return openCensusSpan;
-  }
-
-  io.opentelemetry.api.trace.Span getOpenTelemetrySpan() {
-    return openTelemetrySpan;
-  }
-
-  @Override
-  public void addAnnotation(String message, Map<String, Object> attributes) {
-    AttributesBuilder otAttributesBuilder = Attributes.builder();
-    Map<String, AttributeValue> ocAttributeValues = new HashMap<>();
-    for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-      String key = entry.getKey();
-      Object val = entry.getValue();
-      if (val == null || val instanceof String) {
-        String strVal = (String) val;
-        otAttributesBuilder.put(key, strVal);
-        ocAttributeValues.put(key, AttributeValue.stringAttributeValue(strVal));
-      } else if (val instanceof Long) {
-        long longVal = (Long) val;
-        otAttributesBuilder.put(key, longVal);
-        ocAttributeValues.put(key, AttributeValue.longAttributeValue(longVal));
-      }
-    }
-    openTelemetrySpan.addEvent(message, otAttributesBuilder.build());
-    openCensusSpan.addAnnotation(message, ocAttributeValues);
-  }
-
-  @Override
-  public void addAnnotation(String message) {
-    openTelemetrySpan.addEvent(message);
-    openCensusSpan.addAnnotation(message);
-  }
-
-  @Override
-  public void addAnnotation(String message, String key, String value) {
-    openTelemetrySpan.addEvent(message, Attributes.builder().put(key, value).build());
-    openCensusSpan.addAnnotation(
-        message, ImmutableMap.of(key, AttributeValue.stringAttributeValue(value)));
-  }
-
-  @Override
-  public void addAnnotation(String message, String key, long value) {
-    openTelemetrySpan.addEvent(message, Attributes.builder().put(key, value).build());
-    openCensusSpan.addAnnotation(
-        message, ImmutableMap.of(key, AttributeValue.longAttributeValue(value)));
-  }
-
-  @Override
-  public void addAnnotation(String message, Throwable e) {
-    openCensusSpan.addAnnotation(message, this.getOpenCensusExceptionAnnotations(e));
-    openTelemetrySpan.addEvent(message, this.getOpenTelemetryExceptionAnnotations(e));
-  }
-
-  @Override
-  public void setStatus(Throwable e) {
-    openTelemetrySpan.setStatus(StatusCode.ERROR);
-    openTelemetrySpan.recordException(e);
-    if (e instanceof SpannerException) {
-      openCensusSpan.setStatus(
-          StatusConverter.fromGrpcStatus(((SpannerException) e).getErrorCode().getGrpcStatus())
-              .withDescription(e.getMessage()));
-    } else {
-      openCensusSpan.setStatus(Status.INTERNAL.withDescription(e.getMessage()));
-    }
-  }
-
-  @Override
-  public void setStatus(Status status) {
-    openTelemetrySpan.setStatus(StatusCode.ERROR);
-    openTelemetrySpan.recordException(new Throwable(status.getDescription()));
-    openCensusSpan.setStatus(status);
-  }
-
-  @Override
-  public void end() {
-    openCensusSpan.end(END_SPAN_OPTIONS);
-    openTelemetrySpan.end();
   }
 
   private ImmutableMap<String, AttributeValue> getOpenCensusExceptionAnnotations(Throwable e) {
@@ -130,11 +48,64 @@ class DualSpan implements ISpan {
     return ImmutableMap.of();
   }
 
-  private Attributes getOpenTelemetryExceptionAnnotations(Throwable e) {
-    AttributesBuilder attributesBuilder = Attributes.builder();
-    if (e instanceof SpannerException) {
-      attributesBuilder.put("Status", ((SpannerException) e).getErrorCode().toString());
+  @Override
+  public void addAnnotation(String message, Map<String, Object> attributes) {
+    Map<String, AttributeValue> ocAttributeValues = new HashMap<>();
+    for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+      String key = entry.getKey();
+      Object val = entry.getValue();
+      if (val == null || val instanceof String) {
+        String strVal = (String) val;
+        assert strVal != null;
+        ocAttributeValues.put(key, AttributeValue.stringAttributeValue(strVal));
+      } else if (val instanceof Long) {
+        long longVal = (Long) val;
+        ocAttributeValues.put(key, AttributeValue.longAttributeValue(longVal));
+      }
     }
-    return attributesBuilder.build();
+    openCensusSpan.addAnnotation(message, ocAttributeValues);
+  }
+
+  @Override
+  public void addAnnotation(String message) {
+    openCensusSpan.addAnnotation(message);
+  }
+
+  @Override
+  public void addAnnotation(String message, String key, String value) {
+    openCensusSpan.addAnnotation(
+        message, ImmutableMap.of(key, AttributeValue.stringAttributeValue(value)));
+  }
+
+  @Override
+  public void addAnnotation(String message, String key, long value) {
+    openCensusSpan.addAnnotation(
+        message, ImmutableMap.of(key, AttributeValue.longAttributeValue(value)));
+  }
+
+  @Override
+  public void addAnnotation(String message, Throwable e) {
+    openCensusSpan.addAnnotation(message, this.getOpenCensusExceptionAnnotations(e));
+  }
+
+  @Override
+  public void setStatus(Throwable e) {
+    if (e instanceof SpannerException) {
+      openCensusSpan.setStatus(
+          StatusConverter.fromGrpcStatus(((SpannerException) e).getErrorCode().getGrpcStatus())
+              .withDescription(e.getMessage()));
+    } else {
+      openCensusSpan.setStatus(Status.INTERNAL.withDescription(e.getMessage()));
+    }
+  }
+
+  @Override
+  public void setStatus(ErrorCode errorCode) {
+    openCensusSpan.setStatus(StatusConverter.fromGrpcStatus(errorCode.getGrpcStatus()));
+  }
+
+  @Override
+  public void end() {
+    openCensusSpan.end(END_SPAN_OPTIONS);
   }
 }

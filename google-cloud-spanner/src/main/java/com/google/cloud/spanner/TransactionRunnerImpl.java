@@ -49,7 +49,6 @@ import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -67,7 +66,6 @@ import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation of {@link TransactionRunner}. */
 class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
-  private static final TraceWrapper tracer = new TraceWrapper(Tracing.getTracer());
   private static final Logger txnLogger = Logger.getLogger(TransactionRunner.class.getName());
   /**
    * (Part of) the error message that is returned by Cloud Spanner if a transaction is cancelled
@@ -420,6 +418,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         } catch (TimeoutException e) {
           res.setException(SpannerExceptionFactory.propagateTimeout(e));
         } catch (ExecutionException e) {
+          res.setException(
+              SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
+        } catch (NullPointerException e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
         }
@@ -937,6 +938,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private final SessionImpl session;
   private final Options options;
   private ISpan span;
+  private TraceWrapper tracer;
   private TransactionContextImpl txn;
   private volatile boolean isValid = true;
 
@@ -950,6 +952,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     this.session = session;
     this.options = Options.fromTransactionOptions(options);
     this.txn = session.newTransaction(this.options);
+    this.tracer = session.getTracer();
   }
 
   @Override
@@ -973,6 +976,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // We also do this unconditionally in case a user has modified the flag when the transaction
       // was running.
       SessionImpl.hasPendingTransaction.remove();
+      span.end();
     }
   }
 

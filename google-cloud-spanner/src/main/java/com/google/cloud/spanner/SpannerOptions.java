@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
@@ -84,6 +85,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final long serialVersionUID = 2789571558532701170L;
   private static SpannerEnvironment environment = SpannerEnvironmentImpl.INSTANCE;
   private static boolean enableOpenTelemetryTraces = false;
+
+  private static boolean enableOpenCensusMetrics = true;
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
@@ -1324,23 +1327,35 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   /**
-   * Gets the OpenTelemetry object. Global OpenTelemetry object will be returned if found else No-op
-   * will be returned.
+   * Enables OpenTelemetry traces. Enabling OpenTelemetry traces will disable OpenCensus traces. By
+   * default, OpenCensus traces are enabled.
    */
-  public static OpenTelemetry getOpenTelemetry() {
-    if (GlobalOpenTelemetry.get() != null) {
-      return GlobalOpenTelemetry.get();
-    } else {
-      return OpenTelemetry.noop();
-    }
-  }
-
   public static void enableOpenTelemetryTraces() {
     SpannerOptions.enableOpenTelemetryTraces = true;
   }
 
+  /** Enables OpenCensus traces. Enabling OpenCensus traces will disable OpenTelemetry traces. */
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  public static void enableOpenCensusTraces() {
+    SpannerOptions.enableOpenTelemetryTraces = false;
+  }
+
   public static boolean isEnabledOpenTelemetryTraces() {
     return SpannerOptions.enableOpenTelemetryTraces;
+  }
+
+  public static void disableOpenCensusMetrics() {
+    SpannerOptions.enableOpenCensusMetrics = false;
+  }
+
+  @VisibleForTesting
+  public static void enableOpenCensusMetrics() {
+    SpannerOptions.enableOpenCensusMetrics = true;
+  }
+
+  public static boolean isEnabledOpenCensusMetrics() {
+    return SpannerOptions.enableOpenCensusMetrics;
   }
 
   @Override
@@ -1442,8 +1457,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public boolean isAttemptDirectPath() {
     return attemptDirectPath;
   }
-  
-  public OpenTelemetry getInjectedOpenTelemetry() {
+
+  /**
+   * Returns an instance of OpenTelemetry. If OpenTelemetry object is not set via SpannerOptions
+   * then GlobalOpenTelemetry will be used as fallback.
+   */
+  public OpenTelemetry getOpenTelemetry() {
     if (this.openTelemetry != null) {
       return this.openTelemetry;
     } else {
