@@ -35,6 +35,7 @@ import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.VirtualThreadExecutorProvider.VirtualExecutorFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -1398,7 +1399,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public static GrpcTransportOptions getDefaultGrpcTransportOptions() {
-    return GrpcTransportOptions.newBuilder().build();
+    GrpcTransportOptions.Builder builder = GrpcTransportOptions.newBuilder();
+    if (VirtualThreadExecutorProvider.supportsVirtualThreads()) {
+      builder.setExecutorFactory(VirtualExecutorFactory.INSTANCE);
+    }
+    return builder.build();
   }
 
   @Override

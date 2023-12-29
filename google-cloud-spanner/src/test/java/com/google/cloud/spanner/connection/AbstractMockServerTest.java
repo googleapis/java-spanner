@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
+
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -52,6 +54,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.junit.AfterClass;
@@ -162,6 +165,9 @@ public abstract class AbstractMockServerTest {
             .addService(mockInstanceAdmin)
             .addService(mockDatabaseAdmin)
             .addService(mockOperations)
+            .executor(
+                Executors.newCachedThreadPool(
+                    createVirtualOrDaemonThreadFactory("test-server-executor")))
             .build()
             .start();
     mockSpanner.putStatementResult(
