@@ -120,7 +120,7 @@ abstract class AbstractReadContext
     }
 
     B setDefaultDirectedReadOption(DirectedReadOptions directedReadOptions) {
-      this.defaultDirectedReadOption = Preconditions.checkNotNull(directedReadOptions);
+      this.defaultDirectedReadOption = directedReadOptions;
       return self();
     }
 
