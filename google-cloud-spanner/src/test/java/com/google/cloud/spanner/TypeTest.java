@@ -527,6 +527,69 @@ public class TypeTest {
     assertNotEquals(unrecognizedArray, Type.array(Type.int64()));
   }
 
+  @Test
+  public void testGoogleSQLTypeNames() {
+    assertEquals("INT64", Type.int64().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("BOOL", Type.bool().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("FLOAT64", Type.float64().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("STRING", Type.string().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("BYTES", Type.bytes().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("DATE", Type.date().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("TIMESTAMP", Type.timestamp().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("JSON", Type.json().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals("NUMERIC", Type.numeric().getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+
+    assertEquals(
+        "ARRAY<INT64>", Type.array(Type.int64()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<BOOL>", Type.array(Type.bool()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<FLOAT64>",
+        Type.array(Type.float64()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<STRING>", Type.array(Type.string()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<BYTES>", Type.array(Type.bytes()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<DATE>", Type.array(Type.date()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<TIMESTAMP>",
+        Type.array(Type.timestamp()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<JSON>", Type.array(Type.json()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+    assertEquals(
+        "ARRAY<NUMERIC>",
+        Type.array(Type.numeric()).getSpannerTypeName(Dialect.GOOGLE_STANDARD_SQL));
+  }
+
+  @Test
+  public void testPostgreSQLTypeNames() {
+    assertEquals("bigint", Type.int64().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("boolean", Type.bool().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("double precision", Type.float64().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("character varying", Type.string().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("bytea", Type.bytes().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("date", Type.date().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals(
+        "timestamp with time zone", Type.timestamp().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("jsonb", Type.pgJsonb().getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("numeric", Type.pgNumeric().getSpannerTypeName(Dialect.POSTGRESQL));
+
+    assertEquals("bigint[]", Type.array(Type.int64()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("boolean[]", Type.array(Type.bool()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals(
+        "double precision[]", Type.array(Type.float64()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals(
+        "character varying[]", Type.array(Type.string()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("bytea[]", Type.array(Type.bytes()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("date[]", Type.array(Type.date()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals(
+        "timestamp with time zone[]",
+        Type.array(Type.timestamp()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("jsonb[]", Type.array(Type.pgJsonb()).getSpannerTypeName(Dialect.POSTGRESQL));
+    assertEquals("numeric[]", Type.array(Type.pgNumeric()).getSpannerTypeName(Dialect.POSTGRESQL));
+  }
+
   private static void assertProtoEquals(com.google.spanner.v1.Type proto, String expected) {
     MatcherAssert.assertThat(
         proto, SpannerMatchers.matchesProto(com.google.spanner.v1.Type.class, expected));
