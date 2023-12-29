@@ -48,6 +48,9 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -696,6 +699,27 @@ public class SpannerOptionsTest {
             .disableLeaderAwareRouting()
             .build()
             .isLeaderAwareRoutingEnabled());
+  }
+
+  @Test
+  public void testSetDirectedReadOptions() {
+    final DirectedReadOptions directedReadOptions =
+        DirectedReadOptions.newBuilder()
+            .setIncludeReplicas(
+                IncludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder().setLocation("us-west1").build())
+                    .build())
+            .build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setDirectedReadOption(directedReadOptions)
+            .build();
+    assertEquals(options.getDirectedReadOptions(), directedReadOptions);
+    assertThrows(
+        NullPointerException.class,
+        () -> SpannerOptions.newBuilder().setDirectedReadOption(null).build());
   }
 
   @Test

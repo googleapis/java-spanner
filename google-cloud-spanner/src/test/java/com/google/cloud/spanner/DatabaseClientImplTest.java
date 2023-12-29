@@ -180,6 +180,13 @@ public class DatabaseClientImplTest {
                   .addReplicaSelections(
                       ReplicaSelection.newBuilder().setLocation("us-west1").build()))
           .build();
+  private static final DirectedReadOptions DIRECTED_READ_OPTIONS2 =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder().setLocation("us-east1").build()))
+          .build();
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
@@ -1548,6 +1555,29 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testExecuteQueryWithDirectedReadOptionsViaSpannerOptions() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOption(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
+      while (resultSet.next()) {}
+    }
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(requests.size(), 1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS2, request.getDirectedReadOptions());
+  }
+
+  @Test
   public void testExecuteReadWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -1591,6 +1621,57 @@ public class DatabaseClientImplTest {
     ReadRequest request = requests.get(0);
     assertTrue(request.hasDirectedReadOptions());
     assertEquals(DIRECTED_READ_OPTIONS1, request.getDirectedReadOptions());
+  }
+
+  @Test
+  public void testExecuteReadWithDirectedReadOptionsViaSpannerOptions() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOption(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client.singleUse().read(READ_TABLE_NAME, KeySet.singleKey(Key.of(1L)), READ_COLUMN_NAMES)) {
+      while (resultSet.next()) {}
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertEquals(requests.size(), 1);
+    ReadRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS2, request.getDirectedReadOptions());
+  }
+
+  @Test
+  public void testReadWriteExecuteQueryWithDirectedReadOptionsViaSpannerOptions() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOption(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+            while (resultSet.next()) {}
+          }
+          return null;
+        });
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(requests.size(), 1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertFalse(request.hasDirectedReadOptions());
   }
 
   @Test

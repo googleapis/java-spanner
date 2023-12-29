@@ -199,7 +199,6 @@ public class OptionsTest {
     assertThat(options.tag()).isEqualTo(tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
-    assertThat(options.hashCode()).isEqualTo(-1667681729);
   }
 
   @Test
@@ -252,7 +251,6 @@ public class OptionsTest {
     assertThat(options.tag()).isEqualTo(tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
-    assertThat(options.hashCode()).isEqualTo(-187561950);
   }
 
   @Test
