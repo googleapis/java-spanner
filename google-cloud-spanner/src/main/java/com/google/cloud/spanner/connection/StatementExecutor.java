@@ -24,7 +24,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -133,21 +132,17 @@ class StatementExecutor {
    * Use a {@link ThreadFactory} that produces daemon threads and sets recognizable name on the
    * threads.
    */
-  private static final ThreadFactory THREAD_FACTORY =
-      new ThreadFactoryBuilder()
-          .setDaemon(true)
-          .setNameFormat("connection-executor-%d")
-          .setThreadFactory(MoreExecutors.platformThreadFactory())
-          .build();
+  private static final ThreadFactory DEFAULT_THREAD_FACTORY =
+      ThreadFactoryUtil.createVirtualOrDaemonThreadFactory("connection-executor");
 
   /** Creates an {@link ExecutorService} for a {@link StatementExecutor}. */
   private static ListeningExecutorService createExecutorService() {
     return MoreExecutors.listeningDecorator(
         new ThreadPoolExecutor(
-            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY));
+            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), DEFAULT_THREAD_FACTORY));
   }
 
-  private ListeningExecutorService executor = createExecutorService();
+  private final ListeningExecutorService executor = createExecutorService();
 
   /**
    * Interceptors that should be invoked before or after a statement is executed can be registered
