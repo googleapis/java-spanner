@@ -20,43 +20,48 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.example.spanner.SampleRunner;
-import com.example.spanner.SampleTestBase;
-import com.example.spanner.UpdateDatabaseSample;
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
+import com.google.common.collect.Lists;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
-import java.util.Collections;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class UpdateDatabaseSampleIT extends SampleTestBase {
+public class UpdateDatabaseSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testUpdateDatabase() throws Exception {
     // Create database
     final String databaseId = idGenerator.generateDatabaseId();
     databaseAdminClient
-        .createDatabase(instanceId, databaseId, Collections.emptyList())
+        .createDatabaseAsync(getInstanceName(projectId, instanceId),
+            "CREATE DATABASE `" + databaseId + "`")
         .get(5, TimeUnit.MINUTES);
 
     // Runs sample
     final String out =
         SampleRunner.runSample(
-            () -> UpdateDatabaseSample.updateDatabase(projectId, instanceId, databaseId));
-
-    DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
+            () -> UpdateDatabaseSample.updateDatabase(databaseId));
     assertTrue(
         "Expected that database would have been updated. Output received was " + out,
-        out.contains(String.format("Updated database %s", dbId)));
+        out.contains(String.format("Updated database %s", databaseId)));
 
     // Cleanup
-    Database databaseToUpdate =
-        databaseAdminClient.newDatabaseBuilder(dbId).disableDropProtection().build();
+    final com.google.spanner.admin.database.v1.Database database =
+        com.google.spanner.admin.database.v1.Database.newBuilder().setName(databaseId).setEnableDropProtection(true).build();
+    final UpdateDatabaseRequest updateDatabaseRequest =
+        UpdateDatabaseRequest.newBuilder()
+            .setDatabase(database)
+            .setUpdateMask(
+                FieldMask.newBuilder().addAllPaths(
+                    Lists.newArrayList("enable_drop_protection")).build())
+            .build();
+
     OperationFuture<Database, UpdateDatabaseMetadata> operation =
-        databaseAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
+        databaseAdminClient.updateDatabaseAsync(updateDatabaseRequest);
     Database updatedDb = operation.get(5, TimeUnit.MINUTES);
-    assertFalse(updatedDb.isDropProtectionEnabled());
+    assertFalse(updatedDb.getEnableDropProtection());
   }
 }

@@ -17,17 +17,17 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_drop_sequence]
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class DropSequenceSample {
-  static void dropSequence() {
+  static void dropSequence() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -35,21 +35,15 @@ public class DropSequenceSample {
     dropSequence(projectId, instanceId, databaseId);
   }
 
-  static void dropSequence(String projectId, String instanceId, String databaseId) {
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
-
-      dbAdminClient
-          .updateDatabaseDdl(
-              instanceId,
-              databaseId,
+  static void dropSequence(String projectId, String instanceId, String databaseId) throws IOException {
+    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+    try {
+      databaseAdminClient
+          .updateDatabaseDdlAsync(DatabaseName.of(projectId, instanceId, databaseId),
               ImmutableList.of(
                   "ALTER TABLE Customers ALTER COLUMN CustomerId DROP DEFAULT",
-                  "DROP SEQUENCE Seq"),
-              null)
+                  "DROP SEQUENCE Seq"))
           .get(5, TimeUnit.MINUTES);
-
       System.out.println(
           "Altered Customers table to drop DEFAULT from CustomerId column "
               + "and dropped the Seq sequence");

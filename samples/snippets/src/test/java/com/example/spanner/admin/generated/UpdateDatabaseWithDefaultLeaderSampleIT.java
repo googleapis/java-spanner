@@ -19,39 +19,32 @@ package com.example.spanner.admin.generated;
 import static org.junit.Assert.assertTrue;
 
 import com.example.spanner.SampleRunner;
-import com.example.spanner.SampleTestBase;
-import com.example.spanner.UpdateDatabaseWithDefaultLeaderSample;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.InstanceConfig;
-import com.google.cloud.spanner.InstanceConfigId;
-import java.util.Collections;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.instance.v1.InstanceConfig;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class UpdateDatabaseWithDefaultLeaderSampleIT extends SampleTestBase {
+public class UpdateDatabaseWithDefaultLeaderSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testUpdateDatabaseWithDefaultLeader() throws Exception {
     // Create database
     final String databaseId = idGenerator.generateDatabaseId();
     final Database createdDatabase = databaseAdminClient
-        .createDatabase(multiRegionalInstanceId, databaseId, Collections.emptyList())
+        .createDatabaseAsync(getInstanceName(projectId, multiRegionalInstanceId),
+            "CREATE DATABASE `" + databaseId + "`")
         .get(5, TimeUnit.MINUTES);
     final String defaultLeader = createdDatabase.getDefaultLeader();
 
     // Finds a possible new leader option
-    final InstanceConfigId instanceConfigId = instanceAdminClient
-        .getInstance(multiRegionalInstanceId)
-        .getInstanceConfigId();
-    final InstanceConfig config = instanceAdminClient
-        .getInstanceConfig(instanceConfigId.getInstanceConfig());
-    final String newLeader = config
-        .getLeaderOptions()
-        .stream()
-        .filter(leader -> !leader.equals(defaultLeader))
-        .findFirst()
-        .orElseThrow(() ->
-            new RuntimeException("Expected to find a leader option different than " + defaultLeader)
+    final String instanceConfigId =
+        instanceAdminClient.getInstance(getInstanceName(projectId, multiRegionalInstanceId)).getConfig();
+    final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigId);
+    final String newLeader =
+        config.getLeaderOptionsList().stream()
+            .filter(leader -> !leader.equals(defaultLeader))
+            .findFirst().orElseThrow(() ->
+                new RuntimeException("Expected to find a leader option different than " + defaultLeader)
         );
 
     // Runs sample
