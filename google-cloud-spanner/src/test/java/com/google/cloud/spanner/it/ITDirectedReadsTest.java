@@ -17,9 +17,11 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -73,6 +75,8 @@ public class ITDirectedReadsTest {
   @Test
   public void testReadWriteTransactionRunner_queryWithDirectedReadOptions_throwsError() {
     // Directed Read Options set at an RPC level is not acceptable for RW transaction
+
+    assumeFalse("Emulator does not support directed reads", isUsingEmulator());
     SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
     try (Spanner spanner = options.getService()) {
       DatabaseClient client = spanner.getDatabaseClient(db.getId());
