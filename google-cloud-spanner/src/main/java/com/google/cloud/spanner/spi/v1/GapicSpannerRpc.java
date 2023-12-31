@@ -353,12 +353,12 @@ public class GapicSpannerRpc implements SpannerRpc {
                       && !Objects.equals(
                           options.getScopedCredentials(), NoCredentials.getInstance()));
 
-      ThreadFactory virtualThreadFactory =
-          tryCreateVirtualThreadFactory("spanner-virtual-grpc-executor");
-      if (virtualThreadFactory != null) {
-        defaultChannelProviderBuilder.setExecutor(
-            Executors.newCachedThreadPool(virtualThreadFactory));
-      }
+//      ThreadFactory virtualThreadFactory =
+//          tryCreateVirtualThreadFactory("spanner-virtual-grpc-executor");
+//      if (virtualThreadFactory != null) {
+//        defaultChannelProviderBuilder.setExecutor(
+//            Executors.newCachedThreadPool(virtualThreadFactory));
+//      }
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 

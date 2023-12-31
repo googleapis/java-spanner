@@ -1400,9 +1400,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public static GrpcTransportOptions getDefaultGrpcTransportOptions() {
     GrpcTransportOptions.Builder builder = GrpcTransportOptions.newBuilder();
-    if (VirtualThreadExecutorProvider.supportsVirtualThreads()) {
-      builder.setExecutorFactory(VirtualExecutorFactory.INSTANCE);
-    }
+//    if (VirtualThreadExecutorProvider.supportsVirtualThreads()) {
+//      builder.setExecutorFactory(VirtualExecutorFactory.INSTANCE);
+//    }
     return builder.build();
   }
 
