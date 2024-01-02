@@ -27,6 +27,8 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
@@ -34,6 +36,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.common.collect.Lists;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
@@ -90,6 +93,39 @@ public class ITDirectedReadsTest {
                         try (ResultSet resultSet =
                             transaction.executeQuery(
                                 SELECT1, Options.directedRead(DIRECTED_READ_OPTIONS))) {
+                          while (resultSet.next()) {}
+                        }
+                        return null;
+                      }));
+
+      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+      assertTrue(
+          e.getMessage()
+              .contains("Directed reads can only be performed in a read-only transaction."));
+    }
+  }
+
+  @Test
+  public void testReadWriteTransactionRunner_readWithDirectedReadOptions_throwsError() {
+    // Directed Read Options set at an RPC level is not acceptable for RW transaction
+
+    assumeFalse("Emulator does not support directed reads", isUsingEmulator());
+    SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
+    try (Spanner spanner = options.getService()) {
+      DatabaseClient client = spanner.getDatabaseClient(db.getId());
+      TransactionRunner runner = client.readWriteTransaction();
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () ->
+                  runner.run(
+                      transaction -> {
+                        try (ResultSet resultSet =
+                            transaction.read(
+                                "TEST",
+                                KeySet.singleKey(Key.of(1L)),
+                                Lists.newArrayList("NAME"),
+                                Options.directedRead(DIRECTED_READ_OPTIONS))) {
                           while (resultSet.next()) {}
                         }
                         return null;
