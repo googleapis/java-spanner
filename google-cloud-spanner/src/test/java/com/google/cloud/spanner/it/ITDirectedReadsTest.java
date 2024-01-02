@@ -19,10 +19,12 @@ package com.google.cloud.spanner.it;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
+import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
@@ -35,6 +37,8 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.common.collect.Lists;
 import com.google.spanner.v1.DirectedReadOptions;
@@ -135,6 +139,45 @@ public class ITDirectedReadsTest {
       assertTrue(
           e.getMessage()
               .contains("Directed reads can only be performed in a read-only transaction."));
+    }
+  }
+
+  @Test
+  public void testReadWriteTransactionManager_readWithDirectedReadOptionsViaRequest_throwsError() {
+    // Directed Read Options set at an RPC level is not acceptable for RW transaction
+    SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
+    try (Spanner spanner = options.getService()) {
+      DatabaseClient client = spanner.getDatabaseClient(db.getId());
+      try (TransactionManager manager = client.transactionManager()) {
+        SpannerException e =
+            assertThrows(
+                SpannerException.class,
+                () -> {
+                  TransactionContext transaction = manager.begin();
+                  try {
+                    while (true) {
+
+                      ResultSet resultSet =
+                          transaction.read(
+                              "TEST",
+                              KeySet.singleKey(Key.of(1L)),
+                              Lists.newArrayList("NAME"),
+                              Options.directedRead(DIRECTED_READ_OPTIONS));
+                      while (resultSet.next()) {}
+
+                      manager.commit();
+                      assertNotNull(manager.getCommitTimestamp());
+                      break;
+                    }
+                  } catch (AbortedException ex) {
+                    transaction = manager.resetForRetry();
+                  }
+                });
+        assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+        assertTrue(
+            e.getMessage()
+                .contains("Directed reads can only be performed in a read-only transaction."));
+      }
     }
   }
 }
