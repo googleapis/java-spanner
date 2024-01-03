@@ -1539,7 +1539,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testExecuteQueryWithDirectedReadOptions() {
+  public void testExecuteQuery_withDirectedReadOptionsViaRequest() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet =
@@ -1555,12 +1555,12 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testExecuteQueryWithDirectedReadOptionsViaSpannerOptions() {
+  public void testExecuteQuery_withDirectedReadOptionsViaSpannerOptions() {
     Spanner spannerWithDirectedReadOptions =
         spanner
             .getOptions()
             .toBuilder()
-            .setDirectedReadOption(DIRECTED_READ_OPTIONS2)
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
     DatabaseClient client =
@@ -1575,6 +1575,30 @@ public class DatabaseClientImplTest {
     ExecuteSqlRequest request = requests.get(0);
     assertTrue(request.hasDirectedReadOptions());
     assertEquals(DIRECTED_READ_OPTIONS2, request.getDirectedReadOptions());
+  }
+
+  @Test
+  public void testExecuteQuery_whenMultipleDirectedReadsOptions_preferRequestOption() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client.singleUse().executeQuery(SELECT1, Options.directedRead(DIRECTED_READ_OPTIONS1))) {
+      while (resultSet.next()) {}
+    }
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(requests.size(), 1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS1, request.getDirectedReadOptions());
   }
 
   @Test
@@ -1629,7 +1653,7 @@ public class DatabaseClientImplTest {
         spanner
             .getOptions()
             .toBuilder()
-            .setDirectedReadOption(DIRECTED_READ_OPTIONS2)
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
     DatabaseClient client =
@@ -1653,7 +1677,7 @@ public class DatabaseClientImplTest {
         spanner
             .getOptions()
             .toBuilder()
-            .setDirectedReadOption(DIRECTED_READ_OPTIONS2)
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService();
     DatabaseClient client =
@@ -2860,7 +2884,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBackendQueryOptions() {
-    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -2901,7 +2925,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBackendQueryOptionsWithAnalyzeQuery() {
-    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -2944,7 +2968,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBackendPartitionQueryOptions() {
-    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -2976,8 +3000,8 @@ public class DatabaseClientImplTest {
         transaction.cleanup();
       }
       // Check if the last query executed is a DeleteSessionRequest and the second last query
-      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version and
-      // statistics package.
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version,
+      // statistics package and directed read options.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assert requests.size() >= 2 : "required to have at least 2 requests";
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
@@ -2993,7 +3017,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBackendPartitionReadOptions() {
-    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -3021,8 +3045,8 @@ public class DatabaseClientImplTest {
         transaction.cleanup();
       }
       // Check if the last query executed is a DeleteSessionRequest and the second last query
-      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version and
-      // statistics package.
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version,
+      // statistics package and directed read options.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assert requests.size() >= 2 : "required to have at least 2 requests";
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);

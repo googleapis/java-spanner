@@ -119,7 +119,7 @@ abstract class AbstractReadContext
       return self();
     }
 
-    B setDefaultDirectedReadOption(DirectedReadOptions directedReadOptions) {
+    B setDefaultDirectedReadOptions(DirectedReadOptions directedReadOptions) {
       this.defaultDirectedReadOption = directedReadOptions;
       return self();
     }

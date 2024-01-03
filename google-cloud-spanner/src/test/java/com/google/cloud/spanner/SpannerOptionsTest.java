@@ -714,12 +714,12 @@ public class SpannerOptionsTest {
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setProjectId("[PROJECT]")
-            .setDirectedReadOption(directedReadOptions)
+            .setDirectedReadOptions(directedReadOptions)
             .build();
     assertEquals(options.getDirectedReadOptions(), directedReadOptions);
     assertThrows(
         NullPointerException.class,
-        () -> SpannerOptions.newBuilder().setDirectedReadOption(null).build());
+        () -> SpannerOptions.newBuilder().setDirectedReadOptions(null).build());
   }
 
   @Test

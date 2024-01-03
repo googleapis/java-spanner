@@ -139,7 +139,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
   private final boolean attemptDirectPath;
-  private final DirectedReadOptions directedReadOption;
+  private final DirectedReadOptions directedReadOptions;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -630,7 +630,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
     attemptDirectPath = builder.attemptDirectPath;
-    directedReadOption = builder.directedReadOption;
+    directedReadOptions = builder.directedReadOptions;
   }
 
   /**
@@ -733,7 +733,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
     private boolean attemptDirectPath = true;
-    private DirectedReadOptions directedReadOption;
+    private DirectedReadOptions directedReadOptions;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -794,7 +794,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
       this.attemptDirectPath = options.attemptDirectPath;
-      this.directedReadOption = options.directedReadOption;
+      this.directedReadOptions = options.directedReadOptions;
     }
 
     @Override
@@ -1166,8 +1166,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      * <p>DirectedReadOptions set at the request level will take precedence over the options set
      * using this method.
      */
-    public Builder setDirectedReadOption(DirectedReadOptions directedReadOptions) {
-      this.directedReadOption =
+    public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      this.directedReadOptions =
           Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
       return this;
     }
@@ -1391,7 +1391,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public DirectedReadOptions getDirectedReadOptions() {
-    return directedReadOption;
+    return directedReadOptions;
   }
 
   @BetaApi

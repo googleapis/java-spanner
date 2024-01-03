@@ -80,7 +80,7 @@ public class ITDirectedReadsTest {
   }
 
   @Test
-  public void testReadWriteTransactionRunner_queryWithDirectedReadOptions_throwsError() {
+  public void testReadWriteTransactionRunner_queryWithDirectedReadOptionsViaRequest_throwsError() {
     // Directed Read Options set at an RPC level is not acceptable for RW transaction
 
     assumeFalse("Emulator does not support directed reads", isUsingEmulator());
@@ -110,7 +110,7 @@ public class ITDirectedReadsTest {
   }
 
   @Test
-  public void testReadWriteTransactionRunner_readWithDirectedReadOptions_throwsError() {
+  public void testReadWriteTransactionRunner_readWithDirectedReadOptionsViaRequest_throwsError() {
     // Directed Read Options set at an RPC level is not acceptable for RW transaction
 
     assumeFalse("Emulator does not support directed reads", isUsingEmulator());
