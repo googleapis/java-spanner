@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.spanner.v2;
+package com.example.spanner.admin.generated;
 
 // [START spanner_list_instance_config_operations]
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
