@@ -1165,6 +1165,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      *
      * <p>DirectedReadOptions set at the request level will take precedence over the options set
      * using this method.
+     *
+     * <p>An example below of how {@link DirectedReadOptions} can be constructed by including a
+     * replica.
+     *
+     * <pre><code>
+     * DirectedReadOptions.newBuilder()
+     *           .setIncludeReplicas(
+     *               IncludeReplicas.newBuilder()
+     *                   .addReplicaSelections(
+     *                       ReplicaSelection.newBuilder().setLocation("us-east1").build()))
+     *           .build();
+     *           }
+     * </code></pre>
      */
     public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
       this.directedReadOptions =
