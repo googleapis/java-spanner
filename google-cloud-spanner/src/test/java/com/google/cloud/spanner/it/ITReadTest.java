@@ -21,6 +21,9 @@ import static com.google.cloud.spanner.Type.StructField;
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.spanner.Database;
@@ -42,6 +45,9 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import io.grpc.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,6 +83,17 @@ public class ITReadTest {
   private static final Type TABLE_TYPE =
       Type.struct(
           StructField.of("key", Type.string()), StructField.of("stringvalue", Type.string()));
+  private static DirectedReadOptions DIRECTED_READ_OPTIONS =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder()
+                          .setLocation("us-west1")
+                          .setType(ReplicaSelection.Type.READ_ONLY)
+                          .build())
+                  .setAutoFailoverDisabled(true))
+          .build();
 
   private static DatabaseClient googleStandardSQLClient;
   private static DatabaseClient postgreSQLClient;
@@ -334,6 +351,23 @@ public class ITReadTest {
     assertThat(rows.get(1).getString(1)).isEqualTo("v3");
     assertThat(rows.get(2).getString(0)).isEqualTo("k4");
     assertThat(rows.get(2).getString(1)).isEqualTo("v4");
+  }
+
+  @Test
+  public void pointReadWithDirectedReadOptions() {
+    try (ResultSet rs =
+        getClient(dialect.dialect)
+            .singleUse()
+            .read(
+                TABLE_NAME,
+                KeySet.singleKey(Key.of("k1")),
+                ALL_COLUMNS,
+                Options.directedRead(DIRECTED_READ_OPTIONS))) {
+      assertTrue(rs.next());
+      assertEquals("k1", rs.getString(0));
+      assertEquals("v1", rs.getString(1));
+      assertFalse(rs.next());
+    }
   }
 
   @Test
