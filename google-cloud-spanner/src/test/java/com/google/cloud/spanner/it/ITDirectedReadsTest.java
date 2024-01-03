@@ -145,6 +145,8 @@ public class ITDirectedReadsTest {
   @Test
   public void testReadWriteTransactionManager_readWithDirectedReadOptionsViaRequest_throwsError() {
     // Directed Read Options set at an RPC level is not acceptable for RW transaction
+
+    assumeFalse("Emulator does not support directed reads", isUsingEmulator());
     SpannerOptions options = env.getTestHelper().getOptions().toBuilder().build();
     try (Spanner spanner = options.getService()) {
       DatabaseClient client = spanner.getDatabaseClient(db.getId());
