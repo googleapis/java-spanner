@@ -20,7 +20,6 @@ package com.example.spanner.admin.generated;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
@@ -55,17 +54,14 @@ class CreateInstanceWithProcessingUnitsExample {
               .setConfig(
                   InstanceConfigName.of(projectId, configId).toString())
               .build();
-      OperationFuture<Instance, CreateInstanceMetadata> operation =
-          instanceAdminClient.createInstanceAsync(
-              CreateInstanceRequest.newBuilder()
-                  .setParent(ProjectName.of(projectId).toString())
-                  .setInstanceId(instanceId)
-                  .setInstance(instance)
-                  .build());
-
       // Wait for the createInstance operation to finish.
       System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
-      Instance createdInstance = operation.get();
+      Instance createdInstance = instanceAdminClient.createInstanceAsync(
+          CreateInstanceRequest.newBuilder()
+              .setParent(ProjectName.of(projectId).toString())
+              .setInstanceId(instanceId)
+              .setInstance(instance)
+              .build()).get();
 
       System.out.printf("Created instance %s.%n", createdInstance.getName());
       System.out.printf("Instance %s has %d processing units.%n", createdInstance.getName(),

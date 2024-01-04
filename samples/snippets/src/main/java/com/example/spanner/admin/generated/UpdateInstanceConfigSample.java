@@ -17,11 +17,9 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_update_instance_config]
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
-import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -46,11 +44,11 @@ class UpdateInstanceConfigSample {
     final UpdateInstanceConfigRequest updateInstanceConfigRequest =
         UpdateInstanceConfigRequest.newBuilder().setInstanceConfig(instanceConfig).setUpdateMask(
             FieldMask.newBuilder().addAllPaths(ImmutableList.of("display_name", "labels")).build()).build();
-    final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
-        instanceAdminClient.updateInstanceConfigAsync(updateInstanceConfigRequest);
     try {
       System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigName);
-      InstanceConfig instanceConfigResult = operation.get(5, TimeUnit.MINUTES);
+      InstanceConfig instanceConfigResult =
+          instanceAdminClient.updateInstanceConfigAsync(
+              updateInstanceConfigRequest).get(5, TimeUnit.MINUTES);
       System.out.printf(
           "Updated instance configuration %s with new display name %s\n",
           instanceConfigResult.getName(), instanceConfig.getDisplayName());

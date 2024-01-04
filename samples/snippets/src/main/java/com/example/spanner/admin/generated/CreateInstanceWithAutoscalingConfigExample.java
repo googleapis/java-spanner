@@ -18,10 +18,8 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_instance_with_autoscaling_config]
 
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
@@ -65,17 +63,14 @@ class CreateInstanceWithAutoscalingConfigExample {
 
     // Creates a new instance
     System.out.printf("Creating instance %s.%n", instanceId);
-
-    OperationFuture<Instance, CreateInstanceMetadata> operation =
-        instanceAdminClient.createInstanceAsync(
-            CreateInstanceRequest.newBuilder()
-                .setParent(ProjectName.of(projectId).toString())
-                .setInstanceId(instanceId)
-                .setInstance(instance)
-                .build());
     try {
       // Wait for the createInstance operation to finish.
-      Instance instanceResult = operation.get();
+      Instance instanceResult = instanceAdminClient.createInstanceAsync(
+          CreateInstanceRequest.newBuilder()
+              .setParent(ProjectName.of(projectId).toString())
+              .setInstanceId(instanceId)
+              .setInstance(instance)
+              .build()).get();
       System.out.printf("Autoscaler instance %s was successfully created%n", instanceResult.getName());
     } catch (ExecutionException e) {
       System.out.printf(

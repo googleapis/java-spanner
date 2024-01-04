@@ -17,9 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_create_instance_config]
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.ReplicaInfo;
@@ -60,11 +58,11 @@ class CreateInstanceConfigSample {
     final CreateInstanceConfigRequest createInstanceConfigRequest =
         CreateInstanceConfigRequest.newBuilder().setParent(projectId)
             .setInstanceConfigId(instanceConfigId).setInstanceConfig(instanceConfig).build();
-    final OperationFuture<InstanceConfig, CreateInstanceConfigMetadata> operation =
-        instanceAdminClient.createInstanceConfigAsync(createInstanceConfigRequest);
     try {
       System.out.printf("Waiting for create operation for %s to complete...\n", instanceConfigName);
-      InstanceConfig instanceConfigResult = operation.get(5, TimeUnit.MINUTES);
+      InstanceConfig instanceConfigResult =
+          instanceAdminClient.createInstanceConfigAsync(
+              createInstanceConfigRequest).get(5, TimeUnit.MINUTES);
       System.out.printf("Created instance configuration %s\n", instanceConfigResult.getName());
     } catch (ExecutionException | TimeoutException e) {
       System.out.printf(
