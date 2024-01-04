@@ -81,9 +81,10 @@ public class CredentialsProviderTest extends AbstractMockServerTest {
                           "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?credentialsProvider=%s",
                           getPort(), TestCredentialsProvider.class.getName()))
                   .setConfigurator(
-                      spannerOptions ->
-                          spannerOptions.setChannelConfigurator(
-                              ManagedChannelBuilder::usePlaintext))
+                      spannerOptions -> {
+                        spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
+                        spannerOptions.disableDirectPath();
+                      })
                   .build();
 
           try (Connection connection = options.getConnection()) {
@@ -122,9 +123,10 @@ public class CredentialsProviderTest extends AbstractMockServerTest {
                           "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?credentialsProvider=%s",
                           getPort(), TestCredentialsProvider.class.getName()))
                   .setConfigurator(
-                      spannerOptions ->
-                          spannerOptions.setChannelConfigurator(
-                              ManagedChannelBuilder::usePlaintext))
+                      spannerOptions -> {
+                        spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
+                        spannerOptions.disableDirectPath();
+                      })
                   .build();
           try (Connection connection = options.getConnection()) {
             assertEquals(

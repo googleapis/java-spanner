@@ -38,6 +38,7 @@ import com.google.rpc.Status;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
 import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.DatabaseName;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -598,6 +599,7 @@ public class SpannerClientHttpJsonTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -640,6 +642,7 @@ public class SpannerClientHttpJsonTest {
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.executeSql(request);
@@ -744,6 +747,7 @@ public class SpannerClientHttpJsonTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -786,6 +790,7 @@ public class SpannerClientHttpJsonTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.read(request);

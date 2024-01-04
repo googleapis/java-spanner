@@ -51,6 +51,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
@@ -1148,6 +1149,138 @@ public class ITWriteTest {
   }
 
   @Test
+  public void testTypeNamesGoogleSQL() {
+    assumeTrue(
+        "GoogleSQL uses different type names", dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(
+                        "select column_name, spanner_type "
+                            + "from information_schema.columns "
+                            + "where table_schema=@schema "
+                            + "and table_name=@table "
+                            + "order by ordinal_position")
+                    .bind("schema")
+                    .to(dialect.dialect.getDefaultSchema())
+                    .bind("table")
+                    .to("T")
+                    .build())) {
+      assertTrue(resultSet.next());
+      assertEquals("K", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("BoolValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bool().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Int64Value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.int64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Float64Value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.float64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("StringValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("JsonValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.json().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("BytesValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bytes().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("TimestampValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.timestamp().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("DateValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.date().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("NumericValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.numeric().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("BoolArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bool()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Int64ArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.int64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Float64ArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.float64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("StringArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.string()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("JsonArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.json()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("BytesArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bytes()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("TimestampArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.timestamp()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("DateArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.date()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("NumericArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.numeric()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
   public void testWriteUntypedNullValuesPostgreSQL() {
     assumeTrue(
         "PostgreSQL uses a different parameter format", dialect.dialect == Dialect.POSTGRESQL);
@@ -1223,5 +1356,134 @@ public class ITWriteTest {
                             .bind("p19")
                             .to(untypedNull)
                             .build())));
+  }
+
+  @Test
+  public void testTypeNamesPostgreSQL() {
+    assumeTrue("PostgreSQL uses different type names", dialect.dialect == Dialect.POSTGRESQL);
+
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(
+                        "select column_name, spanner_type "
+                            + "from information_schema.columns "
+                            + "where table_schema=$1 "
+                            + "and table_name=$2 "
+                            + "order by ordinal_position")
+                    .bind("p1")
+                    .to(dialect.dialect.getDefaultSchema())
+                    .bind("p2")
+                    .to("t")
+                    .build())) {
+      assertTrue(resultSet.next());
+      assertEquals("k", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("boolvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bool().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("int64value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.int64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("float64value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.float64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("stringvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("jsonvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.pgJsonb().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("bytesvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bytes().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("timestampvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.timestamp().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("datevalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.date().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("numericvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.pgNumeric().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("boolarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bool()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("int64arrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.int64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("float64arrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.float64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("stringarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.string()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("jsonarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.pgJsonb()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("bytesarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bytes()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("timestamparrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.timestamp()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("datearrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.date()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("numericarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.pgNumeric()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertFalse(resultSet.next());
+    }
   }
 }

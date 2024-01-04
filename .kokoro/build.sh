@@ -79,7 +79,7 @@ javadoc)
     mvn javadoc:javadoc javadoc:test-javadoc
     RETURN_CODE=$?
     ;;
-integration)
+integration|integration-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
@@ -94,7 +94,7 @@ integration)
       verify
     RETURN_CODE=$?
     ;;
-integration-cloud-devel)
+integration-cloud-devel|integration-cloud-devel-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
@@ -110,7 +110,7 @@ integration-cloud-devel)
       verify
     RETURN_CODE=$?
     ;;
-integration-cloud-staging)
+integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \

@@ -234,20 +234,20 @@ public final class Type implements Serializable {
 
   /** Enumerates the categories of types. */
   public enum Code {
-    UNRECOGNIZED(TypeCode.UNRECOGNIZED),
-    BOOL(TypeCode.BOOL),
-    INT64(TypeCode.INT64),
-    NUMERIC(TypeCode.NUMERIC),
-    PG_NUMERIC(TypeCode.NUMERIC, TypeAnnotationCode.PG_NUMERIC),
-    FLOAT64(TypeCode.FLOAT64),
-    STRING(TypeCode.STRING),
-    JSON(TypeCode.JSON),
-    PG_JSONB(TypeCode.JSON, TypeAnnotationCode.PG_JSONB),
-    BYTES(TypeCode.BYTES),
-    TIMESTAMP(TypeCode.TIMESTAMP),
-    DATE(TypeCode.DATE),
-    ARRAY(TypeCode.ARRAY),
-    STRUCT(TypeCode.STRUCT);
+    UNRECOGNIZED(TypeCode.UNRECOGNIZED, "unknown"),
+    BOOL(TypeCode.BOOL, "boolean"),
+    INT64(TypeCode.INT64, "bigint"),
+    NUMERIC(TypeCode.NUMERIC, "unknown"),
+    PG_NUMERIC(TypeCode.NUMERIC, "numeric", TypeAnnotationCode.PG_NUMERIC),
+    FLOAT64(TypeCode.FLOAT64, "double precision"),
+    STRING(TypeCode.STRING, "character varying"),
+    JSON(TypeCode.JSON, "unknown"),
+    PG_JSONB(TypeCode.JSON, "jsonb", TypeAnnotationCode.PG_JSONB),
+    BYTES(TypeCode.BYTES, "bytea"),
+    TIMESTAMP(TypeCode.TIMESTAMP, "timestamp with time zone"),
+    DATE(TypeCode.DATE, "date"),
+    ARRAY(TypeCode.ARRAY, "array"),
+    STRUCT(TypeCode.STRUCT, "struct");
 
     private static final Map<Entry<TypeCode, TypeAnnotationCode>, Code> protoToCode;
 
@@ -260,15 +260,17 @@ public final class Type implements Serializable {
       protoToCode = builder.build();
     }
 
+    private final String postgreSQLName;
     private final TypeCode typeCode;
     private final TypeAnnotationCode typeAnnotationCode;
 
-    Code(TypeCode typeCode) {
-      this(typeCode, TYPE_ANNOTATION_CODE_UNSPECIFIED);
+    Code(TypeCode typeCode, String postgreSQLName) {
+      this(typeCode, postgreSQLName, TYPE_ANNOTATION_CODE_UNSPECIFIED);
     }
 
-    Code(TypeCode typeCode, TypeAnnotationCode typeAnnotationCode) {
+    Code(TypeCode typeCode, String postgreSQLName, TypeAnnotationCode typeAnnotationCode) {
       this.typeCode = typeCode;
+      this.postgreSQLName = postgreSQLName;
       this.typeAnnotationCode = typeAnnotationCode;
     }
 
@@ -292,6 +294,14 @@ public final class Type implements Serializable {
       } else {
         return typeCode.toString() + "<" + typeAnnotationCode.toString() + ">";
       }
+    }
+
+    private String getGoogleSQLName() {
+      return name();
+    }
+
+    private String getPostgreSQLName() {
+      return postgreSQLName;
     }
   }
 
@@ -437,6 +447,31 @@ public final class Type implements Serializable {
     StringBuilder b = new StringBuilder();
     toString(b);
     return b.toString();
+  }
+
+  /** Returns the type name as used by the database in the given dialect. */
+  public String getSpannerTypeName(Dialect dialect) {
+    switch (dialect) {
+      case POSTGRESQL:
+        return getTypeNamePostgreSQL();
+      case GOOGLE_STANDARD_SQL:
+      default:
+        return getTypeNameGoogleSQL();
+    }
+  }
+
+  private String getTypeNameGoogleSQL() {
+    if (code == Code.ARRAY) {
+      return code.getGoogleSQLName() + "<" + arrayElementType.getTypeNameGoogleSQL() + ">";
+    }
+    return code.getGoogleSQLName();
+  }
+
+  private String getTypeNamePostgreSQL() {
+    if (code == Code.ARRAY) {
+      return arrayElementType.getTypeNamePostgreSQL() + "[]";
+    }
+    return code.getPostgreSQLName();
   }
 
   @Override

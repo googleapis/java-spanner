@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -191,6 +192,7 @@ public class ConnectionOptions {
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String SPANNER_EMULATOR_HOST_ENV_VAR = "SPANNER_EMULATOR_HOST";
   private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
   private static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
@@ -473,7 +475,10 @@ public class ConnectionOptions {
         "(?:cloudspanner:)(?<HOSTGROUP>//[\\w.-]+(?:\\.[\\w\\.-]+)*[\\w\\-\\._~:/?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=.]+)?/projects/(?<PROJECTGROUP>(([a-z]|[-.:]|[0-9])+|(DEFAULT_PROJECT_ID)))(/instances/(?<INSTANCEGROUP>([a-z]|[-]|[0-9])+)(/databases/(?<DATABASEGROUP>([a-z]|[-]|[_]|[0-9])+))?)?(?:[?|;].*)?";
 
     private static final String SPANNER_URI_REGEX = "(?is)^" + SPANNER_URI_FORMAT + "$";
-    private static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
+
+    @VisibleForTesting
+    static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
+
     private static final String HOST_GROUP = "HOSTGROUP";
     private static final String PROJECT_GROUP = "PROJECTGROUP";
     private static final String INSTANCE_GROUP = "INSTANCEGROUP";
@@ -706,7 +711,7 @@ public class ConnectionOptions {
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
-    this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
+    this.host = determineHost(matcher, autoConfigEmulator, usePlainText, System.getenv());
     this.rpcPriority = parseRPCPriority(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
@@ -791,11 +796,19 @@ public class ConnectionOptions {
     }
   }
 
-  private static String determineHost(
-      Matcher matcher, boolean autoConfigEmulator, boolean usePlainText) {
+  @VisibleForTesting
+  static String determineHost(
+      Matcher matcher,
+      boolean autoConfigEmulator,
+      boolean usePlainText,
+      Map<String, String> environment) {
     if (matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
-        return DEFAULT_EMULATOR_HOST;
+        if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
+          return DEFAULT_EMULATOR_HOST;
+        } else {
+          return PLAIN_TEXT_PROTOCOL + "//" + environment.get(SPANNER_EMULATOR_HOST_ENV_VAR);
+        }
       } else {
         return DEFAULT_HOST;
       }
