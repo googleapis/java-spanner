@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spanner.connection;
+package com.google.cloud.spanner;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.lang.reflect.InvocationTargetException;

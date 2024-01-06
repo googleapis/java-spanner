@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.connection.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
+import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
 
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import io.grpc.internal.SharedResourceHolder;

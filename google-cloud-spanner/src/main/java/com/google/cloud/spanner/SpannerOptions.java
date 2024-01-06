@@ -1415,14 +1415,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public static GrpcTransportOptions getDefaultGrpcTransportOptions() {
-    return getDefaultGrpcTransportOptions(false);
-  }
-
-  private static GrpcTransportOptions getDefaultGrpcTransportOptions(boolean useVirtualThreads) {
     GrpcTransportOptions.Builder builder = GrpcTransportOptions.newBuilder();
-    //    if (useVirtualThreads && VirtualThreadExecutorProvider.supportsVirtualThreads()) {
-    //      builder.setExecutorFactory(VirtualExecutorFactory.INSTANCE);
-    //    }
     return builder.build();
   }
 
@@ -1450,7 +1443,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public TransportOptions getDefaultTransportOptions() {
-      return getDefaultGrpcTransportOptions(useVirtualThreads);
+      return getDefaultGrpcTransportOptions();
     }
   }
 

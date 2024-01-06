@@ -27,7 +27,6 @@ import com.google.cloud.spanner.SessionPool.SessionNotFoundHandler;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -57,22 +56,19 @@ class SessionPoolAsyncTransactionManager
   private void createTransaction(PooledSessionFuture session) {
     this.session = session;
     this.delegate = SettableApiFuture.create();
-    if (session instanceof ListenableFuture) {
-      ((ListenableFuture) session)
-          .addListener(
-              () -> {
-                try {
-                  delegate.set(
-                      SessionPoolAsyncTransactionManager.this
-                          .session
-                          .get()
-                          .transactionManagerAsync(options));
-                } catch (Throwable t) {
-                  delegate.setException(t);
-                }
-              },
-              MoreExecutors.directExecutor());
-    }
+    this.session.addListener(
+        () -> {
+          try {
+            delegate.set(
+                SessionPoolAsyncTransactionManager.this
+                    .session
+                    .get()
+                    .transactionManagerAsync(options));
+          } catch (Throwable t) {
+            delegate.setException(t);
+          }
+        },
+        MoreExecutors.directExecutor());
   }
 
   @Override

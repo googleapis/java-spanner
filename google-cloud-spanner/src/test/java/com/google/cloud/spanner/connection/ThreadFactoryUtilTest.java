@@ -15,8 +15,8 @@
  */
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.connection.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
-import static com.google.cloud.spanner.connection.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
+import static com.google.cloud.spanner.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
+import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

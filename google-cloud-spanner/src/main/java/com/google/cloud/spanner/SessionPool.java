@@ -1120,6 +1120,10 @@ class SessionPool {
       return true;
     }
 
+    default void addListener(Runnable listener, Executor executor) {
+      executor.execute(listener);
+    }
+
     void markCheckedOut();
 
     SessionPool getPool();
@@ -2172,12 +2176,6 @@ class SessionPool {
   @GuardedBy("lock")
   @VisibleForTesting
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
-  //  final java.util.function.Supplier<Iterable<PooledSession>> checkedOutSessions = () -> {
-  //    synchronized (lock) {
-  //      return allSessions.stream().filter(session ->
-  // session.delegate.checkedOut).collect(Collectors.toList());
-  //    }
-  //  };
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
@@ -2484,8 +2482,6 @@ class SessionPool {
       }
 
       sess = sessions.poll();
-      // sess = sessions.isEmpty() ? null :
-      // sessions.get(ThreadLocalRandom.current().nextInt(sessions.size()));
       if (sess == null) {
         span.addAnnotation("No session available");
         maybeCreateSession();

@@ -17,7 +17,7 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.cloud.spanner.connection.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
+import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;

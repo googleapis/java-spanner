@@ -16,7 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.connection.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
+import static com.google.cloud.spanner.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
 
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
