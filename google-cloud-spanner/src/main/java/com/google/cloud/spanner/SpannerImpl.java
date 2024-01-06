@@ -198,6 +198,17 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public DatabaseClient getDatabaseClient(DatabaseId db) {
+    return getOptions().isUseStickySessionClients()
+        ? getFixedSessionDatabaseClient(db)
+        : getDatabaseClientImpl(db);
+  }
+
+  DatabaseClient getFixedSessionDatabaseClient(DatabaseId db) {
+    DatabaseClientImpl client = getDatabaseClientImpl(db);
+    return new FixedSessionDatabaseClientImpl(client.clientId, client.pool);
+  }
+
+  private DatabaseClientImpl getDatabaseClientImpl(DatabaseId db) {
     synchronized (this) {
       checkClosed();
       String clientId = null;

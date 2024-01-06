@@ -252,9 +252,14 @@ class DatabaseClientImpl implements DatabaseClient {
       try {
         return callable.apply(session);
       } catch (SessionNotFoundException e) {
-        session = pool.replaceSession(e, session);
+        session = replaceSession(e, session);
       }
     }
+  }
+
+  PooledSessionFuture replaceSession(
+      SessionNotFoundException sessionNotFoundException, PooledSessionFuture session) {
+    return pool.replaceSession(sessionNotFoundException, session);
   }
 
   ListenableFuture<Void> closeAsync(ClosedException closedException) {

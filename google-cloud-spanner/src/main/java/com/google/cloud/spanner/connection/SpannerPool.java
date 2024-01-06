@@ -22,7 +22,6 @@ import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -175,7 +174,7 @@ public class SpannerPool {
       this.databaseRole = options.getDatabaseRole();
       this.sessionPoolOptions =
           options.getSessionPoolOptions() == null
-              ? SessionPoolOptions.newBuilder().build()
+              ? ConnectionSessionPoolOptions.newBuilder().build()
               : options.getSessionPoolOptions();
       this.numChannels = options.getNumChannels();
       this.usePlainText = options.isUsePlainText();
@@ -332,7 +331,7 @@ public class SpannerPool {
 
   @VisibleForTesting
   Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
-    SpannerOptions.Builder builder = SpannerOptions.newBuilder();
+    ConnectionSpannerOptions.Builder builder = ConnectionSpannerOptions.newBuilder();
     builder
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)

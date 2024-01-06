@@ -137,6 +137,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
   private final boolean attemptDirectPath;
+  private final boolean useStickySessionClients;
   private final boolean useVirtualThreads;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
@@ -578,13 +579,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return FixedCloseableExecutorProvider.create(executor);
   }
 
-  private SpannerOptions(Builder builder) {
+  protected SpannerOptions(Builder builder) {
     super(
         SpannerFactory.class,
         SpannerRpcFactory.class,
         builder,
         new SpannerDefaults(builder.useVirtualThreads));
-    numChannels = builder.numChannels;
+    numChannels = builder.numChannels == null ? DEFAULT_CHANNELS : builder.numChannels;
     Preconditions.checkArgument(
         numChannels >= 1 && numChannels <= MAX_CHANNELS,
         "Number of channels must fall in the range [1, %s], found: %s",
@@ -632,6 +633,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
     attemptDirectPath = builder.attemptDirectPath;
+    useStickySessionClients = builder.useStickySessionClients;
     useVirtualThreads = builder.useVirtualThreads;
   }
 
@@ -735,13 +737,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
     private boolean attemptDirectPath = true;
+    private boolean useStickySessionClients = false;
     private boolean useVirtualThreads = false;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
     }
 
-    private Builder() {
+    protected Builder() {
       // Manually set retry and polling settings that work.
       OperationTimedPollAlgorithm longRunningPollingAlgorithm =
           OperationTimedPollAlgorithm.create(
@@ -796,6 +799,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
       this.attemptDirectPath = options.attemptDirectPath;
+      this.useStickySessionClients = options.useStickySessionClients;
       this.useVirtualThreads = options.useVirtualThreads;
     }
 
@@ -1239,6 +1243,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    protected Builder setUseStickSessionClients(boolean useStickSessionClients) {
+      this.useStickySessionClients = useStickSessionClients;
+      return this;
+    }
+
     public Builder setUseVirtualThreads(boolean useVirtualThreads) {
       this.useVirtualThreads = useVirtualThreads;
       return this;
@@ -1387,6 +1396,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @BetaApi
   public boolean isAttemptDirectPath() {
     return attemptDirectPath;
+  }
+
+  boolean isUseStickySessionClients() {
+    return useStickySessionClients;
   }
 
   public boolean isUseVirtualThreads() {

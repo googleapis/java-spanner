@@ -261,7 +261,7 @@ public class ConnectionTest {
     }
 
     protected String getBaseUrl() {
-      return super.getBaseUrl() + ";maxSessions=1";
+      return super.getBaseUrl() + ";maxSessions=2";
     }
 
     @Test
@@ -290,7 +290,7 @@ public class ConnectionTest {
         assertThat(count1.isDone()).isTrue();
         assertThat(count2.isDone()).isTrue();
       }
-      assertThat(mockSpanner.numSessionsCreated()).isEqualTo(1);
+      assertThat(mockSpanner.numSessionsCreated()).isEqualTo(2);
     }
   }
 

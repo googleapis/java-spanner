@@ -69,7 +69,7 @@ public class SessionPoolOptions {
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
 
-  private SessionPoolOptions(Builder builder) {
+  protected SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
     // We allow that to prevent code that only sets a value for maxSessions to break if the
     // maxSessions value is less than the default for minSessions.
@@ -294,10 +294,11 @@ public class SessionPoolOptions {
   }
 
   @VisibleForTesting
-  enum ActionOnInactiveTransaction {
+  protected enum ActionOnInactiveTransaction {
     WARN,
     WARN_AND_CLOSE,
-    CLOSE
+    CLOSE,
+    NONE
   }
 
   /** Configuration options for task to clean up inactive transactions. */
@@ -485,7 +486,7 @@ public class SessionPoolOptions {
 
     public Builder() {}
 
-    private Builder(SessionPoolOptions options) {
+    protected Builder(SessionPoolOptions options) {
       this.minSessionsSet = true;
       this.minSessions = options.minSessions;
       this.maxSessions = options.maxSessions;
@@ -602,6 +603,14 @@ public class SessionPoolOptions {
      */
     public Builder setBlockIfPoolExhausted() {
       this.actionOnExhaustion = ActionOnExhaustion.BLOCK;
+      return this;
+    }
+
+    protected Builder disableInactiveTransactionActions() {
+      this.inactiveTransactionRemovalOptions =
+          InactiveTransactionRemovalOptions.newBuilder()
+              .setActionOnInactiveTransaction(ActionOnInactiveTransaction.NONE)
+              .build();
       return this;
     }
 

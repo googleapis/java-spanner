@@ -356,6 +356,13 @@ class ConnectionImpl implements Connection {
         }
         statementExecutor.shutdown();
         leakedException = null;
+        if (dbClient instanceof AutoCloseable) {
+          try {
+            ((AutoCloseable) dbClient).close();
+          } catch (Exception ignored) {
+            // ignore and continue to close the connection.
+          }
+        }
         spannerPool.removeConnection(options, this);
         return ApiFutures.transform(
             ApiFutures.allAsList(futures), ignored -> null, MoreExecutors.directExecutor());

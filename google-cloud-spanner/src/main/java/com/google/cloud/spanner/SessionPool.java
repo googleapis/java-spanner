@@ -116,7 +116,7 @@ import org.threeten.bp.Instant;
  * Maintains a pool of sessions. This class itself is thread safe and is meant to be used
  * concurrently across multiple threads.
  */
-class SessionPool {
+class SessionPool implements SessionProvider {
 
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
   private static final Tracer tracer = Tracing.getTracer();
@@ -1105,6 +1105,10 @@ class SessionPool {
   }
 
   interface PooledSessionFuture extends Session {
+    enum ActionOnClose {
+      RELEASE,
+      NONE,
+    }
 
     default PooledSession get() {
       return get(false);
@@ -1127,6 +1131,10 @@ class SessionPool {
     void markCheckedOut();
 
     SessionPool getPool();
+
+    ActionOnClose getActionOnClose();
+
+    void setActionOnClose(ActionOnClose actionOnClose);
 
     @Override
     default Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
@@ -1316,15 +1324,17 @@ class SessionPool {
 
     @Override
     default ApiFuture<Empty> asyncClose() {
-      PooledSession pooledSession = getOrNull();
-      try {
-        if (pooledSession != null) {
-          return pooledSession.asyncClose();
-        }
-      } finally {
-        synchronized (getPool().lock) {
-          clearLeakedException();
-          getPool().checkedOutSessions.remove(this);
+      if (getActionOnClose() == ActionOnClose.RELEASE) {
+        PooledSession pooledSession = getOrNull();
+        try {
+          if (pooledSession != null) {
+            return pooledSession.asyncClose();
+          }
+        } finally {
+          synchronized (getPool().lock) {
+            clearLeakedException();
+            getPool().checkedOutSessions.remove(this);
+          }
         }
       }
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
@@ -1340,6 +1350,7 @@ class SessionPool {
   }
 
   class SimplePooledSessionFuture implements PooledSessionFuture {
+    private ActionOnClose actionOnClose = ActionOnClose.RELEASE;
     private final AtomicBoolean inUse = new AtomicBoolean();
     private final PooledSession session;
     private final Span span;
@@ -1348,6 +1359,16 @@ class SessionPool {
     SimplePooledSessionFuture(PooledSession session, Span span) {
       this.session = session;
       this.span = span;
+    }
+
+    @Override
+    public ActionOnClose getActionOnClose() {
+      return actionOnClose;
+    }
+
+    @Override
+    public void setActionOnClose(ActionOnClose actionOnClose) {
+      this.actionOnClose = actionOnClose;
     }
 
     @Override
@@ -1387,6 +1408,7 @@ class SessionPool {
 
   class ForwardingPooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
       implements Session, PooledSessionFuture {
+    private ActionOnClose actionOnClose = ActionOnClose.RELEASE;
     private volatile LeakedSessionException leakedException;
     private final AtomicBoolean inUse = new AtomicBoolean();
     private final CountDownLatch initialized = new CountDownLatch(1);
@@ -1397,6 +1419,16 @@ class SessionPool {
     ForwardingPooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
       super(delegate);
       this.span = span;
+    }
+
+    @Override
+    public ActionOnClose getActionOnClose() {
+      return actionOnClose;
+    }
+
+    @Override
+    public void setActionOnClose(ActionOnClose actionOnClose) {
+      this.actionOnClose = actionOnClose;
     }
 
     @Override
@@ -2288,7 +2320,8 @@ class SessionPool {
    *     SessionPoolOptions.Builder#setAutoDetectDialect(boolean)} to true. This will ensure that
    *     the dialect is fetched automatically in a background task when a session pool is created.
    */
-  Dialect getDialect() {
+  @Override
+  public Dialect getDialect() {
     boolean mustDetectDialect = false;
     synchronized (lock) {
       if (!detectDialectStarted) {
@@ -2440,7 +2473,8 @@ class SessionPool {
   }
 
   /** @return true if this {@link SessionPool} is still valid. */
-  boolean isValid() {
+  @Override
+  public boolean isValid() {
     synchronized (lock) {
       return closureFuture == null && resourceNotFoundException == null;
     }
@@ -2461,7 +2495,8 @@ class SessionPool {
    *       session being returned to the pool or a new session being created.
    * </ol>
    */
-  PooledSessionFuture getSession() throws SpannerException {
+  @Override
+  public PooledSessionFuture getSession() throws SpannerException {
     Span span = Tracing.getTracer().getCurrentSpan();
     span.addAnnotation("Acquiring session");
     WaiterFuture waiter = null;
@@ -2514,7 +2549,9 @@ class SessionPool {
     return pooledSessionFuture;
   }
 
-  PooledSessionFuture replaceSession(SessionNotFoundException e, PooledSessionFuture session) {
+  @Override
+  public PooledSessionFuture replaceSession(
+      SessionNotFoundException e, PooledSessionFuture session) {
     if (!options.isFailIfSessionNotFound() && session.get().allowReplacing) {
       synchronized (lock) {
         numSessionsInUse--;
@@ -2730,7 +2767,8 @@ class SessionPool {
    * {@code IllegalStateException}. The returned future blocks till all the sessions created in this
    * pool have been closed.
    */
-  ListenableFuture<Void> closeAsync(ClosedException closedException) {
+  @Override
+  public ListenableFuture<Void> closeAsync(ClosedException closedException) {
     ListenableFuture<Void> retFuture = null;
     synchronized (lock) {
       if (closureFuture != null) {

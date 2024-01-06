@@ -34,6 +34,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.connection.ConnectionSessionPoolOptions.Builder;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -776,12 +777,11 @@ public class ConnectionOptions {
     this.configurator = builder.configurator;
 
     if (this.minSessions != null || this.maxSessions != null || !this.trackSessionLeaks) {
-      SessionPoolOptions.Builder sessionPoolOptionsBuilder =
+      ConnectionSessionPoolOptions.Builder sessionPoolOptionsBuilder =
           builder.sessionPoolOptions == null
-              ? SessionPoolOptions.newBuilder()
-              : builder.sessionPoolOptions.toBuilder();
+              ? ConnectionSessionPoolOptions.newBuilder()
+              : new ConnectionSessionPoolOptions.Builder(builder.sessionPoolOptions);
       sessionPoolOptionsBuilder.setTrackStackTraceOfSessionCheckout(this.trackSessionLeaks);
-      sessionPoolOptionsBuilder.setAutoDetectDialect(true);
       if (this.minSessions != null) {
         sessionPoolOptionsBuilder.setMinSessions(this.minSessions);
       }
@@ -790,9 +790,10 @@ public class ConnectionOptions {
       }
       this.sessionPoolOptions = sessionPoolOptionsBuilder.build();
     } else if (builder.sessionPoolOptions != null) {
-      this.sessionPoolOptions = builder.sessionPoolOptions;
+      this.sessionPoolOptions =
+          new ConnectionSessionPoolOptions.Builder(builder.sessionPoolOptions).build();
     } else {
-      this.sessionPoolOptions = SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build();
+      this.sessionPoolOptions = ConnectionSessionPoolOptions.newBuilder().build();
     }
   }
 
