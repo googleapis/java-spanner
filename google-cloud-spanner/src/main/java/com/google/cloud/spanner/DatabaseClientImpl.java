@@ -56,6 +56,10 @@ class DatabaseClientImpl implements DatabaseClient {
     return pool.getSession();
   }
 
+  Session getRandomSession() {
+    return pool.getRandomSession();
+  }
+
   @Override
   public Dialect getDialect() {
     return pool.getDialect();

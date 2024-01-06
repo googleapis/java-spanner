@@ -101,6 +101,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -1748,7 +1749,7 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    Collection<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       assertThat(rs.next()).isTrue();
@@ -3324,7 +3325,7 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    Collection<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
     // Getting a single use read-only transaction and not using it should not cause any sessions
@@ -3339,7 +3340,7 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    Collection<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
     client.singleUseReadOnlyTransaction().close();
@@ -3352,7 +3353,7 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    Collection<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
     client.readWriteTransaction();
@@ -3365,7 +3366,7 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    Collection<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
     client.readOnlyTransaction().close();
@@ -3378,7 +3379,7 @@ public class DatabaseClientImplTest {
     DatabaseClientImpl client =
         (DatabaseClientImpl)
             spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Set<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
+    Collection<PooledSessionFuture> checkedOut = client.pool.checkedOutSessions;
     assertThat(checkedOut).isEmpty();
 
     client.transactionManager().close();

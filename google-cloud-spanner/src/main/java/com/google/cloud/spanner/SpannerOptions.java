@@ -138,6 +138,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
   private final boolean attemptDirectPath;
+  private final boolean useVirtualThreads;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -579,7 +580,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private SpannerOptions(Builder builder) {
-    super(SpannerFactory.class, SpannerRpcFactory.class, builder, new SpannerDefaults());
+    super(SpannerFactory.class, SpannerRpcFactory.class, builder, new SpannerDefaults(builder.useVirtualThreads));
     numChannels = builder.numChannels;
     Preconditions.checkArgument(
         numChannels >= 1 && numChannels <= MAX_CHANNELS,
@@ -628,6 +629,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
     attemptDirectPath = builder.attemptDirectPath;
+    useVirtualThreads = builder.useVirtualThreads;
   }
 
   /**
@@ -730,6 +732,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
     private boolean attemptDirectPath = true;
+    private boolean useVirtualThreads = false;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -790,6 +793,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
       this.attemptDirectPath = options.attemptDirectPath;
+      this.useVirtualThreads = options.useVirtualThreads;
     }
 
     @Override
@@ -1232,6 +1236,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public Builder setUseVirtualThreads(boolean useVirtualThreads) {
+      this.useVirtualThreads = useVirtualThreads;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1377,6 +1386,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return attemptDirectPath;
   }
 
+  public boolean isUseVirtualThreads() {
+    return useVirtualThreads;
+  }
+
   /** Returns the default query options to use for the specific database. */
   public QueryOptions getDefaultQueryOptions(DatabaseId databaseId) {
     // Use the specific query options for the database if any have been specified. These have
@@ -1399,8 +1412,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   public static GrpcTransportOptions getDefaultGrpcTransportOptions() {
+    return getDefaultGrpcTransportOptions(false);
+  }
+
+  private static GrpcTransportOptions getDefaultGrpcTransportOptions(boolean useVirtualThreads) {
     GrpcTransportOptions.Builder builder = GrpcTransportOptions.newBuilder();
-//    if (VirtualThreadExecutorProvider.supportsVirtualThreads()) {
+//    if (useVirtualThreads && VirtualThreadExecutorProvider.supportsVirtualThreads()) {
 //      builder.setExecutorFactory(VirtualExecutorFactory.INSTANCE);
 //    }
     return builder.build();
@@ -1412,6 +1429,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private static class SpannerDefaults implements ServiceDefaults<Spanner, SpannerOptions> {
+    private final boolean useVirtualThreads;
+
+    SpannerDefaults(boolean useVirtualThreads) {
+      this.useVirtualThreads = useVirtualThreads;
+    }
 
     @Override
     public SpannerFactory getDefaultServiceFactory() {
@@ -1425,7 +1447,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     @Override
     public TransportOptions getDefaultTransportOptions() {
-      return getDefaultGrpcTransportOptions();
+      return getDefaultGrpcTransportOptions(useVirtualThreads);
     }
   }
 

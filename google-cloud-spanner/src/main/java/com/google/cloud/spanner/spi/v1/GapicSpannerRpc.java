@@ -25,6 +25,7 @@ import com.google.api.core.InternalApi;
 import com.google.api.core.NanoClock;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.GaxProperties;
+import com.google.api.gax.grpc.ChannelPoolSettings;
 import com.google.api.gax.grpc.GaxGrpcProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcCallSettings;
@@ -326,7 +327,12 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setEndpoint(options.getEndpoint())
               .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
               .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
-              .setPoolSize(options.getNumChannels())
+              .setChannelPoolSettings(ChannelPoolSettings.builder()
+                  .setInitialChannelCount(options.getNumChannels())
+                  .setMaxChannelCount(options.getNumChannels())
+                  .setPreemptiveRefreshEnabled(true)
+                  .build())
+              // .setPoolSize(options.getNumChannels())
 
               // Set a keepalive time of 120 seconds to help long running
               // commit GRPC calls succeed
@@ -353,12 +359,14 @@ public class GapicSpannerRpc implements SpannerRpc {
                       && !Objects.equals(
                           options.getScopedCredentials(), NoCredentials.getInstance()));
 
-//      ThreadFactory virtualThreadFactory =
-//          tryCreateVirtualThreadFactory("spanner-virtual-grpc-executor");
-//      if (virtualThreadFactory != null) {
-//        defaultChannelProviderBuilder.setExecutor(
-//            Executors.newCachedThreadPool(virtualThreadFactory));
-//      }
+      if (options.isUseVirtualThreads()) {
+        ThreadFactory virtualThreadFactory =
+            tryCreateVirtualThreadFactory("spanner-virtual-grpc-executor");
+        if (virtualThreadFactory != null) {
+          defaultChannelProviderBuilder.setExecutor(
+              Executors.newCachedThreadPool(virtualThreadFactory));
+        }
+      }
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 

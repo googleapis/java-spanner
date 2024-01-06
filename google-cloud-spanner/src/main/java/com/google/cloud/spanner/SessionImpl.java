@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 import org.threeten.bp.Instant;
@@ -107,6 +108,20 @@ class SessionImpl implements Session {
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
     this.lastUseTime = Instant.now();
+  }
+
+  @Override
+  public int hashCode() {
+    return name.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof SessionImpl)) {
+      return false;
+    }
+    SessionImpl other = (SessionImpl) o;
+    return Objects.equals(this.name, other.name);
   }
 
   @Override
