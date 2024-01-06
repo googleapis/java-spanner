@@ -1243,8 +1243,7 @@ class SessionPool {
         Function<PooledSessionFuture, ReadOnlyTransaction> transactionSupplier,
         boolean isSingleUse) {
       try {
-        return new AutoClosingReadTransaction(
-            transactionSupplier, getPool(), this, isSingleUse);
+        return new AutoClosingReadTransaction(transactionSupplier, getPool(), this, isSingleUse);
       } catch (Exception e) {
         close();
         throw e;
@@ -1334,7 +1333,6 @@ class SessionPool {
         return null;
       }
     }
-
   }
 
   class SimplePooledSessionFuture implements PooledSessionFuture {
@@ -1359,7 +1357,7 @@ class SessionPool {
 
     public PooledSession get(boolean eligibleForLongRunning) {
       if (inUse.compareAndSet(false, true)) {
-         checkOut(this.session, this.span, eligibleForLongRunning);
+        checkOut(this.session, this.span, eligibleForLongRunning);
       }
       return this.session;
     }
@@ -1896,7 +1894,9 @@ class SessionPool {
           return;
         }
         running = true;
-        SessionPool.this.transactionsPerSecond = (SessionPool.this.numSessionsAcquired - lastNumSessionsAcquired) / (loopFrequency / 1000L);
+        SessionPool.this.transactionsPerSecond =
+            (SessionPool.this.numSessionsAcquired - lastNumSessionsAcquired)
+                / (loopFrequency / 1000L);
         this.lastNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
       }
       Instant currTime = clock.instant();
@@ -2172,11 +2172,12 @@ class SessionPool {
   @GuardedBy("lock")
   @VisibleForTesting
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
-//  final java.util.function.Supplier<Iterable<PooledSession>> checkedOutSessions = () -> {
-//    synchronized (lock) {
-//      return allSessions.stream().filter(session -> session.delegate.checkedOut).collect(Collectors.toList());
-//    }
-//  };
+  //  final java.util.function.Supplier<Iterable<PooledSession>> checkedOutSessions = () -> {
+  //    synchronized (lock) {
+  //      return allSessions.stream().filter(session ->
+  // session.delegate.checkedOut).collect(Collectors.toList());
+  //    }
+  //  };
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
@@ -2483,7 +2484,8 @@ class SessionPool {
       }
 
       sess = sessions.poll();
-      // sess = sessions.isEmpty() ? null : sessions.get(ThreadLocalRandom.current().nextInt(sessions.size()));
+      // sess = sessions.isEmpty() ? null :
+      // sessions.get(ThreadLocalRandom.current().nextInt(sessions.size()));
       if (sess == null) {
         span.addAnnotation("No session available");
         maybeCreateSession();
@@ -2502,22 +2504,18 @@ class SessionPool {
 
   private PooledSessionFuture checkoutSession(
       final Span span, final PooledSession readySession, WaiterFuture waiter) {
-    ListenableFuture<PooledSession> sessionFuture;
+    PooledSessionFuture pooledSessionFuture;
     if (waiter != null) {
       logger.log(
           Level.FINE,
           "No session available in the pool. Blocking for one to become available/created");
       span.addAnnotation("Waiting for a session to come available");
-      sessionFuture = waiter;
+      pooledSessionFuture = createPooledSessionFuture(waiter, span);
     } else {
-      return createPooledSessionFuture(readySession, span);
-//      SettableFuture<PooledSession> fut = SettableFuture.create();
-//      fut.set(readySession);
-//      sessionFuture = fut;
+      pooledSessionFuture = createPooledSessionFuture(readySession, span);
     }
-    PooledSessionFuture res = createPooledSessionFuture(sessionFuture, span);
-    res.markCheckedOut();
-    return res;
+    pooledSessionFuture.markCheckedOut();
+    return pooledSessionFuture;
   }
 
   PooledSessionFuture replaceSession(SessionNotFoundException e, PooledSessionFuture session) {
@@ -2581,7 +2579,10 @@ class SessionPool {
         // There are no pending waiters.
         // Add to a random position if the head of the session pool already contains many sessions
         // with the same channel as this one.
-        if (session.releaseToPosition == Position.FIRST && (transactionsPerSecond >= options.getRandomizePositionTransactionsPerSecondThreshold() || isUnbalanced(session))) {
+        if (session.releaseToPosition == Position.FIRST
+            && (transactionsPerSecond
+                    >= options.getRandomizePositionTransactionsPerSecondThreshold()
+                || isUnbalanced(session))) {
           session.releaseToPosition = Position.RANDOM;
         } else if (session.releaseToPosition == Position.RANDOM
             && !isNewSession

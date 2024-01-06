@@ -327,11 +327,12 @@ public class GapicSpannerRpc implements SpannerRpc {
               .setEndpoint(options.getEndpoint())
               .setMaxInboundMessageSize(MAX_MESSAGE_SIZE)
               .setMaxInboundMetadataSize(MAX_METADATA_SIZE)
-              .setChannelPoolSettings(ChannelPoolSettings.builder()
-                  .setInitialChannelCount(options.getNumChannels())
-                  .setMaxChannelCount(options.getNumChannels())
-                  .setPreemptiveRefreshEnabled(true)
-                  .build())
+              .setChannelPoolSettings(
+                  ChannelPoolSettings.builder()
+                      .setInitialChannelCount(options.getNumChannels())
+                      .setMaxChannelCount(options.getNumChannels())
+                      .setPreemptiveRefreshEnabled(true)
+                      .build())
               // .setPoolSize(options.getNumChannels())
 
               // Set a keepalive time of 120 seconds to help long running

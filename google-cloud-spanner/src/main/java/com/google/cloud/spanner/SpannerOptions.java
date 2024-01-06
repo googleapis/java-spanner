@@ -35,7 +35,6 @@ import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
-import com.google.cloud.spanner.VirtualThreadExecutorProvider.VirtualExecutorFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
@@ -580,7 +579,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   private SpannerOptions(Builder builder) {
-    super(SpannerFactory.class, SpannerRpcFactory.class, builder, new SpannerDefaults(builder.useVirtualThreads));
+    super(
+        SpannerFactory.class,
+        SpannerRpcFactory.class,
+        builder,
+        new SpannerDefaults(builder.useVirtualThreads));
     numChannels = builder.numChannels;
     Preconditions.checkArgument(
         numChannels >= 1 && numChannels <= MAX_CHANNELS,
@@ -1417,9 +1420,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private static GrpcTransportOptions getDefaultGrpcTransportOptions(boolean useVirtualThreads) {
     GrpcTransportOptions.Builder builder = GrpcTransportOptions.newBuilder();
-//    if (useVirtualThreads && VirtualThreadExecutorProvider.supportsVirtualThreads()) {
-//      builder.setExecutorFactory(VirtualExecutorFactory.INSTANCE);
-//    }
+    //    if (useVirtualThreads && VirtualThreadExecutorProvider.supportsVirtualThreads()) {
+    //      builder.setExecutorFactory(VirtualExecutorFactory.INSTANCE);
+    //    }
     return builder.build();
   }
 

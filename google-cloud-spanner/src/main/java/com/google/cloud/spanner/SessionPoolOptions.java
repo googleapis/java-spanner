@@ -66,7 +66,6 @@ public class SessionPoolOptions {
   private final Position releaseToPosition;
   private final long randomizePositionTransactionsPerSecondThreshold;
 
-
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
 
@@ -91,7 +90,8 @@ public class SessionPoolOptions {
     this.waitForMinSessions = builder.waitForMinSessions;
     this.acquireSessionTimeout = builder.acquireSessionTimeout;
     this.releaseToPosition = builder.releaseToPosition;
-    this.randomizePositionTransactionsPerSecondThreshold = builder.randomizePositionTransactionsPerSecondThreshold;
+    this.randomizePositionTransactionsPerSecondThreshold =
+        builder.randomizePositionTransactionsPerSecondThreshold;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
   }
@@ -121,7 +121,9 @@ public class SessionPoolOptions {
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
         && Objects.equals(this.acquireSessionTimeout, other.acquireSessionTimeout)
         && Objects.equals(this.releaseToPosition, other.releaseToPosition)
-        && Objects.equals(this.randomizePositionTransactionsPerSecondThreshold, other.randomizePositionTransactionsPerSecondThreshold)
+        && Objects.equals(
+            this.randomizePositionTransactionsPerSecondThreshold,
+            other.randomizePositionTransactionsPerSecondThreshold)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
@@ -460,7 +462,10 @@ public class SessionPoolOptions {
     private Duration waitForMinSessions = Duration.ZERO;
     private Duration acquireSessionTimeout = Duration.ofSeconds(60);
     private Position releaseToPosition = getReleaseToPositionFromSystemProperty();
-    /** The session pool will randomize the position of a session that is being returned when this threshold is exceeded. */
+    /**
+     * The session pool will randomize the position of a session that is being returned when this
+     * threshold is exceeded.
+     */
     private long randomizePositionTransactionsPerSecondThreshold = 20L;
 
     private Clock poolMaintainerClock;
@@ -775,8 +780,10 @@ public class SessionPoolOptions {
       return this;
     }
 
-    public Builder setRandomizePositionTransactionsPerSecondThreshold(long randomizePositionTransactionsPerSecondThreshold) {
-      this.randomizePositionTransactionsPerSecondThreshold = randomizePositionTransactionsPerSecondThreshold;
+    public Builder setRandomizePositionTransactionsPerSecondThreshold(
+        long randomizePositionTransactionsPerSecondThreshold) {
+      this.randomizePositionTransactionsPerSecondThreshold =
+          randomizePositionTransactionsPerSecondThreshold;
       return this;
     }
 

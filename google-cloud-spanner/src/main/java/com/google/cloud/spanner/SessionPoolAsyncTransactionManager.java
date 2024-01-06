@@ -29,7 +29,6 @@ import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-import java.util.concurrent.Future;
 import javax.annotation.concurrent.GuardedBy;
 
 class SessionPoolAsyncTransactionManager
@@ -59,19 +58,20 @@ class SessionPoolAsyncTransactionManager
     this.session = session;
     this.delegate = SettableApiFuture.create();
     if (session instanceof ListenableFuture) {
-      ((ListenableFuture) session).addListener(
-          () -> {
-            try {
-              delegate.set(
-                  SessionPoolAsyncTransactionManager.this
-                      .session
-                      .get()
-                      .transactionManagerAsync(options));
-            } catch (Throwable t) {
-              delegate.setException(t);
-            }
-          },
-          MoreExecutors.directExecutor());
+      ((ListenableFuture) session)
+          .addListener(
+              () -> {
+                try {
+                  delegate.set(
+                      SessionPoolAsyncTransactionManager.this
+                          .session
+                          .get()
+                          .transactionManagerAsync(options));
+                } catch (Throwable t) {
+                  delegate.setException(t);
+                }
+              },
+              MoreExecutors.directExecutor());
     }
   }
 
