@@ -168,6 +168,7 @@ public class ConnectionOptions {
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
+  static final boolean DEFAULT_USE_VIRTUAL_THREADS = true;
   private static final String DEFAULT_CREDENTIALS = null;
   private static final String DEFAULT_OAUTH_TOKEN = null;
   private static final String DEFAULT_MIN_SESSIONS = null;
@@ -205,6 +206,8 @@ public class ConnectionOptions {
   public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
+  /** Name of the property to enable/disable virtual threads. */
+  public static final String USE_VIRTUAL_THREADS_PROPERTY_NAME = "useVirtualThreads";
   /** Name of the 'credentials' connection property. */
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
   /** Name of the 'encodedCredentials' connection property. */
@@ -294,6 +297,10 @@ public class ConnectionOptions {
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
                       DEFAULT_RETRY_ABORTS_INTERNALLY),
+                  ConnectionProperty.createBooleanProperty(
+                      USE_VIRTUAL_THREADS_PROPERTY_NAME,
+                      "Use a virtual thread instead of a platform thread for each connection (true/false)",
+                      DEFAULT_USE_VIRTUAL_THREADS),
                   ConnectionProperty.createStringProperty(
                       CREDENTIALS_PROPERTY_NAME,
                       "The location of the credentials file to use for this connection. If neither this property or encoded credentials are set, the connection will use the default Google Cloud credentials for the runtime environment."),
@@ -673,6 +680,7 @@ public class ConnectionOptions {
   private final boolean readOnly;
   private final boolean routeToLeader;
   private final boolean retryAbortsInternally;
+  private final boolean useVirtualThreads;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -772,6 +780,7 @@ public class ConnectionOptions {
     this.readOnly = parseReadOnly(this.uri);
     this.routeToLeader = parseRouteToLeader(this.uri);
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
+    this.useVirtualThreads = parseUseVirtualThreads(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -872,6 +881,12 @@ public class ConnectionOptions {
   static boolean parseRetryAbortsInternally(String uri) {
     String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
+  }
+
+  @VisibleForTesting
+  static boolean parseUseVirtualThreads(String uri) {
+    String value = parseUriProperty(uri, USE_VIRTUAL_THREADS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_THREADS;
   }
 
   @VisibleForTesting
@@ -1292,6 +1307,11 @@ public class ConnectionOptions {
    */
   public boolean isRetryAbortsInternally() {
     return retryAbortsInternally;
+  }
+
+  /** Whether connections should use virtual threads. */
+  public boolean isUseVirtualThreads() {
+    return useVirtualThreads;
   }
 
   /** Any warnings that were generated while creating the {@link ConnectionOptions} instance. */

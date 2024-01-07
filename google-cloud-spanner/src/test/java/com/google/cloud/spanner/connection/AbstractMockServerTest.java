@@ -167,7 +167,7 @@ public abstract class AbstractMockServerTest {
             .addService(mockOperations)
             .executor(
                 Executors.newCachedThreadPool(
-                    createVirtualOrDaemonThreadFactory("test-server-executor")))
+                    createVirtualOrDaemonThreadFactory("test-server-executor", true)))
             .build()
             .start();
     mockSpanner.putStatementResult(

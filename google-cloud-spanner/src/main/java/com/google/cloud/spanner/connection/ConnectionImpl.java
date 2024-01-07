@@ -248,7 +248,9 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(options);
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
-    this.statementExecutor = new StatementExecutor(options.getStatementExecutionInterceptors());
+    this.statementExecutor =
+        new StatementExecutor(
+            options.isUseVirtualThreads(), options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
@@ -283,7 +285,8 @@ class ConnectionImpl implements Connection {
       BatchClient batchClient) {
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
-    this.statementExecutor = new StatementExecutor(Collections.emptyList());
+    this.statementExecutor =
+        new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
     this.spanner = spannerPool.getSpanner(options, this);

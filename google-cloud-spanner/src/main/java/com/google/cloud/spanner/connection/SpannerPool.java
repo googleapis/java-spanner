@@ -336,6 +336,7 @@ public class SpannerPool {
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
+        .setUseVirtualThreads(options.isUseVirtualThreads())
         .setDatabaseRole(options.getDatabaseRole())
         .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);

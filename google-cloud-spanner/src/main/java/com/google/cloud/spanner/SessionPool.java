@@ -1885,7 +1885,12 @@ class SessionPool implements SessionProvider {
      */
     @VisibleForTesting Instant lastExecutionTime;
 
-    private long lastNumSessionsAcquired;
+    /**
+     * The previous numSessionsAcquired seen by the maintainer. This is used to calculate the
+     * transactions per second, which again is used to determine whether to randomize the order of
+     * the session pool.
+     */
+    private long prevNumSessionsAcquired;
 
     boolean closed = false;
 
@@ -1931,9 +1936,9 @@ class SessionPool implements SessionProvider {
         }
         running = true;
         SessionPool.this.transactionsPerSecond =
-            (SessionPool.this.numSessionsAcquired - lastNumSessionsAcquired)
+            (SessionPool.this.numSessionsAcquired - prevNumSessionsAcquired)
                 / (loopFrequency / 1000L);
-        this.lastNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
+        this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
       }
       Instant currTime = clock.instant();
       removeIdleSessions(currTime);
@@ -2613,9 +2618,7 @@ class SessionPool implements SessionProvider {
         // Add to a random position if the head of the session pool already contains many sessions
         // with the same channel as this one.
         if (session.releaseToPosition == Position.FIRST
-            && (transactionsPerSecond
-                    >= options.getRandomizePositionTransactionsPerSecondThreshold()
-                || isUnbalanced(session))) {
+            && (shouldRandomize() || isUnbalanced(session))) {
           session.releaseToPosition = Position.RANDOM;
         } else if (session.releaseToPosition == Position.RANDOM
             && !isNewSession
@@ -2642,6 +2645,13 @@ class SessionPool implements SessionProvider {
         waiters.poll().put(session);
       }
     }
+  }
+
+  private boolean shouldRandomize() {
+    return options.getRandomizePositionTransactionsPerSecondThreshold() > 0
+        && transactionsPerSecond >= options.getRandomizePositionTransactionsPerSecondThreshold()
+        && checkedOutSessions.size()
+            >= options.getRandomizePositionTransactionsPerSecondThreshold();
   }
 
   private boolean isUnbalanced(PooledSession session) {

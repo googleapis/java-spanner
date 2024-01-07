@@ -34,7 +34,7 @@ public class ThreadFactoryUtilTest {
 
   @Test
   public void testCreateThreadFactory() throws Exception {
-    ThreadFactory threadFactory = createVirtualOrDaemonThreadFactory("test-thread");
+    ThreadFactory threadFactory = createVirtualOrDaemonThreadFactory("test-thread", true);
     assertNotNull(threadFactory);
     SettableFuture<Boolean> future = SettableFuture.create();
     Thread thread = threadFactory.newThread(() -> future.set(true));
