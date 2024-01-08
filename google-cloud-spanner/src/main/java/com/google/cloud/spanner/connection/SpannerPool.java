@@ -333,6 +333,7 @@ public class SpannerPool {
   Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
     ConnectionSpannerOptions.Builder builder = ConnectionSpannerOptions.newBuilder();
     builder
+        .setUseStickySessionClients(options.isUseStickySessions())
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)

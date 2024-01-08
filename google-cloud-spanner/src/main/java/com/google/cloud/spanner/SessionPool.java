@@ -2548,7 +2548,13 @@ class SessionPool implements SessionProvider {
       span.addAnnotation("Waiting for a session to come available");
       pooledSessionFuture = createPooledSessionFuture(waiter, span);
     } else {
-      pooledSessionFuture = createPooledSessionFuture(readySession, span);
+      if (options.isOptimizeSessionPoolFuture()) {
+        pooledSessionFuture = createPooledSessionFuture(readySession, span);
+      } else {
+        SettableFuture<PooledSession> fut = SettableFuture.create();
+        fut.set(readySession);
+        pooledSessionFuture = createPooledSessionFuture(fut, span);
+      }
     }
     pooledSessionFuture.markCheckedOut();
     return pooledSessionFuture;
@@ -2662,7 +2668,12 @@ class SessionPool implements SessionProvider {
   private boolean isUnbalanced(PooledSession session) {
     int channel = session.getChannel();
     int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
-    return isUnbalanced(channel, this.sessions, this.checkedOutSessions, numChannels);
+    return isUnbalanced(
+        channel,
+        this.sessions,
+        this.checkedOutSessions,
+        numChannels,
+        options.isOptimizeUnbalancedCheck());
   }
 
   /**
@@ -2699,6 +2710,16 @@ class SessionPool implements SessionProvider {
       List<PooledSession> sessions,
       Set<PooledSessionFuture> checkedOutSessions,
       int numChannels) {
+    return isUnbalanced(
+        channelOfSessionBeingAdded, sessions, checkedOutSessions, numChannels, true);
+  }
+
+  private static boolean isUnbalanced(
+      int channelOfSessionBeingAdded,
+      List<PooledSession> sessions,
+      Set<PooledSessionFuture> checkedOutSessions,
+      int numChannels,
+      boolean optimizeUnbalancedCheck) {
     // Do not re-balance the pool if the number of checked out sessions is low, as it is
     // better to re-use sessions as much as possible in a low-QPS scenario.
     if (sessions.isEmpty() || checkedOutSessions.size() <= 2) {
@@ -2734,10 +2755,12 @@ class SessionPool implements SessionProvider {
     BitSet seenChannels = new BitSet(numChannels);
     for (PooledSessionFuture otherSession : checkedOutSessions) {
       if (otherSession.isDone()) {
-        seenChannels.set(otherSession.get().getChannel());
-        // Stop the check if we have seen all channels.
-        if (seenChannels.cardinality() >= numChannels) {
-          return false;
+        if (optimizeUnbalancedCheck) {
+          seenChannels.set(otherSession.get().getChannel());
+          // Stop the check if we have seen all channels.
+          if (seenChannels.cardinality() >= numChannels) {
+            return false;
+          }
         }
         if (channelOfSessionBeingAdded == otherSession.get().getChannel()) {
           count++;

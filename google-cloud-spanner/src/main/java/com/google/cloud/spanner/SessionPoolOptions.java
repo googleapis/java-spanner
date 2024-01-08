@@ -65,6 +65,8 @@ public class SessionPoolOptions {
   private final Duration acquireSessionTimeout;
   private final Position releaseToPosition;
   private final long randomizePositionTransactionsPerSecondThreshold;
+  private final boolean optimizeSessionPoolFuture;
+  private final boolean optimizeUnbalancedCheck;
 
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
@@ -92,6 +94,8 @@ public class SessionPoolOptions {
     this.releaseToPosition = builder.releaseToPosition;
     this.randomizePositionTransactionsPerSecondThreshold =
         builder.randomizePositionTransactionsPerSecondThreshold;
+    this.optimizeSessionPoolFuture = builder.optimizeSessionPoolFuture;
+    this.optimizeUnbalancedCheck = builder.optimizeUnbalancedCheck;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
   }
@@ -124,6 +128,7 @@ public class SessionPoolOptions {
         && Objects.equals(
             this.randomizePositionTransactionsPerSecondThreshold,
             other.randomizePositionTransactionsPerSecondThreshold)
+        && Objects.equals(this.optimizeSessionPoolFuture, other.optimizeSessionPoolFuture)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
@@ -150,6 +155,7 @@ public class SessionPoolOptions {
         this.acquireSessionTimeout,
         this.releaseToPosition,
         this.randomizePositionTransactionsPerSecondThreshold,
+        this.optimizeSessionPoolFuture,
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock);
   }
@@ -272,6 +278,14 @@ public class SessionPoolOptions {
 
   public long getRandomizePositionTransactionsPerSecondThreshold() {
     return randomizePositionTransactionsPerSecondThreshold;
+  }
+
+  public boolean isOptimizeSessionPoolFuture() {
+    return optimizeSessionPoolFuture;
+  }
+
+  public boolean isOptimizeUnbalancedCheck() {
+    return optimizeUnbalancedCheck;
   }
 
   public static Builder newBuilder() {
@@ -469,6 +483,9 @@ public class SessionPoolOptions {
      */
     private long randomizePositionTransactionsPerSecondThreshold = 20L;
 
+    private boolean optimizeSessionPoolFuture = true;
+    private boolean optimizeUnbalancedCheck = true;
+
     private Clock poolMaintainerClock;
 
     private static Position getReleaseToPositionFromSystemProperty() {
@@ -504,6 +521,10 @@ public class SessionPoolOptions {
       this.autoDetectDialect = options.autoDetectDialect;
       this.waitForMinSessions = options.waitForMinSessions;
       this.acquireSessionTimeout = options.acquireSessionTimeout;
+      this.randomizePositionTransactionsPerSecondThreshold =
+          options.randomizePositionTransactionsPerSecondThreshold;
+      this.optimizeSessionPoolFuture = options.optimizeSessionPoolFuture;
+      this.optimizeUnbalancedCheck = options.optimizeUnbalancedCheck;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -793,6 +814,16 @@ public class SessionPoolOptions {
         long randomizePositionTransactionsPerSecondThreshold) {
       this.randomizePositionTransactionsPerSecondThreshold =
           randomizePositionTransactionsPerSecondThreshold;
+      return this;
+    }
+
+    public Builder setOptimizeSessionPoolFuture(boolean optimizeSessionPoolFuture) {
+      this.optimizeSessionPoolFuture = optimizeSessionPoolFuture;
+      return this;
+    }
+
+    public Builder setOptimizeUnbalancedCheck(boolean optimizeUnbalancedCheck) {
+      this.optimizeUnbalancedCheck = optimizeUnbalancedCheck;
       return this;
     }
 

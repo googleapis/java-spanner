@@ -1275,8 +1275,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    protected Builder setUseStickSessionClients(boolean useStickSessionClients) {
-      this.useStickySessionClients = useStickSessionClients;
+    protected Builder setUseStickySessionClients(boolean useStickySessionClients) {
+      this.useStickySessionClients = useStickySessionClients;
       return this;
     }
 

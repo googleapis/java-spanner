@@ -24,8 +24,11 @@ class ConnectionSpannerOptions extends SpannerOptions {
   }
 
   static class Builder extends SpannerOptions.Builder {
-    Builder() {
-      setUseStickSessionClients(true);
+    Builder() {}
+
+    protected Builder setUseStickySessionClients(boolean useStickySessionClients) {
+      super.setUseStickySessionClients(useStickySessionClients);
+      return this;
     }
 
     @Override
