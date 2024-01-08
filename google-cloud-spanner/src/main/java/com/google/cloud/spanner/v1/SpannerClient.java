@@ -1643,6 +1643,7 @@ public class SpannerClient implements BackgroundResource {
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .addAllMutations(new ArrayList<Mutation>())
    *           .setReturnCommitStats(true)
+   *           .setMaxCommitDelay(Duration.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   CommitResponse response = spannerClient.commit(request);
@@ -1686,6 +1687,7 @@ public class SpannerClient implements BackgroundResource {
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .addAllMutations(new ArrayList<Mutation>())
    *           .setReturnCommitStats(true)
+   *           .setMaxCommitDelay(Duration.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<CommitResponse> future = spannerClient.commitCallable().futureCall(request);

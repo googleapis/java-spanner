@@ -339,6 +339,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         builder.setRequestOptions(requestOptionsBuilder.build());
       }
+      if (options.hasMaxCommitDelayInMilliSeconds()) {
+        builder.setMaxCommitDelay(
+            com.google.protobuf.Duration.newBuilder()
+                .setNanos(
+                    (int) TimeUnit.MILLISECONDS.toNanos(options.maxCommitDelayInMilliSeconds()))
+                .build());
+      }
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
