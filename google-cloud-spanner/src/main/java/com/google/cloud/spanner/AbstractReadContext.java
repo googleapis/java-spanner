@@ -42,6 +42,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -72,6 +73,7 @@ abstract class AbstractReadContext
     private Span span = Tracing.getTracer().getCurrentSpan();
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
+    private DirectedReadOptions defaultDirectedReadOption;
     private ExecutorProvider executorProvider;
     private Clock clock = new Clock();
 
@@ -114,6 +116,11 @@ abstract class AbstractReadContext
 
     B setClock(Clock clock) {
       this.clock = Preconditions.checkNotNull(clock);
+      return self();
+    }
+
+    B setDefaultDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      this.defaultDirectedReadOption = directedReadOptions;
       return self();
     }
 
@@ -399,6 +406,7 @@ abstract class AbstractReadContext
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
+  private final DirectedReadOptions defaultDirectedReadOptions;
   private final Clock clock;
 
   @GuardedBy("lock")
@@ -423,6 +431,7 @@ abstract class AbstractReadContext
     this.rpc = builder.rpc;
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
+    this.defaultDirectedReadOptions = builder.defaultDirectedReadOption;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
     this.clock = builder.clock;
@@ -623,6 +632,11 @@ abstract class AbstractReadContext
     if (options.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(options.dataBoostEnabled());
     }
+    if (options.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(options.directedReadOptions());
+    } else if (defaultDirectedReadOptions != null) {
+      builder.setDirectedReadOptions(defaultDirectedReadOptions);
+    }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
@@ -810,6 +824,11 @@ abstract class AbstractReadContext
     }
     if (readOptions.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
+    }
+    if (readOptions.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(readOptions.directedReadOptions());
+    } else if (defaultDirectedReadOptions != null) {
+      builder.setDirectedReadOptions(defaultDirectedReadOptions);
     }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;

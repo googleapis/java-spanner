@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -32,6 +33,7 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.Options.DirectedReadOption;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
@@ -49,6 +51,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
@@ -135,6 +138,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final CloseableExecutorProvider asyncExecutorProvider;
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
+  private final boolean attemptDirectPath;
+  private final DirectedReadOptions directedReadOptions;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -624,6 +629,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     asyncExecutorProvider = builder.asyncExecutorProvider;
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
+    attemptDirectPath = builder.attemptDirectPath;
+    directedReadOptions = builder.directedReadOptions;
   }
 
   /**
@@ -725,6 +732,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String compressorName;
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
+    private boolean attemptDirectPath = true;
+    private DirectedReadOptions directedReadOptions;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -784,6 +793,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelProvider = options.channelProvider;
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
+      this.attemptDirectPath = options.attemptDirectPath;
+      this.directedReadOptions = options.directedReadOptions;
     }
 
     @Override
@@ -1149,6 +1160,32 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the {@link DirectedReadOption} that specify which replicas or regions should be used for
+     * non-transactional reads or queries.
+     *
+     * <p>DirectedReadOptions set at the request level will take precedence over the options set
+     * using this method.
+     *
+     * <p>An example below of how {@link DirectedReadOptions} can be constructed by including a
+     * replica.
+     *
+     * <pre><code>
+     * DirectedReadOptions.newBuilder()
+     *           .setIncludeReplicas(
+     *               IncludeReplicas.newBuilder()
+     *                   .addReplicaSelections(
+     *                       ReplicaSelection.newBuilder().setLocation("us-east1").build()))
+     *           .build();
+     *           }
+     * </code></pre>
+     */
+    public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      this.directedReadOptions =
+          Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -1217,6 +1254,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder disableLeaderAwareRouting() {
       this.leaderAwareRoutingEnabled = false;
+      return this;
+    }
+
+    @BetaApi
+    public Builder disableDirectPath() {
+      this.attemptDirectPath = false;
       return this;
     }
 
@@ -1358,6 +1401,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isLeaderAwareRoutingEnabled() {
     return leaderAwareRoutingEnabled;
+  }
+
+  public DirectedReadOptions getDirectedReadOptions() {
+    return directedReadOptions;
+  }
+
+  @BetaApi
+  public boolean isAttemptDirectPath() {
+    return attemptDirectPath;
   }
 
   /** Returns the default query options to use for the specific database. */
