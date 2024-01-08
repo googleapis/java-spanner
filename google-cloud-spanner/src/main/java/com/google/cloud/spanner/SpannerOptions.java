@@ -33,6 +33,7 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.Options.DirectedReadOption;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
@@ -50,6 +51,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
@@ -139,6 +141,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean attemptDirectPath;
   private final boolean useStickySessionClients;
   private final boolean useVirtualThreads;
+  private final DirectedReadOptions directedReadOptions;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -635,6 +638,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     attemptDirectPath = builder.attemptDirectPath;
     useStickySessionClients = builder.useStickySessionClients;
     useVirtualThreads = builder.useVirtualThreads;
+    directedReadOptions = builder.directedReadOptions;
   }
 
   /**
@@ -739,6 +743,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean attemptDirectPath = true;
     private boolean useStickySessionClients = false;
     private boolean useVirtualThreads = false;
+    private DirectedReadOptions directedReadOptions;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -801,6 +806,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.attemptDirectPath = options.attemptDirectPath;
       this.useStickySessionClients = options.useStickySessionClients;
       this.useVirtualThreads = options.useVirtualThreads;
+      this.directedReadOptions = options.directedReadOptions;
     }
 
     @Override
@@ -1166,6 +1172,32 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the {@link DirectedReadOption} that specify which replicas or regions should be used for
+     * non-transactional reads or queries.
+     *
+     * <p>DirectedReadOptions set at the request level will take precedence over the options set
+     * using this method.
+     *
+     * <p>An example below of how {@link DirectedReadOptions} can be constructed by including a
+     * replica.
+     *
+     * <pre><code>
+     * DirectedReadOptions.newBuilder()
+     *           .setIncludeReplicas(
+     *               IncludeReplicas.newBuilder()
+     *                   .addReplicaSelections(
+     *                       ReplicaSelection.newBuilder().setLocation("us-east1").build()))
+     *           .build();
+     *           }
+     * </code></pre>
+     */
+    public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      this.directedReadOptions =
+          Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -1391,6 +1423,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public boolean isLeaderAwareRoutingEnabled() {
     return leaderAwareRoutingEnabled;
+  }
+
+  public DirectedReadOptions getDirectedReadOptions() {
+    return directedReadOptions;
   }
 
   @BetaApi

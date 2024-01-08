@@ -2648,10 +2648,15 @@ class SessionPool implements SessionProvider {
   }
 
   private boolean shouldRandomize() {
+    // Randomize the position where we return the session if:
+    // 1. The current TPS is higher than the configured threshold.
+    // 2. AND the number of sessions checked out is larger than the number of channels.
+    // The second criteria prevents the session pool from being randomized when the application is
+    // running many small, quick queries using a small number of parallel threads. This can cause a
+    // high TPS, without actually having a high degree of parallelism.
     return options.getRandomizePositionTransactionsPerSecondThreshold() > 0
         && transactionsPerSecond >= options.getRandomizePositionTransactionsPerSecondThreshold()
-        && checkedOutSessions.size()
-            >= options.getRandomizePositionTransactionsPerSecondThreshold();
+        && checkedOutSessions.size() >= sessionClient.getSpanner().getOptions().getNumChannels();
   }
 
   private boolean isUnbalanced(PooledSession session) {
@@ -2728,14 +2733,17 @@ class SessionPool implements SessionProvider {
     int checkedOutThreshold = Math.max(2, 2 * checkedOutSessions.size() / numChannels);
     BitSet seenChannels = new BitSet(numChannels);
     for (PooledSessionFuture otherSession : checkedOutSessions) {
-      seenChannels.set(otherSession.get().getChannel());
-      if (seenChannels.cardinality() >= numChannels) {
-        return false;
-      }
-      if (otherSession.isDone() && channelOfSessionBeingAdded == otherSession.get().getChannel()) {
-        count++;
-        if (count > checkedOutThreshold) {
-          return true;
+      if (otherSession.isDone()) {
+        seenChannels.set(otherSession.get().getChannel());
+        // Stop the check if we have seen all channels.
+        if (seenChannels.cardinality() >= numChannels) {
+          return false;
+        }
+        if (channelOfSessionBeingAdded == otherSession.get().getChannel()) {
+          count++;
+          if (count > checkedOutThreshold) {
+            return true;
+          }
         }
       }
     }

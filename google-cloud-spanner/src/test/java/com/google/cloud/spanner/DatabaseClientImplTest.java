@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RE
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
+import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_FROM_TABLE;
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1_RESULTSET;
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
@@ -75,6 +76,9 @@ import com.google.spanner.v1.BatchWriteRequest;
 import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -169,6 +173,20 @@ public class DatabaseClientImplTest {
               .setStatus(STATUS_OK)
               .addAllIndexes(ImmutableList.of(2, 3))
               .build());
+  private static final DirectedReadOptions DIRECTED_READ_OPTIONS1 =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+          .build();
+  private static final DirectedReadOptions DIRECTED_READ_OPTIONS2 =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder().setLocation("us-east1").build()))
+          .build();
   private Spanner spanner;
   private Spanner spannerWithEmptySessionPool;
   private static ExecutorService executor;
@@ -186,6 +204,8 @@ public class DatabaseClientImplTest {
         StatementResult.exception(
             INVALID_UPDATE_STATEMENT,
             Status.INVALID_ARGUMENT.withDescription("invalid statement").asRuntimeException()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(SELECT1_FROM_TABLE, MockSpannerTestUtil.SELECT1_RESULTSET));
     mockSpanner.setBatchWriteResult(BATCH_WRITE_RESPONSES);
 
     executor = Executors.newSingleThreadExecutor();
@@ -1519,6 +1539,69 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testExecuteQuery_withDirectedReadOptionsViaRequest() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client.singleUse().executeQuery(SELECT1, Options.directedRead(DIRECTED_READ_OPTIONS1))) {
+      while (resultSet.next()) {}
+    }
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(1, requests.size());
+    ExecuteSqlRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS1, request.getDirectedReadOptions());
+  }
+
+  @Test
+  public void testExecuteQuery_withDirectedReadOptionsViaSpannerOptions() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
+      while (resultSet.next()) {}
+    }
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(requests.size(), 1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS2, request.getDirectedReadOptions());
+  }
+
+  @Test
+  public void testExecuteQuery_whenMultipleDirectedReadsOptions_preferRequestOption() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client.singleUse().executeQuery(SELECT1, Options.directedRead(DIRECTED_READ_OPTIONS1))) {
+      while (resultSet.next()) {}
+    }
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(requests.size(), 1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS1, request.getDirectedReadOptions());
+  }
+
+  @Test
   public void testExecuteReadWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -1540,6 +1623,79 @@ public class DatabaseClientImplTest {
     assertThat(request.getRequestOptions().getRequestTag())
         .isEqualTo("app=spanner,env=test,action=read");
     assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void testExecuteReadWithDirectedReadOptions() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.directedRead(DIRECTED_READ_OPTIONS1))) {
+      while (resultSet.next()) {}
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertEquals(1, requests.size());
+    ReadRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS1, request.getDirectedReadOptions());
+  }
+
+  @Test
+  public void testExecuteReadWithDirectedReadOptionsViaSpannerOptions() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client.singleUse().read(READ_TABLE_NAME, KeySet.singleKey(Key.of(1L)), READ_COLUMN_NAMES)) {
+      while (resultSet.next()) {}
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertEquals(requests.size(), 1);
+    ReadRequest request = requests.get(0);
+    assertTrue(request.hasDirectedReadOptions());
+    assertEquals(DIRECTED_READ_OPTIONS2, request.getDirectedReadOptions());
+  }
+
+  @Test
+  public void testReadWriteExecuteQueryWithDirectedReadOptionsViaSpannerOptions() {
+    Spanner spannerWithDirectedReadOptions =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService();
+    DatabaseClient client =
+        spannerWithDirectedReadOptions.getDatabaseClient(
+            DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+            while (resultSet.next()) {}
+          }
+          return null;
+        });
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertEquals(requests.size(), 1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertFalse(request.hasDirectedReadOptions());
   }
 
   @Test
@@ -2728,7 +2884,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBackendQueryOptions() {
-    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -2769,7 +2925,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBackendQueryOptionsWithAnalyzeQuery() {
-    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -2812,7 +2968,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBackendPartitionQueryOptions() {
-    // Use a Spanner instance with MinSession=0 and WriteFraction=0.0 to prevent background requests
+    // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
@@ -2820,6 +2976,58 @@ public class DatabaseClientImplTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService()) {
+      BatchClient client =
+          spanner.getBatchClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      BatchReadOnlyTransaction transaction =
+          client.batchReadOnlyTransaction(TimestampBound.strong());
+      List<Partition> partitions =
+          transaction.partitionQuery(
+              PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
+              Statement.newBuilder(SELECT1.getSql())
+                  .withQueryOptions(
+                      QueryOptions.newBuilder()
+                          .setOptimizerVersion("1")
+                          .setOptimizerStatisticsPackage("custom-package")
+                          .build())
+                  .build(),
+              Options.directedRead(DIRECTED_READ_OPTIONS1));
+      try (ResultSet rs = transaction.execute(partitions.get(0))) {
+        // Just iterate over the results to execute the query.
+        while (rs.next()) {}
+      } finally {
+        transaction.cleanup();
+      }
+      // Check if the last query executed is a DeleteSessionRequest and the second last query
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version,
+      // statistics package and directed read options.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assert requests.size() >= 2 : "required to have at least 2 requests";
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ExecuteSqlRequest.class);
+      ExecuteSqlRequest executeSqlRequest = (ExecuteSqlRequest) requests.get(requests.size() - 2);
+      assertThat(executeSqlRequest.getQueryOptions()).isNotNull();
+      assertThat(executeSqlRequest.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
+      assertThat(executeSqlRequest.getQueryOptions().getOptimizerStatisticsPackage())
+          .isEqualTo("custom-package");
+      assertThat(executeSqlRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS1);
+    }
+  }
+
+  @Test
+  public void
+      testBackendPartitionQueryOptions_whenDirectedReadOptionsViaSpannerOptions_assertOptions() {
+    // Use a Spanner instance with MinSession=0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
             .build()
             .getService()) {
       BatchClient client =
@@ -2843,8 +3051,8 @@ public class DatabaseClientImplTest {
         transaction.cleanup();
       }
       // Check if the last query executed is a DeleteSessionRequest and the second last query
-      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version and
-      // statistics package.
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version,
+      // statistics package and directed read options.
       List<AbstractMessage> requests = mockSpanner.getRequests();
       assert requests.size() >= 2 : "required to have at least 2 requests";
       assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
@@ -2854,6 +3062,91 @@ public class DatabaseClientImplTest {
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerVersion()).isEqualTo("1");
       assertThat(executeSqlRequest.getQueryOptions().getOptimizerStatisticsPackage())
           .isEqualTo("custom-package");
+      assertThat(executeSqlRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS2);
+    }
+  }
+
+  @Test
+  public void testBackendPartitionReadOptions() {
+    // Use a Spanner instance with MinSession=0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService()) {
+      BatchClient client =
+          spanner.getBatchClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      BatchReadOnlyTransaction transaction =
+          client.batchReadOnlyTransaction(TimestampBound.strong());
+      List<Partition> partitions =
+          transaction.partitionRead(
+              PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
+              "FOO",
+              KeySet.all(),
+              Lists.newArrayList("1"),
+              Options.directedRead(DIRECTED_READ_OPTIONS1));
+      try (ResultSet rs = transaction.execute(partitions.get(0))) {
+        // Just iterate over the results to execute the query.
+        while (rs.next()) {}
+      } finally {
+        transaction.cleanup();
+      }
+      // Check if the last query executed is a DeleteSessionRequest and the second last query
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version,
+      // statistics package and directed read options.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assert requests.size() >= 2 : "required to have at least 2 requests";
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ReadRequest.class);
+      ReadRequest readRequest = (ReadRequest) requests.get(requests.size() - 2);
+      assertThat(readRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS1);
+    }
+  }
+
+  @Test
+  public void
+      testBackendPartitionReadOptions_whenDirectedReadOptionsViaSpannerOptions_assertOptions() {
+    // Use a Spanner instance with MinSession=0 to prevent background requests
+    // from the session pool interfering with the test case.
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
+            .setDirectedReadOptions(DIRECTED_READ_OPTIONS2)
+            .build()
+            .getService()) {
+      BatchClient client =
+          spanner.getBatchClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE"));
+      BatchReadOnlyTransaction transaction =
+          client.batchReadOnlyTransaction(TimestampBound.strong());
+      List<Partition> partitions =
+          transaction.partitionRead(
+              PartitionOptions.newBuilder().setMaxPartitions(10L).build(),
+              "FOO",
+              KeySet.all(),
+              Lists.newArrayList("1"));
+      try (ResultSet rs = transaction.execute(partitions.get(0))) {
+        // Just iterate over the results to execute the query.
+        while (rs.next()) {}
+      } finally {
+        transaction.cleanup();
+      }
+      // Check if the last query executed is a DeleteSessionRequest and the second last query
+      // executed is a ExecuteSqlRequest and was executed using a custom optimizer version,
+      // statistics package and directed read options.
+      List<AbstractMessage> requests = mockSpanner.getRequests();
+      assert requests.size() >= 2 : "required to have at least 2 requests";
+      assertThat(requests.get(requests.size() - 1)).isInstanceOf(DeleteSessionRequest.class);
+      assertThat(requests.get(requests.size() - 2)).isInstanceOf(ReadRequest.class);
+      ReadRequest readRequest = (ReadRequest) requests.get(requests.size() - 2);
+      assertThat(readRequest.getDirectedReadOptions()).isEqualTo(DIRECTED_READ_OPTIONS2);
     }
   }
 

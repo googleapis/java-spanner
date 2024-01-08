@@ -270,6 +270,7 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
@@ -289,6 +290,7 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .buildSingleUseReadOnlyTransaction());
@@ -308,6 +310,7 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
