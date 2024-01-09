@@ -17,7 +17,6 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_postgresql_alter_sequence]
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
@@ -25,14 +24,17 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PgAlterSequenceSample {
-  static void pgAlterSequence() {
+  static void pgAlterSequence() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -40,16 +42,14 @@ public class PgAlterSequenceSample {
     pgAlterSequence(projectId, instanceId, databaseId);
   }
 
-  static void pgAlterSequence(String projectId, String instanceId, String databaseId) {
+  static void pgAlterSequence(String projectId, String instanceId, String databaseId) throws IOException {
     try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
-      dbAdminClient
-          .updateDatabaseDdl(
-              instanceId,
-              databaseId,
-              ImmutableList.of("ALTER SEQUENCE Seq SKIP RANGE 1000 5000000"),
-              null)
+      final DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+      databaseAdminClient
+          .updateDatabaseDdlAsync(
+              DatabaseName.of(projectId, instanceId, databaseId),
+              ImmutableList.of("ALTER SEQUENCE Seq SKIP RANGE 1000 5000000"))
           .get(5, TimeUnit.MINUTES);
       System.out.println(
           "Altered Seq sequence to skip an inclusive range between 1000 and 5000000");

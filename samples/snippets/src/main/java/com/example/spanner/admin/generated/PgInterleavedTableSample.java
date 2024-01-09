@@ -18,18 +18,16 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_postgresql_interleaved_table]
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 public class PgInterleavedTableSample {
 
-  static void pgInterleavedTable() {
+  static void pgInterleavedTable() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -37,22 +35,16 @@ public class PgInterleavedTableSample {
     pgInterleavedTable(projectId, instanceId, databaseId);
   }
 
-  static void pgInterleavedTable(String projectId, String instanceId, String databaseId) {
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService()) {
-      final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-
+  static void pgInterleavedTable(String projectId, String instanceId, String databaseId) throws IOException {
+    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+    try {
       // The Spanner PostgreSQL dialect extends the PostgreSQL dialect with certain Spanner
       // specific features, such as interleaved tables.
       // See https://cloud.google.com/spanner/docs/postgresql/data-definition-language#create_table
       // for the full CREATE TABLE syntax.
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> updateOperation =
-          databaseAdminClient.updateDatabaseDdl(
+      databaseAdminClient.updateDatabaseDdlAsync(DatabaseName.of(projectId,
               instanceId,
-              databaseId,
+              databaseId),
               Arrays.asList(
                   "CREATE TABLE Singers ("
                       + "  SingerId  bigint NOT NULL PRIMARY KEY,"
@@ -64,9 +56,7 @@ public class PgInterleavedTableSample {
                       + "  AlbumId  bigint NOT NULL,"
                       + "  Title    varchar(1024) NOT NULL,"
                       + "  PRIMARY KEY (SingerId, AlbumId)"
-                      + ") INTERLEAVE IN PARENT Singers ON DELETE CASCADE"),
-              null);
-      updateOperation.get();
+                      + ") INTERLEAVE IN PARENT Singers ON DELETE CASCADE")).get();
       System.out.println("Created interleaved table hierarchy using PostgreSQL dialect");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.

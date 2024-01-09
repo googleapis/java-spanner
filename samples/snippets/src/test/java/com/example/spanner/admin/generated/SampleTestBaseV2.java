@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 import com.example.spanner.SampleIdGenerator;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
@@ -46,7 +47,7 @@ public class SampleTestBaseV2 {
   protected static final String instanceId = System.getProperty("spanner.test.instance");
   protected static DatabaseAdminClient databaseAdminClient;
   protected static InstanceAdminClient instanceAdminClient;
-
+  protected static Spanner spanner;
   protected static final String multiRegionalInstanceId =
       System.getProperty("spanner.test.instance.mr");
   protected static final String instanceConfigName = System
@@ -70,6 +71,7 @@ public class SampleTestBaseV2 {
     }
 
     projectId = options.getProjectId();
+    spanner = options.getService();
     databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettingsBuilder.build());
     instanceAdminClient = InstanceAdminClient.create(instanceAdminSettingBuilder.build());
     idGenerator = new SampleIdGenerator(

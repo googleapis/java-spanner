@@ -41,7 +41,6 @@ public class UpdateDatabaseSample {
   static void updateDatabase(String databaseId) throws IOException {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
     try {
-
       final Database database =
           Database.newBuilder().setName(databaseId).setEnableDropProtection(true).build();
       final UpdateDatabaseRequest updateDatabaseRequest =

@@ -17,40 +17,32 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_postgresql_jsonb_add_column]
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 class AddJsonbColumnSample {
 
-  static void addJsonbColumn() throws InterruptedException, ExecutionException {
+  static void addJsonbColumn() throws InterruptedException, ExecutionException, IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
 
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      addJsonbColumn(adminClient, instanceId, databaseId);
-    }
+    addJsonbColumn(projectId, instanceId, databaseId);
   }
 
-  static void addJsonbColumn(DatabaseAdminClient adminClient, String instanceId, String databaseId)
-      throws InterruptedException, ExecutionException {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-        adminClient.updateDatabaseDdl(
-            instanceId,
-            databaseId,
-            ImmutableList.of("ALTER TABLE Venues ADD COLUMN VenueDetails JSONB"),
-            null);
+  static void addJsonbColumn(String projectId, String instanceId, String databaseId)
+      throws InterruptedException, ExecutionException, IOException {
+    final DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+
     // Wait for the operation to finish.
     // This will throw an ExecutionException if the operation fails.
-    operation.get();
+    databaseAdminClient.updateDatabaseDdlAsync(
+            DatabaseName.of(projectId, instanceId, databaseId),
+            ImmutableList.of("ALTER TABLE Venues ADD COLUMN VenueDetails JSONB")).get();
     System.out.printf("Successfully added column `VenueDetails`%n");
   }
 }

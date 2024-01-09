@@ -18,59 +18,43 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_database_with_version_retention_period]
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import java.util.Arrays;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.common.collect.Lists;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.InstanceName;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public class CreateDatabaseWithVersionRetentionPeriodSample {
 
-  static void createDatabaseWithVersionRetentionPeriod() {
+  static void createDatabaseWithVersionRetentionPeriod() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
     String versionRetentionPeriod = "7d";
 
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      createDatabaseWithVersionRetentionPeriod(adminClient, instanceId, databaseId,
-          versionRetentionPeriod);
-    }
+    createDatabaseWithVersionRetentionPeriod(projectId, instanceId, databaseId,
+        versionRetentionPeriod);
   }
 
-  static void createDatabaseWithVersionRetentionPeriod(DatabaseAdminClient adminClient,
-      String instanceId, String databaseId, String versionRetentionPeriod) {
-    OperationFuture<Database, CreateDatabaseMetadata> op =
-        adminClient.createDatabase(
-            instanceId,
-            databaseId,
-            Arrays.asList(
-                "CREATE TABLE Singers ("
-                    + "  SingerId   INT64 NOT NULL,"
-                    + "  FirstName  STRING(1024),"
-                    + "  LastName   STRING(1024),"
-                    + "  SingerInfo BYTES(MAX)"
-                    + ") PRIMARY KEY (SingerId)",
-                "CREATE TABLE Albums ("
-                    + "  SingerId     INT64 NOT NULL,"
-                    + "  AlbumId      INT64 NOT NULL,"
-                    + "  AlbumTitle   STRING(MAX)"
-                    + ") PRIMARY KEY (SingerId, AlbumId),"
-                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE",
-                "ALTER DATABASE " + "`" + databaseId + "`"
-                    + " SET OPTIONS ( version_retention_period = '" + versionRetentionPeriod + "' )"
-            ));
+  static void createDatabaseWithVersionRetentionPeriod(String projectId,
+      String instanceId, String databaseId, String versionRetentionPeriod) throws IOException {
+    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+
     try {
-      Database database = op.get();
-      System.out.println("Created database [" + database.getId() + "]");
+      CreateDatabaseRequest request =
+          CreateDatabaseRequest.newBuilder()
+              .setParent(InstanceName.of(projectId, instanceId).toString())
+              .setCreateStatement(databaseId)
+              .addAllExtraStatements(Lists.newArrayList("ALTER DATABASE " + "`" + databaseId + "`"
+                  + " SET OPTIONS ( version_retention_period = '" + versionRetentionPeriod + "' )")).build();
+      Database database =
+          databaseAdminClient.createDatabaseAsync(request).get();
+      System.out.println("Created database [" + database.getName() + "]");
       System.out.println("\tVersion retention period: " + database.getVersionRetentionPeriod());
       System.out.println("\tEarliest version time: " + database.getEarliestVersionTime());
     } catch (ExecutionException e) {

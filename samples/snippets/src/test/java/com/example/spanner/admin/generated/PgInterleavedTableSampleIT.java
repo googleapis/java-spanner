@@ -1,11 +1,11 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,39 +19,26 @@ package com.example.spanner.admin.generated;
 import static org.junit.Assert.assertTrue;
 
 import com.example.spanner.SampleRunner;
-import com.example.spanner.SampleTestBase;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.InstanceName;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class CreateTableWithForeignKeyDeleteCascadeSampleIT extends SampleTestBaseV2 {
+public class PgInterleavedTableSampleIT extends SampleTestBaseV2 {
 
   @Test
-  public void testCreateTableWithForeignKeyDeleteCascade() throws Exception {
-
-    // Creates database
+  public void testPgInterleavedTableSample() throws Exception {
     final String databaseId = idGenerator.generateDatabaseId();
     final CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
-            .setParent(InstanceName.of(projectId, instanceId).toString()).build();
-    databaseAdminClient.createDatabaseAsync(request).get(5, TimeUnit.MINUTES);
+            .setParent(InstanceName.of(projectId, instanceId).toString())
+            .setDatabaseDialect(DatabaseDialect.POSTGRESQL).build();
+    databaseAdminClient.createDatabaseAsync(request).get();
 
-    // Runs sample
     final String out =
         SampleRunner.runSample(
-            () ->
-                CreateTableWithForeignKeyDeleteCascadeSample
-                    .createForeignKeyDeleteCascadeConstraint(projectId, instanceId, databaseId));
-
-    assertTrue(
-        "Expected to have created database "
-            + databaseId
-            + " with tables containing "
-            + "foreign key constraints.",
-        out.contains(
-            "Created Customers and ShoppingCarts table " + "with FKShoppingCartsCustomerId"));
+            () -> PgInterleavedTableSample.pgInterleavedTable(projectId, instanceId, databaseId));
+    assertTrue(out.contains("Created interleaved table hierarchy using PostgreSQL dialect"));
   }
 }

@@ -19,18 +19,17 @@ package com.example.spanner.admin.generated;
 //[START spanner_update_database_with_default_leader]
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 public class UpdateDatabaseWithDefaultLeaderSample {
 
-  static void updateDatabaseWithDefaultLeader() {
+  static void updateDatabaseWithDefaultLeader() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -40,27 +39,21 @@ public class UpdateDatabaseWithDefaultLeaderSample {
   }
 
   static void updateDatabaseWithDefaultLeader(
-      String projectId, String instanceId, String databaseId, String defaultLeader) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
-      final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation = databaseAdminClient
-          .updateDatabaseDdl(
-              instanceId,
-              databaseId,
+      String projectId, String instanceId, String databaseId, String defaultLeader) throws IOException {
+    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+
+    try {
+      databaseAdminClient
+          .updateDatabaseDdlAsync(
+              DatabaseName.of(projectId, instanceId, databaseId),
               Collections.singletonList(
                   String.format(
                       "ALTER DATABASE `%s` SET OPTIONS (default_leader = '%s')",
                       databaseId,
                       defaultLeader
                   )
-              ),
-              null
-          );
-      operation.get();
+              )
+          ).get();
       System.out.println("Updated default leader to " + defaultLeader);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
