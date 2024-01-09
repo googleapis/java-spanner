@@ -15,6 +15,7 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
+import static com.google.api.gax.grpc.GrpcCallContext.TRACER_KEY;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.DATABASE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.INSTANCE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.METHOD;
@@ -22,6 +23,7 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
+import com.google.api.gax.tracing.ApiTracer;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -72,7 +74,8 @@ class HeaderInterceptor implements ClientInterceptor {
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
-        TagContext tagContext = getTagContext(headers, method.getFullMethodName());
+        ApiTracer apiTracer = callOptions.getOption(TRACER_KEY);
+        TagContext tagContext = getTagContext(headers, method.getFullMethodName(), apiTracer);
         super.start(
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
@@ -118,7 +121,7 @@ class HeaderInterceptor implements ClientInterceptor {
         .build();
   }
 
-  private TagContext getTagContext(Metadata headers, String method) {
+  private TagContext getTagContext(Metadata headers, String method, ApiTracer apiTracer) {
     String projectId = "undefined-project";
     String instanceId = "undefined-database";
     String databaseId = "undefined-database";
@@ -137,6 +140,9 @@ class HeaderInterceptor implements ClientInterceptor {
         LOGGER.log(LEVEL, "Error parsing google cloud resource header: " + googleResourcePrefix);
       }
     }
+    apiTracer.addAdditionalAttributes(PROJECT_ID.getName(), projectId);
+    apiTracer.addAdditionalAttributes(INSTANCE_ID.getName(), instanceId);
+    apiTracer.addAdditionalAttributes(DATABASE_ID.getName(), databaseId);
     return getTagContext(method, projectId, instanceId, databaseId);
   }
 }
