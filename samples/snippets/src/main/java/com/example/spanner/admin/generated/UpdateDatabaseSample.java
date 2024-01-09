@@ -23,6 +23,7 @@ import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.Lists;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.io.IOException;
@@ -34,15 +35,21 @@ public class UpdateDatabaseSample {
 
   static void updateDatabase() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    final String databaseId = "projects/my-project/instances/my-instance-id/databases/my-database";
-    updateDatabase(databaseId);
+    final String projectId = "my-project";
+    final String instanceId = "my-instance";
+    final String databaseId = "my-database";
+
+    updateDatabase(projectId, instanceId, databaseId);
   }
 
-  static void updateDatabase(String databaseId) throws IOException {
+  static void updateDatabase(
+      String projectId, String instanceId, String databaseId) throws IOException {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
     try {
       final Database database =
-          Database.newBuilder().setName(databaseId).setEnableDropProtection(true).build();
+          Database.newBuilder()
+              .setName(DatabaseName.of(projectId, instanceId, databaseId).toString())
+              .setEnableDropProtection(true).build();
       final UpdateDatabaseRequest updateDatabaseRequest =
           UpdateDatabaseRequest.newBuilder()
               .setDatabase(database)

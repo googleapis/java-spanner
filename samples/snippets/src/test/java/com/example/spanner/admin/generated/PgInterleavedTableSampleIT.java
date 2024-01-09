@@ -31,7 +31,7 @@ public class PgInterleavedTableSampleIT extends SampleTestBaseV2 {
     final String databaseId = idGenerator.generateDatabaseId();
     final CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
-            .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
+            .setCreateStatement(getCreateDatabaseStatement(databaseId, DatabaseDialect.POSTGRESQL))
             .setParent(InstanceName.of(projectId, instanceId).toString())
             .setDatabaseDialect(DatabaseDialect.POSTGRESQL).build();
     databaseAdminClient.createDatabaseAsync(request).get();

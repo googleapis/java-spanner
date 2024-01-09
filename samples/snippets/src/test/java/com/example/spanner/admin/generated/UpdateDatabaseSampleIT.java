@@ -24,6 +24,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.common.collect.Lists;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.util.concurrent.TimeUnit;
@@ -43,14 +44,17 @@ public class UpdateDatabaseSampleIT extends SampleTestBaseV2 {
     // Runs sample
     final String out =
         SampleRunner.runSample(
-            () -> UpdateDatabaseSample.updateDatabase(databaseId));
+            () -> UpdateDatabaseSample.updateDatabase(projectId, instanceId, databaseId));
     assertTrue(
         "Expected that database would have been updated. Output received was " + out,
-        out.contains(String.format("Updated database %s", databaseId)));
+        out.contains(String.format(
+            "Updated database %s", DatabaseName.of(projectId, instanceId, databaseId))));
 
     // Cleanup
     final com.google.spanner.admin.database.v1.Database database =
-        com.google.spanner.admin.database.v1.Database.newBuilder().setName(databaseId).setEnableDropProtection(true).build();
+        com.google.spanner.admin.database.v1.Database.newBuilder()
+            .setName(DatabaseName.of(projectId, instanceId, databaseId).toString())
+            .setEnableDropProtection(false).build();
     final UpdateDatabaseRequest updateDatabaseRequest =
         UpdateDatabaseRequest.newBuilder()
             .setDatabase(database)

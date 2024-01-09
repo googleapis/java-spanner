@@ -47,7 +47,7 @@ public class DatabaseRolesIT extends SampleTestBaseV2 {
     final CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setParent(
-                com.google.spanner.admin.database.v1.InstanceName.of(projectId, multiRegionalInstanceId).toString())
+                com.google.spanner.admin.database.v1.InstanceName.of(projectId, instanceId).toString())
             .setCreateStatement("CREATE DATABASE `" + database + "`")
             .addAllExtraStatements(Lists.newArrayList(
                 "CREATE TABLE Singers ("
@@ -107,8 +107,8 @@ public class DatabaseRolesIT extends SampleTestBaseV2 {
             () ->
                 AddAndDropDatabaseRole.addAndDropDatabaseRole(
                     projectId, instanceId, databaseId.getDatabase(), "new-parent", "new-child"));
-    assertTrue(out.contains("Created roles new_parent and new_child and granted privileges"));
-    assertTrue(out.contains("Revoked privileges and dropped role new_child"));
+    assertTrue(out.contains("Created roles new-parent and new-child and granted privileges"));
+    assertTrue(out.contains("Revoked privileges and dropped role new-child"));
   }
 
   @Test
