@@ -2190,7 +2190,9 @@ public class SpannerSample {
       printUsageAndExit();
     }
     // [START init_client]
-    SpannerOptions options = SpannerOptions.newBuilder().build();
+    SpannerOptions options = SpannerOptions.newBuilder()
+	.setHost("https://staging-wrenchworks.sandbox.googleapis.com")
+	.build();
     Spanner spanner = options.getService();
     try {
       String command = args[0];
