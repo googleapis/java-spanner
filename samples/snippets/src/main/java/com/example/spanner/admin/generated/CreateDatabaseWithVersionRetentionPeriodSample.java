@@ -49,7 +49,7 @@ public class CreateDatabaseWithVersionRetentionPeriodSample {
       CreateDatabaseRequest request =
           CreateDatabaseRequest.newBuilder()
               .setParent(InstanceName.of(projectId, instanceId).toString())
-              .setCreateStatement(databaseId)
+              .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
               .addAllExtraStatements(Lists.newArrayList("ALTER DATABASE " + "`" + databaseId + "`"
                   + " SET OPTIONS ( version_retention_period = '" + versionRetentionPeriod + "' )")).build();
       Database database =

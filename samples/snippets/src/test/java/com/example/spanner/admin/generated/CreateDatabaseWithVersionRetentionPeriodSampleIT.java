@@ -19,7 +19,6 @@ package com.example.spanner.admin.generated;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.example.spanner.SampleRunner;
-import com.example.spanner.SampleTestBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
