@@ -26,6 +26,7 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -35,6 +36,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.io.IOException;
@@ -46,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -98,6 +101,11 @@ public class ConnectionOptions {
         String name, String description, boolean defaultValue) {
       return new ConnectionProperty(
           name, description, String.valueOf(defaultValue), BOOLEAN_VALUES);
+    }
+
+    private static ConnectionProperty createIntProperty(
+        String name, String description, int defaultValue) {
+      return new ConnectionProperty(name, description, String.valueOf(defaultValue), null);
     }
 
     private static ConnectionProperty createEmptyProperty(String name) {
@@ -172,13 +180,19 @@ public class ConnectionOptions {
   private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
+  private static final boolean DEFAULT_ROUTE_TO_LEADER = true;
   private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
   private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
   private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
+  private static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
+  private static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
+  private static final int DEFAULT_MAX_PARTITIONS = 0;
+  private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String SPANNER_EMULATOR_HOST_ENV_VAR = "SPANNER_EMULATOR_HOST";
   private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
   private static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
@@ -186,14 +200,22 @@ public class ConnectionOptions {
   public static final String AUTOCOMMIT_PROPERTY_NAME = "autocommit";
   /** Name of the 'readonly' connection property. */
   public static final String READONLY_PROPERTY_NAME = "readonly";
+  /** Name of the 'routeToLeader' connection property. */
+  public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
   /** Name of the 'credentials' connection property. */
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
   /** Name of the 'encodedCredentials' connection property. */
   public static final String ENCODED_CREDENTIALS_PROPERTY_NAME = "encodedCredentials";
+
+  public static final String ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY =
+      "ENABLE_ENCODED_CREDENTIALS";
   /** Name of the 'credentialsProvider' connection property. */
   public static final String CREDENTIALS_PROVIDER_PROPERTY_NAME = "credentialsProvider";
+
+  public static final String ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY =
+      "ENABLE_CREDENTIALS_PROVIDER";
   /**
    * OAuth token to use for authentication. Cannot be used in combination with a credentials file.
    */
@@ -206,6 +228,8 @@ public class ConnectionOptions {
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
+
+  public static final String ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY = "ENABLE_CHANNEL_PROVIDER";
   /** Custom user agent string is only for other Google libraries. */
   private static final String USER_AGENT_PROPERTY_NAME = "userAgent";
   /** Query optimizer version to use for a connection. */
@@ -228,6 +252,26 @@ public class ConnectionOptions {
   public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
   /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
   public static final String TRACK_CONNECTION_LEAKS_PROPERTY_NAME = "trackConnectionLeaks";
+
+  public static final String DATA_BOOST_ENABLED_PROPERTY_NAME = "dataBoostEnabled";
+  public static final String AUTO_PARTITION_MODE_PROPERTY_NAME = "autoPartitionMode";
+  public static final String MAX_PARTITIONS_PROPERTY_NAME = "maxPartitions";
+  public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
+      "maxPartitionedParallelism";
+
+  private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
+      "%s can only be used if the system property %s has been set to true. "
+          + "Start the application with the JVM command line option -D%s=true";
+
+  private static String generateGuardedConnectionPropertyError(
+      String systemPropertyName, String connectionPropertyName) {
+    return String.format(
+        GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE,
+        connectionPropertyName,
+        systemPropertyName,
+        systemPropertyName);
+  }
+
   /** All valid connection properties. */
   public static final Set<ConnectionProperty> VALID_PROPERTIES =
       Collections.unmodifiableSet(
@@ -241,6 +285,10 @@ public class ConnectionOptions {
                       READONLY_PROPERTY_NAME,
                       "Should the connection start in read-only mode (true/false)",
                       DEFAULT_READONLY),
+                  ConnectionProperty.createBooleanProperty(
+                      ROUTE_TO_LEADER_PROPERTY_NAME,
+                      "Should read/write transactions and partitioned DML be routed to leader region (true/false)",
+                      DEFAULT_ROUTE_TO_LEADER),
                   ConnectionProperty.createBooleanProperty(
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
@@ -284,7 +332,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
-                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). The instance and database in the connection string will automatically be created if these do not yet exist on the emulator.",
+                      "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
+                          + "The instance and database in the connection string will automatically be created if these do not yet exist on the emulator. "
+                          + "Add dialect=postgresql to the connection string to make sure that the database that is created uses the PostgreSQL dialect.",
                       false),
                   ConnectionProperty.createBooleanProperty(
                       LENIENT_PROPERTY_NAME,
@@ -294,7 +344,8 @@ public class ConnectionOptions {
                       RPC_PRIORITY_NAME,
                       "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."),
                   ConnectionProperty.createStringProperty(
-                      DIALECT_PROPERTY_NAME, "Sets the dialect to use for this connection."),
+                      DIALECT_PROPERTY_NAME,
+                      "Sets the dialect to use for new databases that are created by this connection."),
                   ConnectionProperty.createStringProperty(
                       DATABASE_ROLE_PROPERTY_NAME,
                       "Sets the database role to use for this connection. The default is privileges assigned to IAM role"),
@@ -323,7 +374,29 @@ public class ConnectionOptions {
                           + "If disabled, the LeakedConnectionException will only be created when an "
                           + "actual connection leak is detected. The stack trace of the exception will "
                           + "in that case not contain the call stack of when the connection was created.",
-                      DEFAULT_TRACK_CONNECTION_LEAKS))));
+                      DEFAULT_TRACK_CONNECTION_LEAKS),
+                  ConnectionProperty.createBooleanProperty(
+                      DATA_BOOST_ENABLED_PROPERTY_NAME,
+                      "Enable data boost for all partitioned queries that are executed by this connection. "
+                          + "This setting is only used for partitioned queries and is ignored by all other statements.",
+                      DEFAULT_DATA_BOOST_ENABLED),
+                  ConnectionProperty.createBooleanProperty(
+                      AUTO_PARTITION_MODE_PROPERTY_NAME,
+                      "Execute all queries on this connection as partitioned queries. "
+                          + "Executing a query that cannot be partitioned will fail. "
+                          + "Executing a query in a read/write transaction will also fail.",
+                      DEFAULT_AUTO_PARTITION_MODE),
+                  ConnectionProperty.createIntProperty(
+                      MAX_PARTITIONS_PROPERTY_NAME,
+                      "The max partitions hint value to use for partitioned queries. "
+                          + "Use 0 if you do not want to specify a hint.",
+                      DEFAULT_MAX_PARTITIONS),
+                  ConnectionProperty.createIntProperty(
+                      MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME,
+                      "The maximum number of partitions that will be executed in parallel "
+                          + "for partitioned queries on this connection. Set this value to 0 to "
+                          + "dynamically use the number of processors available in the runtime.",
+                      DEFAULT_MAX_PARTITIONED_PARALLELISM))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -402,7 +475,10 @@ public class ConnectionOptions {
         "(?:cloudspanner:)(?<HOSTGROUP>//[\\w.-]+(?:\\.[\\w\\.-]+)*[\\w\\-\\._~:/?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=.]+)?/projects/(?<PROJECTGROUP>(([a-z]|[-.:]|[0-9])+|(DEFAULT_PROJECT_ID)))(/instances/(?<INSTANCEGROUP>([a-z]|[-]|[0-9])+)(/databases/(?<DATABASEGROUP>([a-z]|[-]|[_]|[0-9])+))?)?(?:[?|;].*)?";
 
     private static final String SPANNER_URI_REGEX = "(?is)^" + SPANNER_URI_FORMAT + "$";
-    private static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
+
+    @VisibleForTesting
+    static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
+
     private static final String HOST_GROUP = "HOSTGROUP";
     private static final String PROJECT_GROUP = "PROJECTGROUP";
     private static final String INSTANCE_GROUP = "INSTANCEGROUP";
@@ -462,6 +538,8 @@ public class ConnectionOptions {
      *       created on the emulator if any of them do not yet exist. Any existing instance or
      *       database on the emulator will remain untouched. No other configuration is needed in
      *       order to connect to the emulator than setting this property.
+     *   <li>routeToLeader (boolean): Sets the routeToLeader flag to route requests to leader (true)
+     *       or any region (false) in read/write transactions and Partitioned DML. Default is true.
      * </ul>
      *
      * @param uri The URI of the Spanner database to connect to.
@@ -579,13 +657,20 @@ public class ConnectionOptions {
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
   private final boolean autoConfigEmulator;
+  private final Dialect dialect;
   private final RpcPriority rpcPriority;
   private final boolean delayTransactionStartUntilFirstWrite;
   private final boolean trackSessionLeaks;
   private final boolean trackConnectionLeaks;
 
+  private final boolean dataBoostEnabled;
+  private final boolean autoPartitionMode;
+  private final int maxPartitions;
+  private final int maxPartitionedParallelism;
+
   private final boolean autocommit;
   private final boolean readOnly;
+  private final boolean routeToLeader;
   private final boolean retryAbortsInternally;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
@@ -624,12 +709,18 @@ public class ConnectionOptions {
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
+    this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
-    this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
+    this.host = determineHost(matcher, autoConfigEmulator, usePlainText, System.getenv());
     this.rpcPriority = parseRPCPriority(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
     this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
+
+    this.dataBoostEnabled = parseDataBoostEnabled(this.uri);
+    this.autoPartitionMode = parseAutoPartitionMode(this.uri);
+    this.maxPartitions = parseMaxPartitions(this.uri);
+    this.maxPartitionedParallelism = parseMaxPartitionedParallelism(this.uri);
 
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
@@ -678,6 +769,7 @@ public class ConnectionOptions {
 
     this.autocommit = parseAutocommit(this.uri);
     this.readOnly = parseReadOnly(this.uri);
+    this.routeToLeader = parseRouteToLeader(this.uri);
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
@@ -704,11 +796,19 @@ public class ConnectionOptions {
     }
   }
 
-  private static String determineHost(
-      Matcher matcher, boolean autoConfigEmulator, boolean usePlainText) {
+  @VisibleForTesting
+  static String determineHost(
+      Matcher matcher,
+      boolean autoConfigEmulator,
+      boolean usePlainText,
+      Map<String, String> environment) {
     if (matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
-        return DEFAULT_EMULATOR_HOST;
+        if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
+          return DEFAULT_EMULATOR_HOST;
+        } else {
+          return PLAIN_TEXT_PROTOCOL + "//" + environment.get(SPANNER_EMULATOR_HOST_ENV_VAR);
+        }
       } else {
         return DEFAULT_HOST;
       }
@@ -762,6 +862,11 @@ public class ConnectionOptions {
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
   }
 
+  static boolean parseRouteToLeader(String uri) {
+    String value = parseUriProperty(uri, ROUTE_TO_LEADER_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_ROUTE_TO_LEADER;
+  }
+
   @VisibleForTesting
   static boolean parseRetryAbortsInternally(String uri) {
     String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
@@ -776,38 +881,62 @@ public class ConnectionOptions {
 
   @VisibleForTesting
   static @Nullable String parseEncodedCredentials(String uri) {
-    return parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
+    String encodedCredentials = parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
+    checkGuardedProperty(
+        encodedCredentials,
+        ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY,
+        ENCODED_CREDENTIALS_PROPERTY_NAME);
+    return encodedCredentials;
   }
 
   @VisibleForTesting
   static @Nullable CredentialsProvider parseCredentialsProvider(String uri) {
-    String name = parseUriProperty(uri, CREDENTIALS_PROVIDER_PROPERTY_NAME);
-    if (name != null) {
+    String credentialsProviderName = parseUriProperty(uri, CREDENTIALS_PROVIDER_PROPERTY_NAME);
+    checkGuardedProperty(
+        credentialsProviderName,
+        ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY,
+        CREDENTIALS_PROVIDER_PROPERTY_NAME);
+    if (!Strings.isNullOrEmpty(credentialsProviderName)) {
       try {
         Class<? extends CredentialsProvider> clazz =
-            (Class<? extends CredentialsProvider>) Class.forName(name);
+            (Class<? extends CredentialsProvider>) Class.forName(credentialsProviderName);
         Constructor<? extends CredentialsProvider> constructor = clazz.getDeclaredConstructor();
         return constructor.newInstance();
       } catch (ClassNotFoundException classNotFoundException) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Unknown or invalid CredentialsProvider class name: " + name,
+            "Unknown or invalid CredentialsProvider class name: " + credentialsProviderName,
             classNotFoundException);
       } catch (NoSuchMethodException noSuchMethodException) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Credentials provider " + name + " does not have a public no-arg constructor.",
+            "Credentials provider "
+                + credentialsProviderName
+                + " does not have a public no-arg constructor.",
             noSuchMethodException);
       } catch (InvocationTargetException
           | InstantiationException
           | IllegalAccessException exception) {
         throw SpannerExceptionFactory.newSpannerException(
             ErrorCode.INVALID_ARGUMENT,
-            "Failed to create an instance of " + name + ": " + exception.getMessage(),
+            "Failed to create an instance of "
+                + credentialsProviderName
+                + ": "
+                + exception.getMessage(),
             exception);
       }
     }
     return null;
+  }
+
+  private static void checkGuardedProperty(
+      String value, String systemPropertyName, String connectionPropertyName) {
+    if (!Strings.isNullOrEmpty(value)
+        && !Boolean.parseBoolean(System.getProperty(systemPropertyName))) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.FAILED_PRECONDITION,
+          generateGuardedConnectionPropertyError(systemPropertyName, connectionPropertyName));
+    }
   }
 
   @VisibleForTesting
@@ -837,6 +966,8 @@ public class ConnectionOptions {
   @VisibleForTesting
   static String parseChannelProvider(String uri) {
     String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
+    checkGuardedProperty(
+        value, ENABLE_CHANNEL_PROVIDER_SYSTEM_PROPERTY, CHANNEL_PROVIDER_PROPERTY_NAME);
     return value != null ? value : DEFAULT_CHANNEL_PROVIDER;
   }
 
@@ -876,6 +1007,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static Dialect parseDialect(String uri) {
+    String value = parseUriProperty(uri, DIALECT_PROPERTY_NAME);
+    return value != null ? Dialect.valueOf(value.toUpperCase()) : Dialect.GOOGLE_STANDARD_SQL;
+  }
+
+  @VisibleForTesting
   static boolean parseLenient(String uri) {
     String value = parseUriProperty(uri, LENIENT_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_LENIENT;
@@ -899,6 +1036,57 @@ public class ConnectionOptions {
   static boolean parseTrackConnectionLeaks(String uri) {
     String value = parseUriProperty(uri, TRACK_CONNECTION_LEAKS_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_CONNECTION_LEAKS;
+  }
+
+  @VisibleForTesting
+  static boolean parseDataBoostEnabled(String uri) {
+    String value = parseUriProperty(uri, DATA_BOOST_ENABLED_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_DATA_BOOST_ENABLED;
+  }
+
+  @VisibleForTesting
+  static boolean parseAutoPartitionMode(String uri) {
+    String value = parseUriProperty(uri, AUTO_PARTITION_MODE_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTO_PARTITION_MODE;
+  }
+
+  @VisibleForTesting
+  static int parseMaxPartitions(String uri) {
+    String stringValue = parseUriProperty(uri, MAX_PARTITIONS_PROPERTY_NAME);
+    if (stringValue == null) {
+      return DEFAULT_MAX_PARTITIONS;
+    }
+    try {
+      int value = Integer.parseInt(stringValue);
+      if (value < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxPartitions must be >=0");
+      }
+      return value;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, "Invalid value for maxPartitions: " + stringValue);
+    }
+  }
+
+  @VisibleForTesting
+  static int parseMaxPartitionedParallelism(String uri) {
+    String stringValue = parseUriProperty(uri, MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME);
+    if (stringValue == null) {
+      return DEFAULT_MAX_PARTITIONED_PARALLELISM;
+    }
+    try {
+      int value = Integer.parseInt(stringValue);
+      if (value < 0) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxPartitionedParallelism must be >=0");
+      }
+      return value;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Invalid value for maxPartitionedParallelism: " + stringValue);
+    }
   }
 
   @VisibleForTesting
@@ -1090,6 +1278,14 @@ public class ConnectionOptions {
   }
 
   /**
+   * Whether read/write transactions and partitioned DML are preferred to be routed to the leader
+   * region.
+   */
+  public boolean isRouteToLeader() {
+    return routeToLeader;
+  }
+
+  /**
    * The initial retryAbortsInternally value for connections created by this {@link
    * ConnectionOptions}
    */
@@ -1136,6 +1332,10 @@ public class ConnectionOptions {
     return autoConfigEmulator;
   }
 
+  public Dialect getDialect() {
+    return dialect;
+  }
+
   /** The {@link RpcPriority} to use for the connection. */
   RpcPriority getRPCPriority() {
     return rpcPriority;
@@ -1151,6 +1351,22 @@ public class ConnectionOptions {
 
   boolean isTrackConnectionLeaks() {
     return this.trackConnectionLeaks;
+  }
+
+  boolean isDataBoostEnabled() {
+    return this.dataBoostEnabled;
+  }
+
+  boolean isAutoPartitionMode() {
+    return this.autoPartitionMode;
+  }
+
+  int getMaxPartitions() {
+    return this.maxPartitions;
+  }
+
+  int getMaxPartitionedParallelism() {
+    return this.maxPartitionedParallelism;
   }
 
   /** Interceptors that should be executed after each statement */

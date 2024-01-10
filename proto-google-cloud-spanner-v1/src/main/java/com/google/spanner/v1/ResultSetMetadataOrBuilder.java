@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ public interface ResultSetMetadataOrBuilder
    * Indicates the field names and types for the rows in the result
    * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
+   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -48,6 +49,7 @@ public interface ResultSetMetadataOrBuilder
    * Indicates the field names and types for the rows in the result
    * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
+   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -66,6 +68,7 @@ public interface ResultSetMetadataOrBuilder
    * Indicates the field names and types for the rows in the result
    * set.  For example, a SQL query like `"SELECT UserId, UserName FROM
    * Users"` could return a `row_type` value like:
+   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -123,6 +126,7 @@ public interface ResultSetMetadataOrBuilder
    * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
    * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
    * `undeclared_parameters` value like:
+   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -143,6 +147,7 @@ public interface ResultSetMetadataOrBuilder
    * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
    * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
    * `undeclared_parameters` value like:
+   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },
@@ -163,6 +168,7 @@ public interface ResultSetMetadataOrBuilder
    * parameters in the SQL query. For example, a SQL query like `"SELECT * FROM
    * Users where UserId = &#64;userId and UserName = &#64;userName "` could return a
    * `undeclared_parameters` value like:
+   *
    *     "fields": [
    *       { "name": "UserId", "type": { "code": "INT64" } },
    *       { "name": "UserName", "type": { "code": "STRING" } },

@@ -22,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -52,14 +54,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.GrpcResultSet}. */
+/** Unit tests for {@link com.google.cloud.spanner.AbstractResultSet.GrpcResultSet}. */
 @RunWith(JUnit4.class)
 public class GrpcResultSetTest {
 
   private AbstractResultSet.GrpcResultSet resultSet;
   private SpannerRpc.ResultStreamConsumer consumer;
   private AbstractResultSet.GrpcStreamIterator stream;
+  private final Duration streamWaitTimeout = Duration.ofNanos(1L);
 
   private static class NoOpListener implements AbstractResultSet.Listener {
     @Override
@@ -81,6 +85,11 @@ public class GrpcResultSetTest {
     stream.setCall(
         new SpannerRpc.StreamingCall() {
           @Override
+          public ApiCallContext getCallContext() {
+            return GrpcCallContext.createDefault().withStreamWaitTimeout(streamWaitTimeout);
+          }
+
+          @Override
           public void cancel(@Nullable String message) {}
 
           @Override
@@ -93,6 +102,14 @@ public class GrpcResultSetTest {
 
   public AbstractResultSet.GrpcResultSet resultSetWithMode(QueryMode queryMode) {
     return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+  }
+
+  @Test
+  public void testStreamTimeout() {
+    // We don't add any results to the stream. That means that it will time out after 1ns.
+    SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+    assertTrue(exception.getMessage(), exception.getMessage().contains("stream wait timeout"));
   }
 
   @Test

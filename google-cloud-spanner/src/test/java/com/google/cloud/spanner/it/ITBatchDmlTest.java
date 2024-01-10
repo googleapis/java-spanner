@@ -31,7 +31,9 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
@@ -188,5 +190,66 @@ public final class ITBatchDmlTest {
         assertThat(rc).isEqualTo(4);
       }
     }
+  }
+
+  @Test
+  public void largeBatchDml() {
+    List<Statement> stmts = new LinkedList<>();
+    for (int i = 0; i < 40; i++) {
+      stmts.add(Statement.of("INSERT INTO T (k, v) VALUES ('boo" + i + "', " + i + ");"));
+    }
+
+    for (int i = 0; i < 40; i++) {
+      stmts.add(Statement.of("DELETE FROM T WHERE T.K = 'boo" + i + "';"));
+    }
+    long[] expectedRowCounts = new long[stmts.size()];
+    Arrays.fill(expectedRowCounts, 1L);
+
+    final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
+    TransactionRunner runner = client.readWriteTransaction();
+    long[] actualRowCounts = runner.run(callable);
+    assertThat(actualRowCounts.length).isEqualTo(80);
+    assertThat(expectedRowCounts).isEqualTo(actualRowCounts);
+  }
+
+  @Test
+  public void largeBatchDml_withParameterisedStatements() {
+    List<Statement> stmts = new LinkedList<>();
+    String insertQuery = "INSERT INTO T(k, v) VALUES(@key, @val)";
+    for (int i = 0; i < 80; i++) {
+      stmts.add(
+          Statement.newBuilder(insertQuery)
+              .bind("key")
+              .to("'boo" + i + "'")
+              .bind("val")
+              .to(i)
+              .build());
+    }
+    long[] expectedRowCounts = new long[stmts.size()];
+    Arrays.fill(expectedRowCounts, 1L);
+
+    final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
+    TransactionRunner runner = client.readWriteTransaction();
+    long[] actualRowCounts = runner.run(callable);
+
+    assertThat(actualRowCounts.length).isEqualTo(80);
+    assertThat(expectedRowCounts).isEqualTo(actualRowCounts);
+  }
+
+  @Test
+  public void largeBatchDml_withNonParameterisedStatements() {
+    List<Statement> stmts = new LinkedList<>();
+    for (int i = 0; i < 80; i++) {
+      stmts.add(Statement.of("INSERT INTO T (k, v) VALUES ('boo" + i + "', " + i + ");"));
+    }
+    long[] expectedRowCounts = new long[stmts.size()];
+    Arrays.fill(expectedRowCounts, 1L);
+
+    final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
+    TransactionRunner runner = client.readWriteTransaction();
+    long[] actualRowCounts = runner.run(callable);
+
+    assertThat(actualRowCounts.length).isEqualTo(80);
+    assertThat(expectedRowCounts).isEqualTo(actualRowCounts);
   }
 }

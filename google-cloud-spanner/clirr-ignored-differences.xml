@@ -450,4 +450,106 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isDelayTransactionStartUntilFirstWrite()</method>
   </difference>
+
+  <!-- Partitioned queries in Connection API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>int getMaxPartitionedParallelism()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>int getMaxPartitions()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isAutoPartitionMode()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isDataBoostEnabled()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.ResultSet partitionQuery(com.google.cloud.spanner.Statement, com.google.cloud.spanner.PartitionOptions, com.google.cloud.spanner.Options$QueryOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.ResultSet runPartition(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.PartitionedQueryResultSet runPartitionedQuery(com.google.cloud.spanner.Statement, com.google.cloud.spanner.PartitionOptions, com.google.cloud.spanner.Options$QueryOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setAutoPartitionMode(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDataBoostEnabled(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxPartitionedParallelism(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxPartitions(int)</method>
+  </difference>
+  <!-- Add an execute method that allows the driver to state what types should be allowed or not.
+       This fixes the gap between what JDBC allows, and what is currently allowed in the Connection
+       API:
+       1. JDBC allows executeUpdate to be used for everything that does not return a ResultSet.
+       2. Connection API requires executeUpdate to be used with something that returns an update
+          count (i.e. no DDL and no client-side statements. -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.StatementResult execute(com.google.cloud.spanner.Statement, java.util.Set)</method>
+  </difference>
+
+  <!-- (Internal change, use stream timeout) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall</className>
+    <method>com.google.api.gax.rpc.ApiCallContext getCallContext()</method>
+  </difference>
+  <!-- (Internal change, propagate streaming retry settings) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getReadRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getExecuteQueryRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getReadRetryableCodes()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getExecuteQueryRetryableCodes()</method>
+  </difference>
+  <!-- Added getDefaultSchema() to Dialect enum. -->
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Dialect</className>
+    <method>java.lang.String getDefaultSchema()</method>
+  </difference>
 </differences>

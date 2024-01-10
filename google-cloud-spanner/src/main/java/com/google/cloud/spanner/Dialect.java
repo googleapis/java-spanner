@@ -33,6 +33,11 @@ public enum Dialect {
     public DatabaseDialect toProto() {
       return DatabaseDialect.GOOGLE_STANDARD_SQL;
     }
+
+    @Override
+    public String getDefaultSchema() {
+      return "";
+    }
   },
   POSTGRESQL {
     @Override
@@ -43,6 +48,11 @@ public enum Dialect {
     @Override
     public DatabaseDialect toProto() {
       return DatabaseDialect.POSTGRESQL;
+    }
+
+    @Override
+    public String getDefaultSchema() {
+      return "public";
     }
   };
 
@@ -55,6 +65,8 @@ public enum Dialect {
   public abstract String createDatabaseStatementFor(String databaseName);
 
   public abstract DatabaseDialect toProto();
+
+  public abstract String getDefaultSchema();
 
   public static Dialect fromProto(DatabaseDialect databaseDialect) {
     final Dialect dialect = protoToDialect.get(databaseDialect);

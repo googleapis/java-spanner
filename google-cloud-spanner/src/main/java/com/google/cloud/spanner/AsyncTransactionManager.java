@@ -18,7 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -43,7 +43,7 @@ import java.util.concurrent.TimeoutException;
  * so can cause resources to be leaked and deadlocks. Easiest way to guarantee this is by calling
  * {@link #close()} in a finally block.
  *
- * @see DatabaseClient#transactionManagerAsync()
+ * @see DatabaseClient#transactionManagerAsync(TransactionOption...)
  */
 public interface AsyncTransactionManager extends AutoCloseable {
   /**
@@ -91,10 +91,10 @@ public interface AsyncTransactionManager extends AutoCloseable {
 
   /**
    * {@link AsyncTransactionStep} is returned by {@link
-   * TransactionContextFuture#then(AsyncTransactionFunction)} and {@link
-   * AsyncTransactionStep#then(AsyncTransactionFunction)} and allows transaction steps that should
-   * be executed serially to be chained together. Each step can contain one or more statements that
-   * may execute in parallel.
+   * TransactionContextFuture#then(AsyncTransactionFunction, Executor)} and {@link
+   * AsyncTransactionStep#then(AsyncTransactionFunction, Executor)} and allows transaction steps
+   * that should be executed serially to be chained together. Each step can contain one or more
+   * statements that may execute in parallel.
    *
    * <p>Example usage:
    *
@@ -115,6 +115,9 @@ public interface AsyncTransactionManager extends AutoCloseable {
    *     executor)
    *   .commitAsync();
    * }</pre>
+   *
+   * @param <I>
+   * @param <O>
    */
   interface AsyncTransactionStep<I, O> extends ApiFuture<O> {
     /**
@@ -140,6 +143,9 @@ public interface AsyncTransactionManager extends AutoCloseable {
    * a {@link TransactionContext} and the output value of the previous transaction step as its input
    * parameters. The method should return an {@link ApiFuture} that will return the result of this
    * step.
+   *
+   * @param <I>
+   * @param <O>
    */
   interface AsyncTransactionFunction<I, O> {
     /**
@@ -151,8 +157,8 @@ public interface AsyncTransactionManager extends AutoCloseable {
      * @param input the result of the previous transaction step.
      * @return an {@link ApiFuture} that will return the result of this step, and that will be the
      *     input of the next transaction step. This method should never return <code>null</code>.
-     *     Instead, if the method does not have a return value, the method should return {@link
-     *     ApiFutures#immediateFuture(null)}.
+     *     Instead, if the method does not have a return value, the method should return
+     *     ApiFutures#immediateFuture(null).
      */
     ApiFuture<O> apply(TransactionContext txn, I input) throws Exception;
   }
@@ -160,7 +166,7 @@ public interface AsyncTransactionManager extends AutoCloseable {
   /**
    * Creates a new read write transaction. This must be called before doing any other operation and
    * can only be called once. To create a new transaction for subsequent retries, see {@link
-   * #resetForRetry()}.
+   * #resetForRetryAsync()}.
    */
   TransactionContextFuture beginAsync();
 

@@ -68,6 +68,10 @@ public final class SpannerDatabaseAdminProto {
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_admin_database_v1_DdlStatementActionInfo_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_admin_database_v1_DdlStatementActionInfo_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
       internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_fieldAccessorTable;
@@ -172,7 +176,7 @@ public final class SpannerDatabaseAdminProto {
           + "oken\030\004 \001(\t\"o\n\025ListDatabasesResponse\022=\n\td"
           + "atabases\030\001 \003(\0132*.google.spanner.admin.da"
           + "tabase.v1.Database\022\027\n\017next_page_token\030\002 "
-          + "\001(\t\"\332\002\n\025CreateDatabaseRequest\0228\n\006parent\030"
+          + "\001(\t\"\271\002\n\025CreateDatabaseRequest\0228\n\006parent\030"
           + "\001 \001(\tB(\342A\001\002\372A!\n\037spanner.googleapis.com/I"
           + "nstance\022\036\n\020create_statement\030\002 \001(\tB\004\342A\001\002\022"
           + "\036\n\020extra_statements\030\003 \003(\tB\004\342A\001\001\022S\n\021encry"
@@ -504,16 +508,24 @@ public final class SpannerDatabaseAdminProto {
             new java.lang.String[] {
               "Database", "Statements", "OperationId", "ProtoDescriptors",
             });
-    internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_descriptor =
+    internal_static_google_spanner_admin_database_v1_DdlStatementActionInfo_descriptor =
         getDescriptor().getMessageTypes().get(10);
+    internal_static_google_spanner_admin_database_v1_DdlStatementActionInfo_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_admin_database_v1_DdlStatementActionInfo_descriptor,
+            new java.lang.String[] {
+              "Action", "EntityType", "EntityNames",
+            });
+    internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_descriptor =
+        getDescriptor().getMessageTypes().get(11);
     internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_UpdateDatabaseDdlMetadata_descriptor,
             new java.lang.String[] {
-              "Database", "Statements", "CommitTimestamps", "Throttled", "Progress",
+              "Database", "Statements", "CommitTimestamps", "Throttled", "Progress", "Actions",
             });
     internal_static_google_spanner_admin_database_v1_DropDatabaseRequest_descriptor =
-        getDescriptor().getMessageTypes().get(11);
+        getDescriptor().getMessageTypes().get(12);
     internal_static_google_spanner_admin_database_v1_DropDatabaseRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_DropDatabaseRequest_descriptor,
@@ -521,7 +533,7 @@ public final class SpannerDatabaseAdminProto {
               "Database",
             });
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlRequest_descriptor =
-        getDescriptor().getMessageTypes().get(12);
+        getDescriptor().getMessageTypes().get(13);
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_GetDatabaseDdlRequest_descriptor,
@@ -529,7 +541,7 @@ public final class SpannerDatabaseAdminProto {
               "Database",
             });
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_descriptor =
-        getDescriptor().getMessageTypes().get(13);
+        getDescriptor().getMessageTypes().get(14);
     internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_descriptor,
@@ -537,7 +549,7 @@ public final class SpannerDatabaseAdminProto {
               "Statements", "ProtoDescriptors",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsRequest_descriptor =
-        getDescriptor().getMessageTypes().get(14);
+        getDescriptor().getMessageTypes().get(15);
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsRequest_descriptor,
@@ -545,7 +557,7 @@ public final class SpannerDatabaseAdminProto {
               "Parent", "Filter", "PageSize", "PageToken",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsResponse_descriptor =
-        getDescriptor().getMessageTypes().get(15);
+        getDescriptor().getMessageTypes().get(16);
     internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseOperationsResponse_descriptor,
@@ -553,7 +565,7 @@ public final class SpannerDatabaseAdminProto {
               "Operations", "NextPageToken",
             });
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseRequest_descriptor =
-        getDescriptor().getMessageTypes().get(16);
+        getDescriptor().getMessageTypes().get(17);
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_RestoreDatabaseRequest_descriptor,
@@ -561,7 +573,7 @@ public final class SpannerDatabaseAdminProto {
               "Parent", "DatabaseId", "Backup", "EncryptionConfig", "Source",
             });
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseEncryptionConfig_descriptor =
-        getDescriptor().getMessageTypes().get(17);
+        getDescriptor().getMessageTypes().get(18);
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseEncryptionConfig_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_RestoreDatabaseEncryptionConfig_descriptor,
@@ -569,7 +581,7 @@ public final class SpannerDatabaseAdminProto {
               "EncryptionType", "KmsKeyName",
             });
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseMetadata_descriptor =
-        getDescriptor().getMessageTypes().get(18);
+        getDescriptor().getMessageTypes().get(19);
     internal_static_google_spanner_admin_database_v1_RestoreDatabaseMetadata_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_RestoreDatabaseMetadata_descriptor,
@@ -583,7 +595,7 @@ public final class SpannerDatabaseAdminProto {
               "SourceInfo",
             });
     internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_descriptor =
-        getDescriptor().getMessageTypes().get(19);
+        getDescriptor().getMessageTypes().get(20);
     internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_OptimizeRestoredDatabaseMetadata_descriptor,
@@ -591,7 +603,7 @@ public final class SpannerDatabaseAdminProto {
               "Name", "Progress",
             });
     internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor =
-        getDescriptor().getMessageTypes().get(20);
+        getDescriptor().getMessageTypes().get(21);
     internal_static_google_spanner_admin_database_v1_DatabaseRole_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_DatabaseRole_descriptor,
@@ -599,7 +611,7 @@ public final class SpannerDatabaseAdminProto {
               "Name",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_descriptor =
-        getDescriptor().getMessageTypes().get(21);
+        getDescriptor().getMessageTypes().get(22);
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseRolesRequest_descriptor,
@@ -607,7 +619,7 @@ public final class SpannerDatabaseAdminProto {
               "Parent", "PageSize", "PageToken",
             });
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_descriptor =
-        getDescriptor().getMessageTypes().get(22);
+        getDescriptor().getMessageTypes().get(23);
     internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_admin_database_v1_ListDatabaseRolesResponse_descriptor,

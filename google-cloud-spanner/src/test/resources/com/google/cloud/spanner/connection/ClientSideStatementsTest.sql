@@ -3790,6 +3790,266 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-delay_transaction_start_until_first_write;
 NEW_CONNECTION;
+partition select col1, col2 from my_table;
+NEW_CONNECTION;
+PARTITION SELECT COL1, COL2 FROM MY_TABLE;
+NEW_CONNECTION;
+partition select col1, col2 from my_table;
+NEW_CONNECTION;
+   partition select col1, col2 from my_table;
+NEW_CONNECTION;
+			partition select col1, col2 from my_table;
+NEW_CONNECTION;
+
+
+
+partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table  ;
+NEW_CONNECTION;
+partition select col1, col2 from my_table		;
+NEW_CONNECTION;
+partition select col1, col2 from my_table
+
+;
+NEW_CONNECTION;
+partition   select   col1,   col2   from   my_table;
+NEW_CONNECTION;
+partition	select	col1,	col2	from	my_table;
+NEW_CONNECTION;
+partition
+select
+col1,
+col2
+from
+my_table;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-partition select col1, col2 from my_table;
+NEW_CONNECTION;
+partition select col1, col2 from my_table/-;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+RUN PARTITIONED QUERY SELECT COL1, COL2 FROM MY_TABLE;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+   run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+			run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+
+
+
+run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table  ;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table		;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table
+
+;
+NEW_CONNECTION;
+run   partitioned   query   select   col1,   col2   from   my_table;
+NEW_CONNECTION;
+run	partitioned	query	select	col1,	col2	from	my_table;
+NEW_CONNECTION;
+run
+partitioned
+query
+select
+col1,
+col2
+from
+my_table;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-run partitioned query select col1, col2 from my_table;
+NEW_CONNECTION;
+run partitioned query select col1, col2 from my_table/-;
+NEW_CONNECTION;
 begin;
 NEW_CONNECTION;
 BEGIN;
@@ -17701,3 +17961,2399 @@ set delay_transaction_start_until_first_write = false/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set delay_transaction_start_until_first_write =/-false;
+NEW_CONNECTION;
+show variable data_boost_enabled;
+NEW_CONNECTION;
+SHOW VARIABLE DATA_BOOST_ENABLED;
+NEW_CONNECTION;
+show variable data_boost_enabled;
+NEW_CONNECTION;
+   show variable data_boost_enabled;
+NEW_CONNECTION;
+			show variable data_boost_enabled;
+NEW_CONNECTION;
+
+
+
+show variable data_boost_enabled;
+NEW_CONNECTION;
+show variable data_boost_enabled  ;
+NEW_CONNECTION;
+show variable data_boost_enabled		;
+NEW_CONNECTION;
+show variable data_boost_enabled
+
+;
+NEW_CONNECTION;
+show   variable   data_boost_enabled;
+NEW_CONNECTION;
+show	variable	data_boost_enabled;
+NEW_CONNECTION;
+show
+variable
+data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable data_boost_enabled/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-data_boost_enabled;
+NEW_CONNECTION;
+set data_boost_enabled = true;
+NEW_CONNECTION;
+SET DATA_BOOST_ENABLED = TRUE;
+NEW_CONNECTION;
+set data_boost_enabled = true;
+NEW_CONNECTION;
+   set data_boost_enabled = true;
+NEW_CONNECTION;
+			set data_boost_enabled = true;
+NEW_CONNECTION;
+
+
+
+set data_boost_enabled = true;
+NEW_CONNECTION;
+set data_boost_enabled = true  ;
+NEW_CONNECTION;
+set data_boost_enabled = true		;
+NEW_CONNECTION;
+set data_boost_enabled = true
+
+;
+NEW_CONNECTION;
+set   data_boost_enabled   =   true;
+NEW_CONNECTION;
+set	data_boost_enabled	=	true;
+NEW_CONNECTION;
+set
+data_boost_enabled
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =/-true;
+NEW_CONNECTION;
+set data_boost_enabled = false;
+NEW_CONNECTION;
+SET DATA_BOOST_ENABLED = FALSE;
+NEW_CONNECTION;
+set data_boost_enabled = false;
+NEW_CONNECTION;
+   set data_boost_enabled = false;
+NEW_CONNECTION;
+			set data_boost_enabled = false;
+NEW_CONNECTION;
+
+
+
+set data_boost_enabled = false;
+NEW_CONNECTION;
+set data_boost_enabled = false  ;
+NEW_CONNECTION;
+set data_boost_enabled = false		;
+NEW_CONNECTION;
+set data_boost_enabled = false
+
+;
+NEW_CONNECTION;
+set   data_boost_enabled   =   false;
+NEW_CONNECTION;
+set	data_boost_enabled	=	false;
+NEW_CONNECTION;
+set
+data_boost_enabled
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set data_boost_enabled =/-false;
+NEW_CONNECTION;
+show variable auto_partition_mode;
+NEW_CONNECTION;
+SHOW VARIABLE AUTO_PARTITION_MODE;
+NEW_CONNECTION;
+show variable auto_partition_mode;
+NEW_CONNECTION;
+   show variable auto_partition_mode;
+NEW_CONNECTION;
+			show variable auto_partition_mode;
+NEW_CONNECTION;
+
+
+
+show variable auto_partition_mode;
+NEW_CONNECTION;
+show variable auto_partition_mode  ;
+NEW_CONNECTION;
+show variable auto_partition_mode		;
+NEW_CONNECTION;
+show variable auto_partition_mode
+
+;
+NEW_CONNECTION;
+show   variable   auto_partition_mode;
+NEW_CONNECTION;
+show	variable	auto_partition_mode;
+NEW_CONNECTION;
+show
+variable
+auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable auto_partition_mode/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-auto_partition_mode;
+NEW_CONNECTION;
+set auto_partition_mode = true;
+NEW_CONNECTION;
+SET AUTO_PARTITION_MODE = TRUE;
+NEW_CONNECTION;
+set auto_partition_mode = true;
+NEW_CONNECTION;
+   set auto_partition_mode = true;
+NEW_CONNECTION;
+			set auto_partition_mode = true;
+NEW_CONNECTION;
+
+
+
+set auto_partition_mode = true;
+NEW_CONNECTION;
+set auto_partition_mode = true  ;
+NEW_CONNECTION;
+set auto_partition_mode = true		;
+NEW_CONNECTION;
+set auto_partition_mode = true
+
+;
+NEW_CONNECTION;
+set   auto_partition_mode   =   true;
+NEW_CONNECTION;
+set	auto_partition_mode	=	true;
+NEW_CONNECTION;
+set
+auto_partition_mode
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =/-true;
+NEW_CONNECTION;
+set auto_partition_mode = false;
+NEW_CONNECTION;
+SET AUTO_PARTITION_MODE = FALSE;
+NEW_CONNECTION;
+set auto_partition_mode = false;
+NEW_CONNECTION;
+   set auto_partition_mode = false;
+NEW_CONNECTION;
+			set auto_partition_mode = false;
+NEW_CONNECTION;
+
+
+
+set auto_partition_mode = false;
+NEW_CONNECTION;
+set auto_partition_mode = false  ;
+NEW_CONNECTION;
+set auto_partition_mode = false		;
+NEW_CONNECTION;
+set auto_partition_mode = false
+
+;
+NEW_CONNECTION;
+set   auto_partition_mode   =   false;
+NEW_CONNECTION;
+set	auto_partition_mode	=	false;
+NEW_CONNECTION;
+set
+auto_partition_mode
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set auto_partition_mode =/-false;
+NEW_CONNECTION;
+show variable max_partitions;
+NEW_CONNECTION;
+SHOW VARIABLE MAX_PARTITIONS;
+NEW_CONNECTION;
+show variable max_partitions;
+NEW_CONNECTION;
+   show variable max_partitions;
+NEW_CONNECTION;
+			show variable max_partitions;
+NEW_CONNECTION;
+
+
+
+show variable max_partitions;
+NEW_CONNECTION;
+show variable max_partitions  ;
+NEW_CONNECTION;
+show variable max_partitions		;
+NEW_CONNECTION;
+show variable max_partitions
+
+;
+NEW_CONNECTION;
+show   variable   max_partitions;
+NEW_CONNECTION;
+show	variable	max_partitions;
+NEW_CONNECTION;
+show
+variable
+max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitions/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-max_partitions;
+NEW_CONNECTION;
+set max_partitions = 0;
+NEW_CONNECTION;
+SET MAX_PARTITIONS = 0;
+NEW_CONNECTION;
+set max_partitions = 0;
+NEW_CONNECTION;
+   set max_partitions = 0;
+NEW_CONNECTION;
+			set max_partitions = 0;
+NEW_CONNECTION;
+
+
+
+set max_partitions = 0;
+NEW_CONNECTION;
+set max_partitions = 0  ;
+NEW_CONNECTION;
+set max_partitions = 0		;
+NEW_CONNECTION;
+set max_partitions = 0
+
+;
+NEW_CONNECTION;
+set   max_partitions   =   0;
+NEW_CONNECTION;
+set	max_partitions	=	0;
+NEW_CONNECTION;
+set
+max_partitions
+=
+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =%0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =_0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =&0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =$0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =@0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =!0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =*0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =(0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =)0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =-0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =-#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =\0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =?0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =-/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =/#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_partitions = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 0/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =/-0;
+NEW_CONNECTION;
+set max_partitions = 10;
+NEW_CONNECTION;
+SET MAX_PARTITIONS = 10;
+NEW_CONNECTION;
+set max_partitions = 10;
+NEW_CONNECTION;
+   set max_partitions = 10;
+NEW_CONNECTION;
+			set max_partitions = 10;
+NEW_CONNECTION;
+
+
+
+set max_partitions = 10;
+NEW_CONNECTION;
+set max_partitions = 10  ;
+NEW_CONNECTION;
+set max_partitions = 10		;
+NEW_CONNECTION;
+set max_partitions = 10
+
+;
+NEW_CONNECTION;
+set   max_partitions   =   10;
+NEW_CONNECTION;
+set	max_partitions	=	10;
+NEW_CONNECTION;
+set
+max_partitions
+=
+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =%10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =_10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =&10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =$10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =@10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =!10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =*10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =(10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =)10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =-10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =-#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =\10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =?10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =-/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =/#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions = 10/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitions =/-10;
+NEW_CONNECTION;
+show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+SHOW VARIABLE MAX_PARTITIONED_PARALLELISM;
+NEW_CONNECTION;
+show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+   show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+			show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+
+
+
+show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+show variable max_partitioned_parallelism  ;
+NEW_CONNECTION;
+show variable max_partitioned_parallelism		;
+NEW_CONNECTION;
+show variable max_partitioned_parallelism
+
+;
+NEW_CONNECTION;
+show   variable   max_partitioned_parallelism;
+NEW_CONNECTION;
+show	variable	max_partitioned_parallelism;
+NEW_CONNECTION;
+show
+variable
+max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable max_partitioned_parallelism/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-max_partitioned_parallelism;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+SET MAX_PARTITIONED_PARALLELISM = 0;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+   set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+			set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+
+
+
+set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 0  ;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 0		;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 0
+
+;
+NEW_CONNECTION;
+set   max_partitioned_parallelism   =   0;
+NEW_CONNECTION;
+set	max_partitioned_parallelism	=	0;
+NEW_CONNECTION;
+set
+max_partitioned_parallelism
+=
+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =%0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =_0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =&0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =$0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =@0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =!0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =*0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =(0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =)0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =-0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =+0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =-#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =\0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =?0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =-/0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =/#0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_partitioned_parallelism = 0;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 0/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =/-0;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+SET MAX_PARTITIONED_PARALLELISM = 10;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+   set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+			set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+
+
+
+set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 10  ;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 10		;
+NEW_CONNECTION;
+set max_partitioned_parallelism = 10
+
+;
+NEW_CONNECTION;
+set   max_partitioned_parallelism   =   10;
+NEW_CONNECTION;
+set	max_partitioned_parallelism	=	10;
+NEW_CONNECTION;
+set
+max_partitioned_parallelism
+=
+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =%10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =_10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =&10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =$10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =@10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =!10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =*10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =(10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =)10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =-10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =-#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =\10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =?10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =-/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =/#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism = 10/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set max_partitioned_parallelism =/-10;

@@ -50,7 +50,7 @@ public final class TypeProto {
     java.lang.String[] descriptorData = {
       "\n\034google/spanner/v1/type.proto\022\021google.s"
           + "panner.v1\032\037google/api/field_behavior.pro"
-          + "to\"\370\001\n\004Type\022/\n\004code\030\001 \001(\0162\033.google.spann"
+          + "to\"\340\001\n\004Type\022/\n\004code\030\001 \001(\0162\033.google.spann"
           + "er.v1.TypeCodeB\004\342A\001\002\0223\n\022array_element_ty"
           + "pe\030\002 \001(\0132\027.google.spanner.v1.Type\0222\n\013str"
           + "uct_type\030\003 \001(\0132\035.google.spanner.v1.Struc"

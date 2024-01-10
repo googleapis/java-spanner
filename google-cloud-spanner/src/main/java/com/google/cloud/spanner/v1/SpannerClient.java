@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -940,6 +942,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
@@ -988,6 +991,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
@@ -1029,6 +1033,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream =
@@ -1165,6 +1170,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.read(request);
@@ -1214,6 +1220,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
@@ -1255,6 +1262,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
@@ -2009,6 +2017,49 @@ public class SpannerClient implements BackgroundResource {
    */
   public final UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable() {
     return stub.partitionReadCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Batches the supplied mutation groups in a collection of efficient transactions. All mutations
+   * in a group are committed atomically. However, mutations across groups can be committed
+   * non-atomically in an unspecified order and thus, they must be independent of each other.
+   * Partial failure is possible, i.e., some groups may have been committed successfully, while some
+   * may have failed. The results of individual batches are streamed into the response as the
+   * batches are applied.
+   *
+   * <p>BatchWrite requests are not replay protected, meaning that each mutation group may be
+   * applied more than once. Replays of non-idempotent mutations may have undesirable effects. For
+   * example, replays of an insert mutation may produce an already exists error or if you use
+   * generated or commit timestamp-based keys, it may result in additional rows being added to the
+   * mutation's table. We recommend structuring your mutation groups to be idempotent to avoid this
+   * issue.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (SpannerClient spannerClient = SpannerClient.create()) {
+   *   BatchWriteRequest request =
+   *       BatchWriteRequest.newBuilder()
+   *           .setSession(
+   *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+   *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+   *           .build();
+   *   ServerStream<BatchWriteResponse> stream = spannerClient.batchWriteCallable().call(request);
+   *   for (BatchWriteResponse response : stream) {
+   *     // Do something when a response is received.
+   *   }
+   * }
+   * }</pre>
+   */
+  public final ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
+    return stub.batchWriteCallable();
   }
 
   @Override

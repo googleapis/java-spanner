@@ -42,6 +42,8 @@ import com.google.rpc.ResourceInfo;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -55,6 +57,7 @@ import com.google.spanner.v1.ListSessionsRequest;
 import com.google.spanner.v1.ListSessionsResponse;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.Partition;
+import com.google.spanner.v1.PartitionOptions;
 import com.google.spanner.v1.PartitionQueryRequest;
 import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.PartitionResponse;
@@ -107,6 +110,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import org.threeten.bp.Instant;
 
 /**
@@ -257,7 +262,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
      */
     public static StatementResult queryAndThen(
         Statement statement, ResultSet resultSet, ResultSet next) {
-      return new StatementResult(statement, resultSet);
+      return new StatementResult(statement, resultSet, next);
     }
 
     /** Creates a {@link StatementResult} for a read request. */
@@ -595,8 +600,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
+  private Iterable<BatchWriteResponse> batchWriteResult = new ArrayList<>();
   private AtomicInteger numSessionsCreated = new AtomicInteger();
-
   private SimulatedExecutionTime beginTransactionExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime commitExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime batchCreateSessionsExecutionTime = NO_EXECUTION_TIME;
@@ -673,6 +678,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   public void putPartialStatementResult(StatementResult result) {
     synchronized (lock) {
       partialStatementResults.put(result.statement.getSql(), result);
+    }
+  }
+
+  public void setBatchWriteResult(final Iterable<BatchWriteResponse> responses) {
+    synchronized (lock) {
+      this.batchWriteResult = responses;
     }
   }
 
@@ -903,7 +914,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
-  private <T> void setSessionNotFound(String name, StreamObserver<T> responseObserver) {
+  public StatusRuntimeException createSessionNotFoundException(String name) {
     ResourceInfo resourceInfo =
         ResourceInfo.newBuilder()
             .setResourceType(SpannerExceptionFactory.SESSION_RESOURCE_TYPE)
@@ -915,10 +926,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             ProtoLiteUtils.metadataMarshaller(resourceInfo));
     Metadata trailers = new Metadata();
     trailers.put(key, resourceInfo);
-    responseObserver.onError(
-        Status.NOT_FOUND
-            .withDescription(String.format("Session not found: Session with id %s not found", name))
-            .asRuntimeException(trailers));
+    return Status.NOT_FOUND
+        .withDescription(String.format("Session not found: Session with id %s not found", name))
+        .asRuntimeException(trailers);
+  }
+
+  private <T> void setSessionNotFound(String name, StreamObserver<T> responseObserver) {
+    final StatusRuntimeException statusRuntimeException = createSessionNotFoundException(name);
+    responseObserver.onError(statusRuntimeException);
   }
 
   @Override
@@ -1956,6 +1971,29 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     }
   }
 
+  @Override
+  public void batchWrite(
+      BatchWriteRequest request, StreamObserver<BatchWriteResponse> responseObserver) {
+    requests.add(request);
+    Preconditions.checkNotNull(request.getSession());
+    Session session = sessions.get(request.getSession());
+    if (session == null) {
+      setSessionNotFound(request.getSession(), responseObserver);
+      return;
+    }
+    sessionLastUsed.put(session.getName(), Instant.now());
+    try {
+      for (BatchWriteResponse response : batchWriteResult) {
+        responseObserver.onNext(response);
+      }
+      responseObserver.onCompleted();
+    } catch (StatusRuntimeException t) {
+      responseObserver.onError(t);
+    } catch (Throwable t) {
+      responseObserver.onError(Status.INTERNAL.asRuntimeException());
+    }
+  }
+
   private void commitTransaction(ByteString transactionId) {
     transactions.remove(transactionId);
     isPartitionedDmlTransaction.remove(transactionId);
@@ -2007,7 +2045,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     try {
       partitionQueryExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
-      partition(request.getSession(), request.getTransaction(), responseObserver);
+      partition(
+          request.getSession(),
+          request.getTransaction(),
+          request.getPartitionOptions(),
+          responseObserver);
     } catch (StatusRuntimeException t) {
       responseObserver.onError(t);
     } catch (Throwable t) {
@@ -2022,7 +2064,11 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     try {
       partitionReadExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
-      partition(request.getSession(), request.getTransaction(), responseObserver);
+      partition(
+          request.getSession(),
+          request.getTransaction(),
+          request.getPartitionOptions(),
+          responseObserver);
     } catch (StatusRuntimeException t) {
       responseObserver.onError(t);
     } catch (Throwable t) {
@@ -2033,6 +2079,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private void partition(
       String sessionName,
       TransactionSelector transactionSelector,
+      PartitionOptions options,
       StreamObserver<PartitionResponse> responseObserver) {
     Session session = sessions.get(sessionName);
     if (session == null) {
@@ -2044,10 +2091,16 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       ByteString transactionId = getTransactionId(session, transactionSelector);
       responseObserver.onNext(
           PartitionResponse.newBuilder()
-              .addPartitions(
-                  Partition.newBuilder()
-                      .setPartitionToken(generatePartitionToken(session.getName(), transactionId))
-                      .build())
+              .addAllPartitions(
+                  LongStream.range(
+                          0L, options.getMaxPartitions() == 0L ? 1L : options.getMaxPartitions())
+                      .mapToObj(
+                          ignored ->
+                              Partition.newBuilder()
+                                  .setPartitionToken(
+                                      generatePartitionToken(session.getName(), transactionId))
+                                  .build())
+                      .collect(Collectors.toList()))
               .build());
       responseObserver.onCompleted();
     } catch (StatusRuntimeException e) {
@@ -2205,10 +2258,6 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     readExecutionTime = NO_EXECUTION_TIME;
     rollbackExecutionTime = NO_EXECUTION_TIME;
     streamingReadExecutionTime = NO_EXECUTION_TIME;
-  }
-
-  public SimulatedExecutionTime getBeginTransactionExecutionTime() {
-    return beginTransactionExecutionTime;
   }
 
   public void setBeginTransactionExecutionTime(

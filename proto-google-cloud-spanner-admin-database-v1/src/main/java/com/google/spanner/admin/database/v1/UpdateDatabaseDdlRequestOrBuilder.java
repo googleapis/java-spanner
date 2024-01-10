@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,6 +111,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * automatically-generated operation ID. Otherwise, `operation_id`
    * is used to construct the name of the resulting
    * [Operation][google.longrunning.Operation].
+   *
    * Specifying an explicit operation ID simplifies determining
    * whether the statements were executed in the event that the
    * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -118,6 +119,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * `operation_id` fields can be combined to form the
    * [name][google.longrunning.Operation.name] of the resulting
    * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
+   *
    * `operation_id` should be unique within the database, and must be
    * a valid identifier: `[a-z][a-z0-9_]*`. Note that
    * automatically-generated operation IDs always begin with an
@@ -139,6 +141,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * automatically-generated operation ID. Otherwise, `operation_id`
    * is used to construct the name of the resulting
    * [Operation][google.longrunning.Operation].
+   *
    * Specifying an explicit operation ID simplifies determining
    * whether the statements were executed in the event that the
    * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl] call is replayed,
@@ -146,6 +149,7 @@ public interface UpdateDatabaseDdlRequestOrBuilder
    * `operation_id` fields can be combined to form the
    * [name][google.longrunning.Operation.name] of the resulting
    * [longrunning.Operation][google.longrunning.Operation]: `&lt;database&gt;/operations/&lt;operation_id&gt;`.
+   *
    * `operation_id` should be unique within the database, and must be
    * a valid identifier: `[a-z][a-z0-9_]*`. Note that
    * automatically-generated operation IDs always begin with an

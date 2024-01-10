@@ -48,6 +48,9 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -63,6 +66,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nonnull;
 import org.junit.Test;
@@ -515,7 +519,9 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .setClientLibToken(jdbcToken)
             .build();
-    assertThat(options.getClientLibToken()).isEqualTo(jdbcToken);
+    // Verify that the client lib token that will actually be used contains both the JDBC token and
+    // the standard Java client library token ('gccl').
+    assertEquals("sp-jdbc gccl", options.getClientLibToken());
 
     options =
         SpannerOptions.newBuilder()
@@ -523,7 +529,7 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .setClientLibToken(hibernateToken)
             .build();
-    assertThat(options.getClientLibToken()).isEqualTo(hibernateToken);
+    assertEquals("sp-hib gccl", options.getClientLibToken());
 
     options =
         SpannerOptions.newBuilder()
@@ -531,7 +537,7 @@ public class SpannerOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .setClientLibToken(pgAdapterToken)
             .build();
-    assertEquals(options.getClientLibToken(), pgAdapterToken);
+    assertEquals("pg-adapter gccl", options.getClientLibToken());
 
     options =
         SpannerOptions.newBuilder()
@@ -680,8 +686,7 @@ public class SpannerOptionsTest {
 
   @Test
   public void testLeaderAwareRoutingEnablement() {
-    assertFalse(
-        SpannerOptions.newBuilder().setProjectId("p").build().isLeaderAwareRoutingEnabled());
+    assertTrue(SpannerOptions.newBuilder().setProjectId("p").build().isLeaderAwareRoutingEnabled());
     assertTrue(
         SpannerOptions.newBuilder()
             .setProjectId("p")
@@ -694,6 +699,27 @@ public class SpannerOptionsTest {
             .disableLeaderAwareRouting()
             .build()
             .isLeaderAwareRoutingEnabled());
+  }
+
+  @Test
+  public void testSetDirectedReadOptions() {
+    final DirectedReadOptions directedReadOptions =
+        DirectedReadOptions.newBuilder()
+            .setIncludeReplicas(
+                IncludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder().setLocation("us-west1").build())
+                    .build())
+            .build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setDirectedReadOptions(directedReadOptions)
+            .build();
+    assertEquals(options.getDirectedReadOptions(), directedReadOptions);
+    assertThrows(
+        NullPointerException.class,
+        () -> SpannerOptions.newBuilder().setDirectedReadOptions(null).build());
   }
 
   @Test
@@ -912,6 +938,62 @@ public class SpannerOptionsTest {
             .setAsyncExecutorProvider(FixedCloseableExecutorProvider.create(service))
             .build();
     assertSame(service, options.getAsyncExecutorProvider().getExecutor());
+  }
+
+  @Test
+  public void testAsyncExecutorProviderCoreThreadCount() throws Exception {
+    assertEquals(8, SpannerOptions.getDefaultAsyncExecutorProviderCoreThreadCount());
+    String propertyName = "com.google.cloud.spanner.async_num_core_threads";
+    assertEquals(
+        Integer.valueOf(8),
+        runWithSystemProperty(
+            propertyName, null, SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertEquals(
+        Integer.valueOf(16),
+        runWithSystemProperty(
+            propertyName, "16", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertEquals(
+        Integer.valueOf(1),
+        runWithSystemProperty(
+            propertyName, "1", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runWithSystemProperty(
+                propertyName,
+                "foo",
+                SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runWithSystemProperty(
+                propertyName,
+                "-1",
+                SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+    assertThrows(
+        SpannerException.class,
+        () ->
+            runWithSystemProperty(
+                propertyName, "", SpannerOptions::getDefaultAsyncExecutorProviderCoreThreadCount));
+  }
+
+  static <V> V runWithSystemProperty(
+      String propertyName, String propertyValue, Callable<V> callable) throws Exception {
+    String currentValue = System.getProperty(propertyName);
+    if (propertyValue == null) {
+      System.clearProperty(propertyName);
+    } else {
+      System.setProperty(propertyName, propertyValue);
+    }
+    try {
+      return callable.call();
+    } finally {
+      if (currentValue == null) {
+        System.clearProperty(propertyName);
+      } else {
+        System.setProperty(propertyName, currentValue);
+      }
+    }
   }
 
   @Test

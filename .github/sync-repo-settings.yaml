@@ -10,6 +10,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (17)
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -18,8 +19,6 @@ branchProtectionRules:
       - compile (8)
       - compile (11)
       - OwlBot Post Processor
-      - 'Kokoro - Test: Java GraalVM Native Image'
-      - 'Kokoro - Test: Java 17 GraalVM Native Image'
   - pattern: 3.3.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -28,6 +27,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -42,6 +42,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -56,6 +57,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -69,6 +71,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -81,6 +84,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -95,6 +99,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -109,6 +114,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'

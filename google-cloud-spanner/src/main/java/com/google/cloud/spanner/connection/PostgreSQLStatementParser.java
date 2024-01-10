@@ -184,9 +184,8 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
    * Note: This is an internal API and breaking changes can be made without prior notice.
    *
    * <p>Returns the PostgreSQL-style query parameters ($1, $2, ...) in the given SQL string. The
-   * SQL-string is assumed to not contain any comments. Use {@link #removeCommentsAndTrim(String)}
-   * to remove all comments before calling this method. Occurrences of query-parameter like strings
-   * inside quoted identifiers or string literals are ignored.
+   * SQL-string is allowed to contain comments. Occurrences of query-parameter like strings inside
+   * quoted identifiers or string literals are ignored.
    *
    * <p>The following example will return a set containing ("$1", "$2"). <code>
    * select col1, col2, "col$4"
@@ -195,7 +194,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
    * and not col3=$1 and col4='$3'
    * </code>
    *
-   * @param sql the SQL-string to check for parameters. Must not contain comments.
+   * @param sql the SQL-string to check for parameters.
    * @return A set containing all the parameters in the SQL-string.
    */
   @InternalApi
@@ -233,10 +232,54 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
         return skipQuoted(
             sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
       }
+    } else if (currentChar == HYPHEN
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == HYPHEN) {
+      return skipSingleLineComment(sql, currentIndex, result);
+    } else if (currentChar == SLASH
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == ASTERISK) {
+      return skipMultiLineComment(sql, currentIndex, result);
     }
 
     appendIfNotNull(result, currentChar);
     return currentIndex + 1;
+  }
+
+  static int skipSingleLineComment(String sql, int currentIndex, @Nullable StringBuilder result) {
+    int endIndex = sql.indexOf('\n', currentIndex + 2);
+    if (endIndex == -1) {
+      endIndex = sql.length();
+    } else {
+      // Include the newline character.
+      endIndex++;
+    }
+    appendIfNotNull(result, sql.substring(currentIndex, endIndex));
+    return endIndex;
+  }
+
+  static int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    // Current position is start + '/*'.length().
+    int pos = startIndex + 2;
+    // PostgreSQL allows comments to be nested. That is, the following is allowed:
+    // '/* test /* inner comment */ still a comment */'
+    int level = 1;
+    while (pos < sql.length()) {
+      if (sql.charAt(pos) == SLASH && sql.length() > (pos + 1) && sql.charAt(pos + 1) == ASTERISK) {
+        level++;
+      }
+      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
+        level--;
+        if (level == 0) {
+          pos += 2;
+          appendIfNotNull(result, sql.substring(startIndex, pos));
+          return pos;
+        }
+      }
+      pos++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex));
+    return sql.length();
   }
 
   private int skipQuoted(
@@ -282,6 +325,12 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
   private void appendIfNotNull(@Nullable StringBuilder result, char currentChar) {
     if (result != null) {
       result.append(currentChar);
+    }
+  }
+
+  private static void appendIfNotNull(@Nullable StringBuilder result, String suffix) {
+    if (result != null) {
+      result.append(suffix);
     }
   }
 

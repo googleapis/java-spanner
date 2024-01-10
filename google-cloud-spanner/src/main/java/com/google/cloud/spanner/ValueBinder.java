@@ -35,6 +35,8 @@ import javax.annotation.Nullable;
  *
  * <p>{@code ValueBinder} subclasses typically carry state and are therefore not thread-safe,
  * although the core implementation itself is thread-safe.
+ *
+ * @param <R> The context which is used to bind the {@link Value}.
  */
 public abstract class ValueBinder<R> {
   /**

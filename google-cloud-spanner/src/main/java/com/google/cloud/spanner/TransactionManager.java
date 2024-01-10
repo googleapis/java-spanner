@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.TransactionOption;
 
 /**
  * An interface for managing the life cycle of a read write transaction including all its retries.
@@ -33,7 +34,7 @@ import com.google.cloud.Timestamp;
  * can cause resources to be leaked and deadlocks. Easiest way to guarantee this is by calling
  * {@link #close()} in a finally block.
  *
- * @see DatabaseClient#transactionManager()
+ * @see DatabaseClient#transactionManager(TransactionOption...)
  */
 public interface TransactionManager extends AutoCloseable {
 

@@ -38,9 +38,11 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -71,7 +73,9 @@ abstract class AbstractReadContext
     private Span span = Tracing.getTracer().getCurrentSpan();
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
+    private DirectedReadOptions defaultDirectedReadOption;
     private ExecutorProvider executorProvider;
+    private Clock clock = new Clock();
 
     Builder() {}
 
@@ -107,6 +111,16 @@ abstract class AbstractReadContext
 
     B setExecutorProvider(ExecutorProvider executorProvider) {
       this.executorProvider = executorProvider;
+      return self();
+    }
+
+    B setClock(Clock clock) {
+      this.clock = Preconditions.checkNotNull(clock);
+      return self();
+    }
+
+    B setDefaultDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      this.defaultDirectedReadOption = directedReadOptions;
       return self();
     }
 
@@ -392,6 +406,9 @@ abstract class AbstractReadContext
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
+  private final DirectedReadOptions defaultDirectedReadOptions;
+  private final Clock clock;
+
   @GuardedBy("lock")
   private boolean isValid = true;
 
@@ -414,8 +431,10 @@ abstract class AbstractReadContext
     this.rpc = builder.rpc;
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
+    this.defaultDirectedReadOptions = builder.defaultDirectedReadOption;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
+    this.clock = builder.clock;
   }
 
   @Override
@@ -613,6 +632,11 @@ abstract class AbstractReadContext
     if (options.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(options.dataBoostEnabled());
     }
+    if (options.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(options.directedReadOptions());
+    } else if (defaultDirectedReadOptions != null) {
+      builder.setDirectedReadOptions(defaultDirectedReadOptions);
+    }
     builder.setSeqno(getSeqNo());
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
@@ -664,7 +688,12 @@ abstract class AbstractReadContext
         getExecuteSqlRequestBuilder(
             statement, queryMode, options, /* withTransactionSelector = */ false);
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.QUERY,
+            span,
+            rpc.getExecuteQueryRetrySettings(),
+            rpc.getExecuteQueryRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
@@ -684,6 +713,7 @@ abstract class AbstractReadContext
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
                     request.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
+            session.markUsed(clock.instant());
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
@@ -795,10 +825,20 @@ abstract class AbstractReadContext
     if (readOptions.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
     }
+    if (readOptions.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(readOptions.directedReadOptions());
+    } else if (defaultDirectedReadOptions != null) {
+      builder.setDirectedReadOptions(defaultDirectedReadOptions);
+    }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.READ, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.READ,
+            span,
+            rpc.getReadRetrySettings(),
+            rpc.getReadRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
@@ -816,6 +856,7 @@ abstract class AbstractReadContext
             SpannerRpc.StreamingCall call =
                 rpc.read(
                     builder.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
+            session.markUsed(clock.instant());
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;

@@ -22,8 +22,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
-    <trace.version>2.18.0</trace.version>
-    <cloudmonitoring.version>3.19.0</cloudmonitoring.version>
+    <trace.version>2.30.0</trace.version>
+    <cloudmonitoring.version>3.23.0</cloudmonitoring.version>
   </properties>
 
 
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.42.3</version>
+      <version>6.53.0</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.1.4</version>
+      <version>1.1.5</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -110,7 +110,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
             <id>add-snippets-source</id>
@@ -139,12 +139,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.1</version>
         <configuration>
           <systemPropertyVariables>
-            <spanner.test.instance>spanner-testing-east1</spanner.test.instance>
-            <spanner.test.instance.mr>spanner-mr-testing</spanner.test.instance.mr>
-            <spanner.test.instance.config>nam6</spanner.test.instance.config>
+            <spanner.test.instance>java-client-integration-test</spanner.test.instance>
+            <spanner.test.instance.mr>java-client-mr-integration-test</spanner.test.instance.mr>
+            <spanner.test.instance.config>nam15</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
             <spanner.test.key.name>cmek-test-key</spanner.test.key.name>

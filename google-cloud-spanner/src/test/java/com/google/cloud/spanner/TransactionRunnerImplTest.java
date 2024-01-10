@@ -73,7 +73,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit test for {@link com.google.cloud.spanner.SpannerImpl.TransactionRunnerImpl} */
+/** Unit test for {@link com.google.cloud.spanner.TransactionRunnerImpl} */
 @RunWith(JUnit4.class)
 public class TransactionRunnerImplTest {
   private static final class TestExecutorFactory
@@ -273,10 +273,15 @@ public class TransactionRunnerImplTest {
   @Test
   public void inlineBegin() {
     SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions options = mock(SpannerOptions.class);
+
     when(spanner.getRpc()).thenReturn(rpc);
     when(spanner.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
-    when(spanner.getOptions()).thenReturn(mock(SpannerOptions.class));
+    when(spanner.getOptions()).thenReturn(options);
+    SessionPoolOptions sessionPoolOptions = SessionPoolOptions.newBuilder().build();
+    when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
+
     SessionImpl session =
         new SessionImpl(
             spanner, "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP) {

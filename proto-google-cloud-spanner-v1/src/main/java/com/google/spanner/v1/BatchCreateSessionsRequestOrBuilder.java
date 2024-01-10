@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,8 @@ public interface BatchCreateSessionsRequestOrBuilder
    * The API may return fewer than the requested number of sessions. If a
    * specific number of sessions are desired, the client can make additional
    * calls to BatchCreateSessions (adjusting
-   * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count] as necessary).
+   * [session_count][google.spanner.v1.BatchCreateSessionsRequest.session_count]
+   * as necessary).
    * </pre>
    *
    * <code>int32 session_count = 3 [(.google.api.field_behavior) = REQUIRED];</code>

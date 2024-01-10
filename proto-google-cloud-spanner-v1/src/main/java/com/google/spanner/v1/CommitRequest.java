@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,11 +48,6 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     return new CommitRequest();
   }
 
-  @java.lang.Override
-  public final com.google.protobuf.UnknownFieldSet getUnknownFields() {
-    return this.unknownFields;
-  }
-
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.v1.SpannerProto
         .internal_static_google_spanner_v1_CommitRequest_descriptor;
@@ -69,6 +64,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
   }
 
   private int transactionCase_ = 0;
+
+  @SuppressWarnings("serial")
   private java.lang.Object transaction_;
 
   public enum TransactionCase
@@ -368,8 +365,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * If `true`, then statistics related to the transaction will be included in
-   * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
-   * `false`.
+   * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats].
+   * Default value is `false`.
    * </pre>
    *
    * <code>bool return_commit_stats = 5;</code>
@@ -1846,8 +1843,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If `true`, then statistics related to the transaction will be included in
-     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
-     * `false`.
+     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats].
+     * Default value is `false`.
      * </pre>
      *
      * <code>bool return_commit_stats = 5;</code>
@@ -1863,8 +1860,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If `true`, then statistics related to the transaction will be included in
-     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
-     * `false`.
+     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats].
+     * Default value is `false`.
      * </pre>
      *
      * <code>bool return_commit_stats = 5;</code>
@@ -1884,8 +1881,8 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * If `true`, then statistics related to the transaction will be included in
-     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats]. Default value is
-     * `false`.
+     * the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats].
+     * Default value is `false`.
      * </pre>
      *
      * <code>bool return_commit_stats = 5;</code>

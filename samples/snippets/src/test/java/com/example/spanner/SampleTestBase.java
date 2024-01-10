@@ -25,7 +25,8 @@ import org.junit.BeforeClass;
 
 /** Base class for sample integration tests. */
 public class SampleTestBase {
-
+  private static final String BASE_INSTANCE_ID =
+      System.getProperty("spanner.sample.instance", "mysample-instance");
   private static final String BASE_DATABASE_ID =
       System.getProperty("spanner.sample.database", "sampledb");
   private static final String BASE_BACKUP_ID = "samplebk";
@@ -44,19 +45,39 @@ public class SampleTestBase {
 
   @BeforeClass
   public static void beforeClass() {
-    final SpannerOptions options = SpannerOptions
+    final String serverUrl = "";
+    final SpannerOptions.Builder optionsBuilder = SpannerOptions
         .newBuilder()
-        .setAutoThrottleAdministrativeRequests()
-        .build();
+        .setAutoThrottleAdministrativeRequests();
+    if (!serverUrl.isEmpty()) {
+      optionsBuilder.setHost(serverUrl);
+    }
+    final SpannerOptions options = optionsBuilder.build();
     projectId = options.getProjectId();
     spanner = options.getService();
     databaseAdminClient = spanner.getDatabaseAdminClient();
     instanceAdminClient = spanner.getInstanceAdminClient();
-    idGenerator = new SampleIdGenerator(BASE_DATABASE_ID, BASE_BACKUP_ID, BASE_INSTANCE_CONFIG_ID);
+    idGenerator = new SampleIdGenerator(
+        BASE_DATABASE_ID, BASE_BACKUP_ID, BASE_INSTANCE_CONFIG_ID, BASE_INSTANCE_ID);
   }
 
   @AfterClass
   public static void afterClass() {
+    for (String instanceId : idGenerator.getInstanceIds()) {
+      System.out.println("Trying to drop " + instanceId);
+      try {
+        // If the database is not found, it is ignored (no exception is thrown)
+        instanceAdminClient.deleteInstance(instanceId);
+      } catch (Exception e) {
+        System.out.println(
+            "Failed to drop instance "
+                + instanceId
+                + " due to "
+                + e.getMessage()
+                + ", skipping...");
+      }
+    }
+
     for (String databaseId : idGenerator.getDatabaseIds()) {
       System.out.println("Trying to drop " + databaseId);
       try {

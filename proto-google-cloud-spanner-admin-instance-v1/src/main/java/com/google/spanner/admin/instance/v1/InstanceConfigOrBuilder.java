@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -273,12 +273,15 @@ public interface InstanceConfigOrBuilder
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. Therefore, you are advised to use
    * an internal label representation, such as JSON, which doesn't rely upon
@@ -300,12 +303,15 @@ public interface InstanceConfigOrBuilder
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. Therefore, you are advised to use
    * an internal label representation, such as JSON, which doesn't rely upon
@@ -330,12 +336,15 @@ public interface InstanceConfigOrBuilder
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. Therefore, you are advised to use
    * an internal label representation, such as JSON, which doesn't rely upon
@@ -357,12 +366,15 @@ public interface InstanceConfigOrBuilder
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. Therefore, you are advised to use
    * an internal label representation, such as JSON, which doesn't rely upon
@@ -388,12 +400,15 @@ public interface InstanceConfigOrBuilder
    * resources. They can be used to control how resource metrics are aggregated.
    * And they can be used as arguments to policy management rules (e.g. route,
    * firewall, load balancing, etc.).
+   *
    *  * Label keys must be between 1 and 63 characters long and must conform to
    *    the following regular expression: `[a-z][a-z0-9_-]{0,62}`.
    *  * Label values must be between 0 and 63 characters long and must conform
    *    to the regular expression `[a-z0-9_-]{0,63}`.
    *  * No more than 64 labels can be associated with a given resource.
+   *
    * See https://goo.gl/xmQnxf for more information on and examples of labels.
+   *
    * If you plan to use labels in your own code, please note that additional
    * characters may be allowed in the future. Therefore, you are advised to use
    * an internal label representation, such as JSON, which doesn't rely upon

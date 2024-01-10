@@ -26,6 +26,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     initMocks(this);
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
+    when(sessionClient.getSpanner()).thenReturn(client);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
     setupMockSessionCreation();
@@ -82,7 +84,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
                     SessionConsumerImpl consumer =
                         invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
-                      consumer.onSessionReady(setupMockSession(mockSession()));
+                      ReadContext mockContext = mock(ReadContext.class);
+                      consumer.onSessionReady(
+                          setupMockSession(buildMockSession(mockContext), mockContext));
                     }
                   });
               return null;
@@ -92,10 +96,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
   }
 
-  private SessionImpl setupMockSession(final SessionImpl session) {
-    ReadContext mockContext = mock(ReadContext.class);
+  private SessionImpl setupMockSession(final SessionImpl session, final ReadContext mockContext) {
     final ResultSet mockResult = mock(ResultSet.class);
-    when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
             invocation -> {
@@ -111,9 +113,11 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool() throws Exception {
+    // Allow sessions to be added to the head of the pool in all cases in this test, as it is
+    // otherwise impossible to know which session exactly is getting pinged at what point in time.
     SessionPool pool =
         SessionPool.createPool(
-            options, new TestExecutorFactory(), client.getSessionClient(db), clock);
+            options, new TestExecutorFactory(), client.getSessionClient(db), clock, Position.FIRST);
     pool.idleSessionRemovedListener =
         input -> {
           idledSessions.add(input);
