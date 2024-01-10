@@ -28,6 +28,7 @@ import com.google.cloud.Date;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.Key;
@@ -1876,18 +1877,24 @@ public class SpannerSample {
   // [END spanner_update_backup]
 
   // [START spanner_delete_backup]
-  static void deleteBackup(DatabaseAdminClient dbAdminClient, BackupId backupId) {
-    Backup backup = dbAdminClient.newBackupBuilder(backupId).build();
+  static void deleteBackup(DatabaseAdminClient dbAdminClient,
+      String project, String instance, String backupId) {
+    BackupName backupName = BackupName.of(project, instance, backupId);
+
     // Delete the backup.
     System.out.println("Deleting backup [" + backupId + "]...");
-    backup.delete();
+    dbAdminClient.deleteBackup(backupName);
     // Verify that the backup is deleted.
-    if (backup.exists()) {
-      System.out.println("Delete backup [" + backupId + "] failed");
-      throw new RuntimeException("Delete backup [" + backupId + "] failed");
-    } else {
-      System.out.println("Deleted backup [" + backupId + "]");
+    try {
+      dbAdminClient.getBackup(backupName);
+    } catch (SpannerException e) {
+      if (e.getErrorCode() == ErrorCode.NOT_FOUND) {
+        System.out.println("Delete backup [" + backupId + "] failed");
+        throw new RuntimeException("Delete backup [" + backupId + "] failed");
+      }
+      throw e;
     }
+    System.out.println("Deleted backup [" + backupId + "]");
   }
   // [END spanner_delete_backup]
 
@@ -1916,7 +1923,8 @@ public class SpannerSample {
         read(dbClient);
         break;
       case "addmarketingbudget":
-        addMarketingBudget(dbAdminClient, database);
+        addMarketingBudget(dbAdminClient, DatabaseName.of(database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase()));
         break;
       case "update":
         update(dbClient);
@@ -1928,7 +1936,8 @@ public class SpannerSample {
         queryMarketingBudget(dbClient);
         break;
       case "addindex":
-        addIndex(dbAdminClient, database);
+        addIndex(dbAdminClient, DatabaseName.of(database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase()));
         break;
       case "readindex":
         readUsingIndex(dbClient);
@@ -1937,7 +1946,8 @@ public class SpannerSample {
         queryUsingIndex(dbClient);
         break;
       case "addstoringindex":
-        addStoringIndex(dbAdminClient, database);
+        addStoringIndex(dbAdminClient, DatabaseName.of(database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase()));
         break;
       case "readstoringindex":
         readStoringIndex(dbClient);
@@ -1949,7 +1959,8 @@ public class SpannerSample {
         readStaleData(dbClient);
         break;
       case "addcommittimestamp":
-        addCommitTimestamp(dbAdminClient, database);
+        addCommitTimestamp(dbAdminClient, DatabaseName.of(database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase()));
         break;
       case "updatewithtimestamp":
         updateWithTimestamp(dbClient);
@@ -2184,7 +2195,6 @@ public class SpannerSample {
     try {
       String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
-      DatabaseName databaseName = DatabaseName.of(options.getProjectId(), args[1], args[2]);
       // [END init_client]
       // This will return the default project id based on the environment.
       String clientProject = spanner.getOptions().getProjectId();
@@ -2196,13 +2206,12 @@ public class SpannerSample {
         printUsageAndExit();
       }
       // Generate a backup id for the sample database.
-      String backupName =
+      String backupId =
           String.format(
               "%s_%02d",
               db.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
-      BackupId backup = BackupId.of(db.getInstanceId(), backupName);
       if (args.length == 4) {
-        backupName = args[3];
+        backupId = args[3];
       }
 
       // [START init_client]
@@ -2213,7 +2222,7 @@ public class SpannerSample {
       // Use client here...
       // [END init_client]
 
-      run(dbClient, dbAdminClient, instanceAdminClient, command, db, databaseName, backup);
+      run(dbClient, dbAdminClient, instanceAdminClient, command, db, backupId);
       // [START init_client]
     } finally {
       spanner.close();
