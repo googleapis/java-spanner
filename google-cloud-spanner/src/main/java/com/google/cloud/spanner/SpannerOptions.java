@@ -88,7 +88,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final String PG_ADAPTER_CLIENT_LIB_TOKEN = "pg-adapter";
 
   private static final String API_SHORT_NAME = "Spanner";
-  private static final String DEFAULT_HOST = "https://staging-wrenchworks.sandbox.googleapis.com";
+  private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
   private static final ImmutableSet<String> SCOPES =
       ImmutableSet.of(
           "https://www.googleapis.com/auth/spanner.admin",

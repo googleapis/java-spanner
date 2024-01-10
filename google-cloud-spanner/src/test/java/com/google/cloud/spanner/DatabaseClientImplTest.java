@@ -3617,7 +3617,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner =
-        client.readWriteTransaction(Options.maxCommitDelayInMilliSecondas(1000));
+        client.readWriteTransaction(Options.maxCommitDelayInMilliSeconds(1000));
     runner.run(
         transaction -> {
           transaction.buffer(Mutation.delete("TEST", KeySet.all()));
