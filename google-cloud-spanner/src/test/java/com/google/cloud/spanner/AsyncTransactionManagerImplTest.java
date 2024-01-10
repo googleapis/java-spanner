@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -35,11 +37,11 @@ public class AsyncTransactionManagerImplTest {
 
   @Test
   public void testCommitReturnsCommitStats() {
+    Span oTspan = mock(Span.class);
+    ISpan span = new OpenTelemetrySpan(oTspan);
+    when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
     try (AsyncTransactionManagerImpl manager =
-        new AsyncTransactionManagerImpl(
-            session,
-            new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),
-            Options.commitStats())) {
+        new AsyncTransactionManagerImpl(session, span, Options.commitStats())) {
       when(session.newTransaction(Options.fromTransactionOptions(Options.commitStats())))
           .thenReturn(transaction);
       when(transaction.ensureTxnAsync()).thenReturn(ApiFutures.immediateFuture(null));

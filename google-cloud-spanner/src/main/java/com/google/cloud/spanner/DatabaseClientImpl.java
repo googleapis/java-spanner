@@ -218,7 +218,6 @@ class DatabaseClientImpl implements DatabaseClient {
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
-    ;
     try (IScope s = tracer.withSpan(span)) {
       return getSession().runAsync(options);
     } catch (RuntimeException e) {

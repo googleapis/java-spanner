@@ -28,8 +28,6 @@ class OpenCensusScope implements IScope {
 
   @Override
   public void close() {
-    if (openCensusScope != null) {
-      openCensusScope.close();
-    }
+    openCensusScope.close();
   }
 }

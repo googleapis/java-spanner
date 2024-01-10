@@ -62,7 +62,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
           this.getOptions()
               .getOpenTelemetry()
               .getTracer(
-                  MetricRegistryConstants.Instrumentation_Scope,
+                  MetricRegistryConstants.INSTRUMENTATION_SCOPE,
                   GaxProperties.getLibraryVersion(this.getOptions().getClass())));
 
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";

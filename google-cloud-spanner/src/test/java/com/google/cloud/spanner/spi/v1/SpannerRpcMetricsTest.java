@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.DatabaseClient;
@@ -26,7 +25,6 @@ import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -114,7 +112,6 @@ public class SpannerRpcMetricsTest {
 
   @BeforeClass
   public static void startServer() throws IOException {
-    assumeFalse(EmulatorSpannerHelper.isUsingEmulator());
     SpannerOptions.enableOpenTelemetryMetrics();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.

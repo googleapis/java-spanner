@@ -67,6 +67,7 @@ public final class BatchClientImplTest {
   @Before
   public void setUp() {
     initMocks(this);
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
     DatabaseId db = DatabaseId.of(DB_NAME);
     when(spannerOptions.getNumChannels()).thenReturn(4);

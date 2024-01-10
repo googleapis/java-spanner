@@ -154,7 +154,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     OPEN_TELEMETRY
   }
 
-  private static TracingFramework activeTracingFramework = TracingFramework.OPEN_CENSUS;
+  private static TracingFramework activeTracingFramework;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -1318,6 +1318,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         this.numChannels =
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
+      if (activeTracingFramework == null) {
+        activeTracingFramework = TracingFramework.OPEN_CENSUS;
+      }
       return new SpannerOptions(this);
     }
   }
@@ -1352,6 +1355,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    * default, OpenCensus traces are enabled.
    */
   public static void enableOpenTelemetryTraces() {
+    if (activeTracingFramework != null
+        && activeTracingFramework != TracingFramework.OPEN_TELEMETRY) {
+      throw new IllegalStateException(
+          "ActiveTracingFramework is set to OpenCensus. Cannot be reset.");
+    }
     activeTracingFramework = TracingFramework.OPEN_TELEMETRY;
   }
 
@@ -1359,15 +1367,25 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
   public static void enableOpenCensusTraces() {
+    if (activeTracingFramework != null && activeTracingFramework != TracingFramework.OPEN_CENSUS) {
+      throw new IllegalStateException(
+          "ActiveTracingFramework is set to OpenTelemetry. Cannot be reset.");
+    }
     activeTracingFramework = TracingFramework.OPEN_CENSUS;
+  }
+
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  /**
+   * Always resets the activeTracingFramework. This variable is used for internal testing, and is
+   * not a valid production scenario
+   */
+  static void resetActiveTracingFramework() {
+    activeTracingFramework = null;
   }
 
   public static TracingFramework getActiveTracingFramework() {
     return activeTracingFramework;
-  }
-
-  public static boolean isEnabledOpenTelemetryTraces() {
-    return SpannerOptions.enableOpenTelemetryTraces;
   }
 
   public static void disableOpenCensusMetrics() {

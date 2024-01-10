@@ -81,6 +81,7 @@ public class TransactionManagerImplTest {
   @Before
   public void setUp() {
     initMocks(this);
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
     manager =
         new TransactionManagerImpl(

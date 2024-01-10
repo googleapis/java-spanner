@@ -2196,7 +2196,7 @@ class SessionPool {
     this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
     this.tracer = tracer;
-    this.initMetricsCollection(metricRegistry, labelValues);
+    this.initOpenCensusMetricsCollection(metricRegistry, labelValues);
     this.initOpenTelemetryMetricsCollection(openTelemetry, attributes);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
@@ -2836,7 +2836,8 @@ class SessionPool {
    * Initializes and creates Spanner session relevant metrics using OpenCensus. When coupled with an
    * exporter, it allows users to monitor client behavior.
    */
-  private void initMetricsCollection(MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+  private void initOpenCensusMetricsCollection(
+      MetricRegistry metricRegistry, List<LabelValue> labelValues) {
     if (!SpannerOptions.isEnabledOpenCensusMetrics()) {
       return;
     }
@@ -2960,7 +2961,7 @@ class SessionPool {
       return;
     }
 
-    Meter meter = openTelemetry.getMeter(MetricRegistryConstants.Instrumentation_Scope);
+    Meter meter = openTelemetry.getMeter(MetricRegistryConstants.INSTRUMENTATION_SCOPE);
     meter
         .gaugeBuilder(MAX_ALLOWED_SESSIONS)
         .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)

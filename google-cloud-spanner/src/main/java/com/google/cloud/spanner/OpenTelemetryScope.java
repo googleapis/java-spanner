@@ -28,8 +28,6 @@ class OpenTelemetryScope implements IScope {
 
   @Override
   public void close() {
-    if (openTelemetryScope != null) {
-      openTelemetryScope.close();
-    }
+    openTelemetryScope.close();
   }
 }

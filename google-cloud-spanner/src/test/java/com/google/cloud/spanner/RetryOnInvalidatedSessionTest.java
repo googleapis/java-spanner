@@ -162,6 +162,8 @@ public class RetryOnInvalidatedSessionTest {
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(

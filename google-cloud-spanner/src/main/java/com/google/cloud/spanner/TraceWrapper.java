@@ -51,13 +51,15 @@ class TraceWrapper {
 
       io.opentelemetry.api.trace.Span otSpan;
 
-      if (otParentSpan.getOpenTelemetrySpan() != null)
+      if (otParentSpan.getOpenTelemetrySpan() != null) {
         otSpan =
             openTelemetryTracer
                 .spanBuilder(spanName)
                 .setParent(Context.current().with(otParentSpan.getOpenTelemetrySpan()))
                 .startSpan();
-      else otSpan = openTelemetryTracer.spanBuilder(spanName).startSpan();
+      } else {
+        otSpan = openTelemetryTracer.spanBuilder(spanName).startSpan();
+      }
 
       return new OpenTelemetrySpan(otSpan);
 

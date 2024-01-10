@@ -39,14 +39,11 @@ class OpenTelemetrySpan implements ISpan {
     AttributesBuilder otAttributesBuilder = Attributes.builder();
     for (Map.Entry<String, Object> entry : attributes.entrySet()) {
       String key = entry.getKey();
-      Object val = entry.getValue();
-      if (val == null || val instanceof String) {
-        String strVal = (String) val;
-        assert strVal != null;
-        otAttributesBuilder.put(key, strVal);
-      } else if (val instanceof Long) {
-        long longVal = (Long) val;
-        otAttributesBuilder.put(key, longVal);
+      Object value = entry.getValue();
+      if (value instanceof String) {
+        otAttributesBuilder.put(key, (String) value);
+      } else if (value instanceof Long) {
+        otAttributesBuilder.put(key, (Long) value);
       }
     }
     openTelemetrySpan.addEvent(message, otAttributesBuilder.build());

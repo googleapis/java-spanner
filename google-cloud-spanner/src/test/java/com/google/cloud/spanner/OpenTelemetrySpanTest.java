@@ -233,6 +233,7 @@ public class OpenTelemetrySpanTest {
 
     // OpenTelemetry Configuration
 
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.

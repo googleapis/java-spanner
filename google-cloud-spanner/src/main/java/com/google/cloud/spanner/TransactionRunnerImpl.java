@@ -430,7 +430,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         } catch (ExecutionException e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
-        } catch (NullPointerException e) {
+        } catch (Throwable e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
         }

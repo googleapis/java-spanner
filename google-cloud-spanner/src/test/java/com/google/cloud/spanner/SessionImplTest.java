@@ -50,6 +50,8 @@ import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collections;
@@ -81,6 +83,7 @@ public class SessionImplTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
@@ -130,8 +133,10 @@ public class SessionImplTest {
         .thenReturn(
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
     session = spanner.getSessionClient(db).createSession();
-    ((SessionImpl) session)
-        .setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
+    Span oTspan = mock(Span.class);
+    ISpan span = new OpenTelemetrySpan(oTspan);
+    when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
+    ((SessionImpl) session).setCurrentSpan(span);
     // We expect the same options, "options", on all calls on "session".
     options = optionsCaptor.getValue();
   }

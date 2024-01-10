@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.api.client.util.BackOff;
 import com.google.cloud.spanner.AbstractResultSet.ResumableStreamIterator;
@@ -40,6 +41,7 @@ import io.grpc.protobuf.ProtoUtils;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -168,14 +170,15 @@ public class ResumableStreamIteratorTest {
 
   @Test
   public void closedOTSpan() {
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
     Assume.assumeTrue(
         "This test is only supported on JDK11 and lower",
         JavaVersionUtil.getJavaMajorVersion() < 12);
-    io.opentelemetry.api.trace.Span mockOpenTelemetrySpan =
-        mock(io.opentelemetry.api.trace.Span.class);
 
-    ISpan span = new OpenTelemetrySpan(mockOpenTelemetrySpan);
+    io.opentelemetry.api.trace.Span oTspan = mock(io.opentelemetry.api.trace.Span.class);
+    ISpan span = new OpenTelemetrySpan(oTspan);
+    when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
     setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
@@ -187,11 +190,12 @@ public class ResumableStreamIteratorTest {
     assertThat(consume(resumableStreamIterator)).containsExactly("a", "b").inOrder();
 
     resumableStreamIterator.close("closed");
-    verify(mockOpenTelemetrySpan).end();
+    verify(oTspan).end();
   }
 
   @Test
   public void closedOCSpan() {
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenCensusTraces();
     Assume.assumeTrue(
         "This test is only supported on JDK11 and lower",

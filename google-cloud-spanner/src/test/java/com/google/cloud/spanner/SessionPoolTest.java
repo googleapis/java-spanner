@@ -90,6 +90,8 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -138,7 +140,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Mock SpannerImpl client;
   @Mock SessionClient sessionClient;
   @Mock SpannerOptions spannerOptions;
-  @Mock ISpan span;
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   SessionPool pool;
   SessionPoolOptions options;
@@ -225,6 +226,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Before
   public void setUp() {
     initMocks(this);
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
@@ -1433,6 +1435,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final SessionImpl closedSession = mock(SessionImpl.class);
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
+
+      Span oTspan = mock(Span.class);
+      ISpan span = new OpenTelemetrySpan(oTspan);
+      when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
+
       final TransactionContextImpl closedTransactionContext =
           TransactionContextImpl.newBuilder()
               .setSession(closedSession)
@@ -1448,8 +1455,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
       when(closedSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
-      closedTransactionRunner.setSpan(
-          new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
+      closedTransactionRunner.setSpan(span);
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
       final SessionImpl openSession = mock(SessionImpl.class);
@@ -1464,8 +1470,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
       when(openSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
-      openTransactionRunner.setSpan(
-          new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
+      openTransactionRunner.setSpan(span);
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
       ResultSet openResultSet = mock(ResultSet.class);

@@ -16,6 +16,10 @@
 
 package com.google.cloud.spanner;
 
+/**
+ * This interface represents a scope that wraps both OpenCensus and OpenTelemetry scopes. It extends
+ * the AutoCloseable interface and overrides the close method that does not throw an exception.
+ */
 interface IScope extends AutoCloseable {
   @Override
   void close();

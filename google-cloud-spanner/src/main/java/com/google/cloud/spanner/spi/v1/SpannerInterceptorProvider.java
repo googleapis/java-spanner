@@ -40,15 +40,9 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
     this.clientInterceptors = clientInterceptors;
   }
 
-  @ObsoleteApi("This method does not have OpenTelemetry support")
+  @ObsoleteApi("This method always uses Global OpenTelemetry")
   public static SpannerInterceptorProvider createDefault() {
-    List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
-    defaultInterceptorList.add(new SpannerErrorInterceptor());
-    defaultInterceptorList.add(
-        new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
-    defaultInterceptorList.add(
-        new HeaderInterceptor(new SpannerRpcMetrics(GlobalOpenTelemetry.get())));
-    return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
+    return createDefault(GlobalOpenTelemetry.get());
   }
 
   public static SpannerInterceptorProvider createDefault(OpenTelemetry openTelemetry) {

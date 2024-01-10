@@ -65,7 +65,7 @@ class MetricRegistryConstants {
   /** Unit to represent counts. */
   static final String COUNT = "1";
 
-  static final String Instrumentation_Scope = "cloud.google.com/java";
+  static final String INSTRUMENTATION_SCOPE = "cloud.google.com/java";
 
   static final String METRIC_PREFIX = "cloud.google.com/java/";
 
@@ -98,5 +98,4 @@ class MetricRegistryConstants {
   static final String SPANNER_GFE_HEADER_MISSING_COUNT = "spanner/gfe_header_missing_count";
   static final String SPANNER_GFE_HEADER_MISSING_COUNT_DESCRIPTION =
       "Number of RPC responses received without the server-timing header, most likely means that the RPC never reached Google's network";
-  static final String MILLISECOND = "ms";
 }

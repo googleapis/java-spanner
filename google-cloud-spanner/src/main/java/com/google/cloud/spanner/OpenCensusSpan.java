@@ -53,17 +53,17 @@ public class OpenCensusSpan implements ISpan {
     Map<String, AttributeValue> ocAttributeValues = new HashMap<>();
     for (Map.Entry<String, Object> entry : attributes.entrySet()) {
       String key = entry.getKey();
-      Object val = entry.getValue();
-      if (val == null || val instanceof String) {
-        String strVal = (String) val;
-        assert strVal != null;
-        ocAttributeValues.put(key, AttributeValue.stringAttributeValue(strVal));
-      } else if (val instanceof Long) {
-        long longVal = (Long) val;
-        ocAttributeValues.put(key, AttributeValue.longAttributeValue(longVal));
+      Object value = entry.getValue();
+      if (value instanceof String) {
+        ocAttributeValues.put(key, AttributeValue.stringAttributeValue((String) value));
+      } else if (value instanceof Long) {
+        ocAttributeValues.put(key, AttributeValue.longAttributeValue((Long) value));
       }
     }
-    openCensusSpan.addAnnotation(message, ocAttributeValues);
+
+    if (ocAttributeValues.size() > 0) {
+      openCensusSpan.addAnnotation(message, ocAttributeValues);
+    }
   }
 
   @Override

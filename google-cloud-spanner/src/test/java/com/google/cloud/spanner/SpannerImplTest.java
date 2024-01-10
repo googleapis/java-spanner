@@ -61,6 +61,7 @@ public class SpannerImplTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
