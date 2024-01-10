@@ -35,7 +35,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Integration tests for FGAC samples for GoogleStandardSql dialect. */
+/**
+ * Integration tests for FGAC samples for GoogleStandardSql dialect.
+ */
 @RunWith(JUnit4.class)
 public class DatabaseRolesIT extends SampleTestBaseV2 {
 
@@ -47,7 +49,8 @@ public class DatabaseRolesIT extends SampleTestBaseV2 {
     final CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setParent(
-                com.google.spanner.admin.database.v1.InstanceName.of(projectId, instanceId).toString())
+                com.google.spanner.admin.database.v1.InstanceName.of(projectId, instanceId)
+                    .toString())
             .setCreateStatement("CREATE DATABASE `" + database + "`")
             .addAllExtraStatements(Lists.newArrayList(
                 "CREATE TABLE Singers ("

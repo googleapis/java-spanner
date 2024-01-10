@@ -42,7 +42,7 @@ public class ListDatabasesSample {
 
     System.out.println("Databases for projects/" + projectId + "/instances/" + instanceId);
 
-    for(ListDatabasesPage page: response.iteratePages()) {
+    for (ListDatabasesPage page : response.iteratePages()) {
       for (Database database : page.iterateAll()) {
         final String defaultLeader = database.getDefaultLeader().equals("")
             ? "" : "(default leader = " + database.getDefaultLeader() + ")";

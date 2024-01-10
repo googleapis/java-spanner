@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_drop_sequence]
+
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class DropSequenceSample {
+
   static void dropSequence() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
@@ -35,7 +37,8 @@ public class DropSequenceSample {
     dropSequence(projectId, instanceId, databaseId);
   }
 
-  static void dropSequence(String projectId, String instanceId, String databaseId) throws IOException {
+  static void dropSequence(String projectId, String instanceId, String databaseId)
+      throws IOException {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
     try {
       databaseAdminClient

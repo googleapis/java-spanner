@@ -38,14 +38,15 @@ public class UpdateDatabaseWithDefaultLeaderSampleIT extends SampleTestBaseV2 {
 
     // Finds a possible new leader option
     final String instanceConfigId =
-        instanceAdminClient.getInstance(getInstanceName(projectId, multiRegionalInstanceId)).getConfig();
+        instanceAdminClient.getInstance(getInstanceName(projectId, multiRegionalInstanceId))
+            .getConfig();
     final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigId);
     final String newLeader =
         config.getLeaderOptionsList().stream()
             .filter(leader -> !leader.equals(defaultLeader))
             .findFirst().orElseThrow(() ->
                 new RuntimeException("Expected to find a leader option different than " + defaultLeader)
-        );
+            );
 
     // Runs sample
     final String out = SampleRunner.runSample(() -> UpdateDatabaseWithDefaultLeaderSample

@@ -45,7 +45,8 @@ public class GetDatabaseDdlSampleIT extends SampleTestBaseV2 {
     final CreateDatabaseRequest request =
         CreateDatabaseRequest.newBuilder()
             .setParent(
-                com.google.spanner.admin.database.v1.InstanceName.of(projectId, multiRegionalInstanceId).toString())
+                com.google.spanner.admin.database.v1.InstanceName.of(projectId,
+                    multiRegionalInstanceId).toString())
             .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
             .addAllExtraStatements(Lists.newArrayList(
                 "CREATE TABLE Singers (Id INT64 NOT NULL) PRIMARY KEY (Id)",

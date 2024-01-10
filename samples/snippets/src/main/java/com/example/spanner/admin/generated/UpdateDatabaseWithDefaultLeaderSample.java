@@ -39,7 +39,8 @@ public class UpdateDatabaseWithDefaultLeaderSample {
   }
 
   static void updateDatabaseWithDefaultLeader(
-      String projectId, String instanceId, String databaseId, String defaultLeader) throws IOException {
+      String projectId, String instanceId, String databaseId, String defaultLeader)
+      throws IOException {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
 
     try {

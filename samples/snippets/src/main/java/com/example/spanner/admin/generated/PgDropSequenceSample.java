@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_postgresql_drop_sequence]
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PgDropSequenceSample {
+
   static void pgDropSequence() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
@@ -37,7 +39,8 @@ public class PgDropSequenceSample {
     pgDropSequence(projectId, instanceId, databaseId);
   }
 
-  static void pgDropSequence(String projectId, String instanceId, String databaseId) throws IOException {
+  static void pgDropSequence(String projectId, String instanceId, String databaseId)
+      throws IOException {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
 
     try (Spanner spanner =

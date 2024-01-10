@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_create_sequence]
+
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class CreateSequenceSample {
+
   static void createSequence() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
@@ -42,7 +44,8 @@ public class CreateSequenceSample {
     createSequence(projectId, instanceId, databaseId);
   }
 
-  static void createSequence(String projectId, String instanceId, String databaseId) throws IOException {
+  static void createSequence(String projectId, String instanceId, String databaseId)
+      throws IOException {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
 
     try (Spanner spanner =

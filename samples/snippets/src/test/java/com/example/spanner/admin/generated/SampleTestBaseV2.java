@@ -170,7 +170,7 @@ public class SampleTestBaseV2 {
 
   static String getCreateDatabaseStatement(
       final String databaseName, final DatabaseDialect dialect) {
-    if(dialect == DatabaseDialect.GOOGLE_STANDARD_SQL) {
+    if (dialect == DatabaseDialect.GOOGLE_STANDARD_SQL) {
       return "CREATE DATABASE `" + databaseName + "`";
     } else {
       return "CREATE DATABASE \"" + databaseName + "\"";

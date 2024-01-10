@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_postgresql_alter_sequence]
+
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PgAlterSequenceSample {
+
   static void pgAlterSequence() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
@@ -42,7 +44,8 @@ public class PgAlterSequenceSample {
     pgAlterSequence(projectId, instanceId, databaseId);
   }
 
-  static void pgAlterSequence(String projectId, String instanceId, String databaseId) throws IOException {
+  static void pgAlterSequence(String projectId, String instanceId, String databaseId)
+      throws IOException {
     try (Spanner spanner =
         SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
       final DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();

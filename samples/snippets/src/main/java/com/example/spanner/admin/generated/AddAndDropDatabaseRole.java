@@ -45,12 +45,13 @@ public class AddAndDropDatabaseRole {
     try {
       System.out.println("Waiting for role create operation to complete...");
       databaseAdminClient.updateDatabaseDdlAsync(
-          DatabaseName.of(projectId, instanceId, databaseId),
-          ImmutableList.of(
-              String.format("CREATE ROLE `%s`", parentRole),
-              String.format("GRANT SELECT ON TABLE Albums TO ROLE `%s`", parentRole),
-              String.format("CREATE ROLE `%s`", childRole),
-              String.format("GRANT ROLE `%s` TO ROLE `%s`", parentRole, childRole))).get(5, TimeUnit.MINUTES);
+              DatabaseName.of(projectId, instanceId, databaseId),
+              ImmutableList.of(
+                  String.format("CREATE ROLE `%s`", parentRole),
+                  String.format("GRANT SELECT ON TABLE Albums TO ROLE `%s`", parentRole),
+                  String.format("CREATE ROLE `%s`", childRole),
+                  String.format("GRANT ROLE `%s` TO ROLE `%s`", parentRole, childRole)))
+          .get(5, TimeUnit.MINUTES);
       System.out.printf(
           "Created roles %s and %s and granted privileges%n", parentRole, childRole);
       // Delete role and membership.

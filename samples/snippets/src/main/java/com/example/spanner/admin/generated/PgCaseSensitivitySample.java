@@ -43,7 +43,8 @@ public class PgCaseSensitivitySample {
     pgCaseSensitivity(projectId, instanceId, databaseId);
   }
 
-  static void pgCaseSensitivity(String projectId, String instanceId, String databaseId) throws IOException {
+  static void pgCaseSensitivity(String projectId, String instanceId, String databaseId)
+      throws IOException {
     DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
 
     try (Spanner spanner =
@@ -58,17 +59,17 @@ public class PgCaseSensitivitySample {
       // See https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
       // for more information.
       databaseAdminClient.updateDatabaseDdlAsync(
-              DatabaseName.of(projectId, instanceId, databaseId),
-              Lists.newArrayList(
-                  "CREATE TABLE Singers ("
-                      // SingerId will be folded to `singerid`.
-                      + "  SingerId      bigint NOT NULL PRIMARY KEY,"
-                      // FirstName and LastName are double-quoted and will therefore retain their
-                      // mixed case and are case-sensitive. This means that any statement that
-                      // references any of these columns must use double quotes.
-                      + "  \"FirstName\" varchar(1024) NOT NULL,"
-                      + "  \"LastName\"  varchar(1024) NOT NULL"
-                      + ")")).get();
+          DatabaseName.of(projectId, instanceId, databaseId),
+          Lists.newArrayList(
+              "CREATE TABLE Singers ("
+                  // SingerId will be folded to `singerid`.
+                  + "  SingerId      bigint NOT NULL PRIMARY KEY,"
+                  // FirstName and LastName are double-quoted and will therefore retain their
+                  // mixed case and are case-sensitive. This means that any statement that
+                  // references any of these columns must use double quotes.
+                  + "  \"FirstName\" varchar(1024) NOT NULL,"
+                  + "  \"LastName\"  varchar(1024) NOT NULL"
+                  + ")")).get();
 
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));

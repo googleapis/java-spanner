@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_create_table_with_foreign_key_delete_cascade]
+
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;

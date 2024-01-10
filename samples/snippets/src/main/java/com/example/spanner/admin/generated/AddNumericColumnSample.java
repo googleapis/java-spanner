@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_add_numeric_column]
+
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.DatabaseName;
