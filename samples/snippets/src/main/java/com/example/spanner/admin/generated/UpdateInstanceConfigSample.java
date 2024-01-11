@@ -18,6 +18,7 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_update_instance_config]
 
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
@@ -38,42 +39,43 @@ class UpdateInstanceConfigSample {
   }
 
   static void updateInstanceConfig(String projectId, String instanceConfigId) throws IOException {
-    final com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient =
-        com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create();
-    final InstanceConfigName instanceConfigName =
-        InstanceConfigName.of(projectId, instanceConfigId);
-    final InstanceConfig instanceConfig =
-        InstanceConfig.newBuilder()
-            .setName(instanceConfigName.toString())
-            .setDisplayName("updated custom instance config")
-            .putLabels("updated", "true").build();
-    /**
-     * The field mask must always be specified; this prevents any future
-     * fields in [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig]
-     * from being erased accidentally by clients that do not know about them.
-     */
-    final UpdateInstanceConfigRequest updateInstanceConfigRequest =
-        UpdateInstanceConfigRequest.newBuilder()
-            .setInstanceConfig(instanceConfig)
-            .setUpdateMask(
-                FieldMask.newBuilder().addAllPaths(ImmutableList.of("display_name", "labels"))
-                    .build()).build();
-    try {
-      System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigName);
-      InstanceConfig instanceConfigResult =
-          instanceAdminClient.updateInstanceConfigAsync(
-              updateInstanceConfigRequest).get(5, TimeUnit.MINUTES);
-      System.out.printf(
-          "Updated instance configuration %s with new display name %s\n",
-          instanceConfigResult.getName(), instanceConfig.getDisplayName());
-    } catch (ExecutionException | TimeoutException e) {
-      System.out.printf(
-          "Error: Updating instance config %s failed with error message %s\n",
-          instanceConfig.getName(), e.getMessage());
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      System.out.println(
-          "Error: Waiting for updateInstanceConfig operation to finish was interrupted");
+    try (final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+      final InstanceConfigName instanceConfigName =
+          InstanceConfigName.of(projectId, instanceConfigId);
+      final InstanceConfig instanceConfig =
+          InstanceConfig.newBuilder()
+              .setName(instanceConfigName.toString())
+              .setDisplayName("updated custom instance config")
+              .putLabels("updated", "true").build();
+      /**
+       * The field mask must always be specified; this prevents any future
+       * fields in [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig]
+       * from being erased accidentally by clients that do not know about them.
+       */
+      final UpdateInstanceConfigRequest updateInstanceConfigRequest =
+          UpdateInstanceConfigRequest.newBuilder()
+              .setInstanceConfig(instanceConfig)
+              .setUpdateMask(
+                  FieldMask.newBuilder().addAllPaths(ImmutableList.of("display_name", "labels"))
+                      .build()).build();
+      try {
+        System.out.printf("Waiting for update operation on %s to complete...\n",
+            instanceConfigName);
+        InstanceConfig instanceConfigResult =
+            instanceAdminClient.updateInstanceConfigAsync(
+                updateInstanceConfigRequest).get(5, TimeUnit.MINUTES);
+        System.out.printf(
+            "Updated instance configuration %s with new display name %s\n",
+            instanceConfigResult.getName(), instanceConfig.getDisplayName());
+      } catch (ExecutionException | TimeoutException e) {
+        System.out.printf(
+            "Error: Updating instance config %s failed with error message %s\n",
+            instanceConfig.getName(), e.getMessage());
+        e.printStackTrace();
+      } catch (InterruptedException e) {
+        System.out.println(
+            "Error: Waiting for updateInstanceConfig operation to finish was interrupted");
+      }
     }
   }
 }

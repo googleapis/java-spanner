@@ -34,20 +34,21 @@ class DeleteInstanceConfigSample {
   }
 
   static void deleteInstanceConfig(String projectId, String instanceConfigId) throws IOException {
-    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
-    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
-        instanceConfigId);
-    final DeleteInstanceConfigRequest request =
-        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName.toString()).build();
+    try (final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+      final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
+          instanceConfigId);
+      final DeleteInstanceConfigRequest request =
+          DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName.toString()).build();
 
-    try {
-      System.out.printf("Deleting %s...\n", instanceConfigName);
-      instanceAdminClient.deleteInstanceConfig(request);
-      System.out.printf("Deleted instance configuration %s\n", instanceConfigName);
-    } catch (SpannerException e) {
-      System.out.printf(
-          "Error: Deleting instance configuration %s failed with error message: %s\n",
-          instanceConfigName, e.getMessage());
+      try {
+        System.out.printf("Deleting %s...\n", instanceConfigName);
+        instanceAdminClient.deleteInstanceConfig(request);
+        System.out.printf("Deleted instance configuration %s\n", instanceConfigName);
+      } catch (SpannerException e) {
+        System.out.printf(
+            "Error: Deleting instance configuration %s failed with error message: %s\n",
+            instanceConfigName, e.getMessage());
+      }
     }
   }
 }

@@ -37,50 +37,50 @@ class CreateInstanceWithAutoscalingConfigExample {
   }
 
   static void createInstance(String projectId, String instanceId) throws IOException {
-    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
+    try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+      // Set Instance configuration.
+      String configId = "regional-us-central1";
+      String displayName = "Descriptive name";
 
-    // Set Instance configuration.
-    String configId = "regional-us-central1";
-    String displayName = "Descriptive name";
+      // Create an autoscaling config.
+      // When autoscaling_config is enabled, node_count and processing_units fields
+      // need not be specified.
+      AutoscalingConfig autoscalingConfig =
+          AutoscalingConfig.newBuilder()
+              .setAutoscalingLimits(
+                  AutoscalingConfig.AutoscalingLimits.newBuilder().setMinNodes(1).setMaxNodes(2))
+              .setAutoscalingTargets(
+                  AutoscalingConfig.AutoscalingTargets.newBuilder()
+                      .setHighPriorityCpuUtilizationPercent(65)
+                      .setStorageUtilizationPercent(95))
+              .build();
+      Instance instance =
+          Instance.newBuilder()
+              .setAutoscalingConfig(autoscalingConfig)
+              .setDisplayName(displayName)
+              .setConfig(
+                  InstanceConfigName.of(projectId, configId).toString())
+              .build();
 
-    // Create an autoscaling config.
-    // When autoscaling_config is enabled, node_count and processing_units fields
-    // need not be specified.
-    AutoscalingConfig autoscalingConfig =
-        AutoscalingConfig.newBuilder()
-            .setAutoscalingLimits(
-                AutoscalingConfig.AutoscalingLimits.newBuilder().setMinNodes(1).setMaxNodes(2))
-            .setAutoscalingTargets(
-                AutoscalingConfig.AutoscalingTargets.newBuilder()
-                    .setHighPriorityCpuUtilizationPercent(65)
-                    .setStorageUtilizationPercent(95))
-            .build();
-    Instance instance =
-        Instance.newBuilder()
-            .setAutoscalingConfig(autoscalingConfig)
-            .setDisplayName(displayName)
-            .setConfig(
-                InstanceConfigName.of(projectId, configId).toString())
-            .build();
-
-    // Creates a new instance
-    System.out.printf("Creating instance %s.%n", instanceId);
-    try {
-      // Wait for the createInstance operation to finish.
-      Instance instanceResult = instanceAdminClient.createInstanceAsync(
-          CreateInstanceRequest.newBuilder()
-              .setParent(ProjectName.of(projectId).toString())
-              .setInstanceId(instanceId)
-              .setInstance(instance)
-              .build()).get();
-      System.out.printf("Autoscaler instance %s was successfully created%n",
-          instanceResult.getName());
-    } catch (ExecutionException e) {
-      System.out.printf(
-          "Error: Creating instance %s failed with error message %s%n",
-          instance.getName(), e.getMessage());
-    } catch (InterruptedException e) {
-      System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+      // Creates a new instance
+      System.out.printf("Creating instance %s.%n", instanceId);
+      try {
+        // Wait for the createInstance operation to finish.
+        Instance instanceResult = instanceAdminClient.createInstanceAsync(
+            CreateInstanceRequest.newBuilder()
+                .setParent(ProjectName.of(projectId).toString())
+                .setInstanceId(instanceId)
+                .setInstance(instance)
+                .build()).get();
+        System.out.printf("Autoscaler instance %s was successfully created%n",
+            instanceResult.getName());
+      } catch (ExecutionException e) {
+        System.out.printf(
+            "Error: Creating instance %s failed with error message %s%n",
+            instance.getName(), e.getMessage());
+      } catch (InterruptedException e) {
+        System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+      }
     }
   }
 }

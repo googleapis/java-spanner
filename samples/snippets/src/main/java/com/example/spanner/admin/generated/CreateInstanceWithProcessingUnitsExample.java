@@ -35,38 +35,38 @@ class CreateInstanceWithProcessingUnitsExample {
   }
 
   static void createInstance(String projectId, String instanceId) throws IOException {
-    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
+    try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+      // Set Instance configuration.
+      String configId = "regional-us-central1";
+      // This will create an instance with the processing power of 0.2 nodes.
+      int processingUnits = 500;
+      String displayName = "Descriptive name";
 
-    // Set Instance configuration.
-    String configId = "regional-us-central1";
-    // This will create an instance with the processing power of 0.2 nodes.
-    int processingUnits = 500;
-    String displayName = "Descriptive name";
+      try {
+        // Creates a new instance
+        System.out.printf("Creating instance %s.%n", instanceId);
+        Instance instance =
+            Instance.newBuilder()
+                .setDisplayName(displayName)
+                .setProcessingUnits(processingUnits)
+                .setConfig(
+                    InstanceConfigName.of(projectId, configId).toString())
+                .build();
+        // Wait for the createInstance operation to finish.
+        System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
+        Instance createdInstance = instanceAdminClient.createInstanceAsync(
+            CreateInstanceRequest.newBuilder()
+                .setParent(ProjectName.of(projectId).toString())
+                .setInstanceId(instanceId)
+                .setInstance(instance)
+                .build()).get();
 
-    try {
-      // Creates a new instance
-      System.out.printf("Creating instance %s.%n", instanceId);
-      Instance instance =
-          Instance.newBuilder()
-              .setDisplayName(displayName)
-              .setProcessingUnits(processingUnits)
-              .setConfig(
-                  InstanceConfigName.of(projectId, configId).toString())
-              .build();
-      // Wait for the createInstance operation to finish.
-      System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
-      Instance createdInstance = instanceAdminClient.createInstanceAsync(
-          CreateInstanceRequest.newBuilder()
-              .setParent(ProjectName.of(projectId).toString())
-              .setInstanceId(instanceId)
-              .setInstance(instance)
-              .build()).get();
-
-      System.out.printf("Created instance %s.%n", createdInstance.getName());
-      System.out.printf("Instance %s has %d processing units.%n", createdInstance.getName(),
-          createdInstance.getProcessingUnits());
-    } catch (Exception e) {
-      System.out.printf("Error: %s.%n", e.getMessage());
+        System.out.printf("Created instance %s.%n", createdInstance.getName());
+        System.out.printf("Instance %s has %d processing units.%n", createdInstance.getName(),
+            createdInstance.getProcessingUnits());
+      } catch (Exception e) {
+        System.out.printf("Error: %s.%n", e.getMessage());
+      }
     }
   }
 }

@@ -33,18 +33,19 @@ public class GetInstanceConfigSample {
   }
 
   static void getInstanceConfig(String projectId, String instanceConfigId) throws IOException {
-    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
-    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
-        instanceConfigId);
+    try (final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+      final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
+          instanceConfigId);
 
-    final InstanceConfig instanceConfig =
-        instanceAdminClient.getInstanceConfig(instanceConfigName.toString());
+      final InstanceConfig instanceConfig =
+          instanceAdminClient.getInstanceConfig(instanceConfigName.toString());
 
-    System.out.printf(
-        "Available leader options for instance config %s: %s%n",
-        instanceConfig.getName(),
-        instanceConfig.getLeaderOptionsList()
-    );
+      System.out.printf(
+          "Available leader options for instance config %s: %s%n",
+          instanceConfig.getName(),
+          instanceConfig.getLeaderOptionsList()
+      );
+    }
   }
 }
 //[END spanner_get_instance_config]

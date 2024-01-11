@@ -32,15 +32,16 @@ public class ListInstanceConfigsSample {
   }
 
   static void listInstanceConfigs(String projectId) throws IOException {
-    final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
-    final ProjectName projectName = ProjectName.of(projectId);
-    for (InstanceConfig instanceConfig :
-        instanceAdminClient.listInstanceConfigs(projectName).iterateAll()) {
-      System.out.printf(
-          "Available leader options for instance config %s: %s%n",
-          instanceConfig.getName(),
-          instanceConfig.getLeaderOptionsList()
-      );
+    try (final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+      final ProjectName projectName = ProjectName.of(projectId);
+      for (InstanceConfig instanceConfig :
+          instanceAdminClient.listInstanceConfigs(projectName).iterateAll()) {
+        System.out.printf(
+            "Available leader options for instance config %s: %s%n",
+            instanceConfig.getName(),
+            instanceConfig.getLeaderOptionsList()
+        );
+      }
     }
   }
 }
