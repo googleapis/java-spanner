@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.example.spanner;
+package com.example.spanner.admin.generated;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.example.spanner.SampleRunner;
+import com.example.spanner.SampleTestBase;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -32,8 +34,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration tests for: {@link CreateDatabaseWithEncryptionKey}, {@link
- * CreateBackupWithEncryptionKey} and {@link RestoreBackupWithEncryptionKey}
+ * Integration tests for: {@link com.example.spanner.CreateDatabaseWithEncryptionKey}, {@link
+ * com.example.spanner.CreateBackupWithEncryptionKey} and {@link com.example.spanner.RestoreBackupWithEncryptionKey}
  */
 @RunWith(JUnit4.class)
 @Ignore

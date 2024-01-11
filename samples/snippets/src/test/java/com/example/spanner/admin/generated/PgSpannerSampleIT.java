@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.spanner;
+package com.example.spanner.admin.generated;
 
 import static com.google.common.truth.Truth.assertThat;
 

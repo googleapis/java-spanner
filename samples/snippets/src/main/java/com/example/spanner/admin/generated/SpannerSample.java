@@ -29,8 +29,6 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
@@ -50,6 +48,8 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.common.io.BaseEncoding;
 import com.google.longrunning.Operation;
@@ -62,9 +62,13 @@ import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.InstanceName;
+import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
+import com.google.spanner.admin.database.v1.ListBackupsRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsResponse;
 import com.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -73,12 +77,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.threeten.bp.Duration;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.OffsetDateTime;
 import org.threeten.bp.temporal.ChronoField;
-import org.threeten.bp.temporal.TemporalUnit;
 
 /**
  * Example code for using the Cloud Spanner API. This example demonstrates all the common operations
@@ -1242,30 +1244,25 @@ public class SpannerSample {
   // [END spanner_dml_batch_update]
 
   // [START spanner_create_table_with_datatypes]
-  static void createTableWithDatatypes(DatabaseAdminClient dbAdminClient, DatabaseId id) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        dbAdminClient.updateDatabaseDdl(
-            id.getInstanceId().getInstance(),
-            id.getDatabase(),
-            Arrays.asList(
-                "CREATE TABLE Venues ("
-                    + "  VenueId         INT64 NOT NULL,"
-                    + "  VenueName       STRING(100),"
-                    + "  VenueInfo       BYTES(MAX),"
-                    + "  Capacity        INT64,"
-                    + "  AvailableDates  ARRAY<DATE>,"
-                    + "  LastContactDate DATE,"
-                    + "  OutdoorVenue    BOOL, "
-                    + "  PopularityScore FLOAT64, "
-                    + "  Revenue         NUMERIC, "
-                    + "  VenueDetails    JSON, "
-                    + "  LastUpdateTime  TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)"
-                    + ") PRIMARY KEY (VenueId)"),
-            null);
+  static void createTableWithDatatypes(DatabaseAdminClient dbAdminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
-      System.out.println("Created Venues table in database: [" + id + "]");
+      dbAdminClient.updateDatabaseDdlAsync(databaseName,
+          Arrays.asList(
+              "CREATE TABLE Venues ("
+                  + "  VenueId         INT64 NOT NULL,"
+                  + "  VenueName       STRING(100),"
+                  + "  VenueInfo       BYTES(MAX),"
+                  + "  Capacity        INT64,"
+                  + "  AvailableDates  ARRAY<DATE>,"
+                  + "  LastContactDate DATE,"
+                  + "  OutdoorVenue    BOOL, "
+                  + "  PopularityScore FLOAT64, "
+                  + "  Revenue         NUMERIC, "
+                  + "  VenueDetails    JSON, "
+                  + "  LastUpdateTime  TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)"
+                  + ") PRIMARY KEY (VenueId)")).get();
+      System.out.println("Created Venues table in database: [" + databaseName.toString() + "]");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -1602,28 +1599,33 @@ public class SpannerSample {
 
   // [START spanner_cancel_backup_create]
   static void cancelCreateBackup(
-      DatabaseAdminClient dbAdminClient, DatabaseId databaseId, BackupId backupId) {
+      DatabaseAdminClient dbAdminClient, String projectId, String instanceId,
+      String databaseId, String backupId) {
     // Set expire time to 14 days from now.
-    Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
-        System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
+    Timestamp expireTime =
+        Timestamp.newBuilder().setSeconds(TimeUnit.MILLISECONDS.toSeconds((
+            System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14)))).build();
+    BackupName backupName = BackupName.of(projectId, instanceId, backupId);
+    Backup backup = Backup.newBuilder()
+        .setName(backupName.toString())
+        .setDatabase(DatabaseName.of(projectId, instanceId, databaseId).toString())
+        .setExpireTime(expireTime).build();
 
-    // Create a backup instance.
-    Backup backup =
-        dbAdminClient
-            .newBackupBuilder(backupId)
-            .setDatabase(databaseId)
-            .setExpireTime(expireTime)
-            .build();
-    // Start the creation of a backup.
-    System.out.println("Creating backup [" + backup.getId() + "]...");
-    OperationFuture<Backup, CreateBackupMetadata> op = backup.create();
+
     try {
-      // Try to cancel the backup operation.
-      System.out.println("Cancelling create backup operation for [" + backup.getId() + "]...");
-      dbAdminClient.cancelOperation(op.getName());
+      // Start the creation of a backup.
+      System.out.println("Creating backup [" + backupId + "]...");
+      OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.createBackupAsync(
+          InstanceName.of(projectId, instanceId), backup, backupId);
+
       // Get a polling future for the running operation. This future will regularly poll the server
       // for the current status of the backup operation.
       RetryingFuture<OperationSnapshot> pollingFuture = op.getPollingFuture();
+
+      // Try to cancel the backup operation.
+      System.out.println("Cancelling create backup operation for [" + backupId + "]...");
+      pollingFuture.cancel(true);
+
       // Wait for the operation to finish.
       // isDone will return true when the operation is complete, regardless of whether it was
       // successful or not.
@@ -1633,11 +1635,11 @@ public class SpannerSample {
       }
       if (pollingFuture.get().getErrorCode() == null) {
         // Backup was created before it could be cancelled. Delete the backup.
-        backup.delete();
-        System.out.println("Backup operation for [" + backup.getId()
+        dbAdminClient.deleteBackup(backupName);
+        System.out.println("Backup operation for [" + backupId
             + "] successfully finished before it could be cancelled");
       } else if (pollingFuture.get().getErrorCode().getCode() == StatusCode.Code.CANCELLED) {
-        System.out.println("Backup operation for [" + backup.getId() + "] successfully cancelled");
+        System.out.println("Backup operation for [" + backupId + "] successfully cancelled");
       }
     } catch (ExecutionException e) {
       throw SpannerExceptionFactory.newSpannerException(e.getCause());
@@ -1649,20 +1651,22 @@ public class SpannerSample {
 
   // [START spanner_list_backup_operations]
   static void listBackupOperations(
-          InstanceAdminClient instanceAdminClient, DatabaseId databaseId, BackupId backupId) {
-    Instance instance = instanceAdminClient.getInstance(databaseId.getInstanceId().getInstance());
+      DatabaseAdminClient databaseAdminClient,
+      String projectId, String instanceId,
+      String databaseId, String backupId) {
+    com.google.spanner.admin.instance.v1.InstanceName instanceName = com.google.spanner.admin.instance.v1.InstanceName.of(projectId, instanceId)
     // Get create backup operations for the sample database.
-    Timestamp last24Hours = Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
-        TimeUnit.HOURS), 0);
     String filter =
         String.format(
                 "(metadata.@type:type.googleapis.com/"
                         + "google.spanner.admin.database.v1.CreateBackupMetadata) "
                         + "AND (metadata.database:%s)",
-                databaseId.getName());
-    Page<Operation> createBackupOperations = instance.listBackupOperations(
-              Options.filter(filter));
+                DatabaseName.of(projectId, instanceId, databaseId).toString());
+    ListBackupOperationsRequest listBackupOperationsRequest =
+        ListBackupOperationsRequest.newBuilder()
+            .setParent(instanceName.toString()).setFilter(filter).build();
+    ListBackupOperationsPagedResponse createBackupOperations
+        = databaseAdminClient.listBackupOperations(listBackupOperationsRequest);
     System.out.println("Create Backup Operations:");
     for (Operation op : createBackupOperations.iterateAll()) {
       try {
@@ -1679,13 +1683,15 @@ public class SpannerSample {
       }
     }
     // Get copy backup operations for the sample database.
-    filter =
-              String.format(
+    filter = String.format(
                       "(metadata.@type:type.googleapis.com/"
                               + "google.spanner.admin.database.v1.CopyBackupMetadata) "
                               + "AND (metadata.source_backup:%s)",
-                      backupId.getName());
-    Page<Operation> copyBackupOperations = instance.listBackupOperations(Options.filter(filter));
+        BackupName.of(projectId, instanceId, backupId).toString());
+    listBackupOperationsRequest =
+        ListBackupOperationsRequest.newBuilder()
+            .setParent(instanceName.toString()).setFilter(filter).build();
+    ListBackupOperationsPagedResponse copyBackupOperations = databaseAdminClient.listBackupOperations(listBackupOperationsRequest);
     System.out.println("Copy Backup Operations:");
     for (Operation op : copyBackupOperations.iterateAll()) {
       try {
@@ -1707,18 +1713,22 @@ public class SpannerSample {
 
   // [START spanner_list_database_operations]
   static void listDatabaseOperations(
-      InstanceAdminClient instanceAdminClient,
-      DatabaseAdminClient dbAdminClient,
-      InstanceId instanceId) {
-    Instance instance = instanceAdminClient.getInstance(instanceId.getInstance());
+      DatabaseAdminClient dbAdminClient, String projectId, String instanceId) {
     // Get optimize restored database operations.
-    Timestamp last24Hours = Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
-        TimeUnit.HOURS), 0);
+    Timestamp last24Hours = Timestamp.newBuilder().setSeconds((TimeUnit.SECONDS.convert(
+        TimeUnit.HOURS.convert(new java.sql.Timestamp(
+            System.currentTimeMillis()).getSeconds(), TimeUnit.SECONDS) - 24,
+        TimeUnit.HOURS))).build();
     String filter = String.format("(metadata.@type:type.googleapis.com/"
                     + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) AND "
                     + "(metadata.progress.start_time > \"%s\")", last24Hours);
-    for (Operation op : instance.listDatabaseOperations(Options.filter(filter)).iterateAll()) {
+    ListDatabaseOperationsRequest listDatabaseOperationsRequest =
+        ListDatabaseOperationsRequest.newBuilder()
+            .setParent(com.google.spanner.admin.instance.v1.InstanceName.of(
+                projectId, instanceId).toString()).setFilter(filter).build();
+    ListDatabaseOperationsPagedResponse pagedResponse
+        = dbAdminClient.listDatabaseOperations(listDatabaseOperationsRequest);
+    for (Operation op : pagedResponse.iterateAll()) {
       try {
         OptimizeRestoredDatabaseMetadata metadata =
             op.getMetadata().unpack(OptimizeRestoredDatabaseMetadata.class);
@@ -1736,46 +1746,60 @@ public class SpannerSample {
 
   // [START spanner_list_backups]
   static void listBackups(
-      InstanceAdminClient instanceAdminClient, DatabaseId databaseId, BackupId backupId) {
-    Instance instance = instanceAdminClient.getInstance(databaseId.getInstanceId().getInstance());
+      DatabaseAdminClient dbAdminClient, String projectId,
+      String instanceId, String databaseId, String backupId) {
+    InstanceName instanceName = InstanceName.of(projectId, instanceId)
     // List all backups.
     System.out.println("All backups:");
-    for (Backup backup : instance.listBackups().iterateAll()) {
+    for (Backup backup : dbAdminClient.listBackups(
+        instanceName.toString()).iterateAll()) {
       System.out.println(backup);
     }
 
     // List all backups with a specific name.
     System.out.println(
-        String.format("All backups with backup name containing \"%s\":", backupId.getBackup()));
-    for (Backup backup : instance.listBackups(
-        Options.filter(String.format("name:%s", backupId.getBackup()))).iterateAll()) {
+        String.format("All backups with backup name containing \"%s\":", backupId));
+    ListBackupsRequest listBackupsRequest =
+        ListBackupsRequest.newBuilder().setParent(instanceName.toString()).setFilter(String.format("name:%s", backupId)).build();
+    for (Backup backup : dbAdminClient.listBackups(listBackupsRequest).iterateAll()) {
       System.out.println(backup);
     }
 
     // List all backups for databases whose name contains a certain text.
     System.out.println(
         String.format(
-            "All backups for databases with a name containing \"%s\":",
-            databaseId.getDatabase()));
-    for (Backup backup : instance.listBackups(
-        Options.filter(String.format("database:%s", databaseId.getDatabase()))).iterateAll()) {
+            "All backups for databases with a name containing \"%s\":", databaseId));
+    listBackupsRequest =
+        ListBackupsRequest.newBuilder().setParent(instanceName.toString())
+            .setFilter(String.format("database:%s", databaseId)).build();
+    for (Backup backup : dbAdminClient.listBackups(listBackupsRequest).iterateAll()) {
       System.out.println(backup);
     }
 
     // List all backups that expire before a certain time.
-    Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
+    Timestamp expireTime = Timestamp.newBuilder().setSeconds((TimeUnit.SECONDS.convert(
+        TimeUnit.SECONDS.convert(new java.sql.Timestamp(
+            System.currentTimeMillis()).getSeconds(), TimeUnit.SECONDS) + TimeUnit.DAYS.toSeconds(30),
+        TimeUnit.HOURS))).build();
+
+    Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.SECONDS.convert(
         System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30), TimeUnit.MILLISECONDS));
     System.out.println(String.format("All backups that expire before %s:", expireTime.toString()));
-    for (Backup backup :
-        instance.listBackups(
-            Options.filter(String.format("expire_time < \"%s\"", expireTime.toString())))
-        .iterateAll()) {
+    listBackupsRequest =
+        ListBackupsRequest.newBuilder().setParent(instanceName.toString())
+            .setFilter(String.format("expire_time < \"%s\"", expireTime.toString())).build();
+
+    for (Backup backup : dbAdminClient.listBackups(listBackupsRequest).iterateAll()) {
       System.out.println(backup);
     }
 
     // List all backups with size greater than a certain number of bytes.
+    listBackupsRequest =
+        ListBackupsRequest.newBuilder().setParent(instanceName.toString())
+            .setFilter("size_bytes > 100").build();
+
     System.out.println("All backups with size greater than 100 bytes:");
-    for (Backup backup : instance.listBackups(Options.filter("size_bytes > 100")).iterateAll()) {
+    for (Backup backup : dbAdminClient.listBackups(listBackupsRequest).iterateAll()) {
       System.out.println(backup);
     }
 
@@ -2033,7 +2057,8 @@ public class SpannerSample {
         updateUsingBatchDml(dbClient);
         break;
       case "createtablewithdatatypes":
-        createTableWithDatatypes(dbAdminClient, database);
+        createTableWithDatatypes(dbAdminClient, DatabaseName.of(database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase()));
         break;
       case "writedatatypesdata":
         writeDatatypesData(dbClient);
@@ -2079,7 +2104,9 @@ public class SpannerSample {
       case "cancelcreatebackup":
         cancelCreateBackup(
             dbAdminClient,
-            database,
+            database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase(),
+            backupId
             BackupId.of(backup.getInstanceId(), backup.getBackup() + "_cancel"));
         break;
       case "listbackupoperations":
@@ -2099,10 +2126,12 @@ public class SpannerSample {
             DatabaseId.of(database.getInstanceId(), createRestoredSampleDbId(database)));
         break;
       case "updatebackup":
-        updateBackup(dbAdminClient, backup);
+        updateBackup(dbAdminClient, database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), backupId);
         break;
       case "deletebackup":
-        deleteBackup(dbAdminClient, backup);
+        deleteBackup(dbAdminClient, database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), backupId);
         break;
       default:
         printUsageAndExit();

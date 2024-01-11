@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.example.spanner;
+package com.example.spanner.admin.generated;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.example.spanner.SampleRunner;
+import com.example.spanner.SpannerSample;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
@@ -83,7 +85,7 @@ public class SpannerSampleIT {
     ByteArrayOutputStream bout = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(bout);
     System.setOut(out);
-    SpannerSample.main(new String[] {command, instanceId, databaseId});
+    com.example.spanner.SpannerSample.main(new String[] {command, instanceId, databaseId});
     System.setOut(stdOut);
     return bout.toString();
   }
@@ -428,7 +430,7 @@ public class SpannerSampleIT {
               "Database %s restored from backup",
               DatabaseId.of(
                   dbId.getInstanceId(),
-                  SpannerSample.createRestoredSampleDbId(dbId))
+                  com.example.spanner.SpannerSample.createRestoredSampleDbId(dbId))
               .getName()));
     }
 
@@ -532,7 +534,7 @@ public class SpannerSampleIT {
     String out =
         runSampleRunnable(() -> {
           try {
-            CreateInstanceExample.createInstance(
+            com.example.spanner.CreateInstanceExample.createInstance(
                 dbId.getInstanceId().getProject(), instanceId);
           } finally {
             spanner.getInstanceAdminClient().deleteInstance(instanceId);
