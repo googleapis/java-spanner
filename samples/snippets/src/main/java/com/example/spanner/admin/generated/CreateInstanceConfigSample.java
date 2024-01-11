@@ -53,9 +53,9 @@ class CreateInstanceConfigSample {
       final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
           instanceConfigId);
       /**
-       * The replicas for the custom instance configuration must include all the replicas of the base
-       * configuration, in addition to at least one from the list of optional replicas of the base
-       * configuration.
+       * The replicas for the custom instance configuration must include all the replicas of the
+       * base configuration, in addition to at least one from the list of optional replicas of the
+       * base configuration.
        */
       final List<ReplicaInfo> replicas =
           Stream.concat(baseConfig.getReplicasList().stream(),
