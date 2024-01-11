@@ -34,7 +34,8 @@ public class GetInstanceConfigSample {
 
   static void getInstanceConfig(String projectId, String instanceConfigId) throws IOException {
     final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
-    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId, instanceConfigId);
+    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
+        instanceConfigId);
 
     final InstanceConfig instanceConfig =
         instanceAdminClient.getInstanceConfig(instanceConfigName.toString());

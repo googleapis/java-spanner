@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_update_instance_config]
+
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 class UpdateInstanceConfigSample {
+
   static void updateInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
@@ -45,9 +47,17 @@ class UpdateInstanceConfigSample {
             .setName(instanceConfigName.toString())
             .setDisplayName("updated custom instance config")
             .putLabels("updated", "true").build();
+    /**
+     * The field mask must always be specified; this prevents any future
+     * fields in [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig]
+     * from being erased accidentally by clients that do not know about them.
+     */
     final UpdateInstanceConfigRequest updateInstanceConfigRequest =
-        UpdateInstanceConfigRequest.newBuilder().setInstanceConfig(instanceConfig).setUpdateMask(
-            FieldMask.newBuilder().addAllPaths(ImmutableList.of("display_name", "labels")).build()).build();
+        UpdateInstanceConfigRequest.newBuilder()
+            .setInstanceConfig(instanceConfig)
+            .setUpdateMask(
+                FieldMask.newBuilder().addAllPaths(ImmutableList.of("display_name", "labels"))
+                    .build()).build();
     try {
       System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigName);
       InstanceConfig instanceConfigResult =

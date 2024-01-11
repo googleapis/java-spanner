@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_create_instance_config]
+
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class CreateInstanceConfigSample {
+
   static void createInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
@@ -44,10 +46,12 @@ class CreateInstanceConfigSample {
   static void createInstanceConfig(
       String projectId, String baseInstanceConfigId, String instanceConfigId) throws IOException {
     InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
-    final InstanceConfigName baseInstanceConfigName = InstanceConfigName.of(projectId, baseInstanceConfigId);
+    final InstanceConfigName baseInstanceConfigName = InstanceConfigName.of(projectId,
+        baseInstanceConfigId);
     final InstanceConfig baseConfig =
         instanceAdminClient.getInstanceConfig(baseInstanceConfigName.toString());
-    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId, instanceConfigId);
+    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
+        instanceConfigId);
     /**
      * The replicas for the custom instance configuration must include all the replicas of the base
      * configuration, in addition to at least one from the list of optional replicas of the base

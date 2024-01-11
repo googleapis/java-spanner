@@ -44,6 +44,8 @@ class CreateInstanceWithAutoscalingConfigExample {
     String displayName = "Descriptive name";
 
     // Create an autoscaling config.
+    // When autoscaling_config is enabled, node_count and processing_units fields
+    // need not be specified.
     AutoscalingConfig autoscalingConfig =
         AutoscalingConfig.newBuilder()
             .setAutoscalingLimits(
@@ -71,7 +73,8 @@ class CreateInstanceWithAutoscalingConfigExample {
               .setInstanceId(instanceId)
               .setInstance(instance)
               .build()).get();
-      System.out.printf("Autoscaler instance %s was successfully created%n", instanceResult.getName());
+      System.out.printf("Autoscaler instance %s was successfully created%n",
+          instanceResult.getName());
     } catch (ExecutionException e) {
       System.out.printf(
           "Error: Creating instance %s failed with error message %s%n",
