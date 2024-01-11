@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,20 @@ package com.example.spanner.admin.generated;
 
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ProjectName;
 import java.io.IOException;
 
 public class ListInstanceConfigsSample {
 
   static void listInstanceConfigs() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String projectName = "projects/my-project";
-    listInstanceConfigs(projectName);
+    String projectId = "my-project";
+    listInstanceConfigs(projectId);
   }
 
-  static void listInstanceConfigs(String projectName) throws IOException {
+  static void listInstanceConfigs(String projectId) throws IOException {
     final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
+    final ProjectName projectName = ProjectName.of(projectId);
     for (InstanceConfig instanceConfig :
         instanceAdminClient.listInstanceConfigs(projectName).iterateAll()) {
       System.out.printf(

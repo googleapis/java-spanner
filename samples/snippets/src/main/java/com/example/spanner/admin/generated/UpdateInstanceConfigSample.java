@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package com.example.spanner.admin.generated;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -29,16 +30,19 @@ import java.util.concurrent.TimeoutException;
 class UpdateInstanceConfigSample {
   static void updateInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String instanceConfigName = "projects/my-project/instanceConfigs/custom-instance-config";
-    updateInstanceConfig(instanceConfigName);
+    String projectId = "my-project";
+    String instanceConfigId = "custom-instance-config";
+    updateInstanceConfig(projectId, instanceConfigId);
   }
 
-  static void updateInstanceConfig(String instanceConfigName) throws IOException {
+  static void updateInstanceConfig(String projectId, String instanceConfigId) throws IOException {
     final com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient =
         com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create();
+    final InstanceConfigName instanceConfigName =
+        InstanceConfigName.of(projectId, instanceConfigId);
     final InstanceConfig instanceConfig =
         InstanceConfig.newBuilder()
-            .setName(instanceConfigName)
+            .setName(instanceConfigName.toString())
             .setDisplayName("updated custom instance config")
             .putLabels("updated", "true").build();
     final UpdateInstanceConfigRequest updateInstanceConfigRequest =

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,23 +22,27 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+import com.google.spanner.admin.instance.v1.ProjectName;
 import java.io.IOException;
 
 public class ListInstanceConfigOperationsSample {
   static void listInstanceConfigOperations() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String projectName = "projects/my-project";
-    listInstanceConfigOperations(projectName);
+    String projectId = "my-project";
+    listInstanceConfigOperations(projectId);
   }
 
-  static void listInstanceConfigOperations(String projectName) throws IOException {
+  static void listInstanceConfigOperations(String projectId) throws IOException {
     final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
+    final ProjectName projectName = ProjectName.of(projectId);
     try {
       System.out.printf(
           "Getting list of instance config operations for project %s...\n",
-          projectName);
+          projectId);
       final ListInstanceConfigOperationsRequest request =
-          ListInstanceConfigOperationsRequest.newBuilder().setParent(projectName).setFilter("(metadata.@type=type.googleapis.com/"
+          ListInstanceConfigOperationsRequest.newBuilder()
+              .setParent(projectName.toString())
+              .setFilter("(metadata.@type=type.googleapis.com/"
               + "google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)").build();
       final Iterable<Operation> instanceConfigOperations =
           instanceAdminClient.listInstanceConfigOperations(request).iterateAll();

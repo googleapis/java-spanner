@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,24 @@ package com.example.spanner.admin.generated;
 
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import java.io.IOException;
 
 public class GetInstanceConfigSample {
 
   static void getInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    final String instanceConfigName = "nam6";
-    getInstanceConfig(instanceConfigName);
+    final String projectId = "my-project";
+    final String instanceConfigId = "nam6";
+    getInstanceConfig(projectId, instanceConfigId);
   }
 
-  static void getInstanceConfig(String instanceConfigName) throws IOException {
+  static void getInstanceConfig(String projectId, String instanceConfigId) throws IOException {
     final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
+    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId, instanceConfigId);
 
-    final InstanceConfig instanceConfig = instanceAdminClient.getInstanceConfig(instanceConfigName);
+    final InstanceConfig instanceConfig =
+        instanceAdminClient.getInstanceConfig(instanceConfigName.toString());
 
     System.out.printf(
         "Available leader options for instance config %s: %s%n",

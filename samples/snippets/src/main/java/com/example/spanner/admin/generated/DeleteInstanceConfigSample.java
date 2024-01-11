@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,28 +20,31 @@ package com.example.spanner.admin.generated;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import java.io.IOException;
 
 class DeleteInstanceConfigSample {
   static void deleteInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
-    String instanceConfigId = "projects/my-project/instanceConfigs/custom-user-config";
-    deleteInstanceConfig(instanceConfigId);
+    String projectId = "my-project";
+    String instanceConfigId = "custom-user-config";
+    deleteInstanceConfig(projectId, instanceConfigId);
   }
 
-  static void deleteInstanceConfig(String instanceConfigId) throws IOException {
+  static void deleteInstanceConfig(String projectId, String instanceConfigId) throws IOException {
     final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
+    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId, instanceConfigId);
     final DeleteInstanceConfigRequest request =
-        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigId).build();
+        DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName.toString()).build();
 
     try {
-      System.out.printf("Deleting %s...\n", instanceConfigId);
+      System.out.printf("Deleting %s...\n", instanceConfigName);
       instanceAdminClient.deleteInstanceConfig(request);
-      System.out.printf("Deleted instance configuration %s\n", instanceConfigId);
+      System.out.printf("Deleted instance configuration %s\n", instanceConfigName);
     } catch (SpannerException e) {
       System.out.printf(
           "Error: Deleting instance configuration %s failed with error message: %s\n",
-          instanceConfigId, e.getMessage());
+          instanceConfigName, e.getMessage());
     }
   }
 }
