@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 // [START spanner_delete_instance_config]
+
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
@@ -24,6 +25,7 @@ import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import java.io.IOException;
 
 class DeleteInstanceConfigSample {
+
   static void deleteInstanceConfig() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
@@ -33,7 +35,8 @@ class DeleteInstanceConfigSample {
 
   static void deleteInstanceConfig(String projectId, String instanceConfigId) throws IOException {
     final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
-    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId, instanceConfigId);
+    final InstanceConfigName instanceConfigName = InstanceConfigName.of(projectId,
+        instanceConfigId);
     final DeleteInstanceConfigRequest request =
         DeleteInstanceConfigRequest.newBuilder().setName(instanceConfigName.toString()).build();
 
