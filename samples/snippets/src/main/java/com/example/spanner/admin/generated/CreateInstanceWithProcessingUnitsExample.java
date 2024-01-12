@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.example.spanner.admin.generated;
 
-//[START spanner_create_instance]
+//[START spanner_create_instance_with_processing_units]
 
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
@@ -24,9 +24,8 @@ import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
-class CreateInstanceExample {
+class CreateInstanceWithProcessingUnitsExample {
 
   static void createInstance() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
@@ -38,34 +37,37 @@ class CreateInstanceExample {
   static void createInstance(String projectId, String instanceId) throws IOException {
     try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
       // Set Instance configuration.
-      int nodeCount = 2;
+      String configId = "regional-us-central1";
+      // This will create an instance with the processing power of 0.2 nodes.
+      int processingUnits = 500;
       String displayName = "Descriptive name";
 
-      // Create an Instance object that will be used to create the instance.
-      Instance instance =
-          Instance.newBuilder()
-              .setDisplayName(displayName)
-              .setNodeCount(nodeCount)
-              .setConfig(
-                  InstanceConfigName.of(projectId, "regional-us-central1").toString())
-              .build();
       try {
+        // Creates a new instance
+        System.out.printf("Creating instance %s.%n", instanceId);
+        Instance instance =
+            Instance.newBuilder()
+                .setDisplayName(displayName)
+                .setProcessingUnits(processingUnits)
+                .setConfig(
+                    InstanceConfigName.of(projectId, configId).toString())
+                .build();
         // Wait for the createInstance operation to finish.
+        System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
         Instance createdInstance = instanceAdminClient.createInstanceAsync(
             CreateInstanceRequest.newBuilder()
                 .setParent(ProjectName.of(projectId).toString())
                 .setInstanceId(instanceId)
                 .setInstance(instance)
                 .build()).get();
-        System.out.printf("Instance %s was successfully created%n", createdInstance.getName());
-      } catch (ExecutionException e) {
-        System.out.printf(
-            "Error: Creating instance %s failed with error message %s%n",
-            instance.getName(), e.getMessage());
-      } catch (InterruptedException e) {
-        System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+
+        System.out.printf("Created instance %s.%n", createdInstance.getName());
+        System.out.printf("Instance %s has %d processing units.%n", createdInstance.getName(),
+            createdInstance.getProcessingUnits());
+      } catch (Exception e) {
+        System.out.printf("Error: %s.%n", e.getMessage());
       }
     }
   }
 }
-//[END spanner_create_instance]
+//[END spanner_create_instance_with_processing_units]
