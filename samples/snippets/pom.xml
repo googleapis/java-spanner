@@ -175,12 +175,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.1</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>java-client-integration-test</spanner.test.instance>
             <spanner.test.instance.mr>java-client-mr-integration-test</spanner.test.instance.mr>
-            <spanner.test.instance.config>nam15</spanner.test.instance.config>
+            <spanner.test.instance.config>nam11</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
             <spanner.test.key.name>cmek-test-key</spanner.test.key.name>
