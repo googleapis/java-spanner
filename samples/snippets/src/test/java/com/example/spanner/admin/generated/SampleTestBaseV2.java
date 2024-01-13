@@ -167,6 +167,7 @@ public class SampleTestBaseV2 {
 
   static String getProjectName(final String projectId) {
     return String.format("projects/%s", projectId);
+  }
 
   static String getCreateDatabaseStatement(
       final String databaseName, final DatabaseDialect dialect) {
