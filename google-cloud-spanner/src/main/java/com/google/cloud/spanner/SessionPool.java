@@ -2534,10 +2534,6 @@ class SessionPool implements SessionProvider {
     }
   }
 
-  Session getRandomSession() {
-    return sessions.get(ThreadLocalRandom.current().nextInt(sessions.size()));
-  }
-
   private PooledSessionFuture checkoutSession(
       final Span span, final PooledSession readySession, WaiterFuture waiter) {
     PooledSessionFuture pooledSessionFuture;

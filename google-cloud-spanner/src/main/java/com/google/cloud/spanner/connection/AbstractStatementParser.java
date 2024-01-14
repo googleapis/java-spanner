@@ -226,8 +226,7 @@ public abstract class AbstractStatementParser {
       this.returningClause = returningClause;
     }
 
-    private ParsedStatement withQueryOptions(
-        Statement statement, QueryOptions defaultQueryOptions) {
+    private ParsedStatement copy(Statement statement, QueryOptions defaultQueryOptions) {
       return new ParsedStatement(
           this.type,
           this.clientSideStatement,
@@ -406,16 +405,9 @@ public abstract class AbstractStatementParser {
     if (parsedStatement == null) {
       parsedStatement = internalParse(statement);
       statementCache.put(statement.getSql(), parsedStatement);
+      return parsedStatement;
     }
-    return withQueryOptions(parsedStatement, statement, defaultQueryOptions);
-  }
-
-  private ParsedStatement withQueryOptions(
-      ParsedStatement parsedStatement, Statement statement, QueryOptions defaultQueryOptions) {
-    if (statement.getQueryOptions() != null || defaultQueryOptions != null) {
-      return parsedStatement.withQueryOptions(statement, defaultQueryOptions);
-    }
-    return parsedStatement;
+    return parsedStatement.copy(statement, defaultQueryOptions);
   }
 
   private ParsedStatement internalParse(Statement statement) {
