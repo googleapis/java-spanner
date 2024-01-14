@@ -35,6 +35,7 @@ class ConnectionSessionPoolOptions extends SessionPoolOptions {
     private void setDefaults() {
       disableInactiveTransactionActions();
       setAutoDetectDialect(true);
+      setTrackStackTraceOfSessionCheckout(false);
     }
 
     @Override

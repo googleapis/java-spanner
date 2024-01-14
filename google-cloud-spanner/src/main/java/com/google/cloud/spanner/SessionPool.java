@@ -2530,8 +2530,8 @@ class SessionPool implements SessionProvider {
       } else {
         span.addAnnotation("Acquired session");
       }
-      return checkoutSession(span, sess, waiter);
     }
+    return checkoutSession(span, sess, waiter);
   }
 
   Session getRandomSession() {
@@ -2544,7 +2544,7 @@ class SessionPool implements SessionProvider {
     if (waiter != null) {
       logger.log(
           Level.FINE,
-          "No session available in the pool. Blocking for one to become available/created");
+          () -> "No session available in the pool. Blocking for one to become available/created");
       span.addAnnotation("Waiting for a session to come available");
       pooledSessionFuture = createPooledSessionFuture(waiter, span);
     } else {

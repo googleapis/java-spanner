@@ -15,6 +15,7 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
+import static com.google.cloud.spanner.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.DATABASE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.INSTANCE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.METHOD;
@@ -37,6 +38,8 @@ import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -64,6 +67,10 @@ class HeaderInterceptor implements ClientInterceptor {
   private static final Logger LOGGER = Logger.getLogger(HeaderInterceptor.class.getName());
   private static final Level LEVEL = Level.INFO;
 
+  private static final ExecutorService EXECUTOR_SERVICE =
+      Executors.newSingleThreadExecutor(
+          createVirtualOrDaemonThreadFactory("server-timing-interceptor-handler", false));
+
   HeaderInterceptor() {}
 
   @Override
@@ -72,13 +79,15 @@ class HeaderInterceptor implements ClientInterceptor {
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
-        TagContext tagContext = getTagContext(headers, method.getFullMethodName());
         super.start(
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
               public void onHeaders(Metadata metadata) {
-
-                processHeader(metadata, tagContext);
+                EXECUTOR_SERVICE.submit(
+                    () -> {
+                      TagContext tagContext = getTagContext(headers, method.getFullMethodName());
+                      processHeader(metadata, tagContext);
+                    });
                 super.onHeaders(metadata);
               }
             },
@@ -89,8 +98,8 @@ class HeaderInterceptor implements ClientInterceptor {
 
   private void processHeader(Metadata metadata, TagContext tagContext) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
-    if (metadata.get(SERVER_TIMING_HEADER_KEY) != null) {
-      String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
+    String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
+    if (serverTiming != null) {
       Matcher matcher = SERVER_TIMING_HEADER_PATTERN.matcher(serverTiming);
       if (matcher.find()) {
         try {
@@ -122,8 +131,8 @@ class HeaderInterceptor implements ClientInterceptor {
     String projectId = "undefined-project";
     String instanceId = "undefined-database";
     String databaseId = "undefined-database";
-    if (headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY) != null) {
-      String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
+    String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
+    if (googleResourcePrefix != null) {
       Matcher matcher = GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN.matcher(googleResourcePrefix);
       if (matcher.find()) {
         projectId = matcher.group("project");
