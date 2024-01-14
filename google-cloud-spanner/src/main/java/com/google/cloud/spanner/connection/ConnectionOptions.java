@@ -310,6 +310,10 @@ public class ConnectionOptions {
                       USE_STICKY_SESSIONS_PROPERTY_NAME,
                       "Use a client that reserves and uses one session for all operations (true/false)",
                       DEFAULT_USE_STICKY_SESSIONS),
+                  ConnectionProperty.createBooleanProperty(
+                      OPTIMIZE_SESSION_POOL_PROPERTY_NAME,
+                      "Apply optimizations to the session pool (true/false)",
+                      DEFAULT_OPTIMIZE_SESSION_POOL),
                   ConnectionProperty.createStringProperty(
                       CREDENTIALS_PROPERTY_NAME,
                       "The location of the credentials file to use for this connection. If neither this property or encoded credentials are set, the connection will use the default Google Cloud credentials for the runtime environment."),
