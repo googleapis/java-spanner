@@ -2530,8 +2530,8 @@ class SessionPool implements SessionProvider {
       } else {
         span.addAnnotation("Acquired session");
       }
+      return checkoutSession(span, sess, waiter);
     }
-    return checkoutSession(span, sess, waiter);
   }
 
   Session getRandomSession() {
