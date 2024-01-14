@@ -25,6 +25,8 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -168,10 +170,9 @@ public abstract class AbstractStatementParser {
       return new ParsedStatement(StatementType.DDL, statement, sqlWithoutComments);
     }
 
-    private static ParsedStatement query(
-        Statement statement, String sqlWithoutComments, QueryOptions defaultQueryOptions) {
+    private static ParsedStatement query(Statement statement, String sqlWithoutComments) {
       return new ParsedStatement(
-          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions, false);
+          StatementType.QUERY, null, statement, sqlWithoutComments, null, false);
     }
 
     private static ParsedStatement update(
@@ -202,15 +203,16 @@ public abstract class AbstractStatementParser {
         Statement statement,
         String sqlWithoutComments,
         boolean returningClause) {
-      this(type, statement, sqlWithoutComments, null, returningClause);
+      this(type, null, statement, sqlWithoutComments, null, returningClause);
     }
 
     private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
-      this(type, statement, sqlWithoutComments, null, false);
+      this(type, null, statement, sqlWithoutComments, null, false);
     }
 
     private ParsedStatement(
         StatementType type,
+        ClientSideStatementImpl clientSideStatement,
         Statement statement,
         String sqlWithoutComments,
         QueryOptions defaultQueryOptions,
@@ -218,10 +220,21 @@ public abstract class AbstractStatementParser {
       Preconditions.checkNotNull(type);
       Preconditions.checkNotNull(statement);
       this.type = type;
-      this.clientSideStatement = null;
+      this.clientSideStatement = clientSideStatement;
       this.statement = mergeQueryOptions(statement, defaultQueryOptions);
       this.sqlWithoutComments = sqlWithoutComments;
       this.returningClause = returningClause;
+    }
+
+    private ParsedStatement withQueryOptions(
+        Statement statement, QueryOptions defaultQueryOptions) {
+      return new ParsedStatement(
+          this.type,
+          this.clientSideStatement,
+          statement,
+          this.sqlWithoutComments,
+          defaultQueryOptions,
+          this.returningClause);
     }
 
     @Override
@@ -361,6 +374,12 @@ public abstract class AbstractStatementParser {
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
 
+  private final Cache<String, ParsedStatement> statementCache =
+      CacheBuilder.newBuilder()
+          .maximumSize(5000L)
+          .concurrencyLevel(Runtime.getRuntime().availableProcessors())
+          .build();
+
   AbstractStatementParser(Set<ClientSideStatementImpl> statements) {
     this.statements = Collections.unmodifiableSet(statements);
   }
@@ -383,12 +402,29 @@ public abstract class AbstractStatementParser {
   }
 
   ParsedStatement parse(Statement statement, QueryOptions defaultQueryOptions) {
+    ParsedStatement parsedStatement = statementCache.getIfPresent(statement.getSql());
+    if (parsedStatement == null) {
+      parsedStatement = internalParse(statement);
+      statementCache.put(statement.getSql(), parsedStatement);
+    }
+    return withQueryOptions(parsedStatement, statement, defaultQueryOptions);
+  }
+
+  private ParsedStatement withQueryOptions(
+      ParsedStatement parsedStatement, Statement statement, QueryOptions defaultQueryOptions) {
+    if (statement.getQueryOptions() != null || defaultQueryOptions != null) {
+      return parsedStatement.withQueryOptions(statement, defaultQueryOptions);
+    }
+    return parsedStatement;
+  }
+
+  private ParsedStatement internalParse(Statement statement) {
     String sql = removeCommentsAndTrim(statement.getSql());
     ClientSideStatementImpl client = parseClientSideStatement(sql);
     if (client != null) {
       return ParsedStatement.clientSideStatement(client, statement, sql);
     } else if (isQuery(sql)) {
-      return ParsedStatement.query(statement, sql, defaultQueryOptions);
+      return ParsedStatement.query(statement, sql);
     } else if (isUpdateStatement(sql)) {
       return ParsedStatement.update(statement, sql, checkReturningClause(sql));
     } else if (isDdlStatement(sql)) {
