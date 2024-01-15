@@ -772,19 +772,17 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   <T> T runWithRetry(Callable<T> callable) throws SpannerException {
     while (true) {
-//      synchronized (abortedLock) {
-        checkAborted();
-        try {
-          checkRolledBackToSavepoint();
-          return callable.call();
-        } catch (final AbortedException aborted) {
-          handleAborted(aborted);
-        } catch (SpannerException e) {
-          throw e;
-        } catch (Exception e) {
-          throw SpannerExceptionFactory.asSpannerException(e);
-        }
-//      }
+      checkAborted();
+      try {
+        checkRolledBackToSavepoint();
+        return callable.call();
+      } catch (final AbortedException aborted) {
+        handleAborted(aborted);
+      } catch (SpannerException e) {
+        throw e;
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
     }
   }
 

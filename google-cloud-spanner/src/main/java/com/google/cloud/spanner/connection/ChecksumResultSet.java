@@ -16,13 +16,10 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.connection.ConnectionOptions.RETRY_ABORTS_INTERNALLY_PROPERTY_NAME;
-
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
-import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -40,9 +37,6 @@ import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.PrimitiveSink;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
@@ -71,15 +65,12 @@ import java.util.concurrent.Callable;
  */
 @VisibleForTesting
 class ChecksumResultSet extends ReplaceableForwardingResultSet implements RetriableStatement {
-  private static final boolean USE_JVM_HASH = true;
-
   private final ReadWriteTransaction transaction;
   private volatile long numberOfNextCalls;
   private final ParsedStatement statement;
   private final AnalyzeMode analyzeMode;
   private final QueryOption[] options;
-  private final ChecksumResultSet.ChecksumCalculator checksumCalculator =
-      new ChecksumCalculator(USE_JVM_HASH);
+  private final ChecksumResultSet.ChecksumCalculator checksumCalculator = new ChecksumCalculator();
 
   ChecksumResultSet(
       ReadWriteTransaction transaction,
@@ -140,8 +131,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   @Override
   public void retry(AbortedException aborted) throws AbortedException {
     // Execute the same query and consume the result set to the same point as the original.
-    ChecksumResultSet.ChecksumCalculator newChecksumCalculator =
-        new ChecksumCalculator(USE_JVM_HASH);
+    ChecksumResultSet.ChecksumCalculator newChecksumCalculator = new ChecksumCalculator();
     ResultSet resultSet = null;
     long counter = 0L;
     try {
@@ -197,65 +187,19 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   private static final class ChecksumCalculator {
     private static final HashFunction SHA256_FUNCTION = Hashing.sha256();
 
-    private boolean isFirst = true;
-
     private HashCode currentChecksum;
 
-    private final MessageDigest digest;
-
-    private ChecksumCalculator(boolean useJvmHash) {
-//      if (useJvmHash) {
-//        try {
-//          this.digest = MessageDigest.getInstance("SHA-256");
-//        } catch (NoSuchAlgorithmException exception) {
-//          // Note: This should never happen, as SHA-256 is standard supported on all JVM versions 8
-//          // and higher.
-//          throw SpannerExceptionFactory.newSpannerException(
-//              ErrorCode.INTERNAL,
-//              "SHA-256 is not supported on this JVM. Please set "
-//                  + RETRY_ABORTS_INTERNALLY_PROPERTY_NAME
-//                  + "=false in the connection string.");
-//        }
-//      } else {
-        digest = null;
-//      }
-    }
-
     private void calculateNextChecksum(Struct row) {
-//      if (digest == null) {
-//        Hasher hasher = SHA256_FUNCTION.newHasher();
-//        if (currentChecksum != null) {
-//          hasher.putBytes(currentChecksum.asBytes());
-//        }
-//        hasher.putObject(row, StructFunnel.INSTANCE);
-//        currentChecksum = hasher.hash();
-//      } else {
-//        if (currentChecksum != null) {
-//          currentChecksum = null;
-//        }
-//        for (int col = 0; col < row.getColumnCount(); col++) {
-//          if (isFirst) {
-//            digest.update(row.getColumnType(col).toString().getBytes(StandardCharsets.UTF_8));
-//          }
-//          digest.update(row.getValue(col).getAsString().getBytes(StandardCharsets.UTF_8));
-//        }
-//        isFirst = false;
-//      }
+      Hasher hasher = SHA256_FUNCTION.newHasher();
+      if (currentChecksum != null) {
+        hasher.putBytes(currentChecksum.asBytes());
+      }
+      hasher.putObject(row, StructFunnel.INSTANCE);
+      currentChecksum = hasher.hash();
     }
 
     private HashCode getChecksum() {
-      return HashCode.fromInt(1);
-//      if (digest != null) {
-//        if (currentChecksum == null) {
-//          try {
-//            MessageDigest clone = (MessageDigest) digest.clone();
-//            currentChecksum = HashCode.fromBytes(clone.digest());
-//          } catch (CloneNotSupportedException cloneNotSupportedException) {
-//            throw SpannerExceptionFactory.asSpannerException(cloneNotSupportedException);
-//          }
-//        }
-//      }
-//      return currentChecksum;
+      return currentChecksum;
     }
   }
 
