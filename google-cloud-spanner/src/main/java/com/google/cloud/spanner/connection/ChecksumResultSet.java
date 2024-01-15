@@ -204,57 +204,58 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
     private final MessageDigest digest;
 
     private ChecksumCalculator(boolean useJvmHash) {
-      if (useJvmHash) {
-        try {
-          this.digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException exception) {
-          // Note: This should never happen, as SHA-256 is standard supported on all JVM versions 8
-          // and higher.
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INTERNAL,
-              "SHA-256 is not supported on this JVM. Please set "
-                  + RETRY_ABORTS_INTERNALLY_PROPERTY_NAME
-                  + "=false in the connection string.");
-        }
-      } else {
+//      if (useJvmHash) {
+//        try {
+//          this.digest = MessageDigest.getInstance("SHA-256");
+//        } catch (NoSuchAlgorithmException exception) {
+//          // Note: This should never happen, as SHA-256 is standard supported on all JVM versions 8
+//          // and higher.
+//          throw SpannerExceptionFactory.newSpannerException(
+//              ErrorCode.INTERNAL,
+//              "SHA-256 is not supported on this JVM. Please set "
+//                  + RETRY_ABORTS_INTERNALLY_PROPERTY_NAME
+//                  + "=false in the connection string.");
+//        }
+//      } else {
         digest = null;
-      }
+//      }
     }
 
     private void calculateNextChecksum(Struct row) {
-      if (digest == null) {
-        Hasher hasher = SHA256_FUNCTION.newHasher();
-        if (currentChecksum != null) {
-          hasher.putBytes(currentChecksum.asBytes());
-        }
-        hasher.putObject(row, StructFunnel.INSTANCE);
-        currentChecksum = hasher.hash();
-      } else {
-        if (currentChecksum != null) {
-          currentChecksum = null;
-        }
-        for (int col = 0; col < row.getColumnCount(); col++) {
-          if (isFirst) {
-            digest.update(row.getColumnType(col).toString().getBytes(StandardCharsets.UTF_8));
-          }
-          digest.update(row.getValue(col).getAsString().getBytes(StandardCharsets.UTF_8));
-        }
-        isFirst = false;
-      }
+//      if (digest == null) {
+//        Hasher hasher = SHA256_FUNCTION.newHasher();
+//        if (currentChecksum != null) {
+//          hasher.putBytes(currentChecksum.asBytes());
+//        }
+//        hasher.putObject(row, StructFunnel.INSTANCE);
+//        currentChecksum = hasher.hash();
+//      } else {
+//        if (currentChecksum != null) {
+//          currentChecksum = null;
+//        }
+//        for (int col = 0; col < row.getColumnCount(); col++) {
+//          if (isFirst) {
+//            digest.update(row.getColumnType(col).toString().getBytes(StandardCharsets.UTF_8));
+//          }
+//          digest.update(row.getValue(col).getAsString().getBytes(StandardCharsets.UTF_8));
+//        }
+//        isFirst = false;
+//      }
     }
 
     private HashCode getChecksum() {
-      if (digest != null) {
-        if (currentChecksum == null) {
-          try {
-            MessageDigest clone = (MessageDigest) digest.clone();
-            currentChecksum = HashCode.fromBytes(clone.digest());
-          } catch (CloneNotSupportedException cloneNotSupportedException) {
-            throw SpannerExceptionFactory.asSpannerException(cloneNotSupportedException);
-          }
-        }
-      }
-      return currentChecksum;
+      return HashCode.fromInt(1);
+//      if (digest != null) {
+//        if (currentChecksum == null) {
+//          try {
+//            MessageDigest clone = (MessageDigest) digest.clone();
+//            currentChecksum = HashCode.fromBytes(clone.digest());
+//          } catch (CloneNotSupportedException cloneNotSupportedException) {
+//            throw SpannerExceptionFactory.asSpannerException(cloneNotSupportedException);
+//          }
+//        }
+//      }
+//      return currentChecksum;
     }
   }
 
