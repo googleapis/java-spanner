@@ -32,6 +32,7 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Random;
 
 /**
@@ -195,7 +196,10 @@ public class RandomResultSetGenerator {
           if (dialect == Dialect.POSTGRESQL && randomNaN()) {
             builder.setStringValue("NaN");
           } else {
-            builder.setStringValue(BigDecimal.valueOf(random.nextDouble()).toString());
+            builder.setStringValue(
+                BigDecimal.valueOf(random.nextDouble())
+                    .setScale(9, RoundingMode.HALF_UP)
+                    .toString());
           }
           break;
         case INT64:

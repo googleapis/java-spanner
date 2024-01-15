@@ -522,7 +522,7 @@ public class ReadWriteTransactionTest {
                     .set("NAME")
                     .to("TEST 1")
                     .set("AMOUNT")
-                    .to(BigDecimal.valueOf(550, 2))
+                    .to(new BigDecimal("5.50"))
                     .set("JSON")
                     .to(Value.json(simpleJson))
                     .build(),
@@ -532,7 +532,7 @@ public class ReadWriteTransactionTest {
                     .set("NAME")
                     .to("TEST 2")
                     .set("AMOUNT")
-                    .to(BigDecimal.valueOf(750, 2))
+                    .to(new BigDecimal("7.50"))
                     .set("JSON")
                     .to(Value.json(arrayJson))
                     .build()));
