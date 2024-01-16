@@ -66,7 +66,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -81,8 +80,6 @@ import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricOptions;
 import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
-import io.opencensus.trace.Annotation;
-import io.opencensus.trace.AttributeValue;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -2448,12 +2445,6 @@ class SessionPool {
     } else {
       throw e;
     }
-  }
-
-  private Annotation sessionAnnotation(Session session) {
-    AttributeValue sessionId = AttributeValue.stringAttributeValue(session.getName());
-    return Annotation.fromDescriptionAndAttributes(
-        "Using Session", ImmutableMap.of("sessionId", sessionId));
   }
 
   private void incrementNumSessionsInUse() {

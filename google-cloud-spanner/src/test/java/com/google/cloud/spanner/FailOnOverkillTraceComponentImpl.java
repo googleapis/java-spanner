@@ -29,6 +29,7 @@ import io.opencensus.trace.Span.Options;
 import io.opencensus.trace.SpanBuilder;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
+import io.opencensus.trace.Status;
 import io.opencensus.trace.TraceComponent;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
@@ -88,7 +89,16 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
     }
 
     @Override
+    public void putAttributes(Map<String, AttributeValue> attributes) {}
+
+    @Override
+    public void addAttributes(Map<String, AttributeValue> attributes) {}
+
+    @Override
     public void addLink(Link link) {}
+
+    @Override
+    public void setStatus(Status status) {}
 
     @Override
     public void end(EndSpanOptions options) {

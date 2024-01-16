@@ -32,7 +32,6 @@ import io.grpc.Server;
 import io.grpc.Status;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.opencensus.trace.Tracing;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -52,9 +51,11 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+@Category(TracerTest.class)
 @RunWith(JUnit4.class)
 public class OpenTelemetrySpanTest {
 
@@ -212,7 +213,6 @@ public class OpenTelemetrySpanTest {
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
-
     // Incorporating OpenCensus tracer to ensure that OpenTraces traces are utilized if enabled,
     // regardless of the presence of OpenCensus tracer.
     java.lang.reflect.Field field = Tracing.class.getDeclaredField("traceComponent");
@@ -233,8 +233,6 @@ public class OpenTelemetrySpanTest {
 
     // OpenTelemetry Configuration
 
-    SpannerOptions.resetActiveTracingFramework();
-    SpannerOptions.enableOpenTelemetryTraces();
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockSpanner.putStatementResult(StatementResult.query(SELECT1, SELECT1_RESULTSET));
@@ -247,6 +245,8 @@ public class OpenTelemetrySpanTest {
     server = InProcessServerBuilder.forName(uniqueName).addService(mockSpanner).build().start();
 
     channelProvider = LocalChannelProvider.create(uniqueName);
+    failOnOverkillTraceComponent.clearSpans();
+    failOnOverkillTraceComponent.clearAnnotations();
   }
 
   @AfterClass
@@ -259,6 +259,8 @@ public class OpenTelemetrySpanTest {
 
   @Before
   public void setUp() throws Exception {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
     spanExporter = InMemorySpanExporter.create();
 
     SdkTracerProvider tracerProvider =
@@ -266,7 +268,6 @@ public class OpenTelemetrySpanTest {
             .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             .build();
 
-    GlobalOpenTelemetry.resetForTest();
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))

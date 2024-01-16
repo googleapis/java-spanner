@@ -1989,8 +1989,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_IN_USE, 2);
       verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_AVAILABLE, 1);
     }
-
-    SpannerOptions.disableOpenTelemetryMetrics();
   }
 
   private static void verifyMetricData(

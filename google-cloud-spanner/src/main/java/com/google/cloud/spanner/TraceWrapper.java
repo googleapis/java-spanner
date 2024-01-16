@@ -42,16 +42,11 @@ class TraceWrapper {
 
   ISpan spanBuilderWithExplicitParent(String spanName, ISpan parentSpan) {
     if (SpannerOptions.getActiveTracingFramework().equals(TracingFramework.OPEN_TELEMETRY)) {
-      OpenTelemetrySpan otParentSpan;
-      if (!(parentSpan instanceof OpenTelemetrySpan)) {
-        otParentSpan = new OpenTelemetrySpan(null);
-      } else {
-        otParentSpan = (OpenTelemetrySpan) parentSpan;
-      }
+      OpenTelemetrySpan otParentSpan = (OpenTelemetrySpan) parentSpan;
 
       io.opentelemetry.api.trace.Span otSpan;
 
-      if (otParentSpan.getOpenTelemetrySpan() != null) {
+      if (otParentSpan != null && otParentSpan.getOpenTelemetrySpan() != null) {
         otSpan =
             openTelemetryTracer
                 .spanBuilder(spanName)
@@ -64,15 +59,11 @@ class TraceWrapper {
       return new OpenTelemetrySpan(otSpan);
 
     } else {
-      OpenCensusSpan parentOcSpan;
-      if (!(parentSpan instanceof OpenCensusSpan)) {
-        parentOcSpan = new OpenCensusSpan(null);
-      } else {
-        parentOcSpan = (OpenCensusSpan) parentSpan;
-      }
+      OpenCensusSpan parentOcSpan = (OpenCensusSpan) parentSpan;
       Span ocSpan =
           openCensusTracer
-              .spanBuilderWithExplicitParent(spanName, parentOcSpan.getOpenCensusSpan())
+              .spanBuilderWithExplicitParent(
+                  spanName, parentOcSpan != null ? parentOcSpan.getOpenCensusSpan() : null)
               .startSpan();
 
       return new OpenCensusSpan(ocSpan);

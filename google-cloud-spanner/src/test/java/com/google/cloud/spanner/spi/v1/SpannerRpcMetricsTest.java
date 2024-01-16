@@ -187,7 +187,6 @@ public class SpannerRpcMetricsTest {
 
   @AfterClass
   public static void stopServer() throws InterruptedException {
-    SpannerOptions.disableOpenTelemetryMetrics();
     if (spannerWithOpenTelemetry != null) {
       spannerWithOpenTelemetry.close();
       server.shutdown();

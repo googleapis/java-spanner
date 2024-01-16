@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.OpenCensusSpan.END_SPAN_OPTIONS;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -136,6 +135,8 @@ public class ResumableStreamIteratorTest {
 
   @Before
   public void setUp() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
     initWithLimit(Integer.MAX_VALUE);
   }
 
@@ -213,7 +214,7 @@ public class ResumableStreamIteratorTest {
     assertThat(consume(resumableStreamIterator)).containsExactly("a", "b").inOrder();
 
     resumableStreamIterator.close("closed");
-    verify(mockSpan).end(END_SPAN_OPTIONS);
+    verify(mockSpan).end(OpenCensusSpan.END_SPAN_OPTIONS);
   }
 
   @Test
