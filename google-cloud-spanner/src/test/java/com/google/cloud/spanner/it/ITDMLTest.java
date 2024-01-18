@@ -62,6 +62,7 @@ import org.junit.runners.Parameterized;
 @Category(ParallelIntegrationTest.class)
 @RunWith(Parameterized.class)
 public final class ITDMLTest {
+
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseClient googleStandardSQLClient;
   private static DatabaseClient postgreSQLClient;
@@ -91,13 +92,13 @@ public final class ITDMLTest {
           + "('%d-boo4', 40), ('%d-boo5', 50) "
           + "ON CONFLICT(k) DO UPDATE SET k = excluded.k, v = excluded.v;";
   private static final String INSERT_IGNORE_DML_FROM_QUERY =
-      "INSERT OR IGNORE INTO T (k, v) (SELECT k, v FROM T)";
+      "INSERT OR IGNORE INTO T (k, v) (SELECT k, v FROM T ORDER BY v)";
   private static final String INSERT_UPDATE_DML_FROM_QUERY =
-      "INSERT OR UPDATE INTO T (k, v) (SELECT k, v+100 FROM T);";
+      "INSERT OR UPDATE INTO T (k, v) (SELECT k, v+100 FROM T ORDER BY v);";
   private static final String INSERT_IGNORE_DML_FROM_QUERY_POSTGRESQL =
-      "INSERT INTO T (k, v) (SELECT k, v FROM T) ON CONFLICT(k) DO NOTHING;";
+      "INSERT INTO T (k, v) (SELECT k, v FROM T ORDER BY v) ON CONFLICT(k) DO NOTHING;";
   private static final String INSERT_UPDATE_DML_FROM_QUERY_POSTGRESQL =
-      "INSERT INTO T (k, v) (SELECT k, v+100 FROM T) "
+      "INSERT INTO T (k, v) (SELECT k, v+100 FROM T ORDER BY v) "
           + "ON CONFLICT(k) DO UPDATE SET k = excluded.k, v = excluded.v;";
   private static final long DML_COUNT = 4;
   private static final long DML_COUNT_WITH_UPSERT = 5;
@@ -350,6 +351,7 @@ public final class ITDMLTest {
   @Test
   public void standardDMLRollback() {
     class UserException extends Exception {
+
       UserException(String message) {
         super(message);
       }
@@ -499,6 +501,122 @@ public final class ITDMLTest {
 
     // Delete all rows
     executeUpdate(DML_COUNT_WITH_UPSERT, deleteDml());
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
+        .isNull();
+  }
+
+  @Test
+  public void testInsertOrUpdateOnNewRow() {
+    executeUpdate(DML_COUNT_WITH_UPSERT, insertOrUpdateDml(dialect.dialect));
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(10);
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo5", id)), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(50);
+
+    // Delete the rows
+    executeUpdate(DML_COUNT_WITH_UPSERT, deleteDml());
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
+        .isNull();
+  }
+
+  @Test
+  public void testInsertOrIgnoreDmlOnExistingRow() {
+    // First insert few rows.
+    executeUpdate(DML_COUNT, insertDml());
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(1);
+
+    // Existing rows are ignored, only 1 new row is inserted.
+    executeUpdate(1, insertOrIgnoreDml(dialect.dialect));
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(1);
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo5", id)), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(5);
+
+    // Delete the rows
+    executeUpdate(DML_COUNT_WITH_UPSERT, deleteDml());
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
+        .isNull();
+  }
+
+  @Test
+  public void testInsertOrIgnoreDuplicateRows() {
+    long expectedRowCount = 2;
+
+    // Only unique keys are inserted. Duplicate keys are ignored.
+    if (dialect.dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      executeUpdate(
+          expectedRowCount,
+          "INSERT OR IGNORE INTO T (k, v) VALUES ('1-boo1', 1), ('2-boo2', 2), ('1-boo1', 1)");
+    } else {
+      executeUpdate(
+          expectedRowCount,
+          "INSERT INTO T (k, v) VALUES ('1-boo1', 1), ('2-boo2', 2), , ('1-boo1', 1) "
+              + "ON CONFLICT(k) DO NOTHING");
+    }
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of("1-boo1"), Collections.singletonList("V"))
+                .getLong(0))
+        .isEqualTo(1);
+    // Delete the rows
+    executeUpdate(expectedRowCount, deleteDml());
+    assertThat(
+            getClient(dialect.dialect)
+                .singleUse(TimestampBound.strong())
+                .readRow("T", Key.of(String.format("%d-boo1", id)), Collections.singletonList("V")))
+        .isNull();
+  }
+
+  @Test
+  public void testInsertOrUpdateDuplicateRows() {
+    try {
+      if (dialect.dialect == Dialect.GOOGLE_STANDARD_SQL) {
+        executeUpdate(
+            0, "INSERT OR UPDATE INTO T (k, v) VALUES ('1-boo1', 1), ('2-boo2', 2), ('1-boo1', 1)");
+      } else {
+        executeUpdate(
+            0,
+            "INSERT INTO T (k, v) VALUES ('1-boo1', 1), ('2-boo2', 2), , ('1-boo1', 1) "
+                + "ON CONFLICT(k) DO UPDATE SET k = expected.k, v = expected.v");
+      }
+    } catch (SpannerException e) {
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+      assertThat(e.getMessage()).contains("Cannot affect a row second time for key('1-boo1')");
+    }
+
+    // No rows to delete as insert was unsuccessful.
+    executeUpdate(0, deleteDml());
     assertThat(
             getClient(dialect.dialect)
                 .singleUse(TimestampBound.strong())
