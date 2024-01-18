@@ -85,7 +85,7 @@ public class DirectedReadSample {
                           ReplicaSelection.newBuilder()
                               .setType(ReplicaSelection.Type.READ_WRITE)
                               .build())
-                      .setAutoFailover(true)
+                      .setAutoFailoverDisabled(true)
                       .build())
               .build();
 
