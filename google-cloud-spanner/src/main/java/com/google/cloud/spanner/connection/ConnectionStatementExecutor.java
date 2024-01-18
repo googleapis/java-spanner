@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.protobuf.Duration;
@@ -76,6 +77,11 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReturnCommitStats();
 
+  StatementResult statementSetDelayTransactionStartUntilFirstWrite(
+      Boolean delayTransactionStartUntilFirstWrite);
+
+  StatementResult statementShowDelayTransactionStartUntilFirstWrite();
+
   StatementResult statementSetStatementTag(String tag);
 
   StatementResult statementShowStatementTag();
@@ -120,4 +126,26 @@ interface ConnectionStatementExecutor {
   StatementResult statementShowTransactionIsolationLevel();
 
   StatementResult statementExplain(String sql);
+
+  StatementResult statementShowDataBoostEnabled();
+
+  StatementResult statementSetDataBoostEnabled(Boolean dataBoostEnabled);
+
+  StatementResult statementShowAutoPartitionMode();
+
+  StatementResult statementSetAutoPartitionMode(Boolean autoPartitionMode);
+
+  StatementResult statementShowMaxPartitions();
+
+  StatementResult statementSetMaxPartitions(Integer maxPartitions);
+
+  StatementResult statementShowMaxPartitionedParallelism();
+
+  StatementResult statementSetMaxPartitionedParallelism(Integer maxPartitionedParallelism);
+
+  StatementResult statementPartition(Statement statement);
+
+  StatementResult statementRunPartition(String partitionId);
+
+  StatementResult statementRunPartitionedQuery(Statement statement);
 }

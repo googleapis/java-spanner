@@ -18,7 +18,9 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -27,6 +29,7 @@ import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Identity;
 import com.google.cloud.Role;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
@@ -53,6 +56,7 @@ import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,6 +73,7 @@ import org.mockito.Mock;
 public class DatabaseAdminClientImplTest {
   private static final String PROJECT_ID = "my-project";
   private static final String INSTANCE_ID = "my-instance";
+  private static final String INSTANCE_ID_2 = "my-instance-2";
   private static final String INSTANCE_NAME = "projects/my-project/instances/my-instance";
   private static final String DB_ID = "my-db";
   private static final String DB_NAME = "projects/my-project/instances/my-instance/databases/my-db";
@@ -244,6 +249,24 @@ public class DatabaseAdminClientImplTest {
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
         client.updateDatabaseDdl(INSTANCE_ID, DB_ID, ddl, newOpId);
     assertThat(op.getName()).isEqualTo(originalOpName);
+  }
+
+  @Test
+  public void updateDatabase() throws Exception {
+    com.google.cloud.spanner.Database database =
+        client.newDatabaseBuilder(DatabaseId.of(DB_NAME)).enableDropProtection().build();
+    Database databaseProto = database.toProto();
+    OperationFuture<Database, UpdateDatabaseMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "updateDatabase", databaseProto, UpdateDatabaseMetadata.getDefaultInstance());
+    when(rpc.updateDatabase(
+            databaseProto, DatabaseField.toFieldMask(DatabaseField.DROP_PROTECTION)))
+        .thenReturn(rawOperationFuture);
+    OperationFuture<com.google.cloud.spanner.Database, UpdateDatabaseMetadata> op =
+        client.updateDatabase(database, DatabaseField.DROP_PROTECTION);
+    assertTrue(op.isDone());
+    assertEquals(op.get().getId().getName(), DB_NAME);
+    assertTrue(op.get().isDropProtectionEnabled());
   }
 
   @Test
@@ -556,6 +579,41 @@ public class DatabaseAdminClientImplTest {
     final com.google.cloud.spanner.Backup requestBackup =
         client
             .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID))
+            .setExpireTime(expireTime)
+            .setVersionTime(versionTime)
+            .build();
+    BackupId sourceBackupId = BackupId.of(PROJECT_ID, INSTANCE_ID, BK_ID);
+
+    when(rpc.copyBackup(sourceBackupId, requestBackup)).thenReturn(rawOperationFuture);
+
+    final OperationFuture<com.google.cloud.spanner.Backup, CopyBackupMetadata> op =
+        client.copyBackup(sourceBackupId, requestBackup);
+    assertThat(op.isDone()).isTrue();
+    assertThat(op.get().getId().getName()).isEqualTo(BK_NAME);
+  }
+
+  @Test
+  public void copyBackupWithBackupObject_onDifferentInstances()
+      throws ExecutionException, InterruptedException {
+    Backup testProto =
+        Backup.newBuilder()
+            .setName(BK_NAME)
+            .setDatabase("projects/my-project/instances/my-instance-2/databases/my-db")
+            .setState(Backup.State.READY)
+            .build();
+    final OperationFuture<Backup, CopyBackupMetadata> rawOperationFuture =
+        OperationFutureUtil.immediateOperationFuture(
+            "copyBackup", testProto, CopyBackupMetadata.getDefaultInstance());
+    final Timestamp expireTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis())
+                + TimeUnit.HOURS.toMicros(28));
+    final Timestamp versionTime =
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()) - TimeUnit.DAYS.toMicros(2));
+    final com.google.cloud.spanner.Backup requestBackup =
+        client
+            .newBackupBuilder(BackupId.of(PROJECT_ID, INSTANCE_ID_2, BK_ID))
             .setExpireTime(expireTime)
             .setVersionTime(versionTime)
             .build();

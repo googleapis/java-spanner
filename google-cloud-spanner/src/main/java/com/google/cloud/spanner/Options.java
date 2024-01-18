@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.BetaApi;
 import com.google.common.base.Preconditions;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
 import java.util.Objects;
@@ -156,11 +156,9 @@ public final class Options implements Serializable {
   }
 
   /**
-   * If this is for a partitioned read & query and this field is set to `true`, the request will be
-   * executed via Spanner independent compute resources. The method is available in Beta mode (and
-   * is not generally available now).
+   * If this is for PartitionedRead or PartitionedQuery and this field is set to `true`, the request
+   * will be executed via Spanner independent compute resources.
    */
-  @BetaApi
   public static DataBoostQueryOption dataBoostEnabled(Boolean dataBoostEnabled) {
     return new DataBoostQueryOption(dataBoostEnabled);
   }
@@ -225,6 +223,18 @@ public final class Options implements Serializable {
    */
   public static CreateUpdateDeleteAdminApiOption validateOnly(Boolean validateOnly) {
     return new ValidateOnlyOption(validateOnly);
+  }
+
+  /**
+   * Option to request DirectedRead for ReadOnlyTransaction and SingleUseTransaction.
+   *
+   * <p>The DirectedReadOptions can be used to indicate which replicas or regions should be used for
+   * non-transactional reads or queries. Not all requests can be sent to non-leader replicas. In
+   * particular, some requests such as reads within read-write transactions must be sent to a
+   * designated leader replica. These requests ignore DirectedReadOptions.
+   */
+  public static ReadAndQueryOption directedRead(DirectedReadOptions directedReadOptions) {
+    return new DirectedReadOption(directedReadOptions);
   }
 
   /** Option to request {@link CommitStats} for read/write transactions. */
@@ -328,6 +338,21 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class DirectedReadOption extends InternalOption implements ReadAndQueryOption {
+    private final DirectedReadOptions directedReadOptions;
+
+    DirectedReadOption(DirectedReadOptions directedReadOptions) {
+      this.directedReadOptions =
+          Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
+      ;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.directedReadOptions = directedReadOptions;
+    }
+  }
+
   private boolean withCommitStats;
   private Long limit;
   private Integer prefetchChunks;
@@ -341,6 +366,7 @@ public final class Options implements Serializable {
   private Boolean validateOnly;
   private Boolean withOptimisticLock;
   private Boolean dataBoostEnabled;
+  private DirectedReadOptions directedReadOptions;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -441,6 +467,14 @@ public final class Options implements Serializable {
     return dataBoostEnabled;
   }
 
+  boolean hasDirectedReadOptions() {
+    return directedReadOptions != null;
+  }
+
+  DirectedReadOptions directedReadOptions() {
+    return directedReadOptions;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -480,6 +514,9 @@ public final class Options implements Serializable {
     if (dataBoostEnabled != null) {
       b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
     }
+    if (directedReadOptions != null) {
+      b.append("directedReadOptions: ").append(directedReadOptions).append(' ');
+    }
     return b.toString();
   }
 
@@ -515,7 +552,8 @@ public final class Options implements Serializable {
         && Objects.equals(etag(), that.etag())
         && Objects.equals(validateOnly(), that.validateOnly())
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
-        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled());
+        && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
+        && Objects.equals(directedReadOptions(), that.directedReadOptions());
   }
 
   @Override
@@ -559,6 +597,9 @@ public final class Options implements Serializable {
     }
     if (dataBoostEnabled != null) {
       result = 31 * result + dataBoostEnabled.hashCode();
+    }
+    if (directedReadOptions != null) {
+      result = 31 * result + directedReadOptions.hashCode();
     }
     return result;
   }

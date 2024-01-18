@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ public interface KeyRangeOrBuilder
    */
   com.google.protobuf.ListValueOrBuilder getEndOpenOrBuilder();
 
-  public com.google.spanner.v1.KeyRange.StartKeyTypeCase getStartKeyTypeCase();
+  com.google.spanner.v1.KeyRange.StartKeyTypeCase getStartKeyTypeCase();
 
-  public com.google.spanner.v1.KeyRange.EndKeyTypeCase getEndKeyTypeCase();
+  com.google.spanner.v1.KeyRange.EndKeyTypeCase getEndKeyTypeCase();
 }

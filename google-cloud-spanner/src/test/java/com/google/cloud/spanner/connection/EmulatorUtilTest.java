@@ -16,8 +16,9 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.EmulatorUtil.maybeCreateInstanceAndDatabase;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -29,6 +30,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
@@ -45,10 +47,18 @@ import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class EmulatorUtilTest {
+  @Parameter public Dialect dialect;
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
 
   @Test
   public void testCreateInstanceAndDatabase_bothSucceed()
@@ -75,12 +85,15 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
+            eq("test-instance"),
+            eq(dialect.createDatabaseStatementFor("test-database")),
+            eq(dialect),
+            eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get()).thenReturn(mock(Database.class));
 
-    EmulatorUtil.maybeCreateInstanceAndDatabase(
-        spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
+    maybeCreateInstanceAndDatabase(
+        spanner, DatabaseId.of("test-project", "test-instance", "test-database"), dialect);
 
     // Verify that both the instance and the database was created.
     verify(instanceClient)
@@ -90,7 +103,12 @@ public class EmulatorUtilTest {
                 .setInstanceConfigId(InstanceConfigId.of("test-project", "emulator-config"))
                 .setNodeCount(1)
                 .build());
-    verify(databaseClient).createDatabase("test-instance", "test-database", ImmutableList.of());
+    verify(databaseClient)
+        .createDatabase(
+            "test-instance",
+            dialect.createDatabaseStatementFor("test-database"),
+            dialect,
+            ImmutableList.of());
   }
 
   @Test
@@ -122,7 +140,10 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
+            eq("test-instance"),
+            eq(dialect.createDatabaseStatementFor("test-database")),
+            eq(dialect),
+            eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get())
         .thenThrow(
@@ -130,8 +151,8 @@ public class EmulatorUtilTest {
                 SpannerExceptionFactory.newSpannerException(
                     ErrorCode.ALREADY_EXISTS, "Database already exists")));
 
-    EmulatorUtil.maybeCreateInstanceAndDatabase(
-        spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
+    maybeCreateInstanceAndDatabase(
+        spanner, DatabaseId.of("test-project", "test-instance", "test-database"), dialect);
 
     // Verify that both the instance and the database was created.
     verify(instanceClient)
@@ -141,7 +162,12 @@ public class EmulatorUtilTest {
                 .setInstanceConfigId(InstanceConfigId.of("test-project", "emulator-config"))
                 .setNodeCount(1)
                 .build());
-    verify(databaseClient).createDatabase("test-instance", "test-database", ImmutableList.of());
+    verify(databaseClient)
+        .createDatabase(
+            "test-instance",
+            dialect.createDatabaseStatementFor("test-database"),
+            dialect,
+            ImmutableList.of());
   }
 
   @Test
@@ -166,13 +192,15 @@ public class EmulatorUtilTest {
                 SpannerExceptionFactory.newSpannerException(
                     ErrorCode.INVALID_ARGUMENT, "Invalid instance options")));
 
-    try {
-      EmulatorUtil.maybeCreateInstanceAndDatabase(
-          spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
-    }
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                maybeCreateInstanceAndDatabase(
+                    spanner,
+                    DatabaseId.of("test-project", "test-instance", "test-database"),
+                    dialect));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
   }
 
   @Test
@@ -193,13 +221,15 @@ public class EmulatorUtilTest {
         .thenReturn(instanceOperationFuture);
     when(instanceOperationFuture.get()).thenThrow(new InterruptedException());
 
-    try {
-      EmulatorUtil.maybeCreateInstanceAndDatabase(
-          spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
-    }
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                maybeCreateInstanceAndDatabase(
+                    spanner,
+                    DatabaseId.of("test-project", "test-instance", "test-database"),
+                    dialect));
+    assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
   }
 
   @Test
@@ -227,7 +257,10 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
+            eq("test-instance"),
+            eq(dialect.createDatabaseStatementFor("test-database")),
+            eq(dialect),
+            eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get())
         .thenThrow(
@@ -235,13 +268,15 @@ public class EmulatorUtilTest {
                 SpannerExceptionFactory.newSpannerException(
                     ErrorCode.INVALID_ARGUMENT, "Invalid database options")));
 
-    try {
-      EmulatorUtil.maybeCreateInstanceAndDatabase(
-          spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
-    }
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                maybeCreateInstanceAndDatabase(
+                    spanner,
+                    DatabaseId.of("test-project", "test-instance", "test-database"),
+                    dialect));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
   }
 
   @Test
@@ -269,16 +304,21 @@ public class EmulatorUtilTest {
 
     when(spanner.getDatabaseAdminClient()).thenReturn(databaseClient);
     when(databaseClient.createDatabase(
-            eq("test-instance"), eq("test-database"), eq(ImmutableList.of())))
+            eq("test-instance"),
+            eq(dialect.createDatabaseStatementFor("test-database")),
+            eq(dialect),
+            eq(ImmutableList.of())))
         .thenReturn(databaseOperationFuture);
     when(databaseOperationFuture.get()).thenThrow(new InterruptedException());
 
-    try {
-      EmulatorUtil.maybeCreateInstanceAndDatabase(
-          spanner, DatabaseId.of("test-project", "test-instance", "test-database"));
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertEquals(ErrorCode.CANCELLED, e.getErrorCode());
-    }
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                maybeCreateInstanceAndDatabase(
+                    spanner,
+                    DatabaseId.of("test-project", "test-instance", "test-database"),
+                    dialect));
+    assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
   }
 }

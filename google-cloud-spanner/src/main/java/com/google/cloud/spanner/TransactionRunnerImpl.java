@@ -85,11 +85,18 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
+
+      private Clock clock = new Clock();
       private ByteString transactionId;
       private Options options;
       private boolean trackTransactionStarter;
 
       private Builder() {}
+
+      Builder setClock(Clock clock) {
+        this.clock = Preconditions.checkNotNull(clock);
+        return self();
+      }
 
       Builder setTransactionId(ByteString transactionId) {
         this.transactionId = transactionId;
@@ -189,6 +196,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     volatile ByteString transactionId;
 
     private CommitResponse commitResponse;
+    private final Clock clock;
 
     private TransactionContextImpl(Builder builder) {
       super(builder);
@@ -196,6 +204,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.trackTransactionStarter = builder.trackTransactionStarter;
       this.options = builder.options;
       this.finishedAsyncOperations.set(null);
+      this.clock = builder.clock;
+    }
+
+    @Override
+    protected boolean isRouteToLeader() {
+      return true;
     }
 
     private void increaseAsyncOperations() {
@@ -255,7 +269,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options);
+      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options, isRouteToLeader());
       fut.addListener(
           () -> {
             try {
@@ -384,6 +398,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span).startSpan();
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture =
               rpc.commitAsync(commitRequest, session.getOptions());
+          session.markUsed(clock.instant());
           commitFuture.addListener(
               tracer.withSpan(
                   opSpan,
@@ -458,12 +473,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       // is still in flight. That transaction will then automatically be terminated by the server.
       if (transactionId != null) {
         span.addAnnotation("Starting Rollback");
-        return rpc.rollbackAsync(
-            RollbackRequest.newBuilder()
-                .setSession(session.getName())
-                .setTransactionId(transactionId)
-                .build(),
-            session.getOptions());
+        ApiFuture<Empty> apiFuture =
+            rpc.rollbackAsync(
+                RollbackRequest.newBuilder()
+                    .setSession(session.getName())
+                    .setTransactionId(transactionId)
+                    .build(),
+                session.getOptions());
+        session.markUsed(clock.instant());
+        return apiFuture;
       } else {
         return ApiFutures.immediateFuture(Empty.getDefaultInstance());
       }
@@ -717,7 +735,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), session.getOptions());
+            rpc.executeQuery(builder.build(), session.getOptions(), isRouteToLeader());
+        session.markUsed(clock.instant());
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
               resultSet.getMetadata().getTransaction(), builder.getTransaction().hasBegin());
@@ -747,7 +766,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // Register the update as an async operation that must finish before the transaction may
         // commit.
         increaseAsyncOperations();
-        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions());
+        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), isRouteToLeader());
+        session.markUsed(clock.instant());
       } catch (Throwable t) {
         decreaseAsyncOperations();
         throw t;
@@ -819,6 +839,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       try {
         com.google.spanner.v1.ExecuteBatchDmlResponse response =
             rpc.executeBatchDml(builder.build(), session.getOptions());
+        session.markUsed(clock.instant());
         long[] results = new long[response.getResultSetsCount()];
         for (int i = 0; i < response.getResultSetsCount(); ++i) {
           results[i] = response.getResultSets(i).getStats().getRowCountExact();
@@ -858,6 +879,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         // commit.
         increaseAsyncOperations();
         response = rpc.executeBatchDmlAsync(builder.build(), session.getOptions());
+        session.markUsed(clock.instant());
       } catch (Throwable t) {
         decreaseAsyncOperations();
         throw t;

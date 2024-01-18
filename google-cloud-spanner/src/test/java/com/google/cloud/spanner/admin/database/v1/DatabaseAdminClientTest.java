@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreInfo;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import io.grpc.StatusRuntimeException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -232,6 +233,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -289,6 +292,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -346,6 +351,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -392,6 +399,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -422,6 +431,65 @@ public class DatabaseAdminClientTest {
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
+    }
+  }
+
+  @Test
+  public void updateDatabaseTest() throws Exception {
+    Database expectedResponse =
+        Database.newBuilder()
+            .setName(DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]").toString())
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setRestoreInfo(RestoreInfo.newBuilder().build())
+            .setEncryptionConfig(EncryptionConfig.newBuilder().build())
+            .addAllEncryptionInfo(new ArrayList<EncryptionInfo>())
+            .setVersionRetentionPeriod("versionRetentionPeriod-629783929")
+            .setEarliestVersionTime(Timestamp.newBuilder().build())
+            .setDefaultLeader("defaultLeader759009962")
+            .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("updateDatabaseTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockDatabaseAdmin.addResponse(resultOperation);
+
+    Database database = Database.newBuilder().build();
+    FieldMask updateMask = FieldMask.newBuilder().build();
+
+    Database actualResponse = client.updateDatabaseAsync(database, updateMask).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    UpdateDatabaseRequest actualRequest = ((UpdateDatabaseRequest) actualRequests.get(0));
+
+    Assert.assertEquals(database, actualRequest.getDatabase());
+    Assert.assertEquals(updateMask, actualRequest.getUpdateMask());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void updateDatabaseExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      Database database = Database.newBuilder().build();
+      FieldMask updateMask = FieldMask.newBuilder().build();
+      client.updateDatabaseAsync(database, updateMask).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
     }
   }
 
@@ -1607,6 +1675,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1667,6 +1737,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1727,6 +1799,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1787,6 +1861,8 @@ public class DatabaseAdminClientTest {
             .setEarliestVersionTime(Timestamp.newBuilder().build())
             .setDefaultLeader("defaultLeader759009962")
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
+            .setEnableDropProtection(true)
+            .setReconciling(true)
             .build();
     Operation resultOperation =
         Operation.newBuilder()

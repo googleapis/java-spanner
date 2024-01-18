@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
@@ -46,6 +47,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
@@ -175,6 +177,7 @@ public class ReadOnlyTransactionTest {
         .thenReturn(new SimpleReadOnlyTransaction(staleness));
     return ReadOnlyTransaction.newBuilder()
         .setDatabaseClient(client)
+        .setBatchClient(mock(BatchClient.class))
         .setReadOnlyStaleness(staleness)
         .withStatementExecutor(new StatementExecutor())
         .build();
@@ -185,7 +188,7 @@ public class ReadOnlyTransactionTest {
     ParsedStatement ddl = mock(ParsedStatement.class);
     when(ddl.getType()).thenReturn(StatementType.DDL);
     try {
-      createSubject().executeDdlAsync(ddl);
+      createSubject().executeDdlAsync(CallType.SYNC, ddl);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -197,7 +200,7 @@ public class ReadOnlyTransactionTest {
     ParsedStatement update = mock(ParsedStatement.class);
     when(update.getType()).thenReturn(StatementType.UPDATE);
     try {
-      createSubject().executeUpdateAsync(update);
+      createSubject().executeUpdateAsync(CallType.SYNC, update);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -208,7 +211,7 @@ public class ReadOnlyTransactionTest {
   public void testWriteIterable() {
     Mutation mutation = Mutation.newInsertBuilder("foo").build();
     try {
-      createSubject().writeAsync(Arrays.asList(mutation, mutation));
+      createSubject().writeAsync(CallType.SYNC, Arrays.asList(mutation, mutation));
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -219,7 +222,7 @@ public class ReadOnlyTransactionTest {
   public void testRunBatch() {
     ReadOnlyTransaction subject = createSubject();
     try {
-      subject.runBatchAsync();
+      subject.runBatchAsync(CallType.SYNC);
       fail("Expected exception");
     } catch (SpannerException ex) {
       assertEquals(ErrorCode.FAILED_PRECONDITION, ex.getErrorCode());
@@ -240,7 +243,7 @@ public class ReadOnlyTransactionTest {
   @Test
   public void testGetCommitTimestamp() {
     ReadOnlyTransaction transaction = createSubject();
-    get(transaction.commitAsync());
+    get(transaction.commitAsync(CallType.SYNC));
     assertThat(transaction.getState(), is(UnitOfWorkState.COMMITTED));
     try {
       transaction.getCommitTimestamp();
@@ -253,7 +256,7 @@ public class ReadOnlyTransactionTest {
   @Test
   public void testGetCommitResponse() {
     ReadOnlyTransaction transaction = createSubject();
-    get(transaction.commitAsync());
+    get(transaction.commitAsync(CallType.SYNC));
     try {
       transaction.getCommitResponse();
       fail("expected FAILED_PRECONDITION");
@@ -265,7 +268,7 @@ public class ReadOnlyTransactionTest {
   @Test
   public void testGetCommitResponseOrNull() {
     ReadOnlyTransaction transaction = createSubject();
-    get(transaction.commitAsync());
+    get(transaction.commitAsync(CallType.SYNC));
     assertNull(transaction.getCommitResponseOrNull());
   }
 
@@ -285,7 +288,8 @@ public class ReadOnlyTransactionTest {
       when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
 
       ReadOnlyTransaction transaction = createSubject(staleness);
-      ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE));
+      ResultSet rs =
+          get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.NONE));
       assertThat(rs, is(notNullValue()));
       assertThat(rs.getStats(), is(nullValue()));
     }
@@ -313,16 +317,19 @@ public class ReadOnlyTransactionTest {
     ReadOnlyTransaction transaction =
         ReadOnlyTransaction.newBuilder()
             .setDatabaseClient(client)
+            .setBatchClient(mock(BatchClient.class))
             .setReadOnlyStaleness(TimestampBound.strong())
             .withStatementExecutor(new StatementExecutor())
             .build();
     ResultSet expectedWithOptions = DirectExecuteResultSet.ofResultSet(resWithOptions);
     assertThat(
-        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE, option)),
+        get(
+            transaction.executeQueryAsync(
+                CallType.SYNC, parsedStatement, AnalyzeMode.NONE, option)),
         is(equalTo(expectedWithOptions)));
     ResultSet expectedWithoutOptions = DirectExecuteResultSet.ofResultSet(resWithoutOptions);
     assertThat(
-        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)),
+        get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.NONE)),
         is(equalTo(expectedWithoutOptions)));
   }
 
@@ -337,7 +344,8 @@ public class ReadOnlyTransactionTest {
       when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
 
       ReadOnlyTransaction transaction = createSubject(staleness);
-      ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.PLAN));
+      ResultSet rs =
+          get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.PLAN));
       assertThat(rs, is(notNullValue()));
       // get all results and then get the stats
       while (rs.next()) {
@@ -358,7 +366,8 @@ public class ReadOnlyTransactionTest {
       when(parsedStatement.getSqlWithoutComments()).thenReturn(statement.getSql());
 
       ReadOnlyTransaction transaction = createSubject(staleness);
-      ResultSet rs = get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.PROFILE));
+      ResultSet rs =
+          get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.PROFILE));
       assertThat(rs, is(notNullValue()));
       // get all results and then get the stats
       while (rs.next()) {
@@ -389,7 +398,7 @@ public class ReadOnlyTransactionTest {
       }
       assertThat(expectedException, is(true));
       assertThat(
-          get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)),
+          get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.NONE)),
           is(notNullValue()));
       assertThat(transaction.getReadTimestamp(), is(notNullValue()));
     }
@@ -418,7 +427,7 @@ public class ReadOnlyTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    get(transaction.commitAsync());
+    get(transaction.commitAsync(CallType.SYNC));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -430,13 +439,14 @@ public class ReadOnlyTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     assertThat(
-        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)), is(notNullValue()));
+        get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.NONE)),
+        is(notNullValue()));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
 
-    get(transaction.commitAsync());
+    get(transaction.commitAsync(CallType.SYNC));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -448,7 +458,7 @@ public class ReadOnlyTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    get(transaction.rollbackAsync());
+    get(transaction.rollbackAsync(CallType.SYNC));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.ROLLED_BACK)));
@@ -460,12 +470,13 @@ public class ReadOnlyTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     assertThat(
-        get(transaction.executeQueryAsync(parsedStatement, AnalyzeMode.NONE)), is(notNullValue()));
+        get(transaction.executeQueryAsync(CallType.SYNC, parsedStatement, AnalyzeMode.NONE)),
+        is(notNullValue()));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    get(transaction.rollbackAsync());
+    get(transaction.rollbackAsync(CallType.SYNC));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.ROLLED_BACK)));

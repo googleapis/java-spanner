@@ -39,6 +39,7 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -52,6 +53,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
 import java.util.ArrayList;
@@ -83,11 +85,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final TransactionOption[] transactionOptions;
   private TransactionManager txManager;
   private final boolean retryAbortsInternally;
+  private final boolean delayTransactionStartUntilFirstWrite;
   private final SavepointSupport savepointSupport;
   private int transactionRetryAttempts;
   private int successfulRetries;
   private final List<TransactionRetryListener> transactionRetryListeners;
   private volatile ApiFuture<TransactionContext> txContextFuture;
+  private boolean canUseSingleUseRead;
   private volatile SettableApiFuture<CommitResponse> commitResponseFuture;
   private volatile UnitOfWorkState state = UnitOfWorkState.STARTED;
   private volatile AbortedException abortedException;
@@ -103,6 +107,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
+    private boolean delayTransactionStartUntilFirstWrite;
     private boolean returnCommitStats;
     private SavepointSupport savepointSupport;
     private List<TransactionRetryListener> transactionRetryListeners;
@@ -112,6 +117,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     Builder setDatabaseClient(DatabaseClient client) {
       Preconditions.checkNotNull(client);
       this.dbClient = client;
+      return this;
+    }
+
+    Builder setDelayTransactionStartUntilFirstWrite(boolean delayTransactionStartUntilFirstWrite) {
+      this.delayTransactionStartUntilFirstWrite = delayTransactionStartUntilFirstWrite;
       return this;
     }
 
@@ -156,11 +166,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     super(builder);
     this.transactionId = ID_GENERATOR.incrementAndGet();
     this.dbClient = builder.dbClient;
+    this.delayTransactionStartUntilFirstWrite = builder.delayTransactionStartUntilFirstWrite;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.savepointSupport = builder.savepointSupport;
     this.transactionRetryListeners = builder.transactionRetryListeners;
     this.transactionOptions = extractOptions(builder);
-    this.txManager = dbClient.transactionManager(this.transactionOptions);
   }
 
   private TransactionOption[] extractOptions(Builder builder) {
@@ -193,6 +203,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     return new StringBuilder()
         .append("ReadWriteTransaction - ID: ")
         .append(transactionId)
+        .append("; Delay tx start: ")
+        .append(delayTransactionStartUntilFirstWrite)
         .append("; Tag: ")
         .append(Strings.nullToEmpty(transactionTag))
         .append("; Status: ")
@@ -225,17 +237,23 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  void checkValidTransaction() {
-    checkValidState();
-    if (txContextFuture == null) {
-      transactionStarted = Timestamp.now();
+  void checkOrCreateValidTransaction(ParsedStatement statement, CallType callType) {
+    checkValidStateAndMarkStarted();
+    if (txContextFuture == null
+        && (!delayTransactionStartUntilFirstWrite
+            || (statement != null && statement.isUpdate())
+            || (statement == COMMIT_STATEMENT && !mutations.isEmpty()))) {
+      txManager = dbClient.transactionManager(this.transactionOptions);
+      canUseSingleUseRead = false;
       txContextFuture =
           executeStatementAsync(
-              BEGIN_STATEMENT, () -> txManager.begin(), SpannerGrpc.getBeginTransactionMethod());
+              callType, BEGIN_STATEMENT, txManager::begin, SpannerGrpc.getBeginTransactionMethod());
+    } else if (txContextFuture == null && delayTransactionStartUntilFirstWrite) {
+      canUseSingleUseRead = true;
     }
   }
 
-  private void checkValidState() {
+  private void checkValidStateAndMarkStarted() {
     ConnectionPreconditions.checkState(
         this.state == UnitOfWorkState.STARTED || this.state == UnitOfWorkState.ABORTED,
         "This transaction has status "
@@ -251,6 +269,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             + "Call Connection#setRetryAbortsInternally(true) or execute `SET RETRY_ABORTS_INTERNALLY=TRUE` to enable "
             + "resuming execution after rolling back to a savepoint.");
     checkTimedOut();
+    if (transactionStarted == null) {
+      transactionStarted = Timestamp.now();
+    }
   }
 
   private void checkTimedOut() {
@@ -310,9 +331,17 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  TransactionContext getReadContext() {
+  ReadContext getReadContext() {
+    if (txContextFuture == null && canUseSingleUseRead) {
+      return dbClient.singleUse();
+    }
     ConnectionPreconditions.checkState(txContextFuture != null, "Missing transaction context");
     return get(txContextFuture);
+  }
+
+  TransactionContext getTransactionContext() {
+    ConnectionPreconditions.checkState(txContextFuture != null, "Missing transaction context");
+    return (TransactionContext) getReadContext();
   }
 
   @Override
@@ -356,7 +385,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> executeDdlAsync(ParsedStatement ddl) {
+  public ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "DDL-statements are not allowed inside a read/write transaction.");
@@ -371,6 +400,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<ResultSet> executeQueryAsync(
+      final CallType callType,
       final ParsedStatement statement,
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
@@ -378,12 +408,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         (statement.getType() == StatementType.QUERY)
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause");
-    checkValidTransaction();
+    checkOrCreateValidTransaction(statement, callType);
 
     ApiFuture<ResultSet> res;
-    if (retryAbortsInternally) {
+    if (retryAbortsInternally && txContextFuture != null) {
       res =
           executeStatementAsync(
+              callType,
               statement,
               () -> {
                 checkTimedOut();
@@ -412,7 +443,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               InterceptorsUsage.IGNORE_INTERCEPTORS,
               ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
     } else {
-      res = super.executeQueryAsync(statement, analyzeMode, options);
+      res = super.executeQueryAsync(callType, statement, analyzeMode, options);
     }
     ApiFutures.addCallback(
         res,
@@ -433,18 +464,18 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     return ApiFutures.transform(
-        internalExecuteUpdateAsync(update, analyzeMode, options),
+        internalExecuteUpdateAsync(callType, update, analyzeMode, options),
         Tuple::y,
         MoreExecutors.directExecutor());
   }
 
   @Override
   public ApiFuture<Long> executeUpdateAsync(
-      final ParsedStatement update, final UpdateOption... options) {
+      CallType callType, final ParsedStatement update, final UpdateOption... options) {
     return ApiFutures.transform(
-        internalExecuteUpdateAsync(update, AnalyzeMode.NONE, options),
+        internalExecuteUpdateAsync(callType, update, AnalyzeMode.NONE, options),
         Tuple::x,
         MoreExecutors.directExecutor());
   }
@@ -462,14 +493,15 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    * mode.
    */
   private ApiFuture<Tuple<Long, ResultSet>> internalExecuteUpdateAsync(
-      ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
+      CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
     Preconditions.checkNotNull(update);
     Preconditions.checkArgument(update.isUpdate(), "The statement is not an update statement");
-    checkValidTransaction();
+    checkOrCreateValidTransaction(update, callType);
     ApiFuture<Tuple<Long, ResultSet>> res;
-    if (retryAbortsInternally) {
+    if (retryAbortsInternally && txContextFuture != null) {
       res =
           executeStatementAsync(
+              callType,
               update,
               () -> {
                 checkTimedOut();
@@ -515,6 +547,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res =
           executeStatementAsync(
+              callType,
               update,
               () -> {
                 checkTimedOut();
@@ -550,7 +583,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(
-      Iterable<ParsedStatement> updates, final UpdateOption... options) {
+      CallType callType, Iterable<ParsedStatement> updates, final UpdateOption... options) {
     Preconditions.checkNotNull(updates);
     final List<Statement> updateStatements = new LinkedList<>();
     for (ParsedStatement update : updates) {
@@ -559,12 +592,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           "Statement is not an update statement: " + update.getSqlWithoutComments());
       updateStatements.add(update.getStatement());
     }
-    checkValidTransaction();
+    checkOrCreateValidTransaction(Iterables.getFirst(updates, null), callType);
 
     ApiFuture<long[]> res;
     if (retryAbortsInternally) {
       res =
           executeStatementAsync(
+              callType,
               RUN_BATCH_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -594,6 +628,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res =
           executeStatementAsync(
+              callType,
               RUN_BATCH_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -620,9 +655,12 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public ApiFuture<Void> writeAsync(Iterable<Mutation> mutations) {
+  public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
     Preconditions.checkNotNull(mutations);
-    checkValidTransaction();
+    // We actually don't need an underlying transaction yet, as mutations are buffered until commit.
+    // But we do need to verify that this transaction is valid, and to mark the start of the
+    // transaction.
+    checkValidStateAndMarkStarted();
     for (Mutation mutation : mutations) {
       this.mutations.add(checkNotNull(mutation));
     }
@@ -643,14 +681,25 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> commitAsync() {
-    checkValidTransaction();
+  public ApiFuture<Void> commitAsync(CallType callType) {
+    checkOrCreateValidTransaction(COMMIT_STATEMENT, callType);
     state = UnitOfWorkState.COMMITTING;
     commitResponseFuture = SettableApiFuture.create();
     ApiFuture<Void> res;
-    if (retryAbortsInternally) {
+    // Check if this transaction actually needs to commit anything.
+    if (txContextFuture == null) {
+      // No actual transaction was started by this read/write transaction, which also means that we
+      // don't have to commit anything.
+      commitResponseFuture.set(
+          new CommitResponse(
+              Timestamp.fromProto(com.google.protobuf.Timestamp.getDefaultInstance())));
+      state = UnitOfWorkState.COMMITTED;
+      res = SettableApiFuture.create();
+      ((SettableApiFuture<Void>) res).set(null);
+    } else if (retryAbortsInternally) {
       res =
           executeStatementAsync(
+              callType,
               COMMIT_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -680,6 +729,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else {
       res =
           executeStatementAsync(
+              callType,
               COMMIT_STATEMENT,
               () -> {
                 checkTimedOut();
@@ -953,11 +1003,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       };
 
   @Override
-  public ApiFuture<Void> rollbackAsync() {
-    return rollbackAsync(true);
+  public ApiFuture<Void> rollbackAsync(CallType callType) {
+    return rollbackAsync(callType, true);
   }
 
-  private ApiFuture<Void> rollbackAsync(boolean updateStatus) {
+  private ApiFuture<Void> rollbackAsync(CallType callType, boolean updateStatus) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED || state == UnitOfWorkState.ABORTED,
         "This transaction has status " + state.name());
@@ -966,7 +1016,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
       return executeStatementAsync(
-          ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
+          callType, ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
     } else {
       return ApiFutures.immediateFuture(null);
     }
@@ -1005,7 +1055,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   void rollbackToSavepoint(Savepoint savepoint) {
-    get(rollbackAsync(false));
+    get(rollbackAsync(CallType.SYNC, false));
     // Mark the state of the transaction as rolled back to a savepoint. This will ensure that the
     // transaction will retry the next time a statement is actually executed.
     this.rolledBackToSavepointException =

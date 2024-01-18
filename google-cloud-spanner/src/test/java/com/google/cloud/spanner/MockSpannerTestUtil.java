@@ -49,6 +49,7 @@ public class MockSpannerTestUtil {
                   .build())
           .setMetadata(SELECT1_METADATA)
           .build();
+  public static final Statement SELECT1_FROM_TABLE = Statement.of("SELECT 1 FROM FOO WHERE 1=1");
 
   static final String TEST_PROJECT = "my-project";
   static final String TEST_INSTANCE = "my-instance";

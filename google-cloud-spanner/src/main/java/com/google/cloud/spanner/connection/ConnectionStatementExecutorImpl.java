@@ -24,7 +24,12 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
@@ -39,8 +44,13 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
@@ -64,6 +74,7 @@ import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -75,6 +86,7 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -314,6 +326,22 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public StatementResult statementSetDelayTransactionStartUntilFirstWrite(
+      Boolean delayTransactionStartUntilFirstWrite) {
+    getConnection().setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite);
+    return noResult(SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
+  }
+
+  @Override
+  public StatementResult statementShowDelayTransactionStartUntilFirstWrite() {
+    return resultSet(
+        String.format(
+            "%sDELAY_TRANSACTION_START_UNTIL_FIRST_WRITE", getNamespace(connection.getDialect())),
+        getConnection().isDelayTransactionStartUntilFirstWrite(),
+        SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
+  }
+
+  @Override
   public StatementResult statementSetStatementTag(String tag) {
     getConnection().setStatementTag("".equals(tag) ? null : tag);
     return noResult(SET_STATEMENT_TAG);
@@ -473,6 +501,83 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowTransactionIsolationLevel() {
     return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
+  }
+
+  @Override
+  public StatementResult statementShowDataBoostEnabled() {
+    return resultSet(
+        String.format("%sDATA_BOOST_ENABLED", getNamespace(connection.getDialect())),
+        getConnection().isDataBoostEnabled(),
+        SHOW_DATA_BOOST_ENABLED);
+  }
+
+  @Override
+  public StatementResult statementSetDataBoostEnabled(Boolean dataBoostEnabled) {
+    getConnection().setDataBoostEnabled(Preconditions.checkNotNull(dataBoostEnabled));
+    return noResult(SET_DATA_BOOST_ENABLED);
+  }
+
+  @Override
+  public StatementResult statementShowAutoPartitionMode() {
+    return resultSet(
+        String.format("%sAUTO_PARTITION_MODE", getNamespace(connection.getDialect())),
+        getConnection().isAutoPartitionMode(),
+        SHOW_AUTO_PARTITION_MODE);
+  }
+
+  @Override
+  public StatementResult statementSetAutoPartitionMode(Boolean autoPartitionMode) {
+    getConnection().setAutoPartitionMode(Preconditions.checkNotNull(autoPartitionMode));
+    return noResult(SET_AUTO_PARTITION_MODE);
+  }
+
+  @Override
+  public StatementResult statementShowMaxPartitions() {
+    return resultSet(
+        String.format("%sMAX_PARTITIONS", getNamespace(connection.getDialect())),
+        Long.valueOf(getConnection().getMaxPartitions()),
+        SHOW_MAX_PARTITIONS);
+  }
+
+  @Override
+  public StatementResult statementSetMaxPartitions(Integer maxPartitions) {
+    getConnection().setMaxPartitions(Preconditions.checkNotNull(maxPartitions));
+    return noResult(SET_MAX_PARTITIONS);
+  }
+
+  @Override
+  public StatementResult statementShowMaxPartitionedParallelism() {
+    return resultSet(
+        String.format("%sMAX_PARTITIONED_PARALLELISM", getNamespace(connection.getDialect())),
+        Long.valueOf(getConnection().getMaxPartitionedParallelism()),
+        SHOW_MAX_PARTITIONED_PARALLELISM);
+  }
+
+  @Override
+  public StatementResult statementSetMaxPartitionedParallelism(Integer maxPartitionedParallelism) {
+    getConnection()
+        .setMaxPartitionedParallelism(Preconditions.checkNotNull(maxPartitionedParallelism));
+    return noResult(SET_MAX_PARTITIONED_PARALLELISM);
+  }
+
+  @Override
+  public StatementResult statementPartition(Statement statement) {
+    return StatementResultImpl.of(
+        getConnection().partitionQuery(statement, PartitionOptions.getDefaultInstance()),
+        ClientSideStatementType.PARTITION);
+  }
+
+  @Override
+  public StatementResult statementRunPartition(String partitionId) {
+    return StatementResultImpl.of(
+        getConnection().runPartition(partitionId), ClientSideStatementType.RUN_PARTITION);
+  }
+
+  @Override
+  public StatementResult statementRunPartitionedQuery(Statement statement) {
+    return StatementResultImpl.of(
+        getConnection().runPartitionedQuery(statement, PartitionOptions.getDefaultInstance()),
+        ClientSideStatementType.RUN_PARTITIONED_QUERY);
   }
 
   private String processQueryPlan(PlanNode planNode) {

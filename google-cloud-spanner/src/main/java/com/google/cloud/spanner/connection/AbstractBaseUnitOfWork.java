@@ -21,13 +21,22 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Partition;
+import com.google.cloud.spanner.PartitionOptions;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.common.base.Preconditions;
@@ -39,6 +48,7 @@ import io.grpc.Status;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -46,6 +56,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -157,6 +168,39 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
         "Rollback to savepoint is not supported for " + getUnitOfWorkName());
   }
 
+  @Override
+  public ApiFuture<ResultSet> partitionQueryAsync(
+      CallType callType,
+      ParsedStatement query,
+      PartitionOptions partitionOptions,
+      QueryOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION,
+        "Partition query is not supported for " + getUnitOfWorkName());
+  }
+
+  ResultSet partitionQuery(
+      BatchReadOnlyTransaction transaction,
+      PartitionOptions partitionOptions,
+      ParsedStatement query,
+      QueryOption... options) {
+    final String partitionColumnName = "PARTITION";
+    BatchTransactionId transactionId = transaction.getBatchTransactionId();
+    List<Partition> partitions =
+        transaction.partitionQuery(partitionOptions, query.getStatement(), options);
+    return ResultSets.forRows(
+        com.google.cloud.spanner.Type.struct(
+            StructField.of(partitionColumnName, com.google.cloud.spanner.Type.string())),
+        partitions.stream()
+            .map(
+                partition ->
+                    Struct.newBuilder()
+                        .set(partitionColumnName)
+                        .to(PartitionId.encodeToString(transactionId, partition))
+                        .build())
+            .collect(Collectors.toList()));
+  }
+
   StatementExecutor getStatementExecutor() {
     return statementExecutor;
   }
@@ -177,10 +221,12 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   }
 
   <T> ApiFuture<T> executeStatementAsync(
+      CallType callType,
       ParsedStatement statement,
       Callable<T> callable,
       @Nullable MethodDescriptor<?, ?> applyStatementTimeoutToMethod) {
     return executeStatementAsync(
+        callType,
         statement,
         callable,
         InterceptorsUsage.INVOKE_INTERCEPTORS,
@@ -190,11 +236,16 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   }
 
   <T> ApiFuture<T> executeStatementAsync(
+      CallType callType,
       ParsedStatement statement,
       Callable<T> callable,
       Collection<MethodDescriptor<?, ?>> applyStatementTimeoutToMethods) {
     return executeStatementAsync(
-        statement, callable, InterceptorsUsage.INVOKE_INTERCEPTORS, applyStatementTimeoutToMethods);
+        callType,
+        statement,
+        callable,
+        InterceptorsUsage.INVOKE_INTERCEPTORS,
+        applyStatementTimeoutToMethods);
   }
 
   <ResponseT, MetadataT> ResponseT getWithStatementTimeout(
@@ -237,6 +288,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   }
 
   <T> ApiFuture<T> executeStatementAsync(
+      CallType callType,
       ParsedStatement statement,
       Callable<T> callable,
       InterceptorsUsage interceptorUsage,
@@ -268,13 +320,17 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     }
     ApiFuture<T> f = statementExecutor.submit(context.wrap(callable));
     final SpannerAsyncExecutionException caller =
-        new SpannerAsyncExecutionException(statement.getStatement());
+        callType == CallType.ASYNC
+            ? new SpannerAsyncExecutionException(statement.getStatement())
+            : null;
     final ApiFuture<T> future =
         ApiFutures.catching(
             f,
             Throwable.class,
             input -> {
-              input.addSuppressed(caller);
+              if (caller != null) {
+                input.addSuppressed(caller);
+              }
               throw SpannerExceptionFactory.asSpannerException(input);
             },
             MoreExecutors.directExecutor());

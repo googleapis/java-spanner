@@ -114,6 +114,8 @@ public abstract class AbstractMockServerTest {
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')");
   public static final Statement INSERT_RETURNING_STATEMENT =
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted') THEN RETURN *");
+  public static final Statement PG_INSERT_RETURNING_STATEMENT =
+      Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted') RETURNING *");
   public static final long UPDATE_COUNT = 1L;
 
   public static final int RANDOM_RESULT_SET_ROW_COUNT = 100;
@@ -168,6 +170,8 @@ public abstract class AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.updateReturning(INSERT_RETURNING_STATEMENT, UPDATE_RETURNING_RESULTSET));
     mockSpanner.putStatementResult(
+        StatementResult.updateReturning(PG_INSERT_RETURNING_STATEMENT, UPDATE_RETURNING_RESULTSET));
+    mockSpanner.putStatementResult(
         StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
 
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
@@ -219,6 +223,10 @@ public abstract class AbstractMockServerTest {
     return createConnection(Collections.emptyList(), Collections.emptyList());
   }
 
+  ITConnection createConnection(String additionalUrlOptions) {
+    return createConnection(Collections.emptyList(), Collections.emptyList(), additionalUrlOptions);
+  }
+
   ITConnection createConnection(
       AbortInterceptor interceptor, TransactionRetryListener transactionRetryListener) {
     return createConnection(
@@ -229,9 +237,16 @@ public abstract class AbstractMockServerTest {
   ITConnection createConnection(
       List<StatementExecutionInterceptor> interceptors,
       List<TransactionRetryListener> transactionRetryListeners) {
+    return createConnection(interceptors, transactionRetryListeners, "");
+  }
+
+  ITConnection createConnection(
+      List<StatementExecutionInterceptor> interceptors,
+      List<TransactionRetryListener> transactionRetryListeners,
+      String additionalUrlOptions) {
     ConnectionOptions.Builder builder =
         ConnectionOptions.newBuilder()
-            .setUri(getBaseUrl())
+            .setUri(getBaseUrl() + additionalUrlOptions)
             .setStatementExecutionInterceptors(interceptors);
     ConnectionOptions options = builder.build();
     ITConnection connection = createITConnection(options);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,6 +259,5 @@ public interface RestoreDatabaseMetadataOrBuilder
    */
   com.google.protobuf.ByteString getOptimizeDatabaseOperationNameBytes();
 
-  public com.google.spanner.admin.database.v1.RestoreDatabaseMetadata.SourceInfoCase
-      getSourceInfoCase();
+  com.google.spanner.admin.database.v1.RestoreDatabaseMetadata.SourceInfoCase getSourceInfoCase();
 }
