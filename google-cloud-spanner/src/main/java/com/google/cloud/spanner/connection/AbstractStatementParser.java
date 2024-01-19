@@ -392,12 +392,13 @@ public abstract class AbstractStatementParser {
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
 
-  public static final int DEFAULT_MAX_STATEMENT_CACHE_SIZE = 20;
+  /** The default maximum size of the statement cache in Mb. */
+  public static final int DEFAULT_MAX_STATEMENT_CACHE_SIZE_MB = 20;
 
   private static int getMaxStatementCacheSize() {
     String stringValue = System.getProperty("spanner.statement_cache_size");
     if (stringValue == null) {
-      return DEFAULT_MAX_STATEMENT_CACHE_SIZE;
+      return DEFAULT_MAX_STATEMENT_CACHE_SIZE_MB;
     }
     int value = 0;
     try {
@@ -414,7 +415,7 @@ public abstract class AbstractStatementParser {
 
   /**
    * Cache for parsed statements. This prevents statements that are executed multiple times by the
-   * application to be parsed over and over again. The maximum size is set to 5,000.
+   * application to be parsed over and over again. The default maximum size is 20Mb.
    */
   private final Cache<String, ParsedStatement> statementCache;
 
