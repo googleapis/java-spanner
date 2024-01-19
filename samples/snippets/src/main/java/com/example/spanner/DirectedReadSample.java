@@ -66,11 +66,11 @@ public class DirectedReadSample {
                     .build())
             .build();
 
-    // You can set default `DirectedReadOptions` for a Spanner client. These options will be applied to
-    // all read-only transactions that are executed by this client, unless specific `DirectedReadOptions`
-    // are set for a query.
-    // Directed read can only be used for read-only transactions. The default options will be ignored for
-    // any read/write transaction that the client executes.
+    // You can set default `DirectedReadOptions` for a Spanner client. These options will be applied
+    // to all read-only transactions that are executed by this client, unless specific
+    // DirectedReadOptions are set for a query.
+    // Directed read can only be used for read-only transactions. The default options will be
+    // ignored for any read/write transaction that the client executes.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(projectId)
