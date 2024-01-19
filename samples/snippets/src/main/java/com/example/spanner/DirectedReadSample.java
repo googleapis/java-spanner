@@ -54,7 +54,7 @@ public class DirectedReadSample {
     //                          in location "us-east1" will be used to process
     //                          the request.
     //  includeReplicas also contains an option called autoFailoverDisabled, which when set to true
-    //  Spanner will not route requests to a replica outside the
+    //  will instruct Spanner to not route requests to a replica outside the
     //  includeReplicas list when all the specified replicas are unavailable
     //  or unhealthy. Default value is `false`.
     final DirectedReadOptions directedReadOptionsForClient =
@@ -66,6 +66,11 @@ public class DirectedReadSample {
                     .build())
             .build();
 
+    // You can set default `DirectedReadOptions` for a Spanner client. These options will be applied to
+    // all read-only transactions that are executed by this client, unless specific `DirectedReadOptions`
+    // are set for a query.
+    // Directed read can only be used for read-only transactions. The default options will be ignored for
+    // any read/write transaction that the client executes.
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(projectId)
@@ -76,7 +81,7 @@ public class DirectedReadSample {
           spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
 
       // DirectedReadOptions at request level will override the options set at
-      // Client level (through SpannerOptions).
+      // client level (through SpannerOptions).
       final DirectedReadOptions directedReadOptionsForRequest =
           DirectedReadOptions.newBuilder()
               .setIncludeReplicas(
@@ -89,7 +94,7 @@ public class DirectedReadSample {
                       .build())
               .build();
 
-      // Read rows while passing DirectedReadOptions directly to the query
+      // Read rows while passing DirectedReadOptions directly to the query.
       try (ResultSet rs =
           dbClient
               .singleUse()
