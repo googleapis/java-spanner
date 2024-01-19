@@ -100,7 +100,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
   private Timestamp transactionStarted;
-  final Object abortedLock = new Object();
 
   private static final class RollbackToSavepointException extends Exception {}
 
@@ -772,18 +771,16 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   <T> T runWithRetry(Callable<T> callable) throws SpannerException {
     while (true) {
-      synchronized (abortedLock) {
-        checkAborted();
-        try {
-          checkRolledBackToSavepoint();
-          return callable.call();
-        } catch (final AbortedException aborted) {
-          handleAborted(aborted);
-        } catch (SpannerException e) {
-          throw e;
-        } catch (Exception e) {
-          throw SpannerExceptionFactory.asSpannerException(e);
-        }
+      checkAborted();
+      try {
+        checkRolledBackToSavepoint();
+        return callable.call();
+      } catch (final AbortedException aborted) {
+        handleAborted(aborted);
+      } catch (SpannerException e) {
+        throw e;
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
       }
     }
   }
