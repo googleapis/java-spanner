@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.AbstractMessage;
@@ -36,6 +37,7 @@ import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.After;
@@ -49,22 +51,50 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class SavepointMockServerTest extends AbstractMockServerTest {
 
-  @Parameters(name = "dialect = {0}")
-  public static Object[] data() {
-    return Dialect.values();
+  // This test uses both platform threads and virtual threads (when available), as this test also
+  // relies on the internal checksum retry strategy. This is the only significant calculation that
+  // is executed by the StatementExecutor thread that is used by a Connection.
+  @Parameters(name = "dialect = {0}, useVirtualThreads = {1}")
+  public static Collection<Object[]> data() {
+    ImmutableList.Builder<Object[]> builder = ImmutableList.builder();
+    for (Dialect dialect : Dialect.values()) {
+      for (boolean useVirtualThreads : new boolean[] {true, false}) {
+        builder.add(new Object[] {dialect, useVirtualThreads});
+      }
+    }
+    return builder.build();
   }
 
-  @Parameter public Dialect dialect;
+  @Parameter(0)
+  public Dialect dialect;
+
+  @Parameter(1)
+  public boolean useVirtualThreads;
+
+  private Dialect currentDialect;
 
   @Before
   public void setupDialect() {
-    mockSpanner.putStatementResult(StatementResult.detectDialectResult(dialect));
+    if (currentDialect != dialect) {
+      // Reset the dialect result.
+      SpannerPool.closeSpannerPool();
+      mockSpanner.putStatementResult(StatementResult.detectDialectResult(dialect));
+      currentDialect = dialect;
+    }
   }
 
   @After
   public void clearRequests() {
     mockSpanner.clearRequests();
-    SpannerPool.closeSpannerPool();
+  }
+
+  @Override
+  public ITConnection createConnection() {
+    return createConnection(
+        ";useVirtualThreads="
+            + useVirtualThreads
+            + ";useVirtualGrpcTransportThreads="
+            + useVirtualThreads);
   }
 
   @Test

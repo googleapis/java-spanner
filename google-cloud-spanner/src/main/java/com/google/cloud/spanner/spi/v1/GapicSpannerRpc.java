@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadPerTaskExecutor;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
@@ -201,6 +202,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -350,7 +352,13 @@ public class GapicSpannerRpc implements SpannerRpc {
                   options.isAttemptDirectPath()
                       && !Objects.equals(
                           options.getScopedCredentials(), NoCredentials.getInstance()));
-
+      if (options.isUseVirtualThreads()) {
+        ExecutorService executor =
+            tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");
+        if (executor != null) {
+          defaultChannelProviderBuilder.setExecutor(executor);
+        }
+      }
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 

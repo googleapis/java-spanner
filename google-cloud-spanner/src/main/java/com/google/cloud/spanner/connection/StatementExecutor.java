@@ -160,7 +160,7 @@ class StatementExecutor {
 
   /**
    * Interceptors that should be invoked before or after a statement is executed can be registered
-   * for a connection. This are added to this list. The interceptors are intended for test usage.
+   * for a connection. These are added to this list. The interceptors are intended for test usage.
    */
   private final List<StatementExecutionInterceptor> interceptors;
 
@@ -178,15 +178,11 @@ class StatementExecutor {
     executor.shutdown();
   }
 
-  void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-    executor.awaitTermination(timeout, unit);
-  }
-
   /**
    * Shutdown this executor now and do not wait for any statement that is being executed to finish.
    */
-  List<Runnable> shutdownNow() {
-    return executor.shutdownNow();
+  void shutdownNow() {
+    executor.shutdownNow();
   }
 
   /** Execute a statement on this {@link StatementExecutor}. */

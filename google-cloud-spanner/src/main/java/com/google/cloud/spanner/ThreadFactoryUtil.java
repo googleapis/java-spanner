@@ -20,7 +20,10 @@ import com.google.api.core.InternalApi;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import javax.annotation.Nullable;
 
 /** Utility class for creating a thread factory for daemon or virtual threads. */
 @InternalApi
@@ -53,6 +56,7 @@ public class ThreadFactoryUtil {
    * threads are not supported on this JVM.
    */
   @InternalApi
+  @Nullable
   public static ThreadFactory tryCreateVirtualThreadFactory(String baseNameFormat) {
     try {
       Class<?> threadBuilderClass = Class.forName("java.lang.Thread$Builder");
@@ -67,5 +71,23 @@ public class ThreadFactoryUtil {
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @InternalApi
+  @Nullable
+  public static ExecutorService tryCreateVirtualThreadPerTaskExecutor(String baseNameFormat) {
+    ThreadFactory factory = tryCreateVirtualThreadFactory(baseNameFormat);
+    if (factory != null) {
+      try {
+        Method newThreadPerTaskExecutorMethod =
+            Executors.class.getDeclaredMethod("newThreadPerTaskExecutor", ThreadFactory.class);
+        return (ExecutorService) newThreadPerTaskExecutorMethod.invoke(null, factory);
+      } catch (NoSuchMethodException ignore) {
+        return null;
+      } catch (InvocationTargetException | IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return null;
   }
 }

@@ -17,6 +17,7 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
 import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
+import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadPerTaskExecutor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -50,6 +51,15 @@ public class ThreadFactoryUtilTest {
       assertEquals(virtualFactory.getClass(), threadFactory.getClass());
     } else {
       assertNull(tryCreateVirtualThreadFactory("test-thread"));
+    }
+  }
+
+  @Test
+  public void testTryCreateVirtualThreadPerTaskExecutor() {
+    if (isJava21OrHigher()) {
+      assertNotNull(tryCreateVirtualThreadPerTaskExecutor("test-virtual-thread"));
+    } else {
+      assertNull(tryCreateVirtualThreadPerTaskExecutor("test-virtual-thread"));
     }
   }
 

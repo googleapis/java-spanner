@@ -22,7 +22,6 @@ import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
@@ -155,6 +154,7 @@ public class SpannerPool {
     private final String userAgent;
     private final String databaseRole;
     private final boolean routeToLeader;
+    private final boolean useVirtualGrpcTransportThreads;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -181,6 +181,7 @@ public class SpannerPool {
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
       this.routeToLeader = options.isRouteToLeader();
+      this.useVirtualGrpcTransportThreads = options.isUseVirtualGrpcTransportThreads();
     }
 
     @Override
@@ -197,7 +198,9 @@ public class SpannerPool {
           && Objects.equals(this.databaseRole, other.databaseRole)
           && Objects.equals(this.usePlainText, other.usePlainText)
           && Objects.equals(this.userAgent, other.userAgent)
-          && Objects.equals(this.routeToLeader, other.routeToLeader);
+          && Objects.equals(this.routeToLeader, other.routeToLeader)
+          && Objects.equals(
+              this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads);
     }
 
     @Override
@@ -211,7 +214,8 @@ public class SpannerPool {
           this.usePlainText,
           this.databaseRole,
           this.userAgent,
-          this.routeToLeader);
+          this.routeToLeader,
+          this.useVirtualGrpcTransportThreads);
     }
   }
 
@@ -332,8 +336,9 @@ public class SpannerPool {
 
   @VisibleForTesting
   Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
-    SpannerOptions.Builder builder = SpannerOptions.newBuilder();
+    ConnectionSpannerOptions.Builder builder = ConnectionSpannerOptions.newBuilder();
     builder
+        .setUseVirtualThreads(key.useVirtualGrpcTransportThreads)
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)

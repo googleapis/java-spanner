@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 
 /**
  * This integration test tests the different scenarios for automatically retrying read/write
@@ -51,7 +51,7 @@ import org.junit.runners.JUnit4;
  * update.
  */
 @Category(ParallelIntegrationTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   private static final Logger logger = Logger.getLogger(ITTransactionRetryTest.class.getName());
 
@@ -59,7 +59,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Override
   protected void appendConnectionUri(StringBuilder uri) {
-    uri.append(";autocommit=false;retryAbortsInternally=true");
+    uri.append(
+        ";autocommit=false;retryAbortsInternally=true;useVirtualThreads=true;useVirtualGrpcTransportThreads=true");
   }
 
   @Override
