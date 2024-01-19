@@ -51,9 +51,10 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class SavepointMockServerTest extends AbstractMockServerTest {
 
-  // This test uses both platform threads and virtual threads (when available), as this test also
-  // relies on the internal checksum retry strategy. This is the only significant calculation that
-  // is executed by the StatementExecutor thread that is used by a Connection.
+  // This test uses both platform threads and virtual threads (when available). We use specifically
+  // this test for testing virtual threads, because it relies heavily on the internal checksum retry
+  // strategy. This is the only significant calculation that is executed by the StatementExecutor
+  // thread, meaning that this shows that using a virtual thread for those calculations also works.
   @Parameters(name = "dialect = {0}, useVirtualThreads = {1}")
   public static Collection<Object[]> data() {
     ImmutableList.Builder<Object[]> builder = ImmutableList.builder();

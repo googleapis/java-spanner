@@ -132,13 +132,13 @@ class StatementExecutor {
   }
 
   /**
-   * Use a {@link ThreadFactory} that produces daemon or virtual threads and sets recognizable name
-   * on the threads.
+   * Use a {@link ThreadFactory} that produces daemon or virtual threads and sets a recognizable
+   * name on the threads.
    */
   private static final ThreadFactory DEFAULT_VIRTUAL_THREAD_FACTORY =
       ThreadFactoryUtil.createVirtualOrDaemonThreadFactory("connection-executor", true);
   /**
-   * Use a {@link ThreadFactory} that produces daemon threads and sets recognizable name on the
+   * Use a {@link ThreadFactory} that produces daemon threads and sets a recognizable name on the
    * threads.
    */
   private static final ThreadFactory DEFAULT_DAEMON_THREAD_FACTORY =

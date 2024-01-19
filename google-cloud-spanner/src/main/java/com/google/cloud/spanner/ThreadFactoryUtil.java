@@ -73,6 +73,12 @@ public class ThreadFactoryUtil {
     }
   }
 
+  /**
+   * Tries to create an {@link ExecutorService} that creates a new virtual thread for each task that
+   * it runs. Creating a new virtual thread is the recommended way to create executors using virtual
+   * threads, instead of creating a pool of virtual threads. Returns null if virtual threads are not
+   * supported on this JVM.
+   */
   @InternalApi
   @Nullable
   public static ExecutorService tryCreateVirtualThreadPerTaskExecutor(String baseNameFormat) {

@@ -59,6 +59,8 @@ public class ITTransactionRetryTest extends ITAbstractSpannerTest {
 
   @Override
   protected void appendConnectionUri(StringBuilder uri) {
+    // This test uses virtual threads when available to verify that the checksum calculation can
+    // reliably be executed by virtual threads.
     uri.append(
         ";autocommit=false;retryAbortsInternally=true;useVirtualThreads=true;useVirtualGrpcTransportThreads=true");
   }
