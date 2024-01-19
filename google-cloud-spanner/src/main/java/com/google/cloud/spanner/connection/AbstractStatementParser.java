@@ -25,6 +25,10 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheStats;
+import com.google.common.cache.Weigher;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -58,6 +62,13 @@ public abstract class AbstractStatementParser {
               SpannerStatementParser.class,
               Dialect.POSTGRESQL,
               PostgreSQLStatementParser.class);
+
+  @VisibleForTesting
+  static void resetParsers() {
+    synchronized (lock) {
+      INSTANCES.clear();
+    }
+  }
 
   /**
    * Get an instance of {@link AbstractStatementParser} for the specified dialect.
@@ -171,7 +182,7 @@ public abstract class AbstractStatementParser {
     private static ParsedStatement query(
         Statement statement, String sqlWithoutComments, QueryOptions defaultQueryOptions) {
       return new ParsedStatement(
-          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions, false);
+          StatementType.QUERY, null, statement, sqlWithoutComments, defaultQueryOptions, false);
     }
 
     private static ParsedStatement update(
@@ -193,7 +204,7 @@ public abstract class AbstractStatementParser {
       this.type = StatementType.CLIENT_SIDE;
       this.clientSideStatement = clientSideStatement;
       this.statement = statement;
-      this.sqlWithoutComments = sqlWithoutComments;
+      this.sqlWithoutComments = Preconditions.checkNotNull(sqlWithoutComments);
       this.returningClause = false;
     }
 
@@ -202,26 +213,46 @@ public abstract class AbstractStatementParser {
         Statement statement,
         String sqlWithoutComments,
         boolean returningClause) {
-      this(type, statement, sqlWithoutComments, null, returningClause);
+      this(type, null, statement, sqlWithoutComments, null, returningClause);
     }
 
     private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
-      this(type, statement, sqlWithoutComments, null, false);
+      this(type, null, statement, sqlWithoutComments, null, false);
     }
 
     private ParsedStatement(
         StatementType type,
+        ClientSideStatementImpl clientSideStatement,
         Statement statement,
         String sqlWithoutComments,
         QueryOptions defaultQueryOptions,
         boolean returningClause) {
       Preconditions.checkNotNull(type);
-      Preconditions.checkNotNull(statement);
       this.type = type;
-      this.clientSideStatement = null;
-      this.statement = mergeQueryOptions(statement, defaultQueryOptions);
-      this.sqlWithoutComments = sqlWithoutComments;
+      this.clientSideStatement = clientSideStatement;
+      this.statement = statement == null ? null : mergeQueryOptions(statement, defaultQueryOptions);
+      this.sqlWithoutComments = Preconditions.checkNotNull(sqlWithoutComments);
       this.returningClause = returningClause;
+    }
+
+    private ParsedStatement copy(Statement statement, QueryOptions defaultQueryOptions) {
+      return new ParsedStatement(
+          this.type,
+          this.clientSideStatement,
+          statement,
+          this.sqlWithoutComments,
+          defaultQueryOptions,
+          this.returningClause);
+    }
+
+    private ParsedStatement forCache() {
+      return new ParsedStatement(
+          this.type,
+          this.clientSideStatement,
+          null,
+          this.sqlWithoutComments,
+          null,
+          this.returningClause);
     }
 
     @Override
@@ -361,8 +392,57 @@ public abstract class AbstractStatementParser {
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
 
+  public static final int DEFAULT_MAX_STATEMENT_CACHE_SIZE = 20;
+
+  private static int getMaxStatementCacheSize() {
+    String stringValue = System.getProperty("spanner.statement_cache_size");
+    if (stringValue == null) {
+      return DEFAULT_MAX_STATEMENT_CACHE_SIZE;
+    }
+    int value = 0;
+    try {
+      value = Integer.parseInt(stringValue);
+    } catch (NumberFormatException ignore) {
+    }
+    return Math.max(value, 0);
+  }
+
+  private static boolean isRecordStatementCacheStats() {
+    return "true"
+        .equalsIgnoreCase(System.getProperty("spanner.record_statement_cache_stats", "false"));
+  }
+
+  /**
+   * Cache for parsed statements. This prevents statements that are executed multiple times by the
+   * application to be parsed over and over again. The maximum size is set to 5,000.
+   */
+  private final Cache<String, ParsedStatement> statementCache;
+
   AbstractStatementParser(Set<ClientSideStatementImpl> statements) {
     this.statements = Collections.unmodifiableSet(statements);
+    int maxCacheSize = getMaxStatementCacheSize();
+    if (maxCacheSize > 0) {
+      CacheBuilder<String, ParsedStatement> cacheBuilder =
+          CacheBuilder.newBuilder()
+              // Set the max size to (approx) 20MB (by default).
+              .maximumWeight(getMaxStatementCacheSize() * 1024L * 1024L)
+              // We do length*2 because Java uses 2 bytes for each char.
+              .weigher(
+                  (Weigher<String, ParsedStatement>)
+                      (key, value) -> 2 * key.length() + 2 * value.sqlWithoutComments.length())
+              .concurrencyLevel(Runtime.getRuntime().availableProcessors());
+      if (isRecordStatementCacheStats()) {
+        cacheBuilder.recordStats();
+      }
+      this.statementCache = cacheBuilder.build();
+    } else {
+      this.statementCache = null;
+    }
+  }
+
+  @VisibleForTesting
+  CacheStats getStatementCacheStats() {
+    return statementCache == null ? null : statementCache.stats();
   }
 
   @VisibleForTesting
@@ -383,6 +463,20 @@ public abstract class AbstractStatementParser {
   }
 
   ParsedStatement parse(Statement statement, QueryOptions defaultQueryOptions) {
+    if (statementCache == null) {
+      return internalParse(statement, defaultQueryOptions);
+    }
+
+    ParsedStatement parsedStatement = statementCache.getIfPresent(statement.getSql());
+    if (parsedStatement == null) {
+      parsedStatement = internalParse(statement, null);
+      statementCache.put(statement.getSql(), parsedStatement.forCache());
+      return parsedStatement;
+    }
+    return parsedStatement.copy(statement, defaultQueryOptions);
+  }
+
+  private ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
     String sql = removeCommentsAndTrim(statement.getSql());
     ClientSideStatementImpl client = parseClientSideStatement(sql);
     if (client != null) {
