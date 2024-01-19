@@ -53,10 +53,10 @@ public class DirectedReadSample {
     //   * `location:us-east1 type:READ_ONLY` --> The "READ_ONLY" type replica(s)
     //                          in location "us-east1" will be used to process
     //                          the request.
-    //  includeReplicas also contains an option for autoFailover which when set
+    //  includeReplicas also contains an option called autoFailoverDisabled, which when set to true
     //  Spanner will not route requests to a replica outside the
     //  includeReplicas list when all the specified replicas are unavailable
-    //  or unhealthy. The default value is `false`.
+    //  or unhealthy. Default value is `false`.
     final DirectedReadOptions directedReadOptionsForClient =
         DirectedReadOptions.newBuilder()
             .setExcludeReplicas(
@@ -85,7 +85,7 @@ public class DirectedReadSample {
                           ReplicaSelection.newBuilder()
                               .setType(ReplicaSelection.Type.READ_WRITE)
                               .build())
-                      .setAutoFailoverDisabled(true)
+                      .setAutoFailoverDisabled(false)
                       .build())
               .build();
 
