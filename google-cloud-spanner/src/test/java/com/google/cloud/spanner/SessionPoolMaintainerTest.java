@@ -154,7 +154,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // Now advance the time enough for both sessions in the pool to be idled. Then do one
     // maintenance loop. This should cause the last session to have been checked back into the pool
     // to get a ping, but not the second session.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 1);
     assertThat(pingedSessions).containsExactly(session1.getName(), 1);
     // Do another maintenance loop. This should cause the other session to also get a ping.
@@ -174,13 +175,15 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     session4.close();
     session3.close();
     // Advance the clock to force pings for the sessions in the pool and do three maintenance loops.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 3);
     assertThat(pingedSessions).containsExactly(session1.getName(), 2, session2.getName(), 2);
 
     // Advance the clock to idle all sessions in the pool again and then check out one session. This
     // should cause only one session to get a ping.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     // We are now checking out session2 because
     Session session6 = pool.getSession();
     // The session that was first in the pool now is equal to the initial first session as each full
@@ -210,7 +213,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     session8.close();
     session9.close();
 
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 3);
     // session1 will not get a ping this time, as it was checked in first and is now the last
     // session in the pool.
