@@ -44,7 +44,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.Parameterized;
 
 /**
  * This integration test tests the different scenarios for automatically retrying read/write
