@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 
 /**
@@ -51,7 +52,7 @@ import org.junit.runners.Parameterized;
  * update.
  */
 @Category(ParallelIntegrationTest.class)
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public class ITTransactionRetryTest extends ITAbstractSpannerTest {
   private static final Logger logger = Logger.getLogger(ITTransactionRetryTest.class.getName());
 
