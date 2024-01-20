@@ -1751,6 +1751,13 @@ class SessionPool {
      */
     @VisibleForTesting Instant lastExecutionTime;
 
+    /**
+     * The previous numSessionsAcquired seen by the maintainer. This is used to calculate the
+     * transactions per second, which again is used to determine whether to randomize the order of
+     * the session pool.
+     */
+    private long prevNumSessionsAcquired;
+
     boolean closed = false;
 
     @GuardedBy("lock")
@@ -1794,6 +1801,12 @@ class SessionPool {
           return;
         }
         running = true;
+        if (loopFrequency >= 1000L) {
+          SessionPool.this.transactionsPerSecond =
+              (SessionPool.this.numSessionsAcquired - prevNumSessionsAcquired)
+                  / (loopFrequency / 1000L);
+        }
+        this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
       }
       Instant currTime = clock.instant();
       removeIdleSessions(currTime);
@@ -1995,6 +2008,7 @@ class SessionPool {
   private final SettableFuture<Dialect> dialect = SettableFuture.create();
   private final String databaseRole;
   private final SessionClient sessionClient;
+  private final int numChannels;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
 
@@ -2053,6 +2067,9 @@ class SessionPool {
 
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
+
+  @GuardedBy("lock")
+  private long transactionsPerSecond = 0L;
 
   @GuardedBy("lock")
   private long numLeakedSessionsRemoved = 0;
@@ -2160,6 +2177,7 @@ class SessionPool {
     this.executorFactory = executorFactory;
     this.executor = executor;
     this.sessionClient = sessionClient;
+    this.numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
     this.clock = clock;
     this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
@@ -2458,11 +2476,13 @@ class SessionPool {
       if (closureFuture != null) {
         return;
       }
-      if (waiters.size() == 0) {
+      if (waiters.isEmpty()) {
         // There are no pending waiters.
-        // Add to a random position if the head of the session pool already contains many sessions
-        // with the same channel as this one.
-        if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
+        // Add to a random position if the transactions per second is high or the head of the
+        // session pool already contains many sessions with the same channel as this one.
+        if (session.releaseToPosition != Position.RANDOM && shouldRandomize()) {
+          session.releaseToPosition = Position.RANDOM;
+        } else if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
         } else if (session.releaseToPosition == Position.RANDOM
             && !isNewSession
@@ -2489,6 +2509,26 @@ class SessionPool {
         waiters.poll().put(session);
       }
     }
+  }
+
+  /**
+   * Returns true if the position where we return the session should be random if:
+   *
+   * <ol>
+   *   <li>The current TPS is higher than the configured threshold.
+   *   <li>AND the number of sessions checked out is larger than the number of channels.
+   * </ol>
+   *
+   * The second check prevents the session pool from being randomized when the application is
+   * running many small, quick queries using a small number of parallel threads. This can cause a
+   * high TPS, without actually having a high degree of parallelism.
+   */
+  @VisibleForTesting
+  boolean shouldRandomize() {
+    return this.options.getRandomizePositionTransactionsPerSecondThreshold() > 0
+        && this.transactionsPerSecond
+            >= this.options.getRandomizePositionTransactionsPerSecondThreshold()
+        && this.numSessionsInUse >= this.numChannels;
   }
 
   private boolean isUnbalanced(PooledSession session) {

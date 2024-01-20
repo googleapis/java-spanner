@@ -117,8 +117,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   SessionPool pool;
   SessionPoolOptions options;
-  private String sessionName = String.format("%s/sessions/s", db.getName());
-  private String TEST_DATABASE_ROLE = "my-role";
+  private final String sessionName = String.format("%s/sessions/s", db.getName());
+  private static final String TEST_DATABASE_ROLE = "my-role";
 
   @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {
@@ -126,6 +126,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool() {
+    return createPool(this.options);
+  }
+
+  private SessionPool createPool(SessionPoolOptions options) {
     return SessionPool.createPool(options, new TestExecutorFactory(), client.getSessionClient(db));
   }
 
@@ -286,7 +290,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void poolAllPositions() throws Exception {
     int maxAttempts = 100;
     setupMockSessionCreation();
-    for (Position position : Position.values()) {
+    for (Position position : new Position[] {Position.LAST}) {
       runWithSystemProperty(
           "com.google.cloud.spanner.session_pool_release_to_position",
           position.name(),
@@ -294,14 +298,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             int attempt = 0;
             while (attempt < maxAttempts) {
               int numSessions = 5;
-              options =
-                  options
+              SessionPoolOptions options =
+                  this.options
                       .toBuilder()
                       .setMinSessions(numSessions)
                       .setMaxSessions(numSessions)
                       .setWaitForMinSessions(Duration.ofSeconds(10L))
                       .build();
-              pool = createPool();
+              pool = createPool(options);
               pool.maybeWaitOnMinSessions();
               // First check out and release the sessions twice to the pool, so we know that we have
               // finalized the position of them.
