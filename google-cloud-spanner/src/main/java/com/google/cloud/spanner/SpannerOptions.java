@@ -1388,12 +1388,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
   }
 
-  @ObsoleteApi(
-      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
   /**
    * Always resets the activeTracingFramework. This variable is used for internal testing, and is
    * not a valid production scenario
    */
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
   static void resetActiveTracingFramework() {
     activeTracingFramework = null;
   }

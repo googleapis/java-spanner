@@ -1871,7 +1871,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setInitialWaitForSessionTimeoutMillis(50L)
             .build();
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     FakeMetricRegistry metricRegistry = new FakeMetricRegistry();
     List<LabelValue> labelValues =
         Arrays.asList(
@@ -1905,7 +1905,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               .setInitialWaitForSessionTimeoutMillis(50L)
               .build();
       FakeClock clock = new FakeClock();
-      clock.currentTimeMillis = System.currentTimeMillis();
+      clock.currentTimeMillis.set(System.currentTimeMillis());
 
       InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
       SdkMeterProvider sdkMeterProvider =

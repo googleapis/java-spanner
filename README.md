@@ -216,8 +216,9 @@ If you are using Maven, add this to your pom.xml file
 ```
 If you are using Gradle, add this to your dependencies
 ```Groovy
-compile 'io.opencensus:opencensus-impl:0.30.0'
-compile 'io.opencensus:opencensus-exporter-stats-stackdriver:0.30.0'
+compile 'io.opentelemetry:opentelemetry-sdk:{opentelemetry.version}'
+compile 'io.opentelemetry:opentelemetry-sdk-metrics:{opentelemetry.version}'
+compile 'io.opentelemetry:opentelemetry-exporter-oltp:{opentelemetry.version}'
 ```
 
 By default, the functionality is disabled. You need to enable OpenTelemetry metrics and must configure the OpenTelemetry with appropriate exporters at the startup of your application:
