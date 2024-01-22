@@ -20,10 +20,10 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Supplier;
 
 /** Forwarding implements of StructReader */
 public class ForwardingStructReader implements StructReader {

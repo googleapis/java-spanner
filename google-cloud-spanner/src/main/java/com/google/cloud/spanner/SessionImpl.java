@@ -99,7 +99,7 @@ class SessionImpl implements Session {
   ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
   private Span currentSpan;
-  private volatile Instant lastUseTime;
+  private Instant lastUseTime;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;

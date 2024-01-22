@@ -17,10 +17,10 @@
 package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
+import java.util.function.Supplier;
 
 /** Forwarding implementation of ResultSet that forwards all calls to a delegate. */
 public class ForwardingResultSet extends ForwardingStructReader implements ResultSet {

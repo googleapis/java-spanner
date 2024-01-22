@@ -20,14 +20,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SessionPoolOptions;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.v1.SpannerClient;
+import com.google.cloud.spanner.v1.SpannerSettings;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.AbstractMessage;
@@ -35,11 +46,15 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.RollbackRequest;
+import com.google.spanner.v1.Session;
+import io.grpc.ManagedChannelBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -65,6 +80,82 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
   public void clearRequests() {
     mockSpanner.clearRequests();
     SpannerPool.closeSpannerPool();
+  }
+
+  @Ignore
+  @Test
+  public void testGapicLatency() throws Exception {
+    try (SpannerClient client =
+        SpannerClient.create(
+            SpannerSettings.newBuilder()
+                .setTransportChannelProvider(
+                    InstantiatingGrpcChannelProvider.newBuilder()
+                        .setEndpoint("localhost:" + getPort())
+                        .setCredentials(NoCredentials.getInstance())
+                        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+                        .build())
+                .setCredentialsProvider(NoCredentialsProvider.create())
+                .build())) {
+      mockSpanner.putStatementResult(
+          StatementResult.query(
+              Statement.of("select * from random"), SELECT_COUNT_RESULTSET_BEFORE_INSERT));
+
+      Session session = client.createSession("projects/p/instances/i/databases/d");
+      for (int n = 0; n < 100; n++) {
+        Thread.sleep(500L);
+        Stopwatch watch = Stopwatch.createStarted();
+        for (PartialResultSet ignore :
+            client
+                .executeStreamingSqlCallable()
+                .call(
+                    ExecuteSqlRequest.newBuilder()
+                        .setSession(session.getName())
+                        .setSql("select * from random")
+                        .build())) {
+          // ignore
+        }
+        System.out.println("Total: " + watch.elapsed());
+      }
+    }
+  }
+
+  @Test
+  public void testLatency() throws Exception {
+    Statement statement = Statement.of("select * from random");
+    //    RandomResultSetGenerator generator = new RandomResultSetGenerator(10);
+    //    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+    mockSpanner.putStatementResult(
+        StatementResult.query(statement, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
+
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setCredentials(NoCredentials.getInstance())
+            .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+            .setHost("http://localhost:" + getPort())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder().setTrackStackTraceOfSessionCheckout(false).build())
+            .build()
+            .getService()) {
+      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+      try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+        while (resultSet.next()) {
+          // ignore
+        }
+      }
+
+      for (int n = 0; n < 100; n++) {
+        Thread.sleep(500L);
+        Stopwatch watch = Stopwatch.createStarted();
+        try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
+          while (resultSet.next()) {
+            // ignore
+          }
+        }
+        System.out.println("Total: " + watch.elapsed());
+        //        System.out.println("GLOBAL: " + GLOBAL_STOP_WATCH.elapsed());
+      }
+    }
   }
 
   @Test

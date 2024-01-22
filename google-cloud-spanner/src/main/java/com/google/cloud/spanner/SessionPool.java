@@ -86,6 +86,7 @@ import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -98,6 +99,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -233,6 +235,9 @@ class SessionPool {
     }
 
     T getReadContextDelegate() {
+      if (readContextDelegate != null) {
+        return readContextDelegate;
+      }
       synchronized (lock) {
         if (readContextDelegate == null) {
           while (true) {
@@ -990,7 +995,7 @@ class SessionPool {
 
   private static class SessionPoolAsyncRunner implements AsyncRunner {
     private final SessionPool sessionPool;
-    private volatile PooledSessionFuture session;
+    private PooledSessionFuture session;
     private final TransactionOption[] options;
     private SettableApiFuture<CommitResponse> commitResponse;
 
@@ -1095,40 +1100,52 @@ class SessionPool {
 
   private PooledSessionFuture createPooledSessionFuture(
       ListenableFuture<PooledSession> future, Span span) {
-    return new PooledSessionFuture(future, span);
+    return new ForwardingPooledSessionFuture(future, span);
   }
 
-  class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
-      implements Session {
-    private volatile LeakedSessionException leakedException;
-    private volatile AtomicBoolean inUse = new AtomicBoolean();
-    private volatile CountDownLatch initialized = new CountDownLatch(1);
-    private final Span span;
+  private PooledSessionFuture createPooledSessionFuture(PooledSession session, Span span) {
+    return new SimplePooledSessionFuture(session, span);
+  }
 
-    @VisibleForTesting
-    PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
-      super(delegate);
-      this.span = span;
+  interface PooledSessionFuture extends Session {
+    enum ActionOnClose {
+      RELEASE,
+      NONE,
     }
 
-    @VisibleForTesting
-    void clearLeakedException() {
-      this.leakedException = null;
+    default PooledSession get() {
+      return get(false);
     }
 
-    private void markCheckedOut() {
-      if (options.isTrackStackTraceOfSessionCheckout()) {
-        this.leakedException = new LeakedSessionException();
-      }
+    PooledSession get(boolean eligibleForLongRunning);
+
+    LeakedSessionException getLeakedException();
+
+    void clearLeakedException();
+
+    default boolean isDone() {
+      return true;
     }
+
+    default void addListener(Runnable listener, Executor executor) {
+      executor.execute(listener);
+    }
+
+    void markCheckedOut();
+
+    SessionPool getPool();
+
+    ActionOnClose getActionOnClose();
+
+    void setActionOnClose(ActionOnClose actionOnClose);
 
     @Override
-    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+    default Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
       return writeWithOptions(mutations).getCommitTimestamp();
     }
 
     @Override
-    public CommitResponse writeWithOptions(
+    default CommitResponse writeWithOptions(
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
         return get().writeWithOptions(mutations, options);
@@ -1138,12 +1155,12 @@ class SessionPool {
     }
 
     @Override
-    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+    default Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
       return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
     }
 
     @Override
-    public CommitResponse writeAtLeastOnceWithOptions(
+    default CommitResponse writeAtLeastOnceWithOptions(
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
         return get().writeAtLeastOnceWithOptions(mutations, options);
@@ -1153,7 +1170,7 @@ class SessionPool {
     }
 
     @Override
-    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+    default ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
         Iterable<MutationGroup> mutationGroups, TransactionOption... options)
         throws SpannerException {
       try {
@@ -1164,14 +1181,14 @@ class SessionPool {
     }
 
     @Override
-    public ReadContext singleUse() {
+    default ReadContext singleUse() {
       try {
         return new AutoClosingReadContext<>(
             session -> {
               PooledSession ps = session.get();
               return ps.delegate.singleUse();
             },
-            SessionPool.this,
+            getPool(),
             this,
             true);
       } catch (Exception e) {
@@ -1181,14 +1198,14 @@ class SessionPool {
     }
 
     @Override
-    public ReadContext singleUse(final TimestampBound bound) {
+    default ReadContext singleUse(final TimestampBound bound) {
       try {
         return new AutoClosingReadContext<>(
             session -> {
               PooledSession ps = session.get();
               return ps.delegate.singleUse(bound);
             },
-            SessionPool.this,
+            getPool(),
             this,
             true);
       } catch (Exception e) {
@@ -1198,7 +1215,7 @@ class SessionPool {
     }
 
     @Override
-    public ReadOnlyTransaction singleUseReadOnlyTransaction() {
+    default ReadOnlyTransaction singleUseReadOnlyTransaction() {
       return internalReadOnlyTransaction(
           session -> {
             PooledSession ps = session.get();
@@ -1208,7 +1225,7 @@ class SessionPool {
     }
 
     @Override
-    public ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
+    default ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
           session -> {
             PooledSession ps = session.get();
@@ -1218,7 +1235,7 @@ class SessionPool {
     }
 
     @Override
-    public ReadOnlyTransaction readOnlyTransaction() {
+    default ReadOnlyTransaction readOnlyTransaction() {
       return internalReadOnlyTransaction(
           session -> {
             PooledSession ps = session.get();
@@ -1228,7 +1245,7 @@ class SessionPool {
     }
 
     @Override
-    public ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
+    default ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
           session -> {
             PooledSession ps = session.get();
@@ -1237,12 +1254,11 @@ class SessionPool {
           false);
     }
 
-    private ReadOnlyTransaction internalReadOnlyTransaction(
+    default ReadOnlyTransaction internalReadOnlyTransaction(
         Function<PooledSessionFuture, ReadOnlyTransaction> transactionSupplier,
         boolean isSingleUse) {
       try {
-        return new AutoClosingReadTransaction(
-            transactionSupplier, SessionPool.this, this, isSingleUse);
+        return new AutoClosingReadTransaction(transactionSupplier, getPool(), this, isSingleUse);
       } catch (Exception e) {
         close();
         throw e;
@@ -1250,27 +1266,27 @@ class SessionPool {
     }
 
     @Override
-    public TransactionRunner readWriteTransaction(TransactionOption... options) {
-      return new SessionPoolTransactionRunner(SessionPool.this, this, options);
+    default TransactionRunner readWriteTransaction(TransactionOption... options) {
+      return new SessionPoolTransactionRunner(getPool(), this, options);
     }
 
     @Override
-    public TransactionManager transactionManager(TransactionOption... options) {
-      return new AutoClosingTransactionManager(SessionPool.this, this, options);
+    default TransactionManager transactionManager(TransactionOption... options) {
+      return new AutoClosingTransactionManager(getPool(), this, options);
     }
 
     @Override
-    public AsyncRunner runAsync(TransactionOption... options) {
-      return new SessionPoolAsyncRunner(SessionPool.this, this, options);
+    default AsyncRunner runAsync(TransactionOption... options) {
+      return new SessionPoolAsyncRunner(getPool(), this, options);
     }
 
     @Override
-    public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
-      return new SessionPoolAsyncTransactionManager(SessionPool.this, this, options);
+    default AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+      return new SessionPoolAsyncTransactionManager(getPool(), this, options);
     }
 
     @Override
-    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+    default long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       try {
         return get(true).executePartitionedUpdate(stmt, options);
       } finally {
@@ -1279,17 +1295,27 @@ class SessionPool {
     }
 
     @Override
-    public String getName() {
+    default String getName() {
       return get().getName();
     }
 
     @Override
-    public void prepareReadWriteTransaction() {
+    default void prepareReadWriteTransaction() {
       get().prepareReadWriteTransaction();
     }
 
+    default void checkOut(PooledSession pooledSession, Span span, boolean eligibleForLongRunning) {
+      pooledSession.markBusy(span);
+      span.addAnnotation(getPool().sessionAnnotation(pooledSession));
+      synchronized (getPool().lock) {
+        getPool().incrementNumSessionsInUse();
+        getPool().checkedOutSessions.add(this);
+      }
+      pooledSession.eligibleForLongRunning = eligibleForLongRunning;
+    }
+
     @Override
-    public void close() {
+    default void close() {
       try {
         asyncClose().get();
       } catch (InterruptedException e) {
@@ -1300,26 +1326,138 @@ class SessionPool {
     }
 
     @Override
-    public ApiFuture<Empty> asyncClose() {
-      try {
-        PooledSession delegate = getOrNull();
-        if (delegate != null) {
-          return delegate.asyncClose();
-        }
-      } finally {
-        synchronized (lock) {
-          leakedException = null;
-          checkedOutSessions.remove(this);
+    default ApiFuture<Empty> asyncClose() {
+      if (getActionOnClose() == ActionOnClose.RELEASE) {
+        PooledSession pooledSession = getOrNull();
+        try {
+          if (pooledSession != null) {
+            return pooledSession.asyncClose();
+          }
+        } finally {
+          synchronized (getPool().lock) {
+            clearLeakedException();
+            getPool().checkedOutSessions.remove(this);
+          }
         }
       }
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
     }
 
-    private PooledSession getOrNull() {
+    default PooledSession getOrNull() {
       try {
         return get();
       } catch (Throwable t) {
         return null;
+      }
+    }
+  }
+
+  class SimplePooledSessionFuture implements PooledSessionFuture {
+    private ActionOnClose actionOnClose = ActionOnClose.RELEASE;
+    private final AtomicBoolean inUse = new AtomicBoolean();
+    private final PooledSession session;
+    private final Span span;
+    private LeakedSessionException leakedException;
+
+    SimplePooledSessionFuture(PooledSession session, Span span) {
+      this.session = session;
+      this.span = span;
+    }
+
+    @Override
+    public ActionOnClose getActionOnClose() {
+      return actionOnClose;
+    }
+
+    @Override
+    public void setActionOnClose(ActionOnClose actionOnClose) {
+      this.actionOnClose = actionOnClose;
+    }
+
+    @Override
+    public int hashCode() {
+      return this.session.delegate.hashCode();
+    }
+
+    public SessionPool getPool() {
+      return SessionPool.this;
+    }
+
+    public PooledSession get(boolean eligibleForLongRunning) {
+      if (inUse.compareAndSet(false, true)) {
+        checkOut(this.session, this.span, eligibleForLongRunning);
+      }
+      return this.session;
+    }
+
+    @VisibleForTesting
+    @Override
+    public void clearLeakedException() {
+      this.leakedException = null;
+    }
+
+    @Override
+    public LeakedSessionException getLeakedException() {
+      return this.leakedException;
+    }
+
+    @Override
+    public void markCheckedOut() {
+      if (options.isTrackStackTraceOfSessionCheckout()) {
+        this.leakedException = new LeakedSessionException();
+      }
+    }
+  }
+
+  class ForwardingPooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
+      implements Session, PooledSessionFuture {
+    private ActionOnClose actionOnClose = ActionOnClose.RELEASE;
+    private LeakedSessionException leakedException;
+    private final AtomicBoolean inUse = new AtomicBoolean();
+    private final CountDownLatch initialized = new CountDownLatch(1);
+    private final Span span;
+    private final int hash = ThreadLocalRandom.current().nextInt();
+
+    @VisibleForTesting
+    ForwardingPooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
+      super(delegate);
+      this.span = span;
+    }
+
+    @Override
+    public ActionOnClose getActionOnClose() {
+      return actionOnClose;
+    }
+
+    @Override
+    public void setActionOnClose(ActionOnClose actionOnClose) {
+      this.actionOnClose = actionOnClose;
+    }
+
+    @Override
+    public int hashCode() {
+      return hash;
+    }
+
+    public SessionPool getPool() {
+      return SessionPool.this;
+    }
+
+    @VisibleForTesting
+    @Override
+    public void clearLeakedException() {
+      this.leakedException = null;
+    }
+
+    @Override
+    public LeakedSessionException getLeakedException() {
+      return this.leakedException;
+    }
+
+    @Override
+    public void markCheckedOut() {
+      if (options.isTrackStackTraceOfSessionCheckout()) {
+        this.leakedException = new LeakedSessionException();
       }
     }
 
@@ -1328,7 +1466,7 @@ class SessionPool {
       return get(false);
     }
 
-    PooledSession get(final boolean eligibleForLongRunning) {
+    public PooledSession get(final boolean eligibleForLongRunning) {
       if (inUse.compareAndSet(false, true)) {
         PooledSession res = null;
         try {
@@ -1337,13 +1475,7 @@ class SessionPool {
           // ignore the exception as it will be handled by the call to super.get() below.
         }
         if (res != null) {
-          res.markBusy(span);
-          span.addAnnotation(sessionAnnotation(res));
-          synchronized (lock) {
-            incrementNumSessionsInUse();
-            checkedOutSessions.add(this);
-          }
-          res.eligibleForLongRunning = eligibleForLongRunning;
+          checkOut(res, span, eligibleForLongRunning);
         }
         initialized.countDown();
       }
@@ -1360,8 +1492,8 @@ class SessionPool {
 
   class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
-    private volatile SpannerException lastException;
-    private volatile boolean allowReplacing = true;
+    private SpannerException lastException;
+    private boolean allowReplacing = true;
 
     /**
      * This ensures that the session is added at a random position in the pool the first time it is
@@ -1376,13 +1508,13 @@ class SessionPool {
      * long-running. By default, most transaction types are not expected to be long-running and
      * hence this value is false.
      */
-    private volatile boolean eligibleForLongRunning = false;
+    private boolean eligibleForLongRunning = false;
 
     /**
      * Property to mark if the session is no longer part of the session pool. For ex - A session
      * which is long-running gets cleaned up and removed from the pool.
      */
-    private volatile boolean isRemovedFromPool = false;
+    private boolean isRemovedFromPool = false;
 
     /**
      * Property to mark if a leaked session exception is already logged. Given a session maintainer
@@ -1390,7 +1522,7 @@ class SessionPool {
      * exception is logged only once per leaked session. This is to avoid noisy repeated logs around
      * session leaks for long-running sessions.
      */
-    private volatile boolean isLeakedExceptionLogged = false;
+    private boolean isLeakedExceptionLogged = false;
 
     @GuardedBy("lock")
     private SessionState state;
@@ -1932,7 +2064,7 @@ class SessionPool {
                   logger.log(
                       Level.WARNING,
                       String.format("Removing long-running session => %s", session.getName()),
-                      sessionFuture.leakedException);
+                      sessionFuture.getLeakedException());
                   session.isLeakedExceptionLogged = true;
                 } else if (options.warnInactiveTransactions()) {
                   logger.log(
@@ -1942,7 +2074,7 @@ class SessionPool {
                               + "long-running sessions, set SessionOption ActionOnInactiveTransaction "
                               + "to WARN_AND_CLOSE by invoking setWarnAndCloseIfInactiveTransactions() method.",
                           session.getName()),
-                      sessionFuture.leakedException);
+                      sessionFuture.getLeakedException());
                   session.isLeakedExceptionLogged = true;
                 }
               }
@@ -2384,21 +2516,18 @@ class SessionPool {
 
   private PooledSessionFuture checkoutSession(
       final Span span, final PooledSession readySession, WaiterFuture waiter) {
-    ListenableFuture<PooledSession> sessionFuture;
+    PooledSessionFuture pooledSessionFuture;
     if (waiter != null) {
       logger.log(
           Level.FINE,
-          "No session available in the pool. Blocking for one to become available/created");
+          () -> "No session available in the pool. Blocking for one to become available/created");
       span.addAnnotation("Waiting for a session to come available");
-      sessionFuture = waiter;
+      pooledSessionFuture = createPooledSessionFuture(waiter, span);
     } else {
-      SettableFuture<PooledSession> fut = SettableFuture.create();
-      fut.set(readySession);
-      sessionFuture = fut;
+      pooledSessionFuture = createPooledSessionFuture(readySession, span);
     }
-    PooledSessionFuture res = createPooledSessionFuture(sessionFuture, span);
-    res.markCheckedOut();
-    return res;
+    pooledSessionFuture.markCheckedOut();
+    return pooledSessionFuture;
   }
 
   PooledSessionFuture replaceSession(SessionNotFoundException e, PooledSessionFuture session) {
@@ -2408,7 +2537,7 @@ class SessionPool {
         numSessionsReleased++;
         checkedOutSessions.remove(session);
       }
-      session.leakedException = null;
+      session.clearLeakedException();
       invalidateSession(session.get());
       return getSession();
     } else {
@@ -2529,7 +2658,7 @@ class SessionPool {
   static boolean isUnbalanced(
       int channelOfSessionBeingAdded,
       List<PooledSession> sessions,
-      Set<PooledSessionFuture> checkedOutSessions,
+      Collection<PooledSessionFuture> checkedOutSessions,
       int numChannels) {
     // Do not re-balance the pool if the number of checked out sessions is low, as it is
     // better to re-use sessions as much as possible in a low-QPS scenario.
@@ -2634,11 +2763,11 @@ class SessionPool {
 
       sessions.clear();
       for (PooledSessionFuture session : checkedOutSessions) {
-        if (session.leakedException != null) {
+        if (session.getLeakedException() != null) {
           if (options.isFailOnSessionLeak()) {
-            throw session.leakedException;
+            throw session.getLeakedException();
           } else {
-            logger.log(Level.WARNING, "Leaked session", session.leakedException);
+            logger.log(Level.WARNING, "Leaked session", session.getLeakedException());
           }
         } else {
           String message =
