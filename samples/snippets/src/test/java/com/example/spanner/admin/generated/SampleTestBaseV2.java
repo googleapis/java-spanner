@@ -124,7 +124,7 @@ public class SampleTestBaseV2 {
     for (String configId : idGenerator.getInstanceConfigIds()) {
       try {
         // If the config is not found, it is ignored (no exception is thrown)
-        instanceAdminClient.deleteInstanceConfig(configId);
+        instanceAdminClient.deleteInstanceConfig(getInstanceConfigName(projectId, configId));
       } catch (Exception e) {
         System.out.println(
             "Failed to delete instance config "
@@ -134,7 +134,6 @@ public class SampleTestBaseV2 {
                 + ", skipping...");
       }
     }
-
     databaseAdminClient.close();
     instanceAdminClient.close();
 
@@ -156,5 +155,13 @@ public class SampleTestBaseV2 {
 
   static String getInstanceName(final String projectId, final String instanceId) {
     return String.format("projects/%s/instances/%s", projectId, instanceId);
+  }
+
+  static String getInstanceConfigName(final String projectId, final String instanceConfigId) {
+    return String.format("projects/%s/instanceConfigs/%s", projectId, instanceConfigId);
+  }
+
+  static String getProjectName(final String projectId) {
+    return String.format("projects/%s", projectId);
   }
 }

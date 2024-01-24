@@ -39,9 +39,7 @@ public class CreateDatabaseWithDefaultLeaderSample {
 
   static void createDatabaseWithDefaultLeader(String instanceName, String databaseId,
       String defaultLeader) throws IOException {
-    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
-
-    try {
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
       Database createdDatabase =
           databaseAdminClient.createDatabaseAsync(
               CreateDatabaseRequest.newBuilder()
