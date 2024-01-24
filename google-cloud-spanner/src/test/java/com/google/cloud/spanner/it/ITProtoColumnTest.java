@@ -56,7 +56,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-// Integration Tests to test DDL, DML and DQL for Proto Columns & Enums
+// Integration Tests to test DDL, DML and DQL for Proto Columns and Enums
 // TODO(harsha): Check session leak warning
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
@@ -153,8 +153,8 @@ public class ITProtoColumnTest {
 
   /**
    * Test to check data update and read queries on Proto Messages, Proto Enums and their arrays.
-   * Test also checks for compatability between following types: 1. Proto Messages & Bytes 2. Proto
-   * Enums & Int64
+   * Test also checks for compatability between following types: 1. Proto Messages and Bytes 2. Proto
+   * Enums and Int64
    */
   @Test
   public void testProtoColumnsUpdateAndRead() {
@@ -242,7 +242,7 @@ public class ITProtoColumnTest {
             resultSet.getProtoMessageList("ProtoMessageArray", SingerInfo.getDefaultInstance()));
         assertEquals(enumList, resultSet.getProtoEnumList("ProtoEnumArray", Genre::forNumber));
 
-        // Check compatability between Proto Messages & Bytes
+        // Check compatability between Proto Messages and Bytes
         assertEquals(singerInfoBytes, resultSet.getBytes("ProtoMessage"));
         assertEquals(
             singerInfo, resultSet.getProtoMessage("Bytes", SingerInfo.getDefaultInstance()));
@@ -252,7 +252,7 @@ public class ITProtoColumnTest {
             singerInfoList,
             resultSet.getProtoMessageList("BytesArray", SingerInfo.getDefaultInstance()));
 
-        // Check compatability between Proto Enum & Int64
+        // Check compatability between Proto Enum and Int64
         assertEquals(genreConst, resultSet.getLong("ProtoEnum"));
         assertEquals(genre, resultSet.getProtoEnum("Int64a", Genre::forNumber));
 
