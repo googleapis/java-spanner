@@ -47,6 +47,6 @@ java.common_templates(
         ".kokoro/build.sh",
         ".kokoro/dependencies.sh",
         ".kokoro/requirements.in",
-        ".kokoro/requirements.txt",
+        ".kokoro/requirements.txt"
     ]
 )
