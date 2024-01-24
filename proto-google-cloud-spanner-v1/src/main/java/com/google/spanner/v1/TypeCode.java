@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,6 +181,27 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>JSON = 11;</code>
    */
   JSON(11),
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as a base64-encoded `string`, as described in RFC 4648,
+   * section 4.
+   * </pre>
+   *
+   * <code>PROTO = 13;</code>
+   */
+  PROTO(13),
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in decimal format.
+   * </pre>
+   *
+   * <code>ENUM = 14;</code>
+   */
+  ENUM(14),
   UNRECOGNIZED(-1),
   ;
 
@@ -331,6 +352,27 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    * <code>JSON = 11;</code>
    */
   public static final int JSON_VALUE = 11;
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as a base64-encoded `string`, as described in RFC 4648,
+   * section 4.
+   * </pre>
+   *
+   * <code>PROTO = 13;</code>
+   */
+  public static final int PROTO_VALUE = 13;
+  /**
+   *
+   *
+   * <pre>
+   * Encoded as `string`, in decimal format.
+   * </pre>
+   *
+   * <code>ENUM = 14;</code>
+   */
+  public static final int ENUM_VALUE = 14;
 
   public final int getNumber() {
     if (this == UNRECOGNIZED) {
@@ -380,6 +422,10 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
         return NUMERIC;
       case 11:
         return JSON;
+      case 13:
+        return PROTO;
+      case 14:
+        return ENUM;
       default:
         return null;
     }

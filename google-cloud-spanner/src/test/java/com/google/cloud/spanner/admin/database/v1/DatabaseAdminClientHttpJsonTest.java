@@ -702,7 +702,10 @@ public class DatabaseAdminClientHttpJsonTest {
   @Test
   public void getDatabaseDdlTest() throws Exception {
     GetDatabaseDdlResponse expectedResponse =
-        GetDatabaseDdlResponse.newBuilder().addAllStatements(new ArrayList<String>()).build();
+        GetDatabaseDdlResponse.newBuilder()
+            .addAllStatements(new ArrayList<String>())
+            .setProtoDescriptors(ByteString.EMPTY)
+            .build();
     mockService.addResponse(expectedResponse);
 
     DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
@@ -744,7 +747,10 @@ public class DatabaseAdminClientHttpJsonTest {
   @Test
   public void getDatabaseDdlTest2() throws Exception {
     GetDatabaseDdlResponse expectedResponse =
-        GetDatabaseDdlResponse.newBuilder().addAllStatements(new ArrayList<String>()).build();
+        GetDatabaseDdlResponse.newBuilder()
+            .addAllStatements(new ArrayList<String>())
+            .setProtoDescriptors(ByteString.EMPTY)
+            .build();
     mockService.addResponse(expectedResponse);
 
     String database = "projects/project-3102/instances/instance-3102/databases/database-3102";
