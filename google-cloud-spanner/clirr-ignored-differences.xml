@@ -334,6 +334,12 @@
   <difference>
     <differenceType>7005</differenceType>
     <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
+    <method>public com.google.api.gax.longrunning.OperationFuture updateDatabaseDdl(java.lang.String, java.lang.Iterable, java.lang.String)</method>
+    <to>com.google.api.gax.longrunning.OperationFuture updateDatabaseDdl(com.google.cloud.spanner.Database, java.lang.Iterable, java.lang.String)</to>
+  </difference>
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/GapicSpannerRpc</className>
     <method>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, com.google.cloud.spanner.spi.v1.SpannerRpc$ResultStreamConsumer, java.util.Map)</method>
     <to>com.google.cloud.spanner.spi.v1.SpannerRpc$StreamingCall executeQuery(com.google.spanner.v1.ExecuteSqlRequest, java.util.Map, boolean)</to>
   </difference>
@@ -384,7 +390,7 @@
   <difference>
     <differenceType>7005</differenceType>
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
-    <method>com.google.api.gax.longrunning.OperationFuture updateDatabaseDdl(java.lang.String, java.lang.Iterable, java.lang.String)</method>
+    <method>public com.google.api.gax.longrunning.OperationFuture updateDatabaseDdl(java.lang.String, java.lang.Iterable, java.lang.String)</method>
     <to>com.google.api.gax.longrunning.OperationFuture updateDatabaseDdl(com.google.cloud.spanner.Database, java.lang.Iterable, java.lang.String)</to>
   </difference>
   <difference>
