@@ -69,6 +69,8 @@ public class ITProtoColumnTest {
 
   @BeforeClass
   public static void setUpDatabase() throws Exception {
+    assumeFalse(
+        "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     RemoteSpannerHelper testHelper = env.getTestHelper();
     databaseID = DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId());
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
