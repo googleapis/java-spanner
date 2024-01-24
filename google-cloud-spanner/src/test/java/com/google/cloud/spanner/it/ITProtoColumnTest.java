@@ -129,6 +129,8 @@ public class ITProtoColumnTest {
 
   @AfterClass
   public static void afterClass() throws Exception {
+    assumeFalse(
+        "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     try {
       dbAdminClient.dropDatabase(
           databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
