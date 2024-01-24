@@ -440,7 +440,7 @@ public class SessionPoolOptions {
      * actual session leak is detected. The stack trace of the exception will in that case not
      * contain the call stack of when the session was checked out.
      */
-    private boolean trackStackTraceOfSessionCheckout = true;
+    private boolean trackStackTraceOfSessionCheckout = false;
 
     private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder().build();

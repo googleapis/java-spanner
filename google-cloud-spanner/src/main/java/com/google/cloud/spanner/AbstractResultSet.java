@@ -1090,7 +1090,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     private final RetrySettings streamingRetrySettings;
     private final Set<Code> retryableCodes;
     private static final Logger logger = Logger.getLogger(ResumableStreamIterator.class.getName());
-    private final BackOff backOff;
+    private BackOff backOff;
     private final LinkedList<PartialResultSet> buffer = new LinkedList<>();
     private final int maxBufferSize;
     private final Span span;
@@ -1115,7 +1115,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
       this.span = tracer.spanBuilderWithExplicitParent(streamName, parent).startSpan();
       this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
       this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
-      this.backOff = newBackOff();
     }
 
     private ExponentialBackOff newBackOff() {
@@ -1289,6 +1288,9 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               if (delay != -1) {
                 backoffSleep(context, delay);
               } else {
+                if (backOff == null) {
+                  backOff = newBackOff();
+                }
                 backoffSleep(context, backOff);
               }
             }

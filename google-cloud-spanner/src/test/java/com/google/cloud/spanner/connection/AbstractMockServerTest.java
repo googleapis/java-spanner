@@ -19,7 +19,6 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.RandomResultSetGenerator;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
@@ -121,7 +120,8 @@ public abstract class AbstractMockServerTest {
   public static final int RANDOM_RESULT_SET_ROW_COUNT = 100;
   public static final Statement SELECT_RANDOM_STATEMENT = Statement.of("SELECT * FROM RANDOM");
   public static final com.google.spanner.v1.ResultSet RANDOM_RESULT_SET =
-      new RandomResultSetGenerator(RANDOM_RESULT_SET_ROW_COUNT).generate();
+      SELECT_COUNT_RESULTSET_AFTER_INSERT;
+  //      new RandomResultSetGenerator(RANDOM_RESULT_SET_ROW_COUNT).generate();
 
   public static MockSpannerServiceImpl mockSpanner;
   public static MockInstanceAdminImpl mockInstanceAdmin;

@@ -580,19 +580,17 @@ abstract class AbstractReadContext
   @VisibleForTesting
   QueryOptions buildQueryOptions(QueryOptions requestOptions) {
     // Shortcut for the most common return value.
-    if (defaultQueryOptions.equals(QueryOptions.getDefaultInstance()) && requestOptions == null) {
-      return QueryOptions.getDefaultInstance();
+    if (requestOptions == null) {
+      return defaultQueryOptions;
     }
-    // Create a builder based on the default query options.
-    QueryOptions.Builder builder = defaultQueryOptions.toBuilder();
-    // Then overwrite with specific options for this query.
-    if (requestOptions != null) {
-      builder.mergeFrom(requestOptions);
-    }
-    return builder.build();
+    return defaultQueryOptions.toBuilder().mergeFrom(requestOptions).build();
   }
 
   RequestOptions buildRequestOptions(Options options) {
+    if (!(options.hasPriority() || options.hasTag() || getTransactionTag() != null)) {
+      return RequestOptions.getDefaultInstance();
+    }
+
     RequestOptions.Builder builder = RequestOptions.newBuilder();
     if (options.hasPriority()) {
       builder.setPriority(options.priority());
