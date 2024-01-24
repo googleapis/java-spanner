@@ -654,7 +654,10 @@ public class DatabaseAdminClientTest {
   @Test
   public void getDatabaseDdlTest() throws Exception {
     GetDatabaseDdlResponse expectedResponse =
-        GetDatabaseDdlResponse.newBuilder().addAllStatements(new ArrayList<String>()).build();
+        GetDatabaseDdlResponse.newBuilder()
+            .addAllStatements(new ArrayList<String>())
+            .setProtoDescriptors(ByteString.EMPTY)
+            .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
     DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
@@ -690,7 +693,10 @@ public class DatabaseAdminClientTest {
   @Test
   public void getDatabaseDdlTest2() throws Exception {
     GetDatabaseDdlResponse expectedResponse =
-        GetDatabaseDdlResponse.newBuilder().addAllStatements(new ArrayList<String>()).build();
+        GetDatabaseDdlResponse.newBuilder()
+            .addAllStatements(new ArrayList<String>())
+            .setProtoDescriptors(ByteString.EMPTY)
+            .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
     String database = "database1789464955";
