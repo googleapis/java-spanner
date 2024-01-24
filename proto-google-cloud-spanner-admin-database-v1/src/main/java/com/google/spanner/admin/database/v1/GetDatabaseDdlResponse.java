@@ -39,7 +39,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
 
   private GetDatabaseDdlResponse() {
     statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
-    protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
   }
 
   @java.lang.Override
@@ -131,28 +130,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
     return statements_.getByteString(index);
   }
 
-  public static final int PROTO_DESCRIPTORS_FIELD_NUMBER = 2;
-  private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
-  /**
-   *
-   *
-   * <pre>
-   * Proto descriptors stored in the database.
-   * Contains a protobuf-serialized
-   * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
-   * For more details, see protobuffer [self
-   * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-   * </pre>
-   *
-   * <code>bytes proto_descriptors = 2;</code>
-   *
-   * @return The protoDescriptors.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString getProtoDescriptors() {
-    return protoDescriptors_;
-  }
-
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -169,9 +146,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
     for (int i = 0; i < statements_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, statements_.getRaw(i));
-    }
-    if (!protoDescriptors_.isEmpty()) {
-      output.writeBytes(2, protoDescriptors_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -190,9 +164,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       size += dataSize;
       size += 1 * getStatementsList().size();
     }
-    if (!protoDescriptors_.isEmpty()) {
-      size += com.google.protobuf.CodedOutputStream.computeBytesSize(2, protoDescriptors_);
-    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -210,7 +181,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
         (com.google.spanner.admin.database.v1.GetDatabaseDdlResponse) obj;
 
     if (!getStatementsList().equals(other.getStatementsList())) return false;
-    if (!getProtoDescriptors().equals(other.getProtoDescriptors())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -226,8 +196,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       hash = (37 * hash) + STATEMENTS_FIELD_NUMBER;
       hash = (53 * hash) + getStatementsList().hashCode();
     }
-    hash = (37 * hash) + PROTO_DESCRIPTORS_FIELD_NUMBER;
-    hash = (53 * hash) + getProtoDescriptors().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -369,7 +337,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       super.clear();
       bitField0_ = 0;
       statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
       return this;
     }
 
@@ -409,9 +376,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       if (((from_bitField0_ & 0x00000001) != 0)) {
         statements_.makeImmutable();
         result.statements_ = statements_;
-      }
-      if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.protoDescriptors_ = protoDescriptors_;
       }
     }
 
@@ -471,9 +435,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
         }
         onChanged();
       }
-      if (other.getProtoDescriptors() != com.google.protobuf.ByteString.EMPTY) {
-        setProtoDescriptors(other.getProtoDescriptors());
-      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -507,12 +468,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
                 statements_.add(s);
                 break;
               } // case 10
-            case 18:
-              {
-                protoDescriptors_ = input.readBytes();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -711,73 +666,6 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
       ensureStatementsIsMutable();
       statements_.add(value);
       bitField0_ |= 0x00000001;
-      onChanged();
-      return this;
-    }
-
-    private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
-    /**
-     *
-     *
-     * <pre>
-     * Proto descriptors stored in the database.
-     * Contains a protobuf-serialized
-     * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
-     * For more details, see protobuffer [self
-     * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-     * </pre>
-     *
-     * <code>bytes proto_descriptors = 2;</code>
-     *
-     * @return The protoDescriptors.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString getProtoDescriptors() {
-      return protoDescriptors_;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Proto descriptors stored in the database.
-     * Contains a protobuf-serialized
-     * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
-     * For more details, see protobuffer [self
-     * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-     * </pre>
-     *
-     * <code>bytes proto_descriptors = 2;</code>
-     *
-     * @param value The protoDescriptors to set.
-     * @return This builder for chaining.
-     */
-    public Builder setProtoDescriptors(com.google.protobuf.ByteString value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-      protoDescriptors_ = value;
-      bitField0_ |= 0x00000002;
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * Proto descriptors stored in the database.
-     * Contains a protobuf-serialized
-     * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
-     * For more details, see protobuffer [self
-     * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-     * </pre>
-     *
-     * <code>bytes proto_descriptors = 2;</code>
-     *
-     * @return This builder for chaining.
-     */
-    public Builder clearProtoDescriptors() {
-      bitField0_ = (bitField0_ & ~0x00000002);
-      protoDescriptors_ = getDefaultInstance().getProtoDescriptors();
       onChanged();
       return this;
     }

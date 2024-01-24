@@ -41,7 +41,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
   private Type() {
     code_ = 0;
     typeAnnotation_ = 0;
-    protoTypeFqn_ = "";
   }
 
   @java.lang.Override
@@ -247,61 +246,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     return result == null ? com.google.spanner.v1.TypeAnnotationCode.UNRECOGNIZED : result;
   }
 
-  public static final int PROTO_TYPE_FQN_FIELD_NUMBER = 5;
-
-  @SuppressWarnings("serial")
-  private volatile java.lang.Object protoTypeFqn_ = "";
-  /**
-   *
-   *
-   * <pre>
-   * If [code][] == [PROTO][TypeCode.PROTO] or [code][] ==
-   * [ENUM][TypeCode.ENUM], then `proto_type_fqn` is the fully qualified name of
-   * the proto type representing the proto/enum definition.
-   * </pre>
-   *
-   * <code>string proto_type_fqn = 5;</code>
-   *
-   * @return The protoTypeFqn.
-   */
-  @java.lang.Override
-  public java.lang.String getProtoTypeFqn() {
-    java.lang.Object ref = protoTypeFqn_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      protoTypeFqn_ = s;
-      return s;
-    }
-  }
-  /**
-   *
-   *
-   * <pre>
-   * If [code][] == [PROTO][TypeCode.PROTO] or [code][] ==
-   * [ENUM][TypeCode.ENUM], then `proto_type_fqn` is the fully qualified name of
-   * the proto type representing the proto/enum definition.
-   * </pre>
-   *
-   * <code>string proto_type_fqn = 5;</code>
-   *
-   * @return The bytes for protoTypeFqn.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString getProtoTypeFqnBytes() {
-    java.lang.Object ref = protoTypeFqn_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b =
-          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
-      protoTypeFqn_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -329,9 +273,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         != com.google.spanner.v1.TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED.getNumber()) {
       output.writeEnum(4, typeAnnotation_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(protoTypeFqn_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, protoTypeFqn_);
-    }
     getUnknownFields().writeTo(output);
   }
 
@@ -353,9 +294,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     if (typeAnnotation_
         != com.google.spanner.v1.TypeAnnotationCode.TYPE_ANNOTATION_CODE_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(4, typeAnnotation_);
-    }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(protoTypeFqn_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, protoTypeFqn_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -382,7 +320,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       if (!getStructType().equals(other.getStructType())) return false;
     }
     if (typeAnnotation_ != other.typeAnnotation_) return false;
-    if (!getProtoTypeFqn().equals(other.getProtoTypeFqn())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -406,8 +343,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + TYPE_ANNOTATION_FIELD_NUMBER;
     hash = (53 * hash) + typeAnnotation_;
-    hash = (37 * hash) + PROTO_TYPE_FQN_FIELD_NUMBER;
-    hash = (53 * hash) + getProtoTypeFqn().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -557,7 +492,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
         structTypeBuilder_ = null;
       }
       typeAnnotation_ = 0;
-      protoTypeFqn_ = "";
       return this;
     }
 
@@ -605,9 +539,39 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.typeAnnotation_ = typeAnnotation_;
       }
-      if (((from_bitField0_ & 0x00000010) != 0)) {
-        result.protoTypeFqn_ = protoTypeFqn_;
-      }
+    }
+
+    @java.lang.Override
+    public Builder clone() {
+      return super.clone();
+    }
+
+    @java.lang.Override
+    public Builder setField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+      return super.setField(field, value);
+    }
+
+    @java.lang.Override
+    public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
+      return super.clearField(field);
+    }
+
+    @java.lang.Override
+    public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+      return super.clearOneof(oneof);
+    }
+
+    @java.lang.Override
+    public Builder setRepeatedField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, int index, java.lang.Object value) {
+      return super.setRepeatedField(field, index, value);
+    }
+
+    @java.lang.Override
+    public Builder addRepeatedField(
+        com.google.protobuf.Descriptors.FieldDescriptor field, java.lang.Object value) {
+      return super.addRepeatedField(field, value);
     }
 
     @java.lang.Override
@@ -633,11 +597,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.typeAnnotation_ != 0) {
         setTypeAnnotationValue(other.getTypeAnnotationValue());
-      }
-      if (!other.getProtoTypeFqn().isEmpty()) {
-        protoTypeFqn_ = other.protoTypeFqn_;
-        bitField0_ |= 0x00000010;
-        onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -690,12 +649,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00000008;
                 break;
               } // case 32
-            case 42:
-              {
-                protoTypeFqn_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000010;
-                break;
-              } // case 42
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1299,122 +1252,6 @@ public final class Type extends com.google.protobuf.GeneratedMessageV3
     public Builder clearTypeAnnotation() {
       bitField0_ = (bitField0_ & ~0x00000008);
       typeAnnotation_ = 0;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object protoTypeFqn_ = "";
-    /**
-     *
-     *
-     * <pre>
-     * If [code][] == [PROTO][TypeCode.PROTO] or [code][] ==
-     * [ENUM][TypeCode.ENUM], then `proto_type_fqn` is the fully qualified name of
-     * the proto type representing the proto/enum definition.
-     * </pre>
-     *
-     * <code>string proto_type_fqn = 5;</code>
-     *
-     * @return The protoTypeFqn.
-     */
-    public java.lang.String getProtoTypeFqn() {
-      java.lang.Object ref = protoTypeFqn_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        protoTypeFqn_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If [code][] == [PROTO][TypeCode.PROTO] or [code][] ==
-     * [ENUM][TypeCode.ENUM], then `proto_type_fqn` is the fully qualified name of
-     * the proto type representing the proto/enum definition.
-     * </pre>
-     *
-     * <code>string proto_type_fqn = 5;</code>
-     *
-     * @return The bytes for protoTypeFqn.
-     */
-    public com.google.protobuf.ByteString getProtoTypeFqnBytes() {
-      java.lang.Object ref = protoTypeFqn_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
-            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
-        protoTypeFqn_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If [code][] == [PROTO][TypeCode.PROTO] or [code][] ==
-     * [ENUM][TypeCode.ENUM], then `proto_type_fqn` is the fully qualified name of
-     * the proto type representing the proto/enum definition.
-     * </pre>
-     *
-     * <code>string proto_type_fqn = 5;</code>
-     *
-     * @param value The protoTypeFqn to set.
-     * @return This builder for chaining.
-     */
-    public Builder setProtoTypeFqn(java.lang.String value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-      protoTypeFqn_ = value;
-      bitField0_ |= 0x00000010;
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If [code][] == [PROTO][TypeCode.PROTO] or [code][] ==
-     * [ENUM][TypeCode.ENUM], then `proto_type_fqn` is the fully qualified name of
-     * the proto type representing the proto/enum definition.
-     * </pre>
-     *
-     * <code>string proto_type_fqn = 5;</code>
-     *
-     * @return This builder for chaining.
-     */
-    public Builder clearProtoTypeFqn() {
-      protoTypeFqn_ = getDefaultInstance().getProtoTypeFqn();
-      bitField0_ = (bitField0_ & ~0x00000010);
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * If [code][] == [PROTO][TypeCode.PROTO] or [code][] ==
-     * [ENUM][TypeCode.ENUM], then `proto_type_fqn` is the fully qualified name of
-     * the proto type representing the proto/enum definition.
-     * </pre>
-     *
-     * <code>string proto_type_fqn = 5;</code>
-     *
-     * @param value The bytes for protoTypeFqn to set.
-     * @return This builder for chaining.
-     */
-    public Builder setProtoTypeFqnBytes(com.google.protobuf.ByteString value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
-      checkByteStringIsUtf8(value);
-      protoTypeFqn_ = value;
-      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }

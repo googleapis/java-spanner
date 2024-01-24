@@ -225,31 +225,4 @@ public interface CreateDatabaseRequestOrBuilder
    * @return The databaseDialect.
    */
   com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect();
-
-  /**
-   *
-   *
-   * <pre>
-   * Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements in
-   * 'extra_statements' above.
-   * Contains a protobuf-serialized
-   * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
-   * To generate it, [install](https://grpc.io/docs/protoc-installation/) and
-   * run `protoc` with --include_imports and --descriptor_set_out. For example,
-   * to generate for moon/shot/app.proto, run
-   * """
-   * $protoc  --proto_path=/app_path --proto_path=/lib_path &#92;
-   *          --include_imports &#92;
-   *          --descriptor_set_out=descriptors.data &#92;
-   *          moon/shot/app.proto
-   * """
-   * For more details, see protobuffer [self
-   * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-   * </pre>
-   *
-   * <code>bytes proto_descriptors = 6 [(.google.api.field_behavior) = OPTIONAL];</code>
-   *
-   * @return The protoDescriptors.
-   */
-  com.google.protobuf.ByteString getProtoDescriptors();
 }

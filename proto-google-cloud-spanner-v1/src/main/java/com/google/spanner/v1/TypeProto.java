@@ -55,23 +55,22 @@ public final class TypeProto {
           + "pe\030\002 \001(\0132\027.google.spanner.v1.Type\0222\n\013str"
           + "uct_type\030\003 \001(\0132\035.google.spanner.v1.Struc"
           + "tType\022>\n\017type_annotation\030\004 \001(\0162%.google."
-          + "spanner.v1.TypeAnnotationCode\022\026\n\016proto_t"
-          + "ype_fqn\030\005 \001(\t\"\177\n\nStructType\0223\n\006fields\030\001 "
-          + "\003(\0132#.google.spanner.v1.StructType.Field"
-          + "\032<\n\005Field\022\014\n\004name\030\001 \001(\t\022%\n\004type\030\002 \001(\0132\027."
-          + "google.spanner.v1.Type*\272\001\n\010TypeCode\022\031\n\025T"
-          + "YPE_CODE_UNSPECIFIED\020\000\022\010\n\004BOOL\020\001\022\t\n\005INT6"
-          + "4\020\002\022\013\n\007FLOAT64\020\003\022\r\n\tTIMESTAMP\020\004\022\010\n\004DATE\020"
-          + "\005\022\n\n\006STRING\020\006\022\t\n\005BYTES\020\007\022\t\n\005ARRAY\020\010\022\n\n\006S"
-          + "TRUCT\020\t\022\013\n\007NUMERIC\020\n\022\010\n\004JSON\020\013\022\t\n\005PROTO\020"
-          + "\r\022\010\n\004ENUM\020\016*X\n\022TypeAnnotationCode\022$\n TYP"
-          + "E_ANNOTATION_CODE_UNSPECIFIED\020\000\022\016\n\nPG_NU"
-          + "MERIC\020\002\022\014\n\010PG_JSONB\020\003B\254\001\n\025com.google.spa"
-          + "nner.v1B\tTypeProtoP\001Z5cloud.google.com/g"
-          + "o/spanner/apiv1/spannerpb;spannerpb\252\002\027Go"
-          + "ogle.Cloud.Spanner.V1\312\002\027Google\\Cloud\\Spa"
-          + "nner\\V1\352\002\032Google::Cloud::Spanner::V1b\006pr"
-          + "oto3"
+          + "spanner.v1.TypeAnnotationCode\"\177\n\nStructT"
+          + "ype\0223\n\006fields\030\001 \003(\0132#.google.spanner.v1."
+          + "StructType.Field\032<\n\005Field\022\014\n\004name\030\001 \001(\t\022"
+          + "%\n\004type\030\002 \001(\0132\027.google.spanner.v1.Type*\245"
+          + "\001\n\010TypeCode\022\031\n\025TYPE_CODE_UNSPECIFIED\020\000\022\010"
+          + "\n\004BOOL\020\001\022\t\n\005INT64\020\002\022\013\n\007FLOAT64\020\003\022\r\n\tTIME"
+          + "STAMP\020\004\022\010\n\004DATE\020\005\022\n\n\006STRING\020\006\022\t\n\005BYTES\020\007"
+          + "\022\t\n\005ARRAY\020\010\022\n\n\006STRUCT\020\t\022\013\n\007NUMERIC\020\n\022\010\n\004"
+          + "JSON\020\013*d\n\022TypeAnnotationCode\022$\n TYPE_ANN"
+          + "OTATION_CODE_UNSPECIFIED\020\000\022\016\n\nPG_NUMERIC"
+          + "\020\002\022\014\n\010PG_JSONB\020\003\022\n\n\006PG_OID\020\004B\254\001\n\025com.goo"
+          + "gle.spanner.v1B\tTypeProtoP\001Z5cloud.googl"
+          + "e.com/go/spanner/apiv1/spannerpb;spanner"
+          + "pb\252\002\027Google.Cloud.Spanner.V1\312\002\027Google\\Cl"
+          + "oud\\Spanner\\V1\352\002\032Google::Cloud::Spanner:"
+          + ":V1b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -84,7 +83,7 @@ public final class TypeProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_v1_Type_descriptor,
             new java.lang.String[] {
-              "Code", "ArrayElementType", "StructType", "TypeAnnotation", "ProtoTypeFqn",
+              "Code", "ArrayElementType", "StructType", "TypeAnnotation",
             });
     internal_static_google_spanner_v1_StructType_descriptor =
         getDescriptor().getMessageTypes().get(1);
