@@ -453,7 +453,8 @@ public interface DatabaseAdminClient {
 
   /**
    * Updates a database in a Cloud Spanner instance. Any proto descriptors that have been set for
-   * the {@link com.google.cloud.spanner.Database} instance will be included in the {@link UpdateDatabaseDdlRequest}.
+   * the {@link com.google.cloud.spanner.Database} instance will be included in the {@link
+   * UpdateDatabaseDdlRequest}.
    *
    * <p>If an operation already exists with the given operation id, the operation will be resumed
    * and the returned future will complete when the original operation finishes. See more
