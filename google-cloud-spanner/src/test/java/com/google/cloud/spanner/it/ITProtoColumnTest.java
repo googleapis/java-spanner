@@ -153,8 +153,8 @@ public class ITProtoColumnTest {
 
   /**
    * Test to check data update and read queries on Proto Messages, Proto Enums and their arrays.
-   * Test also checks for compatability between following types: 1. Proto Messages and Bytes 2. Proto
-   * Enums and Int64
+   * Test also checks for compatability between following types: 1. Proto Messages and Bytes 2.
+   * Proto Enums and Int64
    */
   @Test
   public void testProtoColumnsUpdateAndRead() {
