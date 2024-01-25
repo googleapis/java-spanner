@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
@@ -129,11 +130,11 @@ public class ITProtoColumnTest {
 
   @AfterClass
   public static void afterClass() throws Exception {
-    assumeFalse(
-        "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     try {
-      dbAdminClient.dropDatabase(
-          databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
+      if (!isUsingEmulator()) {
+        dbAdminClient.dropDatabase(
+            databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
+      }
     } catch (Exception e) {
       System.err.println(
           "Failed to drop database "
