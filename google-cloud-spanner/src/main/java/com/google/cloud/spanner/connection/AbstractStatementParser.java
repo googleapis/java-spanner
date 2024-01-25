@@ -393,10 +393,10 @@ public abstract class AbstractStatementParser {
   private final Set<ClientSideStatementImpl> statements;
 
   /** The default maximum size of the statement cache in Mb. */
-  public static final int DEFAULT_MAX_STATEMENT_CACHE_SIZE_MB = 20;
+  public static final int DEFAULT_MAX_STATEMENT_CACHE_SIZE_MB = 5;
 
   private static int getMaxStatementCacheSize() {
-    String stringValue = System.getProperty("spanner.statement_cache_size");
+    String stringValue = System.getProperty("spanner.statement_cache_size_mb");
     if (stringValue == null) {
       return DEFAULT_MAX_STATEMENT_CACHE_SIZE_MB;
     }
@@ -415,7 +415,7 @@ public abstract class AbstractStatementParser {
 
   /**
    * Cache for parsed statements. This prevents statements that are executed multiple times by the
-   * application to be parsed over and over again. The default maximum size is 20Mb.
+   * application to be parsed over and over again. The default maximum size is 5Mb.
    */
   private final Cache<String, ParsedStatement> statementCache;
 
@@ -425,7 +425,7 @@ public abstract class AbstractStatementParser {
     if (maxCacheSize > 0) {
       CacheBuilder<String, ParsedStatement> cacheBuilder =
           CacheBuilder.newBuilder()
-              // Set the max size to (approx) 20MB (by default).
+              // Set the max size to (approx) 5MB (by default).
               .maximumWeight(getMaxStatementCacheSize() * 1024L * 1024L)
               // We do length*2 because Java uses 2 bytes for each char.
               .weigher(
