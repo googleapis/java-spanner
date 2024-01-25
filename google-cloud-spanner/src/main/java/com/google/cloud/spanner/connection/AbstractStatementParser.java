@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.apple.laf.AquaTreeUI.MacPropertyChangeHandler;
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -426,7 +427,7 @@ public abstract class AbstractStatementParser {
       CacheBuilder<String, ParsedStatement> cacheBuilder =
           CacheBuilder.newBuilder()
               // Set the max size to (approx) 5MB (by default).
-              .maximumWeight(getMaxStatementCacheSize() * 1024L * 1024L)
+              .maximumWeight(maxCacheSize * 1024L * 1024L)
               // We do length*2 because Java uses 2 bytes for each char.
               .weigher(
                   (Weigher<String, ParsedStatement>)
