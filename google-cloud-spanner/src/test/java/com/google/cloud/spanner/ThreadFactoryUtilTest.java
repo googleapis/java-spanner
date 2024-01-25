@@ -15,7 +15,7 @@
  */
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.ThreadFactoryUtil.createVirtualOrDaemonThreadFactory;
+import static com.google.cloud.spanner.ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory;
 import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadFactory;
 import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadPerTaskExecutor;
 import static org.junit.Assert.assertEquals;
@@ -35,7 +35,7 @@ public class ThreadFactoryUtilTest {
 
   @Test
   public void testCreateThreadFactory() throws Exception {
-    ThreadFactory threadFactory = createVirtualOrDaemonThreadFactory("test-thread", true);
+    ThreadFactory threadFactory = createVirtualOrPlatformDaemonThreadFactory("test-thread", true);
     assertNotNull(threadFactory);
     SettableFuture<Boolean> future = SettableFuture.create();
     Thread thread = threadFactory.newThread(() -> future.set(true));

@@ -36,11 +36,11 @@ public class ThreadFactoryUtil {
    * @param baseNameFormat the base name format for the threads, '-%d' will be appended to the
    *     actual thread name format
    * @param tryVirtualThreads whether to try to use virtual threads if available or not
-   * @return a {@link ThreadFactory} that produces virtual threads (Java 21 or higher) or daemon
-   *     threads
+   * @return a {@link ThreadFactory} that produces virtual threads (Java 21 or higher) or platform
+   *     daemon threads
    */
   @InternalApi
-  public static ThreadFactory createVirtualOrDaemonThreadFactory(
+  public static ThreadFactory createVirtualOrPlatformDaemonThreadFactory(
       String baseNameFormat, boolean tryVirtualThreads) {
     ThreadFactory virtualThreadFactory =
         tryVirtualThreads ? tryCreateVirtualThreadFactory(baseNameFormat) : null;

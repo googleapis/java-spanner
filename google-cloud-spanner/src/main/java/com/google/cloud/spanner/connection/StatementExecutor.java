@@ -136,13 +136,13 @@ class StatementExecutor {
    * name on the threads.
    */
   private static final ThreadFactory DEFAULT_VIRTUAL_THREAD_FACTORY =
-      ThreadFactoryUtil.createVirtualOrDaemonThreadFactory("connection-executor", true);
+      ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory("connection-executor", true);
   /**
    * Use a {@link ThreadFactory} that produces daemon threads and sets a recognizable name on the
    * threads.
    */
   private static final ThreadFactory DEFAULT_DAEMON_THREAD_FACTORY =
-      ThreadFactoryUtil.createVirtualOrDaemonThreadFactory("connection-executor", false);
+      ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory("connection-executor", false);
 
   /** Creates an {@link ExecutorService} for a {@link StatementExecutor}. */
   private static ListeningExecutorService createExecutorService(boolean useVirtualThreads) {
