@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.apple.laf.AquaTreeUI.MacPropertyChangeHandler;
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
