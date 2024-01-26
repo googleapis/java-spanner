@@ -553,6 +553,19 @@ public class StatementParserTest {
     assertTrue(parser.parse(Statement.of("\t ANALYZE\n ")).isDdl());
     assertTrue(parser.parse(Statement.of("/* This is a comment */ ANALYZE ")).isDdl());
     assertTrue(parser.parse(Statement.of("-- comment\n ANALYZE ")).isDdl());
+    assertTrue(parser.parse(Statement.of("RENAME TABLE foo TO foo2")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ RENAME TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ rename TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("RENAME INDEX idx_foo TO idx_students_last_name")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ Rename TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser
+            .parse(Statement.of("   \t\nRENAME\n  INDEX idx_foo TO idx_students_last_name"))
+            .isDdl());
   }
 
   @Test
