@@ -40,6 +40,8 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -53,6 +55,7 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.ResultSetStats;
 import io.grpc.Metadata;
@@ -508,13 +511,25 @@ public class ReadWriteTransactionTest {
         "[{\"color\":\"red\",\"value\":\"#f00\"},{\"color\":\"green\",\"value\":\"#0f0\"},{\"color\":\"blue\",\"value\":\"#00f\"},{\"color\":\"cyan\",\"value\":\"#0ff\"},{\"color\":\"magenta\",\"value\":\"#f0f\"},{\"color\":\"yellow\",\"value\":\"#ff0\"},{\"color\":\"black\",\"value\":\"#000\"}]";
     String emptyArrayJson = "[]";
     String simpleJson = "{\"color\":\"red\",\"value\":\"#f00\"}";
+    SingerInfo protoMessageVal =
+        SingerInfo.newBuilder()
+            .setSingerId(111)
+            .setNationality("COUNTRY1")
+            .setGenre(Genre.FOLK)
+            .build();
+    ProtocolMessageEnum protoEnumVal = Genre.ROCK;
     ResultSet delegate1 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
                 StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json())),
+                StructField.of("JSON", Type.json()),
+                StructField.of(
+                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                StructField.of(
+                    "PROTOENUM",
+                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -525,6 +540,10 @@ public class ReadWriteTransactionTest {
                     .to(BigDecimal.valueOf(550, 2))
                     .set("JSON")
                     .to(Value.json(simpleJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(protoEnumVal)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -535,6 +554,10 @@ public class ReadWriteTransactionTest {
                     .to(BigDecimal.valueOf(750, 2))
                     .set("JSON")
                     .to(Value.json(arrayJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(Genre.JAZZ)
                     .build()));
     ChecksumResultSet rs1 =
         transaction.createChecksumResultSet(delegate1, parsedStatement, AnalyzeMode.NONE);
@@ -544,7 +567,12 @@ public class ReadWriteTransactionTest {
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
                 StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json())),
+                StructField.of("JSON", Type.json()),
+                StructField.of(
+                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                StructField.of(
+                    "PROTOENUM",
+                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -555,6 +583,10 @@ public class ReadWriteTransactionTest {
                     .to(new BigDecimal("5.50"))
                     .set("JSON")
                     .to(Value.json(simpleJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(protoEnumVal)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -565,6 +597,10 @@ public class ReadWriteTransactionTest {
                     .to(new BigDecimal("7.50"))
                     .set("JSON")
                     .to(Value.json(arrayJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(Genre.JAZZ)
                     .build()));
     ChecksumResultSet rs2 =
         transaction.createChecksumResultSet(delegate2, parsedStatement, AnalyzeMode.NONE);
@@ -575,7 +611,12 @@ public class ReadWriteTransactionTest {
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
                 StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json())),
+                StructField.of("JSON", Type.json()),
+                StructField.of(
+                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                StructField.of(
+                    "PROTOENUM",
+                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -586,6 +627,10 @@ public class ReadWriteTransactionTest {
                     .to(new BigDecimal("7.50"))
                     .set("JSON")
                     .to(Value.json(arrayJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(Genre.JAZZ)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -596,6 +641,10 @@ public class ReadWriteTransactionTest {
                     .to(new BigDecimal("5.50"))
                     .set("JSON")
                     .to(Value.json(simpleJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(protoEnumVal)
                     .build()));
     ChecksumResultSet rs3 =
         transaction.createChecksumResultSet(delegate3, parsedStatement, AnalyzeMode.NONE);
@@ -607,7 +656,12 @@ public class ReadWriteTransactionTest {
                 StructField.of("ID", Type.int64()),
                 StructField.of("NAME", Type.string()),
                 StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json())),
+                StructField.of("JSON", Type.json()),
+                StructField.of(
+                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                StructField.of(
+                    "PROTOENUM",
+                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
             Arrays.asList(
                 Struct.newBuilder()
                     .set("ID")
@@ -618,6 +672,10 @@ public class ReadWriteTransactionTest {
                     .to(new BigDecimal("5.50"))
                     .set("JSON")
                     .to(Value.json(simpleJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(protoEnumVal)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -628,6 +686,10 @@ public class ReadWriteTransactionTest {
                     .to(new BigDecimal("7.50"))
                     .set("JSON")
                     .to(Value.json(arrayJson))
+                    .set("PROTO")
+                    .to(protoMessageVal)
+                    .set("PROTOENUM")
+                    .to(Genre.JAZZ)
                     .build(),
                 Struct.newBuilder()
                     .set("ID")
@@ -638,6 +700,10 @@ public class ReadWriteTransactionTest {
                     .to(new BigDecimal("9.99"))
                     .set("JSON")
                     .to(Value.json(emptyArrayJson))
+                    .set("PROTO")
+                    .to(null, SingerInfo.getDescriptor())
+                    .set("PROTOENUM")
+                    .to(Genre.POP)
                     .build()));
     ChecksumResultSet rs4 =
         transaction.createChecksumResultSet(delegate4, parsedStatement, AnalyzeMode.NONE);
