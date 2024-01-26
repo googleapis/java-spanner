@@ -114,7 +114,6 @@ public class RandomResultSetGenerator {
                     .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
                     .build()));
 
-    // TODO(harsha): add test corresponding to this in testGetAllTypesAsString()
     // appendProtoTypes(types, dialect);
     Type[] typeArray = new Type[types.size()];
     typeArray = types.toArray(typeArray);
