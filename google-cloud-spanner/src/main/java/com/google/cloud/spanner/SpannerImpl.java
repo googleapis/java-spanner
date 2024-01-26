@@ -250,13 +250,13 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     synchronized (this) {
       checkClosed();
       closedException = new ClosedException();
+    }
+    try {
       closureFutures = new ArrayList<>();
       for (DatabaseClientImpl dbClient : dbClients.values()) {
         closureFutures.add(dbClient.closeAsync(closedException));
       }
       dbClients.clear();
-    }
-    try {
       Futures.successfulAsList(closureFutures).get(timeout, unit);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw SpannerExceptionFactory.newSpannerException(e);
