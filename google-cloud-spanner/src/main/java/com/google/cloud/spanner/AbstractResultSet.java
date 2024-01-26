@@ -39,10 +39,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharSource;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.ProtocolMessageEnum;
@@ -61,6 +61,7 @@ import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -726,10 +727,15 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         return (T)
             message
                 .toBuilder()
-                .mergeFrom(((LazyByteArray) rowData.get(columnIndex)).getByteArray().toByteArray())
+                .mergeFrom(
+                    Base64.getDecoder()
+                        .wrap(
+                            CharSource.wrap(((LazyByteArray) rowData.get(columnIndex)).base64String)
+                                .asByteSource(StandardCharsets.UTF_8)
+                                .openStream()))
                 .build();
-      } catch (InvalidProtocolBufferException e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.asSpannerException(ioException);
       }
     }
 
@@ -963,13 +969,18 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 (T)
                     message
                         .toBuilder()
-                        .mergeFrom(protoMessageBytes.getByteArray().toByteArray())
+                        .mergeFrom(
+                            Base64.getDecoder()
+                                .wrap(
+                                    CharSource.wrap(protoMessageBytes.base64String)
+                                        .asByteSource(StandardCharsets.UTF_8)
+                                        .openStream()))
                         .build());
           }
         }
         return protoMessagesList;
-      } catch (InvalidProtocolBufferException e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.asSpannerException(ioException);
       }
     }
 

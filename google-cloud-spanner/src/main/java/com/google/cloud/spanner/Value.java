@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharSource;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
@@ -37,8 +38,10 @@ import com.google.protobuf.Value.KindCase;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -1684,9 +1687,17 @@ public abstract class Value implements Serializable {
           "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
       checkNotNull();
       try {
-        return (T) m.toBuilder().mergeFrom(value.getByteArray().toByteArray()).build();
-      } catch (InvalidProtocolBufferException e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
+        return (T)
+            m.toBuilder()
+                .mergeFrom(
+                    Base64.getDecoder()
+                        .wrap(
+                            CharSource.wrap(value.getBase64String())
+                                .asByteSource(StandardCharsets.UTF_8)
+                                .openStream()))
+                .build();
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.asSpannerException(ioException);
       }
     }
 
@@ -2291,13 +2302,18 @@ public abstract class Value implements Serializable {
             protoMessagesList.add(
                 (T)
                     m.toBuilder()
-                        .mergeFrom(protoMessageBytes.getByteArray().toByteArray())
+                        .mergeFrom(
+                            Base64.getDecoder()
+                                .wrap(
+                                    CharSource.wrap(protoMessageBytes.getBase64String())
+                                        .asByteSource(StandardCharsets.UTF_8)
+                                        .openStream()))
                         .build());
           }
         }
         return protoMessagesList;
-      } catch (InvalidProtocolBufferException e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
 

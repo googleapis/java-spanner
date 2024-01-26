@@ -130,7 +130,7 @@ public final class Type implements Serializable {
   /**
    * To get the descriptor for the {@code PROTO} type.
    *
-   * @param protoTypeFqn Proto full name
+   * @param protoTypeFqn Proto fully qualified name (ex: "spanner.examples.music.SingerInfo").
    */
   public static Type proto(String protoTypeFqn) {
     return new Type(Code.PROTO, protoTypeFqn);
@@ -139,7 +139,7 @@ public final class Type implements Serializable {
   /**
    * To get the descriptor for the {@code ENUM} type.
    *
-   * @param protoTypeFqn Proto ENUM full name
+   * @param protoTypeFqn Proto ENUM fully qualified name (ex: "spanner.examples.music.Genre")
    */
   public static Type protoEnum(String protoTypeFqn) {
     return new Type(Code.ENUM, protoTypeFqn);
