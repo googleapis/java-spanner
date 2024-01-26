@@ -18,6 +18,7 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
@@ -43,6 +44,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException.InvalidWireTypeException;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,7 +60,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 // Integration Tests to test DDL, DML and DQL for Proto Columns and Enums
-// TODO(harsha): Check session leak warning
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITProtoColumnTest {
@@ -120,11 +121,10 @@ public class ITProtoColumnTest {
 
     assertEquals(databaseID.getDatabase(), createdDatabase.getId().getDatabase());
 
-    // TODO(harsha): Check with backend team as this is not working for generated columns yet.
-    // GetDatabaseDdlResponse response =
-    // dbAdminClient.getDatabaseDdlResponse(databaseID.getInstanceId().getInstance(),
-    // databaseID.getDatabase());
-    // assertNotNull(response.getProtoDescriptors());
+    GetDatabaseDdlResponse response =
+        dbAdminClient.getDatabaseDdlResponse(
+            databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
+    assertNotNull(response.getProtoDescriptors());
     in.close();
   }
 
