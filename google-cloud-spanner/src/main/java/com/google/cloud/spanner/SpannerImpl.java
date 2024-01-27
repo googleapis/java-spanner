@@ -143,6 +143,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     return getOptions().getPrefetchChunks();
   }
 
+  DecodeMode getDefaultDecodeMode() {
+    return getOptions().getDecodeMode();
+  }
+
   /** Returns the default query options that should be used for the specified database. */
   QueryOptions getDefaultQueryOptions(DatabaseId databaseId) {
     return getOptions().getDefaultQueryOptions(databaseId);

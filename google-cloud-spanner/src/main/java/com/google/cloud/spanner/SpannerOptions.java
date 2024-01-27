@@ -107,6 +107,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final GrpcInterceptorProvider interceptorProvider;
   private final SessionPoolOptions sessionPoolOptions;
   private final int prefetchChunks;
+  private final DecodeMode decodeMode;
   private final int numChannels;
   private final String transportChannelExecutorThreadNameFormat;
   private final String databaseRole;
@@ -598,6 +599,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             ? builder.sessionPoolOptions
             : SessionPoolOptions.newBuilder().build();
     prefetchChunks = builder.prefetchChunks;
+    decodeMode = builder.decodeMode;
     databaseRole = builder.databaseRole;
     sessionLabels = builder.sessionLabels;
     try {
@@ -684,6 +686,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
+    // TODO: Set the default to DecodeMode.DIRECT before merging to keep the current default.
+    //       It is currently set to LAZY_PER_COL so it is used in all tests.
+    static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.LAZY_PER_COL;
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofSeconds(5L))
@@ -710,6 +715,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
+    private DecodeMode decodeMode = DEFAULT_DECODE_MODE;
     private SessionPoolOptions sessionPoolOptions;
     private String databaseRole;
     private ImmutableMap<String, String> sessionLabels;
@@ -775,6 +781,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
+      this.decodeMode = options.decodeMode;
       this.databaseRole = options.databaseRole;
       this.sessionLabels = options.sessionLabels;
       this.spannerStubSettingsBuilder = options.spannerStubSettings.toBuilder();
@@ -1201,6 +1208,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Specifies how values that are returned from a query should be decoded and converted from
+     * protobuf values into plain Java objects.
+     */
+    public Builder setDecodeMode(DecodeMode decodeMode) {
+      this.decodeMode = decodeMode;
+      return this;
+    }
+
     @Override
     public Builder setHost(String host) {
       super.setHost(host);
@@ -1431,6 +1447,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public int getPrefetchChunks() {
     return prefetchChunks;
+  }
+
+  public DecodeMode getDecodeMode() {
+    return decodeMode;
   }
 
   public static GrpcTransportOptions getDefaultGrpcTransportOptions() {

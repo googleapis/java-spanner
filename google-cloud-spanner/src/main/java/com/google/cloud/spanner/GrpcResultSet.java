@@ -32,6 +32,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> {
 
   private final GrpcValueIterator iterator;
   private final Listener listener;
+  private final DecodeMode decodeMode;
   private ResultSetMetadata metadata;
   private GrpcStruct currRow;
   private SpannerException error;
@@ -39,8 +40,14 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> {
   private boolean closed;
 
   GrpcResultSet(CloseableIterator<PartialResultSet> iterator, Listener listener) {
+    this(iterator, listener, DecodeMode.DIRECT);
+  }
+
+  GrpcResultSet(
+      CloseableIterator<PartialResultSet> iterator, Listener listener, DecodeMode decodeMode) {
     this.iterator = new GrpcValueIterator(iterator);
     this.listener = listener;
+    this.decodeMode = decodeMode;
   }
 
   @Override
@@ -66,7 +73,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
         }
-        currRow = new GrpcStruct(iterator.type(), new ArrayList<>());
+        currRow = new GrpcStruct(iterator.type(), new ArrayList<>(), decodeMode);
       }
       boolean hasNext = currRow.consumeRow(iterator);
       if (!hasNext) {

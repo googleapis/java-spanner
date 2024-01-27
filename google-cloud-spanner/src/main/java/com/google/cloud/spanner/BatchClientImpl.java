@@ -61,6 +61,7 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
             .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
             .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks())
+            .setDefaultDecodeMode(sessionClient.getSpanner().getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions()),
         checkNotNull(bound));
@@ -80,6 +81,7 @@ public class BatchClientImpl implements BatchClient {
                 sessionClient.getSpanner().getDefaultQueryOptions(sessionClient.getDatabaseId()))
             .setExecutorProvider(sessionClient.getSpanner().getAsyncExecutorProvider())
             .setDefaultPrefetchChunks(sessionClient.getSpanner().getDefaultPrefetchChunks())
+            .setDefaultDecodeMode(sessionClient.getSpanner().getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(
                 sessionClient.getSpanner().getOptions().getDirectedReadOptions()),
         batchTransactionId);
