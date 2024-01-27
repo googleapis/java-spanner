@@ -16,9 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import com.google.cloud.ByteArray;
-import com.google.cloud.Date;
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -26,24 +23,21 @@ import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.Code;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ReadWriteTransaction.RetriableStatement;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.hash.Funnel;
 import com.google.common.hash.HashCode;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
-import com.google.common.hash.PrimitiveSink;
 import com.google.protobuf.Value;
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
 /**
@@ -76,9 +70,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   private final ParsedStatement statement;
   private final AnalyzeMode analyzeMode;
   private final QueryOption[] options;
-  // private final ChecksumResultSet.ChecksumCalculator checksumCalculator = new
-  // ChecksumCalculator();
-  private final JdkChecksumCalculator checksumCalculator = new JdkChecksumCalculator();
+  private final ChecksumCalculator checksumCalculator = new ChecksumCalculator();
 
   ChecksumResultSet(
       ReadWriteTransaction transaction,
@@ -143,7 +135,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   @Override
   public void retry(AbortedException aborted) throws AbortedException {
     // Execute the same query and consume the result set to the same point as the original.
-    JdkChecksumCalculator newChecksumCalculator = new JdkChecksumCalculator();
+    ChecksumCalculator newChecksumCalculator = new ChecksumCalculator();
     ProtobufResultSet resultSet = null;
     long counter = 0L;
     try {
@@ -195,13 +187,30 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
     }
   }
 
-  private static final class JdkChecksumCalculator {
+  /**
+   * Calculates a running checksum for all the data that has been seen sofar in this result set. The
+   * calculation is performed on the protobuf values that were returned by Cloud Spanner, which
+   * means that no decoding of the results is needed (or allowed!) before calculating the checksum.
+   * This is more efficient, both in terms of CPU usage and memory consumption, especially if the
+   * consumer of the result set does not read all values, or is only reading the underlying protobuf
+   * values.
+   */
+  private static final class ChecksumCalculator {
+    // Use a buffer of max 32kb to hash string data.
+    private static final int MAX_BUFFER_SIZE = 1 << 15;
+
+    private boolean firstRow = true;
     private final MessageDigest digest;
+    private ByteBuffer buffer;
     private ByteBuffer float64Buffer;
 
-    JdkChecksumCalculator() {
+    ChecksumCalculator() {
       try {
-        digest = MessageDigest.getInstance("SHA-256");
+        // This is safe, as all Java implementations are required to have MD5 implemented.
+        // See https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html
+        // MD5 requires less CPU power than SHA-256, and still offers a low enough collision
+        // probability for the use case at hand here.
+        digest = MessageDigest.getInstance("MD5");
       } catch (Throwable t) {
         throw SpannerExceptionFactory.asSpannerException(t);
       }
@@ -217,11 +226,17 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
     }
 
     private void calculateNextChecksum(ProtobufResultSet resultSet) {
+      if (firstRow) {
+        for (StructField field : resultSet.getType().getStructFields()) {
+          digest.update(field.getType().toString().getBytes(StandardCharsets.UTF_8));
+        }
+      }
       for (int col = 0; col < resultSet.getColumnCount(); col++) {
+        Type type = resultSet.getColumnType(col);
         if (resultSet.canGetProtobufValue(col)) {
           Value value = resultSet.getProtobufValue(col);
           digest.update((byte) value.getKindCase().getNumber());
-          pushValue(value);
+          pushValue(type, value);
         } else {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION,
@@ -231,9 +246,13 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
                   + "Executing queries with DecodeMode#DIRECT is not supported in read/write transactions.");
         }
       }
+      firstRow = false;
     }
 
-    private void pushValue(Value value) {
+    private void pushValue(Type type, Value value) {
+      // Protobuf Value has a very limited set of possible types of values. All Cloud Spanner types
+      // are mapped to one of the protobuf values listed here, meaning that no changes are needed to
+      // this calculation when a new type is added to Cloud Spanner.
       switch (value.getKindCase()) {
         case NULL_VALUE:
           // nothing needed, writing the KindCase is enough.
@@ -242,28 +261,47 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           digest.update(value.getBoolValue() ? (byte) 1 : 0);
           break;
         case STRING_VALUE:
-          pushString(value.getStringValue());
+          putString(value.getStringValue());
           break;
         case NUMBER_VALUE:
           if (float64Buffer == null) {
-            float64Buffer = ByteBuffer.allocate(8);
+            // Create an 8-byte buffer that can be re-used for all float64 values in this result
+            // set.
+            float64Buffer = ByteBuffer.allocate(Double.BYTES);
+          } else {
+            float64Buffer.clear();
           }
-          float64Buffer.rewind();
           float64Buffer.putDouble(value.getNumberValue());
-          float64Buffer.rewind();
+          float64Buffer.flip();
           digest.update(float64Buffer);
           break;
         case LIST_VALUE:
-          for (Value item : value.getListValue().getValuesList()) {
-            digest.update((byte) item.getKindCase().getNumber());
-            pushValue(item);
+          if (type.getCode() == Code.ARRAY) {
+            for (Value item : value.getListValue().getValuesList()) {
+              digest.update((byte) item.getKindCase().getNumber());
+              pushValue(type.getArrayElementType(), item);
+            }
+          } else {
+            // This should not be possible.
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "List values that are not an ARRAY are not supported");
           }
           break;
         case STRUCT_VALUE:
-          for (Entry<String, Value> entry : value.getStructValue().getFieldsMap().entrySet()) {
-            pushString(entry.getKey());
-            digest.update((byte) entry.getValue().getKindCase().getNumber());
-            pushValue(entry.getValue());
+          if (type.getCode() == Code.STRUCT) {
+            for (int col = 0; col < type.getStructFields().size(); col++) {
+              String name = type.getStructFields().get(col).getName();
+              putString(name);
+              Value item = value.getStructValue().getFieldsMap().get(name);
+              digest.update((byte) item.getKindCase().getNumber());
+              pushValue(type.getStructFields().get(col).getType(), item);
+            }
+          } else {
+            // This should not be possible.
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.FAILED_PRECONDITION,
+                "Struct values without a struct type are not supported");
           }
           break;
         default:
@@ -272,231 +310,34 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
       }
     }
 
-    private void pushString(String stringValue) {
-      for (int n = 0; n < stringValue.length(); n++) {
-        char c = stringValue.charAt(n);
-        digest.update((byte) ((c >> 8) & 0xFF)); // first 8 bits
-        digest.update((byte) (c & 0xFF)); // last 8 bits
-      }
-    }
-  }
-
-  /** Calculates and keeps the current checksum of a {@link ChecksumResultSet} */
-  private static final class ChecksumCalculator {
-    private static final HashFunction SHA256_FUNCTION = Hashing.sha256();
-    private HashCode currentChecksum;
-
-    private void calculateNextChecksum(Struct row) {
-      Hasher hasher = SHA256_FUNCTION.newHasher();
-      if (currentChecksum != null) {
-        hasher.putBytes(currentChecksum.asBytes());
-      }
-      hasher.putObject(row, StructFunnel.INSTANCE);
-      currentChecksum = hasher.hash();
-    }
-
-    private HashCode getChecksum() {
-      return currentChecksum;
-    }
-  }
-
-  /**
-   * A {@link Funnel} implementation for calculating a {@link HashCode} for each row in a {@link
-   * ResultSet}.
-   */
-  private enum StructFunnel implements Funnel<Struct> {
-    INSTANCE;
-    private static final String NULL = "null";
-
-    @Override
-    public void funnel(Struct row, PrimitiveSink into) {
-      for (int i = 0; i < row.getColumnCount(); i++) {
-        if (row.isNull(i)) {
-          funnelValue(Code.STRING, null, into);
-        } else {
-          Code type = row.getColumnType(i).getCode();
-          switch (type) {
-            case ARRAY:
-              funnelArray(row.getColumnType(i).getArrayElementType().getCode(), row, i, into);
-              break;
-            case BOOL:
-              funnelValue(type, row.getBoolean(i), into);
-              break;
-            case BYTES:
-            case PROTO:
-              funnelValue(type, row.getBytes(i), into);
-              break;
-            case DATE:
-              funnelValue(type, row.getDate(i), into);
-              break;
-            case FLOAT64:
-              funnelValue(type, row.getDouble(i), into);
-              break;
-            case NUMERIC:
-              funnelValue(type, row.getBigDecimal(i), into);
-              break;
-            case PG_NUMERIC:
-              funnelValue(type, row.getString(i), into);
-              break;
-            case INT64:
-            case ENUM:
-              funnelValue(type, row.getLong(i), into);
-              break;
-            case STRING:
-              funnelValue(type, row.getString(i), into);
-              break;
-            case JSON:
-              funnelValue(type, row.getJson(i), into);
-              break;
-            case PG_JSONB:
-              funnelValue(type, row.getPgJsonb(i), into);
-              break;
-            case TIMESTAMP:
-              funnelValue(type, row.getTimestamp(i), into);
-              break;
-
-            case STRUCT:
-            default:
-              throw new IllegalArgumentException("unsupported row type");
-          }
-        }
-      }
-    }
-
-    private void funnelArray(
-        Code arrayElementType, Struct row, int columnIndex, PrimitiveSink into) {
-      funnelValue(Code.STRING, "BeginArray", into);
-      switch (arrayElementType) {
-        case BOOL:
-          into.putInt(row.getBooleanList(columnIndex).size());
-          for (Boolean value : row.getBooleanList(columnIndex)) {
-            funnelValue(Code.BOOL, value, into);
-          }
-          break;
-        case BYTES:
-        case PROTO:
-          into.putInt(row.getBytesList(columnIndex).size());
-          for (ByteArray value : row.getBytesList(columnIndex)) {
-            funnelValue(Code.BYTES, value, into);
-          }
-          break;
-        case DATE:
-          into.putInt(row.getDateList(columnIndex).size());
-          for (Date value : row.getDateList(columnIndex)) {
-            funnelValue(Code.DATE, value, into);
-          }
-          break;
-        case FLOAT64:
-          into.putInt(row.getDoubleList(columnIndex).size());
-          for (Double value : row.getDoubleList(columnIndex)) {
-            funnelValue(Code.FLOAT64, value, into);
-          }
-          break;
-        case NUMERIC:
-          into.putInt(row.getBigDecimalList(columnIndex).size());
-          for (BigDecimal value : row.getBigDecimalList(columnIndex)) {
-            funnelValue(Code.NUMERIC, value, into);
-          }
-          break;
-        case PG_NUMERIC:
-          into.putInt(row.getStringList(columnIndex).size());
-          for (String value : row.getStringList(columnIndex)) {
-            funnelValue(Code.STRING, value, into);
-          }
-          break;
-        case INT64:
-        case ENUM:
-          into.putInt(row.getLongList(columnIndex).size());
-          for (Long value : row.getLongList(columnIndex)) {
-            funnelValue(Code.INT64, value, into);
-          }
-          break;
-        case STRING:
-          into.putInt(row.getStringList(columnIndex).size());
-          for (String value : row.getStringList(columnIndex)) {
-            funnelValue(Code.STRING, value, into);
-          }
-          break;
-        case JSON:
-          into.putInt(row.getJsonList(columnIndex).size());
-          for (String value : row.getJsonList(columnIndex)) {
-            funnelValue(Code.JSON, value, into);
-          }
-          break;
-        case PG_JSONB:
-          into.putInt(row.getPgJsonbList(columnIndex).size());
-          for (String value : row.getPgJsonbList(columnIndex)) {
-            funnelValue(Code.PG_JSONB, value, into);
-          }
-          break;
-        case TIMESTAMP:
-          into.putInt(row.getTimestampList(columnIndex).size());
-          for (Timestamp value : row.getTimestampList(columnIndex)) {
-            funnelValue(Code.TIMESTAMP, value, into);
-          }
-          break;
-
-        case ARRAY:
-        case STRUCT:
-        default:
-          throw new IllegalArgumentException("unsupported array element type");
-      }
-      funnelValue(Code.STRING, "EndArray", into);
-    }
-
-    private <T> void funnelValue(Code type, T value, PrimitiveSink into) {
-      // Include the type name in case the type of a column has changed.
-      into.putUnencodedChars(type.name());
-      if (value == null) {
-        if (type == Code.BYTES || type == Code.STRING) {
-          // Put length -1 to distinguish from the string value 'null'.
-          into.putInt(-1);
-        }
-        into.putUnencodedChars(NULL);
+    /** Hashes a string value in blocks of max MAX_BUFFER_SIZE. */
+    private void putString(String stringValue) {
+      int length = stringValue.length();
+      if (buffer == null || (buffer.capacity() < MAX_BUFFER_SIZE && buffer.capacity() < length)) {
+        // Create a ByteBuffer with a maximum buffer size.
+        // This buffer is re-used for all string values in the result set.
+        buffer = ByteBuffer.allocate(Math.min(MAX_BUFFER_SIZE, length));
       } else {
-        switch (type) {
-          case BOOL:
-            into.putBoolean((Boolean) value);
-            break;
-          case BYTES:
-          case PROTO:
-            ByteArray byteArray = (ByteArray) value;
-            into.putInt(byteArray.length());
-            into.putBytes(byteArray.toByteArray());
-            break;
-          case DATE:
-            Date date = (Date) value;
-            into.putInt(date.getYear()).putInt(date.getMonth()).putInt(date.getDayOfMonth());
-            break;
-          case FLOAT64:
-            into.putDouble((Double) value);
-            break;
-          case NUMERIC:
-            String stringRepresentation = value.toString();
-            into.putInt(stringRepresentation.length());
-            into.putUnencodedChars(stringRepresentation);
-            break;
-          case INT64:
-          case ENUM:
-            into.putLong((Long) value);
-            break;
-          case PG_NUMERIC:
-          case STRING:
-          case JSON:
-          case PG_JSONB:
-            String stringValue = (String) value;
-            into.putInt(stringValue.length());
-            into.putUnencodedChars(stringValue);
-            break;
-          case TIMESTAMP:
-            Timestamp timestamp = (Timestamp) value;
-            into.putLong(timestamp.getSeconds()).putInt(timestamp.getNanos());
-            break;
-          case ARRAY:
-          case STRUCT:
-          default:
-            throw new IllegalArgumentException("invalid type for single value");
-        }
+        buffer.clear();
+      }
+
+      // Wrap the string in a CharBuffer. This allows us to read from the string in sections without
+      // creating a new copy of (a part of) the string. E.g. using something like substring(..)
+      // would create a copy of that part of the string, using CharBuffer.wrap(..) does not.
+      CharBuffer source = CharBuffer.wrap(stringValue);
+      CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
+      // source.hasRemaining() returns false when all the characters in the string have been
+      // processed.
+      while (source.hasRemaining()) {
+        // Encode the string into bytes and write them into the byte buffer.
+        // At most MAX_BUFFER_SIZE bytes will be written.
+        encoder.encode(source, buffer, false);
+        // Flip the buffer so we can read from the start.
+        buffer.flip();
+        // Put the bytes from the buffer into the digest.
+        digest.update(buffer);
+        // Flip the buffer again, so we can repeat and write to the start of the buffer again.
+        buffer.flip();
       }
     }
   }
