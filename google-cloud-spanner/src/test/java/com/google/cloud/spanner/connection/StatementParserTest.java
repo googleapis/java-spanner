@@ -1579,6 +1579,25 @@ public class StatementParserTest {
   }
 
   @Test
+  public void testConcatenatedLiterals() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    assertTrue(parser.isUpdateStatement("UPDATE foo SET name='foo' 'bar' WHERE ID=1"));
+    assertTrue(parser.isQuery("SELECT 'boo'   'bar' FROM my_table WHERE value='lit1''lit2'"));
+    assertTrue(
+        parser.checkReturningClause(
+            "insert into my_table (id, value) values (1, 'value' '1') then return id"));
+    assertTrue(parser.isUpdateStatement("UPDATE foo SET name=b'foo' b'bar' WHERE ID=1"));
+
+    assertEquals(
+        1,
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "select 'foo?''bar?' where id=? and value='?'  '?'")
+            .numberOfParameters,
+        1);
+  }
+
+  @Test
   public void testSkipSingleLineComment() {
     assumeTrue(dialect == Dialect.POSTGRESQL);
 
