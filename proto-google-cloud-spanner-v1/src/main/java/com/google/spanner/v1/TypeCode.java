@@ -79,6 +79,17 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    *
    *
    * <pre>
+   * Encoded as `number`, or the strings `"NaN"`, `"Infinity"`, or
+   * `"-Infinity"`.
+   * </pre>
+   *
+   * <code>FLOAT32 = 15;</code>
+   */
+  FLOAT32(15),
+  /**
+   *
+   *
+   * <pre>
    * Encoded as `string` in RFC 3339 timestamp format. The time zone
    * must be present, and must be `"Z"`.
    *
@@ -250,6 +261,17 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
    *
    *
    * <pre>
+   * Encoded as `number`, or the strings `"NaN"`, `"Infinity"`, or
+   * `"-Infinity"`.
+   * </pre>
+   *
+   * <code>FLOAT32 = 15;</code>
+   */
+  public static final int FLOAT32_VALUE = 15;
+  /**
+   *
+   *
+   * <pre>
    * Encoded as `string` in RFC 3339 timestamp format. The time zone
    * must be present, and must be `"Z"`.
    *
@@ -406,6 +428,8 @@ public enum TypeCode implements com.google.protobuf.ProtocolMessageEnum {
         return INT64;
       case 3:
         return FLOAT64;
+      case 15:
+        return FLOAT32;
       case 4:
         return TIMESTAMP;
       case 5:
