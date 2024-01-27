@@ -56,13 +56,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
-/** Unit tests for {@link com.google.cloud.spanner.AbstractResultSet.GrpcResultSet}. */
+/** Unit tests for {@link GrpcResultSet}. */
 @RunWith(JUnit4.class)
 public class GrpcResultSetTest {
 
-  private AbstractResultSet.GrpcResultSet resultSet;
+  private GrpcResultSet resultSet;
   private SpannerRpc.ResultStreamConsumer consumer;
-  private AbstractResultSet.GrpcStreamIterator stream;
+  private GrpcStreamIterator stream;
   private final Duration streamWaitTimeout = Duration.ofNanos(1L);
 
   private static class NoOpListener implements AbstractResultSet.Listener {
@@ -81,7 +81,7 @@ public class GrpcResultSetTest {
 
   @Before
   public void setUp() {
-    stream = new AbstractResultSet.GrpcStreamIterator(10);
+    stream = new GrpcStreamIterator(10);
     stream.setCall(
         new SpannerRpc.StreamingCall() {
           @Override
@@ -97,11 +97,11 @@ public class GrpcResultSetTest {
         },
         false);
     consumer = stream.consumer();
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new GrpcResultSet(stream, new NoOpListener());
   }
 
-  public AbstractResultSet.GrpcResultSet resultSetWithMode(QueryMode queryMode) {
-    return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+  public GrpcResultSet resultSetWithMode(QueryMode queryMode) {
+    return new GrpcResultSet(stream, new NoOpListener());
   }
 
   @Test
@@ -609,7 +609,7 @@ public class GrpcResultSetTest {
 
   private void verifySerialization(
       Function<Value, com.google.protobuf.Value> protoFn, Value... values) {
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new GrpcResultSet(stream, new NoOpListener());
     PartialResultSet.Builder builder = PartialResultSet.newBuilder();
     List<Type.StructField> types = new ArrayList<>();
     for (Value value : values) {
