@@ -25,6 +25,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.Float64Array;
 import com.google.cloud.spanner.AbstractResultSet.Int64Array;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
+import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -457,8 +458,35 @@ class GrpcStruct extends Struct implements Serializable {
     return (Date) rowData.get(columnIndex);
   }
 
+  private boolean isUnrecognizedType(int columnIndex) {
+    return type.getStructFields().get(columnIndex).getType().getCode() == Code.UNRECOGNIZED;
+  }
+
+  boolean canGetProtoValue(int columnIndex) {
+    return isUnrecognizedType(columnIndex)
+        || (decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded)
+        || (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex));
+  }
+
   protected com.google.protobuf.Value getProtoValueInternal(int columnIndex) {
+    checkProtoValueSupported(columnIndex);
     return (com.google.protobuf.Value) rowData.get(columnIndex);
+  }
+
+  private void checkProtoValueSupported(int columnIndex) {
+    // Unrecognized types are returned as protobuf values.
+    if (isUnrecognizedType(columnIndex)) {
+      return;
+    }
+    Preconditions.checkState(
+        decodeMode != DecodeMode.DIRECT,
+        "Getting proto value is not supported when DecodeMode#DIRECT is used.");
+    Preconditions.checkState(
+        !(decodeMode == DecodeMode.LAZY_PER_ROW && rowDecoded),
+        "Getting proto value after the row has been decoded is not supported.");
+    Preconditions.checkState(
+        !(decodeMode == DecodeMode.LAZY_PER_COL && colDecoded.get(columnIndex)),
+        "Getting proto value after the column has been decoded is not supported.");
   }
 
   private void ensureDecoded(int columnIndex) {

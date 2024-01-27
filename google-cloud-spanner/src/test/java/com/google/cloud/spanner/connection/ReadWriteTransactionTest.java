@@ -37,6 +37,7 @@ import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -518,7 +519,7 @@ public class ReadWriteTransactionTest {
             .setGenre(Genre.FOLK)
             .build();
     ProtocolMessageEnum protoEnumVal = Genre.ROCK;
-    ResultSet delegate1 =
+    ProtobufResultSet delegate1 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),
@@ -561,7 +562,7 @@ public class ReadWriteTransactionTest {
                     .build()));
     ChecksumResultSet rs1 =
         transaction.createChecksumResultSet(delegate1, parsedStatement, AnalyzeMode.NONE);
-    ResultSet delegate2 =
+    ProtobufResultSet delegate2 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),
@@ -605,7 +606,7 @@ public class ReadWriteTransactionTest {
     ChecksumResultSet rs2 =
         transaction.createChecksumResultSet(delegate2, parsedStatement, AnalyzeMode.NONE);
     // rs1 and rs2 are equal, rs3 contains the same rows, but in a different order
-    ResultSet delegate3 =
+    ProtobufResultSet delegate3 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),
@@ -650,7 +651,7 @@ public class ReadWriteTransactionTest {
         transaction.createChecksumResultSet(delegate3, parsedStatement, AnalyzeMode.NONE);
 
     // rs4 contains the same rows as rs1 and rs2, but also an additional row
-    ResultSet delegate4 =
+    ProtobufResultSet delegate4 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),
@@ -736,7 +737,7 @@ public class ReadWriteTransactionTest {
     ParsedStatement parsedStatement = mock(ParsedStatement.class);
     Statement statement = Statement.of("SELECT * FROM FOO");
     when(parsedStatement.getStatement()).thenReturn(statement);
-    ResultSet delegate1 =
+    ProtobufResultSet delegate1 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),
@@ -756,7 +757,7 @@ public class ReadWriteTransactionTest {
                     .build()));
     ChecksumResultSet rs1 =
         transaction.createChecksumResultSet(delegate1, parsedStatement, AnalyzeMode.NONE);
-    ResultSet delegate2 =
+    ProtobufResultSet delegate2 =
         ResultSets.forRows(
             Type.struct(
                 StructField.of("ID", Type.int64()),

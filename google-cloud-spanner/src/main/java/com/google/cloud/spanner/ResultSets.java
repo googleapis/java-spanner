@@ -48,7 +48,7 @@ public final class ResultSets {
    * @param type row type of the rows in the returned {@link com.google.cloud.spanner.ResultSet}
    * @param rows the rows in the returned {@link com.google.cloud.spanner.ResultSet}.
    */
-  public static ResultSet forRows(Type type, Iterable<Struct> rows) {
+  public static ProtobufResultSet forRows(Type type, Iterable<Struct> rows) {
     return new PrePopulatedResultSet(type, rows);
   }
 
@@ -109,7 +109,7 @@ public final class ResultSets {
     }
   }
 
-  private static class PrePopulatedResultSet implements ResultSet {
+  private static class PrePopulatedResultSet implements ProtobufResultSet {
     private final List<Struct> rows;
     private final Type type;
     private int index = -1;
@@ -135,6 +135,19 @@ public final class ResultSets {
     @Override
     public boolean next() throws SpannerException {
       return ++index < rows.size();
+    }
+
+    @Override
+    public boolean canGetProtobufValue(int columnIndex) {
+      return !closed && index >= 0 && index < rows.size();
+    }
+
+    @Override
+    public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+      Preconditions.checkState(!closed, "ResultSet is closed");
+      Preconditions.checkState(index >= 0, "Must be preceded by a next() call");
+      Preconditions.checkElementIndex(index, rows.size(), "All rows have been yielded");
+      return getValue(columnIndex).toProto();
     }
 
     @Override

@@ -20,7 +20,9 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -36,8 +38,12 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.PrimitiveSink;
+import com.google.protobuf.Value;
 import java.math.BigDecimal;
-import java.util.Objects;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 
 /**
@@ -70,11 +76,13 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   private final ParsedStatement statement;
   private final AnalyzeMode analyzeMode;
   private final QueryOption[] options;
-  private final ChecksumResultSet.ChecksumCalculator checksumCalculator = new ChecksumCalculator();
+  // private final ChecksumResultSet.ChecksumCalculator checksumCalculator = new
+  // ChecksumCalculator();
+  private final JdkChecksumCalculator checksumCalculator = new JdkChecksumCalculator();
 
   ChecksumResultSet(
       ReadWriteTransaction transaction,
-      ResultSet delegate,
+      ProtobufResultSet delegate,
       ParsedStatement statement,
       AnalyzeMode analyzeMode,
       QueryOption... options) {
@@ -90,6 +98,11 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
     this.options = options;
   }
 
+  @Override
+  public Value getProtobufValue(int columnIndex) {
+    return ((ProtobufResultSet) getDelegate()).getProtobufValue(columnIndex);
+  }
+
   /** Simple {@link Callable} for calling {@link ResultSet#next()} */
   private final class NextCallable implements Callable<Boolean> {
     @Override
@@ -101,7 +114,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
       boolean res = ChecksumResultSet.super.next();
       // Only update the checksum if there was another row to be consumed.
       if (res) {
-        checksumCalculator.calculateNextChecksum(getCurrentRowAsStruct());
+        checksumCalculator.calculateNextChecksum(ChecksumResultSet.this);
       }
       numberOfNextCalls++;
       return res;
@@ -117,8 +130,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   }
 
   @VisibleForTesting
-  HashCode getChecksum() {
-    // HashCode is immutable and can be safely returned.
+  byte[] getChecksum() {
     return checksumCalculator.getChecksum();
   }
 
@@ -131,8 +143,8 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
   @Override
   public void retry(AbortedException aborted) throws AbortedException {
     // Execute the same query and consume the result set to the same point as the original.
-    ChecksumResultSet.ChecksumCalculator newChecksumCalculator = new ChecksumCalculator();
-    ResultSet resultSet = null;
+    JdkChecksumCalculator newChecksumCalculator = new JdkChecksumCalculator();
+    ProtobufResultSet resultSet = null;
     long counter = 0L;
     try {
       transaction
@@ -149,7 +161,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
                 statement, StatementExecutionStep.RETRY_NEXT_ON_RESULT_SET, transaction);
         next = resultSet.next();
         if (next) {
-          newChecksumCalculator.calculateNextChecksum(resultSet.getCurrentRowAsStruct());
+          newChecksumCalculator.calculateNextChecksum(resultSet);
         }
         counter++;
       }
@@ -167,9 +179,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
       throw e;
     }
     // Check that we have the same number of rows and the same checksum.
-    HashCode newChecksum = newChecksumCalculator.getChecksum();
-    HashCode currentChecksum = checksumCalculator.getChecksum();
-    if (counter == numberOfNextCalls && Objects.equals(newChecksum, currentChecksum)) {
+    byte[] newChecksum = newChecksumCalculator.getChecksum();
+    byte[] currentChecksum = checksumCalculator.getChecksum();
+    if (counter == numberOfNextCalls && Arrays.equals(newChecksum, currentChecksum)) {
       // Checksum is ok, we only need to replace the delegate result set if it's still open.
       if (isClosed()) {
         resultSet.close();
@@ -180,6 +192,92 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
       // The results are not equal, there is an actual concurrent modification, so we cannot
       // continue the transaction.
       throw SpannerExceptionFactory.newAbortedDueToConcurrentModificationException(aborted);
+    }
+  }
+
+  private static final class JdkChecksumCalculator {
+    private final MessageDigest digest;
+    private ByteBuffer float64Buffer;
+
+    JdkChecksumCalculator() {
+      try {
+        digest = MessageDigest.getInstance("SHA-256");
+      } catch (Throwable t) {
+        throw SpannerExceptionFactory.asSpannerException(t);
+      }
+    }
+
+    private byte[] getChecksum() {
+      try {
+        MessageDigest clone = (MessageDigest) digest.clone();
+        return clone.digest();
+      } catch (CloneNotSupportedException e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
+    }
+
+    private void calculateNextChecksum(ProtobufResultSet resultSet) {
+      for (int col = 0; col < resultSet.getColumnCount(); col++) {
+        if (resultSet.canGetProtobufValue(col)) {
+          Value value = resultSet.getProtobufValue(col);
+          digest.update((byte) value.getKindCase().getNumber());
+          pushValue(value);
+        } else {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.FAILED_PRECONDITION,
+              "Failed to get the underlying protobuf value for the column "
+                  + resultSet.getMetadata().getRowType().getFields(col).getName()
+                  + ". "
+                  + "Executing queries with DecodeMode#DIRECT is not supported in read/write transactions.");
+        }
+      }
+    }
+
+    private void pushValue(Value value) {
+      switch (value.getKindCase()) {
+        case NULL_VALUE:
+          // nothing needed, writing the KindCase is enough.
+          break;
+        case BOOL_VALUE:
+          digest.update(value.getBoolValue() ? (byte) 1 : 0);
+          break;
+        case STRING_VALUE:
+          pushString(value.getStringValue());
+          break;
+        case NUMBER_VALUE:
+          if (float64Buffer == null) {
+            float64Buffer = ByteBuffer.allocate(8);
+          }
+          float64Buffer.rewind();
+          float64Buffer.putDouble(value.getNumberValue());
+          float64Buffer.rewind();
+          digest.update(float64Buffer);
+          break;
+        case LIST_VALUE:
+          for (Value item : value.getListValue().getValuesList()) {
+            digest.update((byte) item.getKindCase().getNumber());
+            pushValue(item);
+          }
+          break;
+        case STRUCT_VALUE:
+          for (Entry<String, Value> entry : value.getStructValue().getFieldsMap().entrySet()) {
+            pushString(entry.getKey());
+            digest.update((byte) entry.getValue().getKindCase().getNumber());
+            pushValue(entry.getValue());
+          }
+          break;
+        default:
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.UNIMPLEMENTED, "Unsupported protobuf value: " + value.getKindCase());
+      }
+    }
+
+    private void pushString(String stringValue) {
+      for (int n = 0; n < stringValue.length(); n++) {
+        char c = stringValue.charAt(n);
+        digest.update((byte) ((c >> 8) & 0xFF)); // first 8 bits
+        digest.update((byte) (c & 0xFF)); // last 8 bits
+      }
     }
   }
 

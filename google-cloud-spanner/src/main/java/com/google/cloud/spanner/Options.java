@@ -362,7 +362,6 @@ public final class Options implements Serializable {
 
     DecodeOption(DecodeMode decodeMode) {
       this.decodeMode = Preconditions.checkNotNull(decodeMode, "DecodeMode cannot be null");
-      ;
     }
 
     @Override
