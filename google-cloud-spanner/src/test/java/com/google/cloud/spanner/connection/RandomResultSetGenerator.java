@@ -114,7 +114,7 @@ public class RandomResultSetGenerator {
                     .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
                     .build()));
 
-    // appendProtoTypes(types, dialect);
+    appendProtoTypes(types, dialect);
     Type[] typeArray = new Type[types.size()];
     typeArray = types.toArray(typeArray);
     return typeArray;
@@ -123,8 +123,16 @@ public class RandomResultSetGenerator {
   /** To append Proto & Enum types * */
   private static void appendProtoTypes(List<Type> types, Dialect dialect) {
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
-      types.add(Type.newBuilder().setCode(TypeCode.PROTO).setProtoTypeFqn("testProto").build());
-      types.add(Type.newBuilder().setCode(TypeCode.ENUM).setProtoTypeFqn("testEnum").build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.PROTO)
+              .setProtoTypeFqn(SingerInfo.getDescriptor().getFullName())
+              .build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ENUM)
+              .setProtoTypeFqn(Genre.getDescriptor().getFullName())
+              .build());
       types.add(
           Type.newBuilder()
               .setCode(TypeCode.ARRAY)
