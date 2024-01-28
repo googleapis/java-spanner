@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,9 +40,6 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -383,41 +379,5 @@ public class ChecksumResultSetTest {
           AbortedDueToConcurrentModificationException.class,
           () -> resultSet.retry(abortedException));
     }
-  }
-
-  @Test
-  public void testEncode() {
-    final int MAX_WRITE_LENGTH = 8;
-    ByteBuffer target = null;
-
-    for (String stringValue :
-        new String[] {
-          "a-bit",
-          "s",
-          "some-slightly-long-string-with-many-characters",
-          "short",
-          "longer-string-than-the-previous-ones-but-the-buffer-is-not-increased"
-        }) {
-
-      byte[] output = new byte[0];
-      int length = stringValue.length();
-      if (target == null || (target.capacity() < MAX_WRITE_LENGTH && target.capacity() < length)) {
-        target = ByteBuffer.allocate(Math.min(MAX_WRITE_LENGTH, length));
-      }
-      CharBuffer source = CharBuffer.wrap(stringValue);
-      CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
-
-      while (source.hasRemaining()) {
-        encoder.encode(source, target, false);
-        target.flip();
-        byte[] tmp = new byte[output.length + target.remaining()];
-        System.arraycopy(output, 0, tmp, 0, output.length);
-        int len = target.remaining();
-        System.arraycopy(target.array(), 0, tmp, output.length, len);
-        output = tmp;
-      }
-      assertEquals(stringValue, new String(output, StandardCharsets.UTF_8));
-    }
-    assertEquals(MAX_WRITE_LENGTH, target.capacity());
   }
 }
