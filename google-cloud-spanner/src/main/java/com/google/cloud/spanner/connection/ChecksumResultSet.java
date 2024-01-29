@@ -226,6 +226,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
               funnelValue(type, row.getBoolean(i), into);
               break;
             case BYTES:
+            case PROTO:
               funnelValue(type, row.getBytes(i), into);
               break;
             case DATE:
@@ -241,6 +242,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
               funnelValue(type, row.getString(i), into);
               break;
             case INT64:
+            case ENUM:
               funnelValue(type, row.getLong(i), into);
               break;
             case STRING:
@@ -275,6 +277,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           }
           break;
         case BYTES:
+        case PROTO:
           into.putInt(row.getBytesList(columnIndex).size());
           for (ByteArray value : row.getBytesList(columnIndex)) {
             funnelValue(Code.BYTES, value, into);
@@ -305,6 +308,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           }
           break;
         case INT64:
+        case ENUM:
           into.putInt(row.getLongList(columnIndex).size());
           for (Long value : row.getLongList(columnIndex)) {
             funnelValue(Code.INT64, value, into);
@@ -358,6 +362,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putBoolean((Boolean) value);
             break;
           case BYTES:
+          case PROTO:
             ByteArray byteArray = (ByteArray) value;
             into.putInt(byteArray.length());
             into.putBytes(byteArray.toByteArray());
@@ -375,6 +380,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
             into.putUnencodedChars(stringRepresentation);
             break;
           case INT64:
+          case ENUM:
             into.putLong((Long) value);
             break;
           case PG_NUMERIC:

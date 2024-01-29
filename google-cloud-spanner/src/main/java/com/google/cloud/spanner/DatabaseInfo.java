@@ -20,9 +20,13 @@ import com.google.cloud.FieldSelector;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.database.v1.Database.State;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents a Cloud Spanner database. */
@@ -97,6 +101,34 @@ public class DatabaseInfo {
       throw new UnsupportedOperationException("Unimplemented");
     }
 
+    /**
+     * Optional for creating a new database.
+     *
+     * <p>It is used by CREATE/ALTER PROTO BUNDLE statements which are part of DDL statements.
+     * Contains a protobuf-serialized [google.protobuf.FileDescriptorSet]. To generate a proto
+     * descriptors file run {@code protoc --include_imports
+     * --descriptor_set_out=DESCRIPTOR_OUTPUT_LOCATION LOCATION-OF-PROTO-FILES}
+     *
+     * @param protoDescriptors The proto descriptors input as byte[] to be used for the database.
+     * @return {@link Builder}
+     */
+    public abstract Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors);
+
+    /**
+     * Optional for creating a new database.
+     *
+     * <p>It is used by CREATE/ALTER PROTO BUNDLE statements which are part of DDL statements.
+     * Contains a protobuf-serialized [google.protobuf.FileDescriptorSet]. To generate a proto
+     * descriptors file run {@code protoc --include_imports
+     * --descriptor_set_out=DESCRIPTOR_OUTPUT_LOCATION LOCATION-OF-PROTO-FILES}
+     *
+     * @param inputStream The proto descriptors input as InputStream to be used for the database.
+     * @return {@link Builder}
+     * @throws IOException if there is a problem reading the underlying stream.
+     */
+    public abstract Builder setProtoDescriptors(@Nonnull InputStream inputStream)
+        throws IOException;
+
     abstract Builder setProto(com.google.spanner.admin.database.v1.Database proto);
 
     /** Builds the database from this builder. */
@@ -115,6 +147,7 @@ public class DatabaseInfo {
     private Dialect dialect = Dialect.GOOGLE_STANDARD_SQL;
     private boolean dropProtectionEnabled;
     private boolean reconciling;
+    private ByteString protoDescriptors;
     private com.google.spanner.admin.database.v1.Database proto;
 
     BuilderImpl(DatabaseId id) {
@@ -131,6 +164,7 @@ public class DatabaseInfo {
       this.encryptionConfig = other.encryptionConfig;
       this.defaultLeader = other.defaultLeader;
       this.dialect = other.dialect;
+      this.protoDescriptors = other.protoDescriptors;
       this.proto = other.proto;
     }
 
@@ -201,6 +235,20 @@ public class DatabaseInfo {
     }
 
     @Override
+    public Builder setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
+      Preconditions.checkNotNull(protoDescriptors);
+      this.protoDescriptors = ByteString.copyFrom(protoDescriptors);
+      return this;
+    }
+
+    @Override
+    public Builder setProtoDescriptors(@Nonnull InputStream inputStream) throws IOException {
+      Preconditions.checkNotNull(inputStream);
+      this.protoDescriptors = ByteString.readFrom(inputStream);
+      return this;
+    }
+
+    @Override
     Builder setProto(@Nullable com.google.spanner.admin.database.v1.Database proto) {
       this.proto = proto;
       return this;
@@ -252,6 +300,8 @@ public class DatabaseInfo {
   private final Dialect dialect;
   private final boolean dropProtectionEnabled;
   private final boolean reconciling;
+
+  private final ByteString protoDescriptors;
   private final com.google.spanner.admin.database.v1.Database proto;
 
   public DatabaseInfo(DatabaseId id, State state) {
@@ -266,6 +316,7 @@ public class DatabaseInfo {
     this.dialect = null;
     this.dropProtectionEnabled = false;
     this.reconciling = false;
+    this.protoDescriptors = null;
     this.proto = null;
   }
 
@@ -281,6 +332,7 @@ public class DatabaseInfo {
     this.dialect = builder.dialect;
     this.dropProtectionEnabled = builder.dropProtectionEnabled;
     this.reconciling = builder.reconciling;
+    this.protoDescriptors = builder.protoDescriptors;
     this.proto = builder.proto;
   }
 
@@ -357,6 +409,10 @@ public class DatabaseInfo {
     return reconciling;
   }
 
+  public ByteString getProtoDescriptors() {
+    return protoDescriptors;
+  }
+
   /** Returns the raw proto instance that was used to construct this {@link Database}. */
   public @Nullable com.google.spanner.admin.database.v1.Database getProto() {
     return proto;
@@ -381,7 +437,8 @@ public class DatabaseInfo {
         && Objects.equals(defaultLeader, that.defaultLeader)
         && Objects.equals(dialect, that.dialect)
         && Objects.equals(dropProtectionEnabled, that.dropProtectionEnabled)
-        && Objects.equals(reconciling, that.reconciling);
+        && Objects.equals(reconciling, that.reconciling)
+        && Objects.equals(protoDescriptors, that.protoDescriptors);
   }
 
   @Override
@@ -397,13 +454,14 @@ public class DatabaseInfo {
         defaultLeader,
         dialect,
         dropProtectionEnabled,
-        reconciling);
+        reconciling,
+        protoDescriptors);
   }
 
   @Override
   public String toString() {
     return String.format(
-        "Database[%s, %s, %s, %s, %s, %s, %s, %s, %s %s %s]",
+        "Database[%s, %s, %s, %s, %s, %s, %s, %s, %s %s %s %s]",
         id.getName(),
         state,
         createTime,
@@ -414,6 +472,7 @@ public class DatabaseInfo {
         defaultLeader,
         dialect,
         dropProtectionEnabled,
-        reconciling);
+        reconciling,
+        protoDescriptors);
   }
 }
