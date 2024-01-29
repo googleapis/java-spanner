@@ -294,6 +294,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             () -> {
               while (!stopMaintenance.get()) {
                 runMaintenanceLoop(clock, pool, 1);
+                Uninterruptibles.sleepUninterruptibly(1L, TimeUnit.MILLISECONDS);
               }
             })
         .start();
