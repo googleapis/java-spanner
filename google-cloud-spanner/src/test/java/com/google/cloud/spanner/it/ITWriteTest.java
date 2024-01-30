@@ -305,6 +305,22 @@ public class ITWriteTest {
   }
 
   @Test
+  public void testWriteWithMaxCommitDelay() {
+    CommitResponse response =
+        client.writeWithOptions(
+            Collections.singletonList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.maxCommitDelayInMilliSeconds(100));
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
+  }
+
+  @Test
   public void testWriteReturnsCommitStats() {
     assumeFalse("Emulator does not return commit statistics", isUsingEmulator());
     CommitResponse response =
