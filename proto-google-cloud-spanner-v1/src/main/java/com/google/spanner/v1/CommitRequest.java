@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -381,7 +381,18 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
   public static final int MAX_COMMIT_DELAY_FIELD_NUMBER = 8;
   private com.google.protobuf.Duration maxCommitDelay_;
   /**
-   * <code>.google.protobuf.Duration max_commit_delay = 8;</code>
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    *
    * @return Whether the maxCommitDelay field is set.
    */
@@ -390,7 +401,18 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     return maxCommitDelay_ != null;
   }
   /**
-   * <code>.google.protobuf.Duration max_commit_delay = 8;</code>
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
    *
    * @return The maxCommitDelay.
    */
@@ -400,7 +422,20 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         ? com.google.protobuf.Duration.getDefaultInstance()
         : maxCommitDelay_;
   }
-  /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
   @java.lang.Override
   public com.google.protobuf.DurationOrBuilder getMaxCommitDelayOrBuilder() {
     return maxCommitDelay_ == null
@@ -1965,7 +2000,19 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             com.google.protobuf.DurationOrBuilder>
         maxCommitDelayBuilder_;
     /**
-     * <code>.google.protobuf.Duration max_commit_delay = 8;</code>
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      *
      * @return Whether the maxCommitDelay field is set.
      */
@@ -1973,7 +2020,19 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       return ((bitField0_ & 0x00000020) != 0);
     }
     /**
-     * <code>.google.protobuf.Duration max_commit_delay = 8;</code>
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
      *
      * @return The maxCommitDelay.
      */
@@ -1986,7 +2045,21 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         return maxCommitDelayBuilder_.getMessage();
       }
     }
-    /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
     public Builder setMaxCommitDelay(com.google.protobuf.Duration value) {
       if (maxCommitDelayBuilder_ == null) {
         if (value == null) {
@@ -2000,7 +2073,21 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
-    /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
     public Builder setMaxCommitDelay(com.google.protobuf.Duration.Builder builderForValue) {
       if (maxCommitDelayBuilder_ == null) {
         maxCommitDelay_ = builderForValue.build();
@@ -2011,7 +2098,21 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
-    /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
     public Builder mergeMaxCommitDelay(com.google.protobuf.Duration value) {
       if (maxCommitDelayBuilder_ == null) {
         if (((bitField0_ & 0x00000020) != 0)
@@ -2028,7 +2129,21 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
-    /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
     public Builder clearMaxCommitDelay() {
       bitField0_ = (bitField0_ & ~0x00000020);
       maxCommitDelay_ = null;
@@ -2039,13 +2154,41 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       onChanged();
       return this;
     }
-    /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
     public com.google.protobuf.Duration.Builder getMaxCommitDelayBuilder() {
       bitField0_ |= 0x00000020;
       onChanged();
       return getMaxCommitDelayFieldBuilder().getBuilder();
     }
-    /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
     public com.google.protobuf.DurationOrBuilder getMaxCommitDelayOrBuilder() {
       if (maxCommitDelayBuilder_ != null) {
         return maxCommitDelayBuilder_.getMessageOrBuilder();
@@ -2055,7 +2198,21 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             : maxCommitDelay_;
       }
     }
-    /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.Duration,
             com.google.protobuf.Duration.Builder,

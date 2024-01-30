@@ -140,6 +140,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean leaderAwareRoutingEnabled;
   private final boolean attemptDirectPath;
   private final DirectedReadOptions directedReadOptions;
+  private final boolean useVirtualThreads;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -580,9 +581,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return FixedCloseableExecutorProvider.create(executor);
   }
 
-  private SpannerOptions(Builder builder) {
+  protected SpannerOptions(Builder builder) {
     super(SpannerFactory.class, SpannerRpcFactory.class, builder, new SpannerDefaults());
-    numChannels = builder.numChannels;
+    numChannels = builder.numChannels == null ? DEFAULT_CHANNELS : builder.numChannels;
     Preconditions.checkArgument(
         numChannels >= 1 && numChannels <= MAX_CHANNELS,
         "Number of channels must fall in the range [1, %s], found: %s",
@@ -631,6 +632,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
     attemptDirectPath = builder.attemptDirectPath;
     directedReadOptions = builder.directedReadOptions;
+    useVirtualThreads = builder.useVirtualThreads;
   }
 
   /**
@@ -734,12 +736,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean leaderAwareRoutingEnabled = true;
     private boolean attemptDirectPath = true;
     private DirectedReadOptions directedReadOptions;
+    private boolean useVirtualThreads = false;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
     }
 
-    private Builder() {
+    protected Builder() {
       // Manually set retry and polling settings that work.
       OperationTimedPollAlgorithm longRunningPollingAlgorithm =
           OperationTimedPollAlgorithm.create(
@@ -795,6 +798,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.interceptorProvider = options.interceptorProvider;
       this.attemptDirectPath = options.attemptDirectPath;
       this.directedReadOptions = options.directedReadOptions;
+      this.useVirtualThreads = options.useVirtualThreads;
     }
 
     @Override
@@ -1263,6 +1267,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Enables/disables the use of virtual threads for the gRPC executor. Setting this option only
+     * has any effect on Java 21 and higher. In all other cases, the option will be ignored.
+     */
+    @BetaApi
+    protected Builder setUseVirtualThreads(boolean useVirtualThreads) {
+      this.useVirtualThreads = useVirtualThreads;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1410,6 +1424,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @BetaApi
   public boolean isAttemptDirectPath() {
     return attemptDirectPath;
+  }
+
+  @BetaApi
+  public boolean isUseVirtualThreads() {
+    return useVirtualThreads;
   }
 
   /** Returns the default query options to use for the specific database. */

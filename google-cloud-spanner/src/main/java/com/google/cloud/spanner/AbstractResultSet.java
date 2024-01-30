@@ -39,10 +39,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharSource;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -58,6 +61,7 @@ import io.opencensus.trace.Tracing;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -73,6 +77,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -477,6 +482,14 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case JSON:
             builder.set(fieldName).to(Value.json((String) value));
             break;
+          case PROTO:
+            builder
+                .set(fieldName)
+                .to(Value.protoMessage((ByteArray) value, fieldType.getProtoTypeFqn()));
+            break;
+          case ENUM:
+            builder.set(fieldName).to(Value.protoEnum((Long) value, fieldType.getProtoTypeFqn()));
+            break;
           case PG_JSONB:
             builder.set(fieldName).to(Value.pgJsonb((String) value));
             break;
@@ -500,6 +513,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 builder.set(fieldName).toBoolArray((Iterable<Boolean>) value);
                 break;
               case INT64:
+              case ENUM:
                 builder.set(fieldName).toInt64Array((Iterable<Long>) value);
                 break;
               case FLOAT64:
@@ -521,6 +535,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
                 builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
                 break;
               case BYTES:
+              case PROTO:
                 builder
                     .set(fieldName)
                     .toBytesArrayFromBase64(
@@ -596,6 +611,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.BOOL_VALUE);
           return proto.getBoolValue();
         case INT64:
+        case ENUM:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return Long.parseLong(proto.getStringValue());
         case FLOAT64:
@@ -610,6 +626,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return proto.getStringValue();
         case BYTES:
+        case PROTO:
           checkType(fieldType, proto, KindCase.STRING_VALUE);
           return new LazyByteArray(proto.getStringValue());
         case TIMESTAMP:
@@ -649,7 +666,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     static Object decodeArrayValue(Type elementType, ListValue listValue) {
       switch (elementType.getCode()) {
         case INT64:
-          // For int64/float64 types, use custom containers.  These avoid wrapper object
+        case ENUM:
+          // For int64/float64/enum types, use custom containers.  These avoid wrapper object
           // creation for non-null arrays.
           return new Int64Array(listValue);
         case FLOAT64:
@@ -664,6 +682,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case TIMESTAMP:
         case DATE:
         case STRUCT:
+        case PROTO:
           return Lists.transform(
               listValue.getValuesList(), input -> decodeValue(elementType, input));
         default:
@@ -697,6 +716,35 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @Override
     public boolean isNull(int columnIndex) {
       return rowData.get(columnIndex) == null;
+    }
+
+    @Override
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
+      Preconditions.checkNotNull(
+          message,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+      try {
+        return (T)
+            message
+                .toBuilder()
+                .mergeFrom(
+                    Base64.getDecoder()
+                        .wrap(
+                            CharSource.wrap(((LazyByteArray) rowData.get(columnIndex)).base64String)
+                                .asByteSource(StandardCharsets.UTF_8)
+                                .openStream()))
+                .build();
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.asSpannerException(ioException);
+      }
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
+      return (T) method.apply((int) getLongInternal(columnIndex));
     }
 
     @Override
@@ -768,6 +816,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.bool(isNull ? null : getBooleanInternal(columnIndex));
         case INT64:
           return Value.int64(isNull ? null : getLongInternal(columnIndex));
+        case ENUM:
+          return Value.protoEnum(getLongInternal(columnIndex), columnType.getProtoTypeFqn());
         case NUMERIC:
           return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
         case PG_NUMERIC:
@@ -782,6 +832,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
         case BYTES:
           return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
+        case PROTO:
+          return Value.protoMessage(getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
         case TIMESTAMP:
           return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:
@@ -812,6 +864,12 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
               return Value.pgJsonbArray(isNull ? null : getPgJsonbListInternal(columnIndex));
             case BYTES:
               return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
+            case PROTO:
+              return Value.protoMessageArray(
+                  isNull ? null : getBytesListInternal(columnIndex), elementType.getProtoTypeFqn());
+            case ENUM:
+              return Value.protoEnumArray(
+                  isNull ? null : getLongListInternal(columnIndex), elementType.getProtoTypeFqn());
             case TIMESTAMP:
               return Value.timestampArray(isNull ? null : getTimestampListInternal(columnIndex));
             case DATE:
@@ -889,6 +947,61 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     @SuppressWarnings("unchecked") // We know ARRAY<JSON> produces a List<String>.
     protected List<String> getJsonListInternal(int columnIndex) {
       return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<PROTO> produces a List<ByteArray>.
+    protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
+        int columnIndex, T message) {
+      Preconditions.checkNotNull(
+          message,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+
+      List<LazyByteArray> bytesArray = (List<LazyByteArray>) rowData.get(columnIndex);
+
+      try {
+        List<T> protoMessagesList = new ArrayList<>(bytesArray.size());
+        for (LazyByteArray protoMessageBytes : bytesArray) {
+          if (protoMessageBytes == null) {
+            protoMessagesList.add(null);
+          } else {
+            protoMessagesList.add(
+                (T)
+                    message
+                        .toBuilder()
+                        .mergeFrom(
+                            Base64.getDecoder()
+                                .wrap(
+                                    CharSource.wrap(protoMessageBytes.base64String)
+                                        .asByteSource(StandardCharsets.UTF_8)
+                                        .openStream()))
+                        .build());
+          }
+        }
+        return protoMessagesList;
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.asSpannerException(ioException);
+      }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // We know ARRAY<ENUM> produces a List<Long>.
+    protected <T extends ProtocolMessageEnum> List<T> getProtoEnumListInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
+
+      List<Long> enumIntArray = (List<Long>) rowData.get(columnIndex);
+      List<T> protoEnumList = new ArrayList<>(enumIntArray.size());
+      for (Long enumIntValue : enumIntArray) {
+        if (enumIntValue == null) {
+          protoEnumList.add(null);
+        } else {
+          protoEnumList.add((T) method.apply(enumIntValue.intValue()));
+        }
+      }
+
+      return protoEnumList;
     }
 
     @Override
@@ -1490,6 +1603,17 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
+    return currRow().getProtoMessageInternal(columnIndex, message);
+  }
+
+  @Override
+  protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    return currRow().getProtoEnumInternal(columnIndex, method);
+  }
+
+  @Override
   protected String getJsonInternal(int columnIndex) {
     return currRow().getJsonInternal(columnIndex);
   }
@@ -1572,6 +1696,18 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<ByteArray> getBytesListInternal(int columnIndex) {
     return currRow().getBytesListInternal(columnIndex);
+  }
+
+  @Override
+  protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
+      int columnIndex, T message) {
+    return currRow().getProtoMessageListInternal(columnIndex, message);
+  }
+
+  @Override
+  protected <T extends ProtocolMessageEnum> List<T> getProtoEnumListInternal(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    return currRow().getProtoEnumListInternal(columnIndex, method);
   }
 
   @Override

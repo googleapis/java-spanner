@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,6 +225,56 @@ public interface CommitRequestOrBuilder
    */
   com.google.protobuf.Duration getMaxCommitDelay();
   /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
+  com.google.protobuf.DurationOrBuilder getMaxCommitDelayOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the maxCommitDelay field is set.
+   */
+  boolean hasMaxCommitDelay();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The maxCommitDelay.
+   */
+  com.google.protobuf.Duration getMaxCommitDelay();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
   com.google.protobuf.DurationOrBuilder getMaxCommitDelayOrBuilder();
 
   /**

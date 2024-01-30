@@ -1164,7 +1164,13 @@ message CommitRequest {
   // Default value is `false`.
   bool return_commit_stats = 5;
 
-  google.protobuf.Duration max_commit_delay = 8;
+  // Optional. The amount of latency this request is willing to incur in order
+  // to improve throughput. If this field is not set, Spanner assumes requests
+  // are relatively latency sensitive and automatically determines an
+  // appropriate delay time. You can specify a batching delay value between 0
+  // and 500 ms.
+  google.protobuf.Duration max_commit_delay = 8
+      [(google.api.field_behavior) = OPTIONAL];
 
   // Common options for this request.
   RequestOptions request_options = 6;
