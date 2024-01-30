@@ -2190,7 +2190,7 @@ public class SpannerSample {
       printUsageAndExit();
     }
     // [START init_client]
-    SpannerOptions options = SpannerOptions.newBuilder().build;
+    SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
     try {
       String command = args[0];
