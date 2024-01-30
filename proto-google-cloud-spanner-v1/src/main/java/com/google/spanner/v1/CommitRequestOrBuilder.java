@@ -213,21 +213,6 @@ public interface CommitRequestOrBuilder
   boolean getReturnCommitStats();
 
   /**
-   * <code>.google.protobuf.Duration max_commit_delay = 8;</code>
-   *
-   * @return Whether the maxCommitDelay field is set.
-   */
-  boolean hasMaxCommitDelay();
-  /**
-   * <code>.google.protobuf.Duration max_commit_delay = 8;</code>
-   *
-   * @return The maxCommitDelay.
-   */
-  com.google.protobuf.Duration getMaxCommitDelay();
-  /** <code>.google.protobuf.Duration max_commit_delay = 8;</code> */
-  com.google.protobuf.DurationOrBuilder getMaxCommitDelayOrBuilder();
-
-  /**
    *
    *
    * <pre>
