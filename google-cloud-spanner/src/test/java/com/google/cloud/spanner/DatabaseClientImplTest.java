@@ -3636,6 +3636,23 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testCommitWithoutMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertFalse(request.hasMaxCommitDelay());
+  }
+
+  @Test
   public void testCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
