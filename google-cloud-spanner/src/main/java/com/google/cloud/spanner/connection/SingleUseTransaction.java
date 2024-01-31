@@ -188,6 +188,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     return readOnly;
   }
 
+  @Override
+  public boolean supportsDirectedReads() {
+    return true;
+  }
+
   private void checkAndMarkUsed() {
     Preconditions.checkState(!used, "This single-use transaction has already been used");
     used = true;

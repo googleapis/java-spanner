@@ -53,6 +53,7 @@ import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
@@ -236,6 +237,7 @@ class ConnectionImpl implements Connection {
    */
   private int maxPartitionedParallelism;
 
+  private DirectedReadOptions directedReadOptions = null;
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
   private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
@@ -508,6 +510,21 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isBatchActive(), "Cannot get read-only while in a batch");
     return this.readOnlyStaleness;
+  }
+
+  @Override
+  public void setDirectedRead(DirectedReadOptions directedReadOptions) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "Cannot set directed read options when a transaction has been started");
+    this.directedReadOptions = directedReadOptions;
+  }
+
+  @Override
+  public DirectedReadOptions getDirectedRead() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.directedReadOptions;
   }
 
   @Override
@@ -1427,27 +1444,14 @@ class ConnectionImpl implements Connection {
 
   private QueryOption[] mergeDataBoost(QueryOption... options) {
     if (this.dataBoostEnabled) {
-
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.dataBoostEnabled(true)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.dataBoostEnabled(true);
-      }
+      options = appendQueryOption(options, Options.dataBoostEnabled(true));
     }
     return options;
   }
 
   private QueryOption[] mergeQueryStatementTag(QueryOption... options) {
     if (this.statementTag != null) {
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.tag(statementTag)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.tag(statementTag);
-      }
+      options = appendQueryOption(options, Options.tag(statementTag));
       this.statementTag = null;
     }
     return options;
@@ -1455,13 +1459,22 @@ class ConnectionImpl implements Connection {
 
   private QueryOption[] mergeQueryRequestOptions(QueryOption... options) {
     if (this.rpcPriority != null) {
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.priority(this.rpcPriority)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.priority(this.rpcPriority);
-      }
+      options = appendQueryOption(options, Options.priority(this.rpcPriority));
+    }
+    if (this.directedReadOptions != null
+        && currentUnitOfWork != null
+        && currentUnitOfWork.supportsDirectedReads()) {
+      options = appendQueryOption(options, Options.directedRead(this.directedReadOptions));
+    }
+    return options;
+  }
+
+  private QueryOption[] appendQueryOption(QueryOption[] options, QueryOption append) {
+    if (options == null || options.length == 0) {
+      options = new QueryOption[] {append};
+    } else {
+      options = Arrays.copyOf(options, options.length + 1);
+      options[options.length - 1] = append;
     }
     return options;
   }

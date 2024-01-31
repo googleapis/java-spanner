@@ -108,6 +108,11 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
+  public boolean supportsDirectedReads() {
+    return true;
+  }
+
+  @Override
   void checkAborted() {
     // No-op for read-only transactions as they cannot abort.
   }
