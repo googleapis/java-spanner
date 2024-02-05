@@ -88,19 +88,285 @@ import javax.annotation.Generated;
  * <p>Note: close() needs to be called on the SpannerClient object to clean up resources such as
  * threads. In the example above, try-with-resources is used, which automatically calls close().
  *
- * <p>The surface of this class includes several types of Java methods for each of the API's
- * methods:
- *
- * <ol>
- *   <li>A "flattened" method. With this type of method, the fields of the request type have been
- *       converted into function parameters. It may be the case that not all fields are available as
- *       parameters, and not every API method will have a flattened method entry point.
- *   <li>A "request object" method. This type of method only takes one parameter, a request object,
- *       which must be constructed before the call. Not every API method will have a request object
- *       method.
- *   <li>A "callable" method. This type of method takes no parameters and returns an immutable API
- *       callable object, which can be used to initiate calls to the service.
- * </ol>
+ * <table>
+ *    <caption>Methods</caption>
+ *    <tr>
+ *      <th>Method</th>
+ *      <th>Description</th>
+ *      <th>Method Variants</th>
+ *    </tr>
+ *    <tr>
+ *      <td><p> CreateSession</td>
+ *      <td><p> Creates a new session. A session can be used to perform transactions that read and/or modify data in a Cloud Spanner database. Sessions are meant to be reused for many consecutive transactions.
+ * <p>  Sessions can only execute one transaction at a time. To execute multiple concurrent read-write/write-only transactions, create multiple sessions. Note that standalone reads and queries use a transaction internally, and count toward the one transaction limit.
+ * <p>  Active sessions use additional server resources, so it is a good idea to delete idle and unneeded sessions. Aside from explicit deletes, Cloud Spanner may delete sessions for which no operations are sent for more than an hour. If a session is deleted, requests to it return `NOT_FOUND`.
+ * <p>  Idle sessions can be kept alive by sending a trivial SQL query periodically, e.g., `"SELECT 1"`.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> createSession(CreateSessionRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> createSession(DatabaseName database)
+ *           <li><p> createSession(String database)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> createSessionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> BatchCreateSessions</td>
+ *      <td><p> Creates multiple new sessions.
+ * <p>  This API can be used to initialize a session cache on the clients. See https://goo.gl/TgSFN2 for best practices on session cache management.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> batchCreateSessions(BatchCreateSessionsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> batchCreateSessions(DatabaseName database, int sessionCount)
+ *           <li><p> batchCreateSessions(String database, int sessionCount)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> batchCreateSessionsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetSession</td>
+ *      <td><p> Gets a session. Returns `NOT_FOUND` if the session does not exist. This is mainly useful for determining whether a session is still alive.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getSession(GetSessionRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getSession(SessionName name)
+ *           <li><p> getSession(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getSessionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListSessions</td>
+ *      <td><p> Lists all sessions in a given database.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listSessions(ListSessionsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listSessions(DatabaseName database)
+ *           <li><p> listSessions(String database)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listSessionsPagedCallable()
+ *           <li><p> listSessionsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> DeleteSession</td>
+ *      <td><p> Ends a session, releasing server resources associated with it. This will asynchronously trigger cancellation of any operations that are running with this session.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> deleteSession(DeleteSessionRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> deleteSession(SessionName name)
+ *           <li><p> deleteSession(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> deleteSessionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ExecuteSql</td>
+ *      <td><p> Executes an SQL statement, returning all results in a single reply. This method cannot be used to return a result set larger than 10 MiB; if the query yields more data than that, the query fails with a `FAILED_PRECONDITION` error.
+ * <p>  Operations inside read-write transactions might return `ABORTED`. If this occurs, the application should restart the transaction from the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+ * <p>  Larger result sets can be fetched in streaming fashion by calling [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] instead.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> executeSql(ExecuteSqlRequest request)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> executeSqlCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ExecuteStreamingSql</td>
+ *      <td><p> Like [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], except returns the result set as a stream. Unlike [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql], there is no limit on the size of the returned result set. However, no individual row in the result set can exceed 100 MiB, and no column value can exceed 10 MiB.</td>
+ *      <td>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> executeStreamingSqlCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ExecuteBatchDml</td>
+ *      <td><p> Executes a batch of SQL DML statements. This method allows many statements to be run with lower latency than submitting them sequentially with [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].
+ * <p>  Statements are executed in sequential order. A request can succeed even if a statement fails. The [ExecuteBatchDmlResponse.status][google.spanner.v1.ExecuteBatchDmlResponse.status] field in the response provides information about the statement that failed. Clients must inspect this field to determine whether an error occurred.
+ * <p>  Execution stops after the first failed statement; the remaining statements are not executed.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> executeBatchDml(ExecuteBatchDmlRequest request)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> executeBatchDmlCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> Read</td>
+ *      <td><p> Reads rows from the database using key lookups and scans, as a simple key/value style alternative to [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql].  This method cannot be used to return a result set larger than 10 MiB; if the read matches more data than that, the read fails with a `FAILED_PRECONDITION` error.
+ * <p>  Reads inside read-write transactions might return `ABORTED`. If this occurs, the application should restart the transaction from the beginning. See [Transaction][google.spanner.v1.Transaction] for more details.
+ * <p>  Larger result sets can be yielded in streaming fashion by calling [StreamingRead][google.spanner.v1.Spanner.StreamingRead] instead.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> read(ReadRequest request)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> readCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> StreamingRead</td>
+ *      <td><p> Like [Read][google.spanner.v1.Spanner.Read], except returns the result set as a stream. Unlike [Read][google.spanner.v1.Spanner.Read], there is no limit on the size of the returned result set. However, no individual row in the result set can exceed 100 MiB, and no column value can exceed 10 MiB.</td>
+ *      <td>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> streamingReadCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> BeginTransaction</td>
+ *      <td><p> Begins a new transaction. This step can often be skipped: [Read][google.spanner.v1.Spanner.Read], [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and [Commit][google.spanner.v1.Spanner.Commit] can begin a new transaction as a side-effect.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> beginTransaction(BeginTransactionRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> beginTransaction(SessionName session, TransactionOptions options)
+ *           <li><p> beginTransaction(String session, TransactionOptions options)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> beginTransactionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> Commit</td>
+ *      <td><p> Commits a transaction. The request includes the mutations to be applied to rows in the database.
+ * <p>  `Commit` might return an `ABORTED` error. This can occur at any time; commonly, the cause is conflicts with concurrent transactions. However, it can also happen for a variety of other reasons. If `Commit` returns `ABORTED`, the caller should re-attempt the transaction from the beginning, re-using the same session.
+ * <p>  On very rare occasions, `Commit` might return `UNKNOWN`. This can happen, for example, if the client job experiences a 1+ hour networking failure. At that point, Cloud Spanner has lost track of the transaction outcome and we recommend that you perform another read from the database to see the state of things as they are now.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> commit(CommitRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> commit(SessionName session, ByteString transactionId, List&lt;Mutation&gt; mutations)
+ *           <li><p> commit(SessionName session, TransactionOptions singleUseTransaction, List&lt;Mutation&gt; mutations)
+ *           <li><p> commit(String session, ByteString transactionId, List&lt;Mutation&gt; mutations)
+ *           <li><p> commit(String session, TransactionOptions singleUseTransaction, List&lt;Mutation&gt; mutations)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> commitCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> Rollback</td>
+ *      <td><p> Rolls back a transaction, releasing any locks it holds. It is a good idea to call this for any transaction that includes one or more [Read][google.spanner.v1.Spanner.Read] or [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] requests and ultimately decides not to commit.
+ * <p>  `Rollback` returns `OK` if it successfully aborts the transaction, the transaction was already aborted, or the transaction is not found. `Rollback` never returns `ABORTED`.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> rollback(RollbackRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> rollback(SessionName session, ByteString transactionId)
+ *           <li><p> rollback(String session, ByteString transactionId)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> rollbackCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> PartitionQuery</td>
+ *      <td><p> Creates a set of partition tokens that can be used to execute a query operation in parallel.  Each of the returned partition tokens can be used by [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql] to specify a subset of the query result to read.  The same session and read-only transaction must be used by the PartitionQueryRequest used to create the partition tokens and the ExecuteSqlRequests that use the partition tokens.
+ * <p>  Partition tokens become invalid when the session used to create them is deleted, is idle for too long, begins a new transaction, or becomes too old.  When any of these happen, it is not possible to resume the query, and the whole operation must be restarted from the beginning.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> partitionQuery(PartitionQueryRequest request)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> partitionQueryCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> PartitionRead</td>
+ *      <td><p> Creates a set of partition tokens that can be used to execute a read operation in parallel.  Each of the returned partition tokens can be used by [StreamingRead][google.spanner.v1.Spanner.StreamingRead] to specify a subset of the read result to read.  The same session and read-only transaction must be used by the PartitionReadRequest used to create the partition tokens and the ReadRequests that use the partition tokens.  There are no ordering guarantees on rows returned among the returned partition tokens, or even within each individual StreamingRead call issued with a partition_token.
+ * <p>  Partition tokens become invalid when the session used to create them is deleted, is idle for too long, begins a new transaction, or becomes too old.  When any of these happen, it is not possible to resume the read, and the whole operation must be restarted from the beginning.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> partitionRead(PartitionReadRequest request)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> partitionReadCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> BatchWrite</td>
+ *      <td><p> Batches the supplied mutation groups in a collection of efficient transactions. All mutations in a group are committed atomically. However, mutations across groups can be committed non-atomically in an unspecified order and thus, they must be independent of each other. Partial failure is possible, i.e., some groups may have been committed successfully, while some may have failed. The results of individual batches are streamed into the response as the batches are applied.
+ * <p>  BatchWrite requests are not replay protected, meaning that each mutation group may be applied more than once. Replays of non-idempotent mutations may have undesirable effects. For example, replays of an insert mutation may produce an already exists error or if you use generated or commit timestamp-based keys, it may result in additional rows being added to the mutation's table. We recommend structuring your mutation groups to be idempotent to avoid this issue.</td>
+ *      <td>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> batchWriteCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *  </table>
  *
  * <p>See the individual methods for example code.
  *
@@ -942,6 +1208,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.executeSql(request);
@@ -990,6 +1257,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.executeSqlCallable().futureCall(request);
@@ -1031,6 +1299,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setSeqno(109325920)
    *           .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream =
@@ -1167,6 +1436,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ResultSet response = spannerClient.read(request);
@@ -1216,6 +1486,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ApiFuture<ResultSet> future = spannerClient.readCallable().futureCall(request);
@@ -1257,6 +1528,7 @@ public class SpannerClient implements BackgroundResource {
    *           .setResumeToken(ByteString.EMPTY)
    *           .setPartitionToken(ByteString.EMPTY)
    *           .setRequestOptions(RequestOptions.newBuilder().build())
+   *           .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
    *           .setDataBoostEnabled(true)
    *           .build();
    *   ServerStream<PartialResultSet> stream = spannerClient.streamingReadCallable().call(request);
@@ -1637,6 +1909,7 @@ public class SpannerClient implements BackgroundResource {
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .addAllMutations(new ArrayList<Mutation>())
    *           .setReturnCommitStats(true)
+   *           .setMaxCommitDelay(Duration.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   CommitResponse response = spannerClient.commit(request);
@@ -1680,6 +1953,7 @@ public class SpannerClient implements BackgroundResource {
    *               SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
    *           .addAllMutations(new ArrayList<Mutation>())
    *           .setReturnCommitStats(true)
+   *           .setMaxCommitDelay(Duration.newBuilder().build())
    *           .setRequestOptions(RequestOptions.newBuilder().build())
    *           .build();
    *   ApiFuture<CommitResponse> future = spannerClient.commitCallable().futureCall(request);

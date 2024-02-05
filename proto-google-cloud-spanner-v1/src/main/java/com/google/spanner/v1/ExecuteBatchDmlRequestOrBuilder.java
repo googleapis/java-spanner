@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,10 +109,10 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
    *
    * Callers must provide at least one statement.
    * </pre>
@@ -126,10 +126,10 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
    *
    * Callers must provide at least one statement.
    * </pre>
@@ -143,10 +143,10 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
    *
    * Callers must provide at least one statement.
    * </pre>
@@ -160,10 +160,10 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
    *
    * Callers must provide at least one statement.
    * </pre>
@@ -178,10 +178,10 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The list of statements to execute in this batch. Statements are executed
-   * serially, such that the effects of statement `i` are visible to statement
-   * `i+1`. Each statement must be a DML statement. Execution stops at the
-   * first failed statement; the remaining statements are not executed.
+   * Required. The list of statements to execute in this batch. Statements are
+   * executed serially, such that the effects of statement `i` are visible to
+   * statement `i+1`. Each statement must be a DML statement. Execution stops at
+   * the first failed statement; the remaining statements are not executed.
    *
    * Callers must provide at least one statement.
    * </pre>
@@ -196,9 +196,9 @@ public interface ExecuteBatchDmlRequestOrBuilder
    *
    *
    * <pre>
-   * Required. A per-transaction sequence number used to identify this request. This field
-   * makes each request idempotent such that if the request is received multiple
-   * times, at most one will succeed.
+   * Required. A per-transaction sequence number used to identify this request.
+   * This field makes each request idempotent such that if the request is
+   * received multiple times, at most one will succeed.
    *
    * The sequence number must be monotonically increasing within the
    * transaction. If a request arrives for the first time with an out-of-order

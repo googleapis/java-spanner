@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-bom</artifactId>
-  <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>pom</packaging>
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-shared-config</artifactId>
-    <version>1.5.8</version>
+    <version>1.6.1</version>
   </parent>
 
   <name>Google Cloud Spanner BOM</name>
@@ -53,48 +53,43 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
-      </dependency>
-      <dependency>
-        <groupId>com.google.cloud</groupId>
-        <artifactId>google-cloud-spanner-executor</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner-executor:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner</artifactId>
         <type>test-jar</type>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-v1</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-v1:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-admin-instance-v1</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-instance-v1:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-instance-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-admin-database-v1</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-database-v1:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-database-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-admin-instance-v1</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-instance-v1:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-instance-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-v1</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-v1:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-admin-database-v1</artifactId>
-        <version>6.52.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-database-v1:current} -->
+        <version>6.57.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-database-v1:current} -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -105,7 +100,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.12.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>

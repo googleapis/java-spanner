@@ -85,7 +85,6 @@ public class DatabaseAdminClientTest {
   private static MockOperationsServiceImpl mockOperations;
   private static MockDatabaseAdminServiceImpl mockDatabaseAdmin;
   private static Server server;
-  private static InetSocketAddress address;
 
   private static Spanner spanner;
   private static DatabaseAdminClient client;
@@ -98,7 +97,7 @@ public class DatabaseAdminClientTest {
     mockOperations = new MockOperationsServiceImpl();
     mockDatabaseAdmin = new MockDatabaseAdminServiceImpl(mockOperations);
     // This test uses a NettyServer to properly test network and timeout issues.
-    address = new InetSocketAddress("localhost", 0);
+    InetSocketAddress address = new InetSocketAddress("localhost", 0);
     server =
         NettyServerBuilder.forAddress(address)
             .addService(mockOperations)
@@ -952,14 +951,20 @@ public class DatabaseAdminClientTest {
         Status.RESOURCE_EXHAUSTED.withDescription("foo").asRuntimeException(trailers));
     mockDatabaseAdmin.clearRequests();
 
-    Spanner spannerWithoutRetries =
-        spanner.getOptions().toBuilder().disableAdministrativeRequestRetries().build().getService();
-    AdminRequestsPerMinuteExceededException exception =
-        assertThrows(
-            AdminRequestsPerMinuteExceededException.class,
-            () -> spannerWithoutRetries.getDatabaseAdminClient().getDatabase(INSTANCE_ID, DB_ID));
-    assertEquals(ErrorCode.RESOURCE_EXHAUSTED, exception.getErrorCode());
-    // There should be only one request on the server, as the request was not retried.
-    assertEquals(1, mockDatabaseAdmin.countRequestsOfType(GetDatabaseRequest.class));
+    try (Spanner spannerWithoutRetries =
+        spanner
+            .getOptions()
+            .toBuilder()
+            .disableAdministrativeRequestRetries()
+            .build()
+            .getService()) {
+      AdminRequestsPerMinuteExceededException exception =
+          assertThrows(
+              AdminRequestsPerMinuteExceededException.class,
+              () -> spannerWithoutRetries.getDatabaseAdminClient().getDatabase(INSTANCE_ID, DB_ID));
+      assertEquals(ErrorCode.RESOURCE_EXHAUSTED, exception.getErrorCode());
+      // There should be only one request on the server, as the request was not retried.
+      assertEquals(1, mockDatabaseAdmin.countRequestsOfType(GetDatabaseRequest.class));
+    }
   }
 }

@@ -85,7 +85,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
                     SessionConsumerImpl consumer =
                         invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
-                      consumer.onSessionReady(setupMockSession(mockSession()));
+                      ReadContext mockContext = mock(ReadContext.class);
+                      consumer.onSessionReady(
+                          setupMockSession(buildMockSession(mockContext), mockContext));
                     }
                   });
               return null;
@@ -95,10 +97,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
   }
 
-  private SessionImpl setupMockSession(final SessionImpl session) {
-    ReadContext mockContext = mock(ReadContext.class);
+  private SessionImpl setupMockSession(final SessionImpl session, final ReadContext mockContext) {
     final ResultSet mockResult = mock(ResultSet.class);
-    when(session.singleUse(any(TimestampBound.class))).thenReturn(mockContext);
     when(mockContext.executeQuery(any(Statement.class)))
         .thenAnswer(
             invocation -> {
@@ -155,7 +155,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // Now advance the time enough for both sessions in the pool to be idled. Then do one
     // maintenance loop. This should cause the last session to have been checked back into the pool
     // to get a ping, but not the second session.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 1);
     assertThat(pingedSessions).containsExactly(session1.getName(), 1);
     // Do another maintenance loop. This should cause the other session to also get a ping.
@@ -181,13 +182,15 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // 2. session4 (=session2)
     // The pinged sessions already contains: {session1: 1, session2: 1}
     // Note that the pool only pings up to MinSessions sessions.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 3);
     assertThat(pingedSessions).containsExactly(session1.getName(), 2, session2.getName(), 2);
 
     // Advance the clock to idle all sessions in the pool again and then check out one session. This
     // should cause only one session to get a ping.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     // This will be session1, as all sessions were pinged in the previous 3 maintenance loops, and
     // this will have brought session1 back to the front of the pool.
     Session session6 = pool.getSession();
@@ -219,7 +222,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     session8.close();
     session9.close();
 
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 3);
     // session1 will not get a ping this time, as it was checked in first and is now the last
     // session in the pool.

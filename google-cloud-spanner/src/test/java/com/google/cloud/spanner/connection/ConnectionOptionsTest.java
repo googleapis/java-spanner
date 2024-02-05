@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionOptions.Builder.SPANNER_URI_PATTERN;
+import static com.google.cloud.spanner.connection.ConnectionOptions.determineHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,6 +35,7 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.Files;
 import java.io.File;
@@ -40,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
@@ -151,6 +155,105 @@ public class ConnectionOptionsTest {
     assertEquals("test-database-123", options.getDatabaseName());
     assertEquals(NoCredentials.getInstance(), options.getCredentials());
     assertTrue(options.isUsePlainText());
+  }
+
+  @Test
+  public void testDetermineHost() {
+    final String uriWithoutHost =
+        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123";
+    Matcher matcherWithoutHost = SPANNER_URI_PATTERN.matcher(uriWithoutHost);
+    assertTrue(matcherWithoutHost.find());
+    final String uriWithHost =
+        "cloudspanner://custom.host.domain:1234/projects/test-project-123/instances/test-instance-123/databases/test-database-123";
+    Matcher matcherWithHost = SPANNER_URI_PATTERN.matcher(uriWithHost);
+    assertTrue(matcherWithHost.find());
+
+    assertEquals(
+        DEFAULT_HOST,
+        determineHost(
+            matcherWithoutHost,
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ false,
+            ImmutableMap.of()));
+    assertEquals(
+        DEFAULT_HOST,
+        determineHost(
+            matcherWithoutHost,
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ false,
+            ImmutableMap.of("FOO", "bar")));
+    assertEquals(
+        "http://localhost:9010",
+        determineHost(
+            matcherWithoutHost,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ false,
+            ImmutableMap.of()));
+    assertEquals(
+        "http://localhost:9011",
+        determineHost(
+            matcherWithoutHost,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ false,
+            ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
+    assertEquals(
+        "http://localhost:9010",
+        determineHost(
+            matcherWithoutHost,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ true,
+            ImmutableMap.of()));
+    assertEquals(
+        "http://localhost:9011",
+        determineHost(
+            matcherWithoutHost,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ true,
+            ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
+
+    // A host in the connection string has precedence over all other options.
+    assertEquals(
+        "https://custom.host.domain:1234",
+        determineHost(
+            matcherWithHost,
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ false,
+            ImmutableMap.of()));
+    assertEquals(
+        "http://custom.host.domain:1234",
+        determineHost(
+            matcherWithHost,
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ true,
+            ImmutableMap.of()));
+    assertEquals(
+        "http://custom.host.domain:1234",
+        determineHost(
+            matcherWithHost,
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ true,
+            ImmutableMap.of()));
+    assertEquals(
+        "https://custom.host.domain:1234",
+        determineHost(
+            matcherWithHost,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ false,
+            ImmutableMap.of()));
+    assertEquals(
+        "http://custom.host.domain:1234",
+        determineHost(
+            matcherWithHost,
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ true,
+            ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
+    assertEquals(
+        "https://custom.host.domain:1234",
+        determineHost(
+            matcherWithHost,
+            /* autoConfigEmulator= */ true,
+            /* usePlainText= */ false,
+            ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
   }
 
   @Test
@@ -931,5 +1034,57 @@ public class ConnectionOptionsTest {
                     .setCredentials(NoCredentials.getInstance())
                     .build());
     assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+  }
+
+  @Test
+  public void testUseVirtualThreads() {
+    assertTrue(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualThreads=true")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
+    assertFalse(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualThreads=false")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
+    assertEquals(
+        ConnectionOptions.DEFAULT_USE_VIRTUAL_THREADS,
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
+  }
+
+  @Test
+  public void testUseVirtualGrpcTransportThreads() {
+    assertTrue(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualGrpcTransportThreads=true")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualGrpcTransportThreads());
+    assertFalse(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualGrpcTransportThreads=false")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualGrpcTransportThreads());
+    assertEquals(
+        ConnectionOptions.DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS,
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
   }
 }

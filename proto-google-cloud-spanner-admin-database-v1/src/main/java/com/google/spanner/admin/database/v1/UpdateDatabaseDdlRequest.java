@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     database_ = "";
     statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
     operationId_ = "";
+    protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
   }
 
   @java.lang.Override
@@ -285,6 +286,37 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
   }
 
+  public static final int PROTO_DESCRIPTORS_FIELD_NUMBER = 4;
+  private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
+   * Contains a protobuf-serialized
+   * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+   * To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+   * run `protoc` with --include_imports and --descriptor_set_out. For example,
+   * to generate for moon/shot/app.proto, run
+   * ```
+   * $protoc  --proto_path=/app_path --proto_path=/lib_path &#92;
+   *          --include_imports &#92;
+   *          --descriptor_set_out=descriptors.data &#92;
+   *          moon/shot/app.proto
+   * ```
+   * For more details, see protobuffer [self
+   * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+   * </pre>
+   *
+   * <code>bytes proto_descriptors = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
+   *
+   * @return The protoDescriptors.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getProtoDescriptors() {
+    return protoDescriptors_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -307,6 +339,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(operationId_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, operationId_);
+    }
+    if (!protoDescriptors_.isEmpty()) {
+      output.writeBytes(4, protoDescriptors_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -331,6 +366,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(operationId_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, operationId_);
     }
+    if (!protoDescriptors_.isEmpty()) {
+      size += com.google.protobuf.CodedOutputStream.computeBytesSize(4, protoDescriptors_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -350,6 +388,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     if (!getDatabase().equals(other.getDatabase())) return false;
     if (!getStatementsList().equals(other.getStatementsList())) return false;
     if (!getOperationId().equals(other.getOperationId())) return false;
+    if (!getProtoDescriptors().equals(other.getProtoDescriptors())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -369,6 +408,8 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
     }
     hash = (37 * hash) + OPERATION_ID_FIELD_NUMBER;
     hash = (53 * hash) + getOperationId().hashCode();
+    hash = (37 * hash) + PROTO_DESCRIPTORS_FIELD_NUMBER;
+    hash = (53 * hash) + getProtoDescriptors().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -527,6 +568,7 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       database_ = "";
       statements_ = com.google.protobuf.LazyStringArrayList.emptyList();
       operationId_ = "";
+      protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
       return this;
     }
 
@@ -574,6 +616,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.operationId_ = operationId_;
+      }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        result.protoDescriptors_ = protoDescriptors_;
       }
     }
 
@@ -644,6 +689,9 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
         bitField0_ |= 0x00000004;
         onChanged();
       }
+      if (other.getProtoDescriptors() != com.google.protobuf.ByteString.EMPTY) {
+        setProtoDescriptors(other.getProtoDescriptors());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -689,6 +737,12 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
                 bitField0_ |= 0x00000004;
                 break;
               } // case 26
+            case 34:
+              {
+                protoDescriptors_ = input.readBytes();
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1190,6 +1244,100 @@ public final class UpdateDatabaseDdlRequest extends com.google.protobuf.Generate
       checkByteStringIsUtf8(value);
       operationId_ = value;
       bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.ByteString protoDescriptors_ = com.google.protobuf.ByteString.EMPTY;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
+     * Contains a protobuf-serialized
+     * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+     * To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+     * run `protoc` with --include_imports and --descriptor_set_out. For example,
+     * to generate for moon/shot/app.proto, run
+     * ```
+     * $protoc  --proto_path=/app_path --proto_path=/lib_path &#92;
+     *          --include_imports &#92;
+     *          --descriptor_set_out=descriptors.data &#92;
+     *          moon/shot/app.proto
+     * ```
+     * For more details, see protobuffer [self
+     * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+     * </pre>
+     *
+     * <code>bytes proto_descriptors = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return The protoDescriptors.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getProtoDescriptors() {
+      return protoDescriptors_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
+     * Contains a protobuf-serialized
+     * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+     * To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+     * run `protoc` with --include_imports and --descriptor_set_out. For example,
+     * to generate for moon/shot/app.proto, run
+     * ```
+     * $protoc  --proto_path=/app_path --proto_path=/lib_path &#92;
+     *          --include_imports &#92;
+     *          --descriptor_set_out=descriptors.data &#92;
+     *          moon/shot/app.proto
+     * ```
+     * For more details, see protobuffer [self
+     * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+     * </pre>
+     *
+     * <code>bytes proto_descriptors = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @param value The protoDescriptors to set.
+     * @return This builder for chaining.
+     */
+    public Builder setProtoDescriptors(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      protoDescriptors_ = value;
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
+     * Contains a protobuf-serialized
+     * [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+     * To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+     * run `protoc` with --include_imports and --descriptor_set_out. For example,
+     * to generate for moon/shot/app.proto, run
+     * ```
+     * $protoc  --proto_path=/app_path --proto_path=/lib_path &#92;
+     *          --include_imports &#92;
+     *          --descriptor_set_out=descriptors.data &#92;
+     *          moon/shot/app.proto
+     * ```
+     * For more details, see protobuffer [self
+     * description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+     * </pre>
+     *
+     * <code>bytes proto_descriptors = 4 [(.google.api.field_behavior) = OPTIONAL];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearProtoDescriptors() {
+      bitField0_ = (bitField0_ & ~0x00000008);
+      protoDescriptors_ = getDefaultInstance().getProtoDescriptors();
       onChanged();
       return this;
     }

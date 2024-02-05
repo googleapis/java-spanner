@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,8 @@ public interface ListSessionsRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
+   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
+   * from a previous
    * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
    * </pre>
    *
@@ -85,7 +86,8 @@ public interface ListSessionsRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token] from a previous
+   * [next_page_token][google.spanner.v1.ListSessionsResponse.next_page_token]
+   * from a previous
    * [ListSessionsResponse][google.spanner.v1.ListSessionsResponse].
    * </pre>
    *

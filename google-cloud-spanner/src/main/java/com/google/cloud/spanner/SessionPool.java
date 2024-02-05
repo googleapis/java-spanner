@@ -145,16 +145,6 @@ class SessionPool {
     }
   }
 
-  /**
-   * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
-   * Clock.
-   */
-  static class Clock {
-    Instant instant() {
-      return Instant.now();
-    }
-  }
-
   private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
     private ResultSet cached;
 
@@ -1371,7 +1361,6 @@ class SessionPool {
 
   class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
-    private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
 
@@ -1410,7 +1399,9 @@ class SessionPool {
     private PooledSession(SessionImpl delegate) {
       this.delegate = delegate;
       this.state = SessionState.AVAILABLE;
-      this.lastUseTime = clock.instant();
+
+      // initialise the lastUseTime field for each session.
+      this.markUsed();
     }
 
     int getChannel() {
@@ -1632,7 +1623,7 @@ class SessionPool {
     }
 
     void markUsed() {
-      lastUseTime = clock.instant();
+      delegate.markUsed(clock.instant());
     }
 
     @Override
@@ -1828,7 +1819,7 @@ class SessionPool {
         Iterator<PooledSession> iterator = sessions.descendingIterator();
         while (iterator.hasNext()) {
           PooledSession session = iterator.next();
-          if (session.lastUseTime.isBefore(minLastUseTime)) {
+          if (session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {
               boolean isRemoved = removeFromPool(session);
               if (isRemoved) {
@@ -1930,7 +1921,8 @@ class SessionPool {
             // collection is populated only when the get() method in {@code PooledSessionFuture} is
             // called.
             final PooledSession session = sessionFuture.get();
-            final Duration durationFromLastUse = Duration.between(session.lastUseTime, currentTime);
+            final Duration durationFromLastUse =
+                Duration.between(session.delegate.getLastUseTime(), currentTime);
             if (!session.eligibleForLongRunning
                 && durationFromLastUse.compareTo(
                         inactiveTransactionRemovalOptions.getIdleTimeThreshold())
@@ -2328,7 +2320,7 @@ class SessionPool {
         && (numChecked + numAlreadyChecked)
             < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
-      if (session.lastUseTime.isBefore(keepAliveThreshold)) {
+      if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
         iterator.remove();
         return Tuple.of(session, numChecked);
       }

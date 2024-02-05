@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -166,6 +167,8 @@ public class ConnectionOptions {
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
+  static final boolean DEFAULT_USE_VIRTUAL_THREADS = false;
+  static final boolean DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS = false;
   private static final String DEFAULT_CREDENTIALS = null;
   private static final String DEFAULT_OAUTH_TOKEN = null;
   private static final String DEFAULT_MIN_SESSIONS = null;
@@ -191,6 +194,7 @@ public class ConnectionOptions {
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
   private static final String DEFAULT_HOST = "https://spanner.googleapis.com";
+  private static final String SPANNER_EMULATOR_HOST_ENV_VAR = "SPANNER_EMULATOR_HOST";
   private static final String DEFAULT_EMULATOR_HOST = "http://localhost:9010";
   /** Use plain text is only for local testing purposes. */
   private static final String USE_PLAIN_TEXT_PROPERTY_NAME = "usePlainText";
@@ -202,6 +206,11 @@ public class ConnectionOptions {
   public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
+  /** Name of the property to enable/disable virtual threads for the statement executor. */
+  public static final String USE_VIRTUAL_THREADS_PROPERTY_NAME = "useVirtualThreads";
+  /** Name of the property to enable/disable virtual threads for gRPC transport. */
+  public static final String USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME =
+      "useVirtualGrpcTransportThreads";
   /** Name of the 'credentials' connection property. */
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
   /** Name of the 'encodedCredentials' connection property. */
@@ -291,6 +300,16 @@ public class ConnectionOptions {
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
                       DEFAULT_RETRY_ABORTS_INTERNALLY),
+                  ConnectionProperty.createBooleanProperty(
+                      USE_VIRTUAL_THREADS_PROPERTY_NAME,
+                      "Use a virtual thread instead of a platform thread for each connection (true/false). "
+                          + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
+                      DEFAULT_USE_VIRTUAL_THREADS),
+                  ConnectionProperty.createBooleanProperty(
+                      USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME,
+                      "Use a virtual thread instead of a platform thread for the gRPC executor (true/false). "
+                          + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
+                      DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS),
                   ConnectionProperty.createStringProperty(
                       CREDENTIALS_PROPERTY_NAME,
                       "The location of the credentials file to use for this connection. If neither this property or encoded credentials are set, the connection will use the default Google Cloud credentials for the runtime environment."),
@@ -473,7 +492,10 @@ public class ConnectionOptions {
         "(?:cloudspanner:)(?<HOSTGROUP>//[\\w.-]+(?:\\.[\\w\\.-]+)*[\\w\\-\\._~:/?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=.]+)?/projects/(?<PROJECTGROUP>(([a-z]|[-.:]|[0-9])+|(DEFAULT_PROJECT_ID)))(/instances/(?<INSTANCEGROUP>([a-z]|[-]|[0-9])+)(/databases/(?<DATABASEGROUP>([a-z]|[-]|[_]|[0-9])+))?)?(?:[?|;].*)?";
 
     private static final String SPANNER_URI_REGEX = "(?is)^" + SPANNER_URI_FORMAT + "$";
-    private static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
+
+    @VisibleForTesting
+    static final Pattern SPANNER_URI_PATTERN = Pattern.compile(SPANNER_URI_REGEX);
+
     private static final String HOST_GROUP = "HOSTGROUP";
     private static final String PROJECT_GROUP = "PROJECTGROUP";
     private static final String INSTANCE_GROUP = "INSTANCEGROUP";
@@ -667,6 +689,8 @@ public class ConnectionOptions {
   private final boolean readOnly;
   private final boolean routeToLeader;
   private final boolean retryAbortsInternally;
+  private final boolean useVirtualThreads;
+  private final boolean useVirtualGrpcTransportThreads;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -706,7 +730,7 @@ public class ConnectionOptions {
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
-    this.host = determineHost(matcher, autoConfigEmulator, usePlainText);
+    this.host = determineHost(matcher, autoConfigEmulator, usePlainText, System.getenv());
     this.rpcPriority = parseRPCPriority(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
@@ -766,6 +790,8 @@ public class ConnectionOptions {
     this.readOnly = parseReadOnly(this.uri);
     this.routeToLeader = parseRouteToLeader(this.uri);
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
+    this.useVirtualThreads = parseUseVirtualThreads(this.uri);
+    this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -791,11 +817,19 @@ public class ConnectionOptions {
     }
   }
 
-  private static String determineHost(
-      Matcher matcher, boolean autoConfigEmulator, boolean usePlainText) {
+  @VisibleForTesting
+  static String determineHost(
+      Matcher matcher,
+      boolean autoConfigEmulator,
+      boolean usePlainText,
+      Map<String, String> environment) {
     if (matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
-        return DEFAULT_EMULATOR_HOST;
+        if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
+          return DEFAULT_EMULATOR_HOST;
+        } else {
+          return PLAIN_TEXT_PROTOCOL + "//" + environment.get(SPANNER_EMULATOR_HOST_ENV_VAR);
+        }
       } else {
         return DEFAULT_HOST;
       }
@@ -858,6 +892,18 @@ public class ConnectionOptions {
   static boolean parseRetryAbortsInternally(String uri) {
     String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
+  }
+
+  @VisibleForTesting
+  static boolean parseUseVirtualThreads(String uri) {
+    String value = parseUriProperty(uri, USE_VIRTUAL_THREADS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_THREADS;
+  }
+
+  @VisibleForTesting
+  static boolean parseUseVirtualGrpcTransportThreads(String uri) {
+    String value = parseUriProperty(uri, USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS;
   }
 
   @VisibleForTesting
@@ -1278,6 +1324,16 @@ public class ConnectionOptions {
    */
   public boolean isRetryAbortsInternally() {
     return retryAbortsInternally;
+  }
+
+  /** Whether connections should use virtual threads for connection executors. */
+  public boolean isUseVirtualThreads() {
+    return useVirtualThreads;
+  }
+
+  /** Whether virtual threads should be used for gRPC transport. */
+  public boolean isUseVirtualGrpcTransportThreads() {
+    return useVirtualGrpcTransportThreads;
   }
 
   /** Any warnings that were generated while creating the {@link ConnectionOptions} instance. */

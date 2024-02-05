@@ -48,6 +48,9 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -65,7 +68,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -75,6 +82,20 @@ import org.threeten.bp.Duration;
 /** Unit tests for {@link com.google.cloud.spanner.SpannerOptions}. */
 @RunWith(JUnit4.class)
 public class SpannerOptionsTest {
+  private static Level originalLogLevel;
+
+  @BeforeClass
+  public static void disableLogging() {
+    Logger logger = Logger.getLogger("");
+    originalLogLevel = logger.getLevel();
+    logger.setLevel(Level.OFF);
+  }
+
+  @AfterClass
+  public static void resetLogging() {
+    Logger logger = Logger.getLogger("");
+    logger.setLevel(originalLogLevel);
+  }
 
   @Test
   public void defaultBuilder() {
@@ -696,6 +717,27 @@ public class SpannerOptionsTest {
             .disableLeaderAwareRouting()
             .build()
             .isLeaderAwareRoutingEnabled());
+  }
+
+  @Test
+  public void testSetDirectedReadOptions() {
+    final DirectedReadOptions directedReadOptions =
+        DirectedReadOptions.newBuilder()
+            .setIncludeReplicas(
+                IncludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder().setLocation("us-west1").build())
+                    .build())
+            .build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setDirectedReadOptions(directedReadOptions)
+            .build();
+    assertEquals(options.getDirectedReadOptions(), directedReadOptions);
+    assertThrows(
+        NullPointerException.class,
+        () -> SpannerOptions.newBuilder().setDirectedReadOptions(null).build());
   }
 
   @Test
