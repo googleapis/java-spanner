@@ -54,12 +54,14 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 // Integration Tests to test DDL, DML and DQL for Proto Columns and Enums
+@Ignore("Feature is not yet enabled in production")
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITProtoColumnTest {
