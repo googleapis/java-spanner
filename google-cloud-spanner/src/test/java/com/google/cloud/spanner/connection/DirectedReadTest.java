@@ -160,10 +160,12 @@ public class DirectedReadTest extends AbstractMockServerTest {
                 String.format(
                     "set %sdirected_read='%s'",
                     getVariablePrefix(), DirectedReadOptionsUtil.toString(expected))));
-        executeQuery(connection);
-        assertDirectedReadOptions(expected);
-
-        mockSpanner.clearRequests();
+        Repeat.twice(
+            () -> {
+              executeQuery(connection);
+              assertDirectedReadOptions(expected);
+              mockSpanner.clearRequests();
+            });
 
         // Reset to default.
         connection.execute(
@@ -227,9 +229,15 @@ public class DirectedReadTest extends AbstractMockServerTest {
               String.format(
                   "set %sdirected_read='%s'",
                   getVariablePrefix(), DirectedReadOptionsUtil.toString(expected))));
-      // This uses a read/write transaction, which will ignore any DirectedReadOptions.
-      executeQuery(connection);
-      assertDirectedReadOptions(expected);
+      // This uses a read-only transaction, which will use the DirectedReadOptions.
+      // Repeatedly executing a query on the same connection will also continue to use the
+      // DirectedReadOptions that have been set for the connection.
+      Repeat.twice(
+          () -> {
+            executeQuery(connection);
+            assertDirectedReadOptions(expected);
+            mockSpanner.clearRequests();
+          });
     }
   }
 
