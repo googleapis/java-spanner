@@ -210,7 +210,7 @@ public class IntegrationTestEnv extends ExternalResource {
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
-    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
+    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(6L, TimeUnit.HOURS);
     Timestamp currentTimestamp = Timestamp.now();
     int numDropped = 0;
     Page<Database> page = databaseAdminClient.listDatabases(instanceId.getInstance());

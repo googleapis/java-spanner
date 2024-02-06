@@ -540,4 +540,17 @@
     <className>com/google/cloud/spanner/Dialect</className>
     <method>java.lang.String getDefaultSchema()</method>
   </difference>
+  
+  <!-- Added DirectedReadOptions -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.DirectedReadOptions getDirectedRead()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDirectedRead(com.google.spanner.v1.DirectedReadOptions)</method>
+  </difference>
+  
 </differences>
