@@ -24,6 +24,7 @@ import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.httpjson.InstantiatingHttpJsonChannelProvider;
 import com.google.api.gax.rpc.ApiClientHeaderProvider;
@@ -34,6 +35,7 @@ import com.google.api.gax.rpc.PagedCallSettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
+import com.google.common.base.Strings;
 import com.google.iam.v1.GetIamPolicyRequest;
 import com.google.iam.v1.Policy;
 import com.google.iam.v1.SetIamPolicyRequest;
@@ -103,6 +105,8 @@ import javax.annotation.Generated;
  */
 @Generated("by gapic-generator-java")
 public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings> {
+
+  static final String SPANNER_EMULATOR_HOST_ENV_VAR = "SPANNER_EMULATOR_HOST";
 
   /** Returns the object with the settings used for calls to listInstanceConfigs. */
   public PagedCallSettings<
@@ -256,6 +260,20 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
 
   /** Returns a new gRPC builder for this class. */
   public static Builder newBuilder() {
+    String hostAndPort = System.getenv(SPANNER_EMULATOR_HOST_ENV_VAR);
+    if (!Strings.isNullOrEmpty(hostAndPort)) {
+      int port;
+      try {
+        port = Integer.parseInt(hostAndPort.substring(hostAndPort.lastIndexOf(":") + 1));
+        return newBuilderForEmulator(hostAndPort.substring(0, hostAndPort.lastIndexOf(":")), port);
+      } catch (NumberFormatException | IndexOutOfBoundsException ex) {
+        throw new RuntimeException(
+            "Invalid host/port in "
+                + SPANNER_EMULATOR_HOST_ENV_VAR
+                + " environment variable: "
+                + hostAndPort);
+      }
+    }
     return Builder.createDefault();
   }
 
@@ -268,6 +286,34 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
   /** Returns a new builder for this class. */
   public static Builder newBuilder(ClientContext clientContext) {
     return new Builder(clientContext);
+  }
+
+  /** Create a new builder preconfigured to connect to the Spanner emulator with port number. */
+  public static Builder newBuilderForEmulator(int port) {
+    return newBuilderForEmulator("localhost", port);
+  }
+
+  /**
+   * Creates a new builder preconfigured to connect to the Spanner emulator with host name and port
+   * number.
+   */
+  public static Builder newBuilderForEmulator(String hostname, int port) {
+    Builder builder =
+        new Builder(
+            InstanceAdminStubSettings.newBuilder()
+                .setEndpoint(hostname + ":" + port)
+                .setCredentialsProvider(NoCredentialsProvider.create())
+                .setTransportChannelProvider(
+                    InstantiatingGrpcChannelProvider.newBuilder()
+                        .setEndpoint(hostname + ":" + port)
+                        .setPoolSize(1)
+                        .setChannelConfigurator(
+                            input -> {
+                              input.usePlaintext();
+                              return input;
+                            })
+                        .build()));
+    return builder;
   }
 
   /** Returns a builder containing all the values of this settings class. */
