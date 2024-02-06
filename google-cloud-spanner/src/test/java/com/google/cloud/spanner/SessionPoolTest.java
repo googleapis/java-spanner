@@ -1141,8 +1141,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     latch.await();
     // Wait until the request has timed out.
     int waitCount = 0;
-    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
-      Thread.sleep(5L);
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 5000) {
+      Thread.sleep(1L);
       waitCount++;
     }
     // Return the checked out session to the pool so the async request will get a session and
@@ -1189,8 +1189,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     latch.await();
     // Wait until the request has timed out.
     int waitCount = 0;
-    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
-      Thread.sleep(5L);
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 5000) {
+      Thread.sleep(1L);
       waitCount++;
     }
     // Return the checked out session to the pool so the async request will get a session and
