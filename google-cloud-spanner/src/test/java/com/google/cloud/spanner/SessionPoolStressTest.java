@@ -294,6 +294,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             () -> {
               while (!stopMaintenance.get()) {
                 runMaintenanceLoop(clock, pool, 1);
+                // Sleep 1ms between maintenance loops to prevent the long-running session remover
+                // from stealing all sessions before they can be used.
+                Uninterruptibles.sleepUninterruptibly(1L, TimeUnit.MILLISECONDS);
               }
             })
         .start();
