@@ -189,8 +189,8 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public boolean supportsDirectedReads() {
-    return true;
+  public boolean supportsDirectedReads(ParsedStatement parsedStatement) {
+    return parsedStatement.isQuery();
   }
 
   private void checkAndMarkUsed() {

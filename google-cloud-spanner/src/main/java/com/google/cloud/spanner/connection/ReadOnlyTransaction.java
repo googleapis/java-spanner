@@ -108,7 +108,7 @@ class ReadOnlyTransaction extends AbstractMultiUseTransaction {
   }
 
   @Override
-  public boolean supportsDirectedReads() {
+  public boolean supportsDirectedReads(ParsedStatement ignore) {
     return true;
   }
 

@@ -1148,7 +1148,8 @@ class ConnectionImpl implements Connection {
             CallType.SYNC,
             parsedStatement,
             getEffectivePartitionOptions(partitionOptions),
-            mergeDataBoost(mergeQueryRequestOptions(mergeQueryStatementTag(options)))));
+            mergeDataBoost(
+                mergeQueryRequestOptions(parsedStatement, mergeQueryStatementTag(options)))));
   }
 
   private PartitionOptions getEffectivePartitionOptions(
@@ -1457,13 +1458,14 @@ class ConnectionImpl implements Connection {
     return options;
   }
 
-  private QueryOption[] mergeQueryRequestOptions(QueryOption... options) {
+  private QueryOption[] mergeQueryRequestOptions(
+      ParsedStatement parsedStatement, QueryOption... options) {
     if (this.rpcPriority != null) {
       options = appendQueryOption(options, Options.priority(this.rpcPriority));
     }
     if (this.directedReadOptions != null
         && currentUnitOfWork != null
-        && currentUnitOfWork.supportsDirectedReads()) {
+        && currentUnitOfWork.supportsDirectedReads(parsedStatement)) {
       options = appendQueryOption(options, Options.directedRead(this.directedReadOptions));
     }
     return options;
@@ -1529,7 +1531,7 @@ class ConnectionImpl implements Connection {
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(mergeQueryStatementTag(options))));
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -1551,7 +1553,7 @@ class ConnectionImpl implements Connection {
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(mergeQueryStatementTag(options))),
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))),
         spanner.getAsyncExecutorProvider(),
         options);
   }

@@ -132,7 +132,7 @@ interface UnitOfWork {
    * @return <code>true</code> if this unit of work supports {@link
    *     com.google.spanner.v1.DirectedReadOptions}
    */
-  default boolean supportsDirectedReads() {
+  default boolean supportsDirectedReads(ParsedStatement parsedStatement) {
     return false;
   }
 

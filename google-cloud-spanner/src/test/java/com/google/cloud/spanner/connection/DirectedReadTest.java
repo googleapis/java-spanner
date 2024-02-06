@@ -25,16 +25,11 @@ import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
-import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.*;
 import com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
-import com.google.spanner.v1.ExecuteSqlRequest;
-import com.google.spanner.v1.ResultSetMetadata;
-import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
-import com.google.spanner.v1.Type;
-import com.google.spanner.v1.TypeCode;
 import java.util.Collection;
 import java.util.List;
 import org.junit.After;
@@ -48,7 +43,12 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class DirectedReadTest extends AbstractMockServerTest {
-  private static final Statement STATEMENT = Statement.of("SELECT 1 AS C");
+  private static final Statement READ_STATEMENT = Statement.of("SELECT 1 AS C");
+
+  private static final Statement GOOGLESQL_DML_STATEMENT =
+      Statement.of("INSERT INTO T (id) VALUES (1) THEN RETURN ID");
+  private static final Statement POSTGRESQL_DML_STATEMENT =
+      Statement.of("INSERT INTO T (id) VALUES (1) RETURNING ID");
 
   @Parameters(name = "dialect = {0}")
   public static Collection<Object[]> data() {
@@ -64,26 +64,40 @@ public class DirectedReadTest extends AbstractMockServerTest {
   private Dialect currentDialect;
 
   @BeforeClass
-  public static void setupQueryResult() {
+  public static void setupQueryResults() {
+    com.google.spanner.v1.ResultSet resultSet =
+        com.google.spanner.v1.ResultSet.newBuilder()
+            .setMetadata(
+                ResultSetMetadata.newBuilder()
+                    .setRowType(
+                        StructType.newBuilder()
+                            .addFields(
+                                Field.newBuilder()
+                                    .setName("C")
+                                    .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                    .build())
+                            .build())
+                    .build())
+            .addRows(
+                ListValue.newBuilder()
+                    .addValues(Value.newBuilder().setStringValue("1").build())
+                    .build())
+            .build();
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(READ_STATEMENT, resultSet));
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.query(
-            STATEMENT,
-            com.google.spanner.v1.ResultSet.newBuilder()
-                .setMetadata(
-                    ResultSetMetadata.newBuilder()
-                        .setRowType(
-                            StructType.newBuilder()
-                                .addFields(
-                                    Field.newBuilder()
-                                        .setName("C")
-                                        .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
-                                        .build())
-                                .build())
-                        .build())
-                .addRows(
-                    ListValue.newBuilder()
-                        .addValues(Value.newBuilder().setStringValue("1").build())
-                        .build())
+            GOOGLESQL_DML_STATEMENT,
+            resultSet
+                .toBuilder()
+                .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build())
+                .build()));
+    mockSpanner.putStatementResult(
+        MockSpannerServiceImpl.StatementResult.query(
+            POSTGRESQL_DML_STATEMENT,
+            resultSet
+                .toBuilder()
+                .setStats(ResultSetStats.newBuilder().setRowCountExact(1L).build())
                 .build()));
   }
 
@@ -102,6 +116,10 @@ public class DirectedReadTest extends AbstractMockServerTest {
     return dialect == Dialect.POSTGRESQL ? "spanner." : "";
   }
 
+  private Statement getDmlStatement() {
+    return dialect == Dialect.POSTGRESQL ? POSTGRESQL_DML_STATEMENT : GOOGLESQL_DML_STATEMENT;
+  }
+
   @After
   public void clearRequests() {
     mockSpanner.clearRequests();
@@ -115,7 +133,7 @@ public class DirectedReadTest extends AbstractMockServerTest {
           connection.setAutocommit(autocommit);
           connection.setReadOnly(readOnly);
 
-          executeQuery(connection);
+          executeReadQuery(connection);
           assertDirectedReadOptions(DirectedReadOptions.getDefaultInstance());
 
           if (!autocommit) {
@@ -162,7 +180,7 @@ public class DirectedReadTest extends AbstractMockServerTest {
                     getVariablePrefix(), DirectedReadOptionsUtil.toString(expected))));
         Repeat.twice(
             () -> {
-              executeQuery(connection);
+              executeReadQuery(connection);
               assertDirectedReadOptions(expected);
               mockSpanner.clearRequests();
             });
@@ -170,11 +188,38 @@ public class DirectedReadTest extends AbstractMockServerTest {
         // Reset to default.
         connection.execute(
             Statement.of(String.format("set %sdirected_read=''", getVariablePrefix())));
-        executeQuery(connection);
+        executeReadQuery(connection);
         assertDirectedReadOptions(DirectedReadOptions.getDefaultInstance());
 
         mockSpanner.clearRequests();
       }
+    }
+  }
+
+  @Test
+  public void testDirectedReadIsIgnoredForDmlInAutoCommit() {
+    DirectedReadOptions options =
+        DirectedReadOptions.newBuilder()
+            .setExcludeReplicas(
+                ExcludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder()
+                            .setLocation("eu-west1")
+                            .setType(ReplicaSelection.Type.READ_ONLY)
+                            .build())
+                    .build())
+            .build();
+
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      connection.execute(
+          Statement.of(
+              String.format(
+                  "set %sdirected_read='%s'",
+                  getVariablePrefix(), DirectedReadOptionsUtil.toString(options))));
+      // DML should not use directed read.
+      executeDmlQuery(connection);
+      assertDirectedReadOptions(DirectedReadOptions.getDefaultInstance());
     }
   }
 
@@ -184,25 +229,30 @@ public class DirectedReadTest extends AbstractMockServerTest {
       connection.setAutocommit(false);
       connection.setReadOnly(false);
 
-      connection.execute(
-          Statement.of(
-              String.format(
-                  "set %sdirected_read='%s'",
-                  getVariablePrefix(),
-                  DirectedReadOptionsUtil.toString(
-                      DirectedReadOptions.newBuilder()
-                          .setIncludeReplicas(
-                              IncludeReplicas.newBuilder()
-                                  .addReplicaSelections(
-                                      ReplicaSelection.newBuilder()
-                                          .setType(ReplicaSelection.Type.READ_WRITE)
-                                          .setLocation("us-west1")
-                                          .build())
-                                  .build())
-                          .build()))));
-      // This uses a read/write transaction, which will ignore any DirectedReadOptions.
-      executeQuery(connection);
-      assertDirectedReadOptions(DirectedReadOptions.getDefaultInstance());
+      for (Statement statement : new Statement[] {READ_STATEMENT, getDmlStatement()}) {
+        connection.execute(
+            Statement.of(
+                String.format(
+                    "set %sdirected_read='%s'",
+                    getVariablePrefix(),
+                    DirectedReadOptionsUtil.toString(
+                        DirectedReadOptions.newBuilder()
+                            .setIncludeReplicas(
+                                IncludeReplicas.newBuilder()
+                                    .addReplicaSelections(
+                                        ReplicaSelection.newBuilder()
+                                            .setType(ReplicaSelection.Type.READ_WRITE)
+                                            .setLocation("us-west1")
+                                            .build())
+                                    .build())
+                            .build()))));
+        // This uses a read/write transaction, which will ignore any DirectedReadOptions.
+        executeQuery(connection, statement);
+        assertDirectedReadOptions(DirectedReadOptions.getDefaultInstance());
+
+        connection.commit();
+        mockSpanner.clearRequests();
+      }
     }
   }
 
@@ -234,15 +284,23 @@ public class DirectedReadTest extends AbstractMockServerTest {
       // DirectedReadOptions that have been set for the connection.
       Repeat.twice(
           () -> {
-            executeQuery(connection);
+            executeReadQuery(connection);
             assertDirectedReadOptions(expected);
             mockSpanner.clearRequests();
           });
     }
   }
 
-  private void executeQuery(Connection connection) {
-    try (ResultSet resultSet = connection.executeQuery(STATEMENT)) {
+  private void executeReadQuery(Connection connection) {
+    executeQuery(connection, READ_STATEMENT);
+  }
+
+  private void executeDmlQuery(Connection connection) {
+    executeQuery(connection, getDmlStatement());
+  }
+
+  private void executeQuery(Connection connection, Statement statement) {
+    try (ResultSet resultSet = connection.executeQuery(statement)) {
       //noinspection StatementWithEmptyBody
       while (resultSet.next()) {
         // ignore
