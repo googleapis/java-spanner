@@ -16,12 +16,15 @@
 
 package com.google.cloud.spanner.testing;
 
+import com.google.api.client.util.BackOff;
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
@@ -34,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -138,9 +142,41 @@ public class RemoteSpannerHelper {
     try {
       Iterable<String> ddlStatements =
           dialect == Dialect.POSTGRESQL ? Collections.emptyList() : statements;
-      OperationFuture<Database, CreateDatabaseMetadata> op =
-          client.getDatabaseAdminClient().createDatabase(databaseToCreate, ddlStatements);
-      Database db = op.get();
+      Database db = null;
+      final int maxAttempts = 20;
+      BackOff backOff =
+          new ExponentialBackOff.Builder()
+              .setInitialIntervalMillis(10_000)
+              .setMaxIntervalMillis(60_000)
+              .setMaxElapsedTimeMillis(120_000)
+              .build();
+      for (int attempts = 0; attempts < maxAttempts; attempts++) {
+        try {
+          OperationFuture<Database, CreateDatabaseMetadata> op =
+              client.getDatabaseAdminClient().createDatabase(databaseToCreate, ddlStatements);
+          db = op.get();
+          break;
+        } catch (ExecutionException executionException) {
+          SpannerException spannerException =
+              SpannerExceptionFactory.asSpannerException(executionException.getCause());
+          if (spannerException.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED) {
+            throw executionException;
+          }
+        } catch (SpannerException spannerException) {
+          if (spannerException.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED) {
+            throw spannerException;
+          }
+        }
+        long sleep = backOff.nextBackOffMillis();
+        if (sleep > 0L) {
+          Thread.sleep(sleep);
+        }
+      }
+      if (db == null) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.RESOURCE_EXHAUSTED,
+            String.format("Failed to create test database after %d attempts", maxAttempts));
+      }
       if (dialect == Dialect.POSTGRESQL && Iterables.size(statements) > 0) {
         client
             .getDatabaseAdminClient()
