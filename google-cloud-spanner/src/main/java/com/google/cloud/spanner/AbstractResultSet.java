@@ -485,7 +485,7 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case PROTO:
             builder
                 .set(fieldName)
-                .to(Value.protoMessage((ByteArray) value, fieldType.getProtoTypeFqn()));
+                .to(Value.protoMessage(((LazyByteArray) value).getByteArray(), fieldType.getProtoTypeFqn()));
             break;
           case ENUM:
             builder.set(fieldName).to(Value.protoEnum((Long) value, fieldType.getProtoTypeFqn()));
