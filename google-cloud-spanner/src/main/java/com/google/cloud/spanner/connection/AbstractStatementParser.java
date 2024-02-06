@@ -470,7 +470,7 @@ public abstract class AbstractStatementParser {
 
     ParsedStatement parsedStatement = statementCache.getIfPresent(statement.getSql());
     if (parsedStatement == null) {
-      parsedStatement = internalParse(statement, null);
+      parsedStatement = internalParse(statement, defaultQueryOptions);
       statementCache.put(statement.getSql(), parsedStatement.forCache());
       return parsedStatement;
     }
