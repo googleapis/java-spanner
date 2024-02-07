@@ -133,6 +133,7 @@ import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
+
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
@@ -261,7 +262,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
+  testPoolMaintainer_whenInactiveTransactionAndSessionIsNotFoundOnBackend_removeSessionsFromPool() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -338,7 +339,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenInactiveTransactionAndSessionExistsOnBackend_removeSessionsFromPool() {
+  testPoolMaintainer_whenInactiveTransactionAndSessionExistsOnBackend_removeSessionsFromPool() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -564,8 +565,8 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningReadsUsingTransactionRunner_retainSessionForTransaction()
-          throws Exception {
+  testPoolMaintainer_whenLongRunningReadsUsingTransactionRunner_retainSessionForTransaction()
+      throws Exception {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -637,7 +638,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningQueriesUsingTransactionRunner_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningQueriesUsingTransactionRunner_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -699,7 +700,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningUpdatesUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningUpdatesUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -764,7 +765,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningReadsUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningReadsUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -843,7 +844,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningReadRowUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningReadRowUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -910,7 +911,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningAnalyzeUpdateStatementUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningAnalyzeUpdateStatementUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -981,7 +982,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningBatchUpdatesUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningBatchUpdatesUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -1048,7 +1049,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningBatchUpdatesAsyncUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningBatchUpdatesAsyncUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -1115,7 +1116,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningExecuteQueryUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningExecuteQueryUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -1184,7 +1185,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningExecuteQueryAsyncUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningExecuteQueryAsyncUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -1253,7 +1254,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningAnalyzeQueryUsingTransactionManager_retainSessionForTransaction() {
+  testPoolMaintainer_whenLongRunningAnalyzeQueryUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -2392,7 +2393,9 @@ public class DatabaseClientImplTest {
     assertThat(updateCount).isEqualTo(UPDATE_COUNT);
   }
 
-  /** {@link AbortedException} should automatically be retried. */
+  /**
+   * {@link AbortedException} should automatically be retried.
+   */
   @Test
   public void testExecutePartitionedDmlAborted() {
     DatabaseClient client =
@@ -2413,7 +2416,9 @@ public class DatabaseClientImplTest {
     client.executePartitionedUpdate(SELECT1);
   }
 
-  /** Server side exceptions that are not {@link AbortedException}s should propagate to the user. */
+  /**
+   * Server side exceptions that are not {@link AbortedException}s should propagate to the user.
+   */
   @Test(expected = SpannerException.class)
   public void testExecutePartitionedDmlWithException() {
     DatabaseClient client =
@@ -2565,11 +2570,11 @@ public class DatabaseClientImplTest {
   @Test
   public void testDatabaseOrInstanceDoesNotExistOnInitialization() throws Exception {
     StatusRuntimeException[] exceptions =
-        new StatusRuntimeException[] {
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        new StatusRuntimeException[]{
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
       try (Spanner spanner =
@@ -2604,11 +2609,11 @@ public class DatabaseClientImplTest {
   @Test
   public void testDatabaseOrInstanceDoesNotExistOnCreate() {
     StatusRuntimeException[] exceptions =
-        new StatusRuntimeException[] {
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        new StatusRuntimeException[]{
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
       mockSpanner.setBatchCreateSessionsExecutionTime(
@@ -2644,11 +2649,11 @@ public class DatabaseClientImplTest {
   @Test
   public void testDatabaseOrInstanceDoesNotExistOnReplenish() throws Exception {
     StatusRuntimeException[] exceptions =
-        new StatusRuntimeException[] {
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        new StatusRuntimeException[]{
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
       try (Spanner spanner =
@@ -2700,11 +2705,11 @@ public class DatabaseClientImplTest {
   @Test
   public void testDatabaseOrInstanceIsDeletedAndThenRecreated() throws Exception {
     StatusRuntimeException[] exceptions =
-        new StatusRuntimeException[] {
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        new StatusRuntimeException[]{
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
       try (Spanner spanner =
@@ -2770,11 +2775,11 @@ public class DatabaseClientImplTest {
   @Test
   public void testGetInvalidatedClientMultipleTimes() {
     StatusRuntimeException[] exceptions =
-        new StatusRuntimeException[] {
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+        new StatusRuntimeException[]{
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
       mockSpanner.setBatchCreateSessionsExecutionTime(
@@ -2851,7 +2856,7 @@ public class DatabaseClientImplTest {
     Stopwatch watch = Stopwatch.createStarted();
     while (watch.elapsed(TimeUnit.SECONDS) < 5
         && (client1.pool.getNumberOfSessionsInPool() < minSessions
-            || client2.pool.getNumberOfSessionsInPool() < minSessions)) {
+        || client2.pool.getNumberOfSessionsInPool() < minSessions)) {
       //noinspection BusyWait
       Thread.sleep(1L);
     }
@@ -3034,7 +3039,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testBackendPartitionQueryOptions_whenDirectedReadOptionsViaSpannerOptions_assertOptions() {
+  testBackendPartitionQueryOptions_whenDirectedReadOptionsViaSpannerOptions_assertOptions() {
     // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
@@ -3126,7 +3131,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void
-      testBackendPartitionReadOptions_whenDirectedReadOptionsViaSpannerOptions_assertOptions() {
+  testBackendPartitionReadOptions_whenDirectedReadOptionsViaSpannerOptions_assertOptions() {
     // Use a Spanner instance with MinSession=0 to prevent background requests
     // from the session pool interfering with the test case.
     try (Spanner spanner =
@@ -3151,7 +3156,8 @@ public class DatabaseClientImplTest {
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
         //noinspection StatementWithEmptyBody
-        while (rs.next()) {}
+        while (rs.next()) {
+        }
       } finally {
         transaction.cleanup();
       }
@@ -3426,7 +3432,8 @@ public class DatabaseClientImplTest {
     try (ResultSet resultSet =
         client.singleUse().executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
       //noinspection StatementWithEmptyBody
-      while (resultSet.next()) {}
+      while (resultSet.next()) {
+      }
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -3449,7 +3456,8 @@ public class DatabaseClientImplTest {
                 READ_COLUMN_NAMES,
                 Options.priority(RpcPriority.HIGH))) {
       //noinspection StatementWithEmptyBody
-      while (resultSet.next()) {}
+      while (resultSet.next()) {
+      }
     }
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -3469,7 +3477,8 @@ public class DatabaseClientImplTest {
           try (ResultSet resultSet =
               transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
             //noinspection StatementWithEmptyBody
-            while (resultSet.next()) {}
+            while (resultSet.next()) {
+            }
           }
           return null;
         });
@@ -3495,7 +3504,8 @@ public class DatabaseClientImplTest {
                   READ_COLUMN_NAMES,
                   Options.priority(RpcPriority.HIGH))) {
             //noinspection StatementWithEmptyBody
-            while (resultSet.next()) {}
+            while (resultSet.next()) {
+            }
           }
           return null;
         });
@@ -3657,7 +3667,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner =
-        client.readWriteTransaction(Options.maxCommitDelayInMilliSeconds(1000));
+        client.readWriteTransaction(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
     runner.run(
         transaction -> {
           transaction.buffer(Mutation.delete("TEST", KeySet.all()));
@@ -3669,7 +3679,7 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getMaxCommitDelay());
     assertEquals(
-        com.google.protobuf.Duration.newBuilder().setNanos(1000000000).build(),
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
         request.getMaxCommitDelay());
   }
 
@@ -3678,7 +3688,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionManager manager =
-        client.transactionManager(Options.maxCommitDelayInMilliSeconds(1000));
+        client.transactionManager(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
     TransactionContext transaction = manager.begin();
     transaction.buffer(Mutation.delete("TEST", KeySet.all()));
     manager.commit();
@@ -3688,7 +3698,7 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getMaxCommitDelay());
     assertEquals(
-        com.google.protobuf.Duration.newBuilder().setNanos(1000000000).build(),
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
         request.getMaxCommitDelay());
   }
 
@@ -3696,7 +3706,7 @@ public class DatabaseClientImplTest {
   public void testAsyncRunnerCommitWithMaxCommitDelay() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    AsyncRunner runner = client.runAsync(Options.maxCommitDelayInMilliSeconds(1000));
+    AsyncRunner runner = client.runAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
     get(
         runner.runAsync(
             txn -> {
@@ -3710,7 +3720,7 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getMaxCommitDelay());
     assertEquals(
-        com.google.protobuf.Duration.newBuilder().setNanos(1000000000).build(),
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
         request.getMaxCommitDelay());
   }
 
@@ -3719,7 +3729,7 @@ public class DatabaseClientImplTest {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (AsyncTransactionManager manager =
-        client.transactionManagerAsync(Options.maxCommitDelayInMilliSeconds(1000))) {
+        client.transactionManagerAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)))) {
       TransactionContextFuture transaction = manager.beginAsync();
       get(
           transaction
@@ -3737,7 +3747,7 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getMaxCommitDelay());
     assertEquals(
-        com.google.protobuf.Duration.newBuilder().setNanos(1000000000).build(),
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
         request.getMaxCommitDelay());
   }
 
@@ -3824,7 +3834,8 @@ public class DatabaseClientImplTest {
             }
             try (ResultSet rs = ctx.executeQuery(SELECT1)) {
               //noinspection StatementWithEmptyBody
-              while (rs.next()) {}
+              while (rs.next()) {
+              }
             }
             return 1L;
           }
@@ -4487,7 +4498,7 @@ public class DatabaseClientImplTest {
       mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
 
       for (int errorIndex = 0; errorIndex < expectedRowCount - 1; errorIndex++) {
-        for (boolean withRetryInfo : new boolean[] {false, true}) {
+        for (boolean withRetryInfo : new boolean[]{false, true}) {
           // RESOURCE_EXHAUSTED errors with and without retry-info should be retried.
           StatusRuntimeException exception =
               Status.RESOURCE_EXHAUSTED.asRuntimeException(withRetryInfo ? trailers : null);
@@ -4495,7 +4506,8 @@ public class DatabaseClientImplTest {
               SimulatedExecutionTime.ofStreamException(exception, errorIndex));
           try (ResultSet resultSet = client.singleUse().executeQuery(statement)) {
             //noinspection StatementWithEmptyBody
-            while (resultSet.next()) {}
+            while (resultSet.next()) {
+            }
           }
           assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
           if (errorIndex == 0) {
@@ -4542,12 +4554,14 @@ public class DatabaseClientImplTest {
 
   private void consumeResults(ResultSet resultSet) {
     //noinspection StatementWithEmptyBody
-    while (resultSet.next()) {}
+    while (resultSet.next()) {
+    }
   }
 
   private void consumeBatchWriteStream(ServerStream<BatchWriteResponse> stream) {
     //noinspection StatementWithEmptyBody
-    for (BatchWriteResponse ignore : stream) {}
+    for (BatchWriteResponse ignore : stream) {
+    }
   }
 
   private ListValue getRows(Dialect dialect) {

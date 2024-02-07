@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.Objects;
 
 /** Specifies options for various spanner operations */
@@ -140,11 +141,11 @@ public final class Options implements Serializable {
     return new PriorityOption(priority);
   }
 
-  public static ReadQueryUpdateTransactionOption maxCommitDelayInMilliSeconds(
-      int maxCommitDelayInMilliSeconds) {
+  public static ReadQueryUpdateTransactionOption maxCommitDelay(
+      Duration maxCommitDelay) {
     Preconditions.checkArgument(
-        maxCommitDelayInMilliSeconds > 0, "maxCommitDelayInMilliSeconds should be greater than 0");
-    return new MaxCommitDelayOption(maxCommitDelayInMilliSeconds);
+        !maxCommitDelay.isNegative(), "maxCommitDelay should be positive");
+    return new MaxCommitDelayOption(maxCommitDelay);
   }
 
   /**
@@ -257,15 +258,15 @@ public final class Options implements Serializable {
   /** Option to request {@link MaxCommitDelayOption} for read/write transactions. */
   static final class MaxCommitDelayOption extends InternalOption
       implements ReadQueryUpdateTransactionOption {
-    final int maxCommitDelayInMilliSeconds;
+    final Duration maxCommitDelay;
 
-    MaxCommitDelayOption(int maxCommitDelayInMilliSeconds) {
-      this.maxCommitDelayInMilliSeconds = maxCommitDelayInMilliSeconds;
+    MaxCommitDelayOption(Duration maxCommitDelay) {
+      this.maxCommitDelay = maxCommitDelay;
     }
 
     @Override
     void appendToOptions(Options options) {
-      options.maxCommitDelayInMilliSeconds = maxCommitDelayInMilliSeconds;
+      options.maxCommitDelay = maxCommitDelay;
     }
   }
 
@@ -377,7 +378,7 @@ public final class Options implements Serializable {
 
   private boolean withCommitStats;
 
-  private Integer maxCommitDelayInMilliSeconds;
+  private Duration maxCommitDelay;
 
   private Long limit;
   private Integer prefetchChunks;
@@ -400,12 +401,12 @@ public final class Options implements Serializable {
     return withCommitStats;
   }
 
-  boolean hasMaxCommitDelayInMilliSeconds() {
-    return maxCommitDelayInMilliSeconds != null;
+  boolean hasMaxCommitDelay() {
+    return maxCommitDelay != null;
   }
 
-  int maxCommitDelayInMilliSeconds() {
-    return maxCommitDelayInMilliSeconds;
+  Duration maxCommitDelay() {
+    return maxCommitDelay;
   }
 
   boolean hasLimit() {
@@ -514,8 +515,8 @@ public final class Options implements Serializable {
     if (withCommitStats) {
       b.append("withCommitStats: ").append(withCommitStats).append(' ');
     }
-    if (maxCommitDelayInMilliSeconds != null) {
-      b.append("maxCommitDelayInMilliSeconds: ").append(maxCommitDelayInMilliSeconds).append(' ');
+    if (maxCommitDelay != null) {
+      b.append("maxCommitDelay: ").append(maxCommitDelay).append(' ');
     }
     if (limit != null) {
       b.append("limit: ").append(limit).append(' ');
@@ -569,7 +570,7 @@ public final class Options implements Serializable {
 
     Options that = (Options) o;
     return Objects.equals(withCommitStats, that.withCommitStats)
-        && Objects.equals(maxCommitDelayInMilliSeconds, that.maxCommitDelayInMilliSeconds)
+        && Objects.equals(maxCommitDelay, that.maxCommitDelay)
         && (!hasLimit() && !that.hasLimit()
             || hasLimit() && that.hasLimit() && Objects.equals(limit(), that.limit()))
         && (!hasPrefetchChunks() && !that.hasPrefetchChunks()
@@ -599,8 +600,8 @@ public final class Options implements Serializable {
     if (withCommitStats) {
       result = 31 * result + 1231;
     }
-    if (maxCommitDelayInMilliSeconds != null) {
-      result = 31 * result + maxCommitDelayInMilliSeconds.hashCode();
+    if (maxCommitDelay != null) {
+      result = 31 * result + maxCommitDelay.hashCode();
     }
     if (limit != null) {
       result = 31 * result + limit.hashCode();

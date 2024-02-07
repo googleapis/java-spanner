@@ -61,9 +61,12 @@ import org.threeten.bp.Instant;
  * users need not be aware of the actual session management, pooling and handling.
  */
 class SessionImpl implements Session {
+
   private static final Tracer tracer = Tracing.getTracer();
 
-  /** Keep track of running transactions on this session per thread. */
+  /**
+   * Keep track of running transactions on this session per thread.
+   */
   static final ThreadLocal<Boolean> hasPendingTransaction = ThreadLocal.withInitial(() -> false);
 
   static void throwIfTransactionsPending() {
@@ -87,9 +90,15 @@ class SessionImpl implements Session {
    * only have one such transaction active at a time.
    */
   interface SessionTransaction {
-    /** Invalidates the transaction, generally because a new one has been started on the session. */
+
+    /**
+     * Invalidates the transaction, generally because a new one has been started on the session.
+     */
     void invalidate();
-    /** Registers the current span on the transaction. */
+
+    /**
+     * Registers the current span on the transaction.
+     */
     void setSpan(Span span);
   }
 
@@ -186,9 +195,10 @@ class SessionImpl implements Session {
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
-    if (options.hasMaxCommitDelayInMilliSeconds()) {
+    if (options.hasMaxCommitDelay()) {
       requestBuilder.setMaxCommitDelay(
-          Duration.newBuilder().setNanos(options.maxCommitDelayInMilliSeconds() * 1000000).build());
+          Duration.newBuilder().setSeconds(options.maxCommitDelay().getSeconds())
+              .setNanos(options.maxCommitDelay().getNano()).build());
     }
     RequestOptions commitRequestOptions = getRequestOptions(transactionOptions);
 

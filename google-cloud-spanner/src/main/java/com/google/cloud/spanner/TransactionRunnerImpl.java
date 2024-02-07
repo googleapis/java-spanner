@@ -69,8 +69,11 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
-/** Default implementation of {@link TransactionRunner}. */
+/**
+ * Default implementation of {@link TransactionRunner}.
+ */
 class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
+
   private static final Tracer tracer = Tracing.getTracer();
   private static final Logger txnLogger = Logger.getLogger(TransactionRunner.class.getName());
   /**
@@ -84,6 +87,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
+
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
 
       private Clock clock = new Clock();
@@ -91,7 +95,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       private Options options;
       private boolean trackTransactionStarter;
 
-      private Builder() {}
+      private Builder() {
+      }
 
       Builder setClock(Clock clock) {
         this.clock = Preconditions.checkNotNull(clock);
@@ -126,11 +131,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     /**
      * {@link AsyncResultSet} implementation that keeps track of the async operations that are still
-     * running for this {@link TransactionContext} and that should finish before the {@link
-     * TransactionContext} can commit and release its session back into the pool.
+     * running for this {@link TransactionContext} and that should finish before the
+     * {@link TransactionContext} can commit and release its session back into the pool.
      */
     private class TransactionContextAsyncResultSetImpl extends ForwardingAsyncResultSet
         implements ListenableAsyncResultSet {
+
       private TransactionContextAsyncResultSetImpl(ListenableAsyncResultSet delegate) {
         super(delegate);
       }
@@ -178,7 +184,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private final Options options;
 
-    /** Default to -1 to indicate not available. */
+    /**
+     * Default to -1 to indicate not available.
+     */
     @GuardedBy("lock")
     private long retryDelayInMillis = -1L;
 
@@ -187,9 +195,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      * transaction if the BeginTransaction option is included with the first statement of the
      * transaction.
      */
-    @VisibleForTesting volatile SettableApiFuture<ByteString> transactionIdFuture = null;
+    @VisibleForTesting
+    volatile SettableApiFuture<ByteString> transactionIdFuture = null;
 
-    @VisibleForTesting long waitForTransactionTimeoutMillis = 60_000L;
+    @VisibleForTesting
+    long waitForTransactionTimeoutMillis = 60_000L;
     private final boolean trackTransactionStarter;
     private Exception transactionStarter;
 
@@ -339,11 +349,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         builder.setRequestOptions(requestOptionsBuilder.build());
       }
-      if (options.hasMaxCommitDelayInMilliSeconds()) {
+      if (options.hasMaxCommitDelay()) {
         builder.setMaxCommitDelay(
             com.google.protobuf.Duration.newBuilder()
-                .setNanos(
-                    (int) TimeUnit.MILLISECONDS.toNanos(options.maxCommitDelayInMilliSeconds()))
+                .setSeconds(options.maxCommitDelay().getSeconds())
+                .setNanos(options.maxCommitDelay().getNano())
                 .build());
       }
       synchronized (lock) {
@@ -361,6 +371,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     private final class CommitRunnable implements Runnable {
+
       private final SettableApiFuture<CommitResponse> res;
       private final ApiFuture<Void> prev;
       private final CommitRequest.Builder requestBuilder;
@@ -386,7 +397,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             requestBuilder.setTransactionId(
                 transactionId == null
                     ? transactionIdFuture.get(
-                        waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS)
+                    waitForTransactionTimeoutMillis, TimeUnit.MILLISECONDS)
                     : transactionId);
           }
           if (options.hasPriority() || getTransactionTag() != null) {
@@ -547,8 +558,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   ErrorCode.ABORTED,
                   "Timeout while waiting for a transaction to be returned by another statement."
                       + (trackTransactionStarter
-                          ? " See the suppressed exception for the stacktrace of the caller that should return a transaction"
-                          : ""),
+                      ? " See the suppressed exception for the stacktrace of the caller that should return a transaction"
+                      : ""),
                   e);
           if (transactionStarter != null) {
             se.addSuppressed(transactionStarter);
@@ -582,7 +593,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Nullable
     String getTransactionTag() {
-      if (this.options.hasTag()) return this.options.tag();
+      if (this.options.hasTag()) {
+        return this.options.tag();
+      }
       return null;
     }
 
@@ -790,7 +803,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                 }
                 if (builder.getTransaction().hasBegin()
                     && !(input.getMetadata().hasTransaction()
-                        && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
+                    && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
                   throw SpannerExceptionFactory.newSpannerException(
                       ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
                 }

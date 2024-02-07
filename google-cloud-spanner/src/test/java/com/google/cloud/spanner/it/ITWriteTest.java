@@ -315,7 +315,7 @@ public class ITWriteTest {
                     .set("StringValue")
                     .to("v1")
                     .build()),
-            Options.maxCommitDelayInMilliSeconds(100));
+            Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
     assertNotNull(response);
     assertNotNull(response.getCommitTimestamp());
   }
