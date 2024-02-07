@@ -53,6 +53,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -78,11 +79,15 @@ public class TransactionManagerImplTest {
   @Mock TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionManagerImpl manager;
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
   @Before
   public void setUp() {
     initMocks(this);
-    SpannerOptions.resetActiveTracingFramework();
-    SpannerOptions.enableOpenTelemetryTraces();
     manager =
         new TransactionManagerImpl(
             session,

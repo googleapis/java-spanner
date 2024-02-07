@@ -166,10 +166,14 @@ public class SpanTest {
     }
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setupOpenTelemetry() {
     SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenCensusTraces();
+  }
+
+  @Before
+  public void setUp() throws Exception {
     // Incorporating OpenTelemetry configuration to ensure that OpenCensus traces are utilized by
     // default,
     // regardless of the presence of OpenTelemetry configuration.

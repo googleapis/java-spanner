@@ -39,6 +39,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -63,12 +64,16 @@ public final class BatchClientImplTest {
 
   private BatchClient client;
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     initMocks(this);
-    SpannerOptions.resetActiveTracingFramework();
-    SpannerOptions.enableOpenTelemetryTraces();
     DatabaseId db = DatabaseId.of(DB_NAME);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");

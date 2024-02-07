@@ -70,6 +70,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -102,11 +103,15 @@ public class TransactionRunnerImplTest {
   private TraceWrapper tracer;
   private ISpan span;
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    SpannerOptions.resetActiveTracingFramework();
-    SpannerOptions.enableOpenTelemetryTraces();
     tracer = new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
     firstRun = true;
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);

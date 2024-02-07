@@ -1894,6 +1894,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   @Test
   public void testOpenTelemetrySessionMetrics() throws Exception {
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryMetrics();
     // Create a session pool with max 2 session and a low timeout for waiting for a session.
     if (minSessions == 1) {

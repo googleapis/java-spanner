@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -58,11 +59,15 @@ public class SpannerImplTest {
 
   @Captor ArgumentCaptor<Map<SpannerRpc.Option, Object>> options;
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    SpannerOptions.resetActiveTracingFramework();
-    SpannerOptions.enableOpenTelemetryTraces();
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);

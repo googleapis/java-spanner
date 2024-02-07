@@ -212,6 +212,12 @@ public class OpenTelemetrySpanTest {
           "SessionPool.WaitForSession");
 
   @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
+  @BeforeClass
   public static void startStaticServer() throws Exception {
     // Incorporating OpenCensus tracer to ensure that OpenTraces traces are utilized if enabled,
     // regardless of the presence of OpenCensus tracer.
@@ -230,8 +236,6 @@ public class OpenTelemetrySpanTest {
     // Remove the final modifier from the 'traceComponent' field.
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
     field.set(null, failOnOverkillTraceComponent);
-
-    // OpenTelemetry Configuration
 
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
@@ -259,8 +263,6 @@ public class OpenTelemetrySpanTest {
 
   @Before
   public void setUp() throws Exception {
-    SpannerOptions.resetActiveTracingFramework();
-    SpannerOptions.enableOpenTelemetryTraces();
     spanExporter = InMemorySpanExporter.create();
 
     SdkTracerProvider tracerProvider =
