@@ -74,8 +74,7 @@ public class DecodeModeTest extends AbstractMockServerTest {
               for (int col = 0; col < direct.getColumnCount(); col++) {
                 // Test getting the entire row as a struct both as the first thing we do, and as the
                 // last thing we do. This ensures that the method works as expected both when a row
-                // is
-                // lazily decoded by this method, and when it has already been decoded by another
+                // is lazily decoded by this method, and when it has already been decoded by another
                 // method.
                 if (col % 2 == 0) {
                   assertEquals(direct.getCurrentRowAsStruct(), lazyPerRow.getCurrentRowAsStruct());

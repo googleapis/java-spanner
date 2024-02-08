@@ -93,6 +93,8 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
 
   @Override
   public Value getProtobufValue(int columnIndex) {
+    // We can safely cast to ProtobufResultSet here, as the constructor of this class only accepts
+    // instances of ProtobufResultSet.
     return ((ProtobufResultSet) getDelegate()).getProtobufValue(columnIndex);
   }
 
@@ -124,6 +126,8 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
 
   @VisibleForTesting
   byte[] getChecksum() {
+    // Getting the checksum from the checksumCalculator will create a clone of the current digest
+    // and return the checksum from the clone, so it is safe to return this value.
     return checksumCalculator.getChecksum();
   }
 
@@ -197,8 +201,12 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
    * values.
    */
   private static final class ChecksumCalculator {
-    // Use a buffer of max 32kb to hash string data.
-    private static final int MAX_BUFFER_SIZE = 1 << 15;
+    // Use a buffer of max 1Mb to hash string data. This means that strings of up to 1Mb in size
+    // will be hashed in one go, while strings larger than 1Mb will be chunked into pieces of at
+    // most 1Mb and then fed into the digest. The digest internally creates a copy of the string
+    // that is being hashed, so chunking large strings prevents them from being loaded into memory
+    // twice.
+    private static final int MAX_BUFFER_SIZE = 1 << 20;
 
     private boolean firstRow = true;
     private final MessageDigest digest;
@@ -219,6 +227,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
 
     private byte[] getChecksum() {
       try {
+        // This is safe, as the MD5 MessageDigest is known to be cloneable.
         MessageDigest clone = (MessageDigest) digest.clone();
         return clone.digest();
       } catch (CloneNotSupportedException e) {
@@ -239,6 +248,9 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           digest.update((byte) value.getKindCase().getNumber());
           pushValue(type, value);
         } else {
+          // This will normally not happen, unless the user explicitly sets the decoding mode to
+          // DIRECT for a query in a read/write transaction. The default decoding mode in the
+          // Connection API is set to LAZY_PER_COL.
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION,
               "Failed to get the underlying protobuf value for the column "
