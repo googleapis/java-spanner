@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
@@ -61,6 +62,8 @@ import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -75,12 +78,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
 public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final long serialVersionUID = 2789571558532701170L;
   private static SpannerEnvironment environment = SpannerEnvironmentImpl.INSTANCE;
+  private static boolean enableOpenCensusMetrics = true;
+  private static boolean enableOpenTelemetryMetrics = false;
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
@@ -141,6 +147,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean attemptDirectPath;
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
+  private final OpenTelemetry openTelemetry;
+
+  enum TracingFramework {
+    OPEN_CENSUS,
+    OPEN_TELEMETRY
+  }
+
+  private static final Object lock = new Object();
+
+  @GuardedBy("lock")
+  private static TracingFramework activeTracingFramework;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -633,6 +650,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     attemptDirectPath = builder.attemptDirectPath;
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
+    openTelemetry = builder.openTelemetry;
   }
 
   /**
@@ -737,6 +755,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean attemptDirectPath = true;
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
+    private OpenTelemetry openTelemetry;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1244,6 +1263,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets OpenTelemetry object to be used for Spanner Metrics and Traces. GlobalOpenTelemetry will
+     * be used as fallback if this options is not set.
+     */
+    public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
+      this.openTelemetry = openTelemetry;
+      return this;
+    }
+
+    /**
      * Enable leader aware routing. Leader aware routing would route all requests in RW/PDML
      * transactions to the leader region.
      */
@@ -1297,6 +1325,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
 
+      synchronized (lock) {
+        if (activeTracingFramework == null) {
+          activeTracingFramework = TracingFramework.OPEN_CENSUS;
+        }
+      }
       return new SpannerOptions(this);
     }
   }
@@ -1324,6 +1357,77 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  /**
+   * Enables OpenTelemetry traces. Enabling OpenTelemetry traces will disable OpenCensus traces. By
+   * default, OpenCensus traces are enabled.
+   */
+  public static void enableOpenTelemetryTraces() {
+    synchronized (lock) {
+      if (activeTracingFramework != null
+          && activeTracingFramework != TracingFramework.OPEN_TELEMETRY) {
+        throw new IllegalStateException(
+            "ActiveTracingFramework is set to OpenCensus and cannot be reset after SpannerOptions object is created.");
+      }
+      activeTracingFramework = TracingFramework.OPEN_TELEMETRY;
+    }
+  }
+
+  /** Enables OpenCensus traces. Enabling OpenCensus traces will disable OpenTelemetry traces. */
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  public static void enableOpenCensusTraces() {
+    synchronized (lock) {
+      if (activeTracingFramework != null
+          && activeTracingFramework != TracingFramework.OPEN_CENSUS) {
+        throw new IllegalStateException(
+            "ActiveTracingFramework is set to OpenTelemetry and cannot be reset after SpannerOptions object is created.");
+      }
+      activeTracingFramework = TracingFramework.OPEN_CENSUS;
+    }
+  }
+
+  /**
+   * Always resets the activeTracingFramework. This variable is used for internal testing, and is
+   * not a valid production scenario
+   */
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  static void resetActiveTracingFramework() {
+    activeTracingFramework = null;
+  }
+
+  public static TracingFramework getActiveTracingFramework() {
+    synchronized (lock) {
+      if (activeTracingFramework == null) {
+        return TracingFramework.OPEN_CENSUS;
+      }
+      return activeTracingFramework;
+    }
+  }
+
+  /** Disables OpenCensus metrics. Disable OpenCensus metrics before creating Spanner client. */
+  public static void disableOpenCensusMetrics() {
+    SpannerOptions.enableOpenCensusMetrics = false;
+  }
+
+  @VisibleForTesting
+  static void enableOpenCensusMetrics() {
+    SpannerOptions.enableOpenCensusMetrics = true;
+  }
+
+  public static boolean isEnabledOpenCensusMetrics() {
+    return SpannerOptions.enableOpenCensusMetrics;
+  }
+
+  /** Enables OpenTelemetry metrics. Enable OpenTelemetry metrics before creating Spanner client. */
+  public static void enableOpenTelemetryMetrics() {
+    SpannerOptions.enableOpenTelemetryMetrics = true;
+  }
+
+  public static boolean isEnabledOpenTelemetryMetrics() {
+    return SpannerOptions.enableOpenTelemetryMetrics;
   }
 
   @Override
@@ -1424,6 +1528,18 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @BetaApi
   public boolean isAttemptDirectPath() {
     return attemptDirectPath;
+  }
+
+  /**
+   * Returns an instance of OpenTelemetry. If OpenTelemetry object is not set via SpannerOptions
+   * then GlobalOpenTelemetry will be used as fallback.
+   */
+  public OpenTelemetry getOpenTelemetry() {
+    if (this.openTelemetry != null) {
+      return this.openTelemetry;
+    } else {
+      return GlobalOpenTelemetry.get();
+    }
   }
 
   @BetaApi

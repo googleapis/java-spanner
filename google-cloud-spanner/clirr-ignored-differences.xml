@@ -426,7 +426,6 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void rollbackToSavepoint(java.lang.String)</method>
   </difference>
-  
   <!-- Delay start transaction -->
   <difference>
     <differenceType>7012</differenceType>
@@ -539,6 +538,12 @@
     <differenceType>7013</differenceType>
     <className>com/google/cloud/spanner/Dialect</className>
     <method>java.lang.String getDefaultSchema()</method>
+  </difference>
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/PartitionedDmlTransaction</className>
+    <method>void setSpan(io.opencensus.trace.Span)</method>
+    <to>void setSpan(com.google.cloud.spanner.ISpan)</to>
   </difference>
   
   <!-- Added DirectedReadOptions -->
