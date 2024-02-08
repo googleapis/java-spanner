@@ -478,7 +478,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
           case PROTO:
             builder
                 .set(fieldName)
-                .to(Value.protoMessage((ByteArray) value, fieldType.getProtoTypeFqn()));
+                .to(
+                    Value.protoMessage(
+                        value == null ? null : ((LazyByteArray) value).getByteArray(),
+                        fieldType.getProtoTypeFqn()));
             break;
           case ENUM:
             builder.set(fieldName).to(Value.protoEnum((Long) value, fieldType.getProtoTypeFqn()));
@@ -810,7 +813,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case INT64:
           return Value.int64(isNull ? null : getLongInternal(columnIndex));
         case ENUM:
-          return Value.protoEnum(getLongInternal(columnIndex), columnType.getProtoTypeFqn());
+          return Value.protoEnum(
+              isNull ? null : getLongInternal(columnIndex), columnType.getProtoTypeFqn());
         case NUMERIC:
           return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
         case PG_NUMERIC:
@@ -826,7 +830,8 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
         case BYTES:
           return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
         case PROTO:
-          return Value.protoMessage(getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
+          return Value.protoMessage(
+              isNull ? null : getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
         case TIMESTAMP:
           return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
         case DATE:
