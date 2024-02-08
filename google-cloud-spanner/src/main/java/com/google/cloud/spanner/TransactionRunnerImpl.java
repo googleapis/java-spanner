@@ -71,6 +71,7 @@ import javax.annotation.concurrent.GuardedBy;
 
 /** Default implementation of {@link TransactionRunner}. */
 class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
+
   private static final Tracer tracer = Tracing.getTracer();
   private static final Logger txnLogger = Logger.getLogger(TransactionRunner.class.getName());
   /**
@@ -84,6 +85,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
+
     static class Builder extends AbstractReadContext.Builder<Builder, TransactionContextImpl> {
 
       private Clock clock = new Clock();
@@ -131,6 +133,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
      */
     private class TransactionContextAsyncResultSetImpl extends ForwardingAsyncResultSet
         implements ListenableAsyncResultSet {
+
       private TransactionContextAsyncResultSetImpl(ListenableAsyncResultSet delegate) {
         super(delegate);
       }
@@ -339,6 +342,13 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         }
         builder.setRequestOptions(requestOptionsBuilder.build());
       }
+      if (options.hasMaxCommitDelay()) {
+        builder.setMaxCommitDelay(
+            com.google.protobuf.Duration.newBuilder()
+                .setSeconds(options.maxCommitDelay().getSeconds())
+                .setNanos(options.maxCommitDelay().getNano())
+                .build());
+      }
       synchronized (lock) {
         if (transactionIdFuture == null && transactionId == null && runningAsyncOperations == 0) {
           finishOps = SettableApiFuture.create();
@@ -354,6 +364,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     private final class CommitRunnable implements Runnable {
+
       private final SettableApiFuture<CommitResponse> res;
       private final ApiFuture<Void> prev;
       private final CommitRequest.Builder requestBuilder;
@@ -575,7 +586,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Nullable
     String getTransactionTag() {
-      if (this.options.hasTag()) return this.options.tag();
+      if (this.options.hasTag()) {
+        return this.options.tag();
+      }
       return null;
     }
 

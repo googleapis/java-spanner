@@ -133,6 +133,7 @@ import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
+
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
@@ -3633,6 +3634,112 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
     assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testCommitWithoutMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertFalse(request.hasMaxCommitDelay());
+  }
+
+  @Test
+  public void testCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner =
+        client.readWriteTransaction(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testTransactionManagerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionManager manager =
+        client.transactionManager(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    TransactionContext transaction = manager.begin();
+    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+    manager.commit();
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testAsyncRunnerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    get(
+        runner.runAsync(
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
+            },
+            executor));
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (AsyncTransactionManager manager =
+        client.transactionManagerAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)))) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      get(
+          transaction
+              .then(
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
+                  executor)
+              .commitAsync());
+    }
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
   }
 
   @Test

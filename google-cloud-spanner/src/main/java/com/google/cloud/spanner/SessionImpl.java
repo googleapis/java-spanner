@@ -35,6 +35,7 @@ import com.google.common.base.Ticker;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchWriteRequest;
 import com.google.spanner.v1.BatchWriteResponse;
@@ -60,6 +61,7 @@ import org.threeten.bp.Instant;
  * users need not be aware of the actual session management, pooling and handling.
  */
 class SessionImpl implements Session {
+
   private static final Tracer tracer = Tracing.getTracer();
 
   /** Keep track of running transactions on this session per thread. */
@@ -86,8 +88,10 @@ class SessionImpl implements Session {
    * only have one such transaction active at a time.
    */
   interface SessionTransaction {
+
     /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
+
     /** Registers the current span on the transaction. */
     void setSpan(Span span);
   }
@@ -176,16 +180,24 @@ class SessionImpl implements Session {
     setActive(null);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProto(mutations, mutationsProto);
+    Options options = Options.fromTransactionOptions(transactionOptions);
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
             .setSession(name)
-            .setReturnCommitStats(
-                Options.fromTransactionOptions(transactionOptions).withCommitStats())
+            .setReturnCommitStats(options.withCommitStats())
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
+    if (options.hasMaxCommitDelay()) {
+      requestBuilder.setMaxCommitDelay(
+          Duration.newBuilder()
+              .setSeconds(options.maxCommitDelay().getSeconds())
+              .setNanos(options.maxCommitDelay().getNano())
+              .build());
+    }
     RequestOptions commitRequestOptions = getRequestOptions(transactionOptions);
+
     if (commitRequestOptions != null) {
       requestBuilder.setRequestOptions(commitRequestOptions);
     }
