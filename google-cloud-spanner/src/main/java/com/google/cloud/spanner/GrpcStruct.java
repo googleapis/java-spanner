@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.AbstractResultSet.throwNotNull;
+import static com.google.cloud.spanner.AbstractResultSet.valueProtoToFloat64;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -252,7 +254,7 @@ class GrpcStruct extends Struct implements Serializable {
         checkType(fieldType, proto, KindCase.STRING_VALUE);
         return Long.parseLong(proto.getStringValue());
       case FLOAT64:
-        return AbstractResultSet.valueProtoToFloat64(proto);
+        return valueProtoToFloat64(proto);
       case NUMERIC:
         checkType(fieldType, proto, KindCase.STRING_VALUE);
         return new BigDecimal(proto.getStringValue());
@@ -522,7 +524,8 @@ class GrpcStruct extends Struct implements Serializable {
       case INT64:
         return Value.int64(isNull ? null : getLongInternal(columnIndex));
       case ENUM:
-        return Value.protoEnum(getLongInternal(columnIndex), columnType.getProtoTypeFqn());
+        return Value.protoEnum(
+            isNull ? null : getLongInternal(columnIndex), columnType.getProtoTypeFqn());
       case NUMERIC:
         return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
       case PG_NUMERIC:
@@ -538,7 +541,8 @@ class GrpcStruct extends Struct implements Serializable {
       case BYTES:
         return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
       case PROTO:
-        return Value.protoMessage(getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
+        return Value.protoMessage(
+            isNull ? null : getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
       case TIMESTAMP:
         return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
       case DATE:
@@ -605,7 +609,7 @@ class GrpcStruct extends Struct implements Serializable {
     boolean[] r = new boolean[values.size()];
     for (int i = 0; i < values.size(); ++i) {
       if (values.get(i) == null) {
-        throw AbstractResultSet.throwNotNull(columnIndex);
+        throw throwNotNull(columnIndex);
       }
       r[i] = values.get(i);
     }

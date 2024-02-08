@@ -30,7 +30,6 @@ import javax.annotation.Nullable;
 
 @VisibleForTesting
 class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufResultSet {
-
   private final GrpcValueIterator iterator;
   private final Listener listener;
   private final DecodeMode decodeMode;

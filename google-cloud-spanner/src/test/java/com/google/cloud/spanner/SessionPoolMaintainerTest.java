@@ -28,6 +28,8 @@ import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,7 +119,13 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // otherwise impossible to know which session exactly is getting pinged at what point in time.
     SessionPool pool =
         SessionPool.createPool(
-            options, new TestExecutorFactory(), client.getSessionClient(db), clock, Position.FIRST);
+            options,
+            new TestExecutorFactory(),
+            client.getSessionClient(db),
+            clock,
+            Position.FIRST,
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            OpenTelemetry.noop());
     pool.idleSessionRemovedListener =
         input -> {
           idledSessions.add(input);

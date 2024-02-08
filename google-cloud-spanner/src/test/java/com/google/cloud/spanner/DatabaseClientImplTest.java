@@ -56,6 +56,8 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
@@ -99,6 +101,8 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -130,6 +134,7 @@ import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
+
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
@@ -3371,7 +3376,10 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    TraceWrapper traceWrapper =
+        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, traceWrapper);
     client.readWriteTransaction(option);
 
     verify(session).readWriteTransaction(option);
@@ -3384,7 +3392,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
     try (TransactionManager ignore = client.transactionManager(option)) {
       verify(session).transactionManager(option);
     }
@@ -3397,7 +3405,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
     client.runAsync(option);
 
     verify(session).runAsync(option);
@@ -3410,7 +3418,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
     try (AsyncTransactionManager ignore = client.transactionManagerAsync(option)) {
       verify(session).transactionManagerAsync(option);
     }
@@ -3630,6 +3638,112 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
     assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testCommitWithoutMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertFalse(request.hasMaxCommitDelay());
+  }
+
+  @Test
+  public void testCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner =
+        client.readWriteTransaction(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testTransactionManagerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionManager manager =
+        client.transactionManager(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    TransactionContext transaction = manager.begin();
+    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+    manager.commit();
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testAsyncRunnerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    get(
+        runner.runAsync(
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
+            },
+            executor));
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (AsyncTransactionManager manager =
+        client.transactionManagerAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)))) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      get(
+          transaction
+              .then(
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
+                  executor)
+              .commitAsync());
+    }
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
   }
 
   @Test
@@ -3949,6 +4063,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testGetAllTypesAsString() {
+    SingerInfo info = SingerInfo.newBuilder().setSingerId(1).build();
     for (Dialect dialect : Dialect.values()) {
       Statement statement = Statement.of("select * from all_types");
       mockSpanner.putStatementResult(
@@ -3958,205 +4073,7 @@ public class DatabaseClientImplTest {
                   .setMetadata(
                       RandomResultSetGenerator.generateAllTypesMetadata(
                           RandomResultSetGenerator.generateAllTypes(dialect)))
-                  .addRows(
-                      ListValue.newBuilder()
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder().setStringValue("100").build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("6.626")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("test-string")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("{\"key1\": \"value1\"}")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue(
-                                      Base64.getEncoder()
-                                          .encodeToString(
-                                              "test-bytes".getBytes(StandardCharsets.UTF_8)))
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("2023-01-11")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("2023-01-11T11:55:18.123456789Z")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setBoolValue(true)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setBoolValue(false)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(String.valueOf(Long.MAX_VALUE))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(String.valueOf(Long.MIN_VALUE))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNumberValue(-12345.6789d)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNumberValue(3.14d)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("6.626")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("-8.9123")
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("test-string1")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("test-string2")
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("{\"key\": \"value1\"}")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("{\"key\": \"value2\"}")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(
-                                                      Base64.getEncoder()
-                                                          .encodeToString(
-                                                              "test-bytes1"
-                                                                  .getBytes(
-                                                                      StandardCharsets.UTF_8)))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(
-                                                      Base64.getEncoder()
-                                                          .encodeToString(
-                                                              "test-bytes2"
-                                                                  .getBytes(
-                                                                      StandardCharsets.UTF_8)))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2000-02-29")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2000-01-01")
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2023-01-11T11:55:18.123456789Z")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2023-01-12T11:55:18Z")
-                                                  .build())
-                                          .build()))
-                          .build())
+                  .addRows(getRows(dialect))
                   .build()));
 
       DatabaseClient client =
@@ -4208,7 +4125,18 @@ public class DatabaseClientImplTest {
             ImmutableList.of("2023-01-11T11:55:18.123456789Z", "NULL", "2023-01-12T11:55:18Z"),
             resultSet,
             col++);
-
+        if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+          assertAsString(Base64.getEncoder().encodeToString(info.toByteArray()), resultSet, col++);
+          assertAsString(String.valueOf(Genre.JAZZ_VALUE), resultSet, col++);
+          assertAsString(
+              ImmutableList.of(
+                  String.format("%s", Base64.getEncoder().encodeToString(info.toByteArray())),
+                  "NULL"),
+              resultSet,
+              col++);
+          assertAsString(
+              ImmutableList.of(String.format("%d", Genre.JAZZ_VALUE), "NULL"), resultSet, col++);
+        }
         assertFalse(resultSet.next());
       }
     }
@@ -4625,5 +4553,226 @@ public class DatabaseClientImplTest {
   private void consumeBatchWriteStream(ServerStream<BatchWriteResponse> stream) {
     //noinspection StatementWithEmptyBody
     for (BatchWriteResponse ignore : stream) {}
+  }
+
+  private ListValue getRows(Dialect dialect) {
+    SingerInfo info = SingerInfo.newBuilder().setSingerId(1).build();
+    ListValue.Builder valuesBuilder =
+        ListValue.newBuilder()
+            .addValues(com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("100").build())
+            .addValues(com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("6.626").build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("test-string").build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setStringValue("{\"key1\": \"value1\"}")
+                    .build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setStringValue(
+                        Base64.getEncoder()
+                            .encodeToString("test-bytes".getBytes(StandardCharsets.UTF_8)))
+                    .build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("2023-01-11").build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setStringValue("2023-01-11T11:55:18.123456789Z")
+                    .build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder().setBoolValue(false).build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(String.valueOf(Long.MAX_VALUE))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(String.valueOf(Long.MIN_VALUE))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(-12345.6789d)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(3.14d)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("6.626")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("-8.9123")
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("test-string1")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("test-string2")
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("{\"key\": \"value1\"}")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("{\"key\": \"value2\"}")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(
+                                        Base64.getEncoder()
+                                            .encodeToString(
+                                                "test-bytes1".getBytes(StandardCharsets.UTF_8)))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(
+                                        Base64.getEncoder()
+                                            .encodeToString(
+                                                "test-bytes2".getBytes(StandardCharsets.UTF_8)))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2000-02-29")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2000-01-01")
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2023-01-11T11:55:18.123456789Z")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2023-01-12T11:55:18Z")
+                                    .build())
+                            .build()));
+    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      // Proto columns is supported only for GOOGLE_STANDARD_SQL
+      valuesBuilder
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setStringValue(Base64.getEncoder().encodeToString(info.toByteArray()))
+                  .build())
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setStringValue(String.valueOf(Genre.JAZZ_VALUE))
+                  .build())
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setListValue(
+                      ListValue.newBuilder()
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setStringValue(
+                                      Base64.getEncoder().encodeToString(info.toByteArray()))
+                                  .build())
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setNullValue(NullValue.NULL_VALUE)
+                                  .build())
+                          .build()))
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setListValue(
+                      ListValue.newBuilder()
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setStringValue(String.valueOf(Genre.JAZZ_VALUE))
+                                  .build())
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setNullValue(NullValue.NULL_VALUE)
+                                  .build())
+                          .build()));
+    }
+    return valuesBuilder.build();
   }
 }

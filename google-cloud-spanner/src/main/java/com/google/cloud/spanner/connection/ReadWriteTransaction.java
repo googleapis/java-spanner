@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,6 +82,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final String MAX_INTERNAL_RETRIES_EXCEEDED =
       "Internal transaction retry maximum exceeded";
   private static final int MAX_INTERNAL_RETRIES = 50;
+  private final ReentrantLock abortedLock = new ReentrantLock();
   private final long transactionId;
   private final DatabaseClient dbClient;
   private final TransactionOption[] transactionOptions;
@@ -101,7 +103,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
   private Timestamp transactionStarted;
-  final Object abortedLock = new Object();
 
   private static final class RollbackToSavepointException extends Exception {}
 
@@ -773,7 +774,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   <T> T runWithRetry(Callable<T> callable) throws SpannerException {
     while (true) {
-      synchronized (abortedLock) {
+      abortedLock.lock();
+      try {
         checkAborted();
         try {
           checkRolledBackToSavepoint();
@@ -785,6 +787,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         } catch (Exception e) {
           throw SpannerExceptionFactory.asSpannerException(e);
         }
+      } finally {
+        abortedLock.unlock();
       }
     }
   }
@@ -871,6 +875,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         long delay = aborted.getRetryDelayInMillis();
         try {
           if (delay > 0L) {
+            //noinspection BusyWait
             Thread.sleep(delay);
           }
         } catch (InterruptedException ie) {
