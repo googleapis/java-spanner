@@ -25,6 +25,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -35,9 +36,19 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -90,6 +101,9 @@ public class SpanTest {
   private DatabaseClient client;
   private Spanner spannerWithTimeout;
   private DatabaseClient clientWithTimeout;
+
+  private static InMemorySpanExporter openTelemetrySpanExporter;
+
   private static FailOnOverkillTraceComponentImpl failOnOverkillTraceComponent =
       new FailOnOverkillTraceComponentImpl();
 
@@ -152,13 +166,36 @@ public class SpanTest {
     }
   }
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenCensusTraces();
+  }
+
   @Before
   public void setUp() throws Exception {
+    // Incorporating OpenTelemetry configuration to ensure that OpenCensus traces are utilized by
+    // default,
+    // regardless of the presence of OpenTelemetry configuration.
+    openTelemetrySpanExporter = InMemorySpanExporter.create();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(openTelemetrySpanExporter))
+            .build();
+
+    GlobalOpenTelemetry.resetForTest();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(tracerProvider)
+            .build();
+
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
+            .setOpenTelemetry(openTelemetry)
             .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
 
     spanner = builder.build().getService();
@@ -206,6 +243,7 @@ public class SpanTest {
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
 
     failOnOverkillTraceComponent.clearSpans();
+    failOnOverkillTraceComponent.clearAnnotations();
   }
 
   @After
@@ -240,12 +278,30 @@ public class SpanTest {
         // Just consume the result set.
       }
     }
+
+    // OpenTelemetry spans should be 0 as OpenCensus is default enabled.
+    assertEquals(openTelemetrySpanExporter.getFinishedSpanItems().size(), 0);
+
+    // OpenCensus spans and events verification
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Requesting 25 sessions",
+            "Request for 25 sessions returned 25 sessions",
+            "Creating 25 sessions",
+            "Acquiring session",
+            "No session available",
+            "Creating sessions",
+            "Waiting for a session to come available",
+            "Using Session",
+            "Starting/Resuming stream");
+    verifyAnnotations(failOnOverkillTraceComponent.getAnnotations(), expectedAnnotations);
   }
 
   @Test
@@ -264,6 +320,21 @@ public class SpanTest {
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Requesting 25 sessions",
+            "Request for 25 sessions returned 25 sessions",
+            "Creating 25 sessions",
+            "Acquiring session",
+            "No session available",
+            "Creating sessions",
+            "Waiting for a session to come available",
+            "Using Session",
+            "Starting/Resuming stream",
+            "Creating Transaction",
+            "Transaction Creation Done");
+    verifyAnnotations(failOnOverkillTraceComponent.getAnnotations(), expectedAnnotations);
   }
 
   @Test
@@ -276,6 +347,22 @@ public class SpanTest {
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.Commit", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Acquiring session",
+            "No session available",
+            "Creating sessions",
+            "Waiting for a session to come available",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Starting Commit",
+            "Commit Done",
+            "Transaction Attempt Succeeded",
+            "Requesting 25 sessions",
+            "Request for 25 sessions returned 25 sessions",
+            "Creating 25 sessions");
+    verifyAnnotations(expectedAnnotations, failOnOverkillTraceComponent.getAnnotations());
   }
 
   @Test
@@ -293,5 +380,26 @@ public class SpanTest {
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Acquiring session",
+            "No session available",
+            "Creating sessions",
+            "Waiting for a session to come available",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Transaction Attempt Failed in user operation",
+            "Requesting 25 sessions",
+            "Request for 25 sessions returned 25 sessions",
+            "Creating 25 sessions");
+
+    verifyAnnotations(expectedAnnotations, failOnOverkillTraceComponent.getAnnotations());
+  }
+
+  private void verifyAnnotations(List<String> actualAnnotations, List<String> expectedAnnotations) {
+    assertEquals(
+        actualAnnotations.stream().distinct().sorted().collect(Collectors.toList()),
+        expectedAnnotations.stream().sorted().collect(Collectors.toList()));
   }
 }

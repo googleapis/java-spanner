@@ -61,6 +61,11 @@ import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -117,17 +122,24 @@ public class SpannerOptionsTest {
     String projectId = "test-project";
     Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
+    InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setHost(host)
             .setProjectId(projectId)
             .setPrefetchChunks(2)
             .setSessionLabels(labels)
+            .setOpenTelemetry(openTelemetry)
             .build();
     assertThat(options.getHost()).isEqualTo(host);
     assertThat(options.getProjectId()).isEqualTo(projectId);
     assertThat(options.getPrefetchChunks()).isEqualTo(2);
     assertThat(options.getSessionLabels()).containsExactlyEntriesIn(labels);
+    assertThat(options.getOpenTelemetry()).isEqualTo(openTelemetry);
   }
 
   @Test
@@ -1100,5 +1112,20 @@ public class SpannerOptionsTest {
 
     spanner1.close();
     spanner2.close();
+  }
+
+  @Test
+  public void checkGlobalOpenTelemetryWhenNotInjected() {
+    GlobalOpenTelemetry.resetForTest();
+    InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
+    OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).buildAndRegisterGlobal();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    assertEquals(GlobalOpenTelemetry.get(), options.getOpenTelemetry());
   }
 }

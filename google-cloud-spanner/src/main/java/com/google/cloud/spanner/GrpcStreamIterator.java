@@ -35,7 +35,6 @@ import org.threeten.bp.Duration;
 @VisibleForTesting
 class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     implements CloseableIterator<PartialResultSet> {
-
   private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
   private static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
 
@@ -137,7 +136,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   }
 
   private class ConsumerImpl implements SpannerRpc.ResultStreamConsumer {
-
     @Override
     public void onPartialResultSet(PartialResultSet results) {
       addToStream(results);

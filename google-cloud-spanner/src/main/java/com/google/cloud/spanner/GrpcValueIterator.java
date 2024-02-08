@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.common.collect.AbstractIterator;
 import com.google.protobuf.ListValue;
-import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -33,8 +32,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /** Adapts a stream of {@code PartialResultSet} messages into a stream of {@code Value} messages. */
-class GrpcValueIterator extends AbstractIterator<Value> {
-
+class GrpcValueIterator extends AbstractIterator<com.google.protobuf.Value> {
   private enum StreamValue {
     METADATA,
     RESULT,
@@ -53,12 +51,12 @@ class GrpcValueIterator extends AbstractIterator<Value> {
 
   @SuppressWarnings("unchecked")
   @Override
-  protected Value computeNext() {
+  protected com.google.protobuf.Value computeNext() {
     if (!ensureReady(StreamValue.RESULT)) {
       endOfData();
       return null;
     }
-    Value value = current.getValues(pos++);
+    com.google.protobuf.Value value = current.getValues(pos++);
     KindCase kind = value.getKindCase();
 
     if (!isMergeable(kind)) {
@@ -81,7 +79,7 @@ class GrpcValueIterator extends AbstractIterator<Value> {
         throw newSpannerException(
             ErrorCode.INTERNAL, "Stream closed in the middle of chunked value");
       }
-      Value newValue = current.getValues(pos++);
+      com.google.protobuf.Value newValue = current.getValues(pos++);
       if (newValue.getKindCase() != kind) {
         throw newSpannerException(
             ErrorCode.INTERNAL,
@@ -93,14 +91,16 @@ class GrpcValueIterator extends AbstractIterator<Value> {
       if (kind == KindCase.STRING_VALUE) {
         merged = merged + newValue.getStringValue();
       } else {
-        concatLists((List<Value>) merged, newValue.getListValue().getValuesList());
+        concatLists(
+            (List<com.google.protobuf.Value>) merged, newValue.getListValue().getValuesList());
       }
     }
     if (kind == KindCase.STRING_VALUE) {
-      return Value.newBuilder().setStringValue((String) merged).build();
+      return com.google.protobuf.Value.newBuilder().setStringValue((String) merged).build();
     } else {
-      return Value.newBuilder()
-          .setListValue(ListValue.newBuilder().addAllValues((List<Value>) merged))
+      return com.google.protobuf.Value.newBuilder()
+          .setListValue(
+              ListValue.newBuilder().addAllValues((List<com.google.protobuf.Value>) merged))
           .build();
     }
   }
@@ -173,27 +173,28 @@ class GrpcValueIterator extends AbstractIterator<Value> {
   }
 
   /** @param a is a mutable list and b will be concatenated into a. */
-  private void concatLists(List<Value> a, List<Value> b) {
+  private void concatLists(List<com.google.protobuf.Value> a, List<com.google.protobuf.Value> b) {
     if (a.size() == 0 || b.size() == 0) {
       a.addAll(b);
       return;
     } else {
-      Value last = a.get(a.size() - 1);
-      Value first = b.get(0);
+      com.google.protobuf.Value last = a.get(a.size() - 1);
+      com.google.protobuf.Value first = b.get(0);
       KindCase lastKind = last.getKindCase();
       KindCase firstKind = first.getKindCase();
       if (isMergeable(lastKind) && lastKind == firstKind) {
-        Value merged;
+        com.google.protobuf.Value merged;
         if (lastKind == KindCase.STRING_VALUE) {
           String lastStr = last.getStringValue();
           String firstStr = first.getStringValue();
-          merged = Value.newBuilder().setStringValue(lastStr + firstStr).build();
+          merged =
+              com.google.protobuf.Value.newBuilder().setStringValue(lastStr + firstStr).build();
         } else { // List
-          List<Value> mergedList = new ArrayList<>();
+          List<com.google.protobuf.Value> mergedList = new ArrayList<>();
           mergedList.addAll(last.getListValue().getValuesList());
           concatLists(mergedList, first.getListValue().getValuesList());
           merged =
-              Value.newBuilder()
+              com.google.protobuf.Value.newBuilder()
                   .setListValue(ListValue.newBuilder().addAllValues(mergedList))
                   .build();
         }

@@ -39,6 +39,7 @@ import com.google.common.hash.PrimitiveSink;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * {@link ResultSet} implementation that keeps a running checksum that can be used to determine
@@ -66,7 +67,7 @@ import java.util.concurrent.Callable;
 @VisibleForTesting
 class ChecksumResultSet extends ReplaceableForwardingResultSet implements RetriableStatement {
   private final ReadWriteTransaction transaction;
-  private volatile long numberOfNextCalls;
+  private final AtomicLong numberOfNextCalls = new AtomicLong();
   private final ParsedStatement statement;
   private final AnalyzeMode analyzeMode;
   private final QueryOption[] options;
@@ -103,7 +104,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
       if (res) {
         checksumCalculator.calculateNextChecksum(getCurrentRowAsStruct());
       }
-      numberOfNextCalls++;
+      numberOfNextCalls.incrementAndGet();
       return res;
     }
   }
@@ -142,7 +143,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
           DirectExecuteResultSet.ofResultSet(
               transaction.internalExecuteQuery(statement, analyzeMode, options));
       boolean next = true;
-      while (counter < numberOfNextCalls && next) {
+      while (counter < numberOfNextCalls.get() && next) {
         transaction
             .getStatementExecutor()
             .invokeInterceptors(
@@ -169,7 +170,7 @@ class ChecksumResultSet extends ReplaceableForwardingResultSet implements Retria
     // Check that we have the same number of rows and the same checksum.
     HashCode newChecksum = newChecksumCalculator.getChecksum();
     HashCode currentChecksum = checksumCalculator.getChecksum();
-    if (counter == numberOfNextCalls && Objects.equals(newChecksum, currentChecksum)) {
+    if (counter == numberOfNextCalls.get() && Objects.equals(newChecksum, currentChecksum)) {
       // Checksum is ok, we only need to replace the delegate result set if it's still open.
       if (isClosed()) {
         resultSet.close();

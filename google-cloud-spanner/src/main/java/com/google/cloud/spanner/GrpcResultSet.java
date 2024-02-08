@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 
 @VisibleForTesting
 class GrpcResultSet extends AbstractResultSet<List<Object>> {
-
   private final GrpcValueIterator iterator;
   private final Listener listener;
   private ResultSetMetadata metadata;
