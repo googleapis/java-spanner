@@ -520,192 +520,196 @@ public class ReadWriteTransactionTest {
             .build();
     ProtocolMessageEnum protoEnumVal = Genre.ROCK;
     ProtobufResultSet delegate1 =
-        ResultSets.forRows(
-            Type.struct(
-                StructField.of("ID", Type.int64()),
-                StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json()),
-                StructField.of(
-                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
-                StructField.of(
-                    "PROTOENUM",
-                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
-            Arrays.asList(
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(1L)
-                    .set("NAME")
-                    .to("TEST 1")
-                    .set("AMOUNT")
-                    .to(BigDecimal.valueOf(550, 2))
-                    .set("JSON")
-                    .to(Value.json(simpleJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(protoEnumVal)
-                    .build(),
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(2L)
-                    .set("NAME")
-                    .to("TEST 2")
-                    .set("AMOUNT")
-                    .to(BigDecimal.valueOf(750, 2))
-                    .set("JSON")
-                    .to(Value.json(arrayJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(Genre.JAZZ)
-                    .build()));
+        (ProtobufResultSet)
+            ResultSets.forRows(
+                Type.struct(
+                    StructField.of("ID", Type.int64()),
+                    StructField.of("NAME", Type.string()),
+                    StructField.of("AMOUNT", Type.numeric()),
+                    StructField.of("JSON", Type.json()),
+                    StructField.of(
+                        "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                    StructField.of(
+                        "PROTOENUM",
+                        Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
+                Arrays.asList(
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(1L)
+                        .set("NAME")
+                        .to("TEST 1")
+                        .set("AMOUNT")
+                        .to(BigDecimal.valueOf(550, 2))
+                        .set("JSON")
+                        .to(Value.json(simpleJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(protoEnumVal)
+                        .build(),
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(2L)
+                        .set("NAME")
+                        .to("TEST 2")
+                        .set("AMOUNT")
+                        .to(BigDecimal.valueOf(750, 2))
+                        .set("JSON")
+                        .to(Value.json(arrayJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(Genre.JAZZ)
+                        .build()));
     ChecksumResultSet rs1 =
         transaction.createChecksumResultSet(delegate1, parsedStatement, AnalyzeMode.NONE);
     ProtobufResultSet delegate2 =
-        ResultSets.forRows(
-            Type.struct(
-                StructField.of("ID", Type.int64()),
-                StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json()),
-                StructField.of(
-                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
-                StructField.of(
-                    "PROTOENUM",
-                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
-            Arrays.asList(
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(1L)
-                    .set("NAME")
-                    .to("TEST 1")
-                    .set("AMOUNT")
-                    .to(new BigDecimal("5.50"))
-                    .set("JSON")
-                    .to(Value.json(simpleJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(protoEnumVal)
-                    .build(),
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(2L)
-                    .set("NAME")
-                    .to("TEST 2")
-                    .set("AMOUNT")
-                    .to(new BigDecimal("7.50"))
-                    .set("JSON")
-                    .to(Value.json(arrayJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(Genre.JAZZ)
-                    .build()));
+        (ProtobufResultSet)
+            ResultSets.forRows(
+                Type.struct(
+                    StructField.of("ID", Type.int64()),
+                    StructField.of("NAME", Type.string()),
+                    StructField.of("AMOUNT", Type.numeric()),
+                    StructField.of("JSON", Type.json()),
+                    StructField.of(
+                        "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                    StructField.of(
+                        "PROTOENUM",
+                        Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
+                Arrays.asList(
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(1L)
+                        .set("NAME")
+                        .to("TEST 1")
+                        .set("AMOUNT")
+                        .to(new BigDecimal("5.50"))
+                        .set("JSON")
+                        .to(Value.json(simpleJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(protoEnumVal)
+                        .build(),
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(2L)
+                        .set("NAME")
+                        .to("TEST 2")
+                        .set("AMOUNT")
+                        .to(new BigDecimal("7.50"))
+                        .set("JSON")
+                        .to(Value.json(arrayJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(Genre.JAZZ)
+                        .build()));
     ChecksumResultSet rs2 =
         transaction.createChecksumResultSet(delegate2, parsedStatement, AnalyzeMode.NONE);
     // rs1 and rs2 are equal, rs3 contains the same rows, but in a different order
     ProtobufResultSet delegate3 =
-        ResultSets.forRows(
-            Type.struct(
-                StructField.of("ID", Type.int64()),
-                StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json()),
-                StructField.of(
-                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
-                StructField.of(
-                    "PROTOENUM",
-                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
-            Arrays.asList(
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(2L)
-                    .set("NAME")
-                    .to("TEST 2")
-                    .set("AMOUNT")
-                    .to(new BigDecimal("7.50"))
-                    .set("JSON")
-                    .to(Value.json(arrayJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(Genre.JAZZ)
-                    .build(),
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(1L)
-                    .set("NAME")
-                    .to("TEST 1")
-                    .set("AMOUNT")
-                    .to(new BigDecimal("5.50"))
-                    .set("JSON")
-                    .to(Value.json(simpleJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(protoEnumVal)
-                    .build()));
+        (ProtobufResultSet)
+            ResultSets.forRows(
+                Type.struct(
+                    StructField.of("ID", Type.int64()),
+                    StructField.of("NAME", Type.string()),
+                    StructField.of("AMOUNT", Type.numeric()),
+                    StructField.of("JSON", Type.json()),
+                    StructField.of(
+                        "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                    StructField.of(
+                        "PROTOENUM",
+                        Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
+                Arrays.asList(
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(2L)
+                        .set("NAME")
+                        .to("TEST 2")
+                        .set("AMOUNT")
+                        .to(new BigDecimal("7.50"))
+                        .set("JSON")
+                        .to(Value.json(arrayJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(Genre.JAZZ)
+                        .build(),
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(1L)
+                        .set("NAME")
+                        .to("TEST 1")
+                        .set("AMOUNT")
+                        .to(new BigDecimal("5.50"))
+                        .set("JSON")
+                        .to(Value.json(simpleJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(protoEnumVal)
+                        .build()));
     ChecksumResultSet rs3 =
         transaction.createChecksumResultSet(delegate3, parsedStatement, AnalyzeMode.NONE);
 
     // rs4 contains the same rows as rs1 and rs2, but also an additional row
     ProtobufResultSet delegate4 =
-        ResultSets.forRows(
-            Type.struct(
-                StructField.of("ID", Type.int64()),
-                StructField.of("NAME", Type.string()),
-                StructField.of("AMOUNT", Type.numeric()),
-                StructField.of("JSON", Type.json()),
-                StructField.of(
-                    "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
-                StructField.of(
-                    "PROTOENUM",
-                    Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
-            Arrays.asList(
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(1L)
-                    .set("NAME")
-                    .to("TEST 1")
-                    .set("AMOUNT")
-                    .to(new BigDecimal("5.50"))
-                    .set("JSON")
-                    .to(Value.json(simpleJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(protoEnumVal)
-                    .build(),
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(2L)
-                    .set("NAME")
-                    .to("TEST 2")
-                    .set("AMOUNT")
-                    .to(new BigDecimal("7.50"))
-                    .set("JSON")
-                    .to(Value.json(arrayJson))
-                    .set("PROTO")
-                    .to(protoMessageVal)
-                    .set("PROTOENUM")
-                    .to(Genre.JAZZ)
-                    .build(),
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(3L)
-                    .set("NAME")
-                    .to("TEST 3")
-                    .set("AMOUNT")
-                    .to(new BigDecimal("9.99"))
-                    .set("JSON")
-                    .to(Value.json(emptyArrayJson))
-                    .set("PROTO")
-                    .to(null, SingerInfo.getDescriptor())
-                    .set("PROTOENUM")
-                    .to(Genre.POP)
-                    .build()));
+        (ProtobufResultSet)
+            ResultSets.forRows(
+                Type.struct(
+                    StructField.of("ID", Type.int64()),
+                    StructField.of("NAME", Type.string()),
+                    StructField.of("AMOUNT", Type.numeric()),
+                    StructField.of("JSON", Type.json()),
+                    StructField.of(
+                        "PROTO", Type.proto(protoMessageVal.getDescriptorForType().getFullName())),
+                    StructField.of(
+                        "PROTOENUM",
+                        Type.protoEnum(protoEnumVal.getDescriptorForType().getFullName()))),
+                Arrays.asList(
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(1L)
+                        .set("NAME")
+                        .to("TEST 1")
+                        .set("AMOUNT")
+                        .to(new BigDecimal("5.50"))
+                        .set("JSON")
+                        .to(Value.json(simpleJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(protoEnumVal)
+                        .build(),
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(2L)
+                        .set("NAME")
+                        .to("TEST 2")
+                        .set("AMOUNT")
+                        .to(new BigDecimal("7.50"))
+                        .set("JSON")
+                        .to(Value.json(arrayJson))
+                        .set("PROTO")
+                        .to(protoMessageVal)
+                        .set("PROTOENUM")
+                        .to(Genre.JAZZ)
+                        .build(),
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(3L)
+                        .set("NAME")
+                        .to("TEST 3")
+                        .set("AMOUNT")
+                        .to(new BigDecimal("9.99"))
+                        .set("JSON")
+                        .to(Value.json(emptyArrayJson))
+                        .set("PROTO")
+                        .to(null, SingerInfo.getDescriptor())
+                        .set("PROTOENUM")
+                        .to(Genre.POP)
+                        .build()));
     ChecksumResultSet rs4 =
         transaction.createChecksumResultSet(delegate4, parsedStatement, AnalyzeMode.NONE);
 
@@ -738,43 +742,45 @@ public class ReadWriteTransactionTest {
     Statement statement = Statement.of("SELECT * FROM FOO");
     when(parsedStatement.getStatement()).thenReturn(statement);
     ProtobufResultSet delegate1 =
-        ResultSets.forRows(
-            Type.struct(
-                StructField.of("ID", Type.int64()),
-                StructField.of("PRICES", Type.array(Type.int64()))),
-            Arrays.asList(
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(1L)
-                    .set("PRICES")
-                    .toInt64Array(new long[] {1L, 2L})
-                    .build(),
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(2L)
-                    .set("PRICES")
-                    .toInt64Array(new long[] {3L, 4L})
-                    .build()));
+        (ProtobufResultSet)
+            ResultSets.forRows(
+                Type.struct(
+                    StructField.of("ID", Type.int64()),
+                    StructField.of("PRICES", Type.array(Type.int64()))),
+                Arrays.asList(
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(1L)
+                        .set("PRICES")
+                        .toInt64Array(new long[] {1L, 2L})
+                        .build(),
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(2L)
+                        .set("PRICES")
+                        .toInt64Array(new long[] {3L, 4L})
+                        .build()));
     ChecksumResultSet rs1 =
         transaction.createChecksumResultSet(delegate1, parsedStatement, AnalyzeMode.NONE);
     ProtobufResultSet delegate2 =
-        ResultSets.forRows(
-            Type.struct(
-                StructField.of("ID", Type.int64()),
-                StructField.of("PRICES", Type.array(Type.int64()))),
-            Arrays.asList(
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(1L)
-                    .set("PRICES")
-                    .toInt64Array(new long[] {1L, 2L})
-                    .build(),
-                Struct.newBuilder()
-                    .set("ID")
-                    .to(2L)
-                    .set("PRICES")
-                    .toInt64Array(new long[] {3L, 5L})
-                    .build()));
+        (ProtobufResultSet)
+            ResultSets.forRows(
+                Type.struct(
+                    StructField.of("ID", Type.int64()),
+                    StructField.of("PRICES", Type.array(Type.int64()))),
+                Arrays.asList(
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(1L)
+                        .set("PRICES")
+                        .toInt64Array(new long[] {1L, 2L})
+                        .build(),
+                    Struct.newBuilder()
+                        .set("ID")
+                        .to(2L)
+                        .set("PRICES")
+                        .toInt64Array(new long[] {3L, 5L})
+                        .build()));
     ChecksumResultSet rs2 =
         transaction.createChecksumResultSet(delegate2, parsedStatement, AnalyzeMode.NONE);
 

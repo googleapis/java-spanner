@@ -48,7 +48,7 @@ public final class ResultSets {
    * @param type row type of the rows in the returned {@link com.google.cloud.spanner.ResultSet}
    * @param rows the rows in the returned {@link com.google.cloud.spanner.ResultSet}.
    */
-  public static ProtobufResultSet forRows(Type type, Iterable<Struct> rows) {
+  public static ResultSet forRows(Type type, Iterable<Struct> rows) {
     return new PrePopulatedResultSet(type, rows);
   }
 
