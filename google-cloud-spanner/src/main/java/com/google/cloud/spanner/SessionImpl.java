@@ -64,9 +64,7 @@ class SessionImpl implements Session {
 
   private static final Tracer tracer = Tracing.getTracer();
 
-  /**
-   * Keep track of running transactions on this session per thread.
-   */
+  /** Keep track of running transactions on this session per thread. */
   static final ThreadLocal<Boolean> hasPendingTransaction = ThreadLocal.withInitial(() -> false);
 
   static void throwIfTransactionsPending() {
@@ -91,14 +89,10 @@ class SessionImpl implements Session {
    */
   interface SessionTransaction {
 
-    /**
-     * Invalidates the transaction, generally because a new one has been started on the session.
-     */
+    /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
 
-    /**
-     * Registers the current span on the transaction.
-     */
+    /** Registers the current span on the transaction. */
     void setSpan(Span span);
   }
 
@@ -197,8 +191,10 @@ class SessionImpl implements Session {
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
     if (options.hasMaxCommitDelay()) {
       requestBuilder.setMaxCommitDelay(
-          Duration.newBuilder().setSeconds(options.maxCommitDelay().getSeconds())
-              .setNanos(options.maxCommitDelay().getNano()).build());
+          Duration.newBuilder()
+              .setSeconds(options.maxCommitDelay().getSeconds())
+              .setNanos(options.maxCommitDelay().getNano())
+              .build());
     }
     RequestOptions commitRequestOptions = getRequestOptions(transactionOptions);
 

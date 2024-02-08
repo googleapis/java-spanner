@@ -141,10 +141,8 @@ public final class Options implements Serializable {
     return new PriorityOption(priority);
   }
 
-  public static ReadQueryUpdateTransactionOption maxCommitDelay(
-      Duration maxCommitDelay) {
-    Preconditions.checkArgument(
-        !maxCommitDelay.isNegative(), "maxCommitDelay should be positive");
+  public static ReadQueryUpdateTransactionOption maxCommitDelay(Duration maxCommitDelay) {
+    Preconditions.checkArgument(!maxCommitDelay.isNegative(), "maxCommitDelay should be positive");
     return new MaxCommitDelayOption(maxCommitDelay);
   }
 
