@@ -464,17 +464,18 @@ public abstract class AbstractStatementParser {
   }
 
   ParsedStatement parse(Statement statement, QueryOptions defaultQueryOptions) {
-    if (statementCache == null) {
-      return internalParse(statement, defaultQueryOptions);
-    }
-
-    ParsedStatement parsedStatement = statementCache.getIfPresent(statement.getSql());
-    if (parsedStatement == null) {
-      parsedStatement = internalParse(statement, defaultQueryOptions);
-      statementCache.put(statement.getSql(), parsedStatement.forCache());
-      return parsedStatement;
-    }
-    return parsedStatement.copy(statement, defaultQueryOptions);
+    return internalParse(statement, defaultQueryOptions);
+    //    if (statementCache == null) {
+    //      return internalParse(statement, defaultQueryOptions);
+    //    }
+    //
+    //    ParsedStatement parsedStatement = statementCache.getIfPresent(statement.getSql());
+    //    if (parsedStatement == null) {
+    //      parsedStatement = internalParse(statement, defaultQueryOptions);
+    //      statementCache.put(statement.getSql(), parsedStatement.forCache());
+    //      return parsedStatement;
+    //    }
+    //    return parsedStatement.copy(statement, defaultQueryOptions);
   }
 
   private ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
