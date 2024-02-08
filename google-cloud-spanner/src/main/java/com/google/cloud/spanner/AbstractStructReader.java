@@ -22,10 +22,10 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Type.Code;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -151,16 +151,18 @@ public abstract class AbstractStructReader implements StructReader {
     return getBooleanInternal(columnIndex);
   }
 
+  private static final ImmutableList<Code> INT64_AND_ENUM = ImmutableList.of(Code.ENUM, Code.INT64);
+
   @Override
   public long getLong(int columnIndex) {
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
+    checkNonNullOfCodes(columnIndex, INT64_AND_ENUM, columnIndex);
     return getLongInternal(columnIndex);
   }
 
   @Override
   public long getLong(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
+    checkNonNullOfCodes(columnIndex, INT64_AND_ENUM, columnName);
     return getLongInternal(columnIndex);
   }
 
@@ -190,21 +192,19 @@ public abstract class AbstractStructReader implements StructReader {
     return getBigDecimalInternal(columnIndex);
   }
 
+  private static final ImmutableList<Type> STRING_OR_PG_NUMERIC =
+      ImmutableList.of(Type.string(), Type.pgNumeric());
+
   @Override
   public String getString(int columnIndex) {
-    checkNonNullOfTypes(
-        columnIndex,
-        Arrays.asList(Type.string(), Type.pgNumeric()),
-        columnIndex,
-        "STRING, NUMERIC");
+    checkNonNullOfTypes(columnIndex, STRING_OR_PG_NUMERIC, columnIndex, "STRING, NUMERIC");
     return getStringInternal(columnIndex);
   }
 
   @Override
   public String getString(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfTypes(
-        columnIndex, Arrays.asList(Type.string(), Type.pgNumeric()), columnName, "STRING, NUMERIC");
+    checkNonNullOfTypes(columnIndex, STRING_OR_PG_NUMERIC, columnName, "STRING, NUMERIC");
     return getStringInternal(columnIndex);
   }
 
@@ -234,16 +234,19 @@ public abstract class AbstractStructReader implements StructReader {
     return getPgJsonbInternal(columnIndex);
   }
 
+  private static final ImmutableList<Code> PROTO_OR_BYTES =
+      ImmutableList.of(Code.PROTO, Code.BYTES);
+
   @Override
   public ByteArray getBytes(int columnIndex) {
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
+    checkNonNullOfCodes(columnIndex, PROTO_OR_BYTES, columnIndex);
     return getBytesInternal(columnIndex);
   }
 
   @Override
   public ByteArray getBytes(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
+    checkNonNullOfCodes(columnIndex, PROTO_OR_BYTES, columnName);
     return getBytesInternal(columnIndex);
   }
 
@@ -276,7 +279,7 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public <T extends ProtocolMessageEnum> T getProtoEnum(
       int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
+    checkNonNullOfCodes(columnIndex, INT64_AND_ENUM, columnIndex);
     return getProtoEnumInternal(columnIndex, method);
   }
 
@@ -284,20 +287,20 @@ public abstract class AbstractStructReader implements StructReader {
   public <T extends ProtocolMessageEnum> T getProtoEnum(
       String columnName, Function<Integer, ProtocolMessageEnum> method) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
+    checkNonNullOfCodes(columnIndex, INT64_AND_ENUM, columnName);
     return getProtoEnumInternal(columnIndex, method);
   }
 
   @Override
   public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
+    checkNonNullOfCodes(columnIndex, PROTO_OR_BYTES, columnIndex);
     return getProtoMessageInternal(columnIndex, message);
   }
 
   @Override
   public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
+    checkNonNullOfCodes(columnIndex, PROTO_OR_BYTES, columnName);
     return getProtoMessageInternal(columnIndex, message);
   }
 
@@ -341,7 +344,7 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public long[] getLongArray(int columnIndex) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
+    checkArrayElementType(columnIndex, INT64_AND_ENUM, columnIndex);
     return getLongArrayInternal(columnIndex);
   }
 
@@ -349,14 +352,14 @@ public abstract class AbstractStructReader implements StructReader {
   public long[] getLongArray(String columnName) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
+    checkArrayElementType(columnIndex, INT64_AND_ENUM, columnName);
     return getLongArrayInternal(columnIndex);
   }
 
   @Override
   public List<Long> getLongList(int columnIndex) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
+    checkArrayElementType(columnIndex, INT64_AND_ENUM, columnIndex);
     return getLongListInternal(columnIndex);
   }
 
@@ -364,7 +367,7 @@ public abstract class AbstractStructReader implements StructReader {
   public List<Long> getLongList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
+    checkArrayElementType(columnIndex, INT64_AND_ENUM, columnName);
     return getLongListInternal(columnIndex);
   }
 
@@ -407,13 +410,13 @@ public abstract class AbstractStructReader implements StructReader {
     return getBigDecimalListInternal(columnIndex);
   }
 
+  private static final ImmutableList<Type> STRING_OR_PG_NUMERIC_ARRAY =
+      ImmutableList.of(Type.array(Type.string()), Type.array(Type.pgNumeric()));
+
   @Override
   public List<String> getStringList(int columnIndex) {
     checkNonNullOfTypes(
-        columnIndex,
-        Arrays.asList(Type.array(Type.string()), Type.array(Type.pgNumeric())),
-        columnIndex,
-        "ARRAY<STRING>, ARRAY<NUMERIC>");
+        columnIndex, STRING_OR_PG_NUMERIC_ARRAY, columnIndex, "ARRAY<STRING>, ARRAY<NUMERIC>");
     return getStringListInternal(columnIndex);
   }
 
@@ -421,10 +424,7 @@ public abstract class AbstractStructReader implements StructReader {
   public List<String> getStringList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfTypes(
-        columnIndex,
-        Arrays.asList(Type.array(Type.string()), Type.array(Type.pgNumeric())),
-        columnName,
-        "ARRAY<STRING>, ARRAY<NUMERIC>");
+        columnIndex, STRING_OR_PG_NUMERIC_ARRAY, columnName, "ARRAY<STRING>, ARRAY<NUMERIC>");
     return getStringListInternal(columnIndex);
   }
 
@@ -457,7 +457,7 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public List<ByteArray> getBytesList(int columnIndex) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
+    checkArrayElementType(columnIndex, PROTO_OR_BYTES, columnIndex);
     return getBytesListInternal(columnIndex);
   }
 
@@ -465,14 +465,14 @@ public abstract class AbstractStructReader implements StructReader {
   public List<ByteArray> getBytesList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
+    checkArrayElementType(columnIndex, PROTO_OR_BYTES, columnName);
     return getBytesListInternal(columnIndex);
   }
 
   @Override
   public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnIndex);
+    checkArrayElementType(columnIndex, PROTO_OR_BYTES, columnIndex);
     return getProtoMessageListInternal(columnIndex, message);
   }
 
@@ -480,7 +480,7 @@ public abstract class AbstractStructReader implements StructReader {
   public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.PROTO, Code.BYTES), columnName);
+    checkArrayElementType(columnIndex, PROTO_OR_BYTES, columnName);
     return getProtoMessageListInternal(columnIndex, message);
   }
 
@@ -488,7 +488,7 @@ public abstract class AbstractStructReader implements StructReader {
   public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
       int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
+    checkArrayElementType(columnIndex, INT64_AND_ENUM, columnIndex);
     return getProtoEnumListInternal(columnIndex, method);
   }
 
@@ -497,7 +497,7 @@ public abstract class AbstractStructReader implements StructReader {
       String columnName, Function<Integer, ProtocolMessageEnum> method) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
+    checkArrayElementType(columnIndex, INT64_AND_ENUM, columnName);
     return getProtoEnumListInternal(columnIndex, method);
   }
 
