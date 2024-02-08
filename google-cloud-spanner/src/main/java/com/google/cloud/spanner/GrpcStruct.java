@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.AbstractResultSet.throwNotNull;
+import static com.google.cloud.spanner.AbstractResultSet.valueProtoToFloat64;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -251,7 +253,7 @@ class GrpcStruct extends Struct implements Serializable {
         checkType(fieldType, proto, KindCase.STRING_VALUE);
         return Long.parseLong(proto.getStringValue());
       case FLOAT64:
-        return AbstractResultSet.valueProtoToFloat64(proto);
+        return valueProtoToFloat64(proto);
       case NUMERIC:
         checkType(fieldType, proto, KindCase.STRING_VALUE);
         return new BigDecimal(proto.getStringValue());
@@ -577,7 +579,7 @@ class GrpcStruct extends Struct implements Serializable {
     boolean[] r = new boolean[values.size()];
     for (int i = 0; i < values.size(); ++i) {
       if (values.get(i) == null) {
-        throw AbstractResultSet.throwNotNull(columnIndex);
+        throw throwNotNull(columnIndex);
       }
       r[i] = values.get(i);
     }

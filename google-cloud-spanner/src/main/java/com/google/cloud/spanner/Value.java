@@ -1753,9 +1753,15 @@ public abstract class Value implements Serializable {
       return com.google.protobuf.Value.newBuilder().setStringValue(base64EncodedString).build();
     }
 
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return value == null ? NULL_STRING : value.toBase64();
+    }
+
     @Override
     void valueToString(StringBuilder b) {
-      b.append(value.toString());
+      b.append(value.toBase64());
     }
   }
 
@@ -2391,7 +2397,7 @@ public abstract class Value implements Serializable {
 
     @Override
     void appendElement(StringBuilder b, ByteArray element) {
-      b.append(element.toString());
+      b.append(element.toBase64());
     }
   }
 
