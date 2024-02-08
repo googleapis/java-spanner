@@ -496,7 +496,8 @@ class GrpcStruct extends Struct implements Serializable {
       case INT64:
         return Value.int64(isNull ? null : getLongInternal(columnIndex));
       case ENUM:
-        return Value.protoEnum(getLongInternal(columnIndex), columnType.getProtoTypeFqn());
+        return Value.protoEnum(
+            isNull ? null : getLongInternal(columnIndex), columnType.getProtoTypeFqn());
       case NUMERIC:
         return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
       case PG_NUMERIC:
@@ -512,7 +513,8 @@ class GrpcStruct extends Struct implements Serializable {
       case BYTES:
         return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
       case PROTO:
-        return Value.protoMessage(getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
+        return Value.protoMessage(
+            isNull ? null : getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
       case TIMESTAMP:
         return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
       case DATE:
