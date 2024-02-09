@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerExcepti
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.protobuf.Value;
 import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -28,9 +29,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 @VisibleForTesting
-class GrpcResultSet extends AbstractResultSet<List<Object>> {
+class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufResultSet {
   private final GrpcValueIterator iterator;
   private final Listener listener;
+  private final DecodeMode decodeMode;
   private ResultSetMetadata metadata;
   private GrpcStruct currRow;
   private SpannerException error;
@@ -38,8 +40,26 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> {
   private boolean closed;
 
   GrpcResultSet(CloseableIterator<PartialResultSet> iterator, Listener listener) {
+    this(iterator, listener, DecodeMode.DIRECT);
+  }
+
+  GrpcResultSet(
+      CloseableIterator<PartialResultSet> iterator, Listener listener, DecodeMode decodeMode) {
     this.iterator = new GrpcValueIterator(iterator);
     this.listener = listener;
+    this.decodeMode = decodeMode;
+  }
+
+  @Override
+  public boolean canGetProtobufValue(int columnIndex) {
+    return !closed && currRow != null && currRow.canGetProtoValue(columnIndex);
+  }
+
+  @Override
+  public Value getProtobufValue(int columnIndex) {
+    checkState(!closed, "ResultSet is closed");
+    checkState(currRow != null, "next() call required");
+    return currRow.getProtoValueInternal(columnIndex);
   }
 
   @Override
@@ -65,7 +85,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
         }
-        currRow = new GrpcStruct(iterator.type(), new ArrayList<>());
+        currRow = new GrpcStruct(iterator.type(), new ArrayList<>(), decodeMode);
       }
       boolean hasNext = currRow.consumeRow(iterator);
       if (!hasNext) {

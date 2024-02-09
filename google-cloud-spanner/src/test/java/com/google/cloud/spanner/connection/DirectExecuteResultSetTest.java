@@ -59,6 +59,7 @@ public class DirectExecuteResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",
@@ -79,6 +80,7 @@ public class DirectExecuteResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",
@@ -101,6 +103,7 @@ public class DirectExecuteResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",

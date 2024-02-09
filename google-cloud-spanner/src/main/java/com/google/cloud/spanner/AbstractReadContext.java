@@ -70,6 +70,7 @@ abstract class AbstractReadContext
     private TraceWrapper tracer;
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
+    private DecodeMode defaultDecodeMode = SpannerOptions.Builder.DEFAULT_DECODE_MODE;
     private DirectedReadOptions defaultDirectedReadOption;
     private ExecutorProvider executorProvider;
     private Clock clock = new Clock();
@@ -108,6 +109,11 @@ abstract class AbstractReadContext
 
     B setDefaultQueryOptions(QueryOptions defaultQueryOptions) {
       this.defaultQueryOptions = defaultQueryOptions;
+      return self();
+    }
+
+    B setDefaultDecodeMode(DecodeMode defaultDecodeMode) {
+      this.defaultDecodeMode = defaultDecodeMode;
       return self();
     }
 
@@ -411,8 +417,8 @@ abstract class AbstractReadContext
   TraceWrapper tracer;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
-
   private final DirectedReadOptions defaultDirectedReadOptions;
+  private final DecodeMode defaultDecodeMode;
   private final Clock clock;
 
   @GuardedBy("lock")
@@ -438,6 +444,7 @@ abstract class AbstractReadContext
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
     this.defaultDirectedReadOptions = builder.defaultDirectedReadOption;
+    this.defaultDecodeMode = builder.defaultDecodeMode;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
     this.clock = builder.clock;
@@ -727,7 +734,8 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    return new GrpcResultSet(stream, this);
+    return new GrpcResultSet(
+        stream, this, options.hasDecodeMode() ? options.decodeMode() : defaultDecodeMode);
   }
 
   /**
@@ -871,7 +879,8 @@ abstract class AbstractReadContext
             return stream;
           }
         };
-    return new GrpcResultSet(stream, this);
+    return new GrpcResultSet(
+        stream, this, readOptions.hasDecodeMode() ? readOptions.decodeMode() : defaultDecodeMode);
   }
 
   private Struct consumeSingleRow(ResultSet resultSet) {

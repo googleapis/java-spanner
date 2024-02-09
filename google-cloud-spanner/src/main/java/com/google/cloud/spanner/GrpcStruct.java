@@ -27,6 +27,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.Float64Array;
 import com.google.cloud.spanner.AbstractResultSet.Int64Array;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
+import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -42,6 +43,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +56,9 @@ class GrpcStruct extends Struct implements Serializable {
 
   private final Type type;
   private final List<Object> rowData;
+  private final DecodeMode decodeMode;
+  private final BitSet colDecoded;
+  private boolean rowDecoded;
 
   /**
    * Builds an immutable version of this struct using {@link Struct#newBuilder()} which is used as a
@@ -181,9 +186,28 @@ class GrpcStruct extends Struct implements Serializable {
     return builder.build();
   }
 
-  GrpcStruct(Type type, List<Object> rowData) {
+  GrpcStruct(Type type, List<Object> rowData, DecodeMode decodeMode) {
+    this(
+        type,
+        rowData,
+        decodeMode,
+        /* rowDecoded = */ false,
+        /* colDecoded = */ decodeMode == DecodeMode.LAZY_PER_COL
+            ? new BitSet(type.getStructFields().size())
+            : null);
+  }
+
+  private GrpcStruct(
+      Type type,
+      List<Object> rowData,
+      DecodeMode decodeMode,
+      boolean rowDecoded,
+      BitSet colDecoded) {
     this.type = type;
     this.rowData = rowData;
+    this.decodeMode = decodeMode;
+    this.rowDecoded = rowDecoded;
+    this.colDecoded = colDecoded;
   }
 
   @Override
@@ -193,6 +217,11 @@ class GrpcStruct extends Struct implements Serializable {
 
   boolean consumeRow(Iterator<com.google.protobuf.Value> iterator) {
     rowData.clear();
+    if (decodeMode == DecodeMode.LAZY_PER_ROW) {
+      rowDecoded = false;
+    } else if (decodeMode == DecodeMode.LAZY_PER_COL) {
+      colDecoded.clear();
+    }
     if (!iterator.hasNext()) {
       return false;
     }
@@ -203,7 +232,11 @@ class GrpcStruct extends Struct implements Serializable {
             "Invalid value stream: end of stream reached before row is complete");
       }
       com.google.protobuf.Value value = iterator.next();
-      rowData.add(decodeValue(fieldType.getType(), value));
+      if (decodeMode == DecodeMode.DIRECT) {
+        rowData.add(decodeValue(fieldType.getType(), value));
+      } else {
+        rowData.add(value);
+      }
     }
     return true;
   }
@@ -266,7 +299,7 @@ class GrpcStruct extends Struct implements Serializable {
     for (int i = 0; i < fieldTypes.size(); ++i) {
       fields.add(decodeValue(fieldTypes.get(i).getType(), fieldValues.get(i)));
     }
-    return new GrpcStruct(structType, fields);
+    return new GrpcStruct(structType, fields, DecodeMode.DIRECT);
   }
 
   static Object decodeArrayValue(Type elementType, ListValue listValue) {
@@ -310,7 +343,12 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   Struct immutableCopy() {
-    return new GrpcStruct(type, new ArrayList<>(rowData));
+    return new GrpcStruct(
+        type,
+        new ArrayList<>(rowData),
+        this.decodeMode,
+        this.rowDecoded,
+        this.colDecoded == null ? null : (BitSet) this.colDecoded.clone());
   }
 
   @Override
@@ -320,6 +358,10 @@ class GrpcStruct extends Struct implements Serializable {
 
   @Override
   public boolean isNull(int columnIndex) {
+    if ((decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded)
+        || (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex))) {
+      return ((com.google.protobuf.Value) rowData.get(columnIndex)).hasNullValue();
+    }
     return rowData.get(columnIndex) == null;
   }
 
@@ -355,64 +397,123 @@ class GrpcStruct extends Struct implements Serializable {
 
   @Override
   protected boolean getBooleanInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Boolean) rowData.get(columnIndex);
   }
 
   @Override
   protected long getLongInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Long) rowData.get(columnIndex);
   }
 
   @Override
   protected double getDoubleInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Double) rowData.get(columnIndex);
   }
 
   @Override
   protected BigDecimal getBigDecimalInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (BigDecimal) rowData.get(columnIndex);
   }
 
   @Override
   protected String getStringInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (String) rowData.get(columnIndex);
   }
 
   @Override
   protected String getJsonInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (String) rowData.get(columnIndex);
   }
 
   @Override
   protected String getPgJsonbInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (String) rowData.get(columnIndex);
   }
 
   @Override
   protected ByteArray getBytesInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return getLazyBytesInternal(columnIndex).getByteArray();
   }
 
   LazyByteArray getLazyBytesInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (LazyByteArray) rowData.get(columnIndex);
   }
 
   @Override
   protected Timestamp getTimestampInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Timestamp) rowData.get(columnIndex);
   }
 
   @Override
   protected Date getDateInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Date) rowData.get(columnIndex);
   }
 
+  private boolean isUnrecognizedType(int columnIndex) {
+    return type.getStructFields().get(columnIndex).getType().getCode() == Code.UNRECOGNIZED;
+  }
+
+  boolean canGetProtoValue(int columnIndex) {
+    return isUnrecognizedType(columnIndex)
+        || (decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded)
+        || (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex));
+  }
+
   protected com.google.protobuf.Value getProtoValueInternal(int columnIndex) {
+    checkProtoValueSupported(columnIndex);
     return (com.google.protobuf.Value) rowData.get(columnIndex);
+  }
+
+  private void checkProtoValueSupported(int columnIndex) {
+    // Unrecognized types are returned as protobuf values.
+    if (isUnrecognizedType(columnIndex)) {
+      return;
+    }
+    Preconditions.checkState(
+        decodeMode != DecodeMode.DIRECT,
+        "Getting proto value is not supported when DecodeMode#DIRECT is used.");
+    Preconditions.checkState(
+        !(decodeMode == DecodeMode.LAZY_PER_ROW && rowDecoded),
+        "Getting proto value after the row has been decoded is not supported.");
+    Preconditions.checkState(
+        !(decodeMode == DecodeMode.LAZY_PER_COL && colDecoded.get(columnIndex)),
+        "Getting proto value after the column has been decoded is not supported.");
+  }
+
+  private void ensureDecoded(int columnIndex) {
+    if (decodeMode == DecodeMode.LAZY_PER_ROW && !rowDecoded) {
+      for (int i = 0; i < rowData.size(); i++) {
+        rowData.set(
+            i,
+            decodeValue(
+                type.getStructFields().get(i).getType(),
+                (com.google.protobuf.Value) rowData.get(i)));
+      }
+      rowDecoded = true;
+    } else if (decodeMode == DecodeMode.LAZY_PER_COL && !colDecoded.get(columnIndex)) {
+      rowData.set(
+          columnIndex,
+          decodeValue(
+              type.getStructFields().get(columnIndex).getType(),
+              (com.google.protobuf.Value) rowData.get(columnIndex)));
+      colDecoded.set(columnIndex);
+    }
   }
 
   @Override
   protected Value getValueInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     final List<Type.StructField> structFields = getType().getStructFields();
     final StructField structField = structFields.get(columnIndex);
     final Type columnType = structField.getType();
@@ -423,7 +524,8 @@ class GrpcStruct extends Struct implements Serializable {
       case INT64:
         return Value.int64(isNull ? null : getLongInternal(columnIndex));
       case ENUM:
-        return Value.protoEnum(getLongInternal(columnIndex), columnType.getProtoTypeFqn());
+        return Value.protoEnum(
+            isNull ? null : getLongInternal(columnIndex), columnType.getProtoTypeFqn());
       case NUMERIC:
         return Value.numeric(isNull ? null : getBigDecimalInternal(columnIndex));
       case PG_NUMERIC:
@@ -439,7 +541,8 @@ class GrpcStruct extends Struct implements Serializable {
       case BYTES:
         return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
       case PROTO:
-        return Value.protoMessage(getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
+        return Value.protoMessage(
+            isNull ? null : getBytesInternal(columnIndex), columnType.getProtoTypeFqn());
       case TIMESTAMP:
         return Value.timestamp(isNull ? null : getTimestampInternal(columnIndex));
       case DATE:
@@ -494,11 +597,13 @@ class GrpcStruct extends Struct implements Serializable {
 
   @Override
   protected Struct getStructInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Struct) rowData.get(columnIndex);
   }
 
   @Override
   protected boolean[] getBooleanArrayInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     @SuppressWarnings("unchecked") // We know ARRAY<BOOL> produces a List<Boolean>.
     List<Boolean> values = (List<Boolean>) rowData.get(columnIndex);
     boolean[] r = new boolean[values.size()];
@@ -514,44 +619,52 @@ class GrpcStruct extends Struct implements Serializable {
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<BOOL> produces a List<Boolean>.
   protected List<Boolean> getBooleanListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<Boolean>) rowData.get(columnIndex));
   }
 
   @Override
   protected long[] getLongArrayInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return getLongListInternal(columnIndex).toPrimitiveArray(columnIndex);
   }
 
   @Override
   protected Int64Array getLongListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Int64Array) rowData.get(columnIndex);
   }
 
   @Override
   protected double[] getDoubleArrayInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return getDoubleListInternal(columnIndex).toPrimitiveArray(columnIndex);
   }
 
   @Override
   protected Float64Array getDoubleListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (Float64Array) rowData.get(columnIndex);
   }
 
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<NUMERIC> produces a List<BigDecimal>.
   protected List<BigDecimal> getBigDecimalListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return (List<BigDecimal>) rowData.get(columnIndex);
   }
 
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<STRING> produces a List<String>.
   protected List<String> getStringListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
   }
 
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<JSON> produces a List<String>.
   protected List<String> getJsonListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
   }
 
@@ -562,6 +675,7 @@ class GrpcStruct extends Struct implements Serializable {
     Preconditions.checkNotNull(
         message,
         "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+    ensureDecoded(columnIndex);
 
     List<LazyByteArray> bytesArray = (List<LazyByteArray>) rowData.get(columnIndex);
 
@@ -596,6 +710,7 @@ class GrpcStruct extends Struct implements Serializable {
       int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
     Preconditions.checkNotNull(
         method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
+    ensureDecoded(columnIndex);
 
     List<Long> enumIntArray = (List<Long>) rowData.get(columnIndex);
     List<T> protoEnumList = new ArrayList<>(enumIntArray.size());
@@ -613,12 +728,14 @@ class GrpcStruct extends Struct implements Serializable {
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<JSONB> produces a List<String>.
   protected List<String> getPgJsonbListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
   }
 
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<BYTES> produces a List<LazyByteArray>.
   protected List<ByteArray> getBytesListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Lists.transform(
         (List<LazyByteArray>) rowData.get(columnIndex), l -> l == null ? null : l.getByteArray());
   }
@@ -626,18 +743,21 @@ class GrpcStruct extends Struct implements Serializable {
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<TIMESTAMP> produces a List<Timestamp>.
   protected List<Timestamp> getTimestampListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<Timestamp>) rowData.get(columnIndex));
   }
 
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<DATE> produces a List<Date>.
   protected List<Date> getDateListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<Date>) rowData.get(columnIndex));
   }
 
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<STRUCT<...>> produces a List<STRUCT>.
   protected List<Struct> getStructListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<Struct>) rowData.get(columnIndex));
   }
 }

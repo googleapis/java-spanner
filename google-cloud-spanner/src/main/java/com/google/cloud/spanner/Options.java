@@ -243,6 +243,10 @@ public final class Options implements Serializable {
     return new DirectedReadOption(directedReadOptions);
   }
 
+  public static ReadAndQueryOption decodeMode(DecodeMode decodeMode) {
+    return new DecodeOption(decodeMode);
+  }
+
   /** Option to request {@link CommitStats} for read/write transactions. */
   static final class CommitStatsOption extends InternalOption implements TransactionOption {
     @Override
@@ -374,6 +378,19 @@ public final class Options implements Serializable {
     }
   }
 
+  static final class DecodeOption extends InternalOption implements ReadAndQueryOption {
+    private final DecodeMode decodeMode;
+
+    DecodeOption(DecodeMode decodeMode) {
+      this.decodeMode = Preconditions.checkNotNull(decodeMode, "DecodeMode cannot be null");
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.decodeMode = decodeMode;
+    }
+  }
+
   private boolean withCommitStats;
 
   private Duration maxCommitDelay;
@@ -391,6 +408,7 @@ public final class Options implements Serializable {
   private Boolean withOptimisticLock;
   private Boolean dataBoostEnabled;
   private DirectedReadOptions directedReadOptions;
+  private DecodeMode decodeMode;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -507,6 +525,14 @@ public final class Options implements Serializable {
     return directedReadOptions;
   }
 
+  boolean hasDecodeMode() {
+    return decodeMode != null;
+  }
+
+  DecodeMode decodeMode() {
+    return decodeMode;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -551,6 +577,9 @@ public final class Options implements Serializable {
     }
     if (directedReadOptions != null) {
       b.append("directedReadOptions: ").append(directedReadOptions).append(' ');
+    }
+    if (decodeMode != null) {
+      b.append("decodeMode: ").append(decodeMode).append(' ');
     }
     return b.toString();
   }
@@ -639,6 +668,9 @@ public final class Options implements Serializable {
     }
     if (directedReadOptions != null) {
       result = 31 * result + directedReadOptions.hashCode();
+    }
+    if (decodeMode != null) {
+      result = 31 * result + decodeMode.hashCode();
     }
     return result;
   }
