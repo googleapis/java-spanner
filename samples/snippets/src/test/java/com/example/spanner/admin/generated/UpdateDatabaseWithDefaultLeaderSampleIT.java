@@ -45,7 +45,8 @@ public class UpdateDatabaseWithDefaultLeaderSampleIT extends SampleTestBaseV2 {
         config.getLeaderOptionsList().stream()
             .filter(leader -> !leader.equals(defaultLeader))
             .findFirst().orElseThrow(() ->
-                new RuntimeException("Expected to find a leader option different than " + defaultLeader)
+                new RuntimeException("Expected to find a leader option different than "
+                    + defaultLeader)
             );
 
     // Runs sample
