@@ -25,6 +25,14 @@ import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
+import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
+import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -40,6 +48,7 @@ import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -192,8 +201,51 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @Override
+  public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient getDatabaseAdminClient(
+      DatabaseAdminSettings... settings) {
+    if(settings.length != 0) {
+      com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient client =
+          com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
+              Arrays.stream(settings).iterator().next());
+      return client;
+    } else {
+      DatabaseAdminStub databaseAdminStub =
+          GrpcDatabaseAdminStub.create(
+              getOptions()
+                  .getDatabaseAdminStubSettings()
+                  .toBuilder()
+                  .setTransportChannelProvider(channelProvider)
+                  .setCredentialsProvider(credentialsProvider)
+                  .setStreamWatchdogProvider(watchdogProvider)
+                  .build());
+      return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(databaseAdminStub);
+    }
+  }
+
+  @Override
   public InstanceAdminClient getInstanceAdminClient() {
     return instanceClient;
+  }
+
+  @Override
+  public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient getInstanceAdminClient(
+      InstanceAdminSettings... settings) {
+    if(settings.length != 0) {
+      com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient client =
+          com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(Arrays.stream(settings).iterator().next());
+      return client;
+    } else {
+      InstanceAdminStub instanceAdminStub =
+          GrpcInstanceAdminStub.create(
+              getOptions()
+                  .getInstanceAdminStubSettings()
+                  .toBuilder()
+                  .setTransportChannelProvider(channelProvider)
+                  .setCredentialsProvider(credentialsProvider)
+                  .setStreamWatchdogProvider(watchdogProvider)
+                  .build());
+      return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(instanceAdminStub);
+    }
   }
 
   @Override

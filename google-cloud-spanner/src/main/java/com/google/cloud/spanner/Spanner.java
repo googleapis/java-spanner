@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Service;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 
 /**
  * An interface for Cloud Spanner. Typically, there would only be one instance of this for the
@@ -38,6 +40,14 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    */
   DatabaseAdminClient getDatabaseAdminClient();
 
+  /**
+   *
+   * @param settings
+   * @return
+   */
+  com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient getDatabaseAdminClient(
+      DatabaseAdminSettings... settings);
+
   /** Returns an {@code InstanceAdminClient} to do admin operations on Cloud Spanner instances. */
   /*
    * <!--SNIPPET get_instance_admin_client-->
@@ -49,6 +59,15 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * <!--SNIPPET get_instance_admin_client-->
    */
   InstanceAdminClient getInstanceAdminClient();
+
+  /**
+   *
+   * @param settings
+   * @return
+   */
+  com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient getInstanceAdminClient(
+      InstanceAdminSettings... settings);
+
 
   /**
    * Returns a {@code DatabaseClient} for the given database. It uses a pool of sessions to talk to
