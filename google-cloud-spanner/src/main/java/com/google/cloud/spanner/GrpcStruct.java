@@ -97,7 +97,10 @@ class GrpcStruct extends Struct implements Serializable {
         case PROTO:
           builder
               .set(fieldName)
-              .to(Value.protoMessage((ByteArray) value, fieldType.getProtoTypeFqn()));
+              .to(
+                  Value.protoMessage(
+                      value == null ? null : ((LazyByteArray) value).getByteArray(),
+                      fieldType.getProtoTypeFqn()));
           break;
         case ENUM:
           builder.set(fieldName).to(Value.protoEnum((Long) value, fieldType.getProtoTypeFqn()));
