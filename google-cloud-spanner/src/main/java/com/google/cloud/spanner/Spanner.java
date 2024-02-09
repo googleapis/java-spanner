@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Service;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 
 /**
  * An interface for Cloud Spanner. Typically, there would only be one instance of this for the
@@ -71,6 +73,7 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    *
    * @return {@code InstanceAdminClient}
    */
+
   /*
    * <!--SNIPPET get_instance_admin_client-->
    * <pre>{@code
