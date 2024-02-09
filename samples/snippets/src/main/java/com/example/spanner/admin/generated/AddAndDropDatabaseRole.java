@@ -33,8 +33,8 @@ public class AddAndDropDatabaseRole {
     String projectId = "my-project";
     String instanceId = "my-instance";
     String databaseId = "my-database";
-    String parentRole = "my-new-parent-role";
-    String childRole = "my-new-child-role";
+    String parentRole = "parent_role";
+    String childRole = "child_role";
     addAndDropDatabaseRole(projectId, instanceId, databaseId, parentRole, childRole);
   }
 
@@ -47,10 +47,10 @@ public class AddAndDropDatabaseRole {
       databaseAdminClient.updateDatabaseDdlAsync(
               DatabaseName.of(projectId, instanceId, databaseId),
               ImmutableList.of(
-                  String.format("CREATE ROLE `%s`", parentRole),
-                  String.format("GRANT SELECT ON TABLE Albums TO ROLE `%s`", parentRole),
-                  String.format("CREATE ROLE `%s`", childRole),
-                  String.format("GRANT ROLE `%s` TO ROLE `%s`", parentRole, childRole)))
+                  String.format("CREATE ROLE %s", parentRole),
+                  String.format("GRANT SELECT ON TABLE Albums TO ROLE %s", parentRole),
+                  String.format("CREATE ROLE %s", childRole),
+                  String.format("GRANT ROLE %s TO ROLE %s", parentRole, childRole)))
           .get(5, TimeUnit.MINUTES);
       System.out.printf(
           "Created roles %s and %s and granted privileges%n", parentRole, childRole);
@@ -59,8 +59,8 @@ public class AddAndDropDatabaseRole {
       databaseAdminClient.updateDatabaseDdlAsync(
           DatabaseName.of(projectId, instanceId, databaseId),
           ImmutableList.of(
-              String.format("REVOKE ROLE `%s` FROM ROLE `%s`", parentRole, childRole),
-              String.format("DROP ROLE `%s`", childRole))).get(5, TimeUnit.MINUTES);
+              String.format("REVOKE ROLE %s FROM ROLE %s", parentRole, childRole),
+              String.format("DROP ROLE %s", childRole))).get(5, TimeUnit.MINUTES);
       System.out.printf("Revoked privileges and dropped role %s%n", childRole);
     } catch (ExecutionException | TimeoutException e) {
       System.out.printf(
