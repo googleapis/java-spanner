@@ -46,7 +46,6 @@ import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;

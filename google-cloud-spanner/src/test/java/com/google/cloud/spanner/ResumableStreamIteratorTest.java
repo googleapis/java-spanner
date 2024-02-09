@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.api.client.util.BackOff;
-import com.google.cloud.spanner.AbstractResultSet.ResumableStreamIterator;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
@@ -56,7 +55,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
-/** Unit tests for {@link AbstractResultSet.ResumableStreamIterator}. */
+/** Unit tests for {@link ResumableStreamIterator}. */
 @RunWith(JUnit4.class)
 public class ResumableStreamIteratorTest {
   interface Starter {
@@ -131,7 +130,7 @@ public class ResumableStreamIteratorTest {
   }
 
   Starter starter = Mockito.mock(Starter.class);
-  AbstractResultSet.ResumableStreamIterator resumableStreamIterator;
+  ResumableStreamIterator resumableStreamIterator;
 
   @Before
   public void setUp() {
@@ -143,7 +142,7 @@ public class ResumableStreamIteratorTest {
   private void initWithLimit(int maxBufferSize) {
 
     resumableStreamIterator =
-        new AbstractResultSet.ResumableStreamIterator(
+        new ResumableStreamIterator(
             maxBufferSize,
             "",
             new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),

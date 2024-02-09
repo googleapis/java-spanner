@@ -20,6 +20,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -42,7 +43,7 @@ import java.util.function.Function;
  * that is fetched using the new transaction. This is achieved by wrapping the returned result sets
  * in a {@link ReplaceableForwardingResultSet} that replaces its delegate after a transaction retry.
  */
-class ReplaceableForwardingResultSet implements ResultSet {
+class ReplaceableForwardingResultSet implements ProtobufResultSet {
   private ResultSet delegate;
   private boolean closed;
 
@@ -60,6 +61,10 @@ class ReplaceableForwardingResultSet implements ResultSet {
     this.delegate = delegate;
   }
 
+  protected ResultSet getDelegate() {
+    return this.delegate;
+  }
+
   private void checkClosed() {
     if (closed) {
       throw SpannerExceptionFactory.newSpannerException(
@@ -75,6 +80,21 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public boolean next() throws SpannerException {
     checkClosed();
     return delegate.next();
+  }
+
+  @Override
+  public boolean canGetProtobufValue(int columnIndex) {
+    return !closed
+        && delegate instanceof ProtobufResultSet
+        && ((ProtobufResultSet) delegate).canGetProtobufValue(columnIndex);
+  }
+
+  @Override
+  public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+    checkClosed();
+    Preconditions.checkState(
+        delegate instanceof ProtobufResultSet, "The result set does not support protobuf values");
+    return ((ProtobufResultSet) getDelegate()).getProtobufValue(columnIndex);
   }
 
   @Override
