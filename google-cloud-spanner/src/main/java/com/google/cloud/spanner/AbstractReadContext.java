@@ -39,6 +39,7 @@ import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -53,8 +54,6 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracing;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -70,7 +69,8 @@ abstract class AbstractReadContext
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractReadContext> {
     private SessionImpl session;
     private SpannerRpc rpc;
-    private Span span = Tracing.getTracer().getCurrentSpan();
+    private ISpan span;
+    private TraceWrapper tracer;
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
     private DirectedReadOptions defaultDirectedReadOption;
@@ -94,8 +94,13 @@ abstract class AbstractReadContext
       return self();
     }
 
-    B setSpan(Span span) {
+    B setSpan(ISpan span) {
       this.span = span;
+      return self();
+    }
+
+    B setTracer(TraceWrapper tracer) {
+      this.tracer = tracer;
       return self();
     }
 
@@ -389,9 +394,12 @@ abstract class AbstractReadContext
           }
           transactionId = transaction.getId();
           span.addAnnotation(
-              "Transaction Creation Done", TraceUtil.getTransactionAnnotations(transaction));
+              "Transaction Creation Done",
+              ImmutableMap.of(
+                  "Id", transaction.getId().toStringUtf8(), "Timestamp", timestamp.toString()));
+
         } catch (SpannerException e) {
-          span.addAnnotation("Transaction Creation Failed", TraceUtil.getExceptionAnnotations(e));
+          span.addAnnotation("Transaction Creation Failed", e);
           throw e;
         }
       }
@@ -402,7 +410,8 @@ abstract class AbstractReadContext
   final SessionImpl session;
   final SpannerRpc rpc;
   final ExecutorProvider executorProvider;
-  Span span;
+  ISpan span;
+  TraceWrapper tracer;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
 
@@ -435,10 +444,11 @@ abstract class AbstractReadContext
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
     this.clock = builder.clock;
+    this.tracer = builder.tracer;
   }
 
   @Override
-  public void setSpan(Span span) {
+  public void setSpan(ISpan span) {
     this.span = span;
   }
 
@@ -692,6 +702,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.QUERY,
             span,
+            tracer,
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
@@ -752,7 +763,7 @@ abstract class AbstractReadContext
 
   @Override
   public void close() {
-    span.end(TraceUtil.END_SPAN_OPTIONS);
+    span.end();
     synchronized (lock) {
       isClosed = true;
     }
@@ -837,6 +848,7 @@ abstract class AbstractReadContext
             MAX_BUFFERED_CHUNKS,
             SpannerImpl.READ,
             span,
+            tracer,
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
           @Override

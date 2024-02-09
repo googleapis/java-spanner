@@ -69,6 +69,11 @@ public class ThreadFactoryUtil {
     } catch (ClassNotFoundException | NoSuchMethodException ignore) {
       return null;
     } catch (InvocationTargetException | IllegalAccessException e) {
+      // Java 20 supports virtual threads as an experimental feature. It will throw an
+      // UnsupportedOperationException if experimental features have not been enabled.
+      if (e.getCause() instanceof UnsupportedOperationException) {
+        return null;
+      }
       throw new RuntimeException(e);
     }
   }
@@ -91,6 +96,11 @@ public class ThreadFactoryUtil {
       } catch (NoSuchMethodException ignore) {
         return null;
       } catch (InvocationTargetException | IllegalAccessException e) {
+        // Java 20 supports virtual threads as an experimental feature. It will throw an
+        // UnsupportedOperationException if experimental features have not been enabled.
+        if (e.getCause() instanceof UnsupportedOperationException) {
+          return null;
+        }
         throw new RuntimeException(e);
       }
     }
