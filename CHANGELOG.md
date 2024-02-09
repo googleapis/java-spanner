@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.58.0](https://github.com/googleapis/java-spanner/compare/v6.57.0...v6.58.0) (2024-02-08)
+
+
+### Features
+
+* Open telemetry implementation ([#2770](https://github.com/googleapis/java-spanner/issues/2770)) ([244d6a8](https://github.com/googleapis/java-spanner/commit/244d6a836795bf07dacd6b766436dbd6bf5fa912))
+* **spanner:** Support max_commit_delay in Spanner transactions ([#2854](https://github.com/googleapis/java-spanner/issues/2854)) ([e2b7ae6](https://github.com/googleapis/java-spanner/commit/e2b7ae66648ea775c18c71ab353edd6c0f50e7ac))
+* Support Directed Read in Connection API ([#2855](https://github.com/googleapis/java-spanner/issues/2855)) ([ee477c2](https://github.com/googleapis/java-spanner/commit/ee477c2e7c509ce4b7c43da3b68c1433c59e46fb))
+
+
+### Bug Fixes
+
+* Cast for Proto type ([#2862](https://github.com/googleapis/java-spanner/issues/2862)) ([0a95dba](https://github.com/googleapis/java-spanner/commit/0a95dba47681c9c4cc4e41ecfb5dadec6357bff6))
+* Ignore UnsupportedOperationException for virtual threads ([#2866](https://github.com/googleapis/java-spanner/issues/2866)) ([aa9ad7f](https://github.com/googleapis/java-spanner/commit/aa9ad7f5a5e2405e8082a542916c3d1fa7d0fa25))
+* Use default query options with statement cache ([#2860](https://github.com/googleapis/java-spanner/issues/2860)) ([741e4cf](https://github.com/googleapis/java-spanner/commit/741e4cf4eb51c4635078cfe2c52b7462bd4cbbd8))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.24.0 ([#2856](https://github.com/googleapis/java-spanner/issues/2856)) ([968877e](https://github.com/googleapis/java-spanner/commit/968877e4eff7da3ff27180c2a6129b04922d1af4))
+
 ## [6.57.0](https://github.com/googleapis/java-spanner/compare/v6.56.0...v6.57.0) (2024-01-29)
 
 
