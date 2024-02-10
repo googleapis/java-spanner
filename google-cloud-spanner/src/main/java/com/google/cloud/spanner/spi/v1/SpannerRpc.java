@@ -499,19 +499,22 @@ public interface SpannerRpc extends ServiceRpc {
   boolean isClosed();
 
   /**
+   * Getter method to obtain the auto-generated instance admin client stub.
    *
-   * @return
+   * @return InstanceAdminStub
    */
+  @InternalApi
   default InstanceAdminStub getInstanceAdminStub() {
     throw new UnsupportedOperationException("Not implemented");
   }
 
   /**
+   * Getter method to obtain the auto-generated database admin client stub.
    *
-   * @return
+   * @return DatabaseAdminStub
    */
+  @InternalApi
   default DatabaseAdminStub getDatabaseAdminStub() {
     throw new UnsupportedOperationException("Not implemented");
   }
-
 }

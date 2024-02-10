@@ -1987,6 +1987,16 @@ public class GapicSpannerRpc implements SpannerRpc {
     return rpcIsClosed;
   }
 
+  @Override
+  public DatabaseAdminStub getDatabaseAdminStub() {
+    return databaseAdminStub;
+  }
+
+  @Override
+  public InstanceAdminStub getInstanceAdminStub() {
+    return instanceAdminStub;
+  }
+
   private static final class GrpcStreamingCall implements StreamingCall {
     private final ApiCallContext callContext;
     private final StreamController controller;
@@ -2057,15 +2067,5 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static Duration systemProperty(String name, int defaultValue) {
     String stringValue = System.getProperty(name, "");
     return Duration.ofSeconds(stringValue.isEmpty() ? defaultValue : Integer.parseInt(stringValue));
-  }
-
-  @Override
-  public DatabaseAdminStub getDatabaseAdminStub() {
-    return databaseAdminStub;
-  }
-
-  @Override
-  public InstanceAdminStub getInstanceAdminStub() {
-    return instanceAdminStub;
   }
 }

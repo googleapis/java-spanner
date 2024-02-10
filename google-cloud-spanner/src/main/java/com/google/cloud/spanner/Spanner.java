@@ -26,7 +26,13 @@ import com.google.cloud.Service;
  * quota.
  */
 public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
-  /** Returns a {@code DatabaseAdminClient} to do admin operations on Cloud Spanner databases. */
+
+  /**
+   * Returns a {@code DatabaseAdminClient} to do admin operations on Cloud Spanner databases.
+   *
+   * @return
+   * @deprecated Use {@link #databaseAdminClient()} instead.
+   */
   /*
    * <!--SNIPPET get_dbadmin_client-->
    * <pre>{@code
@@ -36,15 +42,32 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_dbadmin_client-->
    */
+  @Deprecated
   DatabaseAdminClient getDatabaseAdminClient();
 
   /**
+   * Returns a {@link com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient} to do admin
+   * operations on Cloud Spanner databases.
    *
-   * @return
+   * @return {@link com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient}
+   */
+  /*
+   * <!--SNIPPET get_dbadmin_client-->
+   * <pre>{@code
+   * SpannerOptions options = SpannerOptions.newBuilder().build();
+   * Spanner spanner = options.getService();
+   * DatabaseAdminClient dbAdminClient = spanner.databaseAdminClient();
+   * }</pre>
+   * <!--SNIPPET get_dbadmin_client-->
    */
   com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient();
 
-  /** Returns an {@code InstanceAdminClient} to do admin operations on Cloud Spanner instances. */
+  /**
+   * Returns an {@code InstanceAdminClient} to do admin operations on Cloud Spanner instances.
+   *
+   * @return {@code InstanceAdminClient}
+   * @deprecated Use {@link #instanceAdminClient()}} instead.
+   */
   /*
    * <!--SNIPPET get_instance_admin_client-->
    * <pre>{@code
@@ -54,14 +77,25 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_instance_admin_client-->
    */
+  @Deprecated
   InstanceAdminClient getInstanceAdminClient();
 
   /**
+   * Returns an {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient} to do admin
+   * operations on Cloud Spanner instances.
    *
-   * @return
+   * @return {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient}
+   */
+  /*
+   * <!--SNIPPET get_instance_admin_client-->
+   * <pre>{@code
+   * SpannerOptions options = SpannerOptions.newBuilder().build();
+   * Spanner spanner = options.getService();
+   * InstanceAdminClient instanceAdminClient = spanner.instanceAdminClient();
+   * }</pre>
+   * <!--SNIPPET get_instance_admin_client-->
    */
   com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient();
-
 
   /**
    * Returns a {@code DatabaseClient} for the given database. It uses a pool of sessions to talk to
