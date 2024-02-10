@@ -497,4 +497,21 @@ public interface SpannerRpc extends ServiceRpc {
   void shutdown();
 
   boolean isClosed();
+
+  /**
+   *
+   * @return
+   */
+  default InstanceAdminStub getInstanceAdminStub() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   *
+   * @return
+   */
+  default DatabaseAdminStub getDatabaseAdminStub() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
 }

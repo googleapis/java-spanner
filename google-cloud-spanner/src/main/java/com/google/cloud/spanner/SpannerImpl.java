@@ -27,12 +27,9 @@ import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
-import com.google.cloud.spanner.admin.database.v1.stub.GrpcDatabaseAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.GrpcInstanceAdminStub;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -47,6 +44,7 @@ import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -201,25 +199,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @Override
-  public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient getDatabaseAdminClient(
-      DatabaseAdminSettings... settings) {
-    if(settings.length != 0) {
-      com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient client =
-          com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
-              Arrays.stream(settings).iterator().next());
-      return client;
-    } else {
-      DatabaseAdminStub databaseAdminStub =
-          GrpcDatabaseAdminStub.create(
-              getOptions()
-                  .getDatabaseAdminStubSettings()
-                  .toBuilder()
-                  .setTransportChannelProvider(channelProvider)
-                  .setCredentialsProvider(credentialsProvider)
-                  .setStreamWatchdogProvider(watchdogProvider)
-                  .build());
-      return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(databaseAdminStub);
-    }
+  public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient() {
+    DatabaseAdminStub databaseAdminStub = gapicRpc.getDatabaseAdminStub();
+    return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(databaseAdminStub);
   }
 
   @Override
@@ -228,24 +210,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @Override
-  public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient getInstanceAdminClient(
-      InstanceAdminSettings... settings) {
-    if(settings.length != 0) {
-      com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient client =
-          com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(Arrays.stream(settings).iterator().next());
-      return client;
-    } else {
-      InstanceAdminStub instanceAdminStub =
-          GrpcInstanceAdminStub.create(
-              getOptions()
-                  .getInstanceAdminStubSettings()
-                  .toBuilder()
-                  .setTransportChannelProvider(channelProvider)
-                  .setCredentialsProvider(credentialsProvider)
-                  .setStreamWatchdogProvider(watchdogProvider)
-                  .build());
-      return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(instanceAdminStub);
-    }
+  public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient() {
+    InstanceAdminStub instanceAdminStub = gapicRpc.getInstanceAdminStub();
+    return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(instanceAdminStub);
   }
 
   @Override

@@ -2058,4 +2058,14 @@ public class GapicSpannerRpc implements SpannerRpc {
     String stringValue = System.getProperty(name, "");
     return Duration.ofSeconds(stringValue.isEmpty() ? defaultValue : Integer.parseInt(stringValue));
   }
+
+  @Override
+  public DatabaseAdminStub getDatabaseAdminStub() {
+    return databaseAdminStub;
+  }
+
+  @Override
+  public InstanceAdminStub getInstanceAdminStub() {
+    return instanceAdminStub;
+  }
 }
