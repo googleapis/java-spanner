@@ -461,4 +461,27 @@
     <className>com/google/cloud/spanner/Dialect</className>
     <method>java.lang.String getDefaultSchema()</method>
   </difference>
+  <!-- Exposing auto-generated admin/instance clients for admin operations -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient()</method>
+  </difference>
+
+  <!-- (Internal change, use stub objects for generating auto-generated client object) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub getDatabaseAdminStub()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub getInstanceAdminStub()</method>
+  </difference>
 </differences>
