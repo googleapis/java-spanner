@@ -20,6 +20,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -27,10 +28,13 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Forwarding implementation of {@link ResultSet} that forwards all calls to a delegate that can be
@@ -39,7 +43,7 @@ import java.util.List;
  * that is fetched using the new transaction. This is achieved by wrapping the returned result sets
  * in a {@link ReplaceableForwardingResultSet} that replaces its delegate after a transaction retry.
  */
-class ReplaceableForwardingResultSet implements ResultSet {
+class ReplaceableForwardingResultSet implements ProtobufResultSet {
   private ResultSet delegate;
   private boolean closed;
 
@@ -57,6 +61,10 @@ class ReplaceableForwardingResultSet implements ResultSet {
     this.delegate = delegate;
   }
 
+  protected ResultSet getDelegate() {
+    return this.delegate;
+  }
+
   private void checkClosed() {
     if (closed) {
       throw SpannerExceptionFactory.newSpannerException(
@@ -72,6 +80,21 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public boolean next() throws SpannerException {
     checkClosed();
     return delegate.next();
+  }
+
+  @Override
+  public boolean canGetProtobufValue(int columnIndex) {
+    return !closed
+        && delegate instanceof ProtobufResultSet
+        && ((ProtobufResultSet) delegate).canGetProtobufValue(columnIndex);
+  }
+
+  @Override
+  public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+    checkClosed();
+    Preconditions.checkState(
+        delegate instanceof ProtobufResultSet, "The result set does not support protobuf values");
+    return ((ProtobufResultSet) getDelegate()).getProtobufValue(columnIndex);
   }
 
   @Override
@@ -431,6 +454,32 @@ class ReplaceableForwardingResultSet implements ResultSet {
   }
 
   @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
+    checkClosed();
+    return delegate.getProtoMessageList(columnIndex, message);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
+    checkClosed();
+    return delegate.getProtoMessageList(columnName, message);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    checkClosed();
+    return delegate.getProtoEnumList(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    checkClosed();
+    return delegate.getProtoEnumList(columnName, method);
+  }
+
+  @Override
   public List<Struct> getStructList(int columnIndex) {
     checkClosed();
     return delegate.getStructList(columnIndex);
@@ -440,5 +489,31 @@ class ReplaceableForwardingResultSet implements ResultSet {
   public List<Struct> getStructList(String columnName) {
     checkClosed();
     return delegate.getStructList(columnName);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
+    checkClosed();
+    return delegate.getProtoMessage(columnIndex, message);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
+    checkClosed();
+    return delegate.getProtoMessage(columnName, message);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    checkClosed();
+    return delegate.getProtoEnum(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    checkClosed();
+    return delegate.getProtoEnum(columnName, method);
   }
 }
