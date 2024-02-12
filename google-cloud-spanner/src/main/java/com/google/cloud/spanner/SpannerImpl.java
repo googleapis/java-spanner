@@ -25,8 +25,6 @@ import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -101,16 +99,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @GuardedBy("this")
   private final Map<DatabaseId, DatabaseClientImpl> dbClients = new HashMap<>();
-
-  @GuardedBy("this")
-  private final Map<
-          InstanceAdminStub, com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient>
-      instanceAdminClients = new HashMap<>();
-
-  @GuardedBy("this")
-  private final Map<
-          DatabaseAdminStub, com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient>
-      databaseAdminClients = new HashMap<>();
 
   private final CloseableExecutorProvider asyncExecutorProvider;
 
