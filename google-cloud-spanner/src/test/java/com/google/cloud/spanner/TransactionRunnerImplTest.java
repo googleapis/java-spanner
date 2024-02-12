@@ -34,6 +34,10 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
@@ -63,6 +67,7 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
@@ -81,6 +86,7 @@ import org.mockito.MockitoAnnotations;
 /** Unit test for {@link com.google.cloud.spanner.TransactionRunnerImpl} */
 @RunWith(JUnit4.class)
 public class TransactionRunnerImplTest {
+
   private static final class TestExecutorFactory
       implements ExecutorFactory<ScheduledExecutorService> {
     @Override
@@ -97,6 +103,10 @@ public class TransactionRunnerImplTest {
   @Mock private SpannerRpc rpc;
   @Mock private SessionImpl session;
   @Mock private TransactionRunnerImpl.TransactionContextImpl txn;
+  @Mock private InstanceAdminStubSettings instanceAdminStubSettings;
+  @Mock private DatabaseAdminStubSettings databaseAdminStubSettings;
+  @Mock private DatabaseAdminStub databaseAdminStub;
+  @Mock private InstanceAdminStub instanceAdminStub;
   private TransactionRunnerImpl transactionRunner;
   private boolean firstRun;
   private boolean usedInlinedBegin;
@@ -151,7 +161,7 @@ public class TransactionRunnerImplTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void usesPreparedTransaction() {
+  public void usesPreparedTransaction() throws IOException {
     SpannerOptions options = mock(SpannerOptions.class);
     when(options.getNumChannels()).thenReturn(4);
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
@@ -196,6 +206,11 @@ public class TransactionRunnerImplTest {
                         .setCommitTimestamp(
                             Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
+    when(instanceAdminStubSettings.createStub()).thenReturn(instanceAdminStub);
+    when(databaseAdminStubSettings.createStub()).thenReturn(databaseAdminStub);
+    when(rpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
+    when(rpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
+
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

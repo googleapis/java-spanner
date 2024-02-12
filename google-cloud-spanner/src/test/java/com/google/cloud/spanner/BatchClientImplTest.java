@@ -30,12 +30,17 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.util.Timestamps;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opentelemetry.api.OpenTelemetry;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Before;
@@ -59,6 +64,10 @@ public final class BatchClientImplTest {
 
   @Mock private SpannerRpc gapicRpc;
   @Mock private SpannerOptions spannerOptions;
+  @Mock private InstanceAdminStubSettings instanceAdminStubSettings;
+  @Mock private DatabaseAdminStubSettings databaseAdminStubSettings;
+  @Mock private DatabaseAdminStub databaseAdminStub;
+  @Mock private InstanceAdminStub instanceAdminStub;
   @Captor private ArgumentCaptor<Map<SpannerRpc.Option, Object>> optionsCaptor;
   @Mock private BatchTransactionId txnID;
 
@@ -72,7 +81,7 @@ public final class BatchClientImplTest {
 
   @SuppressWarnings("unchecked")
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     initMocks(this);
     DatabaseId db = DatabaseId.of(DB_NAME);
     when(spannerOptions.getNumChannels()).thenReturn(4);
@@ -86,6 +95,10 @@ public final class BatchClientImplTest {
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
+    when(instanceAdminStubSettings.createStub()).thenReturn(instanceAdminStub);
+    when(databaseAdminStubSettings.createStub()).thenReturn(databaseAdminStub);
+    when(gapicRpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
+    when(gapicRpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(gapicRpc, spannerOptions);
     client = new BatchClientImpl(spanner.getSessionClient(db));
