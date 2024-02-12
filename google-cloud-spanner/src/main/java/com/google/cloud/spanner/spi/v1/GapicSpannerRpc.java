@@ -374,6 +374,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setTransportChannelProvider(channelProvider)
                     .setCredentialsProvider(credentialsProvider)
                     .setStreamWatchdogProvider(watchdogProvider)
+                    .setTracerFactory(options.getApiTracerFactory())
                     .build());
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
