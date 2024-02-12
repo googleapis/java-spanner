@@ -28,7 +28,7 @@ import com.google.cloud.Service;
 public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
 
   /**
-   * Returns a {@code DatabaseAdminClient} to do admin operations on Cloud Spanner databases.
+   * Returns a {@code DatabaseAdminClient} to execute admin operations on Cloud Spanner databases.
    *
    * @return
    * @deprecated Use {@link #databaseAdminClient()} instead.
