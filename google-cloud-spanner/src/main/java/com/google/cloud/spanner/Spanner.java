@@ -60,7 +60,9 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_dbadmin_client-->
    */
-  com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient();
+  default com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Returns an {@code InstanceAdminClient} to do admin operations on Cloud Spanner instances.
@@ -95,7 +97,9 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_instance_admin_client-->
    */
-  com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient();
+  default com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Returns a {@code DatabaseClient} for the given database. It uses a pool of sessions to talk to
