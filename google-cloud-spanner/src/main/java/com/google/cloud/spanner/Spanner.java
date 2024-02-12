@@ -65,7 +65,7 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
   }
 
   /**
-   * Returns an {@code InstanceAdminClient} to do admin operations on Cloud Spanner instances.
+   * Returns an {@code InstanceAdminClient} to execute admin operations on Cloud Spanner instances.
    *
    * @return {@code InstanceAdminClient}
    * @deprecated Use {@link #instanceAdminClient()}} instead.
