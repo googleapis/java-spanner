@@ -76,6 +76,7 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.collect.ImmutableSet;
+import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
@@ -213,7 +214,7 @@ public class ConnectionImplTest {
     try {
       DdlClient ddlClient = mock(DdlClient.class);
       @SuppressWarnings("unchecked")
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+      final OperationFuture<Empty, UpdateDatabaseDdlMetadata> operation =
           mock(OperationFuture.class);
       when(operation.get()).thenReturn(null);
       UpdateDatabaseDdlMetadata metadata = UpdateDatabaseDdlMetadata.getDefaultInstance();

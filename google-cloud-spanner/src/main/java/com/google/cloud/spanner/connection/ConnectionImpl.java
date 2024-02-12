@@ -308,7 +308,8 @@ class ConnectionImpl implements Connection {
 
   private DdlClient createDdlClient() {
     return DdlClient.newBuilder()
-        .setDatabaseAdminClient(spanner.getDatabaseAdminClient())
+        .setDatabaseAdminClient(spanner.databaseAdminClient())
+        .setProjectId(options.getProjectId())
         .setInstanceId(options.getInstanceId())
         .setDatabaseName(options.getDatabaseName())
         .build();

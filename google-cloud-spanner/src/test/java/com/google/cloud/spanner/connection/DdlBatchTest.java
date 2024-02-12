@@ -48,6 +48,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
+import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.Status;
@@ -82,7 +83,7 @@ public class DdlBatchTest {
     try {
       DdlClient ddlClient = mock(DdlClient.class);
       @SuppressWarnings("unchecked")
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+      final OperationFuture<Empty, UpdateDatabaseDdlMetadata> operation =
           mock(OperationFuture.class);
       if (waitForMillis > 0L) {
         when(operation.get())
@@ -378,7 +379,7 @@ public class DdlBatchTest {
             .build();
     ApiFuture<UpdateDatabaseDdlMetadata> metadataFuture = ApiFutures.immediateFuture(metadata);
     @SuppressWarnings("unchecked")
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
+    OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
     when(operationFuture.get()).thenReturn(null);
     when(operationFuture.getMetadata()).thenReturn(metadataFuture);
     when(client.executeDdl(argThat(isListOfStringsWithSize(2)))).thenReturn(operationFuture);
@@ -413,7 +414,7 @@ public class DdlBatchTest {
             .build();
     ApiFuture<UpdateDatabaseDdlMetadata> metadataFuture = ApiFutures.immediateFuture(metadata);
     @SuppressWarnings("unchecked")
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
+    OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
     when(operationFuture.get())
         .thenThrow(
             new ExecutionException(
@@ -455,7 +456,7 @@ public class DdlBatchTest {
             .build();
     ApiFuture<UpdateDatabaseDdlMetadata> metadataFuture = ApiFutures.immediateFuture(metadata);
     @SuppressWarnings("unchecked")
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
+    OperationFuture<Empty, UpdateDatabaseDdlMetadata> operationFuture = mock(OperationFuture.class);
     when(operationFuture.get())
         .thenThrow(
             new ExecutionException(

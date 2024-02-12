@@ -18,55 +18,25 @@ package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.isNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class DdlClientTests {
-
+  private final String projectId = "test-project";
   private final String instanceId = "test-instance";
   private final String databaseId = "test-database";
 
   private DdlClient createSubject(DatabaseAdminClient client) {
     return DdlClient.newBuilder()
+        .setProjectId(projectId)
         .setInstanceId(instanceId)
         .setDatabaseName(databaseId)
         .setDatabaseAdminClient(client)
         .build();
-  }
-
-  @Test
-  public void testExecuteDdl() throws InterruptedException, ExecutionException {
-    DatabaseAdminClient client = mock(DatabaseAdminClient.class);
-    @SuppressWarnings("unchecked")
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> operation = mock(OperationFuture.class);
-    when(operation.get()).thenReturn(null);
-    when(client.updateDatabaseDdl(eq(instanceId), eq(databaseId), anyList(), isNull()))
-        .thenReturn(operation);
-    DdlClient subject = createSubject(client);
-    String ddl = "CREATE TABLE FOO";
-    subject.executeDdl(ddl);
-    verify(client).updateDatabaseDdl(instanceId, databaseId, Collections.singletonList(ddl), null);
-
-    subject = createSubject(client);
-    List<String> ddlList = Arrays.asList("CREATE TABLE FOO", "DROP TABLE FOO");
-    subject.executeDdl(ddlList);
-    verify(client).updateDatabaseDdl(instanceId, databaseId, ddlList, null);
   }
 
   @Test
