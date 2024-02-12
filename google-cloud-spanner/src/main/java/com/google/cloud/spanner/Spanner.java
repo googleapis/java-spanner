@@ -30,8 +30,7 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
   /**
    * Returns a {@code DatabaseAdminClient} to execute admin operations on Cloud Spanner databases.
    *
-   * @return
-   * @deprecated Use {@link #databaseAdminClient()} instead.
+   * @return {@code DatabaseAdminClient}
    */
   /*
    * <!--SNIPPET get_dbadmin_client-->
@@ -42,7 +41,6 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_dbadmin_client-->
    */
-  @Deprecated
   DatabaseAdminClient getDatabaseAdminClient();
 
   /**
@@ -68,7 +66,6 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * Returns an {@code InstanceAdminClient} to execute admin operations on Cloud Spanner instances.
    *
    * @return {@code InstanceAdminClient}
-   * @deprecated Use {@link #instanceAdminClient()}} instead.
    */
   /*
    * <!--SNIPPET get_instance_admin_client-->
@@ -79,7 +76,6 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_instance_admin_client-->
    */
-  @Deprecated
   InstanceAdminClient getInstanceAdminClient();
 
   /**

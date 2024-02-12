@@ -101,6 +101,16 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   @GuardedBy("this")
   private final Map<DatabaseId, DatabaseClientImpl> dbClients = new HashMap<>();
 
+  @GuardedBy("this")
+  private final Map<
+          InstanceAdminStub, com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient>
+      instanceAdminClients = new HashMap<>();
+
+  @GuardedBy("this")
+  private final Map<
+          DatabaseAdminStub, com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient>
+      databaseAdminClients = new HashMap<>();
+
   private final CloseableExecutorProvider asyncExecutorProvider;
 
   @GuardedBy("this")
@@ -108,6 +118,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   private final DatabaseAdminClient dbAdminClient;
   private final InstanceAdminClient instanceClient;
+
+  private final com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient;
+  private final com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient;
 
   /**
    * Exception class used to track the stack trace at the point when a Spanner instance is closed.
@@ -137,6 +150,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
+    this.databaseAdminClient =
+        com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
+            gapicRpc.getDatabaseAdminStub());
+    this.instanceAdminClient =
+        com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(
+            gapicRpc.getInstanceAdminStub());
   }
 
   SpannerImpl(SpannerOptions options) {
@@ -211,8 +230,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient() {
-    DatabaseAdminStub databaseAdminStub = gapicRpc.getDatabaseAdminStub();
-    return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(databaseAdminStub);
+    return databaseAdminClient;
   }
 
   @Override
@@ -222,8 +240,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient() {
-    InstanceAdminStub instanceAdminStub = gapicRpc.getInstanceAdminStub();
-    return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(instanceAdminStub);
+    return instanceAdminClient;
   }
 
   @Override
