@@ -25,6 +25,8 @@ import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -108,8 +110,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private final DatabaseAdminClient dbAdminClient;
   private final InstanceAdminClient instanceClient;
 
-  private final com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient;
-  private final com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient;
+  private com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient;
+  private com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient;
 
   /**
    * Exception class used to track the stack trace at the point when a Spanner instance is closed.
@@ -215,7 +217,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient() {
-    return databaseAdminClient;
+    if(databaseAdminClient.isTerminated() || databaseAdminClient.isShutdown()) {
+      this.databaseAdminClient = createDatabaseAdminClient();
+    }
+    return this.databaseAdminClient;
   }
 
   @Override
@@ -225,7 +230,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient() {
-    return instanceAdminClient;
+    if(instanceAdminClient.isTerminated() || instanceAdminClient.isShutdown()) {
+      this.instanceAdminClient = createInstanceAdminClient();
+    }
+    return this.instanceAdminClient;
   }
 
   @Override
@@ -354,8 +362,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient
       createInstanceAdminClient() {
     try {
+      final InstanceAdminStubSettings settings =
+          Preconditions.checkNotNull(gapicRpc.getInstanceAdminStubSettings());
       return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(
-          gapicRpc.getInstanceAdminStubSettings().createStub());
+          settings.createStub());
     } catch (IOException ex) {
       throw SpannerExceptionFactory.newSpannerException(ex);
     }
@@ -364,8 +374,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient
       createDatabaseAdminClient() {
     try {
+      final DatabaseAdminStubSettings settings =
+          Preconditions.checkNotNull(gapicRpc.getDatabaseAdminStubSettings());
       return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
-          gapicRpc.getDatabaseAdminStubSettings().createStub());
+          settings.createStub());
     } catch (IOException ex) {
       throw SpannerExceptionFactory.newSpannerException(ex);
     }
