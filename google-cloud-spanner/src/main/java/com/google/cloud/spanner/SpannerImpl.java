@@ -42,6 +42,7 @@ import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -150,12 +151,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
-    this.databaseAdminClient =
-        com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
-            gapicRpc.getDatabaseAdminStub());
-    this.instanceAdminClient =
-        com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(
-            gapicRpc.getInstanceAdminStub());
+    this.databaseAdminClient = createDatabaseAdminClient();
+    this.instanceAdminClient = createInstanceAdminClient();
   }
 
   SpannerImpl(SpannerOptions options) {
@@ -364,5 +361,25 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     abstract Paginated<T> getNextPage(@Nullable String nextPageToken);
 
     abstract S fromProto(T proto);
+  }
+
+  private com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient
+      createInstanceAdminClient() {
+    try {
+      return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(
+          gapicRpc.getInstanceAdminStubSettings().createStub());
+    } catch (IOException ex) {
+      throw SpannerExceptionFactory.newSpannerException(ex);
+    }
+  }
+
+  private com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient
+      createDatabaseAdminClient() {
+    try {
+      return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
+          gapicRpc.getDatabaseAdminStubSettings().createStub());
+    } catch (IOException ex) {
+      throw SpannerExceptionFactory.newSpannerException(ex);
+    }
   }
 }

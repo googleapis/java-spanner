@@ -555,12 +555,12 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
-    <method>com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub getDatabaseAdminStub()</method>
+    <method>com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings getDatabaseAdminStubSettings()</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
-    <method>com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub getInstanceAdminStub()</method>
+    <method>com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings getInstanceAdminStubSettings()</method>
   </difference>
 
   <difference>

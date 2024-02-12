@@ -28,7 +28,9 @@ import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.ImmutableList;
 import com.google.iam.v1.GetPolicyOptions;
@@ -502,22 +504,22 @@ public interface SpannerRpc extends ServiceRpc {
   boolean isClosed();
 
   /**
-   * Getter method to obtain the auto-generated instance admin client stub.
+   * Getter method to obtain the auto-generated instance admin client stub settings.
    *
-   * @return InstanceAdminStub
+   * @return InstanceAdminStubSettings
    */
   @InternalApi
-  default InstanceAdminStub getInstanceAdminStub() {
+  default InstanceAdminStubSettings getInstanceAdminStubSettings() {
     throw new UnsupportedOperationException("Not implemented");
   }
 
   /**
-   * Getter method to obtain the auto-generated database admin client stub.
+   * Getter method to obtain the auto-generated database admin client stub settings.
    *
-   * @return DatabaseAdminStub
+   * @return DatabaseAdminStubSettings
    */
   @InternalApi
-  default DatabaseAdminStub getDatabaseAdminStub() {
+  default DatabaseAdminStubSettings getDatabaseAdminStubSettings() {
     throw new UnsupportedOperationException("Not implemented");
   }
 }
