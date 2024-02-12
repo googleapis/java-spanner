@@ -83,7 +83,7 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
   InstanceAdminClient getInstanceAdminClient();
 
   /**
-   * Returns an {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient} to do admin
+   * Returns an {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient} to execute admin
    * operations on Cloud Spanner instances.
    *
    * @return {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient}
