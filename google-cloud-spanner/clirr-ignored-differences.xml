@@ -13,6 +13,11 @@
   </difference>
   <difference>
     <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/DatabaseClient</className>
+    <method>com.google.spanner.admin.database.v1.DatabaseDialect getDatabaseDialect()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/BatchReadOnlyTransaction</className>
     <method>void cleanup()</method>
   </difference>
