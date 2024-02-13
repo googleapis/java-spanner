@@ -110,9 +110,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private final DatabaseAdminClient dbAdminClient;
   private final InstanceAdminClient instanceClient;
 
-  private com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient;
-  private com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient;
-
   /**
    * Exception class used to track the stack trace at the point when a Spanner instance is closed.
    * This exception will be thrown if a user tries to use any resources that were returned by this
@@ -141,8 +138,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     this.dbAdminClient = new DatabaseAdminClientImpl(options.getProjectId(), gapicRpc);
     this.instanceClient =
         new InstanceAdminClientImpl(options.getProjectId(), gapicRpc, dbAdminClient);
-    this.databaseAdminClient = createDatabaseAdminClient();
-    this.instanceAdminClient = createInstanceAdminClient();
   }
 
   SpannerImpl(SpannerOptions options) {
@@ -216,11 +211,16 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @Override
-  public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient() {
-    if(databaseAdminClient.isTerminated() || databaseAdminClient.isShutdown()) {
-      this.databaseAdminClient = createDatabaseAdminClient();
+  public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient
+      createDatabaseAdminClient() {
+    try {
+      final DatabaseAdminStubSettings settings =
+          Preconditions.checkNotNull(gapicRpc.getDatabaseAdminStubSettings());
+      return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
+          settings.createStub());
+    } catch (IOException ex) {
+      throw SpannerExceptionFactory.newSpannerException(ex);
     }
-    return this.databaseAdminClient;
   }
 
   @Override
@@ -229,11 +229,16 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @Override
-  public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient() {
-    if(instanceAdminClient.isTerminated() || instanceAdminClient.isShutdown()) {
-      this.instanceAdminClient = createInstanceAdminClient();
+  public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient
+      createInstanceAdminClient() {
+    try {
+      final InstanceAdminStubSettings settings =
+          Preconditions.checkNotNull(gapicRpc.getInstanceAdminStubSettings());
+      return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(
+          settings.createStub());
+    } catch (IOException ex) {
+      throw SpannerExceptionFactory.newSpannerException(ex);
     }
-    return this.instanceAdminClient;
   }
 
   @Override
@@ -357,29 +362,5 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     abstract Paginated<T> getNextPage(@Nullable String nextPageToken);
 
     abstract S fromProto(T proto);
-  }
-
-  private com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient
-      createInstanceAdminClient() {
-    try {
-      final InstanceAdminStubSettings settings =
-          Preconditions.checkNotNull(gapicRpc.getInstanceAdminStubSettings());
-      return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(
-          settings.createStub());
-    } catch (IOException ex) {
-      throw SpannerExceptionFactory.newSpannerException(ex);
-    }
-  }
-
-  private com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient
-      createDatabaseAdminClient() {
-    try {
-      final DatabaseAdminStubSettings settings =
-          Preconditions.checkNotNull(gapicRpc.getDatabaseAdminStubSettings());
-      return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
-          settings.createStub());
-    } catch (IOException ex) {
-      throw SpannerExceptionFactory.newSpannerException(ex);
-    }
   }
 }

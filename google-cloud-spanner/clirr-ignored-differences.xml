@@ -543,12 +543,12 @@
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/Spanner</className>
-    <method>com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient databaseAdminClient()</method>
+    <method>com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient createDatabaseAdminClient()</method>
   </difference>
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/Spanner</className>
-    <method>com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient instanceAdminClient()</method>
+    <method>com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient createInstanceAdminClient()</method>
   </difference>
 
   <!-- (Internal change, use stub objects for generating auto-generated client object) -->
