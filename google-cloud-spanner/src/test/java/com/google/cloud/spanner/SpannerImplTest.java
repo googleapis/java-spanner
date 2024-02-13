@@ -29,14 +29,9 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opentelemetry.api.OpenTelemetry;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
@@ -60,10 +55,6 @@ import org.mockito.MockitoAnnotations;
 public class SpannerImplTest {
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
-  @Mock private InstanceAdminStubSettings instanceAdminStubSettings;
-  @Mock private DatabaseAdminStubSettings databaseAdminStubSettings;
-  @Mock private DatabaseAdminStub databaseAdminStub;
-  @Mock private InstanceAdminStub instanceAdminStub;
   private SpannerImpl impl;
 
   @Captor ArgumentCaptor<Map<SpannerRpc.Option, Object>> options;
@@ -75,7 +66,7 @@ public class SpannerImplTest {
   }
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     MockitoAnnotations.initMocks(this);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
@@ -84,10 +75,6 @@ public class SpannerImplTest {
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
     when(spannerOptions.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
-    when(instanceAdminStubSettings.createStub()).thenReturn(instanceAdminStub);
-    when(databaseAdminStubSettings.createStub()).thenReturn(databaseAdminStub);
-    when(rpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
-    when(rpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
     impl = new SpannerImpl(rpc, spannerOptions);
   }
 

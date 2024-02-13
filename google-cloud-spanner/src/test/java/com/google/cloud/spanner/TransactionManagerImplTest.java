@@ -34,10 +34,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -51,7 +47,6 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
 import io.opentelemetry.api.OpenTelemetry;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -82,10 +77,6 @@ public class TransactionManagerImplTest {
 
   @Mock private SessionImpl session;
   @Mock TransactionRunnerImpl.TransactionContextImpl txn;
-  @Mock private InstanceAdminStubSettings instanceAdminStubSettings;
-  @Mock private DatabaseAdminStubSettings databaseAdminStubSettings;
-  @Mock private DatabaseAdminStub databaseAdminStub;
-  @Mock private InstanceAdminStub instanceAdminStub;
   private TransactionManagerImpl manager;
 
   @BeforeClass
@@ -210,7 +201,7 @@ public class TransactionManagerImplTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void usesPreparedTransaction() throws IOException {
+  public void usesPreparedTransaction() {
     SpannerOptions options = mock(SpannerOptions.class);
     when(options.getNumChannels()).thenReturn(4);
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
@@ -257,11 +248,6 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
-    when(instanceAdminStubSettings.createStub()).thenReturn(instanceAdminStub);
-    when(databaseAdminStubSettings.createStub()).thenReturn(databaseAdminStub);
-    when(rpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
-    when(rpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
-
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);
@@ -277,7 +263,7 @@ public class TransactionManagerImplTest {
 
   @SuppressWarnings({"unchecked", "resource"})
   @Test
-  public void inlineBegin() throws IOException {
+  public void inlineBegin() {
     SpannerOptions options = mock(SpannerOptions.class);
     when(options.getNumChannels()).thenReturn(4);
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
@@ -346,11 +332,6 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
-    when(instanceAdminStubSettings.createStub()).thenReturn(instanceAdminStub);
-    when(databaseAdminStubSettings.createStub()).thenReturn(databaseAdminStub);
-    when(rpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
-    when(rpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
-
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

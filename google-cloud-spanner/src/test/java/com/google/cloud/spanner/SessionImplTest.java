@@ -34,10 +34,6 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
-import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
-import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.ByteString;
@@ -56,7 +52,6 @@ import com.google.spanner.v1.Transaction;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collections;
@@ -81,10 +76,6 @@ import org.mockito.MockitoAnnotations;
 public class SessionImplTest {
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
-  @Mock private InstanceAdminStubSettings instanceAdminStubSettings;
-  @Mock private DatabaseAdminStubSettings databaseAdminStubSettings;
-  @Mock private DatabaseAdminStub databaseAdminStub;
-  @Mock private InstanceAdminStub instanceAdminStub;
   private com.google.cloud.spanner.Session session;
   @Captor private ArgumentCaptor<Map<SpannerRpc.Option, Object>> optionsCaptor;
   private Map<SpannerRpc.Option, Object> options;
@@ -97,7 +88,7 @@ public class SessionImplTest {
 
   @SuppressWarnings("unchecked")
   @Before
-  public void setUp() throws IOException {
+  public void setUp() {
     MockitoAnnotations.initMocks(this);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getPrefetchChunks()).thenReturn(1);
@@ -110,10 +101,6 @@ public class SessionImplTest {
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
     when(spannerOptions.getSessionPoolOptions()).thenReturn(mock(SessionPoolOptions.class));
     when(spannerOptions.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
-    when(instanceAdminStubSettings.createStub()).thenReturn(instanceAdminStub);
-    when(databaseAdminStubSettings.createStub()).thenReturn(databaseAdminStub);
-    when(rpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
-    when(rpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);
     String dbName = "projects/p1/instances/i1/databases/d1";
