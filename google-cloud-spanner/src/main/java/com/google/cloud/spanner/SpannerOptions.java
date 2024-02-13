@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFunction;
 import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
@@ -33,6 +34,7 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.spanner.Options.DirectedReadOption;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
@@ -50,6 +52,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.SpannerGrpc;
@@ -59,6 +62,8 @@ import io.grpc.Context;
 import io.grpc.ExperimentalApi;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -73,12 +78,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import org.threeten.bp.Duration;
 
 /** Options for the Cloud Spanner service. */
 public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private static final long serialVersionUID = 2789571558532701170L;
   private static SpannerEnvironment environment = SpannerEnvironmentImpl.INSTANCE;
+  private static boolean enableOpenCensusMetrics = true;
+  private static boolean enableOpenTelemetryMetrics = false;
 
   private static final String JDBC_API_CLIENT_LIB_TOKEN = "sp-jdbc";
   private static final String HIBERNATE_API_CLIENT_LIB_TOKEN = "sp-hib";
@@ -105,6 +113,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final GrpcInterceptorProvider interceptorProvider;
   private final SessionPoolOptions sessionPoolOptions;
   private final int prefetchChunks;
+  private final DecodeMode decodeMode;
   private final int numChannels;
   private final String transportChannelExecutorThreadNameFormat;
   private final String databaseRole;
@@ -137,6 +146,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final String compressorName;
   private final boolean leaderAwareRoutingEnabled;
   private final boolean attemptDirectPath;
+  private final DirectedReadOptions directedReadOptions;
+  private final boolean useVirtualThreads;
+  private final OpenTelemetry openTelemetry;
+
+  enum TracingFramework {
+    OPEN_CENSUS,
+    OPEN_TELEMETRY
+  }
+
+  private static final Object lock = new Object();
+
+  @GuardedBy("lock")
+  private static TracingFramework activeTracingFramework;
 
   /** Interface that can be used to provide {@link CallCredentials} to {@link SpannerOptions}. */
   public interface CallCredentialsProvider {
@@ -577,9 +599,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return FixedCloseableExecutorProvider.create(executor);
   }
 
-  private SpannerOptions(Builder builder) {
+  protected SpannerOptions(Builder builder) {
     super(SpannerFactory.class, SpannerRpcFactory.class, builder, new SpannerDefaults());
-    numChannels = builder.numChannels;
+    numChannels = builder.numChannels == null ? DEFAULT_CHANNELS : builder.numChannels;
     Preconditions.checkArgument(
         numChannels >= 1 && numChannels <= MAX_CHANNELS,
         "Number of channels must fall in the range [1, %s], found: %s",
@@ -595,6 +617,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             ? builder.sessionPoolOptions
             : SessionPoolOptions.newBuilder().build();
     prefetchChunks = builder.prefetchChunks;
+    decodeMode = builder.decodeMode;
     databaseRole = builder.databaseRole;
     sessionLabels = builder.sessionLabels;
     try {
@@ -627,6 +650,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     compressorName = builder.compressorName;
     leaderAwareRoutingEnabled = builder.leaderAwareRoutingEnabled;
     attemptDirectPath = builder.attemptDirectPath;
+    directedReadOptions = builder.directedReadOptions;
+    useVirtualThreads = builder.useVirtualThreads;
+    openTelemetry = builder.openTelemetry;
   }
 
   /**
@@ -680,6 +706,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
+    // TODO: Set the default to DecodeMode.DIRECT before merging to keep the current default.
+    //       It is currently set to LAZY_PER_COL so it is used in all tests.
+    static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.LAZY_PER_COL;
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofSeconds(5L))
@@ -706,6 +735,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String transportChannelExecutorThreadNameFormat = "Cloud-Spanner-TransportChannel-%d";
 
     private int prefetchChunks = DEFAULT_PREFETCH_CHUNKS;
+    private DecodeMode decodeMode = DEFAULT_DECODE_MODE;
     private SessionPoolOptions sessionPoolOptions;
     private String databaseRole;
     private ImmutableMap<String, String> sessionLabels;
@@ -729,12 +759,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     private boolean leaderAwareRoutingEnabled = true;
     private boolean attemptDirectPath = true;
+    private DirectedReadOptions directedReadOptions;
+    private boolean useVirtualThreads = false;
+    private OpenTelemetry openTelemetry;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
     }
 
-    private Builder() {
+    protected Builder() {
       // Manually set retry and polling settings that work.
       OperationTimedPollAlgorithm longRunningPollingAlgorithm =
           OperationTimedPollAlgorithm.create(
@@ -770,6 +803,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
           options.transportChannelExecutorThreadNameFormat;
       this.sessionPoolOptions = options.sessionPoolOptions;
       this.prefetchChunks = options.prefetchChunks;
+      this.decodeMode = options.decodeMode;
       this.databaseRole = options.databaseRole;
       this.sessionLabels = options.sessionLabels;
       this.spannerStubSettingsBuilder = options.spannerStubSettings.toBuilder();
@@ -789,6 +823,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.channelConfigurator = options.channelConfigurator;
       this.interceptorProvider = options.interceptorProvider;
       this.attemptDirectPath = options.attemptDirectPath;
+      this.directedReadOptions = options.directedReadOptions;
+      this.useVirtualThreads = options.useVirtualThreads;
     }
 
     @Override
@@ -1154,6 +1190,32 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets the {@link DirectedReadOption} that specify which replicas or regions should be used for
+     * non-transactional reads or queries.
+     *
+     * <p>DirectedReadOptions set at the request level will take precedence over the options set
+     * using this method.
+     *
+     * <p>An example below of how {@link DirectedReadOptions} can be constructed by including a
+     * replica.
+     *
+     * <pre><code>
+     * DirectedReadOptions.newBuilder()
+     *           .setIncludeReplicas(
+     *               IncludeReplicas.newBuilder()
+     *                   .addReplicaSelections(
+     *                       ReplicaSelection.newBuilder().setLocation("us-east1").build()))
+     *           .build();
+     *           }
+     * </code></pre>
+     */
+    public Builder setDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      this.directedReadOptions =
+          Preconditions.checkNotNull(directedReadOptions, "DirectedReadOptions cannot be null");
+      return this;
+    }
+
+    /**
      * Specifying this will allow the client to prefetch up to {@code prefetchChunks} {@code
      * PartialResultSet} chunks for each read and query. The data size of each chunk depends on the
      * server implementation but a good rule of thumb is that each chunk will be up to 1 MiB. Larger
@@ -1166,6 +1228,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      */
     public Builder setPrefetchChunks(int prefetchChunks) {
       this.prefetchChunks = prefetchChunks;
+      return this;
+    }
+
+    /**
+     * Specifies how values that are returned from a query should be decoded and converted from
+     * protobuf values into plain Java objects.
+     */
+    public Builder setDecodeMode(DecodeMode decodeMode) {
+      this.decodeMode = decodeMode;
       return this;
     }
 
@@ -1208,6 +1279,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
+     * Sets OpenTelemetry object to be used for Spanner Metrics and Traces. GlobalOpenTelemetry will
+     * be used as fallback if this options is not set.
+     */
+    public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
+      this.openTelemetry = openTelemetry;
+      return this;
+    }
+
+    /**
      * Enable leader aware routing. Leader aware routing would route all requests in RW/PDML
      * transactions to the leader region.
      */
@@ -1231,6 +1311,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Enables/disables the use of virtual threads for the gRPC executor. Setting this option only
+     * has any effect on Java 21 and higher. In all other cases, the option will be ignored.
+     */
+    @BetaApi
+    protected Builder setUseVirtualThreads(boolean useVirtualThreads) {
+      this.useVirtualThreads = useVirtualThreads;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1251,6 +1341,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             this.grpcGcpExtensionEnabled ? GRPC_GCP_ENABLED_DEFAULT_CHANNELS : DEFAULT_CHANNELS;
       }
 
+      synchronized (lock) {
+        if (activeTracingFramework == null) {
+          activeTracingFramework = TracingFramework.OPEN_CENSUS;
+        }
+      }
       return new SpannerOptions(this);
     }
   }
@@ -1278,6 +1373,77 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public static void useDefaultEnvironment() {
     SpannerOptions.environment = SpannerEnvironmentImpl.INSTANCE;
+  }
+
+  /**
+   * Enables OpenTelemetry traces. Enabling OpenTelemetry traces will disable OpenCensus traces. By
+   * default, OpenCensus traces are enabled.
+   */
+  public static void enableOpenTelemetryTraces() {
+    synchronized (lock) {
+      if (activeTracingFramework != null
+          && activeTracingFramework != TracingFramework.OPEN_TELEMETRY) {
+        throw new IllegalStateException(
+            "ActiveTracingFramework is set to OpenCensus and cannot be reset after SpannerOptions object is created.");
+      }
+      activeTracingFramework = TracingFramework.OPEN_TELEMETRY;
+    }
+  }
+
+  /** Enables OpenCensus traces. Enabling OpenCensus traces will disable OpenTelemetry traces. */
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  public static void enableOpenCensusTraces() {
+    synchronized (lock) {
+      if (activeTracingFramework != null
+          && activeTracingFramework != TracingFramework.OPEN_CENSUS) {
+        throw new IllegalStateException(
+            "ActiveTracingFramework is set to OpenTelemetry and cannot be reset after SpannerOptions object is created.");
+      }
+      activeTracingFramework = TracingFramework.OPEN_CENSUS;
+    }
+  }
+
+  /**
+   * Always resets the activeTracingFramework. This variable is used for internal testing, and is
+   * not a valid production scenario
+   */
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  static void resetActiveTracingFramework() {
+    activeTracingFramework = null;
+  }
+
+  public static TracingFramework getActiveTracingFramework() {
+    synchronized (lock) {
+      if (activeTracingFramework == null) {
+        return TracingFramework.OPEN_CENSUS;
+      }
+      return activeTracingFramework;
+    }
+  }
+
+  /** Disables OpenCensus metrics. Disable OpenCensus metrics before creating Spanner client. */
+  public static void disableOpenCensusMetrics() {
+    SpannerOptions.enableOpenCensusMetrics = false;
+  }
+
+  @VisibleForTesting
+  static void enableOpenCensusMetrics() {
+    SpannerOptions.enableOpenCensusMetrics = true;
+  }
+
+  public static boolean isEnabledOpenCensusMetrics() {
+    return SpannerOptions.enableOpenCensusMetrics;
+  }
+
+  /** Enables OpenTelemetry metrics. Enable OpenTelemetry metrics before creating Spanner client. */
+  public static void enableOpenTelemetryMetrics() {
+    SpannerOptions.enableOpenTelemetryMetrics = true;
+  }
+
+  public static boolean isEnabledOpenTelemetryMetrics() {
+    return SpannerOptions.enableOpenTelemetryMetrics;
   }
 
   @Override
@@ -1371,9 +1537,30 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return leaderAwareRoutingEnabled;
   }
 
+  public DirectedReadOptions getDirectedReadOptions() {
+    return directedReadOptions;
+  }
+
   @BetaApi
   public boolean isAttemptDirectPath() {
     return attemptDirectPath;
+  }
+
+  /**
+   * Returns an instance of OpenTelemetry. If OpenTelemetry object is not set via SpannerOptions
+   * then GlobalOpenTelemetry will be used as fallback.
+   */
+  public OpenTelemetry getOpenTelemetry() {
+    if (this.openTelemetry != null) {
+      return this.openTelemetry;
+    } else {
+      return GlobalOpenTelemetry.get();
+    }
+  }
+
+  @BetaApi
+  public boolean isUseVirtualThreads() {
+    return useVirtualThreads;
   }
 
   /** Returns the default query options to use for the specific database. */
@@ -1395,6 +1582,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   public int getPrefetchChunks() {
     return prefetchChunks;
+  }
+
+  public DecodeMode getDecodeMode() {
+    return decodeMode;
   }
 
   public static GrpcTransportOptions getDefaultGrpcTransportOptions() {

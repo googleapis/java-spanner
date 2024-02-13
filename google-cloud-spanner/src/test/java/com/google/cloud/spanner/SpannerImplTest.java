@@ -31,6 +31,7 @@ import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -57,6 +59,12 @@ public class SpannerImplTest {
 
   @Captor ArgumentCaptor<Map<SpannerRpc.Option, Object>> options;
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
@@ -66,6 +74,7 @@ public class SpannerImplTest {
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spannerOptions.getSessionLabels()).thenReturn(Collections.emptyMap());
+    when(spannerOptions.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     impl = new SpannerImpl(rpc, spannerOptions);
   }
 

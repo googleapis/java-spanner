@@ -27,6 +27,8 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.common.base.Throwables;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -34,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -92,6 +95,17 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected Date getDateInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
+      return null;
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
       return null;
     }
 
@@ -157,6 +171,18 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected List<Timestamp> getTimestampListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
+        int columnIndex, T message) {
+      return null;
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> List<T> getProtoEnumListInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
       return null;
     }
 
