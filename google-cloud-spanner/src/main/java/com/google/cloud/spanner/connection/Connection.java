@@ -38,6 +38,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Iterator;
@@ -488,6 +489,22 @@ public interface Connection extends AutoCloseable {
    *     connection is in read-only and autocommit mode.
    */
   TimestampBound getReadOnlyStaleness();
+
+  /**
+   * Sets the {@link DirectedReadOptions} to use for both single-use and multi-use read-only
+   * transactions on this connection.
+   */
+  default void setDirectedRead(DirectedReadOptions directedReadOptions) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Returns the {@link DirectedReadOptions} that are used for both single-use and multi-use
+   * read-only transactions on this connection.
+   */
+  default DirectedReadOptions getDirectedRead() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Sets the query optimizer version to use for this connection.

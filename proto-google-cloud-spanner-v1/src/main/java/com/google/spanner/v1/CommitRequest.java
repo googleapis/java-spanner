@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -378,6 +378,71 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     return returnCommitStats_;
   }
 
+  public static final int MAX_COMMIT_DELAY_FIELD_NUMBER = 8;
+  private com.google.protobuf.Duration maxCommitDelay_;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return Whether the maxCommitDelay field is set.
+   */
+  @java.lang.Override
+  public boolean hasMaxCommitDelay() {
+    return maxCommitDelay_ != null;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The maxCommitDelay.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Duration getMaxCommitDelay() {
+    return maxCommitDelay_ == null
+        ? com.google.protobuf.Duration.getDefaultInstance()
+        : maxCommitDelay_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The amount of latency this request is willing to incur in order
+   * to improve throughput. If this field is not set, Spanner assumes requests
+   * are relatively latency sensitive and automatically determines an
+   * appropriate delay time. You can specify a batching delay value between 0
+   * and 500 ms.
+   * </pre>
+   *
+   * <code>.google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.DurationOrBuilder getMaxCommitDelayOrBuilder() {
+    return maxCommitDelay_ == null
+        ? com.google.protobuf.Duration.getDefaultInstance()
+        : maxCommitDelay_;
+  }
+
   public static final int REQUEST_OPTIONS_FIELD_NUMBER = 6;
   private com.google.spanner.v1.RequestOptions requestOptions_;
   /**
@@ -460,6 +525,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (requestOptions_ != null) {
       output.writeMessage(6, getRequestOptions());
     }
+    if (maxCommitDelay_ != null) {
+      output.writeMessage(8, getMaxCommitDelay());
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -491,6 +559,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (requestOptions_ != null) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(6, getRequestOptions());
     }
+    if (maxCommitDelay_ != null) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(8, getMaxCommitDelay());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -509,6 +580,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     if (!getSession().equals(other.getSession())) return false;
     if (!getMutationsList().equals(other.getMutationsList())) return false;
     if (getReturnCommitStats() != other.getReturnCommitStats()) return false;
+    if (hasMaxCommitDelay() != other.hasMaxCommitDelay()) return false;
+    if (hasMaxCommitDelay()) {
+      if (!getMaxCommitDelay().equals(other.getMaxCommitDelay())) return false;
+    }
     if (hasRequestOptions() != other.hasRequestOptions()) return false;
     if (hasRequestOptions()) {
       if (!getRequestOptions().equals(other.getRequestOptions())) return false;
@@ -543,6 +618,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + RETURN_COMMIT_STATS_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getReturnCommitStats());
+    if (hasMaxCommitDelay()) {
+      hash = (37 * hash) + MAX_COMMIT_DELAY_FIELD_NUMBER;
+      hash = (53 * hash) + getMaxCommitDelay().hashCode();
+    }
     if (hasRequestOptions()) {
       hash = (37 * hash) + REQUEST_OPTIONS_FIELD_NUMBER;
       hash = (53 * hash) + getRequestOptions().hashCode();
@@ -709,6 +788,11 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       }
       bitField0_ = (bitField0_ & ~0x00000008);
       returnCommitStats_ = false;
+      maxCommitDelay_ = null;
+      if (maxCommitDelayBuilder_ != null) {
+        maxCommitDelayBuilder_.dispose();
+        maxCommitDelayBuilder_ = null;
+      }
       requestOptions_ = null;
       if (requestOptionsBuilder_ != null) {
         requestOptionsBuilder_.dispose();
@@ -772,6 +856,10 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
         result.returnCommitStats_ = returnCommitStats_;
       }
       if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.maxCommitDelay_ =
+            maxCommitDelayBuilder_ == null ? maxCommitDelay_ : maxCommitDelayBuilder_.build();
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
         result.requestOptions_ =
             requestOptionsBuilder_ == null ? requestOptions_ : requestOptionsBuilder_.build();
       }
@@ -865,6 +953,9 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       if (other.getReturnCommitStats() != false) {
         setReturnCommitStats(other.getReturnCommitStats());
       }
+      if (other.hasMaxCommitDelay()) {
+        mergeMaxCommitDelay(other.getMaxCommitDelay());
+      }
       if (other.hasRequestOptions()) {
         mergeRequestOptions(other.getRequestOptions());
       }
@@ -950,9 +1041,15 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
             case 50:
               {
                 input.readMessage(getRequestOptionsFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000020;
+                bitField0_ |= 0x00000040;
                 break;
               } // case 50
+            case 66:
+              {
+                input.readMessage(getMaxCommitDelayFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 66
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -1896,6 +1993,243 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    private com.google.protobuf.Duration maxCommitDelay_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Duration,
+            com.google.protobuf.Duration.Builder,
+            com.google.protobuf.DurationOrBuilder>
+        maxCommitDelayBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return Whether the maxCommitDelay field is set.
+     */
+    public boolean hasMaxCommitDelay() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The maxCommitDelay.
+     */
+    public com.google.protobuf.Duration getMaxCommitDelay() {
+      if (maxCommitDelayBuilder_ == null) {
+        return maxCommitDelay_ == null
+            ? com.google.protobuf.Duration.getDefaultInstance()
+            : maxCommitDelay_;
+      } else {
+        return maxCommitDelayBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setMaxCommitDelay(com.google.protobuf.Duration value) {
+      if (maxCommitDelayBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        maxCommitDelay_ = value;
+      } else {
+        maxCommitDelayBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder setMaxCommitDelay(com.google.protobuf.Duration.Builder builderForValue) {
+      if (maxCommitDelayBuilder_ == null) {
+        maxCommitDelay_ = builderForValue.build();
+      } else {
+        maxCommitDelayBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder mergeMaxCommitDelay(com.google.protobuf.Duration value) {
+      if (maxCommitDelayBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0)
+            && maxCommitDelay_ != null
+            && maxCommitDelay_ != com.google.protobuf.Duration.getDefaultInstance()) {
+          getMaxCommitDelayBuilder().mergeFrom(value);
+        } else {
+          maxCommitDelay_ = value;
+        }
+      } else {
+        maxCommitDelayBuilder_.mergeFrom(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public Builder clearMaxCommitDelay() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      maxCommitDelay_ = null;
+      if (maxCommitDelayBuilder_ != null) {
+        maxCommitDelayBuilder_.dispose();
+        maxCommitDelayBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.protobuf.Duration.Builder getMaxCommitDelayBuilder() {
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return getMaxCommitDelayFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    public com.google.protobuf.DurationOrBuilder getMaxCommitDelayOrBuilder() {
+      if (maxCommitDelayBuilder_ != null) {
+        return maxCommitDelayBuilder_.getMessageOrBuilder();
+      } else {
+        return maxCommitDelay_ == null
+            ? com.google.protobuf.Duration.getDefaultInstance()
+            : maxCommitDelay_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. The amount of latency this request is willing to incur in order
+     * to improve throughput. If this field is not set, Spanner assumes requests
+     * are relatively latency sensitive and automatically determines an
+     * appropriate delay time. You can specify a batching delay value between 0
+     * and 500 ms.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Duration max_commit_delay = 8 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Duration,
+            com.google.protobuf.Duration.Builder,
+            com.google.protobuf.DurationOrBuilder>
+        getMaxCommitDelayFieldBuilder() {
+      if (maxCommitDelayBuilder_ == null) {
+        maxCommitDelayBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Duration,
+                com.google.protobuf.Duration.Builder,
+                com.google.protobuf.DurationOrBuilder>(
+                getMaxCommitDelay(), getParentForChildren(), isClean());
+        maxCommitDelay_ = null;
+      }
+      return maxCommitDelayBuilder_;
+    }
+
     private com.google.spanner.v1.RequestOptions requestOptions_;
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.spanner.v1.RequestOptions,
@@ -1914,7 +2248,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the requestOptions field is set.
      */
     public boolean hasRequestOptions() {
-      return ((bitField0_ & 0x00000020) != 0);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      *
@@ -1954,7 +2288,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       } else {
         requestOptionsBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -1973,7 +2307,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       } else {
         requestOptionsBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -1988,7 +2322,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeRequestOptions(com.google.spanner.v1.RequestOptions value) {
       if (requestOptionsBuilder_ == null) {
-        if (((bitField0_ & 0x00000020) != 0)
+        if (((bitField0_ & 0x00000040) != 0)
             && requestOptions_ != null
             && requestOptions_ != com.google.spanner.v1.RequestOptions.getDefaultInstance()) {
           getRequestOptionsBuilder().mergeFrom(value);
@@ -1998,7 +2332,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
       } else {
         requestOptionsBuilder_.mergeFrom(value);
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2012,7 +2346,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
      */
     public Builder clearRequestOptions() {
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000040);
       requestOptions_ = null;
       if (requestOptionsBuilder_ != null) {
         requestOptionsBuilder_.dispose();
@@ -2031,7 +2365,7 @@ public final class CommitRequest extends com.google.protobuf.GeneratedMessageV3
      * <code>.google.spanner.v1.RequestOptions request_options = 6;</code>
      */
     public com.google.spanner.v1.RequestOptions.Builder getRequestOptionsBuilder() {
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return getRequestOptionsFieldBuilder().getBuilder();
     }
