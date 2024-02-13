@@ -37,8 +37,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opencensus.metrics.LabelValue;
-import io.opencensus.trace.Tracer;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,14 @@ import org.threeten.bp.Instant;
 /** Default implementation of the Cloud Spanner interface. */
 class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   private static final Logger logger = Logger.getLogger(SpannerImpl.class.getName());
-  static final Tracer tracer = Tracing.getTracer();
+  final TraceWrapper tracer =
+      new TraceWrapper(
+          Tracing.getTracer(),
+          this.getOptions()
+              .getOpenTelemetry()
+              .getTracer(
+                  MetricRegistryConstants.INSTRUMENTATION_SCOPE,
+                  GaxProperties.getLibraryVersion(this.getOptions().getClass())));
 
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";
   static final String BATCH_CREATE_SESSIONS = "CloudSpannerOperation.BatchCreateSessions";
@@ -143,9 +151,17 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     return getOptions().getPrefetchChunks();
   }
 
+  DecodeMode getDefaultDecodeMode() {
+    return getOptions().getDecodeMode();
+  }
+
   /** Returns the default query options that should be used for the specified database. */
   QueryOptions getDefaultQueryOptions(DatabaseId databaseId) {
     return getOptions().getDefaultQueryOptions(databaseId);
+  }
+
+  TraceWrapper getTracer() {
+    return this.tracer;
   }
 
   /**
@@ -219,9 +235,19 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 LabelValue.create(db.getDatabase()),
                 LabelValue.create(db.getInstanceId().getName()),
                 LabelValue.create(GaxProperties.getLibraryVersion(getOptions().getClass())));
+
+        AttributesBuilder attributesBuilder = Attributes.builder();
+        attributesBuilder.put("client_id", clientId);
+        attributesBuilder.put("database", db.getDatabase());
+        attributesBuilder.put("instance_id", db.getInstanceId().getName());
+
         SessionPool pool =
             SessionPool.createPool(
-                getOptions(), SpannerImpl.this.getSessionClient(db), labelValues);
+                getOptions(),
+                SpannerImpl.this.getSessionClient(db),
+                this.tracer,
+                labelValues,
+                attributesBuilder.build());
         pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
         dbClients.put(db, dbClient);
@@ -232,7 +258,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @VisibleForTesting
   DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return new DatabaseClientImpl(clientId, pool);
+    return new DatabaseClientImpl(clientId, pool, tracer);
   }
 
   @Override
