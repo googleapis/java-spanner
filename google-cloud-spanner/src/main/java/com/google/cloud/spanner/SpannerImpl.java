@@ -25,6 +25,8 @@ import com.google.cloud.PageImpl.NextPageFetcher;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.SpannerOptions.CloseableExecutorProvider;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Paginated;
@@ -40,6 +42,7 @@ import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -208,8 +211,34 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @Override
+  public com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient
+      createDatabaseAdminClient() {
+    try {
+      final DatabaseAdminStubSettings settings =
+          Preconditions.checkNotNull(gapicRpc.getDatabaseAdminStubSettings());
+      return com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.create(
+          settings.createStub());
+    } catch (IOException ex) {
+      throw SpannerExceptionFactory.newSpannerException(ex);
+    }
+  }
+
+  @Override
   public InstanceAdminClient getInstanceAdminClient() {
     return instanceClient;
+  }
+
+  @Override
+  public com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient
+      createInstanceAdminClient() {
+    try {
+      final InstanceAdminStubSettings settings =
+          Preconditions.checkNotNull(gapicRpc.getInstanceAdminStubSettings());
+      return com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.create(
+          settings.createStub());
+    } catch (IOException ex) {
+      throw SpannerExceptionFactory.newSpannerException(ex);
+    }
   }
 
   @Override

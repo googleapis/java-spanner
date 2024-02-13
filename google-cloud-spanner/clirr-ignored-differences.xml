@@ -539,6 +539,30 @@
     <className>com/google/cloud/spanner/Dialect</className>
     <method>java.lang.String getDefaultSchema()</method>
   </difference>
+  <!-- Exposing auto-generated admin/instance clients for admin operations -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient createDatabaseAdminClient()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient createInstanceAdminClient()</method>
+  </difference>
+
+  <!-- (Internal change, use stub objects for generating auto-generated client object) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings getDatabaseAdminStubSettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings getInstanceAdminStubSettings()</method>
+  </difference>
+
   <difference>
     <differenceType>7005</differenceType>
     <className>com/google/cloud/spanner/PartitionedDmlTransaction</className>
@@ -556,6 +580,5 @@
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setDirectedRead(com.google.spanner.v1.DirectedReadOptions)</method>
-  </difference>
-  
+  </difference>  
 </differences>

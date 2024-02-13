@@ -243,6 +243,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final Set<Code> readRetryableCodes;
   private final SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
+  private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final InstanceAdminStub instanceAdminStub;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final DatabaseAdminStub databaseAdminStub;
@@ -435,16 +436,15 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
         }
         this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
-
-        this.instanceAdminStub =
-            GrpcInstanceAdminStub.create(
-                options
-                    .getInstanceAdminStubSettings()
-                    .toBuilder()
-                    .setTransportChannelProvider(channelProvider)
-                    .setCredentialsProvider(credentialsProvider)
-                    .setStreamWatchdogProvider(watchdogProvider)
-                    .build());
+        this.instanceAdminStubSettings =
+            options
+                .getInstanceAdminStubSettings()
+                .toBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider)
+                .setStreamWatchdogProvider(watchdogProvider)
+                .build();
+        this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
         this.databaseAdminStubSettings =
             options
@@ -510,6 +510,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.executeQueryRetryableCodes = null;
       this.partitionedDmlStub = null;
       this.databaseAdminStubSettings = null;
+      this.instanceAdminStubSettings = null;
       this.spannerWatchdog = null;
       this.partitionedDmlRetrySettings = null;
     }
@@ -2002,6 +2003,16 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public boolean isClosed() {
     return rpcIsClosed;
+  }
+
+  @Override
+  public DatabaseAdminStubSettings getDatabaseAdminStubSettings() {
+    return databaseAdminStubSettings;
+  }
+
+  @Override
+  public InstanceAdminStubSettings getInstanceAdminStubSettings() {
+    return instanceAdminStubSettings;
   }
 
   private static final class GrpcStreamingCall implements StreamingCall {
