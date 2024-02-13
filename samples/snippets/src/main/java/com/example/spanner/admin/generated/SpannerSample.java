@@ -1654,7 +1654,7 @@ public class SpannerSample {
       DatabaseAdminClient databaseAdminClient,
       String projectId, String instanceId,
       String databaseId, String backupId) {
-    com.google.spanner.admin.instance.v1.InstanceName instanceName = com.google.spanner.admin.instance.v1.InstanceName.of(projectId, instanceId)
+    InstanceName instanceName = InstanceName.of(projectId, instanceId);
     // Get create backup operations for the sample database.
     String filter =
         String.format(
@@ -1748,7 +1748,7 @@ public class SpannerSample {
   static void listBackups(
       DatabaseAdminClient dbAdminClient, String projectId,
       String instanceId, String databaseId, String backupId) {
-    InstanceName instanceName = InstanceName.of(projectId, instanceId)
+    InstanceName instanceName = InstanceName.of(projectId, instanceId);
     // List all backups.
     System.out.println("All backups:");
     for (Backup backup : dbAdminClient.listBackups(
