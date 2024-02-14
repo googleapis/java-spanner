@@ -41,7 +41,6 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_dbadmin_client-->
    */
-  @Deprecated
   DatabaseAdminClient getDatabaseAdminClient();
 
   /**
@@ -82,7 +81,6 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * }</pre>
    * <!--SNIPPET get_instance_admin_client-->
    */
-  @Deprecated
   InstanceAdminClient getInstanceAdminClient();
 
   /**
