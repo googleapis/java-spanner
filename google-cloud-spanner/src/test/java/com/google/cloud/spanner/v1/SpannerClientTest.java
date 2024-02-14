@@ -138,6 +138,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -181,6 +182,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -302,6 +304,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -345,6 +348,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -1388,6 +1392,7 @@ public class SpannerClientTest {
                 SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
             .setRequestOptions(RequestOptions.newBuilder().build())
             .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+            .setExcludeTxnFromChangeStreams(true)
             .build();
 
     MockStreamObserver<BatchWriteResponse> responseObserver = new MockStreamObserver<>();
@@ -1411,6 +1416,7 @@ public class SpannerClientTest {
                 SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
             .setRequestOptions(RequestOptions.newBuilder().build())
             .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+            .setExcludeTxnFromChangeStreams(true)
             .build();
 
     MockStreamObserver<BatchWriteResponse> responseObserver = new MockStreamObserver<>();

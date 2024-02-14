@@ -118,6 +118,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -167,6 +168,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -304,6 +306,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -353,6 +356,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 
