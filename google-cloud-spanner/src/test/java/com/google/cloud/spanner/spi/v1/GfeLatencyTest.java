@@ -17,7 +17,6 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
 
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
@@ -28,12 +27,12 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.ForwardingServerCall;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.ServerCall;
@@ -137,7 +136,6 @@ public class GfeLatencyTest {
   @BeforeClass
   public static void startServer() throws IOException {
     SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
-    assumeFalse(EmulatorSpannerHelper.isUsingEmulator());
 
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
@@ -311,11 +309,8 @@ public class GfeLatencyTest {
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
-        .setChannelConfigurator(
-            input -> {
-              input.usePlaintext();
-              return input;
-            })
+        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+        .disableDirectPath()
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)

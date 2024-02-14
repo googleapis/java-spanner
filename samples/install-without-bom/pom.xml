@@ -15,6 +15,7 @@
     <groupId>com.google.cloud.samples</groupId>
     <artifactId>shared-configuration</artifactId>
     <version>1.2.0</version>
+    <relativePath></relativePath>
   </parent>
 
   <properties>
@@ -32,7 +33,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.53.0</version>
+      <version>6.56.0</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     
@@ -110,7 +111,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
             <id>add-snippets-source</id>
@@ -139,12 +140,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.1</version>
         <configuration>
           <systemPropertyVariables>
-            <spanner.test.instance>spanner-testing-east1</spanner.test.instance>
-            <spanner.test.instance.mr>spanner-mr-testing</spanner.test.instance.mr>
-            <spanner.test.instance.config>nam6</spanner.test.instance.config>
+            <spanner.test.instance>java-client-integration-test</spanner.test.instance>
+            <spanner.test.instance.mr>java-client-mr-integration-test</spanner.test.instance.mr>
+            <spanner.test.instance.config>nam11</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
             <spanner.test.key.name>cmek-test-key</spanner.test.key.name>

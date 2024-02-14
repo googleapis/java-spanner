@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ package com.google.spanner.v1;
  *
  *
  * <pre>
- * The response for [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
+ * The response for
+ * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
  * </pre>
  *
  * Protobuf type {@code google.spanner.v1.BatchCreateSessionsResponse}
@@ -298,7 +299,8 @@ public final class BatchCreateSessionsResponse extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * The response for [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
+   * The response for
+   * [BatchCreateSessions][google.spanner.v1.Spanner.BatchCreateSessions].
    * </pre>
    *
    * Protobuf type {@code google.spanner.v1.BatchCreateSessionsResponse}

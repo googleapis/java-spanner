@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.54.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.58.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.54.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.58.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
@@ -134,6 +134,15 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
       </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <configuration>
+          <!-- Exclude (public) classes in this internal package -->
+          <excludes>com/google/cloud/spanner/spi/v1/**</excludes>
+        </configuration>
+      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
@@ -141,7 +150,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>
-            <ignoredDependencies>io.grpc:grpc-protobuf-lite,org.hamcrest:hamcrest,org.hamcrest:hamcrest-core,com.google.errorprone:error_prone_annotations,org.openjdk.jmh:jmh-generator-annprocess,com.google.api.grpc:grpc-google-cloud-spanner-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1,javax.annotation:javax.annotation-api,io.opencensus:opencensus-impl,org.graalvm.sdk:graal-sdk,io.grpc:grpc-grpclb,io.grpc:grpc-googleapis,io.grpc:grpc-rls</ignoredDependencies>
+            <ignoredDependencies>io.grpc:grpc-protobuf-lite,org.hamcrest:hamcrest,org.hamcrest:hamcrest-core,com.google.errorprone:error_prone_annotations,org.openjdk.jmh:jmh-generator-annprocess,com.google.api.grpc:grpc-google-cloud-spanner-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1,com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1,javax.annotation:javax.annotation-api,io.opencensus:opencensus-impl,org.graalvm.sdk:graal-sdk,io.grpc:grpc-grpclb,io.grpc:grpc-googleapis,io.grpc:grpc-rls,com.google.api.grpc:proto-google-cloud-spanner-executor-v1,com.google.api.grpc:grpc-google-cloud-spanner-executor-v1</ignoredDependencies>
           </configuration>
         </plugin>
       </plugins>
@@ -200,7 +209,16 @@
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
+      <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
       <artifactId>grpc-google-common-protos</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api.grpc</groupId>
+      <artifactId>grpc-google-cloud-spanner-executor-v1</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
@@ -228,6 +246,14 @@
       <groupId>io.opencensus</groupId>
       <artifactId>opencensus-impl</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-context</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
@@ -375,7 +401,6 @@
       <version>2.2</version>
       <scope>test</scope>
     </dependency>
-    
     <!-- Benchmarking dependencies -->
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
@@ -389,9 +414,28 @@
       <version>1.37</version>
       <scope>test</scope>
     </dependency>
-
+    <!-- OpenTelemetry test dependencies -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-metrics</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-trace</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-testing</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
-
   <profiles>
     <profile>
       <id>java9</id>
