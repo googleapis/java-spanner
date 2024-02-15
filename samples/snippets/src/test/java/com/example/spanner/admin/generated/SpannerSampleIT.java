@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.example.spanner.SampleRunner;
-import com.example.spanner.SpannerSample;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Backup;
 import com.google.cloud.spanner.BackupId;
@@ -41,6 +40,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -430,7 +430,7 @@ public class SpannerSampleIT {
               "Database %s restored from backup",
               DatabaseId.of(
                   dbId.getInstanceId(),
-                  com.example.spanner.SpannerSample.createRestoredSampleDbId(dbId))
+                  com.example.spanner.admin.generated.SpannerSample.createRestoredSampleDbId(dbId))
               .getName()));
     }
 
@@ -534,8 +534,9 @@ public class SpannerSampleIT {
     String out =
         runSampleRunnable(() -> {
           try {
-            com.example.spanner.CreateInstanceExample.createInstance(
+            com.example.spanner.admin.generated.CreateInstanceExample.createInstance(
                 dbId.getInstanceId().getProject(), instanceId);
+          } catch (IOException ex) {
           } finally {
             spanner.getInstanceAdminClient().deleteInstance(instanceId);
           }
