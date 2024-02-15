@@ -20,11 +20,6 @@ package com.example.spanner.admin.generated;
 
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Backup;
-import com.google.cloud.spanner.BackupId;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;

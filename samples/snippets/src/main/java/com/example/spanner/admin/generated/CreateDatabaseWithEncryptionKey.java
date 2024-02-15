@@ -18,23 +18,21 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_database_with_encryption_key]
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.encryption.EncryptionConfigs;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
-import java.util.Arrays;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.EncryptionConfig;
+import com.google.spanner.admin.database.v1.InstanceName;
+import com.google.spanner.admin.database.v1.Database;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class CreateDatabaseWithEncryptionKey {
 
-  static void createDatabaseWithEncryptionKey() {
+  static void createDatabaseWithEncryptionKey() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -42,9 +40,7 @@ public class CreateDatabaseWithEncryptionKey {
     String kmsKeyName =
         "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
+    try (DatabaseAdminClient adminClient = DatabaseAdminClient.create()) {
       createDatabaseWithEncryptionKey(
           adminClient,
           projectId,
@@ -56,32 +52,35 @@ public class CreateDatabaseWithEncryptionKey {
 
   static void createDatabaseWithEncryptionKey(DatabaseAdminClient adminClient,
       String projectId, String instanceId, String databaseId, String kmsKeyName) {
-    final Database databaseToCreate = adminClient
-        .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
-        .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(kmsKeyName))
+    InstanceName instanceName = InstanceName.of(projectId, instanceId);
+    CreateDatabaseRequest request = CreateDatabaseRequest.newBuilder()
+        .setParent(instanceName.toString())
+        .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
+        .setEncryptionConfig(EncryptionConfig.newBuilder().setKmsKeyName(kmsKeyName).build())
+        .addAllExtraStatements(
+            ImmutableList.of(
+                "CREATE TABLE Singers ("
+                    + "  SingerId   INT64 NOT NULL,"
+                    + "  FirstName  STRING(1024),"
+                    + "  LastName   STRING(1024),"
+                    + "  SingerInfo BYTES(MAX)"
+                    + ") PRIMARY KEY (SingerId)",
+                "CREATE TABLE Albums ("
+                    + "  SingerId     INT64 NOT NULL,"
+                    + "  AlbumId      INT64 NOT NULL,"
+                    + "  AlbumTitle   STRING(MAX)"
+                    + ") PRIMARY KEY (SingerId, AlbumId),"
+                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"
+            ))
         .build();
-    final OperationFuture<Database, CreateDatabaseMetadata> operation = adminClient
-        .createDatabase(databaseToCreate, Arrays.asList(
-            "CREATE TABLE Singers ("
-                + "  SingerId   INT64 NOT NULL,"
-                + "  FirstName  STRING(1024),"
-                + "  LastName   STRING(1024),"
-                + "  SingerInfo BYTES(MAX)"
-                + ") PRIMARY KEY (SingerId)",
-            "CREATE TABLE Albums ("
-                + "  SingerId     INT64 NOT NULL,"
-                + "  AlbumId      INT64 NOT NULL,"
-                + "  AlbumTitle   STRING(MAX)"
-                + ") PRIMARY KEY (SingerId, AlbumId),"
-                + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"
-        ));
     try {
       System.out.println("Waiting for operation to complete...");
-      Database createdDatabase = operation.get(120, TimeUnit.SECONDS);
+      Database createdDatabase =
+          adminClient.createDatabaseAsync(request).get(120, TimeUnit.SECONDS);
 
       System.out.printf(
           "Database %s created with encryption key %s%n",
-          createdDatabase.getId(),
+          createdDatabase.getName(),
           createdDatabase.getEncryptionConfig().getKmsKeyName()
       );
     } catch (ExecutionException e) {

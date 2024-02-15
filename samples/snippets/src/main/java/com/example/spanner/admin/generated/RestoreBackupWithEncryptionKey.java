@@ -19,12 +19,6 @@ package com.example.spanner.admin.generated;
 // [START spanner_restore_backup_with_encryption_key]
 
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.BackupId;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Restore;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;

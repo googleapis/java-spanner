@@ -39,7 +39,7 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 @Ignore
-public class EncryptionKeyIT extends SampleTestBase {
+public class EncryptionKeyIT extends SampleTestBaseV2 {
 
   private static String key;
 
