@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -29,9 +30,16 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.SpannerException.DoNotConstructDirectly;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opentelemetry.api.OpenTelemetry;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
@@ -55,6 +63,10 @@ import org.mockito.MockitoAnnotations;
 public class SpannerImplTest {
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
+  @Mock private DatabaseAdminStubSettings databaseAdminStubSettings;
+  @Mock private DatabaseAdminStub databaseAdminStub;
+  @Mock private InstanceAdminStubSettings instanceAdminStubSettings;
+  @Mock private InstanceAdminStub instanceAdminStub;
   private SpannerImpl impl;
 
   @Captor ArgumentCaptor<Map<SpannerRpc.Option, Object>> options;
@@ -284,6 +296,66 @@ public class SpannerImplTest {
     StringWriter sw = new StringWriter();
     e.getCause().printStackTrace(new PrintWriter(sw));
     assertThat(sw.toString()).contains("closeSpannerAndIncludeStacktrace");
+  }
+
+  @Test
+  public void testCreateDatabaseAdminClient_whenNullAdminSettings_assertPreconditionFailure() {
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+    assertThrows(NullPointerException.class, spanner::createDatabaseAdminClient);
+  }
+
+  @Test
+  public void testCreateDatabaseAdminClient_whenMockAdminSettings_assertMethodInvocation()
+      throws IOException {
+    when(rpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
+    when(databaseAdminStubSettings.createStub()).thenReturn(databaseAdminStub);
+
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+
+    DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient();
+    assertNotNull(databaseAdminClient);
+  }
+
+  @Test(expected = SpannerException.class)
+  public void testCreateDatabaseAdminClient_whenMockAdminSettings_assertException()
+      throws IOException {
+    when(rpc.getDatabaseAdminStubSettings()).thenReturn(databaseAdminStubSettings);
+    when(databaseAdminStubSettings.createStub()).thenThrow(IOException.class);
+
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+
+    DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient();
+    assertNotNull(databaseAdminClient);
+  }
+
+  @Test
+  public void testCreateInstanceAdminClient_whenNullAdminSettings_assertPreconditionFailure() {
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+    assertThrows(NullPointerException.class, spanner::createInstanceAdminClient);
+  }
+
+  @Test
+  public void testCreateInstanceAdminClient_whenMockAdminSettings_assertMethodInvocation()
+      throws IOException {
+    when(rpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
+    when(instanceAdminStubSettings.createStub()).thenReturn(instanceAdminStub);
+
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+
+    InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient();
+    assertNotNull(instanceAdminClient);
+  }
+
+  @Test(expected = SpannerException.class)
+  public void testCreateInstanceAdminClient_whenMockAdminSettings_assertException()
+      throws IOException {
+    when(rpc.getInstanceAdminStubSettings()).thenReturn(instanceAdminStubSettings);
+    when(instanceAdminStubSettings.createStub()).thenThrow(IOException.class);
+
+    Spanner spanner = new SpannerImpl(rpc, spannerOptions);
+
+    InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient();
+    assertNotNull(instanceAdminClient);
   }
 
   private void closeSpannerAndIncludeStacktrace(Spanner spanner) {

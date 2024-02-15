@@ -36,35 +36,35 @@ class CreateInstanceExample {
   }
 
   static void createInstance(String projectId, String instanceId) throws IOException {
-    try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
-      // Set Instance configuration.
-      int nodeCount = 2;
-      String displayName = "Descriptive name";
+    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
 
-      // Create an Instance object that will be used to create the instance.
-      Instance instance =
-          Instance.newBuilder()
-              .setDisplayName(displayName)
-              .setNodeCount(nodeCount)
-              .setConfig(
-                  InstanceConfigName.of(projectId, "regional-us-central1").toString())
-              .build();
-      try {
-        // Wait for the createInstance operation to finish.
-        Instance createdInstance = instanceAdminClient.createInstanceAsync(
-            CreateInstanceRequest.newBuilder()
-                .setParent(ProjectName.of(projectId).toString())
-                .setInstanceId(instanceId)
-                .setInstance(instance)
-                .build()).get();
-        System.out.printf("Instance %s was successfully created%n", createdInstance.getName());
-      } catch (ExecutionException e) {
-        System.out.printf(
-            "Error: Creating instance %s failed with error message %s%n",
-            instance.getName(), e.getMessage());
-      } catch (InterruptedException e) {
-        System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
-      }
+    // Set Instance configuration.
+    int nodeCount = 2;
+    String displayName = "Descriptive name";
+
+    // Create an Instance object that will be used to create the instance.
+    Instance instance =
+        Instance.newBuilder()
+            .setDisplayName(displayName)
+            .setNodeCount(nodeCount)
+            .setConfig(
+                InstanceConfigName.of(projectId, "regional-us-central1").toString())
+            .build();
+    try {
+      // Wait for the createInstance operation to finish.
+      Instance createdInstance = instanceAdminClient.createInstanceAsync(
+          CreateInstanceRequest.newBuilder()
+              .setParent(ProjectName.of(projectId).toString())
+              .setInstanceId(instanceId)
+              .setInstance(instance)
+              .build()).get();
+      System.out.printf("Instance %s was successfully created%n", createdInstance.getName());
+    } catch (ExecutionException e) {
+      System.out.printf(
+          "Error: Creating instance %s failed with error message %s%n",
+          instance.getName(), e.getMessage());
+    } catch (InterruptedException e) {
+      System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
     }
   }
 }
