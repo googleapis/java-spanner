@@ -18,12 +18,19 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_backup_with_encryption_key]
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.encryption.EncryptionConfigs;
+import com.google.protobuf.Timestamp;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
+import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
+import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.InstanceName;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -32,7 +39,7 @@ import org.threeten.bp.OffsetDateTime;
 
 public class CreateBackupWithEncryptionKey {
 
-  static void createBackupWithEncryptionKey() throws InterruptedException {
+  static void createBackupWithEncryptionKey() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -41,9 +48,7 @@ public class CreateBackupWithEncryptionKey {
     String kmsKeyName =
         "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
+    try (DatabaseAdminClient adminClient = DatabaseAdminClient.create()) {
       createBackupWithEncryptionKey(
           adminClient,
           projectId,
@@ -55,24 +60,29 @@ public class CreateBackupWithEncryptionKey {
   }
 
   static Void createBackupWithEncryptionKey(DatabaseAdminClient adminClient,
-      String projectId, String instanceId, String databaseId, String backupId, String kmsKeyName)
-      throws InterruptedException {
+      String projectId, String instanceId, String databaseId, String backupId, String kmsKeyName) {
     // Set expire time to 14 days from now.
-    final Timestamp expireTime = Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
-        System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14), TimeUnit.MILLISECONDS));
-    final Backup backupToCreate = adminClient
-        .newBackupBuilder(BackupId.of(projectId, instanceId, backupId))
-        .setDatabase(DatabaseId.of(projectId, instanceId, databaseId))
-        .setExpireTime(expireTime)
-        .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(kmsKeyName))
-        .build();
-    final OperationFuture<Backup, CreateBackupMetadata> operation = adminClient
-        .createBackup(backupToCreate);
+    final Timestamp expireTime =
+        Timestamp.newBuilder().setSeconds(TimeUnit.MILLISECONDS.toSeconds((
+            System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14)))).build();
+    final BackupName backupName = BackupName.of(projectId, instanceId, backupId);
+    Backup backup = Backup.newBuilder()
+        .setName(backupName.toString())
+        .setDatabase(DatabaseName.of(projectId, instanceId, databaseId).toString())
+        .setExpireTime(expireTime).build();
 
-    Backup backup;
+    final CreateBackupRequest request =
+        CreateBackupRequest.newBuilder()
+            .setParent(InstanceName.of(projectId, instanceId).toString())
+            .setBackupId(backupName.toString())
+            .setBackup(backup)
+            .setEncryptionConfig(
+                CreateBackupEncryptionConfig.newBuilder()
+                    .setEncryptionType(EncryptionType.CUSTOMER_MANAGED_ENCRYPTION)
+                    .setKmsKeyName(kmsKeyName).build()).build();
     try {
       System.out.println("Waiting for operation to complete...");
-      backup = operation.get(1200, TimeUnit.SECONDS);
+      backup = adminClient.createBackupAsync(request).get(1200, TimeUnit.SECONDS);
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());
@@ -84,14 +94,13 @@ public class CreateBackupWithEncryptionKey {
       // If the operation timed out propagates the timeout
       throw SpannerExceptionFactory.propagateTimeout(e);
     }
-
     System.out.printf(
         "Backup %s of size %d bytes was created at %s using encryption key %s%n",
-        backup.getId().getName(),
-        backup.getSize(),
+        backup.getName(),
+        backup.getSizeBytes(),
         LocalDateTime.ofEpochSecond(
-            backup.getProto().getCreateTime().getSeconds(),
-            backup.getProto().getCreateTime().getNanos(),
+            backup.getCreateTime().getSeconds(),
+            backup.getCreateTime().getNanos(),
             OffsetDateTime.now().getOffset()),
         kmsKeyName
     );

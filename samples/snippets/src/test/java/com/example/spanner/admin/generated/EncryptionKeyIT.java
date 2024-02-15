@@ -19,7 +19,6 @@ package com.example.spanner.admin.generated;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.example.spanner.SampleRunner;
-import com.example.spanner.SampleTestBase;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;

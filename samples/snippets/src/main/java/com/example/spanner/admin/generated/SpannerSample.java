@@ -1574,8 +1574,9 @@ public class SpannerSample {
     Timestamp expireTime =
         Timestamp.newBuilder().setSeconds(TimeUnit.MILLISECONDS.toSeconds((
             System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14)))).build();
+    BackupName backupName = BackupName.of(projectId, instanceId, backupId);
     Backup backup = Backup.newBuilder()
-        .setName(BackupName.of(projectId, instanceId, backupId).toString())
+        .setName(backupName.toString())
         .setDatabase(DatabaseName.of(projectId, instanceId, databaseId).toString())
         .setExpireTime(expireTime).setVersionTime(versionTime).build();
 
@@ -1584,7 +1585,7 @@ public class SpannerSample {
     try {
       // Wait for the backup operation to complete.
       backup = dbAdminClient.createBackupAsync(
-          InstanceName.of(projectId, instanceId), backup, backupId).get();
+          InstanceName.of(projectId, instanceId), backup, backupName.toString()).get();
       System.out.println("Created backup [" + backup.getName() + "]");
     } catch (ExecutionException e) {
       throw (SpannerException) e.getCause();

@@ -37,6 +37,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.InstanceName;
@@ -137,16 +138,16 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     Pattern samplePattern = getTestDbIdPattern(baseDbId);
     Pattern restoredPattern = getTestDbIdPattern("restored");
     try(DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-      for (Database db : databaseAdminClient.listDatabases(instanceId).iterateAll()) {
+      for (com.google.spanner.admin.database.v1.Database db : databaseAdminClient.listDatabases(instanceId).iterateAll()) {
         if (TimeUnit.HOURS.convert(now.getSeconds() - db.getCreateTime().getSeconds(),
             TimeUnit.SECONDS) > 24) {
-          if (db.getId().getDatabase().length() >= DBID_LENGTH) {
-            if (samplePattern.matcher(toComparableId(baseDbId, db.getId().getDatabase())).matches()) {
-              db.drop();
+          if (db.getName().length() >= DBID_LENGTH) {
+            if (samplePattern.matcher(toComparableId(baseDbId, db.getName())).matches()) {
+              databaseAdminClient.dropDatabase(db.getName());
             }
-            if (restoredPattern.matcher(toComparableId("restored", db.getId().getDatabase()))
+            if (restoredPattern.matcher(toComparableId("restored", db.getName()))
                 .matches()) {
-              db.drop();
+              databaseAdminClient.dropDatabase(db.getName());
             }
           }
         }
@@ -518,7 +519,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       while (attempts < 30) {
         try {
           attempts++;
-          backup.delete();
+          databaseAdminClient.deleteBackup(backup.getName());
           break;
         } catch (SpannerException e) {
           if (e.getErrorCode() == ErrorCode.FAILED_PRECONDITION && e.getMessage()
