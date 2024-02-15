@@ -38,6 +38,7 @@ class AddJsonbColumnSample {
       throws InterruptedException, ExecutionException, IOException {
     final DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
 
+    // JSONB datatype is only supported with PostgreSQL-dialect databases.
     // Wait for the operation to finish.
     // This will throw an ExecutionException if the operation fails.
     databaseAdminClient.updateDatabaseDdlAsync(
