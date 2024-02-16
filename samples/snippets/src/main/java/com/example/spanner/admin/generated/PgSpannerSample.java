@@ -16,16 +16,12 @@
 
 package com.example.spanner.admin.generated;
 
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Instance;
 import com.google.cloud.spanner.InstanceAdminClient;
 import com.google.cloud.spanner.InstanceId;
@@ -45,13 +41,17 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.io.BaseEncoding;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
+import com.google.spanner.admin.instance.v1.InstanceName;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -194,15 +194,19 @@ public class PgSpannerSample {
   }
 
   // [START spanner_postgresql_create_database]
-  static void createPostgreSqlDatabase(DatabaseAdminClient dbAdminClient, DatabaseId id) {
-    OperationFuture<Database, CreateDatabaseMetadata> op = dbAdminClient.createDatabase(
-        dbAdminClient.newDatabaseBuilder(id).setDialect(Dialect.POSTGRESQL).build(),
-        Collections.emptyList());
+  static void createPostgreSqlDatabase(
+      DatabaseAdminClient dbAdminClient, String projectId, String instanceId, String databaseId) {
+    final CreateDatabaseRequest request =
+        CreateDatabaseRequest.newBuilder()
+            .setCreateStatement("CREATE DATABASE \"" + databaseId + "\"")
+            .setParent(InstanceName.of(projectId, instanceId).toString())
+            .setDatabaseDialect(DatabaseDialect.POSTGRESQL).build();
+
     try {
       // Initiate the request which returns an OperationFuture.
-      Database db = op.get();
-      System.out.println("Created database [" + db.getId() + "]");
-      createTableUsingDdl(dbAdminClient, id);
+      Database db = dbAdminClient.createDatabaseAsync(request).get();
+      System.out.println("Created database [" + db.getName() + "]");
+      createTableUsingDdl(dbAdminClient, DatabaseName.parse(db.toString()));
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -302,15 +306,12 @@ public class PgSpannerSample {
   // [END spanner_postgresql_read_data]
 
   // [START spanner_postgresql_add_column]
-  static void addMarketingBudget(DatabaseAdminClient adminClient, DatabaseId dbId) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op = adminClient.updateDatabaseDdl(
-        dbId.getInstanceId().getInstance(),
-        dbId.getDatabase(),
-        Arrays.asList("ALTER TABLE Albums ADD COLUMN MarketingBudget bigint"),
-        null);
+  static void addMarketingBudget(DatabaseAdminClient adminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
+      adminClient.updateDatabaseDdlAsync(
+          databaseName,
+          Arrays.asList("ALTER TABLE Albums ADD COLUMN MarketingBudget bigint")).get();
       System.out.println("Added MarketingBudget column");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
@@ -423,16 +424,12 @@ public class PgSpannerSample {
   // [END spanner_postgresql_query_data_with_new_column]
 
   // [START spanner_postgresql_create_index]
-  static void addIndex(DatabaseAdminClient adminClient, DatabaseId dbId) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        adminClient.updateDatabaseDdl(
-            dbId.getInstanceId().getInstance(),
-            dbId.getDatabase(),
-            Arrays.asList("CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle)"),
-            null);
+  static void addIndex(DatabaseAdminClient adminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
+      adminClient.updateDatabaseDdlAsync(
+          databaseName,
+          Arrays.asList("CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle)")).get();
       System.out.println("Added AlbumsByAlbumTitle index");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
@@ -463,17 +460,14 @@ public class PgSpannerSample {
   // [END spanner_postgresql_read_data_with_index]
 
   // [START spanner_postgresql_create_storing_index]
-  static void addStoringIndex(DatabaseAdminClient adminClient, DatabaseId dbId) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op = adminClient.updateDatabaseDdl(
-        dbId.getInstanceId().getInstance(),
-        dbId.getDatabase(),
-        Arrays.asList(
-            "CREATE INDEX AlbumsByAlbumTitle2 ON Albums(AlbumTitle) "
-                + "INCLUDE (MarketingBudget)"),
-        null);
+  static void addStoringIndex(DatabaseAdminClient adminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
+      adminClient.updateDatabaseDdlAsync(
+          databaseName,
+          Arrays.asList(
+              "CREATE INDEX AlbumsByAlbumTitle2 ON Albums(AlbumTitle) "
+                  + "INCLUDE (MarketingBudget)")).get();
       System.out.println("Added AlbumsByAlbumTitle2 index");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
@@ -655,32 +649,28 @@ public class PgSpannerSample {
 
   // [START spanner_postgresql_create_table_using_ddl]
   // [START spanner_postgresql_create_database]
-  static void createTableUsingDdl(DatabaseAdminClient dbAdminClient, DatabaseId id) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        dbAdminClient.updateDatabaseDdl(
-            id.getInstanceId().getInstance(),
-            id.getDatabase(),
-            Arrays.asList(
-                "CREATE TABLE Singers ("
-                    + "  SingerId   bigint NOT NULL,"
-                    + "  FirstName  character varying(1024),"
-                    + "  LastName   character varying(1024),"
-                    + "  SingerInfo bytea,"
-                    + "  FullName character varying(2048) GENERATED "
-                    + "  ALWAYS AS (FirstName || ' ' || LastName) STORED,"
-                    + "  PRIMARY KEY (SingerId)"
-                    + ")",
-                "CREATE TABLE Albums ("
-                    + "  SingerId     bigint NOT NULL,"
-                    + "  AlbumId      bigint NOT NULL,"
-                    + "  AlbumTitle   character varying(1024),"
-                    + "  PRIMARY KEY (SingerId, AlbumId)"
-                    + ") INTERLEAVE IN PARENT Singers ON DELETE CASCADE"),
-            null);
+  static void createTableUsingDdl(DatabaseAdminClient dbAdminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
-      System.out.println("Created Singers & Albums tables in database: [" + id + "]");
+      dbAdminClient.updateDatabaseDdlAsync(
+          databaseName,
+          Arrays.asList(
+              "CREATE TABLE Singers ("
+                  + "  SingerId   bigint NOT NULL,"
+                  + "  FirstName  character varying(1024),"
+                  + "  LastName   character varying(1024),"
+                  + "  SingerInfo bytea,"
+                  + "  FullName character varying(2048) GENERATED "
+                  + "  ALWAYS AS (FirstName || ' ' || LastName) STORED,"
+                  + "  PRIMARY KEY (SingerId)"
+                  + ")",
+              "CREATE TABLE Albums ("
+                  + "  SingerId     bigint NOT NULL,"
+                  + "  AlbumId      bigint NOT NULL,"
+                  + "  AlbumTitle   character varying(1024),"
+                  + "  PRIMARY KEY (SingerId, AlbumId)"
+                  + ") INTERLEAVE IN PARENT Singers ON DELETE CASCADE")).get();
+      System.out.println("Created Singers & Albums tables in database: [" + databaseName + "]");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -748,17 +738,14 @@ public class PgSpannerSample {
   // [END spanner_postgresql_update_data_with_timestamp_column]
 
   // [START spanner_postgresql_add_timestamp_column]
-  static void addLastUpdateTimestampColumn(DatabaseAdminClient adminClient, DatabaseId dbId) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        adminClient.updateDatabaseDdl(
-            dbId.getInstanceId().getInstance(),
-            dbId.getDatabase(),
-            Arrays.asList(
-                "ALTER TABLE Albums ADD COLUMN LastUpdateTime spanner.commit_timestamp"),
-            null);
+  static void addLastUpdateTimestampColumn(
+      DatabaseAdminClient adminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
+      adminClient.updateDatabaseDdlAsync(
+          databaseName,
+          Arrays.asList(
+              "ALTER TABLE Albums ADD COLUMN LastUpdateTime spanner.commit_timestamp")).get();
       System.out.println("Added LastUpdateTime as a timestamp column in Albums table.");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
@@ -800,24 +787,19 @@ public class PgSpannerSample {
   // [END spanner_postgresql_query_data_with_timestamp_column]
 
   // [START spanner_postgresql_create_table_with_timestamp_column]
-  static void createTableWithTimestamp(DatabaseAdminClient dbAdminClient, DatabaseId id) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        dbAdminClient.updateDatabaseDdl(
-            id.getInstanceId().getInstance(),
-            id.getDatabase(),
-            Arrays.asList(
-                "CREATE TABLE Performances ("
-                    + "  SingerId     BIGINT NOT NULL,"
-                    + "  VenueId      BIGINT NOT NULL,"
-                    + "  Revenue      BIGINT,"
-                    + "  LastUpdateTime SPANNER.COMMIT_TIMESTAMP NOT NULL,"
-                    + "  PRIMARY KEY (SingerId, VenueId))"
-                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"),
-            null);
+  static void createTableWithTimestamp(DatabaseAdminClient dbAdminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
-      System.out.println("Created Performances table in database: [" + id + "]");
+      dbAdminClient.updateDatabaseDdlAsync(databaseName,
+          Arrays.asList(
+              "CREATE TABLE Performances ("
+                  + "  SingerId     BIGINT NOT NULL,"
+                  + "  VenueId      BIGINT NOT NULL,"
+                  + "  Revenue      BIGINT,"
+                  + "  LastUpdateTime SPANNER.COMMIT_TIMESTAMP NOT NULL,"
+                  + "  PRIMARY KEY (SingerId, VenueId))"
+                  + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE")).get();
+      System.out.println("Created Performances table in database: [" + databaseName + "]");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -993,27 +975,23 @@ public class PgSpannerSample {
   // [END spanner_postgresql_dml_batch_update]
 
   // [START spanner_postgresql_create_table_with_datatypes]
-  static void createTableWithDatatypes(DatabaseAdminClient dbAdminClient, DatabaseId id) {
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        dbAdminClient.updateDatabaseDdl(
-            id.getInstanceId().getInstance(),
-            id.getDatabase(),
-            Arrays.asList(
-                "CREATE TABLE Venues ("
-                    + "  VenueId         BIGINT NOT NULL,"
-                    + "  VenueName       character varying(100),"
-                    + "  VenueInfo       bytea,"
-                    + "  Capacity        BIGINT,"
-                    + "  OutdoorVenue    BOOL, "
-                    + "  PopularityScore FLOAT8, "
-                    + "  Revenue         NUMERIC, "
-                    + "  LastUpdateTime  SPANNER.COMMIT_TIMESTAMP NOT NULL,"
-                    + "  PRIMARY KEY (VenueId))"),
-            null);
+  static void createTableWithDatatypes(DatabaseAdminClient dbAdminClient, DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
-      op.get();
-      System.out.println("Created Venues table in database: [" + id + "]");
+      dbAdminClient.updateDatabaseDdlAsync(
+          databaseName,
+          Arrays.asList(
+              "CREATE TABLE Venues ("
+                  + "  VenueId         BIGINT NOT NULL,"
+                  + "  VenueName       character varying(100),"
+                  + "  VenueInfo       bytea,"
+                  + "  Capacity        BIGINT,"
+                  + "  OutdoorVenue    BOOL, "
+                  + "  PopularityScore FLOAT8, "
+                  + "  Revenue         NUMERIC, "
+                  + "  LastUpdateTime  SPANNER.COMMIT_TIMESTAMP NOT NULL,"
+                  + "  PRIMARY KEY (VenueId))")).get();
+      System.out.println("Created Venues table in database: [" + databaseName + "]");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -1324,9 +1302,12 @@ public class PgSpannerSample {
       InstanceAdminClient instanceAdminClient,
       String command,
       DatabaseId database) {
+    DatabaseName databaseName = DatabaseName.of(database.getInstanceId().getProject(),
+        database.getInstanceId().getInstance(), database.getDatabase());
     switch (command) {
       case "createdatabase":
-        createPostgreSqlDatabase(dbAdminClient, database);
+        createPostgreSqlDatabase(dbAdminClient, database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase());
         break;
       case "write":
         writeExampleData(dbClient);
@@ -1341,7 +1322,7 @@ public class PgSpannerSample {
         read(dbClient);
         break;
       case "addmarketingbudget":
-        addMarketingBudget(dbAdminClient, database);
+        addMarketingBudget(dbAdminClient, databaseName);
         break;
       case "update":
         update(dbClient);
@@ -1353,13 +1334,13 @@ public class PgSpannerSample {
         queryMarketingBudget(dbClient);
         break;
       case "addindex":
-        addIndex(dbAdminClient, database);
+        addIndex(dbAdminClient, databaseName);
         break;
       case "readindex":
         readUsingIndex(dbClient);
         break;
       case "addstoringindex":
-        addStoringIndex(dbAdminClient, database);
+        addStoringIndex(dbAdminClient, databaseName);
         break;
       case "readstoringindex":
         readStoringIndex(dbClient);
@@ -1380,13 +1361,13 @@ public class PgSpannerSample {
         writeWithTransactionUsingDml(dbClient);
         break;
       case "createtableusingddl":
-        createTableUsingDdl(dbAdminClient, database);
+        createTableUsingDdl(dbAdminClient, databaseName);
         break;
       case "readstaledata":
         readStaleData(dbClient);
         break;
       case "addlastupdatetimestampcolumn":
-        addLastUpdateTimestampColumn(dbAdminClient, database);
+        addLastUpdateTimestampColumn(dbAdminClient, databaseName);
         break;
       case "updatewithtimestamp":
         updateWithTimestamp(dbClient);
@@ -1395,7 +1376,7 @@ public class PgSpannerSample {
         queryMarketingBudgetWithTimestamp(dbClient);
         break;
       case "createtablewithtimestamp":
-        createTableWithTimestamp(dbAdminClient, database);
+        createTableWithTimestamp(dbAdminClient, databaseName);
         break;
       case "writewithtimestamp":
         writeExampleDataWithTimestamp(dbClient);
@@ -1425,7 +1406,7 @@ public class PgSpannerSample {
         updateUsingBatchDml(dbClient);
         break;
       case "createtablewithdatatypes":
-        createTableWithDatatypes(dbAdminClient, database);
+        createTableWithDatatypes(dbAdminClient, databaseName);
         break;
       case "writedatatypesdata":
         writeDatatypesData(dbClient);
@@ -1517,7 +1498,7 @@ public class PgSpannerSample {
     System.exit(1);
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
     if (args.length != 3) {
       printUsageAndExit();
     }
@@ -1540,7 +1521,7 @@ public class PgSpannerSample {
       }
       // [START spanner_init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
-      DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
+      DatabaseAdminClient dbAdminClient = DatabaseAdminClient.create();
       InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
       // [END spanner_init_client]
 

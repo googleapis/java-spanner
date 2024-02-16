@@ -19,12 +19,16 @@ package com.example.spanner.admin.generated;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.InstanceName;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +44,7 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 @SuppressWarnings("checkstyle:abbreviationaswordinname")
-public class PgSpannerSampleIT {
+public class PgSpannerSampleIT extends SampleTestBaseV2 {
   private static final int DBID_LENGTH = 20;
   // The instance needs to exist for tests to pass.
   private static final String instanceId = System.getProperty("spanner.test.instance");
@@ -54,11 +58,11 @@ public class PgSpannerSampleIT {
   static DatabaseAdminClient dbClient;
 
   @BeforeClass
-  public static void setUp() {
+  public static void setUp() throws IOException {
     SpannerOptions options =
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
-    dbClient = spanner.getDatabaseAdminClient();
+    dbClient = DatabaseAdminClient.create();
     dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
     // Delete stale test databases that have been created earlier by this test, but not deleted.
     deleteStaleTestDatabases();
@@ -68,17 +72,20 @@ public class PgSpannerSampleIT {
     Timestamp now = Timestamp.now();
     Pattern samplePattern = getTestDbIdPattern(PgSpannerSampleIT.baseDbId);
     Pattern restoredPattern = getTestDbIdPattern("restored");
-    for (Database db : dbClient.listDatabases(PgSpannerSampleIT.instanceId).iterateAll()) {
+    for (Database db : dbClient.listDatabases(InstanceName.of(projectId, instanceId)).iterateAll()) {
       if (TimeUnit.HOURS.convert(now.getSeconds() - db.getCreateTime().getSeconds(),
           TimeUnit.SECONDS) > 24) {
-        if (db.getId().getDatabase().length() >= DBID_LENGTH) {
-          if (samplePattern.matcher(toComparableId(PgSpannerSampleIT.baseDbId,
-              db.getId().getDatabase())).matches()) {
-            db.drop();
+        if (db.getName().length() >= DBID_LENGTH) {
+          if (samplePattern.matcher(
+              toComparableId(
+                  DatabaseName.of(projectId, instanceId, PgSpannerSampleIT.baseDbId).toString(),
+                  db.getName())).matches()) {
+            dbClient.dropDatabase(db.getName());
           }
-          if (restoredPattern.matcher(toComparableId("restored", db.getId().getDatabase()))
+          if (restoredPattern.matcher(toComparableId(
+              DatabaseName.of(projectId, instanceId, "restored").toString(), db.getName()))
               .matches()) {
-            db.drop();
+            dbClient.dropDatabase(db.getName());
           }
         }
       }
@@ -87,12 +94,14 @@ public class PgSpannerSampleIT {
 
   @AfterClass
   public static void tearDown() {
-    dbClient.dropDatabase(dbId.getInstanceId().getInstance(), dbId.getDatabase());
     dbClient.dropDatabase(
-        dbId.getInstanceId().getInstance(), SpannerSample.createRestoredSampleDbId(dbId));
-    dbClient.dropDatabase(instanceId, encryptedDatabaseId);
-    dbClient.dropDatabase(instanceId, encryptedRestoreId);
-    dbClient.deleteBackup(instanceId, encryptedBackupId);
+        DatabaseName.of(projectId, dbId.getInstanceId().getInstance(), dbId.getDatabase()));
+    dbClient.dropDatabase(
+        DatabaseName.of(projectId, dbId.getInstanceId().getInstance(),
+            SpannerSample.createRestoredSampleDbId(dbId)));
+    dbClient.dropDatabase(DatabaseName.of(projectId, instanceId, encryptedDatabaseId));
+    dbClient.dropDatabase(DatabaseName.of(projectId, instanceId, encryptedRestoreId));
+    dbClient.deleteBackup(BackupName.of(projectId, instanceId, encryptedBackupId));
     spanner.close();
   }
 
@@ -113,7 +122,7 @@ public class PgSpannerSampleIT {
     return name + "-" + UUID.randomUUID().toString().substring(0, DBID_LENGTH);
   }
 
-  private String runSample(String command) {
+  private String runSample(String command) throws Exception {
     final PrintStream stdOut = System.out;
     final ByteArrayOutputStream bout = new ByteArrayOutputStream();
     final PrintStream out = new PrintStream(bout);
