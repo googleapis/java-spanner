@@ -211,40 +211,13 @@ public class MutationTest {
         Mutation.delete("T1", KeySet.singleKey(Key.of("k"))), Mutation.delete("T1", Key.of("k")));
 
     // Test NaNs
-    // tester.addEqualityGroup(
-    //   // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    // // DO NOT SUBMIT
-    //   Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build(),
-    //     Mutation.newInsertBuilder("T1").set("C").to(Value.float32(Float.NaN)).build());
+    // Refer the comment in `Value.hashCode()` for more details on NaN equality.
     tester.addEqualityGroup(
         Mutation.newInsertBuilder("T1").set("C").to(Double.NaN).build(),
         Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Double.NaN)).build(),
-        Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Float.NaN)).build());
+        Mutation.newInsertBuilder("T1").set("C").to(Float.NaN).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Value.float64(Float.NaN)).build(),
+        Mutation.newInsertBuilder("T1").set("C").to(Value.float32(Float.NaN)).build());
 
     // Test NaN arrays
     tester.addEqualityGroup(

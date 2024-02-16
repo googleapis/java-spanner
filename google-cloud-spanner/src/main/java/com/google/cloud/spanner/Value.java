@@ -1375,9 +1375,29 @@ public abstract class Value implements Serializable {
 
     @Override
     public final int hashCode() {
-      int result = Objects.hash(getType(), isNull);
+      Type typeToHash = getType();
+      int valueHash = isNull ? 0 : valueHash();
+
+      /**
+       * We are relaxing equality values here, making sure that Double.NaNs and Float.NaNs are equal
+       * to each other. This is because our Cloud Spanner Import / Export template in Apache Beam
+       * uses the mutation equality to check for modifications before committing. We noticed that
+       * when NaNs where used the template would always indicate a modification was present, when it
+       * turned out not to be the case.
+       *
+       * <p>With FLOAT32 being introduced, we want to ensure the backward compatibility of the NaN
+       * equality checks that existed for FLOAT64. We're promoting the type to FLOAT64 while
+       * calculating the type hash when the value is a NaN. We're doing a similar type promotion
+       * while calculating valueHash of Float32 type. Note that this is not applicable for composite
+       * types containing FLOAT32.
+       */
+      if (type.getCode() == Type.Code.FLOAT32 && !isNull && Float.isNaN(getFloat32())) {
+        typeToHash = Type.float64();
+      }
+
+      int result = Objects.hash(typeToHash, isNull);
       if (!isNull) {
-        result = 31 * result + valueHash();
+        result = 31 * result + valueHash;
       }
       return result;
     }
@@ -1621,6 +1641,11 @@ public abstract class Value implements Serializable {
 
     @Override
     int valueHash() {
+      // For backward compatibility of NaN equality checks with Float64 NaNs.
+      // Refer the comment in `Value.hashCode()` for more details.
+      if (!isNull() && Float.isNaN(value)) {
+        return Double.valueOf(Double.NaN).hashCode();
+      }
       return Float.valueOf(value).hashCode();
     }
   }

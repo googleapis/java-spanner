@@ -364,6 +364,8 @@ public final class Mutation implements Serializable {
    * mutation equality to check for modifications before committing. We noticed that when NaNs where
    * used the template would always indicate a modification was present, when it turned out not to
    * be the case. For more information see b/206339664.
+   *
+   * <p>Similar change is being done while calculating `Value.hashCode()`.
    */
   private boolean areValuesEqual(List<Value> values, List<Value> otherValues) {
     if (values == null && otherValues == null) {
@@ -386,8 +388,10 @@ public final class Mutation implements Serializable {
 
   private boolean isNaN(Value value) {
     return !value.isNull()
-        && ((value.getType().equals(Type.float64()) && Double.isNaN(value.getFloat64()))
-            || (value.getType().equals(Type.float32()) && Float.isNaN(value.getFloat32())));
+        && ((value.getType().equals(Type.float64())
+                && (Double.isNaN(value.getFloat64()) || Float.isNaN((float) value.getFloat64())))
+            || (value.getType().equals(Type.float32())
+                && (Float.isNaN(value.getFloat32()) || Double.isNaN(value.getFloat32()))));
   }
 
   static void toProto(Iterable<Mutation> mutations, List<com.google.spanner.v1.Mutation> out) {
