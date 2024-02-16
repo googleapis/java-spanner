@@ -73,17 +73,15 @@ public class PgSpannerSampleIT extends SampleTestBaseV2 {
     Pattern samplePattern = getTestDbIdPattern(PgSpannerSampleIT.baseDbId);
     Pattern restoredPattern = getTestDbIdPattern("restored");
     for (Database db : dbClient.listDatabases(InstanceName.of(projectId, instanceId)).iterateAll()) {
+      DatabaseName databaseName = DatabaseName.parse(db.getName());
       if (TimeUnit.HOURS.convert(now.getSeconds() - db.getCreateTime().getSeconds(),
           TimeUnit.SECONDS) > 24) {
-        if (db.getName().length() >= DBID_LENGTH) {
+        if (databaseName.getDatabase().length() >= DBID_LENGTH) {
           if (samplePattern.matcher(
-              toComparableId(
-                  DatabaseName.of(projectId, instanceId, PgSpannerSampleIT.baseDbId).toString(),
-                  db.getName())).matches()) {
+              toComparableId(PgSpannerSampleIT.baseDbId, databaseName.getDatabase())).matches()) {
             dbClient.dropDatabase(db.getName());
           }
-          if (restoredPattern.matcher(toComparableId(
-              DatabaseName.of(projectId, instanceId, "restored").toString(), db.getName()))
+          if (restoredPattern.matcher(toComparableId("restored", databaseName.getDatabase()))
               .matches()) {
             dbClient.dropDatabase(db.getName());
           }

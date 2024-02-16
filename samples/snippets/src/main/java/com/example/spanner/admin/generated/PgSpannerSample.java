@@ -56,7 +56,6 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -206,7 +205,6 @@ public class PgSpannerSample {
       // Initiate the request which returns an OperationFuture.
       Database db = dbAdminClient.createDatabaseAsync(request).get();
       System.out.println("Created database [" + db.getName() + "]");
-      createTableUsingDdl(dbAdminClient, DatabaseName.parse(db.toString()));
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw (SpannerException) e.getCause();
@@ -673,7 +671,7 @@ public class PgSpannerSample {
       System.out.println("Created Singers & Albums tables in database: [" + databaseName + "]");
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
-      throw (SpannerException) e.getCause();
+      throw SpannerExceptionFactory.asSpannerException(e);
     } catch (InterruptedException e) {
       // Throw when a thread is waiting, sleeping, or otherwise occupied,
       // and the thread is interrupted, either before or during the activity.
@@ -1305,7 +1303,7 @@ public class PgSpannerSample {
     DatabaseName databaseName = DatabaseName.of(database.getInstanceId().getProject(),
         database.getInstanceId().getInstance(), database.getDatabase());
     switch (command) {
-      case "createdatabase":
+      case "createpgdatabase":
         createPostgreSqlDatabase(dbAdminClient, database.getInstanceId().getProject(),
             database.getInstanceId().getInstance(), database.getDatabase());
         break;
@@ -1505,6 +1503,7 @@ public class PgSpannerSample {
     // [START spanner_init_client]
     SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
+    DatabaseAdminClient dbAdminClient = null;
     try {
       // [END spanner_init_client]
       String command = args[0];
@@ -1521,7 +1520,7 @@ public class PgSpannerSample {
       }
       // [START spanner_init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
-      DatabaseAdminClient dbAdminClient = DatabaseAdminClient.create();
+      dbAdminClient = DatabaseAdminClient.create();
       InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
       // [END spanner_init_client]
 
@@ -1529,6 +1528,11 @@ public class PgSpannerSample {
       run(dbClient, dbAdminClient, instanceAdminClient, command, db);
       // [START spanner_init_client]
     } finally {
+      if(dbAdminClient != null) {
+        if(!dbAdminClient.isShutdown() || !dbAdminClient.isTerminated()) {
+          dbAdminClient.close();
+        }
+      }
       spanner.close();
     }
     // [END spanner_init_client]
