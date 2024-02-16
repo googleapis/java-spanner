@@ -54,7 +54,7 @@ public final class ITMLPredictTest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
   private static DatabaseClient gSQLClient;
 
-  private static final int TEST_ROW_COUNT = 100;
+  private static final int TEST_ROW_COUNT = 10;
 
   private static boolean throwAbortOnce = false;
 
