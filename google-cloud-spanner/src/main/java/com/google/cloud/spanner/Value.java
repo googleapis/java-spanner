@@ -149,7 +149,7 @@ public abstract class Value implements Serializable {
     return new Int64Impl(false, v);
   }
 
-/**
+  /**
    * Returns a {@code FLOAT32} value.
    *
    * @param v the value, which may be null
@@ -1441,7 +1441,7 @@ public abstract class Value implements Serializable {
       checkNotNull();
       Preconditions.checkState(
           value.hasNumberValue(), "This value does not contain a number value");
-      return (float)value.getNumberValue();
+      return (float) value.getNumberValue();
     }
 
     @Override
@@ -1606,7 +1606,7 @@ public abstract class Value implements Serializable {
 
     @Override
     com.google.protobuf.Value valueToProto() {
-      return com.google.protobuf.Value.newBuilder().setNumberValue((double)value).build();
+      return com.google.protobuf.Value.newBuilder().setNumberValue((double) value).build();
     }
 
     @Override
@@ -2289,7 +2289,7 @@ public abstract class Value implements Serializable {
 
     @Override
     com.google.protobuf.Value getValueAsProto(int i) {
-      return com.google.protobuf.Value.newBuilder().setNumberValue((double)values[i]).build();
+      return com.google.protobuf.Value.newBuilder().setNumberValue((double) values[i]).build();
     }
 
     @Override

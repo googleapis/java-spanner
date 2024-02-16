@@ -256,7 +256,8 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32() {
-    Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0f), Type.float32());
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0f), Type.float32());
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getFloat(0)).isWithin(0.0f).of(2.0f);
   }
@@ -264,8 +265,7 @@ public class ITQueryTest {
   @Test
   public void bindFloat32Null() {
     Struct row =
-        execute(
-            Statement.newBuilder(selectValueQuery).bind("p1").to((Float) null), Type.float32());
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Float) null), Type.float32());
     assertThat(row.isNull(0)).isTrue();
   }
 

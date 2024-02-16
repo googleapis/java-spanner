@@ -311,7 +311,8 @@ public class ReadAsyncTest {
     // DO NOT SUBMIT
     // DO NOT SUBMIT
     // DO NOT SUBMIT
-    ApiFuture<List<List<String>>> allValuesAsList = ApiFutures.allAsList(Arrays.asList(values1, values2));
+    ApiFuture<List<List<String>>> allValuesAsList =
+        ApiFutures.allAsList(Arrays.asList(values1, values2));
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
             allValuesAsList,

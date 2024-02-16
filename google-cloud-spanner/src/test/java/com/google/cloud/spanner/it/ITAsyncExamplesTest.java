@@ -345,10 +345,11 @@ public class ITAsyncExamplesTest {
       }
     }
 
-    ApiFuture<List<List<String>>> allAsListValues = ApiFutures.allAsList(Arrays.asList(values1, values2));
+    ApiFuture<List<List<String>>> allAsListValues =
+        ApiFutures.allAsList(Arrays.asList(values1, values2));
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
-          allAsListValues,
+            allAsListValues,
             input ->
                 Iterables.mergeSorted(
                     input, Comparator.comparing(o -> Integer.valueOf(o.substring(1)))),

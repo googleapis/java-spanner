@@ -207,11 +207,10 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   /**
-   * Memory-optimized base class for {@code ARRAY<INT64>}, {@code ARRAY<FLOAT32>} and
-   * {@code ARRAY<FLOAT64>} types. Both of these involve conversions from the type yielded
-   * by JSON parsing, which are {@code String} and {@code BigDecimal} respectively.
-   * Rather than construct new wrapper objects for each array element, we use primitive arrays
-   * and a {@code BitSet} to track nulls.
+   * Memory-optimized base class for {@code ARRAY<INT64>}, {@code ARRAY<FLOAT32>} and {@code
+   * ARRAY<FLOAT64>} types. Both of these involve conversions from the type yielded by JSON parsing,
+   * which are {@code String} and {@code BigDecimal} respectively. Rather than construct new wrapper
+   * objects for each array element, we use primitive arrays and a {@code BitSet} to track nulls.
    */
   abstract static class PrimitiveArray<T, A> extends AbstractList<T> {
     private final A data;

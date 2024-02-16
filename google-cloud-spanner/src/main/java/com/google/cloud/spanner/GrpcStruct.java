@@ -434,7 +434,6 @@ class GrpcStruct extends Struct implements Serializable {
     return (Float) rowData.get(columnIndex);
   }
 
-
   @Override
   protected BigDecimal getBigDecimalInternal(int columnIndex) {
     ensureDecoded(columnIndex);
