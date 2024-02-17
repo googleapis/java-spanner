@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.example.spanner.SampleRunner;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Instance;
@@ -39,6 +38,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.InstanceName;
 import java.io.ByteArrayOutputStream;
@@ -97,7 +97,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     spanner = options.getService();
     databaseAdminClient = DatabaseAdminClient.create();
     // Delete stale test databases that have been created earlier by this test, but not deleted.
-    deleteStaleTestDatabases(instanceId, baseDbId);
+    deleteStaleTestDatabases();
     key =
         String.format(
             "projects/%s/locations/%s/keyRings/%s/cryptoKeys/%s",
@@ -132,20 +132,22 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       }
     }
   }
-
-  static void deleteStaleTestDatabases(String instanceId, String baseDbId) throws IOException {
+  static void deleteStaleTestDatabases() throws IOException {
     Timestamp now = Timestamp.now();
-    Pattern samplePattern = getTestDbIdPattern(baseDbId);
+    Pattern samplePattern = getTestDbIdPattern(SpannerSampleIT.baseDbId);
     Pattern restoredPattern = getTestDbIdPattern("restored");
     try(DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
-      for (com.google.spanner.admin.database.v1.Database db : databaseAdminClient.listDatabases(instanceId).iterateAll()) {
+      for (Database db : databaseAdminClient.listDatabases(InstanceName.of(projectId, instanceId))
+          .iterateAll()) {
+        DatabaseName databaseName = DatabaseName.parse(db.getName());
         if (TimeUnit.HOURS.convert(now.getSeconds() - db.getCreateTime().getSeconds(),
             TimeUnit.SECONDS) > 24) {
-          if (db.getName().length() >= DBID_LENGTH) {
-            if (samplePattern.matcher(toComparableId(baseDbId, db.getName())).matches()) {
+          if (databaseName.getDatabase().length() >= DBID_LENGTH) {
+            if (samplePattern.matcher(
+                toComparableId(SpannerSampleIT.baseDbId, databaseName.getDatabase())).matches()) {
               databaseAdminClient.dropDatabase(db.getName());
             }
-            if (restoredPattern.matcher(toComparableId("restored", db.getName()))
+            if (restoredPattern.matcher(toComparableId("restored", databaseName.getDatabase()))
                 .matches()) {
               databaseAdminClient.dropDatabase(db.getName());
             }
@@ -173,13 +175,16 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     assertThat(out).contains("Created database");
     assertThat(out).contains(dbId.getName());
 
+    System.out.println("Write data to sample tables ...");
     runSample("write", databaseId);
 
+    System.out.println("Delete data to sample tables ...");
     out = runSample("delete", databaseId);
     assertThat(out).contains("Records deleted.");
 
     runSample("write", databaseId);
 
+    System.out.println("Read data from sample tables ...");
     out = runSample("read", databaseId);
     assertThat(out).contains("1 1 Total Junk");
 
@@ -193,28 +198,38 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       Thread.sleep(1000);
     }
     runSample("update", databaseId);
+
+    System.out.println("Read stale data from sample tables ...");
     out = runSample("readstaledata", databaseId);
     assertThat(out).contains("1 1 NULL");
     runSample("writetransaction", databaseId);
+
+    System.out.println("Query marketing budget ...");
     out = runSample("querymarketingbudget", databaseId);
     assertThat(out).contains("1 1 300000");
     assertThat(out).contains("2 2 300000");
 
+    System.out.println("Add index ...");
     runSample("addindex", databaseId);
+
+    System.out.println("Query index ...");
     out = runSample("queryindex", databaseId);
     assertThat(out).contains("Go, Go, Go");
     assertThat(out).contains("Forever Hold Your Peace");
     assertThat(out).doesNotContain("Green");
 
+    System.out.println("Read index ...");
     out = runSample("readindex", databaseId);
     assertThat(out).contains("Go, Go, Go");
     assertThat(out).contains("Forever Hold Your Peace");
     assertThat(out).contains("Green");
 
+    System.out.println("Add Storing index ...");
     runSample("addstoringindex", databaseId);
     out = runSample("readstoringindex", databaseId);
     assertThat(out).contains("300000");
 
+    System.out.println("Read storing index ...");
     out = runSample("readonlytransaction", databaseId);
     assertThat(out.replaceAll("[\r\n]+", " ")).containsMatch("(Total Junk.*){2}");
 

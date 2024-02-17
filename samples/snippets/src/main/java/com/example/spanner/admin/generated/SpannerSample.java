@@ -2247,6 +2247,7 @@ public class SpannerSample {
     // [START init_client]
     SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
+    DatabaseAdminClient dbAdminClient = null;
     try {
       String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
@@ -2271,7 +2272,7 @@ public class SpannerSample {
 
       // [START init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
-      DatabaseAdminClient dbAdminClient = DatabaseAdminClient.create();
+      dbAdminClient = DatabaseAdminClient.create();
 
       // Use client here...
       // [END init_client]
@@ -2279,6 +2280,11 @@ public class SpannerSample {
       run(dbClient, dbAdminClient, command, db, backupId);
       // [START init_client]
     } finally {
+      if(dbAdminClient != null) {
+        if(!dbAdminClient.isShutdown() || !dbAdminClient.isTerminated()) {
+          dbAdminClient.close();
+        }
+      }
       spanner.close();
     }
     // [END init_client]
