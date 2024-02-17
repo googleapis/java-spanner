@@ -32,7 +32,11 @@ import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
 import java.util.Arrays;
 
-/** This sample demonstrates how to enable opencensus tracing and stats in cloud spanner client. */
+/** This sample demonstrates how to enable opencensus tracing and stats in cloud spanner client. 
+ *
+ * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to enable metrics 
+ * and stats with cloud spanner client. 
+*/
 public class TracingSample {
 
   private static final String SAMPLE_SPAN = "CloudSpannerSample";
