@@ -74,7 +74,7 @@ public class CreateBackupWithEncryptionKey {
     final CreateBackupRequest request =
         CreateBackupRequest.newBuilder()
             .setParent(InstanceName.of(projectId, instanceId).toString())
-            .setBackupId(backupName.toString())
+            .setBackupId(backupId)
             .setBackup(backup)
             .setEncryptionConfig(
                 CreateBackupEncryptionConfig.newBuilder()

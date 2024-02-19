@@ -1585,10 +1585,10 @@ public class SpannerSample {
     try {
       // Wait for the backup operation to complete.
       backup = dbAdminClient.createBackupAsync(
-          InstanceName.of(projectId, instanceId), backup, backupName.toString()).get();
+          InstanceName.of(projectId, instanceId), backup, backupId).get();
       System.out.println("Created backup [" + backup.getName() + "]");
     } catch (ExecutionException e) {
-      throw (SpannerException) e.getCause();
+      throw SpannerExceptionFactory.asSpannerException(e);
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }

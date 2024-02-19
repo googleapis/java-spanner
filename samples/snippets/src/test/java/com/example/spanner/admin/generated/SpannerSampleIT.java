@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -476,6 +477,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       assertThat(out).contains("Deleted backup [" + backupId + "]");
 
     } catch (Exception ex) {
+      Assert.fail("Exception raised => " + ex.getMessage());
     }
   }
 
@@ -529,7 +531,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
 
   private static void deleteAllBackups(String instanceId) throws InterruptedException {
     InstanceName instanceName = InstanceName.of(projectId, instanceId);
-    for (Backup backup : databaseAdminClient.listBackups(instanceName.getInstance()).iterateAll()) {
+    for (Backup backup : databaseAdminClient.listBackups(instanceName.toString()).iterateAll()) {
       int attempts = 0;
       while (attempts < 30) {
         try {
