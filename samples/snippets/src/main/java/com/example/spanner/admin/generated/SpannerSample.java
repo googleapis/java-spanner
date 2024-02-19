@@ -1669,7 +1669,7 @@ public class SpannerSample {
       String projectId, String instanceId,
       String databaseId, String backupId) {
     InstanceName instanceName = InstanceName.of(projectId, instanceId);
-    // Get create backup operations for the sample database.
+    // Get 'CreateBackup' operations for the sample database.
     String filter =
         String.format(
             "(metadata.@type:type.googleapis.com/"
