@@ -34,6 +34,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +55,7 @@ public class ReadOnlyStalenessTest {
     when(spannerPool.getSpanner(any(ConnectionOptions.class), any(ConnectionImpl.class)))
         .thenReturn(spanner);
     DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     ReadOnlyTransaction singleUseReadOnlyTx = mock(ReadOnlyTransaction.class);
     when(singleUseReadOnlyTx.executeQuery(Statement.of(SELECT))).thenReturn(mock(ResultSet.class));
     when(dbClient.singleUseReadOnlyTransaction(any(TimestampBound.class)))
@@ -62,7 +64,8 @@ public class ReadOnlyStalenessTest {
     when(readOnlyTx.executeQuery(Statement.of(SELECT))).thenReturn(mock(ResultSet.class));
     when(dbClient.readOnlyTransaction(any(TimestampBound.class))).thenReturn(readOnlyTx);
 
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, mock(BatchClient.class));
+    return new ConnectionImpl(
+        options, spannerPool, ddlClient, databaseAdminClient, dbClient, mock(BatchClient.class));
   }
 
   @Test

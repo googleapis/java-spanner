@@ -34,6 +34,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.connection.ConnectionImpl.LeakedConnectionException;
 import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode;
 import com.google.cloud.spanner.connection.SpannerPool.SpannerPoolKey;
@@ -296,11 +297,17 @@ public class SpannerPoolTest {
             .build();
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     // create an actual connection object but not in a try-with-resources block
     Connection connection =
         new ConnectionImpl(
-            options, SpannerPool.INSTANCE, ddlClient, dbClient, mock(BatchClient.class));
+            options,
+            SpannerPool.INSTANCE,
+            ddlClient,
+            databaseAdminClient,
+            dbClient,
+            mock(BatchClient.class));
     // try to close the application which should fail
     try {
       ConnectionOptions.closeSpanner();

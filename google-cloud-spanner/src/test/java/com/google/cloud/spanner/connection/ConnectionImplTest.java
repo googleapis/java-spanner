@@ -68,6 +68,7 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
@@ -372,13 +373,15 @@ public class ConnectionImplTest {
                 };
               }
             });
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     BatchClient batchClient = mock(BatchClient.class);
     BatchReadOnlyTransaction batchReadOnlyTransaction = mock(BatchReadOnlyTransaction.class);
     when(batchClient.batchReadOnlyTransaction(any(TimestampBound.class)))
         .thenReturn(batchReadOnlyTransaction);
     when(batchClient.batchReadOnlyTransaction(any(BatchTransactionId.class)))
         .thenReturn(batchReadOnlyTransaction);
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, batchClient);
+    return new ConnectionImpl(
+        options, spannerPool, ddlClient, databaseAdminClient, dbClient, batchClient);
   }
 
   @Test
@@ -1523,6 +1526,7 @@ public class ConnectionImplTest {
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
     when(unitOfWork.executeQueryAsync(
@@ -1530,7 +1534,12 @@ public class ConnectionImplTest {
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl impl =
         new ConnectionImpl(
-            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
+            connectionOptions,
+            spannerPool,
+            ddlClient,
+            databaseAdminClient,
+            dbClient,
+            mock(BatchClient.class)) {
           @Override
           UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
@@ -1631,6 +1640,7 @@ public class ConnectionImplTest {
     when(connectionOptions.isAutocommit()).thenReturn(true);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
@@ -1639,7 +1649,12 @@ public class ConnectionImplTest {
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
         new ConnectionImpl(
-            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
+            connectionOptions,
+            spannerPool,
+            ddlClient,
+            databaseAdminClient,
+            dbClient,
+            mock(BatchClient.class)) {
           @Override
           UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;
@@ -1675,11 +1690,17 @@ public class ConnectionImplTest {
     when(connectionOptions.isAutocommit()).thenReturn(false);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
         new ConnectionImpl(
-            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
+            connectionOptions,
+            spannerPool,
+            ddlClient,
+            databaseAdminClient,
+            dbClient,
+            mock(BatchClient.class))) {
       assertFalse(connection.isAutocommit());
 
       assertNull(connection.getTransactionTag());
@@ -1717,11 +1738,17 @@ public class ConnectionImplTest {
     when(connectionOptions.isAutocommit()).thenReturn(true);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     try (ConnectionImpl connection =
         new ConnectionImpl(
-            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class))) {
+            connectionOptions,
+            spannerPool,
+            ddlClient,
+            databaseAdminClient,
+            dbClient,
+            mock(BatchClient.class))) {
       assertTrue(connection.isAutocommit());
 
       try {
@@ -1739,6 +1766,7 @@ public class ConnectionImplTest {
     when(connectionOptions.isAutocommit()).thenReturn(false);
     SpannerPool spannerPool = mock(SpannerPool.class);
     DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     final UnitOfWork unitOfWork = mock(UnitOfWork.class);
@@ -1750,7 +1778,12 @@ public class ConnectionImplTest {
     when(unitOfWork.rollbackAsync(any())).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
         new ConnectionImpl(
-            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
+            connectionOptions,
+            spannerPool,
+            ddlClient,
+            databaseAdminClient,
+            dbClient,
+            mock(BatchClient.class)) {
           @Override
           UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
             return unitOfWork;

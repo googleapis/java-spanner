@@ -34,6 +34,7 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -57,6 +58,7 @@ public class AutocommitDmlModeTest {
     when(spannerPool.getSpanner(any(ConnectionOptions.class), any(ConnectionImpl.class)))
         .thenReturn(spanner);
     DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseAdminClient databaseAdminClient = mock(DatabaseAdminClient.class);
     TransactionRunner txRunner = mock(TransactionRunner.class);
     when(dbClient.readWriteTransaction()).thenReturn(txRunner);
     when(txRunner.run(any(TransactionCallable.class)))
@@ -71,7 +73,8 @@ public class AutocommitDmlModeTest {
     when(txManager.begin()).thenReturn(txContext);
     when(dbClient.transactionManager()).thenReturn(txManager);
 
-    return new ConnectionImpl(options, spannerPool, ddlClient, dbClient, mock(BatchClient.class));
+    return new ConnectionImpl(
+        options, spannerPool, ddlClient, databaseAdminClient, dbClient, mock(BatchClient.class));
   }
 
   @Test

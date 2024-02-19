@@ -44,6 +44,7 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
@@ -186,6 +187,7 @@ class ConnectionImpl implements Connection {
 
   private final Spanner spanner;
   private final DdlClient ddlClient;
+  private final DatabaseAdminClient databaseAdminClient;
   private final DatabaseClient dbClient;
   private final BatchClient batchClient;
   private boolean autocommit;
@@ -273,7 +275,8 @@ class ConnectionImpl implements Connection {
     this.autoPartitionMode = options.isAutoPartitionMode();
     this.maxPartitions = options.getMaxPartitions();
     this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
-    this.ddlClient = createDdlClient();
+    this.databaseAdminClient = spanner.createDatabaseAdminClient();
+    this.ddlClient = createDdlClient(databaseAdminClient);
     setDefaultTransactionOptions();
   }
 
@@ -283,6 +286,7 @@ class ConnectionImpl implements Connection {
       ConnectionOptions options,
       SpannerPool spannerPool,
       DdlClient ddlClient,
+      DatabaseAdminClient databaseAdminClient,
       DatabaseClient dbClient,
       BatchClient batchClient) {
     this.leakedException =
@@ -291,6 +295,7 @@ class ConnectionImpl implements Connection {
         new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
+    this.databaseAdminClient = Preconditions.checkNotNull(databaseAdminClient);
     this.spanner = spannerPool.getSpanner(options, this);
     this.ddlClient = Preconditions.checkNotNull(ddlClient);
     this.dbClient = Preconditions.checkNotNull(dbClient);
@@ -306,9 +311,9 @@ class ConnectionImpl implements Connection {
     return this.spanner;
   }
 
-  private DdlClient createDdlClient() {
+  private DdlClient createDdlClient(DatabaseAdminClient databaseAdminClient) {
     return DdlClient.newBuilder()
-        .setDatabaseAdminClient(spanner.createDatabaseAdminClient())
+        .setDatabaseAdminClient(databaseAdminClient)
         .setProjectId(options.getProjectId())
         .setInstanceId(options.getInstanceId())
         .setDatabaseName(options.getDatabaseName())
@@ -363,6 +368,13 @@ class ConnectionImpl implements Connection {
         statementExecutor.shutdown();
         leakedException = null;
         spannerPool.removeConnection(options, this);
+        try {
+          if (!databaseAdminClient.isTerminated() || !databaseAdminClient.isShutdown()) {
+            databaseAdminClient.close();
+          }
+        } catch (RuntimeException ex) {
+          throw SpannerExceptionFactory.newSpannerException(ex);
+        }
         return ApiFutures.transform(
             ApiFutures.allAsList(futures), ignored -> null, MoreExecutors.directExecutor());
       }
