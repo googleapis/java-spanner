@@ -86,7 +86,16 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     ByteArrayOutputStream bout = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(bout);
     System.setOut(out);
-    SpannerSample.main(new String[] {command, instanceId, databaseId});
+    SpannerSample.main(new String[] {command, instanceId, databaseId, null});
+    System.setOut(stdOut);
+    return bout.toString();
+  }
+  private String runSample(String command, String databaseId, String backupId) throws Exception {
+    PrintStream stdOut = System.out;
+    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+    PrintStream out = new PrintStream(bout);
+    System.setOut(out);
+    SpannerSample.main(new String[] {command, instanceId, databaseId, backupId});
     System.setOut(stdOut);
     return bout.toString();
   }
@@ -375,27 +384,18 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       assertThat(out).contains("Created database");
       assertThat(out).contains(dbId.getName());
 
-      String backupId =
-          String.format(
-              "%s_%02d",
-              dbId.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
+      String backupId = idGenerator.generateBackupId();
       BackupName backupName = BackupName.of(projectId, instanceId, backupId);
 
-      out = runSample("createbackup", databaseId);
+      out = runSample("createbackup", databaseId, backupId);
       assertThat(out).contains("Created backup [" + backupName.toString() + "]");
-
-      out = runSample("cancelcreatebackup", databaseId);
-      assertThat(out).contains(
-          "Backup operation for [" + backupId + "_cancel] successfully");
 
       // TODO: remove try-catch when filtering on metadata fields works.
       try {
-        out = runSample("listbackupoperations", databaseId);
+        out = runSample("listbackupoperations", databaseId, backupId);
         assertThat(out).contains(
             String.format(
-                "Backup %s on database %s pending:",
-                backupName.toString(),
-                dbId.getName()));
+                "Backup %s on database %s pending:", backupName, dbId.getName()));
         assertTrue("Out does not contain copy backup operations", out.contains(
             "Copy Backup Operations"));
       } catch (SpannerException e) {
@@ -406,7 +406,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       out = runSample("listbackups", databaseId);
       assertThat(out).contains("All backups:");
       assertThat(out).contains(
-          String.format("All backups with backup name containing \"%s\":", backupName.toString()));
+          String.format("All backups with backup name containing \"%s\":", backupName));
       assertThat(out).contains(String.format(
           "All backups for databases with a name containing \"%s\":",
           dbId.getDatabase()));
@@ -477,7 +477,30 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       assertThat(out).contains("Deleted backup [" + backupId + "]");
 
     } catch (Exception ex) {
-      Assert.fail("Exception raised => " + ex.getMessage());
+      Assert.fail("Exception raised => " + ex.getCause());
+    }
+  }
+
+  @Test
+  public void testCancelBackupSamples() {
+    String databaseId = idGenerator.generateDatabaseId();
+    DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
+
+    try {
+      assertThat(instanceId).isNotNull();
+      assertThat(databaseId).isNotNull();
+
+      String out = runSample("createdatabase", databaseId);
+      assertThat(out).contains("Created database");
+      assertThat(out).contains(dbId.getName());
+
+      String backupId = idGenerator.generateBackupId();
+
+      out = runSample("cancelcreatebackup", databaseId, backupId);
+      assertThat(out).contains(
+          "Backup operation for [" + backupId + "_cancel] successfully");
+    } catch (Exception ex) {
+      Assert.fail("Exception raised => " + ex.getCause());
     }
   }
 

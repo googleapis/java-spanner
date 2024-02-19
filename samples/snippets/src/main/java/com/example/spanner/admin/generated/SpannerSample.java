@@ -1632,13 +1632,13 @@ public class SpannerSample {
       OperationFuture<Backup, CreateBackupMetadata> op = dbAdminClient.createBackupAsync(
           InstanceName.of(projectId, instanceId), backup, backupId);
 
+      // Try to cancel the backup operation.
+      System.out.println("Cancelling create backup operation for [" + backupId + "]...");
+      dbAdminClient.getOperationsClient().cancelOperation(op.getName());
+
       // Get a polling future for the running operation. This future will regularly poll the server
       // for the current status of the backup operation.
       RetryingFuture<OperationSnapshot> pollingFuture = op.getPollingFuture();
-
-      // Try to cancel the backup operation.
-      System.out.println("Cancelling create backup operation for [" + backupId + "]...");
-      pollingFuture.cancel(true);
 
       // Wait for the operation to finish.
       // isDone will return true when the operation is complete, regardless of whether it was
@@ -2262,11 +2262,8 @@ public class SpannerSample {
         printUsageAndExit();
       }
       // Generate a backup id for the sample database.
-      String backupId =
-          String.format(
-              "%s_%02d",
-              db.getDatabase(), LocalDate.now().get(ChronoField.ALIGNED_WEEK_OF_YEAR));
-      if (args.length == 4) {
+      String backupId = null;
+      if(args.length == 4) {
         backupId = args[3];
       }
 
