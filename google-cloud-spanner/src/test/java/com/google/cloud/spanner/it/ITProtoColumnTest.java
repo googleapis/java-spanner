@@ -54,14 +54,12 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 // Integration Tests to test DDL, DML and DQL for Proto Columns and Enums
-@Ignore("Feature is not yet enabled in production")
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITProtoColumnTest {
@@ -71,10 +69,17 @@ public class ITProtoColumnTest {
   private static DatabaseAdminClient dbAdminClient;
   private static DatabaseClient databaseClient;
 
+  public static boolean isNotUsingAllowlistedProject() {
+    String projectId = System.getProperty("spanner.gce.config.project_id", "");
+    return !(projectId.equalsIgnoreCase("gcloud-devel")
+        || projectId.equalsIgnoreCase("span-cloud-testing"));
+  }
+
   @BeforeClass
   public static void setUpDatabase() throws Exception {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse("Proto Column is not yet enabled in production", isNotUsingAllowlistedProject());
     RemoteSpannerHelper testHelper = env.getTestHelper();
     databaseID = DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId());
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
@@ -133,7 +138,7 @@ public class ITProtoColumnTest {
   @AfterClass
   public static void afterClass() throws Exception {
     try {
-      if (!isUsingEmulator()) {
+      if (!isUsingEmulator() && !isNotUsingAllowlistedProject()) {
         dbAdminClient.dropDatabase(
             databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
       }
@@ -163,6 +168,7 @@ public class ITProtoColumnTest {
   public void testProtoColumnsUpdateAndRead() {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse("Proto Column is not yet enabled in production", isNotUsingAllowlistedProject());
     SingerInfo singerInfo =
         SingerInfo.newBuilder().setSingerId(1).setNationality("Country1").build();
     ByteArray singerInfoBytes = ByteArray.copyFrom(singerInfo.toByteArray());
@@ -270,6 +276,7 @@ public class ITProtoColumnTest {
   public void testProtoColumnsDMLParameterizedQueriesPKAndIndexes() {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse("Proto Column is not yet enabled in production", isNotUsingAllowlistedProject());
 
     SingerInfo singerInfo1 =
         SingerInfo.newBuilder().setSingerId(1).setNationality("Country1").build();
@@ -376,6 +383,7 @@ public class ITProtoColumnTest {
   public void testProtoMessageDeserializationError() {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
+    assumeFalse("Proto Column is not yet enabled in production", isNotUsingAllowlistedProject());
 
     SingerInfo singerInfo =
         SingerInfo.newBuilder().setSingerId(1).setNationality("Country1").build();

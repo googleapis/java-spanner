@@ -373,6 +373,7 @@ class GrpcStruct extends Struct implements Serializable {
     Preconditions.checkNotNull(
         message,
         "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+    ensureDecoded(columnIndex);
     try {
       return (T)
           message
