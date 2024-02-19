@@ -39,6 +39,8 @@ import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode
 import com.google.cloud.spanner.connection.SpannerPool.SpannerPoolKey;
 import com.google.common.base.Ticker;
 import com.google.common.testing.FakeTicker;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +71,10 @@ public class SpannerPoolTest {
   private ConnectionOptions options7 = mock(ConnectionOptions.class);
   private ConnectionOptions options8 = mock(ConnectionOptions.class);
 
+  private ConnectionOptions optionsOpenTelemetry1 = mock(ConnectionOptions.class);
+  private ConnectionOptions optionsOpenTelemetry2 = mock(ConnectionOptions.class);
+  private ConnectionOptions optionsOpenTelemetry3 = mock(ConnectionOptions.class);
+
   private SpannerPool createSubjectAndMocks() {
     return createSubjectAndMocks(0L, Ticker.systemTicker());
   }
@@ -82,6 +88,9 @@ public class SpannerPoolTest {
             return mock(Spanner.class);
           }
         };
+
+    OpenTelemetry openTelemetry1 = OpenTelemetrySdk.builder().build();
+    OpenTelemetry openTelemetry2 = OpenTelemetrySdk.builder().build();
 
     when(options1.getCredentialsUrl()).thenReturn(credentials1);
     when(options1.getProjectId()).thenReturn("test-project-1");
@@ -100,6 +109,13 @@ public class SpannerPoolTest {
     when(options7.isRouteToLeader()).thenReturn(true);
     when(options8.getProjectId()).thenReturn("test-project-3");
     when(options8.isRouteToLeader()).thenReturn(false);
+
+    when(optionsOpenTelemetry1.getProjectId()).thenReturn("test-project-1");
+    when(optionsOpenTelemetry1.getOpenTelemetry()).thenReturn(openTelemetry1);
+    when(optionsOpenTelemetry2.getProjectId()).thenReturn("test-project-1");
+    when(optionsOpenTelemetry2.getOpenTelemetry()).thenReturn(openTelemetry1);
+    when(optionsOpenTelemetry3.getProjectId()).thenReturn("test-project-1");
+    when(optionsOpenTelemetry3.getOpenTelemetry()).thenReturn(openTelemetry2);
 
     return pool;
   }
@@ -497,5 +513,22 @@ public class SpannerPoolTest {
     assertNotEquals(key1, new Object());
     assertEquals(key3, key4);
     assertNotEquals(key4, key5);
+  }
+
+  @Test
+  public void testOpenTelemetry() {
+    SpannerPool pool = createSubjectAndMocks();
+    Spanner spanner1;
+    Spanner spanner2;
+
+    // assert equal
+    spanner1 = pool.getSpanner(optionsOpenTelemetry1, connection1);
+    spanner2 = pool.getSpanner(optionsOpenTelemetry2, connection2);
+    assertEquals(spanner1, spanner2);
+
+    // assert not equal
+    spanner1 = pool.getSpanner(optionsOpenTelemetry1, connection1);
+    spanner2 = pool.getSpanner(optionsOpenTelemetry3, connection2);
+    assertNotEquals(spanner1, spanner2);
   }
 }
