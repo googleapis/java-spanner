@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -254,8 +255,20 @@ public class ITQueryTest {
     assertThat(row.isNull(0)).isTrue();
   }
 
+  // TODO: Remove once FLOAT32 is supported in production.
+  private static boolean isUsingCloudDevel() {
+    String jobType = System.getenv("JOB_TYPE");
+
+    // Assumes that the jobType contains the string "cloud-devel" to signal that
+    // the environment is cloud-devel.
+    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
+  }
+
   @Test
   public void bindFloat32() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0f), Type.float32());
     assertThat(row.isNull(0)).isFalse();
@@ -264,6 +277,9 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32Null() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Float) null), Type.float32());
     assertThat(row.isNull(0)).isTrue();
@@ -516,6 +532,9 @@ public class ITQueryTest {
   @Ignore
   // Fails due to backend issues. Should be resolved soon.
   public void bindFloat32Array() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -538,6 +557,9 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32ArrayEmpty() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery)
@@ -550,6 +572,9 @@ public class ITQueryTest {
 
   @Test
   public void bindFloat32ArrayNull() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     Struct row =
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toFloat32Array((float[]) null),

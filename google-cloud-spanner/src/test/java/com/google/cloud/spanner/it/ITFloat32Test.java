@@ -16,11 +16,14 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.Timestamp;
@@ -79,7 +82,7 @@ public class ITFloat32Test {
             + "  Key                 STRING(MAX) NOT NULL,"
             + "  Float32Value        FLOAT32,"
             + "  Float32ArrayValue   ARRAY<FLOAT32>,"
-            + ") PRIMARY KEY (K)"
+            + ") PRIMARY KEY (Key)"
       };
 
   private static final String[] POSTGRESQL_SCHEMA =
@@ -87,7 +90,7 @@ public class ITFloat32Test {
         "CREATE TABLE T ("
             + "  Key                 VARCHAR PRIMARY KEY,"
             + "  Float32Value        REAL,"
-            + "  Float32ArrayValue   REAL[],"
+            + "  Float32ArrayValue   REAL[]"
             + ")"
       };
 
@@ -107,8 +110,18 @@ public class ITFloat32Test {
     postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
   }
 
+  private static boolean isUsingCloudDevel() {
+    String jobType = System.getenv("JOB_TYPE");
+
+    // Assumes that the jobType contains the string "cloud-devel" to signal that
+    // the environment is cloud-devel.
+    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
+  }
+
   @Before
   public void before() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+
     client =
         dialect.dialect == Dialect.GOOGLE_STANDARD_SQL ? googleStandardSQLClient : postgreSQLClient;
   }
@@ -147,6 +160,8 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     write(baseInsert().set("Float32Value").to(2.0f).build());
     Struct row = readLastRow("Float32Value");
     assertThat(row.isNull(0)).isFalse();
@@ -155,6 +170,8 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32NonNumbers() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     write(baseInsert().set("Float32Value").to(Float.NEGATIVE_INFINITY).build());
     Struct row = readLastRow("Float32Value");
     assertThat(row.isNull(0)).isFalse();
@@ -173,6 +190,8 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32Null() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     write(baseInsert().set("Float32Value").to((Float) null).build());
     Struct row = readLastRow("Float32Value");
     assertThat(row.isNull(0)).isTrue();
@@ -180,6 +199,8 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32ArrayNull() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     write(baseInsert().set("Float32ArrayValue").toFloat32Array((float[]) null).build());
     Struct row = readLastRow("Float32ArrayValue");
     assertThat(row.isNull(0)).isTrue();
@@ -187,6 +208,8 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32ArrayEmpty() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     write(baseInsert().set("Float32ArrayValue").toFloat32Array(new float[] {}).build());
     Struct row = readLastRow("Float32ArrayValue");
     assertThat(row.isNull(0)).isFalse();
@@ -195,6 +218,8 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32Array() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     write(
         baseInsert()
             .set("Float32ArrayValue")
@@ -213,10 +238,12 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32ArrayNoNulls() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     write(baseInsert().set("Float32ArrayValue").toFloat32Array(Arrays.asList(1.0f, 2.0f)).build());
     Struct row = readLastRow("Float32ArrayValue");
     assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloatArray(0).length).isEqualTo(2f);
+    assertThat(row.getFloatArray(0).length).isEqualTo(2);
     assertThat(row.getFloatArray(0)[0]).isWithin(0.0f).of(1.0f);
     assertThat(row.getFloatArray(0)[1]).isWithin(0.0f).of(2.0f);
   }
@@ -244,6 +271,8 @@ public class ITFloat32Test {
 
   @Test
   public void float32Literals() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     client
         .readWriteTransaction()
         .run(
@@ -269,6 +298,8 @@ public class ITFloat32Test {
 
   @Test
   public void float32Parameter() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     client
         .readWriteTransaction()
         .run(
@@ -311,9 +342,12 @@ public class ITFloat32Test {
   @Ignore("This will be supported before submission")
   @Test
   public void float32UntypedParameter() {
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
     // TODO: Verify before submitting.
     assumeTrue(
-        "This is only supported in GoogleSQL??", dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
+        "This is currently only supported in GoogleSQL??",
+        dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     client
         .readWriteTransaction()
@@ -342,11 +376,13 @@ public class ITFloat32Test {
                       .build());
               return null;
             });
+
+    // TODO: add verifier.
   }
 
   private void verifyContents() {
     try (ResultSet resultSet =
-        client.singleUse().executeQuery(Statement.of("SELECT * FROM T ORDER BY id"))) {
+        client.singleUse().executeQuery(Statement.of("SELECT * FROM T ORDER BY Key"))) {
 
       assertTrue(resultSet.next());
 
