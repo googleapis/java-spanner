@@ -57,10 +57,13 @@ import org.junit.runners.JUnit4;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoField;
 
-/** Unit tests for {@code SpannerSample} */
+/**
+ * Unit tests for {@code SpannerSample}
+ */
 @RunWith(JUnit4.class)
 @SuppressWarnings("checkstyle:abbreviationaswordinname")
 public class SpannerSampleIT extends SampleTestBaseV2 {
+
   private static final int DBID_LENGTH = 20;
   // The instance needs to exist for tests to pass.
   private static final String instanceId = System.getProperty("spanner.test.instance");
@@ -86,16 +89,17 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     ByteArrayOutputStream bout = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(bout);
     System.setOut(out);
-    SpannerSample.main(new String[] {command, instanceId, databaseId, null});
+    SpannerSample.main(new String[]{command, instanceId, databaseId, null});
     System.setOut(stdOut);
     return bout.toString();
   }
+
   private String runSample(String command, String databaseId, String backupId) throws Exception {
     PrintStream stdOut = System.out;
     ByteArrayOutputStream bout = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(bout);
     System.setOut(out);
-    SpannerSample.main(new String[] {command, instanceId, databaseId, backupId});
+    SpannerSample.main(new String[]{command, instanceId, databaseId, backupId});
     System.setOut(stdOut);
     return bout.toString();
   }
@@ -142,11 +146,12 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       }
     }
   }
+
   static void deleteStaleTestDatabases() throws IOException {
     Timestamp now = Timestamp.now();
     Pattern samplePattern = getTestDbIdPattern(SpannerSampleIT.baseDbId);
     Pattern restoredPattern = getTestDbIdPattern("restored");
-    try(DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
       for (Database db : databaseAdminClient.listDatabases(InstanceName.of(projectId, instanceId))
           .iterateAll()) {
         DatabaseName databaseName = DatabaseName.parse(db.getName());
@@ -524,14 +529,16 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
         .get();
     try {
       String out = SampleRunner
-          .runSample(() -> CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(databaseAdminClient,
+          .runSample(() -> CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
+              databaseAdminClient,
               projectId, instanceId, encryptedDatabaseId, key));
       assertThat(out).contains(String.format(
           "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
           projectId, instanceId, encryptedDatabaseId, key));
 
       out = SampleRunner.runSampleWithRetry(
-          () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(databaseAdminClient, projectId,
+          () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(databaseAdminClient,
+              projectId,
               instanceId, encryptedDatabaseId, encryptedBackupId, key),
           new ShouldRetryBackupOperation());
       assertThat(out).containsMatch(String.format(
@@ -540,7 +547,8 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
           projectId, instanceId, encryptedBackupId, key));
 
       out = SampleRunner.runSampleWithRetry(
-          () -> RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(databaseAdminClient, projectId,
+          () -> RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(databaseAdminClient,
+              projectId,
               instanceId, encryptedBackupId, encryptedRestoreId, key),
           new ShouldRetryBackupOperation());
       assertThat(out).contains(String.format(
@@ -635,6 +643,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
   }
 
   static class ShouldRetryBackupOperation implements Predicate<SpannerException> {
+
     private static final int MAX_ATTEMPTS = 20;
     private int attempts = 0;
 

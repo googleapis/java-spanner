@@ -64,6 +64,7 @@ import java.util.concurrent.TimeUnit;
  * Example code for using the Cloud Spanner PostgreSQL interface.
  */
 public class PgSpannerSample {
+
   // [START spanner_postgresql_insert_data]
   static final List<Singer> SINGERS =
       Arrays.asList(
@@ -81,7 +82,9 @@ public class PgSpannerSample {
           new Album(2, 3, "Terrified"));
   // [END spanner_postgresql_insert_data]
 
-  /** Class to contain performance sample data. */
+  /**
+   * Class to contain performance sample data.
+   */
   static class Performance {
 
     final long singerId;
@@ -157,7 +160,9 @@ public class PgSpannerSample {
               new BigDecimal("390650.99")));
   // [END spanner_postgresql_insert_datatypes_data]
 
-  /** Class to contain venue sample data. */
+  /**
+   * Class to contain venue sample data.
+   */
   static class Venue {
 
     final long venueId;
@@ -273,9 +278,9 @@ public class PgSpannerSample {
   // [START spanner_postgresql_query_data]
   static void query(DatabaseClient dbClient) {
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse() // Execute a single read or query against Cloud Spanner.
-                 .executeQuery(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
+        dbClient
+            .singleUse() // Execute a single read or query against Cloud Spanner.
+            .executeQuery(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1),
@@ -288,12 +293,12 @@ public class PgSpannerSample {
   // [START spanner_postgresql_read_data]
   static void read(DatabaseClient dbClient) {
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .read(
-                     "Albums",
-                     KeySet.all(), // Read all rows in a table.
-                     Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
+        dbClient
+            .singleUse()
+            .read(
+                "Albums",
+                KeySet.all(), // Read all rows in a table.
+                Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1),
@@ -402,11 +407,11 @@ public class PgSpannerSample {
     // null. A try-with-resource block is used to automatically release resources held by
     // ResultSet.
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", "
-                     + "albumid as \"AlbumId\", marketingbudget as \"MarketingBudget\" "
-                     + "FROM Albums"))) {
+        dbClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT singerid as \"SingerId\", "
+                + "albumid as \"AlbumId\", marketingbudget as \"MarketingBudget\" "
+                + "FROM Albums"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n",
@@ -443,13 +448,13 @@ public class PgSpannerSample {
   // [START spanner_postgresql_read_data_with_index]
   static void readUsingIndex(DatabaseClient dbClient) {
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .readUsingIndex(
-                     "Albums",
-                     "AlbumsByAlbumTitle",
-                     KeySet.all(),
-                     Arrays.asList("AlbumId", "AlbumTitle"))) {
+        dbClient
+            .singleUse()
+            .readUsingIndex(
+                "Albums",
+                "AlbumsByAlbumTitle",
+                KeySet.all(),
+                Arrays.asList("AlbumId", "AlbumTitle"))) {
       while (resultSet.next()) {
         System.out.printf("%d %s\n", resultSet.getLong(0), resultSet.getString(1));
       }
@@ -484,13 +489,13 @@ public class PgSpannerSample {
   static void readStoringIndex(DatabaseClient dbClient) {
     // We can read MarketingBudget also from the index since it stores a copy of MarketingBudget.
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .readUsingIndex(
-                     "Albums",
-                     "AlbumsByAlbumTitle2",
-                     KeySet.all(),
-                     Arrays.asList("AlbumId", "AlbumTitle", "MarketingBudget"))) {
+        dbClient
+            .singleUse()
+            .readUsingIndex(
+                "Albums",
+                "AlbumsByAlbumTitle2",
+                KeySet.all(),
+                Arrays.asList("AlbumId", "AlbumTitle", "MarketingBudget"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %s %s\n",
@@ -517,8 +522,8 @@ public class PgSpannerSample {
             queryResultSet.getString(2));
       }
       try (ResultSet readResultSet =
-               transaction.read(
-                   "Albums", KeySet.all(), Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
+          transaction.read(
+              "Albums", KeySet.all(), Arrays.asList("SingerId", "AlbumId", "AlbumTitle"))) {
         while (readResultSet.next()) {
           System.out.printf(
               "%d %d %s\n",
@@ -533,10 +538,10 @@ public class PgSpannerSample {
   // [START spanner_postgresql_query_singers_table]
   static void querySingersTable(DatabaseClient dbClient) {
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .executeQuery(Statement.of("SELECT singerid as \"SingerId\", "
-                     + "firstname as \"FirstName\", lastname as \"LastName\" FROM Singers"))) {
+        dbClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT singerid as \"SingerId\", "
+                + "firstname as \"FirstName\", lastname as \"LastName\" FROM Singers"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%s %s %s\n",
@@ -684,11 +689,11 @@ public class PgSpannerSample {
   // [START spanner_postgresql_read_stale_data]
   static void readStaleData(DatabaseClient dbClient) {
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse(TimestampBound.ofExactStaleness(15, TimeUnit.SECONDS))
-                 .read(
-                     "Albums", KeySet.all(),
-                     Arrays.asList("SingerId", "AlbumId", "MarketingBudget"))) {
+        dbClient
+            .singleUse(TimestampBound.ofExactStaleness(15, TimeUnit.SECONDS))
+            .read(
+                "Albums", KeySet.all(),
+                Arrays.asList("SingerId", "AlbumId", "MarketingBudget"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n",
@@ -762,14 +767,14 @@ public class PgSpannerSample {
     // null. A try-with-resource block is used to automatically release resources held by
     // ResultSet.
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .executeQuery(
-                     Statement.of(
-                         "SELECT singerid as \"SingerId\", albumid as \"AlbumId\", "
-                             + "marketingbudget as \"MarketingBudget\","
-                             + "lastupdatetime as \"LastUpdateTime\" FROM Albums"
-                             + " ORDER BY LastUpdateTime DESC"))) {
+        dbClient
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "SELECT singerid as \"SingerId\", albumid as \"AlbumId\", "
+                        + "marketingbudget as \"MarketingBudget\","
+                        + "lastupdatetime as \"LastUpdateTime\" FROM Albums"
+                        + " ORDER BY LastUpdateTime DESC"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s %s\n",
@@ -785,7 +790,8 @@ public class PgSpannerSample {
   // [END spanner_postgresql_query_data_with_timestamp_column]
 
   // [START spanner_postgresql_create_table_with_timestamp_column]
-  static void createTableWithTimestamp(DatabaseAdminClient dbAdminClient, DatabaseName databaseName) {
+  static void createTableWithTimestamp(DatabaseAdminClient dbAdminClient,
+      DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
       dbAdminClient.updateDatabaseDdlAsync(databaseName,
@@ -834,13 +840,13 @@ public class PgSpannerSample {
     // null. A try-with-resource block is used to automatically release resources held by
     // ResultSet.
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .executeQuery(
-                     Statement.of(
-                         "SELECT singerid as \"SingerId\", venueid as \"VenueId\", "
-                             + "revenue as \"Revenue\", lastupdatetime as \"LastUpdateTime\" "
-                             + "FROM Performances ORDER BY LastUpdateTime DESC"))) {
+        dbClient
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "SELECT singerid as \"SingerId\", venueid as \"VenueId\", "
+                        + "revenue as \"Revenue\", lastupdatetime as \"LastUpdateTime\" "
+                        + "FROM Performances ORDER BY LastUpdateTime DESC"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s %s\n",
@@ -973,7 +979,8 @@ public class PgSpannerSample {
   // [END spanner_postgresql_dml_batch_update]
 
   // [START spanner_postgresql_create_table_with_datatypes]
-  static void createTableWithDatatypes(DatabaseAdminClient dbAdminClient, DatabaseName databaseName) {
+  static void createTableWithDatatypes(DatabaseAdminClient dbAdminClient,
+      DatabaseName databaseName) {
     try {
       // Initiate the request which returns an OperationFuture.
       dbAdminClient.updateDatabaseDdlAsync(
@@ -1197,9 +1204,9 @@ public class PgSpannerSample {
     Spanner spanner = options.getService();
     DatabaseClient dbClient = spanner.getDatabaseClient(db);
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .executeQuery(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
+        dbClient
+            .singleUse()
+            .executeQuery(Statement.of("SELECT SingerId, AlbumId, AlbumTitle FROM Albums"))) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
@@ -1211,19 +1218,19 @@ public class PgSpannerSample {
   // [START spanner_postgresql_query_with_query_options]
   static void queryWithQueryOptions(DatabaseClient dbClient) {
     try (ResultSet resultSet =
-             dbClient
-                 .singleUse()
-                 .executeQuery(
-                     Statement
-                         .newBuilder("SELECT SingerId, AlbumId, AlbumTitle FROM Albums")
-                         .withQueryOptions(ExecuteSqlRequest.QueryOptions
-                             .newBuilder()
-                             .setOptimizerVersion("1")
-                             // The list of available statistics packages can be found by querying
-                             // the "INFORMATION_SCHEMA.spanner_postgresql_STATISTICS" table.
-                             .setOptimizerStatisticsPackage("latest")
-                             .build())
-                         .build())) {
+        dbClient
+            .singleUse()
+            .executeQuery(
+                Statement
+                    .newBuilder("SELECT SingerId, AlbumId, AlbumTitle FROM Albums")
+                    .withQueryOptions(ExecuteSqlRequest.QueryOptions
+                        .newBuilder()
+                        .setOptimizerVersion("1")
+                        // The list of available statistics packages can be found by querying
+                        // the "INFORMATION_SCHEMA.spanner_postgresql_STATISTICS" table.
+                        .setOptimizerStatisticsPackage("latest")
+                        .build())
+                    .build())) {
       while (resultSet.next()) {
         System.out.printf(
             "%d %d %s\n", resultSet.getLong(0), resultSet.getLong(1), resultSet.getString(2));
@@ -1528,8 +1535,8 @@ public class PgSpannerSample {
       run(dbClient, dbAdminClient, instanceAdminClient, command, db);
       // [START spanner_init_client]
     } finally {
-      if(dbAdminClient != null) {
-        if(!dbAdminClient.isShutdown() || !dbAdminClient.isTerminated()) {
+      if (dbAdminClient != null) {
+        if (!dbAdminClient.isShutdown() || !dbAdminClient.isTerminated()) {
           dbAdminClient.close();
         }
       }
@@ -1539,7 +1546,9 @@ public class PgSpannerSample {
     System.out.println("Closed client");
   }
 
-  /** Class to contain singer sample data. */
+  /**
+   * Class to contain singer sample data.
+   */
   static class Singer {
 
     final long singerId;
@@ -1553,7 +1562,9 @@ public class PgSpannerSample {
     }
   }
 
-  /** Class to contain album sample data. */
+  /**
+   * Class to contain album sample data.
+   */
   static class Album {
 
     final long singerId;

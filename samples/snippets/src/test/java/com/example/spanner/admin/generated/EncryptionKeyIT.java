@@ -33,8 +33,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration tests for: {@link com.example.spanner.CreateDatabaseWithEncryptionKey}, {@link
- * com.example.spanner.CreateBackupWithEncryptionKey} and {@link com.example.spanner.RestoreBackupWithEncryptionKey}
+ * Integration tests for: {@link com.example.spanner.CreateDatabaseWithEncryptionKey},
+ * {@link com.example.spanner.CreateBackupWithEncryptionKey} and
+ * {@link com.example.spanner.RestoreBackupWithEncryptionKey}
  */
 @RunWith(JUnit4.class)
 @Ignore

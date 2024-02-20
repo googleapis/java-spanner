@@ -73,15 +73,12 @@ import com.google.spanner.admin.database.v1.RestoreInfo;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.LocalDateTime;
-import org.threeten.bp.OffsetDateTime;
-import org.threeten.bp.temporal.ChronoField;
 
 /**
  * Example code for using the Cloud Spanner API. This example demonstrates all the common operations
@@ -1600,15 +1597,13 @@ public class SpannerSample {
             "Backup %s of size %d bytes was created at %s for version of database at %s",
             backup.getName(),
             backup.getSizeBytes(),
-            LocalDateTime.ofEpochSecond(
-                backup.getCreateTime().getSeconds(),
-                backup.getCreateTime().getNanos(),
-                OffsetDateTime.now().getOffset()),
-            LocalDateTime.ofEpochSecond(
-                backup.getVersionTime().getSeconds(),
-                backup.getVersionTime().getNanos(),
-                OffsetDateTime.now().getOffset())
-        ));
+            java.time.OffsetDateTime.ofInstant(
+                Instant.ofEpochSecond(backup.getCreateTime().getSeconds(),
+                    backup.getCreateTime().getNanos()), ZoneId.systemDefault()),
+            java.time.OffsetDateTime.ofInstant(
+                Instant.ofEpochSecond(backup.getVersionTime().getSeconds(),
+                    backup.getVersionTime().getNanos()), ZoneId.systemDefault()))
+    );
   }
   // [END spanner_create_backup]
 
@@ -1731,8 +1726,7 @@ public class SpannerSample {
       DatabaseAdminClient dbAdminClient, String projectId, String instanceId) {
     // Get optimize restored database operations.
     Timestamp last24Hours = Timestamp.newBuilder().setSeconds((TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(new java.sql.Timestamp(
-            System.currentTimeMillis()).getSeconds(), TimeUnit.SECONDS) - 24,
+        TimeUnit.HOURS.convert(Instant.now().getEpochSecond(), TimeUnit.SECONDS) - 24,
         TimeUnit.HOURS))).build();
     String filter = String.format("(metadata.@type:type.googleapis.com/"
         + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) AND "
@@ -1914,8 +1908,9 @@ public class SpannerSample {
     System.out.println(String.format(
         "Updating expire time of backup [%s] to %s...",
         backupId.toString(),
-        LocalDateTime.ofEpochSecond(
-            newExpireTime.getSeconds(), newExpireTime.getNanos(), OffsetDateTime.now().getOffset())));
+        java.time.OffsetDateTime.ofInstant(
+            Instant.ofEpochSecond(newExpireTime.getSeconds(),
+                newExpireTime.getNanos()), ZoneId.systemDefault())));
 
     // Update expire time.
     backup = backup.toBuilder().setExpireTime(newExpireTime).build();
@@ -2263,7 +2258,7 @@ public class SpannerSample {
       }
       // Generate a backup id for the sample database.
       String backupId = null;
-      if(args.length == 4) {
+      if (args.length == 4) {
         backupId = args[3];
       }
 
@@ -2277,8 +2272,8 @@ public class SpannerSample {
       run(dbClient, dbAdminClient, command, db, backupId);
       // [START init_client]
     } finally {
-      if(dbAdminClient != null) {
-        if(!dbAdminClient.isShutdown() || !dbAdminClient.isTerminated()) {
+      if (dbAdminClient != null) {
+        if (!dbAdminClient.isShutdown() || !dbAdminClient.isTerminated()) {
           dbAdminClient.close();
         }
       }

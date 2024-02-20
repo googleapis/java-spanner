@@ -72,7 +72,8 @@ public class PgSpannerSampleIT extends SampleTestBaseV2 {
     Timestamp now = Timestamp.now();
     Pattern samplePattern = getTestDbIdPattern(PgSpannerSampleIT.baseDbId);
     Pattern restoredPattern = getTestDbIdPattern("restored");
-    for (Database db : dbClient.listDatabases(InstanceName.of(projectId, instanceId)).iterateAll()) {
+    for (Database db : dbClient.listDatabases(
+        InstanceName.of(projectId, instanceId)).iterateAll()) {
       DatabaseName databaseName = DatabaseName.parse(db.getName());
       if (TimeUnit.HOURS.convert(now.getSeconds() - db.getCreateTime().getSeconds(),
           TimeUnit.SECONDS) > 24) {
