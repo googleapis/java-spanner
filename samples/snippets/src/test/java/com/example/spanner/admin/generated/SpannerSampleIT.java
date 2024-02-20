@@ -380,6 +380,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       assertThat(instanceId).isNotNull();
       assertThat(databaseId).isNotNull();
 
+      System.out.println("Creating Database ...");
       String out = runSample("createdatabase", databaseId);
       assertThat(out).contains("Created database");
       assertThat(out).contains(dbId.getName());
@@ -387,11 +388,13 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       String backupId = idGenerator.generateBackupId();
       BackupName backupName = BackupName.of(projectId, instanceId, backupId);
 
+      System.out.println("Creating Backup ...");
       out = runSample("createbackup", databaseId, backupId);
       assertThat(out).contains("Created backup [" + backupName.toString() + "]");
 
       // TODO: remove try-catch when filtering on metadata fields works.
       try {
+        System.out.println("List Backup Operations ...");
         out = runSample("listbackupoperations", databaseId, backupId);
         assertThat(out).contains(
             String.format(
@@ -403,6 +406,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
         assertThat(e.getMessage()).contains("Cannot evaluate filter expression");
       }
 
+      System.out.println("List Backup ...");
       out = runSample("listbackups", databaseId);
       assertThat(out).contains("All backups:");
       assertThat(out).contains(
@@ -426,6 +430,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       int restoreAttempts = 0;
       while (true) {
         try {
+          System.out.println("Restore Backup ...");
           out = runSample("restorebackup", databaseId);
           assertThat(out).contains(
               "Restored database ["
