@@ -96,9 +96,21 @@ public class ITFloat32Test {
 
   private static DatabaseClient client;
 
+  private static boolean isUsingCloudDevel() {
+    String jobType = System.getenv("JOB_TYPE");
+
+    // Assumes that the jobType contains the string "cloud-devel" to signal that
+    // the environment is cloud-devel.
+    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
+  }
+
   @BeforeClass
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
+    if (!isUsingCloudDevel()) {
+      return;
+    }
+
     Database googleStandardSQLDatabase =
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
 
@@ -108,14 +120,6 @@ public class ITFloat32Test {
         env.getTestHelper()
             .createTestDatabase(Dialect.POSTGRESQL, Arrays.asList(POSTGRESQL_SCHEMA));
     postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
-  }
-
-  private static boolean isUsingCloudDevel() {
-    String jobType = System.getenv("JOB_TYPE");
-
-    // Assumes that the jobType contains the string "cloud-devel" to signal that
-    // the environment is cloud-devel.
-    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
   }
 
   @Before
