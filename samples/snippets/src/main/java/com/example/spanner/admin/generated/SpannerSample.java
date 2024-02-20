@@ -1700,8 +1700,8 @@ public class SpannerSample {
     listBackupOperationsRequest =
         ListBackupOperationsRequest.newBuilder()
             .setParent(instanceName.toString()).setFilter(filter).build();
-    ListBackupOperationsPagedResponse copyBackupOperations = databaseAdminClient.listBackupOperations(
-        listBackupOperationsRequest);
+    ListBackupOperationsPagedResponse copyBackupOperations =
+        databaseAdminClient.listBackupOperations(listBackupOperationsRequest);
     System.out.println("Copy Backup Operations:");
     for (Operation op : copyBackupOperations.iterateAll()) {
       try {
@@ -2244,7 +2244,7 @@ public class SpannerSample {
     Spanner spanner = options.getService();
     DatabaseAdminClient dbAdminClient = null;
     try {
-      String command = args[0];
+      final String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
       // [END init_client]
       // This will return the default project id based on the environment.
