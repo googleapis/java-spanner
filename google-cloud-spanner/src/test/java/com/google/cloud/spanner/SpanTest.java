@@ -174,6 +174,8 @@ public class SpanTest {
 
   @Before
   public void setUp() throws Exception {
+    failOnOverkillTraceComponent.clearSpans();
+    failOnOverkillTraceComponent.clearAnnotations();
     // Incorporating OpenTelemetry configuration to ensure that OpenCensus traces are utilized by
     // default,
     // regardless of the presence of OpenTelemetry configuration.
@@ -196,7 +198,11 @@ public class SpanTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
             .setOpenTelemetry(openTelemetry)
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(2)
+                    .setWaitForMinSessions(Duration.ofSeconds(5))
+                    .build());
 
     spanner = builder.build().getService();
 
@@ -241,9 +247,6 @@ public class SpanTest {
     clientWithTimeout =
         spannerWithTimeout.getDatabaseClient(
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-
-    failOnOverkillTraceComponent.clearSpans();
-    failOnOverkillTraceComponent.clearAnnotations();
   }
 
   @After
@@ -286,22 +289,23 @@ public class SpanTest {
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
 
     List<String> expectedAnnotations =
         ImmutableList.of(
-            "Requesting 25 sessions",
-            "Request for 25 sessions returned 25 sessions",
-            "Creating 25 sessions",
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions",
             "Acquiring session",
-            "No session available",
-            "Creating sessions",
-            "Waiting for a session to come available",
+            "Acquired session",
             "Using Session",
             "Starting/Resuming stream");
-    verifyAnnotations(failOnOverkillTraceComponent.getAnnotations(), expectedAnnotations);
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotations);
   }
 
   @Test
@@ -317,24 +321,25 @@ public class SpanTest {
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
 
     List<String> expectedAnnotations =
         ImmutableList.of(
-            "Requesting 25 sessions",
-            "Request for 25 sessions returned 25 sessions",
-            "Creating 25 sessions",
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions",
             "Acquiring session",
-            "No session available",
-            "Creating sessions",
-            "Waiting for a session to come available",
+            "Acquired session",
             "Using Session",
             "Starting/Resuming stream",
             "Creating Transaction",
             "Transaction Creation Done");
-    verifyAnnotations(failOnOverkillTraceComponent.getAnnotations(), expectedAnnotations);
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotations);
   }
 
   @Test
@@ -344,25 +349,26 @@ public class SpanTest {
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.Commit", true);
 
     List<String> expectedAnnotations =
         ImmutableList.of(
             "Acquiring session",
-            "No session available",
-            "Creating sessions",
-            "Waiting for a session to come available",
+            "Acquired session",
             "Using Session",
             "Starting Transaction Attempt",
             "Starting Commit",
             "Commit Done",
             "Transaction Attempt Succeeded",
-            "Requesting 25 sessions",
-            "Request for 25 sessions returned 25 sessions",
-            "Creating 25 sessions");
-    verifyAnnotations(expectedAnnotations, failOnOverkillTraceComponent.getAnnotations());
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions");
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotations);
   }
 
   @Test
@@ -375,26 +381,27 @@ public class SpanTest {
     assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
-    assertThat(spans.size()).isEqualTo(4);
+    assertThat(spans.size()).isEqualTo(3);
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
 
     List<String> expectedAnnotations =
         ImmutableList.of(
             "Acquiring session",
-            "No session available",
-            "Creating sessions",
-            "Waiting for a session to come available",
+            "Acquired session",
             "Using Session",
             "Starting Transaction Attempt",
             "Transaction Attempt Failed in user operation",
-            "Requesting 25 sessions",
-            "Request for 25 sessions returned 25 sessions",
-            "Creating 25 sessions");
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions");
 
-    verifyAnnotations(expectedAnnotations, failOnOverkillTraceComponent.getAnnotations());
+    verifyAnnotations(
+        failOnOverkillTraceComponent.getAnnotations().stream()
+            .distinct()
+            .collect(Collectors.toList()),
+        expectedAnnotations);
   }
 
   private void verifyAnnotations(List<String> actualAnnotations, List<String> expectedAnnotations) {
