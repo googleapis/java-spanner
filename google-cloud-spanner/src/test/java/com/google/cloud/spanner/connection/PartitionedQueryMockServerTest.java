@@ -349,9 +349,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertFalse(resultSet.next());
         assertNotNull(resultSet.getMetadata());
-        assertEquals(18, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(22, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(18, resultSet.getType().getStructFields().size());
+        assertEquals(22, resultSet.getType().getStructFields().size());
       }
     }
     assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));

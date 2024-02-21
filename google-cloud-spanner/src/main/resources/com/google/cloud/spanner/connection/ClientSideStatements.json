@@ -77,6 +77,15 @@
 	  "exampleStatements": ["show variable read_only_staleness"]
 	},
 	{
+		"name": "SHOW VARIABLE DIRECTED_READ",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_DIRECTED_READ",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+directed_read\\s*\\z",
+		"method": "statementShowDirectedRead",
+		"exampleStatements": ["show variable directed_read"]
+	},
+	{
 	  "name": "SHOW VARIABLE OPTIMIZER_VERSION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "RESULT_SET",
@@ -372,6 +381,21 @@
 	    "allowedValues": "'((STRONG)|(MIN_READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(READ_TIMESTAMP)[\\t ]+((\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{1,9})?)([Zz]|([+-])(\\d{2}):(\\d{2})))|(MAX_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns))|(EXACT_STALENESS)[\\t ]+((\\d{1,19})(s|ms|us|ns)))'",
 	    "converterName": "ClientSideStatementValueConverters$ReadOnlyStalenessConverter"
 	  }
+	},
+	{
+		"name": "SET DIRECTED_READ = '<directed-read-options>'|''",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_DIRECTED_READ",
+		"regex": "(?is)\\A\\s*set\\s+directed_read\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetDirectedRead",
+		"exampleStatements": ["set directed_read='{\"includeReplicas\":{\"replicaSelections\":[{\"location\":\"eu-west1\",\"type\":\"READ_ONLY\"}]}}'", "set directed_read=''"],
+		"setStatement": {
+			"propertyName": "DIRECTED_READ",
+			"separator": "=",
+			"allowedValues": "'((\\S+)|())'",
+			"converterName": "ClientSideStatementValueConverters$DirectedReadOptionsConverter"
+		}
 	},
 	{
 	  "name": "SET OPTIMIZER_VERSION = '<version>'|'LATEST'|''",

@@ -17,6 +17,7 @@
 package com.example.spanner.admin.generated;
 
 //[START spanner_create_instance]
+
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;

@@ -15,6 +15,7 @@
  */
 package com.google.cloud.spanner;
 
+import java.util.concurrent.atomic.AtomicLong;
 import org.threeten.bp.Instant;
 
 /**
@@ -22,10 +23,10 @@ import org.threeten.bp.Instant;
  * tests.
  */
 class FakeClock extends Clock {
-  volatile long currentTimeMillis;
+  final AtomicLong currentTimeMillis = new AtomicLong();
 
   @Override
   public Instant instant() {
-    return Instant.ofEpochMilli(currentTimeMillis);
+    return Instant.ofEpochMilli(currentTimeMillis.get());
   }
 }

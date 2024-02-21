@@ -20,41 +20,39 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.common.base.Preconditions;
-import io.opencensus.common.Scope;
-import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
 
 /** Implementation of {@link TransactionManager}. */
 final class TransactionManagerImpl implements TransactionManager, SessionTransaction {
-  private static final Tracer tracer = Tracing.getTracer();
+  private final TraceWrapper tracer;
 
   private final SessionImpl session;
-  private Span span;
+  private ISpan span;
   private final Options options;
 
   private TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionState txnState;
 
-  TransactionManagerImpl(SessionImpl session, Span span, TransactionOption... options) {
+  TransactionManagerImpl(
+      SessionImpl session, ISpan span, TraceWrapper tracer, TransactionOption... options) {
     this.session = session;
     this.span = span;
+    this.tracer = tracer;
     this.options = Options.fromTransactionOptions(options);
   }
 
-  Span getSpan() {
+  ISpan getSpan() {
     return span;
   }
 
   @Override
-  public void setSpan(Span span) {
+  public void setSpan(ISpan span) {
     this.span = span;
   }
 
   @Override
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");
-    try (Scope s = tracer.withSpan(span)) {
+    try (IScope s = tracer.withSpan(span)) {
       txn = session.newTransaction(options);
       session.setActive(this);
       txnState = TransactionState.STARTED;
@@ -102,7 +100,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
       throw new IllegalStateException(
           "resetForRetry can only be called if the previous attempt" + " aborted");
     }
-    try (Scope s = tracer.withSpan(span)) {
+    try (IScope s = tracer.withSpan(span)) {
       boolean useInlinedBegin = txn.transactionId != null;
       txn = session.newTransaction(options);
       if (!useInlinedBegin) {
@@ -137,7 +135,7 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
         txnState = TransactionState.ROLLED_BACK;
       }
     } finally {
-      span.end(TraceUtil.END_SPAN_OPTIONS);
+      span.end();
     }
   }
 

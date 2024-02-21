@@ -1035,4 +1035,56 @@ public class ConnectionOptionsTest {
                     .build());
     assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
   }
+
+  @Test
+  public void testUseVirtualThreads() {
+    assertTrue(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualThreads=true")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
+    assertFalse(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualThreads=false")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
+    assertEquals(
+        ConnectionOptions.DEFAULT_USE_VIRTUAL_THREADS,
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
+  }
+
+  @Test
+  public void testUseVirtualGrpcTransportThreads() {
+    assertTrue(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualGrpcTransportThreads=true")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualGrpcTransportThreads());
+    assertFalse(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?useVirtualGrpcTransportThreads=false")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualGrpcTransportThreads());
+    assertEquals(
+        ConnectionOptions.DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS,
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isUseVirtualThreads());
+  }
 }

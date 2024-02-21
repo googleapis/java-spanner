@@ -16,9 +16,14 @@
 package com.google.cloud.spanner.spi.v1;
 
 import com.google.api.core.InternalApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
+import com.google.cloud.spanner.SpannerRpcMetrics;
 import com.google.common.collect.ImmutableList;
 import io.grpc.ClientInterceptor;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,21 +34,24 @@ import java.util.logging.Logger;
  */
 @InternalApi("Exposed for testing")
 public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
-
-  private static final List<ClientInterceptor> defaultInterceptors =
-      ImmutableList.of(
-          new SpannerErrorInterceptor(),
-          new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER),
-          new HeaderInterceptor());
-
   private final List<ClientInterceptor> clientInterceptors;
 
   private SpannerInterceptorProvider(List<ClientInterceptor> clientInterceptors) {
     this.clientInterceptors = clientInterceptors;
   }
 
+  @ObsoleteApi("This method always uses Global OpenTelemetry")
   public static SpannerInterceptorProvider createDefault() {
-    return new SpannerInterceptorProvider(defaultInterceptors);
+    return createDefault(GlobalOpenTelemetry.get());
+  }
+
+  public static SpannerInterceptorProvider createDefault(OpenTelemetry openTelemetry) {
+    List<ClientInterceptor> defaultInterceptorList = new ArrayList<>();
+    defaultInterceptorList.add(new SpannerErrorInterceptor());
+    defaultInterceptorList.add(
+        new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
+    defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry)));
+    return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
 
   static SpannerInterceptorProvider create(GrpcInterceptorProvider provider) {

@@ -16,15 +16,17 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_USE_VIRTUAL_THREADS;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ListenableFutureToApiFuture;
+import com.google.cloud.spanner.ThreadFactoryUtil;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -130,37 +132,45 @@ class StatementExecutor {
   }
 
   /**
-   * Use a {@link ThreadFactory} that produces daemon threads and sets recognizable name on the
+   * Use a {@link ThreadFactory} that produces daemon or virtual threads and sets a recognizable
+   * name on the threads.
+   */
+  private static final ThreadFactory DEFAULT_VIRTUAL_THREAD_FACTORY =
+      ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory("connection-executor", true);
+  /**
+   * Use a {@link ThreadFactory} that produces daemon threads and sets a recognizable name on the
    * threads.
    */
-  private static final ThreadFactory THREAD_FACTORY =
-      new ThreadFactoryBuilder()
-          .setDaemon(true)
-          .setNameFormat("connection-executor-%d")
-          .setThreadFactory(MoreExecutors.platformThreadFactory())
-          .build();
+  private static final ThreadFactory DEFAULT_DAEMON_THREAD_FACTORY =
+      ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory("connection-executor", false);
 
   /** Creates an {@link ExecutorService} for a {@link StatementExecutor}. */
-  private static ListeningExecutorService createExecutorService() {
+  private static ListeningExecutorService createExecutorService(boolean useVirtualThreads) {
     return MoreExecutors.listeningDecorator(
         new ThreadPoolExecutor(
-            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY));
+            1,
+            1,
+            0L,
+            TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(),
+            useVirtualThreads ? DEFAULT_VIRTUAL_THREAD_FACTORY : DEFAULT_DAEMON_THREAD_FACTORY));
   }
 
-  private ListeningExecutorService executor = createExecutorService();
+  private final ListeningExecutorService executor;
 
   /**
    * Interceptors that should be invoked before or after a statement is executed can be registered
-   * for a connection. This are added to this list. The interceptors are intended for test usage.
+   * for a connection. These are added to this list. The interceptors are intended for test usage.
    */
   private final List<StatementExecutionInterceptor> interceptors;
 
   @VisibleForTesting
   StatementExecutor() {
-    this.interceptors = Collections.emptyList();
+    this(DEFAULT_USE_VIRTUAL_THREADS, Collections.emptyList());
   }
 
-  StatementExecutor(List<StatementExecutionInterceptor> interceptors) {
+  StatementExecutor(boolean useVirtualThreads, List<StatementExecutionInterceptor> interceptors) {
+    this.executor = createExecutorService(useVirtualThreads);
     this.interceptors = Collections.unmodifiableList(interceptors);
   }
 
@@ -168,15 +178,11 @@ class StatementExecutor {
     executor.shutdown();
   }
 
-  void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-    executor.awaitTermination(timeout, unit);
-  }
-
   /**
    * Shutdown this executor now and do not wait for any statement that is being executed to finish.
    */
-  List<Runnable> shutdownNow() {
-    return executor.shutdownNow();
+  void shutdownNow() {
+    executor.shutdownNow();
   }
 
   /** Execute a statement on this {@link StatementExecutor}. */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -167,6 +168,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -304,6 +306,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 
@@ -353,6 +356,7 @@ public class SpannerClientHttpJsonTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockService.addResponse(expectedResponse);
 

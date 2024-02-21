@@ -3855,6 +3855,403 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.read_only_staleness;
 NEW_CONNECTION;
+show spanner.directed_read;
+NEW_CONNECTION;
+SHOW SPANNER.DIRECTED_READ;
+NEW_CONNECTION;
+show spanner.directed_read;
+NEW_CONNECTION;
+   show spanner.directed_read;
+NEW_CONNECTION;
+			show spanner.directed_read;
+NEW_CONNECTION;
+
+
+
+show spanner.directed_read;
+NEW_CONNECTION;
+show spanner.directed_read  ;
+NEW_CONNECTION;
+show spanner.directed_read		;
+NEW_CONNECTION;
+show spanner.directed_read
+
+;
+NEW_CONNECTION;
+show   spanner.directed_read;
+NEW_CONNECTION;
+show	spanner.directed_read;
+NEW_CONNECTION;
+show
+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.directed_read;
+NEW_CONNECTION;
+show variable spanner.directed_read;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.DIRECTED_READ;
+NEW_CONNECTION;
+show variable spanner.directed_read;
+NEW_CONNECTION;
+   show variable spanner.directed_read;
+NEW_CONNECTION;
+			show variable spanner.directed_read;
+NEW_CONNECTION;
+
+
+
+show variable spanner.directed_read;
+NEW_CONNECTION;
+show variable spanner.directed_read  ;
+NEW_CONNECTION;
+show variable spanner.directed_read		;
+NEW_CONNECTION;
+show variable spanner.directed_read
+
+;
+NEW_CONNECTION;
+show   variable   spanner.directed_read;
+NEW_CONNECTION;
+show	variable	spanner.directed_read;
+NEW_CONNECTION;
+show
+variable
+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.directed_read;
+NEW_CONNECTION;
 show spanner.optimizer_version;
 NEW_CONNECTION;
 SHOW SPANNER.OPTIMIZER_VERSION;
@@ -62154,6 +62551,394 @@ set spanner.read_only_staleness to 'EXACT_STALENESS 9999ns'/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.read_only_staleness to 'EXACT_STALENESS/-9999ns';
+NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+   set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+			set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+
+
+
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'  ;
+NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'		;
+NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'
+
+;
+NEW_CONNECTION;
+set   spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set	spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set
+spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set spanner.directed_read='';
+NEW_CONNECTION;
+   set spanner.directed_read='';
+NEW_CONNECTION;
+			set spanner.directed_read='';
+NEW_CONNECTION;
+
+
+
+set spanner.directed_read='';
+NEW_CONNECTION;
+set spanner.directed_read=''  ;
+NEW_CONNECTION;
+set spanner.directed_read=''		;
+NEW_CONNECTION;
+set spanner.directed_read=''
+
+;
+NEW_CONNECTION;
+set   spanner.directed_read='';
+NEW_CONNECTION;
+set	spanner.directed_read='';
+NEW_CONNECTION;
+set
+spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.directed_read='';
 NEW_CONNECTION;
 set spanner.optimizer_version='1';
 NEW_CONNECTION;

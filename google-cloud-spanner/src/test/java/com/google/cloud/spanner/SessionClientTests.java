@@ -17,6 +17,8 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +29,8 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +87,9 @@ public class SessionClientTests {
   @Mock private SpannerImpl spanner;
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
+  private final TraceWrapper tracer =
+      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+  @Mock private ISpan span;
   @Captor ArgumentCaptor<Map<SpannerRpc.Option, Object>> options;
 
   @Before
@@ -109,6 +116,10 @@ public class SessionClientTests {
     when(spannerOptions.getRetrySettings()).thenReturn(RetrySettings.newBuilder().build());
     when(spannerOptions.getClock()).thenReturn(NanoClock.getDefaultClock());
     when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(spanner.getTracer()).thenReturn(tracer);
+    doNothing().when(span).setStatus(any(Throwable.class));
+    doNothing().when(span).end();
+    doNothing().when(span).addAnnotation("Starting Commit");
     when(spanner.getRpc()).thenReturn(rpc);
   }
 

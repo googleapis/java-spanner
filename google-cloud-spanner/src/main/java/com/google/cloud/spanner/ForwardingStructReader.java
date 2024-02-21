@@ -22,8 +22,11 @@ import com.google.cloud.Timestamp;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /** Forwarding implements of StructReader */
 public class ForwardingStructReader implements StructReader {
@@ -371,6 +374,32 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
+    checkValidState();
+    return delegate.get().getProtoMessageList(columnIndex, message);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
+    checkValidState();
+    return delegate.get().getProtoMessageList(columnName, message);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    checkValidState();
+    return delegate.get().getProtoEnumList(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    checkValidState();
+    return delegate.get().getProtoEnumList(columnName, method);
+  }
+
+  @Override
   public List<Struct> getStructList(int columnIndex) {
     checkValidState();
     return delegate.get().getStructList(columnIndex);
@@ -380,6 +409,32 @@ public class ForwardingStructReader implements StructReader {
   public List<Struct> getStructList(String columnName) {
     checkValidState();
     return delegate.get().getStructList(columnName);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
+    checkValidState();
+    return delegate.get().getProtoMessage(columnIndex, message);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
+    checkValidState();
+    return delegate.get().getProtoMessage(columnName, message);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    checkValidState();
+    return delegate.get().getProtoEnum(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    checkValidState();
+    return delegate.get().getProtoEnum(columnName, method);
   }
 
   @Override

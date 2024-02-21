@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
@@ -27,6 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -301,6 +303,48 @@ class ClientSideStatementValueConverters {
             }
           default:
             // fall through to allow the calling method to handle this
+        }
+      }
+      return null;
+    }
+  }
+  /**
+   * Converter from string to possible values for {@link com.google.spanner.v1.DirectedReadOptions}.
+   */
+  static class DirectedReadOptionsConverter
+      implements ClientSideStatementValueConverter<DirectedReadOptions> {
+    private final Pattern allowedValues;
+
+    public DirectedReadOptionsConverter(String allowedValues) {
+      // Remove the single quotes at the beginning and end.
+      this.allowedValues =
+          Pattern.compile(
+              "(?is)\\A" + allowedValues.substring(1, allowedValues.length() - 1) + "\\z");
+    }
+
+    @Override
+    public Class<DirectedReadOptions> getParameterClass() {
+      return DirectedReadOptions.class;
+    }
+
+    @Override
+    public DirectedReadOptions convert(String value) {
+      Matcher matcher = allowedValues.matcher(value);
+      if (matcher.find()) {
+        try {
+          return DirectedReadOptionsUtil.parse(value);
+        } catch (SpannerException spannerException) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              String.format(
+                  "Failed to parse '%s' as a valid value for DIRECTED_READ.\n"
+                      + "The value should be a JSON string like this: '%s'.\n"
+                      + "You can generate a valid JSON string from a DirectedReadOptions instance by calling %s.%s",
+                  value,
+                  "{\"includeReplicas\":{\"replicaSelections\":[{\"location\":\"eu-west1\",\"type\":\"READ_ONLY\"}]}}",
+                  DirectedReadOptionsUtil.class.getName(),
+                  "toString(DirectedReadOptions directedReadOptions)"),
+              spannerException);
         }
       }
       return null;

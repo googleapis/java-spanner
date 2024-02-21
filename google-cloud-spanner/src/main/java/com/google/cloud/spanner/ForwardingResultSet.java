@@ -23,7 +23,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 
 /** Forwarding implementation of ResultSet that forwards all calls to a delegate. */
-public class ForwardingResultSet extends ForwardingStructReader implements ResultSet {
+public class ForwardingResultSet extends ForwardingStructReader implements ProtobufResultSet {
 
   private Supplier<ResultSet> delegate;
 
@@ -53,6 +53,22 @@ public class ForwardingResultSet extends ForwardingStructReader implements Resul
   @Override
   public boolean next() throws SpannerException {
     return delegate.get().next();
+  }
+
+  @Override
+  public boolean canGetProtobufValue(int columnIndex) {
+    ResultSet resultSetDelegate = delegate.get();
+    return (resultSetDelegate instanceof ProtobufResultSet)
+        && ((ProtobufResultSet) resultSetDelegate).canGetProtobufValue(columnIndex);
+  }
+
+  @Override
+  public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+    ResultSet resultSetDelegate = delegate.get();
+    Preconditions.checkState(
+        resultSetDelegate instanceof ProtobufResultSet,
+        "The result set does not support protobuf values");
+    return ((ProtobufResultSet) resultSetDelegate).getProtobufValue(columnIndex);
   }
 
   @Override

@@ -34,6 +34,8 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -248,7 +250,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             new TestExecutorFactory(),
             mockSpanner.getSessionClient(db),
             clock,
-            Position.RANDOM);
+            Position.RANDOM,
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            OpenTelemetry.noop());
     pool.idleSessionRemovedListener =
         pooled -> {
           String name = pooled.getName();
@@ -294,6 +298,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             () -> {
               while (!stopMaintenance.get()) {
                 runMaintenanceLoop(clock, pool, 1);
+                // Sleep 1ms between maintenance loops to prevent the long-running session remover
+                // from stealing all sessions before they can be used.
+                Uninterruptibles.sleepUninterruptibly(1L, TimeUnit.MILLISECONDS);
               }
             })
         .start();

@@ -52,6 +52,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -111,6 +113,8 @@ public class ChannelUsageTest {
       ConcurrentHashMap.newKeySet();
   private static final Set<InetSocketAddress> executeSqlLocalIps = ConcurrentHashMap.newKeySet();
 
+  private static Level originalLogLevel;
+
   @BeforeClass
   public static void startServer() throws IOException {
     mockSpanner = new MockSpannerServiceImpl();
@@ -165,6 +169,19 @@ public class ChannelUsageTest {
   public static void stopServer() throws InterruptedException {
     server.shutdown();
     server.awaitTermination();
+  }
+
+  @BeforeClass
+  public static void disableLogging() {
+    Logger logger = Logger.getLogger("");
+    originalLogLevel = logger.getLevel();
+    logger.setLevel(Level.OFF);
+  }
+
+  @AfterClass
+  public static void resetLogging() {
+    Logger logger = Logger.getLogger("");
+    logger.setLevel(originalLogLevel);
   }
 
   @After

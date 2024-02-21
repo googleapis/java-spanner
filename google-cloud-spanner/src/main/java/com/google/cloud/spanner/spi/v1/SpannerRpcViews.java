@@ -15,6 +15,8 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
+import com.google.api.core.ObsoleteApi;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import io.opencensus.stats.Aggregation;
@@ -91,28 +93,49 @@ public class SpannerRpcViews {
    * measures the latency between Google's network receives an RPC and reads back the first byte of
    * the response. gfe_header_missing_count is a counter of the number of RPC responses without a
    * server-timing header.
+   *
+   * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and
+   *     gfe_header_missing_count metrics.
    */
   @VisibleForTesting
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
   public static void registerGfeLatencyAndHeaderMissingCountViews() {
-    viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
-    viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    if (SpannerOptions.isEnabledOpenCensusMetrics()) {
+      viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
+      viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    }
   }
 
   /**
    * Register GFE Latency view. gfe_latency measures the latency between Google's network receives
    * an RPC and reads back the first byte of the response.
+   *
+   * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and
+   *     gfe_header_missing_count metrics.
    */
   @VisibleForTesting
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
   public static void registerGfeLatencyView() {
-    viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
+    if (SpannerOptions.isEnabledOpenCensusMetrics()) {
+      viewManager.registerView(SPANNER_GFE_LATENCY_VIEW);
+    }
   }
 
   /**
    * Register GFE Header Missing Count view. gfe_header_missing_count is a counter of the number of
    * RPC responses without a server-timing header.
+   *
+   * @deprecated The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and
+   *     gfe_header_missing_count metrics.
    */
   @VisibleForTesting
+  @ObsoleteApi(
+      "The OpenCensus project is deprecated. Use OpenTelemetry to get gfe_latency and gfe_header_missing_count metrics.")
   public static void registerGfeHeaderMissingCountView() {
-    viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    if (SpannerOptions.isEnabledOpenCensusMetrics()) {
+      viewManager.registerView(SPANNER_GFE_HEADER_MISSING_COUNT_VIEW);
+    }
   }
 }

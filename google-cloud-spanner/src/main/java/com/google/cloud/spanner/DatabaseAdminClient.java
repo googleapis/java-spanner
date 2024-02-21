@@ -26,6 +26,7 @@ import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
@@ -424,7 +425,8 @@ public interface DatabaseAdminClient {
    *
    * <p>If an operation already exists with the given operation id, the operation will be resumed
    * and the returned future will complete when the original operation finishes. See more
-   * information in {@link com.google.cloud.spanner.spi.v1.GapicSpannerRpc#updateDatabaseDdl(String,
+   * information in {@link
+   * com.google.cloud.spanner.spi.v1.GapicSpannerRpc#updateDatabaseDdl(com.google.cloud.spanner.Database,
    * Iterable, String)}
    *
    * <p>Example to update the database DDL.
@@ -447,6 +449,40 @@ public interface DatabaseAdminClient {
       String databaseId,
       Iterable<String> statements,
       @Nullable String operationId)
+      throws SpannerException;
+
+  /**
+   * Updates a database in a Cloud Spanner instance. Any proto descriptors that have been set for
+   * the {@link com.google.cloud.spanner.Database} instance will be included in the {@link
+   * com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest}.
+   *
+   * <p>If an operation already exists with the given operation id, the operation will be resumed
+   * and the returned future will complete when the original operation finishes. See more
+   * information in {@link
+   * com.google.cloud.spanner.spi.v1.GapicSpannerRpc#updateDatabaseDdl(com.google.cloud.spanner.Database,
+   * Iterable, String)}
+   *
+   * <p>Example to update the database DDL with proto descriptors.
+   *
+   * <pre>{@code
+   * Database dbInfo =
+   *         dbClient
+   *            .newDatabaseBuilder(DatabaseId.of("my_project_id", "my_instance_id", "my_database_id"))
+   *            .setProtoDescriptors("com/google/cloud/spanner/descriptors.pb")
+   *            .build();
+   * dbAdminClient.updateDatabaseDdl(dbInfo,
+   *     Arrays.asList("ALTER TABLE Albums ADD COLUMN MarketingBudget INT64"),
+   *     null).waitFor();
+   * }</pre>
+   *
+   * @param database Database object to set configuration options such as proto_descriptors.
+   * @param statements DDL statements to run while updating the database.
+   * @param operationId Operation id assigned to this operation. If null, system will autogenerate
+   *     one. This must be unique within a database abd must be a valid identifier
+   *     [a-zA-Z][a-zA-Z0-9_]*.
+   */
+  OperationFuture<Void, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
+      Database database, Iterable<String> statements, @Nullable String operationId)
       throws SpannerException;
 
   /**
@@ -475,6 +511,23 @@ public interface DatabaseAdminClient {
    * }</pre>
    */
   List<String> getDatabaseDdl(String instanceId, String databaseId);
+
+  /**
+   * Returns the GetDatabaseDdlResponse object of a Cloud Spanner database.
+   *
+   * <p>Example to get GetDatabaseDdlResponse object of a Cloud Spanner database.
+   *
+   * <pre>{@code
+   * String instanceId = my_instance_id;
+   * String databaseId = my_database_id;
+   * GetDatabaseDdlResponse response = dbAdminClient.getDatabaseDdl(instanceId, databaseId);
+   * }</pre>
+   *
+   * @param instanceId the id of the instance where the database was created.
+   * @param databaseId the id of the database.
+   * @return GetDatabaseDdlResponse object
+   */
+  GetDatabaseDdlResponse getDatabaseDdlResponse(String instanceId, String databaseId);
 
   /**
    * Returns the list of Cloud Spanner database in the given instance.

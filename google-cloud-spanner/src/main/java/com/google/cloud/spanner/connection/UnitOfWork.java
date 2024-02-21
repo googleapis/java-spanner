@@ -129,6 +129,14 @@ interface UnitOfWork {
   boolean isReadOnly();
 
   /**
+   * @return <code>true</code> if this unit of work supports {@link
+   *     com.google.spanner.v1.DirectedReadOptions}
+   */
+  default boolean supportsDirectedReads(ParsedStatement parsedStatement) {
+    return false;
+  }
+
+  /**
    * Executes a query with the given options. If {@link AnalyzeMode} is set to {@link
    * AnalyzeMode#PLAN} or {@link AnalyzeMode#PROFILE}, the returned {@link ResultSet} will include
    * {@link ResultSetStats}.

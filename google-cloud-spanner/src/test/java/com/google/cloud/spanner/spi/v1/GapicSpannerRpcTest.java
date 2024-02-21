@@ -637,6 +637,37 @@ public class GapicSpannerRpcTest {
         Objects.requireNonNull(lastSeenHeaders.get(key)).contains("gl-java/"));
   }
 
+  @Test
+  public void testGetDatabaseAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getDatabaseAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testGetInstanceAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testAdminStubSettings_whenStubNotInitialized_assertNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+
+    assertNull(rpc.getDatabaseAdminStubSettings());
+    assertNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()

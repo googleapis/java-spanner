@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -45,13 +46,14 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.Session;
 import com.google.spanner.v1.Transaction;
-import io.opencensus.trace.Span;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -77,10 +79,20 @@ public class TransactionManagerImplTest {
   @Mock TransactionRunnerImpl.TransactionContextImpl txn;
   private TransactionManagerImpl manager;
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+  }
+
   @Before
   public void setUp() {
     initMocks(this);
-    manager = new TransactionManagerImpl(session, mock(Span.class));
+    manager =
+        new TransactionManagerImpl(
+            session,
+            new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),
+            mock(TraceWrapper.class));
   }
 
   @Test
@@ -200,6 +212,7 @@ public class TransactionManagerImplTest {
     when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
     when(options.getDatabaseRole()).thenReturn("role");
+    when(options.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
@@ -262,6 +275,7 @@ public class TransactionManagerImplTest {
     when(options.getSessionLabels()).thenReturn(Collections.emptyMap());
     when(options.getDefaultQueryOptions(Mockito.any(DatabaseId.class)))
         .thenReturn(QueryOptions.getDefaultInstance());
+    when(options.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     SpannerRpc rpc = mock(SpannerRpc.class);
     when(rpc.asyncDeleteSession(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
