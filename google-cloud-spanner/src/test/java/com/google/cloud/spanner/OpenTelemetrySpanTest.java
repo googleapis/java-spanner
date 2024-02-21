@@ -388,6 +388,7 @@ public class OpenTelemetrySpanTest {
   public void transactionRunner() {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
+    System.out.println("In transactionRunner test");
     List<String> actualSpanItems = new ArrayList<>();
     spanExporter
         .getFinishedSpanItems()

@@ -126,6 +126,7 @@ class SessionClient implements AutoCloseable {
       List<SessionImpl> sessions;
       int remainingSessionsToCreate = sessionCount;
       ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.BATCH_CREATE_SESSIONS);
+      System.out.println("Started span batch create session");
       try (IScope s = spanner.getTracer().withSpan(span)) {
         spanner
             .getTracer()
@@ -145,6 +146,7 @@ class SessionClient implements AutoCloseable {
           remainingSessionsToCreate -= sessions.size();
         }
       } finally {
+        System.out.println("Ended span batch create session");
         span.end();
       }
     }
