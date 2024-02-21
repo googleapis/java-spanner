@@ -1518,6 +1518,10 @@ public abstract class Value implements Serializable {
 
     @Override
     boolean valueEquals(Value v) {
+      // NaN == NaN always returns false, so we need a custom check.
+      if (Double.isNaN(this.value)) {
+        return Double.isNaN(((Float64Impl) v).value);
+      }
       return ((Float64Impl) v).value == value;
     }
 
