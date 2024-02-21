@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -34,6 +35,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.truth.Truth;
@@ -43,9 +45,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -80,6 +85,17 @@ public class StatementParserTest {
   }
 
   private AbstractStatementParser parser;
+
+  @BeforeClass
+  public static void enableStatementCacheStats() {
+    AbstractStatementParser.resetParsers();
+    System.setProperty("spanner.record_statement_cache_stats", "true");
+  }
+
+  @AfterClass
+  public static void disableStatementCacheStats() {
+    System.clearProperty("spanner.record_statement_cache_stats");
+  }
 
   @Before
   public void setupParser() {
@@ -553,6 +569,19 @@ public class StatementParserTest {
     assertTrue(parser.parse(Statement.of("\t ANALYZE\n ")).isDdl());
     assertTrue(parser.parse(Statement.of("/* This is a comment */ ANALYZE ")).isDdl());
     assertTrue(parser.parse(Statement.of("-- comment\n ANALYZE ")).isDdl());
+    assertTrue(parser.parse(Statement.of("RENAME TABLE foo TO foo2")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ RENAME TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ rename TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("RENAME INDEX idx_foo TO idx_students_last_name")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ Rename TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser
+            .parse(Statement.of("   \t\nRENAME\n  INDEX idx_foo TO idx_students_last_name"))
+            .isDdl());
   }
 
   @Test
@@ -1579,6 +1608,25 @@ public class StatementParserTest {
   }
 
   @Test
+  public void testConcatenatedLiterals() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    assertTrue(parser.isUpdateStatement("UPDATE foo SET name='foo' 'bar' WHERE ID=1"));
+    assertTrue(parser.isQuery("SELECT 'boo'   'bar' FROM my_table WHERE value='lit1''lit2'"));
+    assertTrue(
+        parser.checkReturningClause(
+            "insert into my_table (id, value) values (1, 'value' '1') then return id"));
+    assertTrue(parser.isUpdateStatement("UPDATE foo SET name=b'foo' b'bar' WHERE ID=1"));
+
+    assertEquals(
+        1,
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "select 'foo?''bar?' where id=? and value='?'  '?'")
+            .numberOfParameters,
+        1);
+  }
+
+  @Test
   public void testSkipSingleLineComment() {
     assumeTrue(dialect == Dialect.POSTGRESQL);
 
@@ -1607,6 +1655,63 @@ public class StatementParserTest {
     assertEquals(
         "/* foo /* inner comment */ not in inner comment */".length(),
         skipMultiLineComment("/* foo /* inner comment */ not in inner comment */ bar", 0));
+  }
+
+  @Test
+  public void testStatementCache_NonParameterizedStatement() {
+    CacheStats statsBefore = parser.getStatementCacheStats();
+
+    String sql = "select foo from bar where id=" + UUID.randomUUID();
+    ParsedStatement parsedStatement1 = parser.parse(Statement.of(sql));
+    assertEquals(StatementType.QUERY, parsedStatement1.getType());
+
+    ParsedStatement parsedStatement2 = parser.parse(Statement.of(sql));
+    assertEquals(StatementType.QUERY, parsedStatement2.getType());
+
+    // Even though the parsed statements are cached, the returned instances are not the same.
+    // This makes sure that statements with the same SQL string and different parameter values
+    // can use the cache.
+    assertNotSame(parsedStatement1, parsedStatement2);
+
+    CacheStats statsAfter = parser.getStatementCacheStats();
+    CacheStats stats = statsAfter.minus(statsBefore);
+
+    // The first query had a cache miss. The second a cache hit.
+    assertEquals(1, stats.missCount());
+    assertEquals(1, stats.hitCount());
+  }
+
+  @Test
+  public void testStatementCache_ParameterizedStatement() {
+    CacheStats statsBefore = parser.getStatementCacheStats();
+
+    String sql =
+        "select "
+            + UUID.randomUUID()
+            + " from bar where id="
+            + (dialect == Dialect.POSTGRESQL ? "$1" : "@p1");
+    Statement statement1 = Statement.newBuilder(sql).bind("p1").to(1L).build();
+    Statement statement2 = Statement.newBuilder(sql).bind("p1").to(2L).build();
+
+    ParsedStatement parsedStatement1 = parser.parse(statement1);
+    assertEquals(StatementType.QUERY, parsedStatement1.getType());
+    assertEquals(parsedStatement1.getStatement(), statement1);
+
+    ParsedStatement parsedStatement2 = parser.parse(statement2);
+    assertEquals(StatementType.QUERY, parsedStatement2.getType());
+    assertEquals(parsedStatement2.getStatement(), statement2);
+
+    // Even though the parsed statements are cached, the returned instances are not the same.
+    // This makes sure that statements with the same SQL string and different parameter values
+    // can use the cache.
+    assertNotSame(parsedStatement1, parsedStatement2);
+
+    CacheStats statsAfter = parser.getStatementCacheStats();
+    CacheStats stats = statsAfter.minus(statsBefore);
+
+    // The first query had a cache miss. The second a cache hit.
+    assertEquals(1, stats.missCount());
+    assertEquals(1, stats.hitCount());
   }
 
   private void assertUnclosedLiteral(String sql) {

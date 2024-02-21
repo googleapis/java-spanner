@@ -15,6 +15,7 @@
     <groupId>com.google.cloud.samples</groupId>
     <artifactId>shared-configuration</artifactId>
     <version>1.2.0</version>
+    <relativePath></relativePath>
   </parent>
 
   <properties>
@@ -22,7 +23,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
-    <trace.version>2.30.0</trace.version>
+    <trace.version>2.36.0</trace.version>
     <cloudmonitoring.version>3.23.0</cloudmonitoring.version>
   </properties>
 
@@ -32,7 +33,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.53.0</version>
+      <version>6.57.0</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     
@@ -99,7 +100,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.1.5</version>
+      <version>1.3.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -144,7 +145,7 @@
           <systemPropertyVariables>
             <spanner.test.instance>java-client-integration-test</spanner.test.instance>
             <spanner.test.instance.mr>java-client-mr-integration-test</spanner.test.instance.mr>
-            <spanner.test.instance.config>nam15</spanner.test.instance.config>
+            <spanner.test.instance.config>nam11</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
             <spanner.test.key.name>cmek-test-key</spanner.test.key.name>
