@@ -104,7 +104,14 @@ public class ReplaceableForwardingResultSetTest {
   public void testMethodCallBeforeNext()
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
-        Arrays.asList("getStats", "getMetadata", "next", "close", "equals", "hashCode");
+        Arrays.asList(
+            "canGetProtobufValue",
+            "getStats",
+            "getMetadata",
+            "next",
+            "close",
+            "equals",
+            "hashCode");
     ReplaceableForwardingResultSet subject = createSubject();
     // Test that all methods throw an IllegalStateException except the excluded methods when called
     // before a call to ResultSet#next().
@@ -116,6 +123,7 @@ public class ReplaceableForwardingResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",
@@ -140,6 +148,7 @@ public class ReplaceableForwardingResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",

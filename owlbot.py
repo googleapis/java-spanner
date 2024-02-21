@@ -33,6 +33,8 @@ java.common_templates(
         ".kokoro/presubmit/java8-samples.cfg",
         ".kokoro/presubmit/java11-samples.cfg",
         ".kokoro/presubmit/samples.cfg",
+        ".kokoro/presubmit/graalvm-native.cfg",
+        ".kokoro/presubmit/graalvm-native-17.cfg",
         ".kokoro/release/common.cfg",
         "samples/install-without-bom/pom.xml",
         "samples/snapshot/pom.xml",
@@ -46,5 +48,7 @@ java.common_templates(
         ".kokoro/common.sh",
         ".kokoro/build.sh",
         ".kokoro/dependencies.sh",
+        ".kokoro/requirements.in",
+        ".kokoro/requirements.txt"
     ]
 )

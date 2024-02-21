@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.DecodeMode;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
@@ -342,6 +343,9 @@ public class SpannerPool {
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
+        // Use lazy decoding, so we can use the protobuf values for calculating the checksum that is
+        // needed for read/write transactions.
+        .setDecodeMode(DecodeMode.LAZY_PER_COL)
         .setDatabaseRole(options.getDatabaseRole())
         .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);

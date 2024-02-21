@@ -17,11 +17,13 @@
 package com.example.spanner.admin.generated;
 
 import com.example.spanner.SampleIdGenerator;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminSettings;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminSettings;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.junit.AfterClass;
@@ -45,7 +47,7 @@ public class SampleTestBaseV2 {
   protected static final String instanceId = System.getProperty("spanner.test.instance");
   protected static DatabaseAdminClient databaseAdminClient;
   protected static InstanceAdminClient instanceAdminClient;
-
+  protected static Spanner spanner;
   protected static final String multiRegionalInstanceId =
       System.getProperty("spanner.test.instance.mr");
   protected static final String instanceConfigName = System
@@ -69,6 +71,7 @@ public class SampleTestBaseV2 {
     }
 
     projectId = options.getProjectId();
+    spanner = options.getService();
     databaseAdminClient = DatabaseAdminClient.create(databaseAdminSettingsBuilder.build());
     instanceAdminClient = InstanceAdminClient.create(instanceAdminSettingBuilder.build());
     idGenerator = new SampleIdGenerator(
@@ -134,6 +137,7 @@ public class SampleTestBaseV2 {
                 + ", skipping...");
       }
     }
+
     databaseAdminClient.close();
     instanceAdminClient.close();
 
@@ -163,5 +167,14 @@ public class SampleTestBaseV2 {
 
   static String getProjectName(final String projectId) {
     return String.format("projects/%s", projectId);
+  }
+
+  static String getCreateDatabaseStatement(
+      final String databaseName, final DatabaseDialect dialect) {
+    if (dialect == DatabaseDialect.GOOGLE_STANDARD_SQL) {
+      return "CREATE DATABASE `" + databaseName + "`";
+    } else {
+      return "CREATE DATABASE \"" + databaseName + "\"";
+    }
   }
 }
