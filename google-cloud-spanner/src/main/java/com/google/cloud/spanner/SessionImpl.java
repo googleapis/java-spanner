@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
@@ -34,29 +35,29 @@ import com.google.common.base.Ticker;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
-import io.opencensus.common.Scope;
-import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
+import org.threeten.bp.Instant;
 
 /**
  * Implementation of {@link Session}. Sessions are managed internally by the client library, and
  * users need not be aware of the actual session management, pooling and handling.
  */
 class SessionImpl implements Session {
-  private static final Tracer tracer = Tracing.getTracer();
+  private final TraceWrapper tracer;
 
   /** Keep track of running transactions on this session per thread. */
   static final ThreadLocal<Boolean> hasPendingTransaction = ThreadLocal.withInitial(() -> false);
@@ -82,10 +83,12 @@ class SessionImpl implements Session {
    * only have one such transaction active at a time.
    */
   interface SessionTransaction {
+
     /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
+
     /** Registers the current span on the transaction. */
-    void setSpan(Span span);
+    void setSpan(ISpan span);
   }
 
   private final SpannerImpl spanner;
@@ -94,13 +97,16 @@ class SessionImpl implements Session {
   private SessionTransaction activeTransaction;
   ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
-  private Span currentSpan;
+  private volatile Instant lastUseTime;
+  private ISpan currentSpan;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;
+    this.tracer = spanner.getTracer();
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
+    this.lastUseTime = Instant.now();
   }
 
   @Override
@@ -112,12 +118,20 @@ class SessionImpl implements Session {
     return options;
   }
 
-  void setCurrentSpan(Span span) {
+  void setCurrentSpan(ISpan span) {
     currentSpan = span;
   }
 
-  Span getCurrentSpan() {
+  ISpan getCurrentSpan() {
     return currentSpan;
+  }
+
+  Instant getLastUseTime() {
+    return lastUseTime;
+  }
+
+  void markUsed(Instant instant) {
+    lastUseTime = instant;
   }
 
   @Override
@@ -160,38 +174,78 @@ class SessionImpl implements Session {
       Iterable<Mutation> mutations, TransactionOption... transactionOptions)
       throws SpannerException {
     setActive(null);
-    Options commitRequestOptions = Options.fromTransactionOptions(transactionOptions);
     List<com.google.spanner.v1.Mutation> mutationsProto = new ArrayList<>();
     Mutation.toProto(mutations, mutationsProto);
+    Options options = Options.fromTransactionOptions(transactionOptions);
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
             .setSession(name)
-            .setReturnCommitStats(
-                Options.fromTransactionOptions(transactionOptions).withCommitStats())
+            .setReturnCommitStats(options.withCommitStats())
             .addAllMutations(mutationsProto)
             .setSingleUseTransaction(
                 TransactionOptions.newBuilder()
                     .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
-    if (commitRequestOptions.hasPriority() || commitRequestOptions.hasTag()) {
-      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
-      if (commitRequestOptions.hasPriority()) {
-        requestOptionsBuilder.setPriority(commitRequestOptions.priority());
-      }
-      if (commitRequestOptions.hasTag()) {
-        requestOptionsBuilder.setTransactionTag(commitRequestOptions.tag());
-      }
-      requestBuilder.setRequestOptions(requestOptionsBuilder.build());
+    if (options.hasMaxCommitDelay()) {
+      requestBuilder.setMaxCommitDelay(
+          Duration.newBuilder()
+              .setSeconds(options.maxCommitDelay().getSeconds())
+              .setNanos(options.maxCommitDelay().getNano())
+              .build());
     }
-    Span span = tracer.spanBuilder(SpannerImpl.COMMIT).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
-      com.google.spanner.v1.CommitResponse response =
-          spanner.getRpc().commit(requestBuilder.build(), this.options);
-      return new CommitResponse(response);
+    RequestOptions commitRequestOptions = getRequestOptions(transactionOptions);
+
+    if (commitRequestOptions != null) {
+      requestBuilder.setRequestOptions(commitRequestOptions);
+    }
+    CommitRequest request = requestBuilder.build();
+    ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
+    try (IScope s = tracer.withSpan(span)) {
+      return SpannerRetryHelper.runTxWithRetriesOnAborted(
+          () -> new CommitResponse(spanner.getRpc().commit(request, this.options)));
     } catch (RuntimeException e) {
-      TraceUtil.setWithFailure(span, e);
+      span.setStatus(e);
       throw e;
     } finally {
-      span.end(TraceUtil.END_SPAN_OPTIONS);
+      span.end();
+    }
+  }
+
+  private RequestOptions getRequestOptions(TransactionOption... transactionOptions) {
+    Options requestOptions = Options.fromTransactionOptions(transactionOptions);
+    if (requestOptions.hasPriority() || requestOptions.hasTag()) {
+      RequestOptions.Builder requestOptionsBuilder = RequestOptions.newBuilder();
+      if (requestOptions.hasPriority()) {
+        requestOptionsBuilder.setPriority(requestOptions.priority());
+      }
+      if (requestOptions.hasTag()) {
+        requestOptionsBuilder.setTransactionTag(requestOptions.tag());
+      }
+      return requestOptionsBuilder.build();
+    }
+    return null;
+  }
+
+  @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      Iterable<MutationGroup> mutationGroups, TransactionOption... transactionOptions)
+      throws SpannerException {
+    setActive(null);
+    List<BatchWriteRequest.MutationGroup> mutationGroupsProto =
+        MutationGroup.toListProto(mutationGroups);
+    final BatchWriteRequest.Builder requestBuilder =
+        BatchWriteRequest.newBuilder().setSession(name).addAllMutationGroups(mutationGroupsProto);
+    RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
+    if (batchWriteRequestOptions != null) {
+      requestBuilder.setRequestOptions(batchWriteRequestOptions);
+    }
+    ISpan span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE);
+    try (IScope s = tracer.withSpan(span)) {
+      return spanner.getRpc().batchWriteAtLeastOnce(requestBuilder.build(), this.options);
+    } catch (Throwable e) {
+      span.setStatus(e);
+      throw SpannerExceptionFactory.newSpannerException(e);
+    } finally {
+      span.end();
     }
   }
 
@@ -209,7 +263,10 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
+            .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
+            .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
@@ -228,7 +285,10 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
+            .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
+            .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .buildSingleUseReadOnlyTransaction());
   }
@@ -247,7 +307,10 @@ class SessionImpl implements Session {
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+            .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
+            .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
+            .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
   }
@@ -264,7 +327,7 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    return new TransactionManagerImpl(this, currentSpan, options);
+    return new TransactionManagerImpl(this, currentSpan, tracer, options);
   }
 
   @Override
@@ -285,14 +348,14 @@ class SessionImpl implements Session {
 
   @Override
   public void close() {
-    Span span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION).startSpan();
-    try (Scope s = tracer.withSpan(span)) {
+    ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
+    try (IScope s = tracer.withSpan(span)) {
       spanner.getRpc().deleteSession(name, options);
     } catch (RuntimeException e) {
-      TraceUtil.setWithFailure(span, e);
+      span.setStatus(e);
       throw e;
     } finally {
-      span.end(TraceUtil.END_SPAN_OPTIONS);
+      span.end();
     }
   }
 
@@ -312,7 +375,7 @@ class SessionImpl implements Session {
 
   ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
-    final Span span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION).startSpan();
+    final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(name)
@@ -321,35 +384,39 @@ class SessionImpl implements Session {
     final ApiFuture<Transaction> requestFuture =
         spanner.getRpc().beginTransactionAsync(request, options, routeToLeader);
     requestFuture.addListener(
-        tracer.withSpan(
-            span,
-            () -> {
-              try {
-                Transaction txn = requestFuture.get();
-                if (txn.getId().isEmpty()) {
-                  throw newSpannerException(
-                      ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
-                }
-                span.end(TraceUtil.END_SPAN_OPTIONS);
-                res.set(txn.getId());
-              } catch (ExecutionException e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(
-                    SpannerExceptionFactory.newSpannerException(
-                        e.getCause() == null ? e : e.getCause()));
-              } catch (InterruptedException e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(SpannerExceptionFactory.propagateInterrupt(e));
-              } catch (Exception e) {
-                TraceUtil.endSpanWithFailure(span, e);
-                res.setException(e);
-              }
-            }),
+        () -> {
+          try (IScope s = tracer.withSpan(span)) {
+            Transaction txn = requestFuture.get();
+            if (txn.getId().isEmpty()) {
+              throw newSpannerException(
+                  ErrorCode.INTERNAL, "Missing id in transaction\n" + getName());
+            }
+            span.end();
+            res.set(txn.getId());
+          } catch (ExecutionException e) {
+            span.setStatus(e);
+            span.end();
+            res.setException(
+                SpannerExceptionFactory.newSpannerException(
+                    e.getCause() == null ? e : e.getCause()));
+          } catch (InterruptedException e) {
+            span.setStatus(e);
+            span.end();
+            res.setException(SpannerExceptionFactory.propagateInterrupt(e));
+          } catch (Exception e) {
+            span.setStatus(e);
+            span.end();
+            res.setException(e);
+          }
+        },
         MoreExecutors.directExecutor());
     return res;
   }
 
   TransactionContextImpl newTransaction(Options options) {
+    // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
+    final Clock poolMaintainerClock =
+        spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
@@ -359,8 +426,11 @@ class SessionImpl implements Session {
         .setRpc(spanner.getRpc())
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
+        .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
         .setSpan(currentSpan)
+        .setTracer(tracer)
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
+        .setClock(poolMaintainerClock == null ? new Clock() : poolMaintainerClock)
         .build();
   }
 
@@ -380,5 +450,9 @@ class SessionImpl implements Session {
 
   boolean hasReadyTransaction() {
     return readyTransactionId != null;
+  }
+
+  TraceWrapper getTracer() {
+    return tracer;
   }
 }

@@ -16,21 +16,34 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.METRIC_PREFIX;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_AVAILABLE;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_USE;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
+import static com.google.cloud.spanner.SpannerOptionsTest.runWithSystemProperty;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
@@ -49,15 +62,17 @@ import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
-import com.google.cloud.spanner.SessionPool.Clock;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.ByteString;
@@ -70,7 +85,17 @@ import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.RollbackRequest;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricRegistry;
-import io.opencensus.trace.Span;
+import io.opencensus.metrics.Metrics;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -80,13 +105,19 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -101,6 +132,7 @@ import org.threeten.bp.temporal.ChronoUnit;
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
 public class SessionPoolTest extends BaseSessionPoolTest {
+  private static Level originalLogLevel;
 
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
   @Parameter public int minSessions;
@@ -114,18 +146,32 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private String sessionName = String.format("%s/sessions/s", db.getName());
   private String TEST_DATABASE_ROLE = "my-role";
 
+  private final TraceWrapper tracer =
+      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+
   @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {{0}, {1}});
   }
 
   private SessionPool createPool() {
-    return SessionPool.createPool(options, new TestExecutorFactory(), client.getSessionClient(db));
+    return SessionPool.createPool(
+        options,
+        new TestExecutorFactory(),
+        client.getSessionClient(db),
+        tracer,
+        OpenTelemetry.noop());
   }
 
   private SessionPool createPool(Clock clock) {
     return SessionPool.createPool(
-        options, new TestExecutorFactory(), client.getSessionClient(db), clock);
+        options,
+        new TestExecutorFactory(),
+        client.getSessionClient(db),
+        clock,
+        Position.RANDOM,
+        tracer,
+        OpenTelemetry.noop());
   }
 
   private SessionPool createPool(
@@ -136,15 +182,55 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         new TestExecutorFactory(),
         client.getSessionClient(db),
         clock,
+        Position.RANDOM,
         metricRegistry,
-        labelValues);
+        tracer,
+        labelValues,
+        OpenTelemetry.noop(),
+        null);
+  }
+
+  private SessionPool createPool(
+      Clock clock,
+      MetricRegistry metricRegistry,
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
+    return SessionPool.createPool(
+        options,
+        TEST_DATABASE_ROLE,
+        new TestExecutorFactory(),
+        client.getSessionClient(db),
+        clock,
+        Position.RANDOM,
+        metricRegistry,
+        tracer,
+        labelValues,
+        openTelemetry,
+        attributes);
+  }
+
+  @BeforeClass
+  public static void disableLogging() {
+    Logger logger = Logger.getLogger("");
+    originalLogLevel = logger.getLevel();
+    logger.setLevel(Level.OFF);
+  }
+
+  @AfterClass
+  public static void resetLogging() {
+    Logger logger = Logger.getLogger("");
+    logger.setLevel(originalLogLevel);
   }
 
   @Before
   public void setUp() {
     initMocks(this);
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
     when(client.getOptions()).thenReturn(spannerOptions);
     when(client.getSessionClient(db)).thenReturn(sessionClient);
+    when(sessionClient.getSpanner()).thenReturn(client);
     when(spannerOptions.getNumChannels()).thenReturn(4);
     when(spannerOptions.getDatabaseRole()).thenReturn("role");
     options =
@@ -203,19 +289,161 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void poolLifo() {
     setupMockSessionCreation();
+    options =
+        options
+            .toBuilder()
+            .setMinSessions(2)
+            .setWaitForMinSessions(Duration.ofSeconds(10L))
+            .build();
     pool = createPool();
+    pool.maybeWaitOnMinSessions();
     Session session1 = pool.getSession().get();
     Session session2 = pool.getSession().get();
     assertThat(session1).isNotEqualTo(session2);
 
     session2.close();
     session1.close();
+
+    // Check the session out and back in once more to finalize their positions.
+    session1 = pool.getSession().get();
+    session2 = pool.getSession().get();
+    session2.close();
+    session1.close();
+
     Session session3 = pool.getSession().get();
     Session session4 = pool.getSession().get();
     assertThat(session3).isEqualTo(session1);
     assertThat(session4).isEqualTo(session2);
     session3.close();
     session4.close();
+  }
+
+  @Test
+  public void poolFifo() throws Exception {
+    setupMockSessionCreation();
+    runWithSystemProperty(
+        "com.google.cloud.spanner.session_pool_release_to_position",
+        "LAST",
+        () -> {
+          options =
+              options
+                  .toBuilder()
+                  .setMinSessions(2)
+                  .setWaitForMinSessions(Duration.ofSeconds(10L))
+                  .build();
+          pool = createPool();
+          pool.maybeWaitOnMinSessions();
+          Session session1 = pool.getSession().get();
+          Session session2 = pool.getSession().get();
+          assertNotEquals(session1, session2);
+
+          session2.close();
+          session1.close();
+
+          // Check the session out and back in once more to finalize their positions.
+          session1 = pool.getSession().get();
+          session2 = pool.getSession().get();
+          session2.close();
+          session1.close();
+
+          // Verify that we get the sessions in FIFO order, so in this order:
+          // 1. session2
+          // 2. session1
+          Session session3 = pool.getSession().get();
+          Session session4 = pool.getSession().get();
+          assertEquals(session2, session3);
+          assertEquals(session1, session4);
+          session3.close();
+          session4.close();
+
+          return null;
+        });
+  }
+
+  @Test
+  public void poolAllPositions() throws Exception {
+    int maxAttempts = 100;
+    setupMockSessionCreation();
+    for (Position position : Position.values()) {
+      runWithSystemProperty(
+          "com.google.cloud.spanner.session_pool_release_to_position",
+          position.name(),
+          () -> {
+            int attempt = 0;
+            while (attempt < maxAttempts) {
+              int numSessions = 5;
+              options =
+                  options
+                      .toBuilder()
+                      .setMinSessions(numSessions)
+                      .setMaxSessions(numSessions)
+                      .setWaitForMinSessions(Duration.ofSeconds(10L))
+                      .build();
+              pool = createPool();
+              pool.maybeWaitOnMinSessions();
+              // First check out and release the sessions twice to the pool, so we know that we have
+              // finalized the position of them.
+              for (int n = 0; n < 2; n++) {
+                checkoutAndReleaseAllSessions();
+              }
+
+              // Now verify that if we get all sessions twice, they will be in random order.
+              List<List<PooledSessionFuture>> allSessions = new ArrayList<>(2);
+              for (int n = 0; n < 2; n++) {
+                allSessions.add(checkoutAndReleaseAllSessions());
+              }
+              List<Session> firstTime =
+                  allSessions.get(0).stream()
+                      .map(PooledSessionFuture::get)
+                      .collect(Collectors.toList());
+              List<Session> secondTime =
+                  allSessions.get(1).stream()
+                      .map(PooledSessionFuture::get)
+                      .collect(Collectors.toList());
+              switch (position) {
+                case FIRST:
+                  // LIFO:
+                  // First check out all sessions, so we have 1, 2, 3, 4, ..., N
+                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ..., N)
+                  // That will give us the list N, ..., 4, 3, 2, 1 because each session is added at
+                  // the front of the pool.
+                  assertEquals(firstTime, Lists.reverse(secondTime));
+                  break;
+                case LAST:
+                  // FIFO:
+                  // First check out all sessions, so we have 1, 2, 3, 4, ..., N
+                  // Then release them all back into the pool in the same order (1, 2, 3, 4, ..., N)
+                  // That will give us the list 1, 2, 3, 4, ..., N because each session is added at
+                  // the end of the pool.
+                  assertEquals(firstTime, secondTime);
+                  break;
+                case RANDOM:
+                  // Random means that we should not get the same order twice (unless the randomizer
+                  // got lucky, and then we retry).
+                  if (attempt < (maxAttempts - 1)) {
+                    if (Objects.equals(firstTime, secondTime)) {
+                      attempt++;
+                      continue;
+                    }
+                  }
+                  assertNotEquals(firstTime, secondTime);
+              }
+              break;
+            }
+            return null;
+          });
+    }
+  }
+
+  private List<PooledSessionFuture> checkoutAndReleaseAllSessions() {
+    List<PooledSessionFuture> sessions = new ArrayList<>(pool.totalSessions());
+    for (int i = 0; i < pool.totalSessions(); i++) {
+      sessions.add(pool.getSession());
+    }
+    for (Session session : sessions) {
+      session.close();
+    }
+    return sessions;
   }
 
   @Test
@@ -490,6 +718,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   @Test
   public void idleSessionCleanup() throws Exception {
+    ReadContext context = mock(ReadContext.class);
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
@@ -497,9 +726,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setIncStep(1)
             .setMaxIdleSessions(0)
             .build();
-    SessionImpl session1 = mockSession();
-    SessionImpl session2 = mockSession();
-    SessionImpl session3 = mockSession();
+    SessionImpl session1 = buildMockSession(context);
+    SessionImpl session2 = buildMockSession(context);
+    SessionImpl session3 = buildMockSession(context);
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
     doAnswer(
@@ -514,11 +743,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    for (SessionImpl session : sessions) {
-      mockKeepAlive(session);
-    }
+
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
+
+    mockKeepAlive(context);
+
     pool = createPool(clock);
     // Make sure pool has been initialized
     pool.getSession().close();
@@ -609,7 +839,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
-            .setMaxIdleSessions(0)
             .setWarnIfInactiveTransactions() // set option to warn (via logs) inactive transactions
             .build();
     Clock clock = mock(Clock.class);
@@ -641,6 +870,10 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
     assertEquals(0, pool.numLeakedSessionsRemoved());
+
+    readSession1.close();
+    readSession2.close();
+    readSession3.close();
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -879,13 +1112,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
     assertEquals(0, pool.numLeakedSessionsRemoved());
+
+    readSession1.close();
+    readSession2.close();
+    readSession3.close();
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
   private void setupForLongRunningTransactionsCleanup() {
-    SessionImpl session1 = mockSession();
-    SessionImpl session2 = mockSession();
-    SessionImpl session3 = mockSession();
+    ReadContext context = mock(ReadContext.class);
+    SessionImpl session1 = buildMockSession(context);
+    SessionImpl session2 = buildMockSession(context);
+    SessionImpl session3 = buildMockSession(context);
 
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
@@ -902,16 +1140,20 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
-    for (SessionImpl session : sessions) {
-      mockKeepAlive(session);
-    }
+    mockKeepAlive(context);
   }
 
   @Test
   public void keepAlive() throws Exception {
+    ReadContext context = mock(ReadContext.class);
     options = SessionPoolOptions.newBuilder().setMinSessions(2).setMaxSessions(3).build();
-    final SessionImpl session = mockSession();
-    mockKeepAlive(session);
+    final SessionImpl mockSession1 = buildMockSession(context);
+    final SessionImpl mockSession2 = buildMockSession(context);
+    final SessionImpl mockSession3 = buildMockSession(context);
+    final LinkedList<SessionImpl> sessions =
+        new LinkedList<>(Arrays.asList(mockSession1, mockSession2, mockSession3));
+
+    mockKeepAlive(context);
     // This is cheating as we are returning the same session each but it makes the verification
     // easier.
     doAnswer(
@@ -922,7 +1164,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     SessionConsumerImpl consumer =
                         invocation.getArgument(2, SessionConsumerImpl.class);
                     for (int i = 0; i < sessionCount; i++) {
-                      consumer.onSessionReady(session);
+                      consumer.onSessionReady(sessions.pop());
                     }
                   });
               return null;
@@ -930,7 +1172,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
     PooledSessionFuture session1 = pool.getSession();
     PooledSessionFuture session2 = pool.getSession();
@@ -939,18 +1181,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     session1.close();
     session2.close();
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, never()).singleUse(any(TimestampBound.class));
+    verify(context, never()).executeQuery(any(Statement.class));
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    verify(session, times(2)).singleUse(any(TimestampBound.class));
-    clock.currentTimeMillis +=
-        clock.currentTimeMillis + (options.getKeepAliveIntervalMinutes() + 5) * 60 * 1000;
+    verify(context, times(2)).executeQuery(Statement.newBuilder("SELECT 1").build());
+    clock.currentTimeMillis.addAndGet(
+        clock.currentTimeMillis.get() + (options.getKeepAliveIntervalMinutes() + 5L) * 60L * 1000L);
     session1 = pool.getSession();
     session1.writeAtLeastOnceWithOptions(new ArrayList<>());
     session1.close();
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     // The session pool only keeps MinSessions + MaxIdleSessions alive.
-    verify(session, times(options.getMinSessions() + options.getMaxIdleSessions()))
-        .singleUse(any(TimestampBound.class));
+    verify(context, times(options.getMinSessions() + options.getMaxIdleSessions()))
+        .executeQuery(Statement.newBuilder("SELECT 1").build());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
@@ -962,6 +1204,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(minSessions)
             .setMaxSessions(1)
             .setInitialWaitForSessionTimeoutMillis(20L)
+            .setAcquireSessionTimeout(null)
             .build();
     setupMockSessionCreation();
     pool = createPool();
@@ -983,8 +1226,56 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     latch.await();
     // Wait until the request has timed out.
     int waitCount = 0;
-    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
-      Thread.sleep(5L);
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 5000) {
+      Thread.sleep(1L);
+      waitCount++;
+    }
+    // Return the checked out session to the pool so the async request will get a session and
+    // finish.
+    checkedOutSession.close();
+    // Verify that the async request also succeeds.
+    fut.get(10L, TimeUnit.SECONDS);
+    executor.shutdown();
+
+    // Verify that the session was returned to the pool and that we can get it again.
+    Session session = pool.getSession();
+    assertThat(session).isNotNull();
+    session.close();
+    assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
+  }
+
+  @Test
+  public void blockAndTimeoutOnPoolExhaustion_withAcquireSessionTimeout() throws Exception {
+    // Create a session pool with max 1 session and a low timeout for waiting for a session.
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(1)
+            .setInitialWaitForSessionTimeoutMillis(20L)
+            .setAcquireSessionTimeout(Duration.ofMillis(20L))
+            .build();
+    setupMockSessionCreation();
+    pool = createPool();
+    // Take the only session that can be in the pool.
+    PooledSessionFuture checkedOutSession = pool.getSession();
+    checkedOutSession.get();
+    ExecutorService executor = Executors.newFixedThreadPool(1);
+    final CountDownLatch latch = new CountDownLatch(1);
+    // Then try asynchronously to take another session. This attempt should time out.
+    Future<Void> fut =
+        executor.submit(
+            () -> {
+              latch.countDown();
+              PooledSessionFuture session = pool.getSession();
+              session.close();
+              return null;
+            });
+    // Wait until the background thread is actually waiting for a session.
+    latch.await();
+    // Wait until the request has timed out.
+    int waitCount = 0;
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 5000) {
+      Thread.sleep(1L);
       waitCount++;
     }
     // Return the checked out session to the pool so the async request will get a session and
@@ -1042,7 +1333,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
     ReadContext context = pool.getSession().singleUse();
     ResultSet resultSet = context.executeQuery(statement);
@@ -1086,7 +1377,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
     ReadOnlyTransaction transaction = pool.getSession().readOnlyTransaction();
     ResultSet resultSet = transaction.executeQuery(statement);
@@ -1131,22 +1422,40 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.<CommitResponse>immediateFailedFuture(sessionNotFound));
       when(rpc.rollbackAsync(any(RollbackRequest.class), any(Map.class)))
           .thenReturn(ApiFutures.<Empty>immediateFailedFuture(sessionNotFound));
+      when(rpc.getReadRetrySettings())
+          .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetrySettings());
+      when(rpc.getReadRetryableCodes())
+          .thenReturn(SpannerStubSettings.newBuilder().streamingReadSettings().getRetryableCodes());
+      when(rpc.getExecuteQueryRetrySettings())
+          .thenReturn(
+              SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings());
+      when(rpc.getExecuteQueryRetryableCodes())
+          .thenReturn(
+              SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
       final SessionImpl closedSession = mock(SessionImpl.class);
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
+
+      Span oTspan = mock(Span.class);
+      ISpan span = new OpenTelemetrySpan(oTspan);
+      when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
+
       final TransactionContextImpl closedTransactionContext =
           TransactionContextImpl.newBuilder()
               .setSession(closedSession)
               .setOptions(Options.fromTransactionOptions())
               .setRpc(rpc)
+              .setTracer(tracer)
+              .setSpan(span)
               .build();
       when(closedSession.asyncClose())
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
       when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
+      when(closedSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
-      closedTransactionRunner.setSpan(mock(Span.class));
+      closedTransactionRunner.setSpan(span);
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
       final SessionImpl openSession = mock(SessionImpl.class);
@@ -1159,8 +1468,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(openTransactionContext);
       when(openSession.beginTransactionAsync(any(), eq(true)))
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
+      when(openSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
-      openTransactionRunner.setSpan(mock(Span.class));
+      openTransactionRunner.setSpan(span);
       when(openSession.readWriteTransaction()).thenReturn(openTransactionRunner);
 
       ResultSet openResultSet = mock(ResultSet.class);
@@ -1176,6 +1486,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       SpannerImpl spanner = mock(SpannerImpl.class);
       SessionClient sessionClient = mock(SessionClient.class);
       when(spanner.getSessionClient(db)).thenReturn(sessionClient);
+      when(sessionClient.getSpanner()).thenReturn(spanner);
 
       doAnswer(
               invocation -> {
@@ -1213,7 +1524,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(spannerOptions.getDatabaseRole()).thenReturn("role");
       when(spanner.getOptions()).thenReturn(spannerOptions);
       SessionPool pool =
-          SessionPool.createPool(options, new TestExecutorFactory(), spanner.getSessionClient(db));
+          SessionPool.createPool(
+              options,
+              new TestExecutorFactory(),
+              spanner.getSessionClient(db),
+              tracer,
+              OpenTelemetry.noop());
       try (PooledSessionFuture readWriteSession = pool.getSession()) {
         TransactionRunner runner = readWriteSession.readWriteTransaction();
         try {
@@ -1310,9 +1626,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, tracer);
     assertThat(impl.write(mutations)).isNotNull();
   }
 
@@ -1352,9 +1668,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, tracer);
     assertThat(impl.writeAtLeastOnce(mutations)).isNotNull();
   }
 
@@ -1391,24 +1707,25 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
-    DatabaseClientImpl impl = new DatabaseClientImpl(pool);
+    DatabaseClientImpl impl = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
     assertThat(impl.executePartitionedUpdate(statement)).isEqualTo(1L);
   }
 
+  @SuppressWarnings("rawtypes")
   @Test
-  public void testSessionMetrics() throws Exception {
+  public void testOpenCensusSessionMetrics() throws Exception {
     // Create a session pool with max 2 session and a low timeout for waiting for a session.
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(2)
-            .setMaxIdleSessions(0)
             .setInitialWaitForSessionTimeoutMillis(50L)
+            .setAcquireSessionTimeout(null)
             .build();
     FakeClock clock = new FakeClock();
-    clock.currentTimeMillis = System.currentTimeMillis();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     FakeMetricRegistry metricRegistry = new FakeMetricRegistry();
     List<LabelValue> labelValues =
         Arrays.asList(
@@ -1428,42 +1745,42 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(record.getMetrics().size()).isEqualTo(6);
 
     List<PointWithFunction> maxInUseSessions =
-        record.getMetrics().get(MetricRegistryConstants.MAX_IN_USE_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + MAX_IN_USE_SESSIONS);
     assertThat(maxInUseSessions.size()).isEqualTo(1);
     assertThat(maxInUseSessions.get(0).value()).isEqualTo(2L);
     assertThat(maxInUseSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(maxInUseSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> getSessionsTimeouts =
-        record.getMetrics().get(MetricRegistryConstants.GET_SESSION_TIMEOUTS);
+        record.getMetrics().get(METRIC_PREFIX + GET_SESSION_TIMEOUTS);
     assertThat(getSessionsTimeouts.size()).isEqualTo(1);
     assertThat(getSessionsTimeouts.get(0).value()).isAtMost(1L);
     assertThat(getSessionsTimeouts.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(getSessionsTimeouts.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> numAcquiredSessions =
-        record.getMetrics().get(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
     assertThat(numAcquiredSessions.size()).isEqualTo(1);
     assertThat(numAcquiredSessions.get(0).value()).isEqualTo(2L);
     assertThat(numAcquiredSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(numAcquiredSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> numReleasedSessions =
-        record.getMetrics().get(MetricRegistryConstants.NUM_RELEASED_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
     assertThat(numReleasedSessions.size()).isEqualTo(1);
     assertThat(numReleasedSessions.get(0).value()).isEqualTo(0);
     assertThat(numReleasedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(numReleasedSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> maxAllowedSessions =
-        record.getMetrics().get(MetricRegistryConstants.MAX_ALLOWED_SESSIONS);
+        record.getMetrics().get(METRIC_PREFIX + MAX_ALLOWED_SESSIONS);
     assertThat(maxAllowedSessions.size()).isEqualTo(1);
     assertThat(maxAllowedSessions.get(0).value()).isEqualTo(options.getMaxSessions());
     assertThat(maxAllowedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(maxAllowedSessions.get(0).values()).isEqualTo(labelValues);
 
     List<PointWithFunction> numSessionsInPool =
-        record.getMetrics().get(MetricRegistryConstants.NUM_SESSIONS_IN_POOL);
+        record.getMetrics().get(METRIC_PREFIX + NUM_SESSIONS_IN_POOL);
     assertThat(numSessionsInPool.size()).isEqualTo(4);
     PointWithFunction beingPrepared = numSessionsInPool.get(0);
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
@@ -1504,10 +1821,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     latch.await();
     // Wait until the request has timed out.
     int waitCount = 0;
-    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
-      Thread.sleep(5L);
+    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 5000) {
+      //noinspection BusyWait
+      Thread.sleep(1L);
       waitCount++;
     }
+    assertTrue(pool.getNumWaiterTimeouts() > 0L);
     // Return the checked out session to the pool so the async request will get a session and
     // finish.
     session2.close();
@@ -1516,19 +1835,19 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     executor.shutdown();
 
     session1.close();
-    numAcquiredSessions = record.getMetrics().get(MetricRegistryConstants.NUM_ACQUIRED_SESSIONS);
+    numAcquiredSessions = record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
     assertThat(numAcquiredSessions.size()).isEqualTo(1);
     assertThat(numAcquiredSessions.get(0).value()).isEqualTo(3L);
 
-    numReleasedSessions = record.getMetrics().get(MetricRegistryConstants.NUM_RELEASED_SESSIONS);
+    numReleasedSessions = record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
     assertThat(numReleasedSessions.size()).isEqualTo(1);
     assertThat(numReleasedSessions.get(0).value()).isEqualTo(3L);
 
-    maxInUseSessions = record.getMetrics().get(MetricRegistryConstants.MAX_IN_USE_SESSIONS);
+    maxInUseSessions = record.getMetrics().get(METRIC_PREFIX + MAX_IN_USE_SESSIONS);
     assertThat(maxInUseSessions.size()).isEqualTo(1);
     assertThat(maxInUseSessions.get(0).value()).isEqualTo(2L);
 
-    numSessionsInPool = record.getMetrics().get(MetricRegistryConstants.NUM_SESSIONS_IN_POOL);
+    numSessionsInPool = record.getMetrics().get(METRIC_PREFIX + NUM_SESSIONS_IN_POOL);
     assertThat(numSessionsInPool.size()).isEqualTo(4);
     beingPrepared = numSessionsInPool.get(0);
     assertThat(beingPrepared.value()).isEqualTo(0L);
@@ -1538,6 +1857,191 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(readSessions.value()).isEqualTo(2L);
     writePreparedSessions = numSessionsInPool.get(3);
     assertThat(writePreparedSessions.value()).isEqualTo(0L);
+  }
+
+  @Test
+  public void testOpenCensusMetricsDisable() {
+    SpannerOptions.disableOpenCensusMetrics();
+    // Create a session pool with max 2 session and a low timeout for waiting for a session.
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(1)
+            .setMaxSessions(2)
+            .setMaxIdleSessions(0)
+            .setInitialWaitForSessionTimeoutMillis(50L)
+            .build();
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
+    FakeMetricRegistry metricRegistry = new FakeMetricRegistry();
+    List<LabelValue> labelValues =
+        Arrays.asList(
+            LabelValue.create("client1"),
+            LabelValue.create("database1"),
+            LabelValue.create("instance1"),
+            LabelValue.create("1.0.0"));
+
+    setupMockSessionCreation();
+    pool = createPool(clock, metricRegistry, labelValues);
+    PooledSessionFuture session1 = pool.getSession();
+    PooledSessionFuture session2 = pool.getSession();
+    session1.get();
+    session2.get();
+
+    MetricsRecord record = metricRegistry.pollRecord();
+    assertThat(record.getMetrics().size()).isEqualTo(0);
+    SpannerOptions.enableOpenCensusMetrics();
+  }
+
+  @Test
+  public void testOpenTelemetrySessionMetrics() throws Exception {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryMetrics();
+    // Create a session pool with max 2 session and a low timeout for waiting for a session.
+    if (minSessions == 1) {
+      options =
+          SessionPoolOptions.newBuilder()
+              .setMinSessions(1)
+              .setMaxSessions(3)
+              .setMaxIdleSessions(0)
+              .setInitialWaitForSessionTimeoutMillis(50L)
+              .build();
+      FakeClock clock = new FakeClock();
+      clock.currentTimeMillis.set(System.currentTimeMillis());
+
+      InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
+      SdkMeterProvider sdkMeterProvider =
+          SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
+      OpenTelemetry openTelemetry =
+          OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
+
+      setupMockSessionCreation();
+
+      AttributesBuilder attributesBuilder = Attributes.builder();
+      attributesBuilder.put("client_id", "testClient");
+      attributesBuilder.put("database", "testDb");
+      attributesBuilder.put("instance_id", "test_instance");
+      attributesBuilder.put("library_version", "test_version");
+
+      pool =
+          createPool(
+              clock,
+              Metrics.getMetricRegistry(),
+              SPANNER_DEFAULT_LABEL_VALUES,
+              openTelemetry,
+              attributesBuilder.build());
+      PooledSessionFuture session1 = pool.getSession();
+      PooledSessionFuture session2 = pool.getSession();
+      session1.get();
+      session2.get();
+
+      Collection<MetricData> metricDataCollection = inMemoryMetricReader.collectAllMetrics();
+      // Acquired sessions are 2.
+      verifyMetricData(metricDataCollection, NUM_ACQUIRED_SESSIONS, 1, 2L);
+      // Max in use session are 2.
+      verifyMetricData(metricDataCollection, MAX_IN_USE_SESSIONS, 1, 2D);
+      // Max Allowed sessions should be 3
+      verifyMetricData(metricDataCollection, MAX_ALLOWED_SESSIONS, 1, 3D);
+      // Released sessions should be 0
+      verifyMetricData(metricDataCollection, NUM_RELEASED_SESSIONS, 1, 0L);
+      // Num sessions in pool
+      verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_IN_USE, 2);
+
+      PooledSessionFuture session3 = pool.getSession();
+      session3.get();
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      // Try asynchronously to take another session. This attempt should time out.
+      Future<Void> fut =
+          executor.submit(
+              () -> {
+                latch.countDown();
+                Session session = pool.getSession();
+                session.close();
+                return null;
+              });
+      // Wait until the background thread is actually waiting for a session.
+      latch.await();
+      // Wait until the request has timed out.
+      int waitCount = 0;
+      while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
+        Thread.sleep(5L);
+        waitCount++;
+      }
+      // Return the checked out session to the pool so the async request will get a session and
+      // finish.
+      session2.close();
+      // Verify that the async request also succeeds.
+      fut.get(10L, TimeUnit.SECONDS);
+      executor.shutdown();
+
+      metricDataCollection = inMemoryMetricReader.collectAllMetrics();
+
+      // Max Allowed sessions should be 3
+      verifyMetricData(metricDataCollection, MAX_ALLOWED_SESSIONS, 1, 3D);
+      // Session timeouts 1
+      // verifyMetricData(metricDataCollection, GET_SESSION_TIMEOUTS, 1, 1L);
+      // Max in use session are 2.
+      verifyMetricData(metricDataCollection, MAX_IN_USE_SESSIONS, 1, 3D);
+      // Session released 2
+      verifyMetricData(metricDataCollection, NUM_RELEASED_SESSIONS, 1, 2L);
+      // Acquired sessions are 4.
+      verifyMetricData(metricDataCollection, NUM_ACQUIRED_SESSIONS, 1, 4L);
+      // Num sessions in pool
+      verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_IN_USE, 2);
+      verifyMetricData(metricDataCollection, NUM_SESSIONS_IN_POOL, 1, NUM_SESSIONS_AVAILABLE, 1);
+    }
+  }
+
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection, String metricName, int size, long value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+
+    assertEquals(metricDataFiltered.size(), size);
+    MetricData metricData = metricDataFiltered.stream().findFirst().get();
+    assertEquals(
+        metricData.getLongSumData().getPoints().stream().findFirst().get().getValue(), value);
+  }
+
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection, String metricName, int size, double value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+
+    assertEquals(metricDataFiltered.size(), size);
+    MetricData metricData = metricDataFiltered.stream().findFirst().get();
+    assertEquals(
+        metricData.getDoubleGaugeData().getPoints().stream().findFirst().get().getValue(),
+        value,
+        0.0);
+  }
+
+  private static void verifyMetricData(
+      Collection<MetricData> metricDataCollection,
+      String metricName,
+      int size,
+      String labelName,
+      long value) {
+    Collection<MetricData> metricDataFiltered =
+        metricDataCollection.stream()
+            .filter(x -> x.getName().equals(metricName))
+            .collect(Collectors.toList());
+
+    assertEquals(metricDataFiltered.size(), size);
+
+    MetricData metricData = metricDataFiltered.stream().findFirst().get();
+
+    assertEquals(
+        metricData.getLongSumData().getPoints().stream()
+            .filter(x -> x.getAttributes().asMap().containsValue(labelName))
+            .findFirst()
+            .get()
+            .getValue(),
+        value);
   }
 
   @Test
@@ -1586,6 +2090,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .build();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();
+  }
+
+  private void mockKeepAlive(ReadContext context) {
+    ResultSet resultSet = mock(ResultSet.class);
+    when(resultSet.next()).thenReturn(true, false);
+    when(context.executeQuery(any(Statement.class))).thenReturn(resultSet);
   }
 
   private void mockKeepAlive(Session session) {

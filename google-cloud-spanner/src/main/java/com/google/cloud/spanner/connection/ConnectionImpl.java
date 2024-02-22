@@ -47,11 +47,13 @@ import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
+import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
@@ -60,12 +62,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
@@ -232,6 +237,7 @@ class ConnectionImpl implements Connection {
    */
   private int maxPartitionedParallelism;
 
+  private DirectedReadOptions directedReadOptions = null;
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
   private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
@@ -244,12 +250,15 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(options);
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
-    this.statementExecutor = new StatementExecutor(options.getStatementExecutionInterceptors());
+    this.statementExecutor =
+        new StatementExecutor(
+            options.isUseVirtualThreads(), options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
     if (options.isAutoConfigEmulator()) {
-      EmulatorUtil.maybeCreateInstanceAndDatabase(spanner, options.getDatabaseId());
+      EmulatorUtil.maybeCreateInstanceAndDatabase(
+          spanner, options.getDatabaseId(), options.getDialect());
     }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
@@ -278,7 +287,8 @@ class ConnectionImpl implements Connection {
       BatchClient batchClient) {
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
-    this.statementExecutor = new StatementExecutor(Collections.emptyList());
+    this.statementExecutor =
+        new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
     this.spanner = spannerPool.getSpanner(options, this);
@@ -397,6 +407,9 @@ class ConnectionImpl implements Connection {
   @Override
   public void setAutocommit(boolean autocommit) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    if (isAutocommit() == autocommit) {
+      return;
+    }
     ConnectionPreconditions.checkState(!isBatchActive(), "Cannot set autocommit while in a batch");
     ConnectionPreconditions.checkState(
         !isTransactionStarted(), "Cannot set autocommit while a transaction is active");
@@ -497,6 +510,21 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ConnectionPreconditions.checkState(!isBatchActive(), "Cannot get read-only while in a batch");
     return this.readOnlyStaleness;
+  }
+
+  @Override
+  public void setDirectedRead(DirectedReadOptions directedReadOptions) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "Cannot set directed read options when a transaction has been started");
+    this.directedReadOptions = directedReadOptions;
+  }
+
+  @Override
+  public DirectedReadOptions getDirectedRead() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.directedReadOptions;
   }
 
   @Override
@@ -939,9 +967,20 @@ class ConnectionImpl implements Connection {
 
   @Override
   public StatementResult execute(Statement statement) {
-    Preconditions.checkNotNull(statement);
+    return internalExecute(Preconditions.checkNotNull(statement), null);
+  }
+
+  @Override
+  public StatementResult execute(Statement statement, Set<ResultType> allowedResultTypes) {
+    return internalExecute(
+        Preconditions.checkNotNull(statement), Preconditions.checkNotNull(allowedResultTypes));
+  }
+
+  private StatementResult internalExecute(
+      Statement statement, @Nullable Set<ResultType> allowedResultTypes) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     ParsedStatement parsedStatement = getStatementParser().parse(statement, this.queryOptions);
+    checkResultTypeAllowed(parsedStatement, allowedResultTypes);
     switch (parsedStatement.getType()) {
       case CLIENT_SIDE:
         return parsedStatement
@@ -966,6 +1005,53 @@ class ConnectionImpl implements Connection {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT,
         "Unknown statement: " + parsedStatement.getSqlWithoutComments());
+  }
+
+  @VisibleForTesting
+  static void checkResultTypeAllowed(
+      ParsedStatement parsedStatement, @Nullable Set<ResultType> allowedResultTypes) {
+    if (allowedResultTypes == null) {
+      return;
+    }
+    ResultType resultType = getResultType(parsedStatement);
+    if (!allowedResultTypes.contains(resultType)) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "This statement returns a result of type "
+              + resultType
+              + ". Only statements that return a result of one of the following types are allowed: "
+              + allowedResultTypes.stream()
+                  .map(ResultType::toString)
+                  .collect(Collectors.joining(", ")));
+    }
+  }
+
+  private static ResultType getResultType(ParsedStatement parsedStatement) {
+    switch (parsedStatement.getType()) {
+      case CLIENT_SIDE:
+        if (parsedStatement.getClientSideStatement().isQuery()) {
+          return ResultType.RESULT_SET;
+        } else if (parsedStatement.getClientSideStatement().isUpdate()) {
+          return ResultType.UPDATE_COUNT;
+        } else {
+          return ResultType.NO_RESULT;
+        }
+      case QUERY:
+        return ResultType.RESULT_SET;
+      case UPDATE:
+        if (parsedStatement.hasReturningClause()) {
+          return ResultType.RESULT_SET;
+        } else {
+          return ResultType.UPDATE_COUNT;
+        }
+      case DDL:
+        return ResultType.NO_RESULT;
+      case UNKNOWN:
+      default:
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT,
+            "Unknown statement: " + parsedStatement.getSqlWithoutComments());
+    }
   }
 
   @Override
@@ -1062,7 +1148,8 @@ class ConnectionImpl implements Connection {
             CallType.SYNC,
             parsedStatement,
             getEffectivePartitionOptions(partitionOptions),
-            mergeDataBoost(mergeQueryRequestOptions(mergeQueryStatementTag(options)))));
+            mergeDataBoost(
+                mergeQueryRequestOptions(parsedStatement, mergeQueryStatementTag(options)))));
   }
 
   private PartitionOptions getEffectivePartitionOptions(
@@ -1323,32 +1410,15 @@ class ConnectionImpl implements Connection {
 
   @Override
   public long[] executeBatchUpdate(Iterable<Statement> updates) {
-    Preconditions.checkNotNull(updates);
-    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    // Check that there are only DML statements in the input.
-    List<ParsedStatement> parsedStatements = new LinkedList<>();
-    for (Statement update : updates) {
-      ParsedStatement parsedStatement = getStatementParser().parse(update);
-      switch (parsedStatement.getType()) {
-        case UPDATE:
-          parsedStatements.add(parsedStatement);
-          break;
-        case CLIENT_SIDE:
-        case QUERY:
-        case DDL:
-        case UNKNOWN:
-        default:
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INVALID_ARGUMENT,
-              "The batch update list contains a statement that is not an update statement: "
-                  + parsedStatement.getSqlWithoutComments());
-      }
-    }
-    return get(internalExecuteBatchUpdateAsync(CallType.SYNC, parsedStatements));
+    return get(internalExecuteBatchUpdateAsync(CallType.SYNC, parseUpdateStatements(updates)));
   }
 
   @Override
   public ApiFuture<long[]> executeBatchUpdateAsync(Iterable<Statement> updates) {
+    return internalExecuteBatchUpdateAsync(CallType.ASYNC, parseUpdateStatements(updates));
+  }
+
+  private List<ParsedStatement> parseUpdateStatements(Iterable<Statement> updates) {
     Preconditions.checkNotNull(updates);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     // Check that there are only DML statements in the input.
@@ -1370,46 +1440,43 @@ class ConnectionImpl implements Connection {
                   + parsedStatement.getSqlWithoutComments());
       }
     }
-    return internalExecuteBatchUpdateAsync(CallType.ASYNC, parsedStatements);
+    return parsedStatements;
   }
 
   private QueryOption[] mergeDataBoost(QueryOption... options) {
     if (this.dataBoostEnabled) {
-
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.dataBoostEnabled(true)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.dataBoostEnabled(true);
-      }
+      options = appendQueryOption(options, Options.dataBoostEnabled(true));
     }
     return options;
   }
 
   private QueryOption[] mergeQueryStatementTag(QueryOption... options) {
     if (this.statementTag != null) {
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.tag(statementTag)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.tag(statementTag);
-      }
+      options = appendQueryOption(options, Options.tag(statementTag));
       this.statementTag = null;
     }
     return options;
   }
 
-  private QueryOption[] mergeQueryRequestOptions(QueryOption... options) {
+  private QueryOption[] mergeQueryRequestOptions(
+      ParsedStatement parsedStatement, QueryOption... options) {
     if (this.rpcPriority != null) {
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.priority(this.rpcPriority)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.priority(this.rpcPriority);
-      }
+      options = appendQueryOption(options, Options.priority(this.rpcPriority));
+    }
+    if (this.directedReadOptions != null
+        && currentUnitOfWork != null
+        && currentUnitOfWork.supportsDirectedReads(parsedStatement)) {
+      options = appendQueryOption(options, Options.directedRead(this.directedReadOptions));
+    }
+    return options;
+  }
+
+  private QueryOption[] appendQueryOption(QueryOption[] options, QueryOption append) {
+    if (options == null || options.length == 0) {
+      options = new QueryOption[] {append};
+    } else {
+      options = Arrays.copyOf(options, options.length + 1);
+      options[options.length - 1] = append;
     }
     return options;
   }
@@ -1464,7 +1531,7 @@ class ConnectionImpl implements Connection {
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(mergeQueryStatementTag(options))));
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -1486,7 +1553,7 @@ class ConnectionImpl implements Connection {
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(mergeQueryStatementTag(options))),
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))),
         spanner.getAsyncExecutorProvider(),
         options);
   }

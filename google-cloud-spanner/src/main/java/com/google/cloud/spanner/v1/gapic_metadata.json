@@ -13,6 +13,9 @@
             "BatchCreateSessions": {
               "methods": ["batchCreateSessions", "batchCreateSessions", "batchCreateSessions", "batchCreateSessionsCallable"]
             },
+            "BatchWrite": {
+              "methods": ["batchWriteCallable"]
+            },
             "BeginTransaction": {
               "methods": ["beginTransaction", "beginTransaction", "beginTransaction", "beginTransactionCallable"]
             },

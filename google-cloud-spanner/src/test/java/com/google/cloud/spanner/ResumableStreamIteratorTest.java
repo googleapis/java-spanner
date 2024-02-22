@@ -21,9 +21,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.api.client.util.BackOff;
-import com.google.cloud.spanner.AbstractResultSet.ResumableStreamIterator;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
@@ -35,8 +36,10 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
-import io.opencensus.trace.EndSpanOptions;
 import io.opencensus.trace.Span;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -52,7 +55,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
-/** Unit tests for {@link AbstractResultSet.ResumableStreamIterator}. */
+/** Unit tests for {@link ResumableStreamIterator}. */
 @RunWith(JUnit4.class)
 public class ResumableStreamIteratorTest {
   interface Starter {
@@ -127,16 +130,25 @@ public class ResumableStreamIteratorTest {
   }
 
   Starter starter = Mockito.mock(Starter.class);
-  AbstractResultSet.ResumableStreamIterator resumableStreamIterator;
+  ResumableStreamIterator resumableStreamIterator;
 
   @Before
   public void setUp() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
     initWithLimit(Integer.MAX_VALUE);
   }
 
   private void initWithLimit(int maxBufferSize) {
+
     resumableStreamIterator =
-        new AbstractResultSet.ResumableStreamIterator(maxBufferSize, "", null) {
+        new ResumableStreamIterator(
+            maxBufferSize,
+            "",
+            new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
+            SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override
           AbstractResultSet.CloseableIterator<PartialResultSet> startStream(
               @Nullable ByteString resumeToken) {
@@ -157,12 +169,16 @@ public class ResumableStreamIteratorTest {
   }
 
   @Test
-  public void closedSpan() {
+  public void closedOTSpan() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
     Assume.assumeTrue(
         "This test is only supported on JDK11 and lower",
         JavaVersionUtil.getJavaMajorVersion() < 12);
 
-    Span span = mock(Span.class);
+    io.opentelemetry.api.trace.Span oTspan = mock(io.opentelemetry.api.trace.Span.class);
+    ISpan span = new OpenTelemetrySpan(oTspan);
+    when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
     setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
 
     ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
@@ -174,7 +190,30 @@ public class ResumableStreamIteratorTest {
     assertThat(consume(resumableStreamIterator)).containsExactly("a", "b").inOrder();
 
     resumableStreamIterator.close("closed");
-    verify(span).end(EndSpanOptions.builder().setSampleToLocalSpanStore(true).build());
+    verify(oTspan).end();
+  }
+
+  @Test
+  public void closedOCSpan() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenCensusTraces();
+    Assume.assumeTrue(
+        "This test is only supported on JDK11 and lower",
+        JavaVersionUtil.getJavaMajorVersion() < 12);
+    Span mockSpan = mock(Span.class);
+    ISpan span = new OpenCensusSpan(mockSpan);
+    setInternalState(ResumableStreamIterator.class, this.resumableStreamIterator, "span", span);
+
+    ResultSetStream s1 = Mockito.mock(ResultSetStream.class);
+    Mockito.when(starter.startStream(null)).thenReturn(new ResultSetIterator(s1));
+    Mockito.when(s1.next())
+        .thenReturn(resultSet(ByteString.copyFromUtf8("r1"), "a"))
+        .thenReturn(resultSet(ByteString.copyFromUtf8("r2"), "b"))
+        .thenReturn(null);
+    assertThat(consume(resumableStreamIterator)).containsExactly("a", "b").inOrder();
+
+    resumableStreamIterator.close("closed");
+    verify(mockSpan).end(OpenCensusSpan.END_SPAN_OPTIONS);
   }
 
   @Test

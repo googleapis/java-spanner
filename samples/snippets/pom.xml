@@ -17,6 +17,7 @@
     <groupId>com.google.cloud.samples</groupId>
     <artifactId>shared-configuration</artifactId>
     <version>1.2.0</version>
+    <relativePath/>
   </parent>
 
   <properties>
@@ -33,7 +34,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.22.0</version>
+        <version>26.33.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -110,7 +111,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.1.5</version>
+      <version>1.4.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -174,12 +175,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.1</version>
         <configuration>
           <systemPropertyVariables>
-            <spanner.test.instance>spanner-testing-east1</spanner.test.instance>
-            <spanner.test.instance.mr>spanner-mr-testing</spanner.test.instance.mr>
-            <spanner.test.instance.config>nam6</spanner.test.instance.config>
+            <spanner.test.instance>java-client-integration-test</spanner.test.instance>
+            <spanner.test.instance.mr>java-client-mr-integration-test</spanner.test.instance.mr>
+            <spanner.test.instance.config>nam11</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>cmek-test-key-ring</spanner.test.key.ring>
             <spanner.test.key.name>cmek-test-key</spanner.test.key.name>

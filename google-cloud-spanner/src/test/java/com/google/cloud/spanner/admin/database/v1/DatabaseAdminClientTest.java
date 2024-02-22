@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -654,7 +654,10 @@ public class DatabaseAdminClientTest {
   @Test
   public void getDatabaseDdlTest() throws Exception {
     GetDatabaseDdlResponse expectedResponse =
-        GetDatabaseDdlResponse.newBuilder().addAllStatements(new ArrayList<String>()).build();
+        GetDatabaseDdlResponse.newBuilder()
+            .addAllStatements(new ArrayList<String>())
+            .setProtoDescriptors(ByteString.EMPTY)
+            .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
     DatabaseName database = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
@@ -690,7 +693,10 @@ public class DatabaseAdminClientTest {
   @Test
   public void getDatabaseDdlTest2() throws Exception {
     GetDatabaseDdlResponse expectedResponse =
-        GetDatabaseDdlResponse.newBuilder().addAllStatements(new ArrayList<String>()).build();
+        GetDatabaseDdlResponse.newBuilder()
+            .addAllStatements(new ArrayList<String>())
+            .setProtoDescriptors(ByteString.EMPTY)
+            .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
     String database = "database1789464955";

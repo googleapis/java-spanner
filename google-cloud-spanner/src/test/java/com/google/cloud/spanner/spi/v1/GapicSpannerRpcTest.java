@@ -33,6 +33,7 @@ import com.google.api.gax.rpc.ApiClientHeaderProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
+import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
@@ -62,6 +63,7 @@ import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
 import io.grpc.Contexts;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.grpc.MethodDescriptor;
@@ -77,6 +79,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
@@ -181,6 +184,12 @@ public class GapicSpannerRpcTest {
                     String auth =
                         headers.get(Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER));
                     assertThat(auth).isEqualTo("Bearer " + VARIABLE_OAUTH_TOKEN);
+                    String clientLibToken =
+                        headers.get(
+                            Metadata.Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER));
+                    assertNotNull(clientLibToken);
+                    assertTrue(
+                        clientLibToken.contains(ServiceOptions.getGoogApiClientLibName() + "/"));
                     if (call.getMethodDescriptor()
                             .equals(SpannerGrpc.getExecuteStreamingSqlMethod())
                         || call.getMethodDescriptor().equals(SpannerGrpc.getExecuteSqlMethod())) {
@@ -575,16 +584,97 @@ public class GapicSpannerRpcTest {
     assertFalse(isRouteToLeader);
   }
 
+  @Test
+  public void testClientLibToken() {
+    SpannerOptions options = createSpannerOptions();
+    try (Spanner spanner = options.getService()) {
+      DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
+    }
+    Key<String> key = Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER);
+    assertTrue(lastSeenHeaders.containsKey(key));
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key))
+            .contains(ServiceOptions.getGoogApiClientLibName() + "/"));
+    // Check that the default header value is only included once in the header.
+    // We do this by splitting the entire header by the default header value. The resulting array
+    // should have 2 elements.
+    assertEquals(
+        lastSeenHeaders.get(key),
+        2,
+        Objects.requireNonNull(lastSeenHeaders.get(key))
+            .split(ServiceOptions.getGoogApiClientLibName())
+            .length);
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key)).contains("gl-java/"));
+  }
+
+  @Test
+  public void testCustomClientLibToken_alsoContainsDefaultToken() {
+    SpannerOptions options =
+        createSpannerOptions().toBuilder().setClientLibToken("pg-adapter").build();
+    try (Spanner spanner = options.getService()) {
+      DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(transaction -> transaction.executeUpdate(UPDATE_FOO_STATEMENT));
+    }
+    Key<String> key = Key.of("x-goog-api-client", Metadata.ASCII_STRING_MARSHALLER);
+    assertTrue(lastSeenHeaders.containsKey(key));
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key)).contains("pg-adapter"));
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key))
+            .contains(ServiceOptions.getGoogApiClientLibName() + "/"));
+    assertTrue(
+        lastSeenHeaders.get(key),
+        Objects.requireNonNull(lastSeenHeaders.get(key)).contains("gl-java/"));
+  }
+
+  @Test
+  public void testGetDatabaseAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getDatabaseAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testGetInstanceAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testAdminStubSettings_whenStubNotInitialized_assertNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+
+    assertNull(rpc.getDatabaseAdminStubSettings());
+    assertNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
-        .setChannelConfigurator(
-            input -> {
-              input.usePlaintext();
-              return input;
-            })
+        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+        .disableDirectPath()
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)

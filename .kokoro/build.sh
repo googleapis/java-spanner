@@ -94,6 +94,21 @@ integration)
       verify
     RETURN_CODE=$?
     ;;
+integration-directpath-enabled)
+    mvn -B ${INTEGRATION_TEST_ARGS} \
+      -ntp \
+      -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
+      -DtrimStackTrace=false \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.gce.config.project_id=gcloud-devel \
+      -Dspanner.testenv.instance=projects/gcloud-devel/instances/java-client-integration-tests-directpath \
+      -fae \
+      verify
+    RETURN_CODE=$?
+    ;;
 integration-cloud-devel)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
@@ -104,13 +119,29 @@ integration-cloud-devel)
       -Denforcer.skip=true \
       -Dmaven.main.skip=true \
       -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
-      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-testing-east1 \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-testing \
       -Dspanner.gce.config.project_id=span-cloud-testing \
       -fae \
       verify
     RETURN_CODE=$?
     ;;
-integration-cloud-staging)
+integration-cloud-devel-directpath-enabled)
+    mvn -B ${INTEGRATION_TEST_ARGS} \
+      -ntp \
+      -Penable-integration-tests \
+      -Djava.net.preferIPv4Stack=true \
+      -DtrimStackTrace=false \
+      -Dclirr.skip=true \
+      -Denforcer.skip=true \
+      -Dmaven.main.skip=true \
+      -Dspanner.gce.config.server_url=https://staging-wrenchworks.sandbox.googleapis.com \
+      -Dspanner.testenv.instance=projects/span-cloud-testing/instances/spanner-java-client-directpath \
+      -Dspanner.gce.config.project_id=span-cloud-testing \
+      -fae \
+      verify
+    RETURN_CODE=$?
+    ;;
+integration-cloud-staging|integration-cloud-staging-directpath-enabled)
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \

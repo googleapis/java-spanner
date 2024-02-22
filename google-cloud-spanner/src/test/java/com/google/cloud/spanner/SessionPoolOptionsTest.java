@@ -129,7 +129,7 @@ public class SessionPoolOptionsTest {
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         sessionPoolOptions.getInactiveTransactionRemovalOptions();
 
-    assertFalse(sessionPoolOptions.warnInactiveTransactions());
+    assertTrue(sessionPoolOptions.warnInactiveTransactions());
     assertFalse(sessionPoolOptions.warnAndCloseInactiveTransactions());
     assertFalse(sessionPoolOptions.closeInactiveTransactions());
     assertEquals(0.95, inactiveTransactionRemovalOptions.getUsedSessionsRatioThreshold(), 0.0);
@@ -185,5 +185,37 @@ public class SessionPoolOptionsTest {
             .build();
     SessionPoolOptions.newBuilder()
         .setInactiveTransactionRemovalOptions(inactiveTransactionRemovalOptions);
+  }
+
+  @Test
+  public void setAcquireSessionTimeout() {
+    SessionPoolOptions sessionPoolOptions1 =
+        SessionPoolOptions.newBuilder().setAcquireSessionTimeout(Duration.ofSeconds(20)).build();
+    SessionPoolOptions sessionPoolOptions2 =
+        SessionPoolOptions.newBuilder()
+            .setAcquireSessionTimeout(Duration.ofMillis(Long.MAX_VALUE))
+            .build();
+
+    assertEquals(Duration.ofSeconds(20), sessionPoolOptions1.getAcquireSessionTimeout());
+    assertEquals(Duration.ofMillis(Long.MAX_VALUE), sessionPoolOptions2.getAcquireSessionTimeout());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void setAcquireSessionTimeout_valueLessThanLowerBound() {
+    SessionPoolOptions.newBuilder().setAcquireSessionTimeout(Duration.ofMillis(0)).build();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void setAcquireSessionTimeout_valueMoreThanUpperBound() {
+    SessionPoolOptions.newBuilder()
+        .setAcquireSessionTimeout(Duration.ofSeconds(Long.MAX_VALUE))
+        .build();
+  }
+
+  @Test
+  public void verifyDefaultAcquireSessionTimeout() {
+    SessionPoolOptions sessionPoolOptions = SessionPoolOptions.newBuilder().build();
+
+    assertEquals(Duration.ofSeconds(60), sessionPoolOptions.getAcquireSessionTimeout());
   }
 }

@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
-import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
 import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
@@ -42,6 +41,8 @@ import com.google.rpc.ResourceInfo;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -260,7 +261,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
      */
     public static StatementResult queryAndThen(
         Statement statement, ResultSet resultSet, ResultSet next) {
-      return new StatementResult(statement, resultSet);
+      return new StatementResult(statement, resultSet, next);
     }
 
     /** Creates a {@link StatementResult} for a read request. */
@@ -598,6 +599,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private ConcurrentMap<ByteString, Instant> transactionLastUsed = new ConcurrentHashMap<>();
   private int maxNumSessionsInOneBatch = 100;
   private int maxTotalSessions = Integer.MAX_VALUE;
+  private Iterable<BatchWriteResponse> batchWriteResult = new ArrayList<>();
   private AtomicInteger numSessionsCreated = new AtomicInteger();
   private SimulatedExecutionTime beginTransactionExecutionTime = NO_EXECUTION_TIME;
   private SimulatedExecutionTime commitExecutionTime = NO_EXECUTION_TIME;
@@ -675,6 +677,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   public void putPartialStatementResult(StatementResult result) {
     synchronized (lock) {
       partialStatementResults.put(result.statement.getSql(), result);
+    }
+  }
+
+  public void setBatchWriteResult(final Iterable<BatchWriteResponse> responses) {
+    synchronized (lock) {
+      this.batchWriteResult = responses;
     }
   }
 
@@ -1954,6 +1962,29 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                 .build());
       }
       responseObserver.onNext(responseBuilder.build());
+      responseObserver.onCompleted();
+    } catch (StatusRuntimeException t) {
+      responseObserver.onError(t);
+    } catch (Throwable t) {
+      responseObserver.onError(Status.INTERNAL.asRuntimeException());
+    }
+  }
+
+  @Override
+  public void batchWrite(
+      BatchWriteRequest request, StreamObserver<BatchWriteResponse> responseObserver) {
+    requests.add(request);
+    Preconditions.checkNotNull(request.getSession());
+    Session session = sessions.get(request.getSession());
+    if (session == null) {
+      setSessionNotFound(request.getSession(), responseObserver);
+      return;
+    }
+    sessionLastUsed.put(session.getName(), Instant.now());
+    try {
+      for (BatchWriteResponse response : batchWriteResult) {
+        responseObserver.onNext(response);
+      }
       responseObserver.onCompleted();
     } catch (StatusRuntimeException t) {
       responseObserver.onError(t);

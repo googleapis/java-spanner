@@ -16,13 +16,13 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionOptionsTest.runWithSystemPropertyEnabled;
 import static org.junit.Assert.assertEquals;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.OAuth2Credentials;
 import io.grpc.ManagedChannelBuilder;
-import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.BeforeClass;
@@ -64,63 +64,83 @@ public class CredentialsProviderTest extends AbstractMockServerTest {
 
   static final class TestCredentialsProvider implements CredentialsProvider {
     @Override
-    public Credentials getCredentials() throws IOException {
+    public Credentials getCredentials() {
       return new TestCredentials(COUNTER.incrementAndGet());
     }
   }
 
   @Test
-  public void testCredentialsProvider() {
-    ConnectionOptions options =
-        ConnectionOptions.newBuilder()
-            .setUri(
-                String.format(
-                    "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?credentialsProvider=%s",
-                    getPort(), TestCredentialsProvider.class.getName()))
-            .setConfigurator(
-                spannerOptions ->
-                    spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext))
-            .build();
+  public void testCredentialsProvider() throws Throwable {
+    runWithSystemPropertyEnabled(
+        ConnectionOptions.ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY,
+        () -> {
+          ConnectionOptions options =
+              ConnectionOptions.newBuilder()
+                  .setUri(
+                      String.format(
+                          "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?credentialsProvider=%s",
+                          getPort(), TestCredentialsProvider.class.getName()))
+                  .setConfigurator(
+                      spannerOptions -> {
+                        spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
+                        spannerOptions.disableDirectPath();
+                      })
+                  .build();
 
-    try (Connection connection = options.getConnection()) {
-      assertEquals(
-          TestCredentials.class,
-          ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials().getClass());
-      TestCredentials credentials =
-          (TestCredentials)
-              ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials();
-      assertEquals(1, credentials.id);
-    }
-    // The second connection should get the same credentials from the provider.
-    try (Connection connection = options.getConnection()) {
-      assertEquals(
-          TestCredentials.class,
-          ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials().getClass());
-      TestCredentials credentials =
-          (TestCredentials)
-              ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials();
-      assertEquals(1, credentials.id);
-    }
+          try (Connection connection = options.getConnection()) {
+            assertEquals(
+                TestCredentials.class,
+                ((ConnectionImpl) connection)
+                    .getSpanner()
+                    .getOptions()
+                    .getCredentials()
+                    .getClass());
+            TestCredentials credentials =
+                (TestCredentials)
+                    ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials();
+            assertEquals(1, credentials.id);
+          }
+          // The second connection should get the same credentials from the provider.
+          try (Connection connection = options.getConnection()) {
+            assertEquals(
+                TestCredentials.class,
+                ((ConnectionImpl) connection)
+                    .getSpanner()
+                    .getOptions()
+                    .getCredentials()
+                    .getClass());
+            TestCredentials credentials =
+                (TestCredentials)
+                    ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials();
+            assertEquals(1, credentials.id);
+          }
 
-    // Creating new ConnectionOptions should refresh the credentials.
-    options =
-        ConnectionOptions.newBuilder()
-            .setUri(
-                String.format(
-                    "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?credentialsProvider=%s",
-                    getPort(), TestCredentialsProvider.class.getName()))
-            .setConfigurator(
-                spannerOptions ->
-                    spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext))
-            .build();
-    try (Connection connection = options.getConnection()) {
-      assertEquals(
-          TestCredentials.class,
-          ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials().getClass());
-      TestCredentials credentials =
-          (TestCredentials)
-              ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials();
-      assertEquals(2, credentials.id);
-    }
+          // Creating new ConnectionOptions should refresh the credentials.
+          options =
+              ConnectionOptions.newBuilder()
+                  .setUri(
+                      String.format(
+                          "cloudspanner://localhost:%d/projects/proj/instances/inst/databases/db?credentialsProvider=%s",
+                          getPort(), TestCredentialsProvider.class.getName()))
+                  .setConfigurator(
+                      spannerOptions -> {
+                        spannerOptions.setChannelConfigurator(ManagedChannelBuilder::usePlaintext);
+                        spannerOptions.disableDirectPath();
+                      })
+                  .build();
+          try (Connection connection = options.getConnection()) {
+            assertEquals(
+                TestCredentials.class,
+                ((ConnectionImpl) connection)
+                    .getSpanner()
+                    .getOptions()
+                    .getCredentials()
+                    .getClass());
+            TestCredentials credentials =
+                (TestCredentials)
+                    ((ConnectionImpl) connection).getSpanner().getOptions().getCredentials();
+            assertEquals(2, credentials.id);
+          }
+        });
   }
 }

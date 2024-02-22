@@ -25,6 +25,9 @@ import static org.mockito.Mockito.when;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -45,6 +48,14 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class AbstractReadContextTest {
+  private static final DirectedReadOptions DIRECTED_READ_OPTIONS =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+          .build();
+
   @Parameter(0)
   public QueryOptions defaultQueryOptions;
 
@@ -249,5 +260,16 @@ public class AbstractReadContextTest {
     assertThat(request.getRequestOptions().getRequestTag())
         .isEqualTo("app=spanner,env=test,action=query");
     assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
+  }
+
+  @Test
+  public void testGetExecuteSqlRequestBuilderWithDirectedReadOptions() {
+    ExecuteSqlRequest.Builder request =
+        context.getExecuteSqlRequestBuilder(
+            Statement.of("SELECT * FROM FOO"),
+            QueryMode.NORMAL,
+            Options.fromQueryOptions(Options.directedRead(DIRECTED_READ_OPTIONS)),
+            false);
+    assertEquals(DIRECTED_READ_OPTIONS, request.getDirectedReadOptions());
   }
 }

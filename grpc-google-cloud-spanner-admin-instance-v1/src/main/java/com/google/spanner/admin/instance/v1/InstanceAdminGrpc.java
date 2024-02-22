@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,8 @@ public final class InstanceAdminGrpc {
 
   private InstanceAdminGrpc() {}
 
-  public static final String SERVICE_NAME = "google.spanner.admin.instance.v1.InstanceAdmin";
+  public static final java.lang.String SERVICE_NAME =
+      "google.spanner.admin.instance.v1.InstanceAdmin";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<
@@ -2573,9 +2574,9 @@ public final class InstanceAdminGrpc {
   private static final class InstanceAdminMethodDescriptorSupplier
       extends InstanceAdminBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    InstanceAdminMethodDescriptorSupplier(String methodName) {
+    InstanceAdminMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 

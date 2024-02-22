@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import com.google.longrunning.stub.GrpcOperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -202,6 +204,15 @@ public class GrpcSpannerStub extends SpannerStub {
               .setResponseMarshaller(ProtoUtils.marshaller(PartitionResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<BatchWriteRequest, BatchWriteResponse>
+      batchWriteMethodDescriptor =
+          MethodDescriptor.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.SERVER_STREAMING)
+              .setFullMethodName("google.spanner.v1.Spanner/BatchWrite")
+              .setRequestMarshaller(ProtoUtils.marshaller(BatchWriteRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(BatchWriteResponse.getDefaultInstance()))
+              .build();
+
   private final UnaryCallable<CreateSessionRequest, Session> createSessionCallable;
   private final UnaryCallable<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
       batchCreateSessionsCallable;
@@ -222,6 +233,7 @@ public class GrpcSpannerStub extends SpannerStub {
   private final UnaryCallable<RollbackRequest, Empty> rollbackCallable;
   private final UnaryCallable<PartitionQueryRequest, PartitionResponse> partitionQueryCallable;
   private final UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable;
+  private final ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable;
 
   private final BackgroundResource backgroundResources;
   private final GrpcOperationsStub operationsStub;
@@ -414,6 +426,16 @@ public class GrpcSpannerStub extends SpannerStub {
                   return builder.build();
                 })
             .build();
+    GrpcCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteTransportSettings =
+        GrpcCallSettings.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+            .setMethodDescriptor(batchWriteMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
+            .build();
 
     this.createSessionCallable =
         callableFactory.createUnaryCallable(
@@ -467,6 +489,9 @@ public class GrpcSpannerStub extends SpannerStub {
     this.partitionReadCallable =
         callableFactory.createUnaryCallable(
             partitionReadTransportSettings, settings.partitionReadSettings(), clientContext);
+    this.batchWriteCallable =
+        callableFactory.createServerStreamingCallable(
+            batchWriteTransportSettings, settings.batchWriteSettings(), clientContext);
 
     this.backgroundResources =
         new BackgroundResourceAggregation(clientContext.getBackgroundResources());
@@ -556,6 +581,11 @@ public class GrpcSpannerStub extends SpannerStub {
   @Override
   public UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable() {
     return partitionReadCallable;
+  }
+
+  @Override
+  public ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
+    return batchWriteCallable;
   }
 
   @Override

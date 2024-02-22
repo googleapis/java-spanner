@@ -88,7 +88,7 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
   ITConnection createConnection() {
     ConnectionOptions options =
         ConnectionOptions.newBuilder()
-            .setUri(getBaseUrl())
+            .setUri(getBaseUrl() + ";trackSessionLeaks=false")
             .setConfigurator(
                 optionsConfigurator ->
                     optionsConfigurator
@@ -508,13 +508,14 @@ public class StatementTimeoutTest extends AbstractMockServerTest {
 
                   thread.set(Thread.currentThread());
                   latch.countDown();
-                  try (ResultSet rs = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {}
+                  //noinspection EmptyTryBlock
+                  try (ResultSet ignore = connection.executeQuery(SELECT_RANDOM_STATEMENT)) {}
                   return false;
                 } catch (SpannerException e) {
                   return e.getErrorCode() == ErrorCode.CANCELLED;
                 }
               });
-      latch.await(10L, TimeUnit.SECONDS);
+      assertTrue(latch.await(10L, TimeUnit.SECONDS));
       waitForRequestsToContain(ExecuteSqlRequest.class);
       thread.get().interrupt();
       assertTrue(future.get());

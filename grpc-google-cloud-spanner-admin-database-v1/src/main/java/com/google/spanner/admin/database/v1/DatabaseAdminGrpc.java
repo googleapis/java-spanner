@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ public final class DatabaseAdminGrpc {
 
   private DatabaseAdminGrpc() {}
 
-  public static final String SERVICE_NAME = "google.spanner.admin.database.v1.DatabaseAdmin";
+  public static final java.lang.String SERVICE_NAME =
+      "google.spanner.admin.database.v1.DatabaseAdmin";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<
@@ -3058,9 +3059,9 @@ public final class DatabaseAdminGrpc {
   private static final class DatabaseAdminMethodDescriptorSupplier
       extends DatabaseAdminBaseDescriptorSupplier
       implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
+    private final java.lang.String methodName;
 
-    DatabaseAdminMethodDescriptorSupplier(String methodName) {
+    DatabaseAdminMethodDescriptorSupplier(java.lang.String methodName) {
       this.methodName = methodName;
     }
 

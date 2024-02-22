@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -30,6 +31,7 @@ import com.google.cloud.spanner.ResultSetsHelper;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -139,6 +141,19 @@ public class MergedResultSetTest {
         new MergedResultSet(results.connection, results.partitions, maxParallelism)) {
       while (resultSet.next()) {
         assertRowExists(results.allRows, resultSet.getCurrentRowAsStruct(), rowsFound);
+      }
+      // Verify that we can get the metadata after having gotten all rows.
+      // This failed in the initial release of this feature for result sets that were empty. The
+      // reason for that was that the initial implementation would do a call to currentRowAsStruct,
+      // which would always be null for result sets that never returned any data.
+      assertNotNull(resultSet.getMetadata());
+      if (numPartitions == 0) {
+        assertEquals(0, resultSet.getColumnCount());
+      } else {
+        assertEquals(22, resultSet.getColumnCount());
+        assertEquals(Type.bool(), resultSet.getColumnType(0));
+        assertEquals(Type.bool(), resultSet.getColumnType("COL0"));
+        assertEquals(10, resultSet.getColumnIndex("COL10"));
       }
       // Check that all rows were found.
       assertEquals(results.allRows.size(), rowsFound.nextClearBit(0));

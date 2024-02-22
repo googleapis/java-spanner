@@ -27,6 +27,8 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
@@ -54,13 +56,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 
-/** Unit tests for {@link com.google.cloud.spanner.AbstractResultSet.GrpcResultSet}. */
+/** Unit tests for {@link GrpcResultSet}. */
 @RunWith(JUnit4.class)
 public class GrpcResultSetTest {
 
-  private AbstractResultSet.GrpcResultSet resultSet;
+  private GrpcResultSet resultSet;
   private SpannerRpc.ResultStreamConsumer consumer;
-  private AbstractResultSet.GrpcStreamIterator stream;
+  private GrpcStreamIterator stream;
   private final Duration streamWaitTimeout = Duration.ofNanos(1L);
 
   private static class NoOpListener implements AbstractResultSet.Listener {
@@ -79,7 +81,7 @@ public class GrpcResultSetTest {
 
   @Before
   public void setUp() {
-    stream = new AbstractResultSet.GrpcStreamIterator(10);
+    stream = new GrpcStreamIterator(10);
     stream.setCall(
         new SpannerRpc.StreamingCall() {
           @Override
@@ -95,11 +97,11 @@ public class GrpcResultSetTest {
         },
         false);
     consumer = stream.consumer();
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new GrpcResultSet(stream, new NoOpListener());
   }
 
-  public AbstractResultSet.GrpcResultSet resultSetWithMode(QueryMode queryMode) {
-    return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+  public GrpcResultSet resultSetWithMode(QueryMode queryMode) {
+    return new GrpcResultSet(stream, new NoOpListener());
   }
 
   @Test
@@ -607,7 +609,7 @@ public class GrpcResultSetTest {
 
   private void verifySerialization(
       Function<Value, com.google.protobuf.Value> protoFn, Value... values) {
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new GrpcResultSet(stream, new NoOpListener());
     PartialResultSet.Builder builder = PartialResultSet.newBuilder();
     List<Type.StructField> types = new ArrayList<>();
     for (Value value : values) {
@@ -766,6 +768,68 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getProtoMessage() {
+    SingerInfo singerInfo1 =
+        SingerInfo.newBuilder()
+            .setSingerId(111)
+            .setNationality("COUNTRY1")
+            .setGenre(Genre.FOLK)
+            .build();
+    SingerInfo singerInfo2 = SingerInfo.newBuilder().setSingerId(222).setGenre(Genre.JAZZ).build();
+    String singerInfoFullName = SingerInfo.getDescriptor().getFullName();
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.proto(singerInfoFullName)))))
+            .addValues(Value.protoMessage(singerInfo1).toProto())
+            .addValues(
+                Value.protoMessage(
+                        ByteArray.copyFrom(singerInfo2.toByteArray()), singerInfoFullName)
+                    .toProto())
+            .addValues(Value.protoMessage(null, SingerInfo.getDescriptor().getFullName()).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals(singerInfo1, resultSet.getProtoMessage(0, SingerInfo.getDefaultInstance()));
+    assertTrue(resultSet.next());
+    assertEquals(singerInfo2, resultSet.getProtoMessage(0, SingerInfo.getDefaultInstance()));
+    assertTrue(resultSet.next());
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          resultSet.getProtoMessage(0, SingerInfo.getDefaultInstance());
+        });
+  }
+
+  @Test
+  public void getProtoEnum() {
+    String genreFullyQualifiedName = Genre.getDescriptor().getFullName();
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(
+                    Type.struct(Type.StructField.of("f", Type.protoEnum(genreFullyQualifiedName)))))
+            .addValues(Value.protoEnum(Genre.FOLK).toProto())
+            .addValues(Value.protoEnum(Genre.JAZZ.getNumber(), genreFullyQualifiedName).toProto())
+            .addValues(Value.protoEnum(null, genreFullyQualifiedName).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals(Genre.FOLK, resultSet.getProtoEnum(0, Genre::forNumber));
+    assertTrue(resultSet.next());
+    assertEquals(Genre.JAZZ, resultSet.getProtoEnum(0, Genre::forNumber));
+    assertTrue(resultSet.next());
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          resultSet.getProtoEnum(0, Genre::forNumber);
+        });
+  }
+
+  @Test
   public void getBooleanArray() {
     boolean[] boolArray = {true, true, false};
     consumer.onPartialResultSet(
@@ -905,5 +969,76 @@ public class GrpcResultSetTest {
 
     assertTrue(resultSet.next());
     assertEquals(jsonList, resultSet.getPgJsonbList(0));
+  }
+
+  @Test
+  public void getProtoMessageList() {
+    SingerInfo singerInfo1 =
+        SingerInfo.newBuilder()
+            .setSingerId(111)
+            .setNationality("COUNTRY1")
+            .setGenre(Genre.FOLK)
+            .build();
+    SingerInfo singerInfo2 = SingerInfo.newBuilder().setSingerId(222).setGenre(Genre.JAZZ).build();
+    String singerInfoFullName = SingerInfo.getDescriptor().getFullName();
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(
+                    Type.struct(
+                        Type.StructField.of("f", Type.array(Type.proto(singerInfoFullName))))))
+            .addValues(
+                Value.protoMessageArray(
+                        Arrays.asList(singerInfo1, singerInfo2), SingerInfo.getDescriptor())
+                    .toProto())
+            .addValues(
+                Value.protoMessageArray(
+                        Arrays.asList(singerInfo2, null, singerInfo1), SingerInfo.getDescriptor())
+                    .toProto())
+            .addValues(Value.protoMessageArray(null, SingerInfo.getDescriptor()).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals(
+        Arrays.asList(singerInfo1, singerInfo2),
+        resultSet.getProtoMessageList(0, SingerInfo.getDefaultInstance()));
+    assertTrue(resultSet.next());
+    assertEquals(
+        Arrays.asList(singerInfo2, null, singerInfo1),
+        resultSet.getProtoMessageList(0, SingerInfo.getDefaultInstance()));
+    assertTrue(resultSet.next());
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          resultSet.getProtoMessageList(0, SingerInfo.getDefaultInstance());
+        });
+  }
+
+  @Test
+  public void getProtoEnumList() {
+    String genreFullyQualifiedName = Genre.getDescriptor().getFullName();
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(
+                    Type.struct(Type.StructField.of("f", Type.protoEnum(genreFullyQualifiedName)))))
+            .addValues(Value.protoEnum(Genre.FOLK).toProto())
+            .addValues(Value.protoEnum(Genre.JAZZ.getNumber(), genreFullyQualifiedName).toProto())
+            .addValues(Value.protoEnum(null, genreFullyQualifiedName).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertTrue(resultSet.next());
+    assertEquals(Genre.FOLK, resultSet.getProtoEnum(0, Genre::forNumber));
+    assertTrue(resultSet.next());
+    assertEquals(Genre.JAZZ, resultSet.getProtoEnum(0, Genre::forNumber));
+    assertTrue(resultSet.next());
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          resultSet.getProtoEnum(0, Genre::forNumber);
+        });
   }
 }

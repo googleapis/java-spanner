@@ -22,6 +22,7 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
+import com.google.cloud.spanner.SpannerRpcMetrics;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -37,6 +38,8 @@ import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -63,8 +66,23 @@ class HeaderInterceptor implements ClientInterceptor {
 
   private static final Logger LOGGER = Logger.getLogger(HeaderInterceptor.class.getName());
   private static final Level LEVEL = Level.INFO;
+  private final SpannerRpcMetrics spannerRpcMetrics;
 
-  HeaderInterceptor() {}
+  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
+    this.spannerRpcMetrics = spannerRpcMetrics;
+  }
+
+  private class SpannerProperties {
+    String projectId;
+    String instanceId;
+    String databaseId;
+
+    SpannerProperties(String projectId, String instanceId, String databaseId) {
+      this.databaseId = databaseId;
+      this.instanceId = instanceId;
+      this.projectId = projectId;
+    }
+  }
 
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
@@ -72,13 +90,14 @@ class HeaderInterceptor implements ClientInterceptor {
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
-        TagContext tagContext = getTagContext(headers, method.getFullMethodName());
+        SpannerProperties spannerProperties = createProjectPropertes(headers);
+        TagContext tagContext = getTagContext(method.getFullMethodName(), spannerProperties);
+        Attributes attributes = getMetricAttributes(method.getFullMethodName(), spannerProperties);
         super.start(
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
               public void onHeaders(Metadata metadata) {
-
-                processHeader(metadata, tagContext);
+                processHeader(metadata, tagContext, attributes);
                 super.onHeaders(metadata);
               }
             },
@@ -87,7 +106,7 @@ class HeaderInterceptor implements ClientInterceptor {
     };
   }
 
-  private void processHeader(Metadata metadata, TagContext tagContext) {
+  private void processHeader(Metadata metadata, TagContext tagContext, Attributes attributes) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     if (metadata.get(SERVER_TIMING_HEADER_KEY) != null) {
       String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
@@ -98,27 +117,20 @@ class HeaderInterceptor implements ClientInterceptor {
           measureMap.put(SPANNER_GFE_LATENCY, latency);
           measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
           measureMap.record(tagContext);
+
+          spannerRpcMetrics.recordGfeLatency(latency, attributes);
+          spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
         } catch (NumberFormatException e) {
           LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
         }
       }
     } else {
+      spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
       measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
     }
   }
 
-  private TagContext getTagContext(
-      String method, String projectId, String instanceId, String databaseId) {
-    return TAGGER
-        .currentBuilder()
-        .putLocal(PROJECT_ID, TagValue.create(projectId))
-        .putLocal(INSTANCE_ID, TagValue.create(instanceId))
-        .putLocal(DATABASE_ID, TagValue.create(databaseId))
-        .putLocal(METHOD, TagValue.create(method))
-        .build();
-  }
-
-  private TagContext getTagContext(Metadata headers, String method) {
+  private SpannerProperties createProjectPropertes(Metadata headers) {
     String projectId = "undefined-project";
     String instanceId = "undefined-database";
     String databaseId = "undefined-database";
@@ -137,6 +149,26 @@ class HeaderInterceptor implements ClientInterceptor {
         LOGGER.log(LEVEL, "Error parsing google cloud resource header: " + googleResourcePrefix);
       }
     }
-    return getTagContext(method, projectId, instanceId, databaseId);
+    return new SpannerProperties(projectId, instanceId, databaseId);
+  }
+
+  private TagContext getTagContext(String method, SpannerProperties spannerProperties) {
+    return TAGGER
+        .currentBuilder()
+        .putLocal(PROJECT_ID, TagValue.create(spannerProperties.projectId))
+        .putLocal(INSTANCE_ID, TagValue.create(spannerProperties.instanceId))
+        .putLocal(DATABASE_ID, TagValue.create(spannerProperties.databaseId))
+        .putLocal(METHOD, TagValue.create(method))
+        .build();
+  }
+
+  private Attributes getMetricAttributes(String method, SpannerProperties spannerProperties) {
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    attributesBuilder.put("database", spannerProperties.databaseId);
+    attributesBuilder.put("instance_id", spannerProperties.instanceId);
+    attributesBuilder.put("project_id", spannerProperties.projectId);
+    attributesBuilder.put("method", method);
+
+    return attributesBuilder.build();
   }
 }

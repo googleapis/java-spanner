@@ -22,17 +22,21 @@ import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSI
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.METRIC_PREFIX;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_ACQUIRED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_READ_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_RELEASED_SESSIONS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_AVAILABLE;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_BEING_PREPARED;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_POOL_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_USE;
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS_DESCRIPTION;
+import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TYPE;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
@@ -43,6 +47,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
@@ -54,35 +59,31 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.Empty;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.ResultSetStats;
-import io.opencensus.common.Scope;
 import io.opencensus.metrics.DerivedLongCumulative;
 import io.opencensus.metrics.DerivedLongGauge;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.metrics.MetricOptions;
 import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
-import io.opencensus.trace.Annotation;
-import io.opencensus.trace.AttributeValue;
-import io.opencensus.trace.BlankSpan;
-import io.opencensus.trace.Span;
-import io.opencensus.trace.Status;
-import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.Meter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -115,19 +116,8 @@ import org.threeten.bp.Instant;
 class SessionPool {
 
   private static final Logger logger = Logger.getLogger(SessionPool.class.getName());
-  private static final Tracer tracer = Tracing.getTracer();
+  private final TraceWrapper tracer;
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
-  static final ImmutableSet<ErrorCode> SHOULD_STOP_PREPARE_SESSIONS_ERROR_CODES =
-      ImmutableSet.of(
-          ErrorCode.UNKNOWN,
-          ErrorCode.INVALID_ARGUMENT,
-          ErrorCode.PERMISSION_DENIED,
-          ErrorCode.UNAUTHENTICATED,
-          ErrorCode.RESOURCE_EXHAUSTED,
-          ErrorCode.FAILED_PRECONDITION,
-          ErrorCode.OUT_OF_RANGE,
-          ErrorCode.UNIMPLEMENTED,
-          ErrorCode.INTERNAL);
 
   /**
    * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
@@ -150,16 +140,6 @@ class SessionPool {
       }
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
-    }
-  }
-
-  /**
-   * Wrapper around current time so that we can fake it in tests. TODO(user): Replace with Java 8
-   * Clock.
-   */
-  static class Clock {
-    Instant instant() {
-      return Instant.now();
     }
   }
 
@@ -1113,7 +1093,7 @@ class SessionPool {
   }
 
   private PooledSessionFuture createPooledSessionFuture(
-      ListenableFuture<PooledSession> future, Span span) {
+      ListenableFuture<PooledSession> future, ISpan span) {
     return new PooledSessionFuture(future, span);
   }
 
@@ -1122,10 +1102,10 @@ class SessionPool {
     private volatile LeakedSessionException leakedException;
     private volatile AtomicBoolean inUse = new AtomicBoolean();
     private volatile CountDownLatch initialized = new CountDownLatch(1);
-    private final Span span;
+    private final ISpan span;
 
     @VisibleForTesting
-    PooledSessionFuture(ListenableFuture<PooledSession> delegate, Span span) {
+    PooledSessionFuture(ListenableFuture<PooledSession> delegate, ISpan span) {
       super(delegate);
       this.span = span;
     }
@@ -1166,6 +1146,17 @@ class SessionPool {
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
       try {
         return get().writeAtLeastOnceWithOptions(mutations, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        return get().batchWriteAtLeastOnce(mutationGroups, options);
       } finally {
         close();
       }
@@ -1346,7 +1337,7 @@ class SessionPool {
         }
         if (res != null) {
           res.markBusy(span);
-          span.addAnnotation(sessionAnnotation(res));
+          span.addAnnotation("Using Session", "sessionId", res.getName());
           synchronized (lock) {
             incrementNumSessionsInUse();
             checkedOutSessions.add(this);
@@ -1366,11 +1357,17 @@ class SessionPool {
     }
   }
 
-  final class PooledSession implements Session {
+  class PooledSession implements Session {
     @VisibleForTesting SessionImpl delegate;
-    private volatile Instant lastUseTime;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
+
+    /**
+     * This ensures that the session is added at a random position in the pool the first time it is
+     * actually added to the pool.
+     */
+    @GuardedBy("lock")
+    private Position releaseToPosition = initialReleasePosition;
 
     /**
      * Property to mark if the session is eligible to be long-running. This can only be true if the
@@ -1400,7 +1397,16 @@ class SessionPool {
     private PooledSession(SessionImpl delegate) {
       this.delegate = delegate;
       this.state = SessionState.AVAILABLE;
-      this.lastUseTime = clock.instant();
+
+      // initialise the lastUseTime field for each session.
+      this.markUsed();
+    }
+
+    int getChannel() {
+      Long channelHint = (Long) delegate.getOptions().get(SpannerRpc.Option.CHANNEL_HINT);
+      return channelHint == null
+          ? 0
+          : (int) (channelHint % sessionClient.getSpanner().getOptions().getNumChannels());
     }
 
     @Override
@@ -1445,6 +1451,18 @@ class SessionPool {
       try {
         markUsed();
         return delegate.writeAtLeastOnceWithOptions(mutations, options);
+      } catch (SpannerException e) {
+        throw lastException = e;
+      }
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        markUsed();
+        return delegate.batchWriteAtLeastOnce(mutationGroups, options);
       } catch (SpannerException e) {
         throw lastException = e;
       }
@@ -1536,7 +1554,7 @@ class SessionPool {
         if (state != SessionState.CLOSING) {
           state = SessionState.AVAILABLE;
         }
-        releaseSession(this, Position.FIRST);
+        releaseSession(this, false);
       }
     }
 
@@ -1553,8 +1571,8 @@ class SessionPool {
 
     private void keepAlive() {
       markUsed();
-      final Span previousSpan = delegate.getCurrentSpan();
-      delegate.setCurrentSpan(BlankSpan.INSTANCE);
+      final ISpan previousSpan = delegate.getCurrentSpan();
+      delegate.setCurrentSpan(tracer.getBlankSpan());
       try (ResultSet resultSet =
           delegate
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
@@ -1576,7 +1594,7 @@ class SessionPool {
               // in the database dialect, and there's nothing sensible that we can do with it here.
               dialect.setException(t);
             } finally {
-              releaseSession(this, Position.FIRST);
+              releaseSession(this, false);
             }
           });
     }
@@ -1593,7 +1611,7 @@ class SessionPool {
       }
     }
 
-    private void markBusy(Span span) {
+    private void markBusy(ISpan span) {
       this.delegate.setCurrentSpan(span);
       this.state = SessionState.BUSY;
     }
@@ -1603,7 +1621,7 @@ class SessionPool {
     }
 
     void markUsed() {
-      lastUseTime = clock.instant();
+      delegate.markUsed(clock.instant());
     }
 
     @Override
@@ -1633,35 +1651,52 @@ class SessionPool {
     public PooledSession get() {
       long currentTimeout = options.getInitialWaitForSessionTimeoutMillis();
       while (true) {
-        Span span = tracer.spanBuilder(WAIT_FOR_SESSION).startSpan();
-        try (Scope waitScope = tracer.withSpan(span)) {
-          PooledSession s = pollUninterruptiblyWithTimeout(currentTimeout);
+        ISpan span = tracer.spanBuilder(WAIT_FOR_SESSION);
+        try (IScope waitScope = tracer.withSpan(span)) {
+          PooledSession s =
+              pollUninterruptiblyWithTimeout(currentTimeout, options.getAcquireSessionTimeout());
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
             numWaiterTimeouts.incrementAndGet();
-            tracer.getCurrentSpan().setStatus(Status.DEADLINE_EXCEEDED);
+            tracer.getCurrentSpan().setStatus(ErrorCode.DEADLINE_EXCEEDED);
             currentTimeout = Math.min(currentTimeout * 2, MAX_SESSION_WAIT_TIMEOUT);
           } else {
             return s;
           }
         } catch (Exception e) {
-          TraceUtil.setWithFailure(span, e);
+          if (e instanceof SpannerException
+              && ErrorCode.RESOURCE_EXHAUSTED.equals(((SpannerException) e).getErrorCode())) {
+            numWaiterTimeouts.incrementAndGet();
+            tracer.getCurrentSpan().setStatus(ErrorCode.RESOURCE_EXHAUSTED);
+          }
+          span.setStatus(e);
           throw e;
         } finally {
-          span.end(TraceUtil.END_SPAN_OPTIONS);
+          span.end();
         }
       }
     }
 
-    private PooledSession pollUninterruptiblyWithTimeout(long timeoutMillis) {
+    private PooledSession pollUninterruptiblyWithTimeout(
+        long timeoutMillis, Duration acquireSessionTimeout) {
       boolean interrupted = false;
       try {
         while (true) {
           try {
-            return waiter.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            return acquireSessionTimeout == null
+                ? waiter.get(timeoutMillis, TimeUnit.MILLISECONDS)
+                : waiter.get(acquireSessionTimeout.toMillis(), TimeUnit.MILLISECONDS);
           } catch (InterruptedException e) {
             interrupted = true;
           } catch (TimeoutException e) {
+            if (acquireSessionTimeout != null) {
+              throw SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.RESOURCE_EXHAUSTED,
+                  "Timed out after waiting "
+                      + acquireSessionTimeout.toMillis()
+                      + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
+                      + " or increase the number of sessions in the session pool.");
+            }
             return null;
           } catch (ExecutionException e) {
             throw SpannerExceptionFactory.newSpannerException(e.getCause());
@@ -1782,7 +1817,7 @@ class SessionPool {
         Iterator<PooledSession> iterator = sessions.descendingIterator();
         while (iterator.hasNext()) {
           PooledSession session = iterator.next();
-          if (session.lastUseTime.isBefore(minLastUseTime)) {
+          if (session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {
               boolean isRemoved = removeFromPool(session);
               if (isRemoved) {
@@ -1830,7 +1865,7 @@ class SessionPool {
           logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
           numSessionsToKeepAlive--;
           sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive, Position.FIRST);
+          releaseSession(sessionToKeepAlive, false);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -1884,7 +1919,8 @@ class SessionPool {
             // collection is populated only when the get() method in {@code PooledSessionFuture} is
             // called.
             final PooledSession session = sessionFuture.get();
-            final Duration durationFromLastUse = Duration.between(session.lastUseTime, currentTime);
+            final Duration durationFromLastUse =
+                Duration.between(session.delegate.getLastUseTime(), currentTime);
             if (!session.eligibleForLongRunning
                 && durationFromLastUse.compareTo(
                         inactiveTransactionRemovalOptions.getIdleTimeThreshold())
@@ -1929,8 +1965,9 @@ class SessionPool {
     }
   }
 
-  private enum Position {
+  enum Position {
     FIRST,
+    LAST,
     RANDOM
   }
 
@@ -1962,6 +1999,15 @@ class SessionPool {
 
   final PoolMaintainer poolMaintainer;
   private final Clock clock;
+  /**
+   * initialReleasePosition determines where in the pool sessions are added when they are released
+   * into the pool the first time. This is always RANDOM in production, but some tests use FIRST to
+   * be able to verify the order of sessions in the pool. Using RANDOM ensures that we do not get an
+   * unbalanced session pool where all sessions belonging to one gRPC channel are added to the same
+   * region in the pool.
+   */
+  private final Position initialReleasePosition;
+
   private final Object lock = new Object();
   private final Random random = new Random();
 
@@ -2034,7 +2080,11 @@ class SessionPool {
    * be created.
    */
   static SessionPool createPool(
-      SpannerOptions spannerOptions, SessionClient sessionClient, List<LabelValue> labelValues) {
+      SpannerOptions spannerOptions,
+      SessionClient sessionClient,
+      TraceWrapper tracer,
+      List<LabelValue> labelValues,
+      Attributes attributes) {
     final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
 
     // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
@@ -2045,30 +2095,50 @@ class SessionPool {
         ((GrpcTransportOptions) spannerOptions.getTransportOptions()).getExecutorFactory(),
         sessionClient,
         poolMaintainerClock == null ? new Clock() : poolMaintainerClock,
+        Position.RANDOM,
         Metrics.getMetricRegistry(),
-        labelValues);
-  }
-
-  static SessionPool createPool(
-      SessionPoolOptions poolOptions,
-      ExecutorFactory<ScheduledExecutorService> executorFactory,
-      SessionClient sessionClient) {
-    return createPool(poolOptions, executorFactory, sessionClient, new Clock());
+        tracer,
+        labelValues,
+        spannerOptions.getOpenTelemetry(),
+        attributes);
   }
 
   static SessionPool createPool(
       SessionPoolOptions poolOptions,
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
-      Clock clock) {
+      TraceWrapper tracer,
+      OpenTelemetry openTelemetry) {
+    return createPool(
+        poolOptions,
+        executorFactory,
+        sessionClient,
+        new Clock(),
+        Position.RANDOM,
+        tracer,
+        openTelemetry);
+  }
+
+  static SessionPool createPool(
+      SessionPoolOptions poolOptions,
+      ExecutorFactory<ScheduledExecutorService> executorFactory,
+      SessionClient sessionClient,
+      Clock clock,
+      Position initialReleasePosition,
+      TraceWrapper tracer,
+      OpenTelemetry openTelemetry) {
     return createPool(
         poolOptions,
         null,
         executorFactory,
         sessionClient,
         clock,
+        initialReleasePosition,
         Metrics.getMetricRegistry(),
-        SPANNER_DEFAULT_LABEL_VALUES);
+        tracer,
+        SPANNER_DEFAULT_LABEL_VALUES,
+        openTelemetry,
+        null);
   }
 
   static SessionPool createPool(
@@ -2077,8 +2147,12 @@ class SessionPool {
       ExecutorFactory<ScheduledExecutorService> executorFactory,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
-      List<LabelValue> labelValues) {
+      TraceWrapper tracer,
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
     SessionPool pool =
         new SessionPool(
             poolOptions,
@@ -2087,8 +2161,12 @@ class SessionPool {
             executorFactory.get(),
             sessionClient,
             clock,
+            initialReleasePosition,
             metricRegistry,
-            labelValues);
+            tracer,
+            labelValues,
+            openTelemetry,
+            attributes);
     pool.initPool();
     return pool;
   }
@@ -2100,16 +2178,23 @@ class SessionPool {
       ScheduledExecutorService executor,
       SessionClient sessionClient,
       Clock clock,
+      Position initialReleasePosition,
       MetricRegistry metricRegistry,
-      List<LabelValue> labelValues) {
+      TraceWrapper tracer,
+      List<LabelValue> labelValues,
+      OpenTelemetry openTelemetry,
+      Attributes attributes) {
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
     this.executor = executor;
     this.sessionClient = sessionClient;
     this.clock = clock;
+    this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
-    this.initMetricsCollection(metricRegistry, labelValues);
+    this.tracer = tracer;
+    this.initOpenCensusMetricsCollection(metricRegistry, labelValues);
+    this.initOpenTelemetryMetricsCollection(openTelemetry, attributes);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
   }
@@ -2233,7 +2318,7 @@ class SessionPool {
     if (isSessionNotFound(e)) {
       invalidateSession(session);
     } else {
-      releaseSession(session, Position.FIRST);
+      releaseSession(session, false);
     }
   }
 
@@ -2265,7 +2350,7 @@ class SessionPool {
         && (numChecked + numAlreadyChecked)
             < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
-      if (session.lastUseTime.isBefore(keepAliveThreshold)) {
+      if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
         iterator.remove();
         return session;
       }
@@ -2297,7 +2382,7 @@ class SessionPool {
    * </ol>
    */
   PooledSessionFuture getSession() throws SpannerException {
-    Span span = Tracing.getTracer().getCurrentSpan();
+    ISpan span = tracer.getCurrentSpan();
     span.addAnnotation("Acquiring session");
     WaiterFuture waiter = null;
     PooledSession sess = null;
@@ -2329,7 +2414,7 @@ class SessionPool {
   }
 
   private PooledSessionFuture checkoutSession(
-      final Span span, final PooledSession readySession, WaiterFuture waiter) {
+      final ISpan span, final PooledSession readySession, WaiterFuture waiter) {
     ListenableFuture<PooledSession> sessionFuture;
     if (waiter != null) {
       logger.log(
@@ -2362,12 +2447,6 @@ class SessionPool {
     }
   }
 
-  private Annotation sessionAnnotation(Session session) {
-    AttributeValue sessionId = AttributeValue.stringAttributeValue(session.getName());
-    return Annotation.fromDescriptionAndAttributes(
-        "Using Session", ImmutableMap.of("sessionId", sessionId));
-  }
-
   private void incrementNumSessionsInUse() {
     synchronized (lock) {
       if (maxSessionsInUse < ++numSessionsInUse) {
@@ -2378,7 +2457,7 @@ class SessionPool {
   }
 
   private void maybeCreateSession() {
-    Span span = Tracing.getTracer().getCurrentSpan();
+    ISpan span = tracer.getCurrentSpan();
     synchronized (lock) {
       if (numWaiters() >= numSessionsBeingCreated) {
         if (canCreateSession()) {
@@ -2396,31 +2475,128 @@ class SessionPool {
       }
     }
   }
+
   /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
-  private void releaseSession(PooledSession session, Position position) {
+  private void releaseSession(PooledSession session, boolean isNewSession) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
         return;
       }
       if (waiters.size() == 0) {
-        // No pending waiters
-        switch (position) {
-          case RANDOM:
-            if (!sessions.isEmpty()) {
-              int pos = random.nextInt(sessions.size() + 1);
-              sessions.add(pos, session);
-              break;
-            }
-            // fallthrough
-          case FIRST:
-          default:
-            sessions.addFirst(session);
+        // There are no pending waiters.
+        // Add to a random position if the head of the session pool already contains many sessions
+        // with the same channel as this one.
+        if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
+          session.releaseToPosition = Position.RANDOM;
+        } else if (session.releaseToPosition == Position.RANDOM
+            && !isNewSession
+            && checkedOutSessions.size() <= 2) {
+          // Do not randomize if there are few other sessions checked out and this session has been
+          // used. This ensures that this session will be re-used for the next transaction, which is
+          // more efficient.
+          session.releaseToPosition = options.getReleaseToPosition();
+        }
+        if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
+          // A session should only be added at a random position the first time it is added to
+          // the pool or if the pool was deemed unbalanced. All following releases into the pool
+          // should normally happen at the default release position (unless the pool is again deemed
+          // to be unbalanced and the insertion would happen at the front of the pool).
+          session.releaseToPosition = options.getReleaseToPosition();
+          int pos = random.nextInt(sessions.size() + 1);
+          sessions.add(pos, session);
+        } else if (session.releaseToPosition == Position.LAST) {
+          sessions.addLast(session);
+        } else {
+          sessions.addFirst(session);
         }
       } else {
         waiters.poll().put(session);
       }
     }
+  }
+
+  private boolean isUnbalanced(PooledSession session) {
+    int channel = session.getChannel();
+    int numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
+    return isUnbalanced(channel, this.sessions, this.checkedOutSessions, numChannels);
+  }
+
+  /**
+   * Returns true if the given list of sessions is considered unbalanced when compared to the
+   * sessionChannel that is about to be added to the pool.
+   *
+   * <p>The method returns true if all the following is true:
+   *
+   * <ol>
+   *   <li>The list of sessions is not empty.
+   *   <li>The number of checked out sessions is > 2.
+   *   <li>The number of channels being used by the pool is > 1.
+   *   <li>And at least one of the following is true:
+   *       <ol>
+   *         <li>The first numChannels sessions in the list of sessions contains more than 2
+   *             sessions that use the same channel as the one being added.
+   *         <li>The list of currently checked out sessions contains more than 2 times the the
+   *             number of sessions with the same channel as the one being added than it should in
+   *             order for it to be perfectly balanced. Perfectly balanced in this case means that
+   *             the list should preferably contain size/numChannels sessions of each channel.
+   *       </ol>
+   * </ol>
+   *
+   * @param channelOfSessionBeingAdded the channel number being used by the session that is about to
+   *     be released into the pool
+   * @param sessions the list of all sessions in the pool
+   * @param checkedOutSessions the currently checked out sessions of the pool
+   * @param numChannels the number of channels in use
+   * @return true if the pool is considered unbalanced, and false otherwise
+   */
+  @VisibleForTesting
+  static boolean isUnbalanced(
+      int channelOfSessionBeingAdded,
+      List<PooledSession> sessions,
+      Set<PooledSessionFuture> checkedOutSessions,
+      int numChannels) {
+    // Do not re-balance the pool if the number of checked out sessions is low, as it is
+    // better to re-use sessions as much as possible in a low-QPS scenario.
+    if (sessions.isEmpty() || checkedOutSessions.size() <= 2) {
+      return false;
+    }
+    if (numChannels == 1) {
+      return false;
+    }
+
+    // Ideally, the first numChannels sessions in the pool should contain exactly one session for
+    // each channel.
+    // Check if the first numChannels sessions at the head of the pool already contain more than 2
+    // sessions that use the same channel as this one. If so, we re-balance.
+    // We also re-balance the pool in the specific case that the pool uses 2 channels and the first
+    // two sessions use those two channels.
+    int maxSessionsAtHeadOfPool = Math.min(numChannels, 3);
+    int count = 0;
+    for (int i = 0; i < Math.min(numChannels, sessions.size()); i++) {
+      PooledSession otherSession = sessions.get(i);
+      if (channelOfSessionBeingAdded == otherSession.getChannel()) {
+        count++;
+        if (count >= maxSessionsAtHeadOfPool) {
+          return true;
+        }
+      }
+    }
+    // Ideally, the use of a channel in the checked out sessions is exactly
+    // numCheckedOut / numChannels
+    // We check whether we are more than a factor two away from that perfect distribution.
+    // If we are, then we re-balance.
+    count = 0;
+    int checkedOutThreshold = Math.max(2, 2 * checkedOutSessions.size() / numChannels);
+    for (PooledSessionFuture otherSession : checkedOutSessions) {
+      if (otherSession.isDone() && channelOfSessionBeingAdded == otherSession.get().getChannel()) {
+        count++;
+        if (count > checkedOutThreshold) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private void handleCreateSessionsFailure(SpannerException e, int count) {
@@ -2622,7 +2798,7 @@ class SessionPool {
             // Release the session to a random position in the pool to prevent the case that a batch
             // of sessions that are affiliated with the same channel are all placed sequentially in
             // the pool.
-            releaseSession(pooledSession, Position.RANDOM);
+            releaseSession(pooledSession, true);
           }
         }
       }
@@ -2648,13 +2824,17 @@ class SessionPool {
   }
 
   /**
-   * Initializes and creates Spanner session relevant metrics. When coupled with an exporter, it
-   * allows users to monitor client behavior.
+   * Initializes and creates Spanner session relevant metrics using OpenCensus. When coupled with an
+   * exporter, it allows users to monitor client behavior.
    */
-  private void initMetricsCollection(MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+  private void initOpenCensusMetricsCollection(
+      MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+    if (!SpannerOptions.isEnabledOpenCensusMetrics()) {
+      return;
+    }
     DerivedLongGauge maxInUseSessionsMetric =
         metricRegistry.addDerivedLongGauge(
-            MAX_IN_USE_SESSIONS,
+            METRIC_PREFIX + MAX_IN_USE_SESSIONS,
             MetricOptions.builder()
                 .setDescription(MAX_IN_USE_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
@@ -2663,7 +2843,7 @@ class SessionPool {
 
     DerivedLongGauge maxAllowedSessionsMetric =
         metricRegistry.addDerivedLongGauge(
-            MAX_ALLOWED_SESSIONS,
+            METRIC_PREFIX + MAX_ALLOWED_SESSIONS,
             MetricOptions.builder()
                 .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
@@ -2672,7 +2852,7 @@ class SessionPool {
 
     DerivedLongCumulative sessionsTimeouts =
         metricRegistry.addDerivedLongCumulative(
-            GET_SESSION_TIMEOUTS,
+            METRIC_PREFIX + GET_SESSION_TIMEOUTS,
             MetricOptions.builder()
                 .setDescription(SESSIONS_TIMEOUTS_DESCRIPTION)
                 .setUnit(COUNT)
@@ -2681,7 +2861,7 @@ class SessionPool {
 
     DerivedLongCumulative numAcquiredSessionsMetric =
         metricRegistry.addDerivedLongCumulative(
-            NUM_ACQUIRED_SESSIONS,
+            METRIC_PREFIX + NUM_ACQUIRED_SESSIONS,
             MetricOptions.builder()
                 .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
@@ -2690,7 +2870,7 @@ class SessionPool {
 
     DerivedLongCumulative numReleasedSessionsMetric =
         metricRegistry.addDerivedLongCumulative(
-            NUM_RELEASED_SESSIONS,
+            METRIC_PREFIX + NUM_RELEASED_SESSIONS,
             MetricOptions.builder()
                 .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
@@ -2699,7 +2879,7 @@ class SessionPool {
 
     DerivedLongGauge numSessionsInPoolMetric =
         metricRegistry.addDerivedLongGauge(
-            NUM_SESSIONS_IN_POOL,
+            METRIC_PREFIX + NUM_SESSIONS_IN_POOL,
             MetricOptions.builder()
                 .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
                 .setUnit(COUNT)
@@ -2760,5 +2940,84 @@ class SessionPool {
         this,
         // TODO: Remove metric.
         ignored -> 0L);
+  }
+
+  /**
+   * Initializes and creates Spanner session relevant metrics using OpenTelemetry. When coupled with
+   * an exporter, it allows users to monitor client behavior.
+   */
+  private void initOpenTelemetryMetricsCollection(
+      OpenTelemetry openTelemetry, Attributes attributes) {
+    if (openTelemetry == null || !SpannerOptions.isEnabledOpenTelemetryMetrics()) {
+      return;
+    }
+
+    Meter meter = openTelemetry.getMeter(MetricRegistryConstants.INSTRUMENTATION_SCOPE);
+    meter
+        .gaugeBuilder(MAX_ALLOWED_SESSIONS)
+        .setDescription(MAX_ALLOWED_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(
+            measurement -> {
+              // Although Max sessions is a constant value, OpenTelemetry requires to define this as
+              // a callback.
+              measurement.record(options.getMaxSessions(), attributes);
+            });
+
+    meter
+        .gaugeBuilder(MAX_IN_USE_SESSIONS)
+        .setDescription(MAX_IN_USE_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.maxSessionsInUse, attributes);
+            });
+
+    AttributesBuilder attributesBuilder;
+    if (attributes != null) {
+      attributesBuilder = attributes.toBuilder();
+    } else {
+      attributesBuilder = Attributes.builder();
+    }
+    Attributes attributesInUseSessions =
+        attributesBuilder.put(SESSIONS_TYPE, NUM_SESSIONS_IN_USE).build();
+    Attributes attributesAvailableSessions =
+        attributesBuilder.put(SESSIONS_TYPE, NUM_SESSIONS_AVAILABLE).build();
+    meter
+        .upDownCounterBuilder(NUM_SESSIONS_IN_POOL)
+        .setDescription(NUM_SESSIONS_IN_POOL_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.numSessionsInUse, attributesInUseSessions);
+              measurement.record(this.sessions.size(), attributesAvailableSessions);
+            });
+
+    meter
+        .counterBuilder(GET_SESSION_TIMEOUTS)
+        .setDescription(SESSIONS_TIMEOUTS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.getNumWaiterTimeouts(), attributes);
+            });
+
+    meter
+        .counterBuilder(NUM_ACQUIRED_SESSIONS)
+        .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.numSessionsAcquired, attributes);
+            });
+
+    meter
+        .counterBuilder(NUM_RELEASED_SESSIONS)
+        .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
+        .setUnit(COUNT)
+        .buildWithCallback(
+            measurement -> {
+              measurement.record(this.numSessionsReleased, attributes);
+            });
   }
 }

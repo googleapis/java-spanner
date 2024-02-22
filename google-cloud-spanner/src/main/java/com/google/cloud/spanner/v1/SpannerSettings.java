@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -177,6 +179,11 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     return ((SpannerStubSettings) getStubSettings()).partitionReadSettings();
   }
 
+  /** Returns the object with the settings used for calls to batchWrite. */
+  public ServerStreamingCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteSettings() {
+    return ((SpannerStubSettings) getStubSettings()).batchWriteSettings();
+  }
+
   public static final SpannerSettings create(SpannerStubSettings stub) throws IOException {
     return new SpannerSettings.Builder(stub.toBuilder()).build();
   }
@@ -217,7 +224,6 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     return SpannerStubSettings.defaultTransportChannelProvider();
   }
 
-  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
   public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
     return SpannerStubSettings.defaultApiClientHeaderProviderBuilder();
   }
@@ -373,6 +379,12 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
     public UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
         partitionReadSettings() {
       return getStubSettingsBuilder().partitionReadSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to batchWrite. */
+    public ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings() {
+      return getStubSettingsBuilder().batchWriteSettings();
     }
 
     @Override
