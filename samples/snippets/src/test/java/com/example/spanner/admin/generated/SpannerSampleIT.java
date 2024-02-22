@@ -72,7 +72,6 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       Preconditions.checkNotNull(System.getProperty("spanner.test.key.ring"));
   private static final String keyName =
       Preconditions.checkNotNull(System.getProperty("spanner.test.key.name"));
-  private static final String encryptedDatabaseId = formatForTest(baseDbId);
   private static final String encryptedBackupId = formatForTest(baseDbId);
   private static final long STALE_INSTANCE_THRESHOLD_SECS =
       TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
@@ -171,7 +170,6 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
 
   @AfterClass
   public static void tearDown() {
-    databaseAdminClient.dropDatabase(DatabaseName.of(projectId, instanceId, encryptedDatabaseId));
     databaseAdminClient.deleteBackup(BackupName.of(projectId, instanceId, encryptedBackupId));
     spanner.close();
   }
@@ -409,7 +407,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       }
 
       System.out.println("List Backup ...");
-      out = runSample("listbackups", databaseId);
+      out = runSample("listbackups", databaseId, backupId);
       assertThat(out).contains("All backups:");
       assertThat(out).contains(
           String.format("All backups with backup name containing \"%s\":", backupId));
@@ -422,8 +420,8 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       assertThat(out).containsMatch(
           Pattern.compile("All databases created after (.+) and that are ready:"));
       assertThat(out).contains("All backups, listed using pagination:");
-      // All the above tests should include the created backup exactly once, i.e. exactly 7 times.
-      assertThat(countOccurrences(out, backupName.toString())).isEqualTo(7);
+      // All the above tests should include the created backup exactly once, i.e. exactly 6 times.
+      assertThat(countOccurrences(out, backupName.toString())).isEqualTo(6);
 
       // Try the restore operation in a retry loop, as there is a limit on the number of restore
       // operations that is allowed to execute simultaneously, and we should retry if we hit this

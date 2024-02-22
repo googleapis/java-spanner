@@ -23,17 +23,14 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
-import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.InstanceName;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,10 +46,6 @@ public class PgSpannerSampleIT extends SampleTestBaseV2 {
   // The instance needs to exist for tests to pass.
   private static final String instanceId = System.getProperty("spanner.test.instance");
   private static final String baseDbId = System.getProperty("spanner.sample.database");
-  private static final String databaseId = formatForTest(baseDbId);
-  private static final String encryptedDatabaseId = formatForTest(baseDbId);
-  private static final String encryptedBackupId = formatForTest(baseDbId);
-  private static final String encryptedRestoreId = formatForTest(baseDbId);
   static Spanner spanner;
   static DatabaseId dbId;
   static DatabaseAdminClient dbClient;
@@ -63,7 +56,7 @@ public class PgSpannerSampleIT extends SampleTestBaseV2 {
         SpannerOptions.newBuilder().setAutoThrottleAdministrativeRequests().build();
     spanner = options.getService();
     dbClient = DatabaseAdminClient.create();
-    dbId = DatabaseId.of(options.getProjectId(), instanceId, databaseId);
+    dbId = DatabaseId.of(options.getProjectId(), instanceId, idGenerator.generateDatabaseId());
     // Delete stale test databases that have been created earlier by this test, but not deleted.
     deleteStaleTestDatabases();
   }
@@ -91,19 +84,6 @@ public class PgSpannerSampleIT extends SampleTestBaseV2 {
     }
   }
 
-  @AfterClass
-  public static void tearDown() {
-    dbClient.dropDatabase(
-        DatabaseName.of(projectId, dbId.getInstanceId().getInstance(), dbId.getDatabase()));
-    dbClient.dropDatabase(
-        DatabaseName.of(projectId, dbId.getInstanceId().getInstance(),
-            SpannerSample.createRestoredSampleDbId(dbId)));
-    dbClient.dropDatabase(DatabaseName.of(projectId, instanceId, encryptedDatabaseId));
-    dbClient.dropDatabase(DatabaseName.of(projectId, instanceId, encryptedRestoreId));
-    dbClient.deleteBackup(BackupName.of(projectId, instanceId, encryptedBackupId));
-    spanner.close();
-  }
-
   private static String toComparableId(String baseId, String existingId) {
     String zeroUuid = "00000000-0000-0000-0000-0000-00000000";
     int shouldBeLength = (baseId + "-" + zeroUuid).length();
@@ -117,17 +97,13 @@ public class PgSpannerSampleIT extends SampleTestBaseV2 {
         Pattern.CASE_INSENSITIVE);
   }
 
-  static String formatForTest(String name) {
-    return name + "-" + UUID.randomUUID().toString().substring(0, DBID_LENGTH);
-  }
-
   private String runSample(String command) throws Exception {
     final PrintStream stdOut = System.out;
     final ByteArrayOutputStream bout = new ByteArrayOutputStream();
     final PrintStream out = new PrintStream(bout);
     System.setOut(out);
-    System.out.println(instanceId + ":" + databaseId);
-    PgSpannerSample.main(new String[]{command, instanceId, databaseId});
+    System.out.println(instanceId + ":" + dbId.getDatabase());
+    PgSpannerSample.main(new String[]{command, instanceId, dbId.getDatabase()});
     System.setOut(stdOut);
     return bout.toString();
   }
@@ -135,7 +111,7 @@ public class PgSpannerSampleIT extends SampleTestBaseV2 {
   @Test
   public void testSample() throws Exception {
     assertThat(instanceId).isNotNull();
-    assertThat(databaseId).isNotNull();
+    assertThat(dbId.getDatabase()).isNotNull();
 
     System.out.println("Create Database ...");
     String out = runSample("createpgdatabase");

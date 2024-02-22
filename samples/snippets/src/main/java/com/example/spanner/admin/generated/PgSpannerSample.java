@@ -22,9 +22,6 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceId;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
@@ -42,14 +39,20 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import com.google.common.io.BaseEncoding;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
+import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
 import com.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata;
 import com.google.spanner.admin.instance.v1.InstanceName;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -1240,22 +1243,25 @@ public class PgSpannerSample {
   // [END spanner_postgresql_query_with_query_options]
 
   // [START spanner_postgresql_list_backup_operations]
-  static void listBackupOperations(InstanceAdminClient instanceAdminClient, DatabaseId databaseId) {
-    Instance instance = instanceAdminClient.getInstance(databaseId.getInstanceId().getInstance());
-    // Get create backup operations for the sample database.
-    Timestamp last24Hours = Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
-        TimeUnit.HOURS), 0);
+  static void listBackupOperations(
+      DatabaseAdminClient databaseAdminClient,
+      String projectId, String instanceId,
+      String databaseId, String backupId) {
+    com.google.spanner.admin.database.v1.InstanceName instanceName = com.google.spanner.admin.database.v1.InstanceName.of(projectId, instanceId);
+    // Get 'CreateBackup' operations for the sample database.
     String filter =
         String.format(
-            "(metadata.database:%s) AND "
-                + "(metadata.@type:type.googleapis.com/"
-                + "google.spanner.admin.database.v1.CreateBackupMetadata) AND "
-                + "(metadata.progress.start_time > \"%s\")",
-            databaseId.getName(), last24Hours);
-    Page<Operation> operations = instance
-        .listBackupOperations(Options.filter(filter));
-    for (Operation op : operations.iterateAll()) {
+            "(metadata.@type:type.googleapis.com/"
+                + "google.spanner.admin.database.v1.CreateBackupMetadata) "
+                + "AND (metadata.database:%s)",
+            DatabaseName.of(projectId, instanceId, databaseId).toString());
+    ListBackupOperationsRequest listBackupOperationsRequest =
+        ListBackupOperationsRequest.newBuilder()
+            .setParent(instanceName.toString()).setFilter(filter).build();
+    ListBackupOperationsPagedResponse createBackupOperations
+        = databaseAdminClient.listBackupOperations(listBackupOperationsRequest);
+    System.out.println("Create Backup Operations:");
+    for (Operation op : createBackupOperations.iterateAll()) {
       try {
         CreateBackupMetadata metadata = op.getMetadata().unpack(CreateBackupMetadata.class);
         System.out.println(
@@ -1269,23 +1275,53 @@ public class PgSpannerSample {
         System.err.println(e.getMessage());
       }
     }
+    // Get copy backup operations for the sample database.
+    filter = String.format(
+        "(metadata.@type:type.googleapis.com/"
+            + "google.spanner.admin.database.v1.CopyBackupMetadata) "
+            + "AND (metadata.source_backup:%s)",
+        BackupName.of(projectId, instanceId, backupId).toString());
+    listBackupOperationsRequest =
+        ListBackupOperationsRequest.newBuilder()
+            .setParent(instanceName.toString()).setFilter(filter).build();
+    ListBackupOperationsPagedResponse copyBackupOperations =
+        databaseAdminClient.listBackupOperations(listBackupOperationsRequest);
+    System.out.println("Copy Backup Operations:");
+    for (Operation op : copyBackupOperations.iterateAll()) {
+      try {
+        CopyBackupMetadata copyBackupMetadata =
+            op.getMetadata().unpack(CopyBackupMetadata.class);
+        System.out.println(
+            String.format(
+                "Copy Backup %s on backup %s pending: %d%% complete",
+                copyBackupMetadata.getName(),
+                copyBackupMetadata.getSourceBackup(),
+                copyBackupMetadata.getProgress().getProgressPercent()));
+      } catch (InvalidProtocolBufferException e) {
+        // The returned operation does not contain CopyBackupMetadata.
+        System.err.println(e.getMessage());
+      }
+    }
   }
   // [END spanner_postgresql_list_backup_operations]
 
   // [START spanner_postgresql_list_database_operations]
   static void listDatabaseOperations(
-      InstanceAdminClient instanceAdminClient,
-      DatabaseAdminClient dbAdminClient,
-      InstanceId instanceId) {
-    Instance instance = instanceAdminClient.getInstance(instanceId.getInstance());
+      DatabaseAdminClient dbAdminClient, String projectId, String instanceId) {
     // Get optimize restored database operations.
-    Timestamp last24Hours = Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
+    com.google.cloud.Timestamp last24Hours = com.google.cloud.Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
+        TimeUnit.HOURS.convert(com.google.cloud.Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
         TimeUnit.HOURS), 0);
     String filter = String.format("(metadata.@type:type.googleapis.com/"
         + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) AND "
         + "(metadata.progress.start_time > \"%s\")", last24Hours);
-    for (Operation op : instance.listDatabaseOperations(Options.filter(filter)).iterateAll()) {
+    ListDatabaseOperationsRequest listDatabaseOperationsRequest =
+        ListDatabaseOperationsRequest.newBuilder()
+            .setParent(com.google.spanner.admin.instance.v1.InstanceName.of(
+                projectId, instanceId).toString()).setFilter(filter).build();
+    ListDatabaseOperationsPagedResponse pagedResponse
+        = dbAdminClient.listDatabaseOperations(listDatabaseOperationsRequest);
+    for (Operation op : pagedResponse.iterateAll()) {
       try {
         OptimizeRestoredDatabaseMetadata metadata =
             op.getMetadata().unpack(OptimizeRestoredDatabaseMetadata.class);
@@ -1304,9 +1340,9 @@ public class PgSpannerSample {
   static void run(
       DatabaseClient dbClient,
       DatabaseAdminClient dbAdminClient,
-      InstanceAdminClient instanceAdminClient,
       String command,
-      DatabaseId database) {
+      DatabaseId database,
+      String backupId) {
     DatabaseName databaseName = DatabaseName.of(database.getInstanceId().getProject(),
         database.getInstanceId().getInstance(), database.getDatabase());
     switch (command) {
@@ -1444,10 +1480,12 @@ public class PgSpannerSample {
         queryWithQueryOptions(dbClient);
         break;
       case "listbackupoperations":
-        listBackupOperations(instanceAdminClient, database);
+        listBackupOperations(dbAdminClient, database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance(), database.getDatabase(), backupId);
         break;
       case "listdatabaseoperations":
-        listDatabaseOperations(instanceAdminClient, dbAdminClient, database.getInstanceId());
+        listDatabaseOperations(dbAdminClient, database.getInstanceId().getProject(),
+            database.getInstanceId().getInstance());
         break;
       default:
         printUsageAndExit();
@@ -1525,14 +1563,19 @@ public class PgSpannerSample {
                 + clientProject);
         printUsageAndExit();
       }
+      // Generate a backup id for the sample database.
+      String backupId = null;
+      if (args.length == 4) {
+        backupId = args[3];
+      }
+
       // [START spanner_init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
       dbAdminClient = DatabaseAdminClient.create();
-      InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
       // [END spanner_init_client]
 
       // Use client here...
-      run(dbClient, dbAdminClient, instanceAdminClient, command, db);
+      run(dbClient, dbAdminClient, command, db, backupId);
       // [START spanner_init_client]
     } finally {
       if (dbAdminClient != null) {
