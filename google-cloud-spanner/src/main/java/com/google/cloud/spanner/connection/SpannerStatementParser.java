@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -270,6 +271,31 @@ public class SpannerStatementParser extends AbstractStatementParser {
           ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
     }
     return new ParametersInfo(paramIndex - 1, named.toString());
+  }
+
+  @Override
+  boolean supportsNestedComments() {
+    return false;
+  }
+
+  @Override
+  boolean supportsDollarQuotedStrings() {
+    return false;
+  }
+
+  @Override
+  boolean supportsBacktickQuote() {
+    return true;
+  }
+
+  @Override
+  boolean supportsTripleQuotedStrings() {
+    return true;
+  }
+
+  @Override
+  boolean supportsHashSingleLineComments() {
+    return true;
   }
 
   private boolean isReturning(String sql, int index) {
