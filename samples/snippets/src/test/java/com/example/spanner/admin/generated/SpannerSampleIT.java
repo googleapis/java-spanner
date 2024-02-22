@@ -19,7 +19,6 @@ package com.example.spanner.admin.generated;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.example.spanner.admin.generated.CreateDatabaseWithDefaultLeaderSample;
 import com.example.spanner.SampleRunner;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseId;
@@ -55,8 +54,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.temporal.ChronoField;
 
 /**
  * Unit tests for {@code SpannerSample}
@@ -379,6 +376,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
   public void testBackupSamples_withoutEncryption() {
     String databaseId = idGenerator.generateDatabaseId();
     DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
+    String restoreDatabaseId = idGenerator.generateDatabaseId();
 
     try {
       assertThat(instanceId).isNotNull();
@@ -414,7 +412,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       out = runSample("listbackups", databaseId);
       assertThat(out).contains("All backups:");
       assertThat(out).contains(
-          String.format("All backups with backup name containing \"%s\":", backupName));
+          String.format("All backups with backup name containing \"%s\":", backupId));
       assertThat(out).contains(String.format(
           "All backups for databases with a name containing \"%s\":",
           dbId.getDatabase()));
@@ -435,10 +433,10 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       while (true) {
         try {
           System.out.println("Restore Backup ...");
-          out = runSample("restorebackup", databaseId);
+          out = runSample("restorebackup", restoreDatabaseId, backupId);
           assertThat(out).contains(
               "Restored database ["
-                  + dbId.getName()
+                  + DatabaseName.of(projectId, instanceId, restoreDatabaseId).toString()
                   + "] from ["
                   + backupName
                   + "]");
@@ -463,16 +461,14 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       }
 
       if (restored) {
-        out = runSample("listdatabaseoperations", databaseId);
+        out = runSample("listdatabaseoperations", restoreDatabaseId);
         assertThat(out).contains(
             String.format(
                 "Database %s restored from backup",
-                DatabaseId.of(
-                        dbId.getInstanceId(), SpannerSample.createRestoredSampleDbId(dbId))
-                    .getName()));
+                DatabaseId.of(dbId.getInstanceId(), restoreDatabaseId).getName()));
       }
 
-      out = runSample("updatebackup", databaseId);
+      out = runSample("updatebackup", databaseId, backupId);
       assertThat(out).contains(
           String.format("Updated backup [" + backupId + "]"));
 
@@ -480,16 +476,15 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       // Otherwise the delete backup operation might fail as the backup is still in use by
       // the OptimizeRestoredDatabase operation.
       databaseAdminClient.dropDatabase(DatabaseName.of(projectId,
-          dbId.getInstanceId().getInstance(), SpannerSample.createRestoredSampleDbId(dbId)));
+          dbId.getInstanceId().getInstance(), restoreDatabaseId));
 
-      out = runSample("deletebackup", databaseId);
+      out = runSample("deletebackup", databaseId, backupId);
       assertThat(out).contains("Deleted backup [" + backupId + "]");
 
     } catch (Exception ex) {
       Assert.fail("Exception raised => " + ex.getCause());
     }
   }
-
   @Test
   public void testCancelBackupSamples() {
     String databaseId = idGenerator.generateDatabaseId();

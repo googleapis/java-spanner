@@ -54,7 +54,6 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
-import com.google.protobuf.util.Timestamps;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupInfo;
 import com.google.spanner.admin.database.v1.BackupName;
@@ -186,19 +185,6 @@ public class SpannerSample {
       this.revenue = revenue;
       this.venueDetails = venueDetails;
     }
-  }
-
-  /**
-   * Get a database id to restore a backup to from the sample database id.
-   */
-  static String createRestoredSampleDbId(DatabaseId database) {
-    int index = database.getDatabase().indexOf('-');
-    String prefix = database.getDatabase().substring(0, index);
-    String restoredDbId = database.getDatabase().replace(prefix, "restored");
-    if (restoredDbId.length() > 30) {
-      restoredDbId = restoredDbId.substring(0, 30);
-    }
-    return restoredDbId;
   }
 
   // [START spanner_insert_data]
@@ -1725,9 +1711,9 @@ public class SpannerSample {
   static void listDatabaseOperations(
       DatabaseAdminClient dbAdminClient, String projectId, String instanceId) {
     // Get optimize restored database operations.
-    Timestamp last24Hours = Timestamp.newBuilder().setSeconds((TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(Instant.now().getEpochSecond(), TimeUnit.SECONDS) - 24,
-        TimeUnit.HOURS))).build();
+    com.google.cloud.Timestamp last24Hours = com.google.cloud.Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
+        TimeUnit.HOURS.convert(com.google.cloud.Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
+        TimeUnit.HOURS), 0);
     String filter = String.format("(metadata.@type:type.googleapis.com/"
         + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) AND "
         + "(metadata.progress.start_time > \"%s\")", last24Hours);
@@ -1787,14 +1773,13 @@ public class SpannerSample {
     }
 
     // List all backups that expire before a certain time.
-    Timestamp expireTime =
-        Timestamp.newBuilder().setSeconds(TimeUnit.MILLISECONDS.toSeconds((
-            System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30)))).build();
+    com.google.cloud.Timestamp expireTime = com.google.cloud.Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
+    System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30), TimeUnit.MILLISECONDS));
 
-    System.out.println(String.format("All backups that expire before %s:", expireTime.toString()));
+    System.out.println(String.format("All backups that expire before %s:", expireTime));
     listBackupsRequest =
         ListBackupsRequest.newBuilder().setParent(instanceName.toString())
-            .setFilter(String.format("expire_time < \"%s\"", expireTime.toString())).build();
+            .setFilter(String.format("expire_time < \"%s\"", expireTime)).build();
 
     for (Backup backup : dbAdminClient.listBackups(listBackupsRequest).iterateAll()) {
       System.out.println(backup);
@@ -1811,9 +1796,9 @@ public class SpannerSample {
     }
 
     // List all backups with a create time after a certain timestamp and that are also ready.
-    Timestamp createTime =
-        Timestamp.newBuilder().setSeconds(TimeUnit.MILLISECONDS.toSeconds((
-            System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)))).build();
+    com.google.cloud.Timestamp createTime = com.google.cloud.Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
+        System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1), TimeUnit.MILLISECONDS));
+
     System.out.println(
         String.format(
             "All databases created after %s and that are ready:", createTime.toString()));
@@ -1860,7 +1845,7 @@ public class SpannerSample {
       RestoreDatabaseRequest request =
           RestoreDatabaseRequest.newBuilder()
               .setParent(InstanceName.of(projectId, instanceId).toString())
-              .setDatabaseId(DatabaseName.of(projectId, instanceId, restoreToDatabaseId).toString())
+              .setDatabaseId(restoreToDatabaseId)
               .setBackup(backupName.toString()).build();
       OperationFuture<com.google.spanner.admin.database.v1.Database, RestoreDatabaseMetadata> op =
           dbAdminClient.restoreDatabaseAsync(request);
@@ -1872,7 +1857,7 @@ public class SpannerSample {
 
       System.out.println(
           "Restored database ["
-              + restoreInfo.getBackupInfo().getSourceDatabase()
+              + db.getName()
               + "] from ["
               + restoreInfo.getBackupInfo().getBackup()
               + "] with version time [" + backupInfo.getVersionTime() + "]");
@@ -1894,16 +1879,17 @@ public class SpannerSample {
     // Add 30 days to the expire time.
     // Expire time must be within 366 days of the create time of the backup.
     Timestamp currentExpireTime = backup.getExpireTime();
-    Timestamp newExpireTime =
-        Timestamp.newBuilder().setSeconds(TimeUnit.MILLISECONDS.toSeconds((
-            TimeUnit.SECONDS.toMillis(currentExpireTime.getSeconds())
-                + TimeUnit.NANOSECONDS.toMillis(currentExpireTime.getNanos())
-                + TimeUnit.DAYS.toMillis(30)))).build();
+    com.google.cloud.Timestamp newExpireTime =
+        com.google.cloud.Timestamp.ofTimeMicroseconds(
+            TimeUnit.SECONDS.toMicros(currentExpireTime.getSeconds())
+                + TimeUnit.NANOSECONDS.toMicros(currentExpireTime.getNanos())
+                + TimeUnit.DAYS.toMicros(30L));
+
 
     // New Expire Time must be less than Max Expire Time
-    newExpireTime =
-        Timestamps.compare(newExpireTime, backup.getMaxExpireTime()) < 0 ? newExpireTime
-            : backup.getMaxExpireTime();
+    newExpireTime = newExpireTime.compareTo(com.google.cloud.Timestamp.fromProto(backup.getMaxExpireTime()))
+        < 0 ? newExpireTime : com.google.cloud.Timestamp.fromProto(backup.getMaxExpireTime());
+
 
     System.out.println(String.format(
         "Updating expire time of backup [%s] to %s...",
@@ -1913,7 +1899,7 @@ public class SpannerSample {
                 newExpireTime.getNanos()), ZoneId.systemDefault())));
 
     // Update expire time.
-    backup = backup.toBuilder().setExpireTime(newExpireTime).build();
+    backup = backup.toBuilder().setExpireTime(newExpireTime.toProto()).build();
     dbAdminClient.updateBackup(backup,
         FieldMask.newBuilder().addAllPaths(Lists.newArrayList("expire_time")).build());
     System.out.println("Updated backup [" + backupId + "]");
@@ -2144,7 +2130,7 @@ public class SpannerSample {
       case "restorebackup":
         restoreBackup(
             dbAdminClient, database.getInstanceId().getProject(),
-            database.getInstanceId().getInstance(), backupId, createRestoredSampleDbId(database));
+            database.getInstanceId().getInstance(), backupId, database.getDatabase());
         break;
       case "updatebackup":
         updateBackup(dbAdminClient, database.getInstanceId().getProject(),
