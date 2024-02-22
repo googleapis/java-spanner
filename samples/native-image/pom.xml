@@ -29,7 +29,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.30.0</version>
+        <version>26.33.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -51,7 +51,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.1.5</version>
+      <version>1.4.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -110,7 +110,7 @@
         <dependency>
           <groupId>org.graalvm.buildtools</groupId>
           <artifactId>junit-platform-native</artifactId>
-          <version>0.9.28</version>
+          <version>0.10.1</version>
           <scope>test</scope>
         </dependency>
       </dependencies>

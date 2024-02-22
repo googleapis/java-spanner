@@ -23,7 +23,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
-    <trace.version>2.30.0</trace.version>
+    <trace.version>2.36.0</trace.version>
     <cloudmonitoring.version>3.23.0</cloudmonitoring.version>
   </properties>
 
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.57.1-SNAPSHOT</version>
+      <version>6.60.1-SNAPSHOT</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.1.5</version>
+      <version>1.4.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

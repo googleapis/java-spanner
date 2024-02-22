@@ -340,14 +340,16 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public long[] getLongArray(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.array(Type.int64()), columnIndex);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
     return getLongArrayInternal(columnIndex);
   }
 
   @Override
   public long[] getLongArray(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.array(Type.int64()), columnName);
+    checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
+    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
     return getLongArrayInternal(columnIndex);
   }
 

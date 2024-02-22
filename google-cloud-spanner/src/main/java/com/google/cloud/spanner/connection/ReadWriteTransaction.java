@@ -39,6 +39,7 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -427,7 +428,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 statement,
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
-                        ResultSet delegate =
+                        DirectExecuteResultSet delegate =
                             DirectExecuteResultSet.ofResultSet(
                                 internalExecuteQuery(statement, analyzeMode, options));
                         return createAndAddRetryResultSet(
@@ -797,7 +798,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    * returns a retryable {@link ResultSet}.
    */
   private ResultSet createAndAddRetryResultSet(
-      ResultSet resultSet,
+      ProtobufResultSet resultSet,
       ParsedStatement statement,
       AnalyzeMode analyzeMode,
       QueryOption... options) {
@@ -1091,7 +1092,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   /** Creates a {@link ChecksumResultSet} for this {@link ReadWriteTransaction}. */
   @VisibleForTesting
   ChecksumResultSet createChecksumResultSet(
-      ResultSet delegate,
+      ProtobufResultSet delegate,
       ParsedStatement statement,
       AnalyzeMode analyzeMode,
       QueryOption... options) {
