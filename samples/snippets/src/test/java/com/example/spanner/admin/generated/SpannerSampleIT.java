@@ -19,6 +19,7 @@ package com.example.spanner.admin.generated;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.example.spanner.admin.generated.CreateDatabaseWithDefaultLeaderSample;
 import com.example.spanner.SampleRunner;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseId;
@@ -76,7 +77,6 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       Preconditions.checkNotNull(System.getProperty("spanner.test.key.name"));
   private static final String encryptedDatabaseId = formatForTest(baseDbId);
   private static final String encryptedBackupId = formatForTest(baseDbId);
-  private static final String encryptedRestoreId = formatForTest(baseDbId);
   private static final long STALE_INSTANCE_THRESHOLD_SECS =
       TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
   static Spanner spanner;
@@ -175,7 +175,6 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
   @AfterClass
   public static void tearDown() {
     databaseAdminClient.dropDatabase(DatabaseName.of(projectId, instanceId, encryptedDatabaseId));
-    databaseAdminClient.dropDatabase(DatabaseName.of(projectId, instanceId, encryptedRestoreId));
     databaseAdminClient.deleteBackup(BackupName.of(projectId, instanceId, encryptedBackupId));
     spanner.close();
   }
@@ -517,9 +516,11 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
   @Test
   public void testEncryptedDatabaseAndBackupSamples() throws Exception {
     String projectId = spanner.getOptions().getProjectId();
+    String databaseId = idGenerator.generateDatabaseId();
+    String restoreId = idGenerator.generateDatabaseId();
     // Create a separate instance for this test to prevent multiple parallel backup operations on
     // the same instance that need to wait for each other.
-    String instanceId = String.format("encrypted-test-%s", UUID.randomUUID());
+    String instanceId = idGenerator.generateInstanceId();
     InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
     instanceAdminClient
         .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
@@ -529,17 +530,15 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
         .get();
     try {
       String out = SampleRunner
-          .runSample(() -> CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
-              databaseAdminClient,
-              projectId, instanceId, encryptedDatabaseId, key));
+          .runSample(() -> SpannerSample.createDatabase(
+              databaseAdminClient, InstanceName.of(projectId, instanceId), databaseId));
       assertThat(out).contains(String.format(
-          "Database projects/%s/instances/%s/databases/%s created with encryption key %s",
-          projectId, instanceId, encryptedDatabaseId, key));
+          "Created database [%s]", DatabaseName.of(projectId, instanceId, databaseId)));
 
       out = SampleRunner.runSampleWithRetry(
           () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(databaseAdminClient,
               projectId,
-              instanceId, encryptedDatabaseId, encryptedBackupId, key),
+              instanceId, databaseId, encryptedBackupId, key),
           new ShouldRetryBackupOperation());
       assertThat(out).containsMatch(String.format(
           "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
@@ -548,14 +547,13 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
 
       out = SampleRunner.runSampleWithRetry(
           () -> RestoreBackupWithEncryptionKey.restoreBackupWithEncryptionKey(databaseAdminClient,
-              projectId,
-              instanceId, encryptedBackupId, encryptedRestoreId, key),
+              projectId, instanceId, encryptedBackupId, restoreId, key),
           new ShouldRetryBackupOperation());
       assertThat(out).contains(String.format(
           "Database projects/%s/instances/%s/databases/%s"
               + " restored to projects/%s/instances/%s/databases/%s"
               + " from backup projects/%s/instances/%s/backups/%s" + " using encryption key %s",
-          projectId, instanceId, encryptedDatabaseId, projectId, instanceId, encryptedRestoreId,
+          projectId, instanceId, databaseId, projectId, instanceId, restoreId,
           projectId, instanceId, encryptedBackupId, key));
     } finally {
       // Delete the backups from the test instance first, as the instance can only be deleted once

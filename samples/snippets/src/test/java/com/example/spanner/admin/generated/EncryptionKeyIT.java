@@ -24,6 +24,8 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.InstanceName;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.BeforeClass;
@@ -60,16 +62,10 @@ public class EncryptionKeyIT extends SampleTestBaseV2 {
     final String restoreId = idGenerator.generateDatabaseId();
 
     String out = SampleRunner.runSample(() ->
-        CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
-            databaseAdminClient,
-            projectId,
-            instanceId,
-            databaseId,
-            key
-        ));
-    assertThat(out).contains(
-        "Database projects/" + projectId + "/instances/" + instanceId + "/databases/" + databaseId
-            + " created with encryption key " + key);
+        SpannerSample.createDatabase(
+            databaseAdminClient, InstanceName.of(projectId, instanceId), databaseId));
+    assertThat(out).contains(String.format(
+        "Created database [%s]", DatabaseName.of(projectId, instanceId, databaseId)));
 
     out = SampleRunner.runSampleWithRetry(() ->
         CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(

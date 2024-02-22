@@ -58,7 +58,7 @@ public class RestoreBackupWithEncryptionKey {
     RestoreDatabaseRequest request =
         RestoreDatabaseRequest.newBuilder()
             .setParent(InstanceName.of(projectId, instanceId).toString())
-            .setDatabaseId(DatabaseName.of(projectId, instanceId, restoreId).toString())
+            .setDatabaseId(restoreId)
             .setBackup(BackupName.of(projectId, instanceId, backupId).toString())
             .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder()
                 .setEncryptionType(CUSTOMER_MANAGED_ENCRYPTION).setKmsKeyName(kmsKeyName)).build();
