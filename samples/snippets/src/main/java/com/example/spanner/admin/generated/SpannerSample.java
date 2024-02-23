@@ -21,12 +21,13 @@ import static com.google.cloud.spanner.Type.StructField;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.api.gax.retrying.RetryingFuture;
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
@@ -70,8 +71,6 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreInfo;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -1922,8 +1921,8 @@ public class SpannerSample {
     // Verify that the backup is deleted.
     try {
       dbAdminClient.getBackup(backupName);
-    } catch (StatusRuntimeException e) {
-      if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+    } catch (NotFoundException e) {
+      if (e.getStatusCode().getCode() == Code.NOT_FOUND) {
         System.out.println("Deleted backup [" + backupId + "]");
       } else {
         System.out.println("Delete backup [" + backupId + "] failed");

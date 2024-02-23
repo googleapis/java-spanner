@@ -560,6 +560,35 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     }
   }
 
+  @Test
+  public void testDeleteBackups() {
+    try {
+      String projectId = spanner.getOptions().getProjectId();
+      String databaseId = idGenerator.generateDatabaseId();
+      String backupId = idGenerator.generateBackupId();
+
+      String out = SampleRunner
+          .runSample(() -> SpannerSample.createDatabase(
+              databaseAdminClient, InstanceName.of(projectId, instanceId), databaseId));
+      assertThat(out).contains(String.format(
+          "Created database [%s]", DatabaseName.of(projectId, instanceId, databaseId)));
+
+      out = SampleRunner.runSampleWithRetry(
+          () -> CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(databaseAdminClient,
+              projectId, instanceId, databaseId, backupId, key),
+          new ShouldRetryBackupOperation());
+      assertThat(out).containsMatch(String.format(
+          "Backup projects/%s/instances/%s/backups/%s of size \\d+ bytes "
+              + "was created at (.*) using encryption key %s",
+          projectId, instanceId, backupId, key));
+
+      out = runSample("deletebackup", databaseId, backupId);
+      assertThat(out).contains("Deleted backup [" + backupId + "]");
+    } catch (Exception ex) {
+      Assert.fail("Exception raised => " + ex.getCause());
+    }
+  }
+
   private static void deleteAllBackups(String instanceId) throws InterruptedException {
     InstanceName instanceName = InstanceName.of(projectId, instanceId);
     for (Backup backup : databaseAdminClient.listBackups(instanceName.toString()).iterateAll()) {
