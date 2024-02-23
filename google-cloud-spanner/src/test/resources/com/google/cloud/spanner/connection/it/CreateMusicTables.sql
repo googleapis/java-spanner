@@ -65,7 +65,6 @@ CREATE TABLE Concerts (
 CREATE TABLE TableWithAllColumnTypes (
   ColInt64		INT64		NOT NULL,
   ColFloat64	FLOAT64		NOT NULL,
-  ColFloat32	FLOAT32		NOT NULL,
   ColBool		BOOL		NOT NULL,
   ColString		STRING(100) NOT NULL,
   ColStringMax	STRING(MAX)	NOT NULL,
@@ -77,7 +76,6 @@ CREATE TABLE TableWithAllColumnTypes (
 
   ColInt64Array		ARRAY<INT64>,
   ColFloat64Array	ARRAY<FLOAT64>,
-  ColFloat32Array	ARRAY<FLOAT32>,
   ColBoolArray		ARRAY<BOOL>,
   ColStringArray	ARRAY<STRING(100)>,
   ColStringMaxArray	ARRAY<STRING(MAX)>,
