@@ -47,7 +47,7 @@ public class AddAndDropDatabaseRole {
             .setProjectId(projectId)
             .build()
             .getService())  {
-      try(final DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      try(DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
         System.out.println("Waiting for role create operation to complete...");
         databaseAdminClient.updateDatabaseDdlAsync(
                 DatabaseName.of(projectId, instanceId, databaseId),
