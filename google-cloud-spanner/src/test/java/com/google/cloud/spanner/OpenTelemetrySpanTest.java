@@ -54,6 +54,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
 @Category(TracerTest.class)
 @RunWith(JUnit4.class)
@@ -103,11 +104,11 @@ public class OpenTelemetrySpanTest {
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
 
   private List<String> expectedBatchCreateSessionsRequestEvents =
-      ImmutableList.of("Requesting 25 sessions", "Request for 25 sessions returned 25 sessions");
+      ImmutableList.of("Requesting 2 sessions", "Request for 2 sessions returned 2 sessions");
 
   private int expectedBatchCreateSessionsRequestEventsCount = 2;
 
-  private List<String> expectedBatchCreateSessionsEvents = ImmutableList.of("Creating 25 sessions");
+  private List<String> expectedBatchCreateSessionsEvents = ImmutableList.of("Creating 2 sessions");
 
   private int expectedBatchCreateSessionsEventsCount = 1;
 
@@ -117,58 +118,45 @@ public class OpenTelemetrySpanTest {
   private int expectedExecuteStreamingQueryEventsCount = 1;
 
   private List<String> expectedReadOnlyTransactionSingleUseEvents =
-      ImmutableList.of(
-          "Acquiring session",
-          "No session available",
-          "Creating sessions",
-          "Waiting for a session to come available",
-          "Using Session");
+      ImmutableList.of("Acquiring session", "Acquired session", "Using Session");
 
-  private int expectedReadOnlyTransactionSingleUseEventsCount = 5;
+  private int expectedReadOnlyTransactionSingleUseEventsCount = 3;
 
   private List<String> expectedReadOnlyTransactionMultiUseEvents =
       ImmutableList.of(
           "Acquiring session",
-          "No session available",
-          "Creating sessions",
-          "Waiting for a session to come available",
+          "Acquired session",
           "Using Session",
           "Creating Transaction",
           "Transaction Creation Done");
 
-  private int expectedReadOnlyTransactionMultiUseEventsCount = 7;
+  private int expectedReadOnlyTransactionMultiUseEventsCount = 5;
 
   private List<String> expectedReadWriteTransactionErrorEvents =
       ImmutableList.of(
           "Acquiring session",
-          "No session available",
-          "Creating sessions",
-          "Waiting for a session to come available",
+          "Acquired session",
           "Using Session",
           "Starting Transaction Attempt",
           "Transaction Attempt Failed in user operation",
           "exception");
 
-  private int expectedReadWriteTransactionErrorEventsCount = 8;
+  private int expectedReadWriteTransactionErrorEventsCount = 6;
   private List<String> expectedReadWriteTransactionEvents =
       ImmutableList.of(
           "Acquiring session",
-          "No session available",
-          "Creating sessions",
-          "Waiting for a session to come available",
+          "Acquired session",
           "Using Session",
           "Starting Transaction Attempt",
           "Starting Commit",
           "Commit Done",
           "Transaction Attempt Succeeded");
 
-  private int expectedReadWriteTransactionCount = 9;
+  private int expectedReadWriteTransactionCount = 7;
   private List<String> expectedReadWriteTransactionErrorWithBeginTransactionEvents =
       ImmutableList.of(
           "Acquiring session",
-          "No session available",
-          "Creating sessions",
-          "Waiting for a session to come available",
+          "Acquired session",
           "Using Session",
           "Starting Transaction Attempt",
           "Transaction Attempt Aborted in user operation. Retrying",
@@ -178,29 +166,26 @@ public class OpenTelemetrySpanTest {
           "Commit Done",
           "Transaction Attempt Succeeded");
 
-  private int expectedReadWriteTransactionErrorWithBeginTransactionEventsCount = 13;
+  private int expectedReadWriteTransactionErrorWithBeginTransactionEventsCount = 11;
   private List<String> expectedReadOnlyTransactionSpans =
       ImmutableList.of(
           "CloudSpannerOperation.BatchCreateSessionsRequest",
           "CloudSpannerOperation.ExecuteStreamingQuery",
           "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadOnlyTransaction",
-          "SessionPool.WaitForSession");
+          "CloudSpanner.ReadOnlyTransaction");
 
   private List<String> expectedReadWriteTransactionWithCommitSpans =
       ImmutableList.of(
           "CloudSpannerOperation.BatchCreateSessionsRequest",
           "CloudSpannerOperation.Commit",
           "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadWriteTransaction",
-          "SessionPool.WaitForSession");
+          "CloudSpanner.ReadWriteTransaction");
 
   private List<String> expectedReadWriteTransactionSpans =
       ImmutableList.of(
           "CloudSpannerOperation.BatchCreateSessionsRequest",
           "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadWriteTransaction",
-          "SessionPool.WaitForSession");
+          "CloudSpanner.ReadWriteTransaction");
 
   private List<String> expectedReadWriteTransactionWithCommitAndBeginTransactionSpans =
       ImmutableList.of(
@@ -208,8 +193,7 @@ public class OpenTelemetrySpanTest {
           "CloudSpannerOperation.BatchCreateSessionsRequest",
           "CloudSpannerOperation.Commit",
           "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadWriteTransaction",
-          "SessionPool.WaitForSession");
+          "CloudSpanner.ReadWriteTransaction");
 
   @BeforeClass
   public static void setupOpenTelemetry() {
@@ -282,7 +266,11 @@ public class OpenTelemetrySpanTest {
             .setChannelProvider(channelProvider)
             .setOpenTelemetry(openTelemetry)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(2)
+                    .setWaitForMinSessions(Duration.ofSeconds(5))
+                    .build());
 
     spanner = builder.build().getService();
 
@@ -339,9 +327,6 @@ public class OpenTelemetrySpanTest {
                       expectedReadOnlyTransactionSingleUseEvents,
                       expectedReadOnlyTransactionSingleUseEventsCount);
                   break;
-                case "SessionPool.WaitForSession":
-                  assertEquals(0, spanItem.getEvents().size());
-                  break;
                 default:
                   assert false;
               }
@@ -385,9 +370,6 @@ public class OpenTelemetrySpanTest {
                       expectedExecuteStreamingQueryEvents,
                       expectedExecuteStreamingQueryEventsCount);
                   break;
-                case "SessionPool.WaitForSession":
-                  assertEquals(0, spanItem.getEvents().size());
-                  break;
                 case "CloudSpanner.ReadOnlyTransaction":
                   verifyRequestEvents(
                       spanItem,
@@ -406,7 +388,6 @@ public class OpenTelemetrySpanTest {
   public void transactionRunner() {
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
-
     List<String> actualSpanItems = new ArrayList<>();
     spanExporter
         .getFinishedSpanItems()
@@ -426,7 +407,6 @@ public class OpenTelemetrySpanTest {
                       expectedBatchCreateSessionsEvents,
                       expectedBatchCreateSessionsEventsCount);
                   break;
-                case "SessionPool.WaitForSession":
                 case "CloudSpannerOperation.Commit":
                   assertEquals(0, spanItem.getEvents().size());
                   break;
@@ -471,9 +451,6 @@ public class OpenTelemetrySpanTest {
                       spanItem,
                       expectedBatchCreateSessionsEvents,
                       expectedBatchCreateSessionsEventsCount);
-                  break;
-                case "SessionPool.WaitForSession":
-                  assertEquals(0, spanItem.getEvents().size());
                   break;
                 case "CloudSpanner.ReadWriteTransaction":
                   verifyRequestEvents(
@@ -527,7 +504,6 @@ public class OpenTelemetrySpanTest {
                       expectedBatchCreateSessionsEvents,
                       expectedBatchCreateSessionsEventsCount);
                   break;
-                case "SessionPool.WaitForSession":
                 case "CloudSpannerOperation.Commit":
                 case "CloudSpannerOperation.BeginTransaction":
                   assertEquals(0, spanItem.getEvents().size());
@@ -551,13 +527,13 @@ public class OpenTelemetrySpanTest {
         spanItem.getEvents().stream().map(EventData::getName).collect(Collectors.toList());
     assertEquals(eventCount, spanItem.getEvents().size());
     assertEquals(
-        eventNames.stream().distinct().sorted().collect(Collectors.toList()),
-        expectedEvents.stream().sorted().collect(Collectors.toList()));
+        expectedEvents.stream().sorted().collect(Collectors.toList()),
+        eventNames.stream().distinct().sorted().collect(Collectors.toList()));
   }
 
   private static void verifySpans(List<String> actualSpanItems, List<String> expectedSpansItems) {
     assertEquals(
-        actualSpanItems.stream().distinct().sorted().collect(Collectors.toList()),
-        expectedSpansItems.stream().sorted().collect(Collectors.toList()));
+        expectedSpansItems.stream().sorted().collect(Collectors.toList()),
+        actualSpanItems.stream().distinct().sorted().collect(Collectors.toList()));
   }
 }

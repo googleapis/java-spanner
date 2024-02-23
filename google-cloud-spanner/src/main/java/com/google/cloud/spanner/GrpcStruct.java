@@ -70,6 +70,7 @@ class GrpcStruct extends Struct implements Serializable {
     for (int i = 0; i < structFields.size(); i++) {
       Type.StructField field = structFields.get(i);
       String fieldName = field.getName();
+      ensureDecoded(i);
       Object value = rowData.get(i);
       Type fieldType = field.getType();
       switch (fieldType.getCode()) {
@@ -373,6 +374,7 @@ class GrpcStruct extends Struct implements Serializable {
     Preconditions.checkNotNull(
         message,
         "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+    ensureDecoded(columnIndex);
     try {
       return (T)
           message
