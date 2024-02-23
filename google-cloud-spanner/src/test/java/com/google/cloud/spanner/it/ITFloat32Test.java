@@ -342,23 +342,25 @@ public class ITFloat32Test {
     verifyContents("param");
   }
 
+  private String getInsertStatementForUntypedParameters() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      return "INSERT INTO T (key, float32value, float32arrayvalue) VALUES "
+          + "('untyped1', ($1)::float4, ($2)::float4[])";
+    }
+    return "INSERT INTO T (Key, Float32Value, Float32ArrayValue) VALUES "
+        + "('untyped1', CAST(@p1 AS FLOAT32), CAST(@p2 AS ARRAY<FLOAT32>))";
+  }
+
   @Test
   public void float32UntypedParameter() {
     assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
-    // TODO: Verify before submitting.
-    assumeTrue(
-        "This test is currently only supported in GoogleSQL",
-        dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     client
         .readWriteTransaction()
         .run(
             transaction -> {
               transaction.executeUpdate(
-                  Statement.newBuilder(
-                          "INSERT INTO T (Key, Float32Value, Float32ArrayValue) VALUES "
-                              + "('untyped1', CAST(@p1 AS FLOAT32), CAST(@p2 AS ARRAY<FLOAT32>))")
+                  Statement.newBuilder(getInsertStatementForUntypedParameters())
                       .bind("p1")
                       .to(
                           Value.untyped(
@@ -380,11 +382,13 @@ public class ITFloat32Test {
             });
 
     Struct row = readRow("T", "untyped1", "Float32Value", "Float32ArrayValue");
-    assertThat(row.isNull("Float32Value")).isFalse();
-    assertThat(row.getFloat("Float32Value")).isWithin(0.001f).of(3.14f);
-    assertThat(row.isNull("Float32ArrayValue")).isFalse();
-    assertThat(row.getFloatList("Float32ArrayValue")).hasSize(1);
-    assertThat(row.getFloatList("Float32ArrayValue").get(0)).isWithin(0.001f).of(Float.MIN_NORMAL);
+    // Float32Value
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloat(0)).isWithin(0.001f).of(3.14f);
+    // Float32ArrayValue
+    assertThat(row.isNull(1)).isFalse();
+    assertThat(row.getFloatList(1)).hasSize(1);
+    assertThat(row.getFloatList(1).get(0)).isWithin(0.001f).of(Float.MIN_NORMAL);
   }
 
   private void verifyContents(String keyPrefix) {
