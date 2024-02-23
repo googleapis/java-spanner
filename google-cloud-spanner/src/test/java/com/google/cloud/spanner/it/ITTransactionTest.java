@@ -298,7 +298,7 @@ public class ITTransactionTest {
                           } catch (SpannerException e) {
                             if (e.getErrorCode() == ErrorCode.ABORTED) {
                               assertThat(e).isInstanceOf(AbortedException.class);
-                              assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
+                              assertThat(e.getRetryDelayInMillis()).isEqualTo(-1L);
                             }
                             throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
@@ -338,7 +338,7 @@ public class ITTransactionTest {
                           } catch (SpannerException e) {
                             if (e.getErrorCode() == ErrorCode.ABORTED) {
                               assertThat(e).isInstanceOf(AbortedException.class);
-                              assertThat(e.getRetryDelayInMillis()).isNotEqualTo(-1L);
+                              assertThat(e.getRetryDelayInMillis()).isEqualTo(-1L);
                             }
                             throw new RuntimeException("Swallowed exception: " + e.getMessage());
                           }
