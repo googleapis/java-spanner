@@ -1247,8 +1247,8 @@ public class PgSpannerSample {
       DatabaseAdminClient databaseAdminClient,
       String projectId, String instanceId,
       String databaseId, String backupId) {
-    com.google.spanner.admin.database.v1.InstanceName instanceName = com.google.spanner.admin.database.v1.InstanceName.of(
-        projectId, instanceId);
+    com.google.spanner.admin.database.v1.InstanceName instanceName =
+        com.google.spanner.admin.database.v1.InstanceName.of(projectId, instanceId);
     // Get 'CreateBackup' operations for the sample database.
     String filter =
         String.format(
@@ -1554,7 +1554,7 @@ public class PgSpannerSample {
     DatabaseAdminClient dbAdminClient = null;
     try {
       // [END spanner_init_client]
-      String command = args[0];
+      final String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
 
       // This will return the default project id based on the environment.
