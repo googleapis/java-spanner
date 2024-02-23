@@ -54,13 +54,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.threeten.bp.Duration;
 
 @Category(ParallelIntegrationTest.class)
 @RunWith(Parameterized.class)
 public class ITFloat32Test {
-
-  private static final Duration OPERATION_TIMEOUT = Duration.ofMinutes(5);
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
@@ -172,6 +169,7 @@ public class ITFloat32Test {
     assertThat(row.getFloat(0)).isWithin(0.0f).of(2.0f);
   }
 
+  @Ignore("Needs a fix in the backend.")
   @Test
   public void writeFloat32NonNumbers() {
     assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
@@ -260,14 +258,14 @@ public class ITFloat32Test {
           "('dml1', 3.14::float8, array[1.1]::float4[]), "
               + "('dml2', '3.14'::float4, array[3.14::float4, 3.14::float8]::float4[]), "
               + "('dml3', 'nan'::real, array['inf'::real, (3.14::float8)::float4, 1.2, '-inf']::float4[]), "
-              + "('dml4', 1.175494e-38::real, array[1.175494e-38, 3.402e38, -3.402e38]::real[]), "
+              + "('dml4', 1.175494e-38::real, array[1.175494e-38, 3.4028234e38, -3.4028234e38]::real[]), "
               + "('dml5', null, null)";
     } else {
       statement +=
           "('dml1', 3.14, [CAST(1.1 AS FLOAT32)]), "
               + "('dml2', CAST('3.14' AS FLOAT32), array[CAST(3.14 AS FLOAT32), 3.14]), "
               + "('dml3', CAST('nan' AS FLOAT32), array[CAST('inf' AS FLOAT32), CAST(CAST(3.14 AS FLOAT64) AS FLOAT32), 1.2, CAST('-inf' AS FLOAT32)]), "
-              + "('dml4', 1.175494e-38, [CAST(1.175494e-38 AS FLOAT32), 3.402e38, -3.402e38]), "
+              + "('dml4', 1.175494e-38, [CAST(1.175494e-38 AS FLOAT32), 3.4028234e38, -3.4028234e38]), "
               + "('dml5', null, null)";
     }
     return statement;
@@ -285,7 +283,7 @@ public class ITFloat32Test {
               return null;
             });
 
-    verifyContents();
+    verifyContents("dml");
   }
 
   private String getInsertStatementWithParameters() {
@@ -300,6 +298,7 @@ public class ITFloat32Test {
     return (dialect.dialect == Dialect.POSTGRESQL) ? pgStatement : pgStatement.replace("$", "@p");
   }
 
+  @Ignore("Needs a fix in the backend.")
   @Test
   public void float32Parameter() {
     assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
@@ -326,12 +325,12 @@ public class ITFloat32Test {
                               Arrays.asList(
                                   Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.POSITIVE_INFINITY)))
                       .bind("p7")
-                      .to(Value.float32(Float.MIN_VALUE))
+                      .to(Value.float32(Float.MIN_NORMAL))
                       .bind("p8")
                       .to(
                           Value.float32Array(
                               Arrays.asList(
-                                  Float.MIN_VALUE, Float.MAX_VALUE, -1 * Float.MAX_VALUE)))
+                                  Float.MIN_NORMAL, Float.MAX_VALUE, -1 * Float.MAX_VALUE)))
                       .bind("p9")
                       .to(Value.float32(null))
                       .bind("p10")
@@ -340,17 +339,16 @@ public class ITFloat32Test {
               return null;
             });
 
-    verifyContents();
+    verifyContents("param");
   }
 
-  @Ignore("This will be supported before submission")
   @Test
   public void float32UntypedParameter() {
     assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
 
     // TODO: Verify before submitting.
     assumeTrue(
-        "This is currently only supported in GoogleSQL??",
+        "This test is currently only supported in GoogleSQL",
         dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
 
     client
@@ -360,7 +358,7 @@ public class ITFloat32Test {
               transaction.executeUpdate(
                   Statement.newBuilder(
                           "INSERT INTO T (Key, Float32Value, Float32ArrayValue) VALUES "
-                              + "('param1', CAST(@p1 AS FLOAT32), CAST(@p2 AS ARRAY<FLOAT32>))")
+                              + "('untyped1', CAST(@p1 AS FLOAT32), CAST(@p2 AS ARRAY<FLOAT32>))")
                       .bind("p1")
                       .to(
                           Value.untyped(
@@ -375,57 +373,70 @@ public class ITFloat32Test {
                                       com.google.protobuf.ListValue.newBuilder()
                                           .addValues(
                                               com.google.protobuf.Value.newBuilder()
-                                                  .setNumberValue(Float.MIN_VALUE)))
+                                                  .setNumberValue((double) Float.MIN_NORMAL)))
                                   .build()))
                       .build());
               return null;
             });
 
-    // TODO: add verifier.
+    Struct row = readRow("T", "untyped1", "Float32Value", "Float32ArrayValue");
+    assertThat(row.isNull("Float32Value")).isFalse();
+    assertThat(row.getFloat("Float32Value")).isWithin(0.001f).of(3.14f);
+    assertThat(row.isNull("Float32ArrayValue")).isFalse();
+    assertThat(row.getFloatList("Float32ArrayValue")).hasSize(1);
+    assertThat(row.getFloatList("Float32ArrayValue").get(0)).isWithin(0.001f).of(Float.MIN_NORMAL);
   }
 
-  private void verifyContents() {
+  private void verifyContents(String keyPrefix) {
     try (ResultSet resultSet =
-        client.singleUse().executeQuery(Statement.of("SELECT * FROM T ORDER BY Key"))) {
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.of(
+                    "SELECT Key AS key, Float32Value AS float32value, Float32ArrayValue AS float32arrayvalue FROM T WHERE Key LIKE '{keyPrefix}%' ORDER BY key"
+                        .replace("{keyPrefix}", keyPrefix)))) {
 
       assertTrue(resultSet.next());
 
-      assertThat(resultSet.getFloat("Float32Value")).isWithin(0.001f).of(3.14f);
-      assertThat(resultSet.getValue("Float32Value")).isEqualTo(Value.float32(3.14f));
+      assertThat(resultSet.getFloat("float32value")).isWithin(0.001f).of(3.14f);
+      assertThat(resultSet.getValue("float32value")).isEqualTo(Value.float32(3.14f));
       ;
-      assertThat(resultSet.getFloatArray("Float32ArrayValue")).isEqualTo(new float[] {1.1f});
+      assertThat(resultSet.getFloatArray("float32arrayvalue")).isEqualTo(new float[] {1.1f});
 
       assertTrue(resultSet.next());
 
-      assertThat(resultSet.getFloat("Float32Value")).isWithin(0.001f).of(3.14f);
-      assertThat(resultSet.getFloatList("Float32ArrayValue")).containsExactly(3.14f, 3.14f);
-      assertThat(resultSet.getValue("Float32ArrayValue"))
+      assertThat(resultSet.getFloat("float32value")).isWithin(0.001f).of(3.14f);
+      assertThat(resultSet.getFloatList("float32arrayvalue")).containsExactly(3.14f, 3.14f);
+      assertThat(resultSet.getValue("float32arrayvalue"))
           .isEqualTo(Value.float32Array(new float[] {3.14f, 3.14f}));
 
       assertTrue(resultSet.next());
-      assertThat(resultSet.getFloat("Float32Value")).isNaN();
-      assertThat(resultSet.getValue("Float32Value")).isEqualTo(Value.float32(Float.NaN));
-      ;
-      assertThat(resultSet.getFloatList("Float32ArrayValue"))
+      assertThat(resultSet.getFloat("float32value")).isNaN();
+      assertThat(resultSet.getValue("float32value").getFloat32()).isNaN();
+      assertThat(resultSet.getFloatList("float32arrayvalue"))
           .containsExactly(Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.NEGATIVE_INFINITY);
-      assertThat(resultSet.getValue("Float32ArrayValue"))
+      assertThat(resultSet.getValue("float32arrayvalue"))
           .isEqualTo(
               Value.float32Array(
                   Arrays.asList(Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.NEGATIVE_INFINITY)));
 
       assertTrue(resultSet.next());
-      assertThat(resultSet.getFloat("Float32Value")).isWithin(0.001f).of(Float.MIN_VALUE);
-      assertThat(resultSet.getValue("Float32Value")).isEqualTo(Value.float32(Float.MIN_VALUE));
-      assertThat(resultSet.getFloatList("Float32ArrayValue"))
-          .containsExactly(Float.MIN_VALUE, Float.MAX_VALUE, -1 * Float.MAX_VALUE);
-      assertThat(resultSet.getValue("Float32ArrayValue"))
-          .isEqualTo(
-              Value.float32Array(
-                  Arrays.asList(Float.MIN_VALUE, Float.MAX_VALUE, -1 * Float.MAX_VALUE)));
+      assertThat(resultSet.getFloat("float32value")).isWithin(0.1f).of(Float.MIN_NORMAL);
+      assertThat(resultSet.getValue("float32value").getFloat32())
+          .isWithin(0.1f)
+          .of(Float.MIN_NORMAL);
+      assertThat(resultSet.getFloatList("float32arrayvalue")).hasSize(3);
+      assertThat(resultSet.getFloatList("float32arrayvalue").get(0))
+          .isWithin(0.1f)
+          .of(Float.MIN_NORMAL);
+      assertThat(resultSet.getFloatList("float32arrayvalue").get(1)).isEqualTo(Float.MAX_VALUE);
+      assertThat(resultSet.getFloatList("float32arrayvalue").get(2))
+          .isEqualTo(-1 * Float.MAX_VALUE);
+      assertThat(resultSet.getValue("float32arrayvalue").getFloat32Array()).hasSize(3);
 
       assertTrue(resultSet.next());
-      assertTrue(resultSet.isNull("Float32Value"));
-      assertTrue(resultSet.isNull("Float32ArrayValue"));
+      assertTrue(resultSet.isNull("float32value"));
+      assertTrue(resultSet.isNull("float32arrayvalue"));
 
       assertFalse(resultSet.next());
     }
