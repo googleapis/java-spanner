@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.60.1](https://github.com/googleapis/java-spanner/compare/v6.60.0...v6.60.1) (2024-02-23)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.37.0 ([#2920](https://github.com/googleapis/java-spanner/issues/2920)) ([a3441bb](https://github.com/googleapis/java-spanner/commit/a3441bbad546a1aac1349d6e142a4ac8d32d2a90))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.10.0 ([#2861](https://github.com/googleapis/java-spanner/issues/2861)) ([a652c3b](https://github.com/googleapis/java-spanner/commit/a652c3b6ef6d6ed87d581e73a26a5086acdc5f07))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.10.1 ([#2919](https://github.com/googleapis/java-spanner/issues/2919)) ([8800a28](https://github.com/googleapis/java-spanner/commit/8800a2894a1c17bde1a0da3ffcc868f10f7690d5))
+* Update dependency org.json:json to v20240205 ([#2913](https://github.com/googleapis/java-spanner/issues/2913)) ([277ed81](https://github.com/googleapis/java-spanner/commit/277ed81a0beb95ea57f95a9660a4a6b6adea645b))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.10.2 ([#2868](https://github.com/googleapis/java-spanner/issues/2868)) ([71a65ec](https://github.com/googleapis/java-spanner/commit/71a65ecee5af63996297f8692d569d2a9acfd8ac))
+* Update opentelemetry.version to v1.35.0 ([#2902](https://github.com/googleapis/java-spanner/issues/2902)) ([3286eae](https://github.com/googleapis/java-spanner/commit/3286eaea96a40c6ace8abed22040a637d291b09c))
+
 ## [6.60.0](https://github.com/googleapis/java-spanner/compare/v6.59.0...v6.60.0) (2024-02-21)
 
 
