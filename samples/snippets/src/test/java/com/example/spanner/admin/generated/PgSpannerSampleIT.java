@@ -42,6 +42,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 @SuppressWarnings("checkstyle:abbreviationaswordinname")
 public class PgSpannerSampleIT extends SampleTestBaseV2 {
+
   private static final int DBID_LENGTH = 20;
   // The instance needs to exist for tests to pass.
   private static final String instanceId = System.getProperty("spanner.test.instance");

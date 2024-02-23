@@ -459,6 +459,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       }
 
       if (restored) {
+        System.out.println("List Database Operations ...");
         out = runSample("listdatabaseoperations", restoreDatabaseId);
         assertThat(out).contains(
             String.format(
@@ -466,6 +467,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
                 DatabaseId.of(dbId.getInstanceId(), restoreDatabaseId).getName()));
       }
 
+      System.out.println("Updating backup ...");
       out = runSample("updatebackup", databaseId, backupId);
       assertThat(out).contains(
           String.format("Updated backup [" + backupId + "]"));
@@ -476,6 +478,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       databaseAdminClient.dropDatabase(DatabaseName.of(projectId,
           dbId.getInstanceId().getInstance(), restoreDatabaseId));
 
+      System.out.println("Deleting Backup ...");
       out = runSample("deletebackup", databaseId, backupId);
       assertThat(out).contains("Deleted backup [" + backupId + "]");
 
@@ -483,6 +486,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       Assert.fail("Exception raised => " + ex.getCause());
     }
   }
+
   @Test
   public void testCancelBackupSamples() {
     String databaseId = idGenerator.generateDatabaseId();

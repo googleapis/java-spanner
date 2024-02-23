@@ -1247,7 +1247,8 @@ public class PgSpannerSample {
       DatabaseAdminClient databaseAdminClient,
       String projectId, String instanceId,
       String databaseId, String backupId) {
-    com.google.spanner.admin.database.v1.InstanceName instanceName = com.google.spanner.admin.database.v1.InstanceName.of(projectId, instanceId);
+    com.google.spanner.admin.database.v1.InstanceName instanceName = com.google.spanner.admin.database.v1.InstanceName.of(
+        projectId, instanceId);
     // Get 'CreateBackup' operations for the sample database.
     String filter =
         String.format(
@@ -1309,9 +1310,11 @@ public class PgSpannerSample {
   static void listDatabaseOperations(
       DatabaseAdminClient dbAdminClient, String projectId, String instanceId) {
     // Get optimize restored database operations.
-    com.google.cloud.Timestamp last24Hours = com.google.cloud.Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(com.google.cloud.Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
-        TimeUnit.HOURS), 0);
+    com.google.cloud.Timestamp last24Hours = com.google.cloud.Timestamp.ofTimeSecondsAndNanos(
+        TimeUnit.SECONDS.convert(
+            TimeUnit.HOURS.convert(com.google.cloud.Timestamp.now().getSeconds(), TimeUnit.SECONDS)
+                - 24,
+            TimeUnit.HOURS), 0);
     String filter = String.format("(metadata.@type:type.googleapis.com/"
         + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) AND "
         + "(metadata.progress.start_time > \"%s\")", last24Hours);

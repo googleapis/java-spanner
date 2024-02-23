@@ -1711,9 +1711,11 @@ public class SpannerSample {
   static void listDatabaseOperations(
       DatabaseAdminClient dbAdminClient, String projectId, String instanceId) {
     // Get optimize restored database operations.
-    com.google.cloud.Timestamp last24Hours = com.google.cloud.Timestamp.ofTimeSecondsAndNanos(TimeUnit.SECONDS.convert(
-        TimeUnit.HOURS.convert(com.google.cloud.Timestamp.now().getSeconds(), TimeUnit.SECONDS) - 24,
-        TimeUnit.HOURS), 0);
+    com.google.cloud.Timestamp last24Hours = com.google.cloud.Timestamp.ofTimeSecondsAndNanos(
+        TimeUnit.SECONDS.convert(
+            TimeUnit.HOURS.convert(com.google.cloud.Timestamp.now().getSeconds(), TimeUnit.SECONDS)
+                - 24,
+            TimeUnit.HOURS), 0);
     String filter = String.format("(metadata.@type:type.googleapis.com/"
         + "google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata) AND "
         + "(metadata.progress.start_time > \"%s\")", last24Hours);
@@ -1773,8 +1775,9 @@ public class SpannerSample {
     }
 
     // List all backups that expire before a certain time.
-    com.google.cloud.Timestamp expireTime = com.google.cloud.Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
-    System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30), TimeUnit.MILLISECONDS));
+    com.google.cloud.Timestamp expireTime = com.google.cloud.Timestamp.ofTimeMicroseconds(
+        TimeUnit.MICROSECONDS.convert(
+            System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30), TimeUnit.MILLISECONDS));
 
     System.out.println(String.format("All backups that expire before %s:", expireTime));
     listBackupsRequest =
@@ -1796,8 +1799,9 @@ public class SpannerSample {
     }
 
     // List all backups with a create time after a certain timestamp and that are also ready.
-    com.google.cloud.Timestamp createTime = com.google.cloud.Timestamp.ofTimeMicroseconds(TimeUnit.MICROSECONDS.convert(
-        System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1), TimeUnit.MILLISECONDS));
+    com.google.cloud.Timestamp createTime = com.google.cloud.Timestamp.ofTimeMicroseconds(
+        TimeUnit.MICROSECONDS.convert(
+            System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1), TimeUnit.MILLISECONDS));
 
     System.out.println(
         String.format(
@@ -1885,11 +1889,10 @@ public class SpannerSample {
                 + TimeUnit.NANOSECONDS.toMicros(currentExpireTime.getNanos())
                 + TimeUnit.DAYS.toMicros(30L));
 
-
     // New Expire Time must be less than Max Expire Time
-    newExpireTime = newExpireTime.compareTo(com.google.cloud.Timestamp.fromProto(backup.getMaxExpireTime()))
-        < 0 ? newExpireTime : com.google.cloud.Timestamp.fromProto(backup.getMaxExpireTime());
-
+    newExpireTime =
+        newExpireTime.compareTo(com.google.cloud.Timestamp.fromProto(backup.getMaxExpireTime()))
+            < 0 ? newExpireTime : com.google.cloud.Timestamp.fromProto(backup.getMaxExpireTime());
 
     System.out.println(String.format(
         "Updating expire time of backup [%s] to %s...",
@@ -1919,12 +1922,12 @@ public class SpannerSample {
       dbAdminClient.getBackup(backupName);
     } catch (SpannerException e) {
       if (e.getErrorCode() == ErrorCode.NOT_FOUND) {
+        System.out.println("Deleted backup [" + backupId + "]");
+      } else {
         System.out.println("Delete backup [" + backupId + "] failed");
-        throw new RuntimeException("Delete backup [" + backupId + "] failed");
+        throw new RuntimeException("Delete backup [" + backupId + "] failed", e);
       }
-      throw e;
     }
-    System.out.println("Deleted backup [" + backupId + "]");
   }
   // [END spanner_delete_backup]
 
