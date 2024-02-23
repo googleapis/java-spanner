@@ -67,8 +67,10 @@ public class CopyBackupIT extends SampleTestBaseV2 {
         CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(
             databaseAdminClient, projectId, instanceId, databaseId, sourceBackupId, key
         ), new ShouldRetryBackupOperation());
-    assertThat(out).contains("Created backup [" +
-        BackupName.of(projectId, instanceId, sourceBackupId) + "]");
+    assertThat(out).containsMatch(
+        "Backup projects/" + projectId + "/instances/" + instanceId + "/backups/"
+            + sourceBackupId + " of size \\d+ bytes was created at (.*) using encryption key "
+            + key);
 
     out = SampleRunner.runSampleWithRetry(() ->
         CopyBackupSample.copyBackup(
