@@ -18,7 +18,6 @@ package com.example.spanner.admin.generated;
 
 //[START spanner_update_database_with_default_leader]
 
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;

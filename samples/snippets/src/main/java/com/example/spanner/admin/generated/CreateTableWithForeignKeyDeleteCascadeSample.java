@@ -20,7 +20,6 @@ package com.example.spanner.admin.generated;
 
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import java.io.IOException;
 

@@ -24,7 +24,6 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.InstanceName;
 import com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
