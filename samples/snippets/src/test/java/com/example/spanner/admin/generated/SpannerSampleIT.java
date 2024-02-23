@@ -375,6 +375,7 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
     String databaseId = idGenerator.generateDatabaseId();
     DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
     String restoreDatabaseId = idGenerator.generateDatabaseId();
+    String backupId = idGenerator.generateBackupId();
 
     try {
       assertThat(instanceId).isNotNull();
@@ -385,7 +386,6 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
       assertThat(out).contains("Created database");
       assertThat(out).contains(dbId.getName());
 
-      String backupId = idGenerator.generateBackupId();
       BackupName backupName = BackupName.of(projectId, instanceId, backupId);
 
       System.out.println("Creating Backup ...");

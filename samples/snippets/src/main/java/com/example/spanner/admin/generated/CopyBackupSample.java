@@ -19,13 +19,13 @@ package com.example.spanner.admin.generated;
 // [START spanner_copy_backup]
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Backup;
-import com.google.cloud.spanner.BackupId;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.InstanceName;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -34,15 +34,14 @@ import java.util.concurrent.TimeUnit;
 
 public class CopyBackupSample {
 
-  static void copyBackup() {
+  static void copyBackup() throws IOException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String sourceBackupId = "my-backup";
     String destinationBackupId = "my-destination-backup";
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
+
+    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
       copyBackup(databaseAdminClient, projectId, instanceId, sourceBackupId, destinationBackupId);
     }
   }
@@ -59,39 +58,36 @@ public class CopyBackupSample {
             TimeUnit.MICROSECONDS.convert(
                 System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14),
                 TimeUnit.MILLISECONDS));
-    Backup destinationBackup =
-        databaseAdminClient
-            .newBackupBuilder(BackupId.of(projectId, instanceId, destinationBackupId))
-            .setExpireTime(expireTime)
-            .build();
 
     // Initiate the request which returns an OperationFuture.
-    System.out.println("Copying backup [" + destinationBackup.getId() + "]...");
+    System.out.println("Copying backup [" + destinationBackupId + "]...");
+    Backup destinationBackup;
     try {
       // Creates a copy of an existing backup.
       // Wait for the backup operation to complete.
-      destinationBackup = databaseAdminClient.copyBackup(
-          BackupId.of(projectId, instanceId, sourceBackupId), destinationBackup).get();
-      System.out.println("Copied backup [" + destinationBackup.getId() + "]");
+      destinationBackup = databaseAdminClient.copyBackupAsync(
+          InstanceName.of(projectId, instanceId), destinationBackupId,
+          BackupName.of(projectId, instanceId, sourceBackupId), expireTime.toProto()).get();
+      System.out.println("Copied backup [" + destinationBackup.getName() + "]");
     } catch (ExecutionException e) {
       throw (SpannerException) e.getCause();
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
     // Load the metadata of the new backup from the server.
-    destinationBackup = destinationBackup.reload();
+    destinationBackup = databaseAdminClient.getBackup(destinationBackup.getName());
     System.out.println(
         String.format(
             "Backup %s of size %d bytes was copied at %s for version of database at %s",
-            destinationBackup.getId().getName(),
-            destinationBackup.getSize(),
+            destinationBackup.getName(),
+            destinationBackup.getSizeBytes(),
             OffsetDateTime.ofInstant(
-                Instant.ofEpochSecond(destinationBackup.getProto().getCreateTime().getSeconds(),
-                    destinationBackup.getProto().getCreateTime().getNanos()),
+                Instant.ofEpochSecond(destinationBackup.getCreateTime().getSeconds(),
+                    destinationBackup.getCreateTime().getNanos()),
                 ZoneId.systemDefault()),
             OffsetDateTime.ofInstant(
-                Instant.ofEpochSecond(destinationBackup.getProto().getVersionTime().getSeconds(),
-                    destinationBackup.getProto().getVersionTime().getNanos()),
+                Instant.ofEpochSecond(destinationBackup.getVersionTime().getSeconds(),
+                    destinationBackup.getVersionTime().getNanos()),
                 ZoneId.systemDefault())));
   }
 }

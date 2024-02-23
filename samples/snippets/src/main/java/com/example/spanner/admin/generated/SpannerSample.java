@@ -70,6 +70,8 @@ import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreInfo;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -1920,8 +1922,8 @@ public class SpannerSample {
     // Verify that the backup is deleted.
     try {
       dbAdminClient.getBackup(backupName);
-    } catch (SpannerException e) {
-      if (e.getErrorCode() == ErrorCode.NOT_FOUND) {
+    } catch (StatusRuntimeException e) {
+      if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
         System.out.println("Deleted backup [" + backupId + "]");
       } else {
         System.out.println("Delete backup [" + backupId + "] failed");
