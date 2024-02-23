@@ -529,9 +529,24 @@ public class ITQueryTest {
   }
 
   @Test
-  @Ignore
-  // Fails due to backend issues. Should be resolved soon.
   public void bindFloat32Array() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toFloat32Array(asList(null, 1.0f, 2.0f)),
+            Type.array(Type.float32()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloatList(0)).containsExactly(null, 1.0f, 2.0f).inOrder();
+  }
+
+  // TODO: Merge this with bindFloat32Array after the fix.
+  @Ignore("Waiting for a backend fix.")
+  @Test
+  public void bindFloat32ArrayNonNumbers() {
     assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
     assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
 
