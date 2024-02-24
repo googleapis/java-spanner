@@ -18,26 +18,32 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_instance_with_autoscaling_config]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.ProjectName;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 class CreateInstanceWithAutoscalingConfigExample {
 
-  static void createInstance() throws IOException {
+  static void createInstance() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     createInstance(projectId, instanceId);
   }
 
-  static void createInstance(String projectId, String instanceId) throws IOException {
-    try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+  static void createInstance(String projectId, String instanceId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
       // Set Instance configuration.
       String configId = "regional-us-central1";
       String displayName = "Descriptive name";

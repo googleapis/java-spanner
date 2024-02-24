@@ -18,14 +18,15 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_table_with_foreign_key_delete_cascade]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import java.io.IOException;
 
 class CreateTableWithForeignKeyDeleteCascadeSample {
 
-  static void createForeignKeyDeleteCascadeConstraint() throws IOException {
+  static void createForeignKeyDeleteCascadeConstraint() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -35,28 +36,31 @@ class CreateTableWithForeignKeyDeleteCascadeSample {
   }
 
   static void createForeignKeyDeleteCascadeConstraint(
-      String projectId, String instanceId, String databaseId) throws IOException {
-    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
-    databaseAdminClient.updateDatabaseDdlAsync(
-        DatabaseName.of(projectId, instanceId, databaseId),
-        ImmutableList.of(
-            "CREATE TABLE Customers (\n"
-                + "              CustomerId INT64 NOT NULL,\n"
-                + "              CustomerName STRING(62) NOT NULL,\n"
-                + "              ) PRIMARY KEY (CustomerId)",
-            "CREATE TABLE ShoppingCarts (\n"
-                + "              CartId INT64 NOT NULL,\n"
-                + "              CustomerId INT64 NOT NULL,\n"
-                + "              CustomerName STRING(62) NOT NULL,\n"
-                + "              CONSTRAINT FKShoppingCartsCustomerId FOREIGN KEY (CustomerId)\n"
-                + "              REFERENCES Customers (CustomerId) ON DELETE CASCADE\n"
-                + "              ) PRIMARY KEY (CartId)\n"));
+      String projectId, String instanceId, String databaseId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      databaseAdminClient.updateDatabaseDdlAsync(
+          DatabaseName.of(projectId, instanceId, databaseId),
+          ImmutableList.of(
+              "CREATE TABLE Customers (\n"
+                  + "              CustomerId INT64 NOT NULL,\n"
+                  + "              CustomerName STRING(62) NOT NULL,\n"
+                  + "              ) PRIMARY KEY (CustomerId)",
+              "CREATE TABLE ShoppingCarts (\n"
+                  + "              CartId INT64 NOT NULL,\n"
+                  + "              CustomerId INT64 NOT NULL,\n"
+                  + "              CustomerName STRING(62) NOT NULL,\n"
+                  + "              CONSTRAINT FKShoppingCartsCustomerId FOREIGN KEY (CustomerId)\n"
+                  + "              REFERENCES Customers (CustomerId) ON DELETE CASCADE\n"
+                  + "              ) PRIMARY KEY (CartId)\n"));
 
-    System.out.printf(
-        String.format(
-            "Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId\n"
-                + "foreign key constraint on database %s on instance %s\n",
-            databaseId, instanceId));
+      System.out.printf(
+          String.format(
+              "Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId\n"
+                  + "foreign key constraint on database %s on instance %s\n",
+              databaseId, instanceId));
+    }
   }
 }
 // [END spanner_create_table_with_foreign_key_delete_cascade]

@@ -18,14 +18,15 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_alter_table_with_foreign_key_delete_cascade]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import java.io.IOException;
 
 class AlterTableWithForeignKeyDeleteCascadeSample {
 
-  static void alterForeignKeyDeleteCascadeConstraint() throws IOException {
+  static void alterForeignKeyDeleteCascadeConstraint() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -35,22 +36,24 @@ class AlterTableWithForeignKeyDeleteCascadeSample {
   }
 
   static void alterForeignKeyDeleteCascadeConstraint(
-      String projectId, String instanceId, String databaseId) throws IOException {
-    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
-
-    databaseAdminClient.updateDatabaseDdlAsync(DatabaseName.of(projectId, instanceId,
-            databaseId),
-        ImmutableList.of(
-            "ALTER TABLE ShoppingCarts\n"
-                + "              ADD CONSTRAINT FKShoppingCartsCustomerName\n"
-                + "              FOREIGN KEY (CustomerName)\n"
-                + "              REFERENCES Customers(CustomerName)\n"
-                + "              ON DELETE CASCADE\n"));
-    System.out.printf(
-        String.format(
-            "Altered ShoppingCarts table with FKShoppingCartsCustomerName\n"
-                + "foreign key constraint on database %s on instance %s",
-            databaseId, instanceId));
+      String projectId, String instanceId, String databaseId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      databaseAdminClient.updateDatabaseDdlAsync(DatabaseName.of(projectId, instanceId,
+              databaseId),
+          ImmutableList.of(
+              "ALTER TABLE ShoppingCarts\n"
+                  + "              ADD CONSTRAINT FKShoppingCartsCustomerName\n"
+                  + "              FOREIGN KEY (CustomerName)\n"
+                  + "              REFERENCES Customers(CustomerName)\n"
+                  + "              ON DELETE CASCADE\n"));
+      System.out.printf(
+          String.format(
+              "Altered ShoppingCarts table with FKShoppingCartsCustomerName\n"
+                  + "foreign key constraint on database %s on instance %s",
+              databaseId, instanceId));
+    }
   }
 }
 // [END spanner_alter_table_with_foreign_key_delete_cascade]

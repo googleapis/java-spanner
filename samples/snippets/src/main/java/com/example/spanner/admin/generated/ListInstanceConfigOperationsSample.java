@@ -18,24 +18,30 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_list_instance_config_operations]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.longrunning.Operation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ProjectName;
-import java.io.IOException;
 
 public class ListInstanceConfigOperationsSample {
 
-  static void listInstanceConfigOperations() throws IOException {
+  static void listInstanceConfigOperations() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     listInstanceConfigOperations(projectId);
   }
 
-  static void listInstanceConfigOperations(String projectId) throws IOException {
-    try (final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+  static void listInstanceConfigOperations(String projectId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
       final ProjectName projectName = ProjectName.of(projectId);
       System.out.printf(
           "Getting list of instance config operations for project %s...\n",

@@ -18,15 +18,16 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_add_numeric_column]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 class AddNumericColumnSample {
 
-  static void addNumericColumn() throws InterruptedException, ExecutionException, IOException {
+  static void addNumericColumn() throws InterruptedException, ExecutionException {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -36,15 +37,20 @@ class AddNumericColumnSample {
   }
 
   static void addNumericColumn(String projectId, String instanceId, String databaseId)
-      throws InterruptedException, ExecutionException, IOException {
-    final DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
-
-    // Wait for the operation to finish.
-    // This will throw an ExecutionException if the operation fails.
-    databaseAdminClient.updateDatabaseDdlAsync(
-        DatabaseName.of(projectId, instanceId, databaseId),
-        ImmutableList.of("ALTER TABLE Venues ADD COLUMN Revenue NUMERIC")).get();
-    System.out.printf("Successfully added column `Revenue`%n");
+      throws InterruptedException, ExecutionException {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      // Wait for the operation to finish.
+      // This will throw an ExecutionException if the operation fails.
+      databaseAdminClient.updateDatabaseDdlAsync(
+          DatabaseName.of(projectId, instanceId, databaseId),
+          ImmutableList.of("ALTER TABLE Venues ADD COLUMN Revenue NUMERIC")).get();
+      System.out.printf("Successfully added column `Revenue`%n");
+    }
   }
 }
 // [END spanner_add_numeric_column]
