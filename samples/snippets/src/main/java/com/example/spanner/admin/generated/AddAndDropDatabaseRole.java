@@ -46,35 +46,34 @@ public class AddAndDropDatabaseRole {
         SpannerOptions.newBuilder()
             .setProjectId(projectId)
             .build()
-            .getService())  {
-      try(DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
-        System.out.println("Waiting for role create operation to complete...");
-        databaseAdminClient.updateDatabaseDdlAsync(
-                DatabaseName.of(projectId, instanceId, databaseId),
-                ImmutableList.of(
-                    String.format("CREATE ROLE %s", parentRole),
-                    String.format("GRANT SELECT ON TABLE Albums TO ROLE %s", parentRole),
-                    String.format("CREATE ROLE %s", childRole),
-                    String.format("GRANT ROLE %s TO ROLE %s", parentRole, childRole)))
-            .get(5, TimeUnit.MINUTES);
-        System.out.printf(
-            "Created roles %s and %s and granted privileges%n", parentRole, childRole);
-        // Delete role and membership.
-        System.out.println("Waiting for role revoke & drop operation to complete...");
-        databaseAdminClient.updateDatabaseDdlAsync(
-            DatabaseName.of(projectId, instanceId, databaseId),
-            ImmutableList.of(
-                String.format("REVOKE ROLE %s FROM ROLE %s", parentRole, childRole),
-                String.format("DROP ROLE %s", childRole))).get(5, TimeUnit.MINUTES);
-        System.out.printf("Revoked privileges and dropped role %s%n", childRole);
-      } catch (ExecutionException | TimeoutException e) {
-        System.out.printf(
-            "Error: AddAndDropDatabaseRole failed with error message %s\n", e.getMessage());
-        e.printStackTrace();
-      } catch (InterruptedException e) {
-        System.out.println(
-            "Error: Waiting for AddAndDropDatabaseRole operation to finish was interrupted");
-      }
+            .getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      System.out.println("Waiting for role create operation to complete...");
+      databaseAdminClient.updateDatabaseDdlAsync(
+              DatabaseName.of(projectId, instanceId, databaseId),
+              ImmutableList.of(
+                  String.format("CREATE ROLE %s", parentRole),
+                  String.format("GRANT SELECT ON TABLE Albums TO ROLE %s", parentRole),
+                  String.format("CREATE ROLE %s", childRole),
+                  String.format("GRANT ROLE %s TO ROLE %s", parentRole, childRole)))
+          .get(5, TimeUnit.MINUTES);
+      System.out.printf(
+          "Created roles %s and %s and granted privileges%n", parentRole, childRole);
+      // Delete role and membership.
+      System.out.println("Waiting for role revoke & drop operation to complete...");
+      databaseAdminClient.updateDatabaseDdlAsync(
+          DatabaseName.of(projectId, instanceId, databaseId),
+          ImmutableList.of(
+              String.format("REVOKE ROLE %s FROM ROLE %s", parentRole, childRole),
+              String.format("DROP ROLE %s", childRole))).get(5, TimeUnit.MINUTES);
+      System.out.printf("Revoked privileges and dropped role %s%n", childRole);
+    } catch (ExecutionException | TimeoutException e) {
+      System.out.printf(
+          "Error: AddAndDropDatabaseRole failed with error message %s\n", e.getMessage());
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      System.out.println(
+          "Error: Waiting for AddAndDropDatabaseRole operation to finish was interrupted");
     }
   }
 }
