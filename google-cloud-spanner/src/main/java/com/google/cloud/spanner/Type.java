@@ -93,7 +93,7 @@ public final class Type implements Serializable {
 
   /**
    * Returns the descriptor for the {@code FLOAT32} type: a floating point type with the same value
-   * domain as a Java {code float}.
+   * domain as a Java {@code float}.
    */
   public static Type float32() {
     return TYPE_FLOAT32;
@@ -101,7 +101,7 @@ public final class Type implements Serializable {
 
   /**
    * Returns the descriptor for the {@code FLOAT64} type: a floating point type with the same value
-   * domain as a Java {code double}.
+   * domain as a Java {@code double}.
    */
   public static Type float64() {
     return TYPE_FLOAT64;

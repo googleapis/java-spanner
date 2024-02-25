@@ -73,7 +73,7 @@ CREATE TABLE TableWithAllColumnTypes (
   ColDate		DATE		NOT NULL,
   ColTimestamp	TIMESTAMP	NOT NULL,
   ColCommitTS	TIMESTAMP	NOT NULL OPTIONS (allow_commit_timestamp=true),
-
+  
   ColInt64Array		ARRAY<INT64>,
   ColFloat64Array	ARRAY<FLOAT64>,
   ColBoolArray		ARRAY<BOOL>,

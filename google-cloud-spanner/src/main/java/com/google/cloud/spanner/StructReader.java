@@ -127,13 +127,17 @@ public interface StructReader {
    * @param columnIndex index of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#float32()}.
    */
-  float getFloat(int columnIndex);
+  default float getFloat(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * @param columnName name of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#float32()}.
    */
-  float getFloat(String columnName);
+  default float getFloat(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * @param columnIndex index of the column
@@ -379,7 +383,9 @@ public interface StructReader {
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getFloatList(int)} instead.
    */
-  float[] getFloatArray(int columnIndex);
+  default float[] getFloatArray(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * @param columnName name of the column
@@ -387,7 +393,9 @@ public interface StructReader {
    * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
    *     may contain {@code NULL} values, use {@link #getFloatList(String)} instead.
    */
-  float[] getFloatArray(String columnName);
+  default float[] getFloatArray(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * @param columnIndex index of the column
@@ -395,7 +403,9 @@ public interface StructReader {
    *     list returned by this method is lazily constructed. Create a copy of it if you intend to
    *     access each element in the list multiple times.
    */
-  List<Float> getFloatList(int columnIndex);
+  default List<Float> getFloatList(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
 
   /**
    * @param columnName name of the column

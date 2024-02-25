@@ -508,21 +508,6 @@
 
   <!-- FLOAT32 -->
   <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>float[] getFloatArrayInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>float getFloatInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>java.util.List getFloatListInternal(int)</method>
-  </difference>
-  <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/StructReader</className>
     <method>float getFloat(int)</method>

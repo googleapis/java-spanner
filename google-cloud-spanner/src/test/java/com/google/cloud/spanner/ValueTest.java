@@ -1512,7 +1512,7 @@ public class ValueTest {
         Value.int64(null).toProto());
 
     assertEquals(
-        com.google.protobuf.Value.newBuilder().setNumberValue((double) 3.14f).build(),
+        com.google.protobuf.Value.newBuilder().setNumberValue(3.14f).build(),
         Value.float32(3.14f).toProto());
     assertEquals(
         com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
@@ -1610,9 +1610,7 @@ public class ValueTest {
                 ListValue.newBuilder()
                     .addAllValues(
                         Arrays.asList(
-                            com.google.protobuf.Value.newBuilder()
-                                .setNumberValue((double) 3.14f)
-                                .build(),
+                            com.google.protobuf.Value.newBuilder().setNumberValue(3.14f).build(),
                             com.google.protobuf.Value.newBuilder()
                                 .setNullValue(NullValue.NULL_VALUE)
                                 .build())))
@@ -1784,7 +1782,7 @@ public class ValueTest {
                                     .addAllValues(
                                         Arrays.asList(
                                             com.google.protobuf.Value.newBuilder()
-                                                .setNumberValue((double) 3.14f)
+                                                .setNumberValue(3.14f)
                                                 .build(),
                                             com.google.protobuf.Value.newBuilder()
                                                 .setNullValue(NullValue.NULL_VALUE)

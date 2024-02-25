@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
@@ -104,9 +104,8 @@ public class ITFloat32Test {
   @BeforeClass
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
-    if (!isUsingCloudDevel()) {
-      return;
-    }
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
 
     Database googleStandardSQLDatabase =
         env.getTestHelper().createTestDatabase(GOOGLE_STANDARD_SQL_SCHEMA);
@@ -121,8 +120,6 @@ public class ITFloat32Test {
 
   @Before
   public void before() {
-    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
-
     client =
         dialect.dialect == Dialect.GOOGLE_STANDARD_SQL ? googleStandardSQLClient : postgreSQLClient;
   }
@@ -161,93 +158,75 @@ public class ITFloat32Test {
 
   @Test
   public void writeFloat32() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     write(baseInsert().set("Float32Value").to(2.0f).build());
     Struct row = readLastRow("Float32Value");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloat(0)).isWithin(0.0f).of(2.0f);
+    assertFalse(row.isNull(0));
+    assertEquals(2.0f, row.getFloat(0), 0.0f);
   }
 
   @Ignore("Needs a fix in the backend.")
   @Test
   public void writeFloat32NonNumbers() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
 
     write(baseInsert().set("Float32Value").to(Float.NEGATIVE_INFINITY).build());
     Struct row = readLastRow("Float32Value");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloat(0)).isNegativeInfinity();
+    assertFalse(row.isNull(0));
+    assertEquals(Float.NEGATIVE_INFINITY, row.getFloat(0), 0.0f);
 
     write(baseInsert().set("Float32Value").to(Float.POSITIVE_INFINITY).build());
     row = readLastRow("Float32Value");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloat(0)).isPositiveInfinity();
+    assertFalse(row.isNull(0));
+    assertEquals(Float.POSITIVE_INFINITY, row.getFloat(0), 0.0);
 
     write(baseInsert().set("Float32Value").to(Float.NaN).build());
     row = readLastRow("Float32Value");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloat(0)).isNaN();
+    assertFalse(row.isNull(0));
+    assertTrue(Float.isNaN(row.getFloat(0)));
   }
 
   @Test
   public void writeFloat32Null() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     write(baseInsert().set("Float32Value").to((Float) null).build());
     Struct row = readLastRow("Float32Value");
-    assertThat(row.isNull(0)).isTrue();
+    assertTrue(row.isNull(0));
   }
 
   @Test
   public void writeFloat32ArrayNull() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     write(baseInsert().set("Float32ArrayValue").toFloat32Array((float[]) null).build());
     Struct row = readLastRow("Float32ArrayValue");
-    assertThat(row.isNull(0)).isTrue();
+    assertTrue(row.isNull(0));
   }
 
   @Test
   public void writeFloat32ArrayEmpty() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     write(baseInsert().set("Float32ArrayValue").toFloat32Array(new float[] {}).build());
     Struct row = readLastRow("Float32ArrayValue");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloatList(0)).containsExactly();
+    assertFalse(row.isNull(0));
+    assertTrue(row.getFloatList(0).isEmpty());
   }
 
   @Test
   public void writeFloat32Array() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     write(
         baseInsert()
             .set("Float32ArrayValue")
             .toFloat32Array(Arrays.asList(null, 1.0f, 2.0f))
             .build());
     Struct row = readLastRow("Float32ArrayValue");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloatList(0)).containsExactly(null, 1.0f, 2.0f).inOrder();
-    try {
-      row.getFloatArray(0);
-      fail("Expected exception");
-    } catch (NullPointerException ex) {
-      assertNotNull(ex.getMessage());
-    }
+    assertFalse(row.isNull(0));
+    assertEquals(row.getFloatList(0), Arrays.asList(null, 1.0f, 2.0f));
+    assertThrows(NullPointerException.class, () -> row.getFloatArray(0));
   }
 
   @Test
   public void writeFloat32ArrayNoNulls() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     write(baseInsert().set("Float32ArrayValue").toFloat32Array(Arrays.asList(1.0f, 2.0f)).build());
     Struct row = readLastRow("Float32ArrayValue");
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloatArray(0).length).isEqualTo(2);
-    assertThat(row.getFloatArray(0)[0]).isWithin(0.0f).of(1.0f);
-    assertThat(row.getFloatArray(0)[1]).isWithin(0.0f).of(2.0f);
+    assertFalse(row.isNull(0));
+    assertEquals(2, row.getFloatArray(0).length);
+    assertEquals(1.0f, row.getFloatArray(0)[0], 0.0f);
+    assertEquals(2.0f, row.getFloatArray(0)[1], 0.0f);
   }
 
   private String getInsertStatementWithLiterals() {
@@ -273,8 +252,6 @@ public class ITFloat32Test {
 
   @Test
   public void float32Literals() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     client
         .readWriteTransaction()
         .run(
@@ -301,8 +278,6 @@ public class ITFloat32Test {
   @Ignore("Needs a fix in the backend.")
   @Test
   public void float32Parameter() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     client
         .readWriteTransaction()
         .run(
@@ -353,8 +328,6 @@ public class ITFloat32Test {
 
   @Test
   public void float32UntypedParameter() {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
-
     client
         .readWriteTransaction()
         .run(
@@ -383,12 +356,12 @@ public class ITFloat32Test {
 
     Struct row = readRow("T", "untyped1", "Float32Value", "Float32ArrayValue");
     // Float32Value
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getFloat(0)).isWithin(0.001f).of(3.14f);
+    assertFalse(row.isNull(0));
+    assertEquals(3.14f, row.getFloat(0), 0.00001f);
     // Float32ArrayValue
-    assertThat(row.isNull(1)).isFalse();
-    assertThat(row.getFloatList(1)).hasSize(1);
-    assertThat(row.getFloatList(1).get(0)).isWithin(0.001f).of(Float.MIN_NORMAL);
+    assertFalse(row.isNull(1));
+    assertEquals(1, row.getFloatList(1).size());
+    assertEquals(Float.MIN_NORMAL, row.getFloatList(1).get(0), 0.00001f);
   }
 
   private void verifyContents(String keyPrefix) {
@@ -402,41 +375,38 @@ public class ITFloat32Test {
 
       assertTrue(resultSet.next());
 
-      assertThat(resultSet.getFloat("float32value")).isWithin(0.001f).of(3.14f);
-      assertThat(resultSet.getValue("float32value")).isEqualTo(Value.float32(3.14f));
-      ;
-      assertThat(resultSet.getFloatArray("float32arrayvalue")).isEqualTo(new float[] {1.1f});
+      assertEquals(3.14f, resultSet.getFloat("float32value"), 0.00001f);
+      assertEquals(Value.float32(3.14f), resultSet.getValue("float32value"));
+
+      assertArrayEquals(new float[] {1.1f}, resultSet.getFloatArray("float32arrayvalue"), 0.00001f);
 
       assertTrue(resultSet.next());
 
-      assertThat(resultSet.getFloat("float32value")).isWithin(0.001f).of(3.14f);
-      assertThat(resultSet.getFloatList("float32arrayvalue")).containsExactly(3.14f, 3.14f);
-      assertThat(resultSet.getValue("float32arrayvalue"))
-          .isEqualTo(Value.float32Array(new float[] {3.14f, 3.14f}));
+      assertEquals(3.14f, resultSet.getFloat("float32value"), 0.00001f);
+      assertEquals(Arrays.asList(3.14f, 3.14f), resultSet.getFloatList("float32arrayvalue"));
+      assertEquals(
+          Value.float32Array(new float[] {3.14f, 3.14f}), resultSet.getValue("float32arrayvalue"));
 
       assertTrue(resultSet.next());
-      assertThat(resultSet.getFloat("float32value")).isNaN();
-      assertThat(resultSet.getValue("float32value").getFloat32()).isNaN();
-      assertThat(resultSet.getFloatList("float32arrayvalue"))
-          .containsExactly(Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.NEGATIVE_INFINITY);
-      assertThat(resultSet.getValue("float32arrayvalue"))
-          .isEqualTo(
-              Value.float32Array(
-                  Arrays.asList(Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.NEGATIVE_INFINITY)));
+      assertTrue(Float.isNaN(resultSet.getFloat("float32value")));
+      assertTrue(Float.isNaN(resultSet.getValue("float32value").getFloat32()));
+      assertEquals(
+          Arrays.asList(Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.NEGATIVE_INFINITY),
+          resultSet.getFloatList("float32arrayvalue"));
+      assertEquals(
+          Value.float32Array(
+              Arrays.asList(Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.NEGATIVE_INFINITY)),
+          resultSet.getValue("float32arrayvalue"));
 
       assertTrue(resultSet.next());
-      assertThat(resultSet.getFloat("float32value")).isWithin(0.1f).of(Float.MIN_NORMAL);
-      assertThat(resultSet.getValue("float32value").getFloat32())
-          .isWithin(0.1f)
-          .of(Float.MIN_NORMAL);
-      assertThat(resultSet.getFloatList("float32arrayvalue")).hasSize(3);
-      assertThat(resultSet.getFloatList("float32arrayvalue").get(0))
-          .isWithin(0.1f)
-          .of(Float.MIN_NORMAL);
-      assertThat(resultSet.getFloatList("float32arrayvalue").get(1)).isEqualTo(Float.MAX_VALUE);
-      assertThat(resultSet.getFloatList("float32arrayvalue").get(2))
-          .isEqualTo(-1 * Float.MAX_VALUE);
-      assertThat(resultSet.getValue("float32arrayvalue").getFloat32Array()).hasSize(3);
+      assertEquals(Float.MIN_NORMAL, resultSet.getFloat("float32value"), 0.00001f);
+      assertEquals(Float.MIN_NORMAL, resultSet.getValue("float32value").getFloat32(), 0.00001f);
+      assertEquals(3, resultSet.getFloatList("float32arrayvalue").size());
+      assertEquals(Float.MIN_NORMAL, resultSet.getFloatList("float32arrayvalue").get(0), 0.00001);
+      assertEquals(Float.MAX_VALUE, resultSet.getFloatList("float32arrayvalue").get(1), 0.00001f);
+      assertEquals(
+          -1 * Float.MAX_VALUE, resultSet.getFloatList("float32arrayvalue").get(2), 0.00001f);
+      assertEquals(3, resultSet.getValue("float32arrayvalue").getFloat32Array().size());
 
       assertTrue(resultSet.next());
       assertTrue(resultSet.isNull("float32value"));

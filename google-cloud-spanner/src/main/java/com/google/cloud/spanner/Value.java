@@ -1457,14 +1457,6 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public float getFloat32() {
-      checkNotNull();
-      Preconditions.checkState(
-          value.hasNumberValue(), "This value does not contain a number value");
-      return (float) value.getNumberValue();
-    }
-
-    @Override
     public double getFloat64() {
       checkNotNull();
       Preconditions.checkState(
@@ -1626,7 +1618,7 @@ public abstract class Value implements Serializable {
 
     @Override
     com.google.protobuf.Value valueToProto() {
-      return com.google.protobuf.Value.newBuilder().setNumberValue((double) value).build();
+      return com.google.protobuf.Value.newBuilder().setNumberValue(value).build();
     }
 
     @Override
@@ -2037,8 +2029,6 @@ public abstract class Value implements Serializable {
   private static class PgNumericImpl extends AbstractObjectValue<String> {
     private BigDecimal valueAsBigDecimal;
     private NumberFormatException bigDecimalConversionError;
-    private Float valueAsFloat;
-    private NumberFormatException floatConversionError;
     private Double valueAsDouble;
     private NumberFormatException doubleConversionError;
 
@@ -2067,23 +2057,6 @@ public abstract class Value implements Serializable {
         }
       }
       return valueAsBigDecimal;
-    }
-
-    @Override
-    public float getFloat32() {
-      checkNotNull();
-      if (floatConversionError != null) {
-        throw floatConversionError;
-      }
-      if (valueAsFloat == null) {
-        try {
-          valueAsFloat = Float.parseFloat(value);
-        } catch (NumberFormatException e) {
-          floatConversionError = e;
-          throw e;
-        }
-      }
-      return valueAsFloat;
     }
 
     @Override
@@ -2314,7 +2287,7 @@ public abstract class Value implements Serializable {
 
     @Override
     com.google.protobuf.Value getValueAsProto(int i) {
-      return com.google.protobuf.Value.newBuilder().setNumberValue((double) values[i]).build();
+      return com.google.protobuf.Value.newBuilder().setNumberValue(values[i]).build();
     }
 
     @Override
@@ -2698,8 +2671,6 @@ public abstract class Value implements Serializable {
 
     private List<BigDecimal> valuesAsBigDecimal;
     private NumberFormatException bigDecimalConversionError;
-    private List<Float> valuesAsFloat;
-    private NumberFormatException floatConversionError;
     private List<Double> valuesAsDouble;
     private NumberFormatException doubleConversionError;
 
@@ -2731,26 +2702,6 @@ public abstract class Value implements Serializable {
         }
       }
       return valuesAsBigDecimal;
-    }
-
-    @Override
-    public List<Float> getFloat32Array() {
-      checkNotNull();
-      if (floatConversionError != null) {
-        throw floatConversionError;
-      }
-      if (valuesAsFloat == null) {
-        try {
-          valuesAsFloat =
-              value.stream()
-                  .map(v -> v == null ? null : Float.valueOf(v))
-                  .collect(Collectors.toList());
-        } catch (NumberFormatException e) {
-          floatConversionError = e;
-          throw e;
-        }
-      }
-      return valuesAsFloat;
     }
 
     @Override

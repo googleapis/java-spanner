@@ -43,7 +43,9 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract long getLongInternal(int columnIndex);
 
-  protected abstract float getFloatInternal(int columnIndex);
+  protected float getFloatInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract double getDoubleInternal(int columnIndex);
 
@@ -96,9 +98,13 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract List<Long> getLongListInternal(int columnIndex);
 
-  protected abstract float[] getFloatArrayInternal(int columnIndex);
+  protected float[] getFloatArrayInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
-  protected abstract List<Float> getFloatListInternal(int columnIndex);
+  protected List<Float> getFloatListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract double[] getDoubleArrayInternal(int columnIndex);
 

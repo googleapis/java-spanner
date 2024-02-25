@@ -144,7 +144,7 @@ public class RandomResultSetGenerator {
           builder.setNumberValue(random.nextDouble());
           break;
         case FLOAT32:
-          builder.setNumberValue((double) random.nextFloat());
+          builder.setNumberValue(random.nextFloat());
           break;
         case INT64:
           builder.setStringValue(String.valueOf(random.nextLong()));
