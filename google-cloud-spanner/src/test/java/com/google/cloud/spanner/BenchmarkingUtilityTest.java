@@ -16,11 +16,12 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.common.truth.Truth.assertThat;
-
-import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.api.gax.rpc.ServerStream;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import com.google.rpc.Code;
+import com.google.spanner.v1.BatchWriteResponse;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,11 +42,19 @@ import org.junit.runners.JUnit4;
 /**
  * Hosts a bunch of utility methods/scripts that can be used while performing benchmarks to load
  * data, report latency metrics, etc.
+ *
+ * <p>Table schema used here: CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, )
+ * PRIMARY KEY(id);
  */
 @Category(SlowTest.class)
 @RunWith(JUnit4.class)
-public class BenchmarkingDataLoaderUtility {
-  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
+public class BenchmarkingUtilityTest {
+
+  @ClassRule
+  public static IntegrationTestEnv env = new IntegrationTestEnv();
+
+  // TODO(developer): Add your values here for PROJECT_ID, INSTANCE_ID, DATABASE_ID
+  // TODO(developer): By default these values are blank and should be replaced before a run.
   private static final String PROJECT_ID = "";
   private static final String INSTANCE_ID = "";
   private static final String DATABASE_ID = "";
@@ -65,6 +74,9 @@ public class BenchmarkingDataLoaderUtility {
     final SpannerOptions options = optionsBuilder.build();
     spanner = options.getService();
     client = spanner.getDatabaseClient(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DATABASE_ID));
+
+    // Delete all existing data from the table
+    client.write(ImmutableList.of(Mutation.delete("FOO", KeySet.all())));
   }
 
   @AfterClass
@@ -81,38 +93,41 @@ public class BenchmarkingDataLoaderUtility {
    */
   @Test
   public void bulkInsertTestData() {
-    String insertQuery = "INSERT INTO FOO(id, BAZ, BAR) VALUES(@key, @val1, @val2)";
     int key = 0;
-    for (int batch = 0; batch < 1000; batch++) {
-      List<Statement> stmts = new LinkedList<>();
-      for (int i = 0; i < 100; i++) {
-        stmts.add(
-            Statement.newBuilder(insertQuery)
-                .bind("key")
-                .to(key)
-                .bind("val1")
-                .to(1)
-                .bind("val2")
-                .to(2)
-                .build());
+    List<MutationGroup> mutationGroups = new ArrayList<>();
+    for (int batch = 0; batch < 100; batch++) {
+      List<Mutation> mutations = new LinkedList<>();
+      for (int i = 0; i < 10000; i++) {
+        mutations.add(Mutation.newInsertBuilder("FOO")
+            .set("id")
+            .to(key)
+            .set("BAZ")
+            .to(1)
+            .set("BAR")
+            .to(2)
+            .build());
         key++;
       }
-      final TransactionCallable<long[]> callable = transaction -> transaction.batchUpdate(stmts);
-      TransactionRunner runner = client.readWriteTransaction();
-      long[] actualRowCounts = runner.run(callable);
-      assertThat(actualRowCounts.length).isEqualTo(100);
-      System.out.println("Completed batch => " + batch);
+      mutationGroups.add(MutationGroup.of(mutations));
+    }
+    ServerStream<BatchWriteResponse> responses = client.batchWriteAtLeastOnce(mutationGroups);
+    for (BatchWriteResponse response : responses) {
+      if (response.getStatus().getCode() == Code.OK_VALUE) {
+        System.out.printf(
+            "Mutation group indexes %s have been applied with commit timestamp %s",
+            response.getIndexesList(), response.getCommitTimestamp());
+      } else {
+        System.out.printf(
+            "Mutation group indexes %s could not be applied with error code %s and "
+                + "error message %s", response.getIndexesList(),
+            Code.forNumber(response.getStatus().getCode()), response.getStatus().getMessage());
+      }
     }
   }
 
+
   /**
    * Collects all results from a collection of future objects.
-   *
-   * @param service
-   * @param results
-   * @param numOperations
-   * @return
-   * @throws Exception
    */
   public static List<Duration> collectResults(
       final ListeningScheduledExecutorService service,
@@ -132,8 +147,6 @@ public class BenchmarkingDataLoaderUtility {
 
   /**
    * Utility to print latency numbers. It computes metrics such as Average, P50, P95 and P99.
-   *
-   * @param results
    */
   public static void printResults(List<Duration> results) {
     if (results == null) {
@@ -156,11 +169,14 @@ public class BenchmarkingDataLoaderUtility {
     return convertedValue;
   }
 
+  /**
+   * Returns the average duration in seconds from a list of duration values.
+   */
   public static double avg(List<Duration> results) {
     return results.stream()
         .collect(
             Collectors.averagingDouble(
-                BenchmarkingDataLoaderUtility::convertDurationToFractionInSeconds));
+                BenchmarkingUtilityTest::convertDurationToFractionInSeconds));
   }
 
   public static double convertDurationToFractionInSeconds(Duration duration) {

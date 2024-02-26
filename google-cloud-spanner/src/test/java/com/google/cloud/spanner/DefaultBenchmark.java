@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.BenchmarkingDataLoaderUtility.collectResults;
-import static com.google.cloud.spanner.BenchmarkingDataLoaderUtility.printResults;
+import static com.google.cloud.spanner.BenchmarkingUtilityTest.collectResults;
+import static com.google.cloud.spanner.BenchmarkingUtilityTest.printResults;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.base.Stopwatch;
@@ -55,7 +55,7 @@ import org.openjdk.jmh.annotations.Warmup;
  * <p>Below are a few considerations here: 1. We use all default options for this test because that
  * is what most customers would be using. 2. The test schema uses a numeric primary key. To ensure
  * that the reads/updates are distributed across a large query space, we insert 10^5 records.
- * Utility at {@link BenchmarkingDataLoaderUtility} can be used for loading data. 3. For queries, we
+ * Utility at {@link BenchmarkingUtilityTest} can be used for loading data. 3. For queries, we
  * make sure that the query is sampled randomly across a large query space. This ensure we don't
  * cause hot-spots. 4. For avoid cold start issues, we execute 1 query/update and ignore its latency
  * from the final reported metrics.
@@ -69,19 +69,49 @@ public class DefaultBenchmark {
   private static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
   private static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
   private static final String ID_COLUMN_NAME = "id";
+
+  /**
+   * Used to determine how many concurrent requests are allowed. For ex - To simulate a low
+   * QPS scenario, using 1 thread means there will be 1 request. Use a value > 1 to have
+   * concurrent requests.
+   */
   private static final int PARALLEL_THREADS = 1;
-  private static final int TOTAL_READS_PER_THREAD = 12000;
-  private static final int TOTAL_WRITES_PER_THREAD = 4000;
-  private static final int WARMUP_TRANSACTIONS = 1;
-  private static final int RANDOM_SEARCH_SPACE = 99999;
+
+  /**
+   * Total number of reads per test run for 1 thread. Increasing the value here will increase the
+   * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_READS_PER_RUN = 200, there
+   * will be 400 read requests (200 on each thread).
+   */
+  private static final int TOTAL_READS_PER_RUN = 12000;
+
+  /**
+   * Total number of writes per test run for 1 thread. Increasing the value here will increase the
+   * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_WRITES_PER_RUN = 200, there
+   * will be 400 write requests (200 on each thread).
+   */
+  private static final int TOTAL_WRITES_PER_RUN = 4000;
+
+  /**
+   * Number of requests which are used to initialise/warmup the benchmark. The latency number of
+   * these runs are ignored from the final reported results.
+   */
+  private static final int WARMUP_REQUEST_COUNT = 1;
+
+  /**
+   * Numbers of records in the sample table used in the benchmark. This is used in this benchmark
+   * to randomly choose a primary key and ensure that the reads are randomly distributed. This is
+   * done to ensure we don't end up reading/writing the same table record (leading to hot-spotting).
+   */
+  private static final int TOTAL_RECORDS = 1000000;
 
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
 
+    // TODO(developer): Add your values here for PROJECT_ID, INSTANCE_ID, DATABASE_ID
     private static final String INSTANCE_ID = "";
     private static final String DATABASE_ID = "";
-    private static final String SERVER_URL = "";
+    private static final String SERVER_URL = "https://staging-wrenchworks.sandbox.googleapis.com";
     private Spanner spanner;
     private DatabaseClientImpl client;
 
@@ -120,9 +150,9 @@ public class DefaultBenchmark {
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_THREAD)));
+      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
     }
-    collectResultsAndPrint(service, results, TOTAL_READS_PER_THREAD);
+    collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
 
   /** Measures the time needed to execute a burst of read and write requests. */
@@ -137,13 +167,13 @@ public class DefaultBenchmark {
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_THREAD)));
+      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
     }
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_THREAD)));
+      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
     }
 
-    collectResultsAndPrint(service, results, TOTAL_READS_PER_THREAD + TOTAL_WRITES_PER_THREAD);
+    collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN + TOTAL_WRITES_PER_RUN);
   }
 
   /**
@@ -168,10 +198,10 @@ public class DefaultBenchmark {
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_THREAD)));
+      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
     }
 
-    collectResultsAndPrint(service, results, TOTAL_WRITES_PER_THREAD);
+    collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
   }
 
   private List<java.time.Duration> runBenchmarksForQueries(
@@ -187,7 +217,7 @@ public class DefaultBenchmark {
   }
 
   private void executeWarmup(final BenchmarkState server) {
-    for (int i = 0; i < WARMUP_TRANSACTIONS; i++) {
+    for (int i = 0; i < WARMUP_REQUEST_COUNT; i++) {
       executeQuery(server);
     }
   }
@@ -225,12 +255,12 @@ public class DefaultBenchmark {
   }
 
   static Statement getRandomisedReadStatement() {
-    int randomKey = ThreadLocalRandom.current().nextInt(RANDOM_SEARCH_SPACE);
+    int randomKey = ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
     return Statement.newBuilder(SELECT_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
   }
 
   static Statement getRandomisedUpdateStatement() {
-    int randomKey = ThreadLocalRandom.current().nextInt(RANDOM_SEARCH_SPACE);
+    int randomKey = ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
     return Statement.newBuilder(UPDATE_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
   }
 
