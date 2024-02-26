@@ -46,8 +46,8 @@ import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Benchmarks for measuring existing latencies of various APIs using the Java Client. The benchmarks
- * are bound to the Maven profile `benchmark` and can be executed like this: <code>
- * mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=DefaultBenchmark
+ * are bound to the Maven profile `benchmark` and can be executed like this: <code> mvn clean test
+ * -DskipTests -Pbenchmark -Dbenchmark.name=DefaultBenchmark
  * </code> Test Table Schema :
  *
  * <p>CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, ) PRIMARY KEY(id);
@@ -55,10 +55,10 @@ import org.openjdk.jmh.annotations.Warmup;
  * <p>Below are a few considerations here: 1. We use all default options for this test because that
  * is what most customers would be using. 2. The test schema uses a numeric primary key. To ensure
  * that the reads/updates are distributed across a large query space, we insert 10^5 records.
- * Utility at {@link BenchmarkingUtilityTest} can be used for loading data. 3. For queries, we
- * make sure that the query is sampled randomly across a large query space. This ensure we don't
- * cause hot-spots. 4. For avoid cold start issues, we execute 1 query/update and ignore its latency
- * from the final reported metrics.
+ * Utility at {@link BenchmarkingUtilityTest} can be used for loading data. 3. For queries, we make
+ * sure that the query is sampled randomly across a large query space. This ensure we don't cause
+ * hot-spots. 4. For avoid cold start issues, we execute 1 query/update and ignore its latency from
+ * the final reported metrics.
  */
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 0)
@@ -66,14 +66,15 @@ import org.openjdk.jmh.annotations.Warmup;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 1)
 public class DefaultBenchmark {
+
   private static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
   private static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
   private static final String ID_COLUMN_NAME = "id";
 
   /**
-   * Used to determine how many concurrent requests are allowed. For ex - To simulate a low
-   * QPS scenario, using 1 thread means there will be 1 request. Use a value > 1 to have
-   * concurrent requests.
+   * Used to determine how many concurrent requests are allowed. For ex - To simulate a low QPS
+   * scenario, using 1 thread means there will be 1 request. Use a value > 1 to have concurrent
+   * requests.
    */
   private static final int PARALLEL_THREADS = 1;
 
@@ -86,8 +87,8 @@ public class DefaultBenchmark {
 
   /**
    * Total number of writes per test run for 1 thread. Increasing the value here will increase the
-   * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_WRITES_PER_RUN = 200, there
-   * will be 400 write requests (200 on each thread).
+   * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_WRITES_PER_RUN = 200,
+   * there will be 400 write requests (200 on each thread).
    */
   private static final int TOTAL_WRITES_PER_RUN = 4000;
 
@@ -98,9 +99,9 @@ public class DefaultBenchmark {
   private static final int WARMUP_REQUEST_COUNT = 1;
 
   /**
-   * Numbers of records in the sample table used in the benchmark. This is used in this benchmark
-   * to randomly choose a primary key and ensure that the reads are randomly distributed. This is
-   * done to ensure we don't end up reading/writing the same table record (leading to hot-spotting).
+   * Numbers of records in the sample table used in the benchmark. This is used in this benchmark to
+   * randomly choose a primary key and ensure that the reads are randomly distributed. This is done
+   * to ensure we don't end up reading/writing the same table record (leading to hot-spotting).
    */
   private static final int TOTAL_RECORDS = 1000000;
 
@@ -115,7 +116,7 @@ public class DefaultBenchmark {
     private Spanner spanner;
     private DatabaseClientImpl client;
 
-    @Setup(Level.Invocation)
+    @Setup(Level.Iteration)
     public void setup() throws Exception {
       SpannerOptions options =
           SpannerOptions.newBuilder()
@@ -132,13 +133,15 @@ public class DefaultBenchmark {
                   DatabaseId.of(options.getProjectId(), INSTANCE_ID, DATABASE_ID));
     }
 
-    @TearDown(Level.Invocation)
+    @TearDown(Level.Iteration)
     public void teardown() throws Exception {
       spanner.close();
     }
   }
 
-  /** Measures the time needed to execute a burst of queries. */
+  /**
+   * Measures the time needed to execute a burst of queries.
+   */
   @Benchmark
   public void burstQueries(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -155,7 +158,9 @@ public class DefaultBenchmark {
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
 
-  /** Measures the time needed to execute a burst of read and write requests. */
+  /**
+   * Measures the time needed to execute a burst of read and write requests.
+   */
   @Benchmark
   public void burstQueriesAndWrites(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -270,7 +275,8 @@ public class DefaultBenchmark {
       int numOperationsPerThread)
       throws Exception {
     final List<java.time.Duration> collectResults =
-        collectResults(service, results, numOperationsPerThread * PARALLEL_THREADS);
+        collectResults(service, results,
+            numOperationsPerThread * PARALLEL_THREADS, Duration.ofMinutes(60));
     printResults(collectResults);
   }
 }

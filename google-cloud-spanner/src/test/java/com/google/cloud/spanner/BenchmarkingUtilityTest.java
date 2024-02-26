@@ -132,10 +132,11 @@ public class BenchmarkingUtilityTest {
   public static List<Duration> collectResults(
       final ListeningScheduledExecutorService service,
       final List<ListenableFuture<List<Duration>>> results,
-      final int numOperations)
+      final int numOperations,
+      final Duration timeoutDuration)
       throws Exception {
     service.shutdown();
-    if (!service.awaitTermination(60L, TimeUnit.MINUTES)) {
+    if (!service.awaitTermination(timeoutDuration.toMinutes(), TimeUnit.MINUTES)) {
       throw new TimeoutException();
     }
     List<Duration> allResults = new ArrayList<>(numOperations);
