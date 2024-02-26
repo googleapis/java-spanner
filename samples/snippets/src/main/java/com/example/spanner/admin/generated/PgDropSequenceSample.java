@@ -24,14 +24,13 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PgDropSequenceSample {
 
-  static void pgDropSequence() throws IOException {
+  static void pgDropSequence() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -39,12 +38,11 @@ public class PgDropSequenceSample {
     pgDropSequence(projectId, instanceId, databaseId);
   }
 
-  static void pgDropSequence(String projectId, String instanceId, String databaseId)
-      throws IOException {
-    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+  static void pgDropSequence(String projectId, String instanceId, String databaseId) {
 
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       databaseAdminClient
           .updateDatabaseDdlAsync(
               DatabaseName.of(projectId, instanceId, databaseId),

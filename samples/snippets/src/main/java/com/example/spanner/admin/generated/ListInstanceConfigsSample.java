@@ -18,21 +18,27 @@ package com.example.spanner.admin.generated;
 
 //[START spanner_list_instance_configs]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.ProjectName;
-import java.io.IOException;
 
 public class ListInstanceConfigsSample {
 
-  static void listInstanceConfigs() throws IOException {
+  static void listInstanceConfigs() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     listInstanceConfigs(projectId);
   }
 
-  static void listInstanceConfigs(String projectId) throws IOException {
-    try (final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+  static void listInstanceConfigs(String projectId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
       final ProjectName projectName = ProjectName.of(projectId);
       for (InstanceConfig instanceConfig :
           instanceAdminClient.listInstanceConfigs(projectName).iterateAll()) {

@@ -29,13 +29,12 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.Lists;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 public class PgCaseSensitivitySample {
 
-  static void pgCaseSensitivity() throws IOException {
+  static void pgCaseSensitivity() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -43,15 +42,11 @@ public class PgCaseSensitivitySample {
     pgCaseSensitivity(projectId, instanceId, databaseId);
   }
 
-  static void pgCaseSensitivity(String projectId, String instanceId, String databaseId)
-      throws IOException {
-    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+  static void pgCaseSensitivity(String projectId, String instanceId, String databaseId) {
 
     try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService()) {
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
 
       // Spanner PostgreSQL follows the case sensitivity rules of PostgreSQL. This means that:
       // 1. Identifiers that are not double-quoted are folded to lower case.

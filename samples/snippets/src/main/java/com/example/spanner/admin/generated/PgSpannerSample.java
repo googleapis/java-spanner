@@ -26,7 +26,6 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
@@ -1544,7 +1543,7 @@ public class PgSpannerSample {
     System.exit(1);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     if (args.length != 3) {
       printUsageAndExit();
     }
@@ -1574,7 +1573,7 @@ public class PgSpannerSample {
 
       // [START spanner_init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
-      dbAdminClient = DatabaseAdminClient.create();
+      dbAdminClient = spanner.createDatabaseAdminClient();
       // [END spanner_init_client]
 
       // Use client here...

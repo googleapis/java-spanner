@@ -18,35 +18,38 @@ package com.example.spanner.admin.generated;
 
 //[START spanner_list_databases]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPage;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.InstanceName;
-import java.io.IOException;
 
 public class ListDatabasesSample {
 
-  static void listDatabases() throws IOException {
+  static void listDatabases() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
     listDatabases(projectId, instanceId);
   }
 
-  static void listDatabases(String projectId, String instanceId) throws IOException {
-    final DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+  static void listDatabases(String projectId, String instanceId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      ListDatabasesPagedResponse response =
+          databaseAdminClient.listDatabases(InstanceName.of(projectId, instanceId));
 
-    ListDatabasesPagedResponse response =
-        databaseAdminClient.listDatabases(InstanceName.of(projectId, instanceId));
+      System.out.println("Databases for projects/" + projectId + "/instances/" + instanceId);
 
-    System.out.println("Databases for projects/" + projectId + "/instances/" + instanceId);
-
-    for (ListDatabasesPage page : response.iteratePages()) {
-      for (Database database : page.iterateAll()) {
-        final String defaultLeader = database.getDefaultLeader().equals("")
-            ? "" : "(default leader = " + database.getDefaultLeader() + ")";
-        System.out.println("\t" + database.getName() + " " + defaultLeader);
+      for (ListDatabasesPage page : response.iteratePages()) {
+        for (Database database : page.iterateAll()) {
+          final String defaultLeader = database.getDefaultLeader().equals("")
+              ? "" : "(default leader = " + database.getDefaultLeader() + ")";
+          System.out.println("\t" + database.getName() + " " + defaultLeader);
+        }
       }
     }
   }

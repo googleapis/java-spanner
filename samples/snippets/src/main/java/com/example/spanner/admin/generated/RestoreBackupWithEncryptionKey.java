@@ -20,20 +20,20 @@ package com.example.spanner.admin.generated;
 
 import static com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION;
 
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.Database;
-import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.InstanceName;
 import com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public class RestoreBackupWithEncryptionKey {
 
-  static void restoreBackupWithEncryptionKey() throws IOException {
+  static void restoreBackupWithEncryptionKey() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -42,7 +42,9 @@ public class RestoreBackupWithEncryptionKey {
     String kmsKeyName =
         "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
-    try (DatabaseAdminClient adminClient = DatabaseAdminClient.create()) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient adminClient = spanner.createDatabaseAdminClient()) {
       restoreBackupWithEncryptionKey(
           adminClient,
           projectId,
@@ -65,7 +67,8 @@ public class RestoreBackupWithEncryptionKey {
     Database database;
     try {
       System.out.println("Waiting for operation to complete...");
-      database = adminClient.restoreDatabaseAsync(request).get();;
+      database = adminClient.restoreDatabaseAsync(request).get();
+      ;
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());
