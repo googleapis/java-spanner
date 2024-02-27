@@ -18,28 +18,34 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_update_instance_config]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 class UpdateInstanceConfigSample {
 
-  static void updateInstanceConfig() throws IOException {
+  static void updateInstanceConfig() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceConfigId = "custom-instance-config";
     updateInstanceConfig(projectId, instanceConfigId);
   }
 
-  static void updateInstanceConfig(String projectId, String instanceConfigId) throws IOException {
-    try (final InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+  static void updateInstanceConfig(String projectId, String instanceConfigId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
       final InstanceConfigName instanceConfigName =
           InstanceConfigName.of(projectId, instanceConfigId);
       final InstanceConfig instanceConfig =

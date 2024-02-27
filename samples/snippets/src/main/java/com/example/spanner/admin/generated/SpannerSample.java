@@ -2225,7 +2225,7 @@ public class SpannerSample {
     System.exit(1);
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
     if (args.length != 3 && args.length != 4) {
       printUsageAndExit();
     }
@@ -2254,7 +2254,7 @@ public class SpannerSample {
 
       // [START init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
-      dbAdminClient = DatabaseAdminClient.create();
+      dbAdminClient = spanner.createDatabaseAdminClient();
 
       // Use client here...
       // [END init_client]
