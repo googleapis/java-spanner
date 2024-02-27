@@ -17,13 +17,18 @@
 package com.example.spanner;
 
 // [START spanner_enable_fine_grained_access]
-import com.google.cloud.Binding;
-import com.google.cloud.Condition;
-import com.google.cloud.Policy;
-import com.google.cloud.spanner.DatabaseAdminClient;
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
+import com.google.iam.v1.Binding;
+import com.google.iam.v1.GetIamPolicyRequest;
+import com.google.iam.v1.GetPolicyOptions;
+import com.google.iam.v1.Policy;
+import com.google.iam.v1.SetIamPolicyRequest;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.type.Expr;
 
 public class EnableFineGrainedAccess {
 
@@ -46,12 +51,15 @@ public class EnableFineGrainedAccess {
       String title,
       String role) {
     try (Spanner spanner =
-                 SpannerOptions.newBuilder()
-                         .setProjectId(projectId)
-                         .build()
-                         .getService()) {
-      final DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      Policy policy = adminClient.getDatabaseIAMPolicy(instanceId, databaseId, 3);
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      final GetPolicyOptions options =
+          GetPolicyOptions.newBuilder().setRequestedPolicyVersion(3).build();
+      final GetIamPolicyRequest getRequest =
+          GetIamPolicyRequest.newBuilder()
+              .setResource(DatabaseName.of(projectId, instanceId, databaseId).toString())
+              .setOptions(options).build();
+      final Policy policy = databaseAdminClient.getIamPolicy(getRequest);
       int policyVersion = policy.getVersion();
       // The policy in the response from getDatabaseIAMPolicy might use the policy version
       // that you specified, or it might use a lower policy version. For example, if you
@@ -65,20 +73,17 @@ public class EnableFineGrainedAccess {
       Binding binding1 =
           Binding.newBuilder()
               .setRole("roles/spanner.fineGrainedAccessUser")
-              .setMembers(ImmutableList.of(iamMember))
+              .addAllMembers(ImmutableList.of(iamMember))
               .build();
 
       Binding binding2 =
           Binding.newBuilder()
               .setRole("roles/spanner.databaseRoleUser")
               .setCondition(
-                  Condition.newBuilder()
-                      .setDescription(title)
-                      .setExpression(
-                          String.format("resource.name.endsWith(\"/databaseRoles/%s\")", role))
-                      .setTitle(title)
-                      .build())
-              .setMembers(ImmutableList.of(iamMember))
+                  Expr.newBuilder().setDescription(title).setExpression(
+                      String.format("resource.name.endsWith(\"/databaseRoles/%s\")", role)
+                  ).setTitle(title).build())
+              .addAllMembers(ImmutableList.of(iamMember))
               .build();
       ImmutableList<Binding> bindings =
           ImmutableList.<Binding>builder()
@@ -90,10 +95,13 @@ public class EnableFineGrainedAccess {
           Policy.newBuilder()
               .setVersion(policyVersion)
               .setEtag(policy.getEtag())
-              .setBindings(bindings)
+              .addAllBindings(bindings)
               .build();
-      Policy response =
-          adminClient.setDatabaseIAMPolicy(instanceId, databaseId, policyWithConditions);
+      final SetIamPolicyRequest setRequest =
+          SetIamPolicyRequest.newBuilder()
+              .setResource(DatabaseName.of(projectId, instanceId, databaseId).toString())
+              .setPolicy(policyWithConditions).build();
+      final Policy response = databaseAdminClient.setIamPolicy(setRequest);
       System.out.printf(
           "Enabled fine-grained access in IAM with version %d%n", response.getVersion());
     }

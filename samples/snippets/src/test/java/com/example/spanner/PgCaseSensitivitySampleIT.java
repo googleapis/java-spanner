@@ -18,24 +18,22 @@ package com.example.spanner;
 
 import static org.junit.Assert.assertTrue;
 
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Dialect;
-import java.util.Collections;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
+import com.google.spanner.admin.database.v1.InstanceName;
 import org.junit.Test;
 
-public class PgCaseSensitivitySampleIT extends SampleTestBase {
+public class PgCaseSensitivitySampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testPgCaseSensitivitySample() throws Exception {
     final String databaseId = idGenerator.generateDatabaseId();
-    databaseAdminClient
-        .createDatabase(
-            databaseAdminClient
-                .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseId))
-                .setDialect(Dialect.POSTGRESQL)
-                .build(),
-            Collections.emptyList())
-        .get();
+    final CreateDatabaseRequest request =
+        CreateDatabaseRequest.newBuilder()
+            .setCreateStatement(getCreateDatabaseStatement(databaseId, DatabaseDialect.POSTGRESQL))
+            .setParent(InstanceName.of(projectId, instanceId).toString())
+            .setDatabaseDialect(DatabaseDialect.POSTGRESQL).build();
+    databaseAdminClient.createDatabaseAsync(request).get();
 
     final String out =
         SampleRunner.runSample(

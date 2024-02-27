@@ -165,7 +165,7 @@
           <archive>
             <index>false</index>
             <manifest>
-              <mainClass>com.example.spanner.SpannerSample</mainClass>
+              <mainClass>com.example.spanner.admin.archived.SpannerSample</mainClass>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
             </manifest>

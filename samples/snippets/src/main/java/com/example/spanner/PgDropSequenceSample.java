@@ -17,16 +17,19 @@
 package com.example.spanner;
 
 // [START spanner_postgresql_drop_sequence]
-import com.google.cloud.spanner.DatabaseAdminClient;
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PgDropSequenceSample {
+
   static void pgDropSequence() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
@@ -36,17 +39,16 @@ public class PgDropSequenceSample {
   }
 
   static void pgDropSequence(String projectId, String instanceId, String databaseId) {
+
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
-      dbAdminClient
-          .updateDatabaseDdl(
-              instanceId,
-              databaseId,
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      databaseAdminClient
+          .updateDatabaseDdlAsync(
+              DatabaseName.of(projectId, instanceId, databaseId),
               ImmutableList.of(
                   "ALTER TABLE Customers ALTER COLUMN CustomerId DROP DEFAULT",
-                  "DROP SEQUENCE Seq"),
-              null)
+                  "DROP SEQUENCE Seq"))
           .get(5, TimeUnit.MINUTES);
       System.out.println(
           "Altered Customers table to drop DEFAULT from "

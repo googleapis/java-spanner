@@ -18,11 +18,14 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.example.spanner.admin.archived.CreateDatabaseWithEncryptionKey;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.spanner.admin.database.v1.DatabaseName;
+import com.google.spanner.admin.database.v1.InstanceName;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.junit.BeforeClass;
@@ -32,12 +35,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration tests for: {@link CreateDatabaseWithEncryptionKey}, {@link
- * CreateBackupWithEncryptionKey} and {@link RestoreBackupWithEncryptionKey}
+ * Integration tests for: {@link CreateDatabaseWithEncryptionKey},
+ * {@link com.example.spanner.admin.archived.CreateBackupWithEncryptionKey} and
+ * {@link com.example.spanner.admin.archived.RestoreBackupWithEncryptionKey}
  */
 @RunWith(JUnit4.class)
 @Ignore
-public class EncryptionKeyIT extends SampleTestBase {
+public class EncryptionKeyIT extends SampleTestBaseV2 {
 
   private static String key;
 
@@ -58,16 +62,10 @@ public class EncryptionKeyIT extends SampleTestBase {
     final String restoreId = idGenerator.generateDatabaseId();
 
     String out = SampleRunner.runSample(() ->
-        CreateDatabaseWithEncryptionKey.createDatabaseWithEncryptionKey(
-            databaseAdminClient,
-            projectId,
-            instanceId,
-            databaseId,
-            key
-        ));
-    assertThat(out).contains(
-        "Database projects/" + projectId + "/instances/" + instanceId + "/databases/" + databaseId
-            + " created with encryption key " + key);
+        SpannerSample.createDatabase(
+            databaseAdminClient, InstanceName.of(projectId, instanceId), databaseId));
+    assertThat(out).contains(String.format(
+        "Created database [%s]", DatabaseName.of(projectId, instanceId, databaseId)));
 
     out = SampleRunner.runSampleWithRetry(() ->
         CreateBackupWithEncryptionKey.createBackupWithEncryptionKey(
