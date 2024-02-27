@@ -48,6 +48,9 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -58,6 +61,11 @@ import com.google.spanner.v1.PartitionReadRequest;
 import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.SpannerGrpc;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,7 +73,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -75,6 +87,20 @@ import org.threeten.bp.Duration;
 /** Unit tests for {@link com.google.cloud.spanner.SpannerOptions}. */
 @RunWith(JUnit4.class)
 public class SpannerOptionsTest {
+  private static Level originalLogLevel;
+
+  @BeforeClass
+  public static void disableLogging() {
+    Logger logger = Logger.getLogger("");
+    originalLogLevel = logger.getLevel();
+    logger.setLevel(Level.OFF);
+  }
+
+  @AfterClass
+  public static void resetLogging() {
+    Logger logger = Logger.getLogger("");
+    logger.setLevel(originalLogLevel);
+  }
 
   @Test
   public void defaultBuilder() {
@@ -96,17 +122,24 @@ public class SpannerOptionsTest {
     String projectId = "test-project";
     Map<String, String> labels = new HashMap<>();
     labels.put("env", "dev");
+    InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).build();
     SpannerOptions options =
         SpannerOptions.newBuilder()
             .setHost(host)
             .setProjectId(projectId)
             .setPrefetchChunks(2)
             .setSessionLabels(labels)
+            .setOpenTelemetry(openTelemetry)
             .build();
     assertThat(options.getHost()).isEqualTo(host);
     assertThat(options.getProjectId()).isEqualTo(projectId);
     assertThat(options.getPrefetchChunks()).isEqualTo(2);
     assertThat(options.getSessionLabels()).containsExactlyEntriesIn(labels);
+    assertThat(options.getOpenTelemetry()).isEqualTo(openTelemetry);
   }
 
   @Test
@@ -699,6 +732,27 @@ public class SpannerOptionsTest {
   }
 
   @Test
+  public void testSetDirectedReadOptions() {
+    final DirectedReadOptions directedReadOptions =
+        DirectedReadOptions.newBuilder()
+            .setIncludeReplicas(
+                IncludeReplicas.newBuilder()
+                    .addReplicaSelections(
+                        ReplicaSelection.newBuilder().setLocation("us-west1").build())
+                    .build())
+            .build();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("[PROJECT]")
+            .setDirectedReadOptions(directedReadOptions)
+            .build();
+    assertEquals(options.getDirectedReadOptions(), directedReadOptions);
+    assertThrows(
+        NullPointerException.class,
+        () -> SpannerOptions.newBuilder().setDirectedReadOptions(null).build());
+  }
+
+  @Test
   public void testSpannerCallContextTimeoutConfigurator_NullValues() {
     SpannerCallContextTimeoutConfigurator configurator =
         SpannerCallContextTimeoutConfigurator.create();
@@ -1058,5 +1112,20 @@ public class SpannerOptionsTest {
 
     spanner1.close();
     spanner2.close();
+  }
+
+  @Test
+  public void checkGlobalOpenTelemetryWhenNotInjected() {
+    GlobalOpenTelemetry.resetForTest();
+    InMemoryMetricReader inMemoryMetricReader = InMemoryMetricReader.create();
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder().registerMetricReader(inMemoryMetricReader).build();
+    OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider).buildAndRegisterGlobal();
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    assertEquals(GlobalOpenTelemetry.get(), options.getOpenTelemetry());
   }
 }

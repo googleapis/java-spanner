@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import com.google.spanner.v1.CommitResponse;
 import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DatabaseName;
 import com.google.spanner.v1.DeleteSessionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteBatchDmlResponse;
 import com.google.spanner.v1.ExecuteSqlRequest;
@@ -137,6 +138,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -180,6 +182,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -301,6 +304,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -344,6 +348,7 @@ public class SpannerClientTest {
             .setCreateTime(Timestamp.newBuilder().build())
             .setApproximateLastUseTime(Timestamp.newBuilder().build())
             .setCreatorRole("creatorRole-190742846")
+            .setMultiplexed(true)
             .build();
     mockSpanner.addResponse(expectedResponse);
 
@@ -556,6 +561,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -577,6 +583,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getSeqno(), actualRequest.getSeqno());
     Assert.assertEquals(request.getQueryOptions(), actualRequest.getQueryOptions());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
@@ -603,6 +610,7 @@ public class SpannerClientTest {
               .setSeqno(109325920)
               .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.executeSql(request);
@@ -636,6 +644,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -667,6 +676,7 @@ public class SpannerClientTest {
             .setSeqno(109325920)
             .setQueryOptions(ExecuteSqlRequest.QueryOptions.newBuilder().build())
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -768,6 +778,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -788,6 +799,7 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getResumeToken(), actualRequest.getResumeToken());
     Assert.assertEquals(request.getPartitionToken(), actualRequest.getPartitionToken());
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
+    Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
@@ -814,6 +826,7 @@ public class SpannerClientTest {
               .setResumeToken(ByteString.EMPTY)
               .setPartitionToken(ByteString.EMPTY)
               .setRequestOptions(RequestOptions.newBuilder().build())
+              .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
               .setDataBoostEnabled(true)
               .build();
       client.read(request);
@@ -847,6 +860,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -878,6 +892,7 @@ public class SpannerClientTest {
             .setResumeToken(ByteString.EMPTY)
             .setPartitionToken(ByteString.EMPTY)
             .setRequestOptions(RequestOptions.newBuilder().build())
+            .setDirectedReadOptions(DirectedReadOptions.newBuilder().build())
             .setDataBoostEnabled(true)
             .build();
 
@@ -1377,6 +1392,7 @@ public class SpannerClientTest {
                 SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
             .setRequestOptions(RequestOptions.newBuilder().build())
             .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+            .setExcludeTxnFromChangeStreams(true)
             .build();
 
     MockStreamObserver<BatchWriteResponse> responseObserver = new MockStreamObserver<>();
@@ -1400,6 +1416,7 @@ public class SpannerClientTest {
                 SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
             .setRequestOptions(RequestOptions.newBuilder().build())
             .addAllMutationGroups(new ArrayList<BatchWriteRequest.MutationGroup>())
+            .setExcludeTxnFromChangeStreams(true)
             .build();
 
     MockStreamObserver<BatchWriteResponse> responseObserver = new MockStreamObserver<>();

@@ -63,6 +63,7 @@ import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
 import io.grpc.Contexts;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.grpc.MethodDescriptor;
@@ -636,16 +637,44 @@ public class GapicSpannerRpcTest {
         Objects.requireNonNull(lastSeenHeaders.get(key)).contains("gl-java/"));
   }
 
+  @Test
+  public void testGetDatabaseAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getDatabaseAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testGetInstanceAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testAdminStubSettings_whenStubNotInitialized_assertNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+
+    assertNull(rpc.getDatabaseAdminStubSettings());
+    assertNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
-        .setChannelConfigurator(
-            input -> {
-              input.usePlaintext();
-              return input;
-            })
+        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+        .disableDirectPath()
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)

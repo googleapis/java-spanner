@@ -26,24 +26,38 @@ import java.util.UUID;
  */
 public class SampleIdGenerator {
 
+  private static final int INSTANCE_NAME_MAX_LENGTH = 30;
   private static final int DATABASE_NAME_MAX_LENGTH = 30;
   private static final int BACKUP_NAME_MAX_LENGTH = 30;
   private static final int INSTANCE_CONFIG_ID_MAX_LENGTH = 30;
+  private final List<String> instanceIds;
   private final List<String> databaseIds;
   private final List<String> backupIds;
   private final List<String> instanceConfigIds;
   private final String baseDatabaseId;
   private final String baseBackupId;
   private final String baseInstanceConfigId;
+  private final String baseInstanceId;
 
-  public SampleIdGenerator(
-      String baseDatabaseId, String baseBackupId, String baseInstanceConfigId) {
+  public SampleIdGenerator(String baseDatabaseId, String baseBackupId,
+      String baseInstanceConfigId, String baseInstanceId) {
     this.baseDatabaseId = baseDatabaseId;
     this.baseBackupId = baseBackupId;
     this.baseInstanceConfigId = baseInstanceConfigId;
+    this.baseInstanceId = baseInstanceId;
     this.databaseIds = new ArrayList<>();
     this.backupIds = new ArrayList<>();
     this.instanceConfigIds = new ArrayList<>();
+    this.instanceIds = new ArrayList<>();
+  }
+
+  public String generateInstanceId() {
+    final String instanceId =
+        (baseInstanceId + "-" + UUID.randomUUID().toString().replaceAll("-", ""))
+            .substring(0, INSTANCE_NAME_MAX_LENGTH);
+
+    instanceIds.add(instanceId);
+    return instanceId;
   }
 
   public String generateDatabaseId() {
@@ -79,6 +93,10 @@ public class SampleIdGenerator {
 
   public List<String> getBackupIds() {
     return backupIds;
+  }
+
+  public List<String> getInstanceIds() {
+    return instanceIds;
   }
 
   public List<String> getInstanceConfigIds() {
