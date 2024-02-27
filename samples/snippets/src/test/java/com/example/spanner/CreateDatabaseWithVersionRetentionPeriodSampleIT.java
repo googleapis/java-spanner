@@ -23,7 +23,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration tests for {@link com.example.spanner.admin.archived.CreateDatabaseWithVersionRetentionPeriodSample}
+ * Integration tests for
+ * {@link com.example.spanner.admin.archived.CreateDatabaseWithVersionRetentionPeriodSample}
  */
 @RunWith(JUnit4.class)
 public class CreateDatabaseWithVersionRetentionPeriodSampleIT extends SampleTestBaseV2 {
