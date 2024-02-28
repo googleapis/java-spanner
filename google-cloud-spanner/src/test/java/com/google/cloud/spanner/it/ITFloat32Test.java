@@ -49,7 +49,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -164,7 +163,6 @@ public class ITFloat32Test {
     assertEquals(2.0f, row.getFloat(0), 0.0f);
   }
 
-  @Ignore("Needs a fix in the backend.")
   @Test
   public void writeFloat32NonNumbers() {
 
@@ -275,7 +273,6 @@ public class ITFloat32Test {
     return (dialect.dialect == Dialect.POSTGRESQL) ? pgStatement : pgStatement.replace("$", "@p");
   }
 
-  @Ignore("Needs a fix in the backend.")
   @Test
   public void float32Parameter() {
     client
@@ -298,7 +295,7 @@ public class ITFloat32Test {
                       .to(
                           Value.float32Array(
                               Arrays.asList(
-                                  Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.POSITIVE_INFINITY)))
+                                  Float.POSITIVE_INFINITY, 3.14f, 1.2f, Float.NEGATIVE_INFINITY)))
                       .bind("p7")
                       .to(Value.float32(Float.MIN_NORMAL))
                       .bind("p8")
