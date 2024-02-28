@@ -1284,6 +1284,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case DATE:
                 builder.bind(fieldName).toDateArray(null);
                 break;
+              case FLOAT32:
+                builder.bind(fieldName).toFloat32Array((Iterable<Float>) null);
               case FLOAT64:
                 builder.bind(fieldName).toFloat64Array((Iterable<Double>) null);
                 break;
@@ -1327,6 +1329,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           case DATE:
             builder.bind(fieldName).to((Date) null);
             break;
+          case FLOAT32:
+            builder.bind(fieldName).to((Float) null);
           case FLOAT64:
             builder.bind(fieldName).to((Double) null);
             break;
