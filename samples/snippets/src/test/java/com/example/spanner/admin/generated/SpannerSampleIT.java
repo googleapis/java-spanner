@@ -633,8 +633,6 @@ public class SpannerSampleIT extends SampleTestBaseV2 {
           try {
             CreateInstanceExample.createInstance(
                 dbId.getInstanceId().getProject(), instanceId);
-          } catch (IOException ex) {
-            System.out.println("Got exception => " + ex);
           } finally {
             spanner.getInstanceAdminClient().deleteInstance(instanceId);
           }
