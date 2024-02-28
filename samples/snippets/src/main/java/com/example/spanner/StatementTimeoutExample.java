@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 
 class StatementTimeoutExample {
 
+  // [START spanner_set_statement_timeout]
+
   static void executeSqlWithTimeout() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
@@ -73,4 +75,5 @@ class StatementTimeoutExample {
         })
     );
   }
+  // [END spanner_set_statement_timeout]
 }
