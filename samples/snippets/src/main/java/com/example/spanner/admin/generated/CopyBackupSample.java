@@ -19,13 +19,14 @@ package com.example.spanner.admin.generated;
 // [START spanner_copy_backup]
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.InstanceName;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -34,14 +35,16 @@ import java.util.concurrent.TimeUnit;
 
 public class CopyBackupSample {
 
-  static void copyBackup() throws IOException {
+  static void copyBackup() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String sourceBackupId = "my-backup";
     String destinationBackupId = "my-destination-backup";
 
-    try (DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create()) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       copyBackup(databaseAdminClient, projectId, instanceId, sourceBackupId, destinationBackupId);
     }
   }

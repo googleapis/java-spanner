@@ -39,6 +39,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -484,6 +485,7 @@ public class ConnectionOptions {
     private List<StatementExecutionInterceptor> statementExecutionInterceptors =
         Collections.emptyList();
     private SpannerOptionsConfigurator configurator;
+    private OpenTelemetry openTelemetry;
 
     private Builder() {}
 
@@ -633,6 +635,11 @@ public class ConnectionOptions {
       return this;
     }
 
+    public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
+      this.openTelemetry = openTelemetry;
+      return this;
+    }
+
     /** @return the {@link ConnectionOptions} */
     public ConnectionOptions build() {
       Preconditions.checkState(this.uri != null, "Connection URI is required");
@@ -691,6 +698,7 @@ public class ConnectionOptions {
   private final boolean retryAbortsInternally;
   private final boolean useVirtualThreads;
   private final boolean useVirtualGrpcTransportThreads;
+  private final OpenTelemetry openTelemetry;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -792,6 +800,7 @@ public class ConnectionOptions {
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.useVirtualThreads = parseUseVirtualThreads(this.uri);
     this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
+    this.openTelemetry = builder.openTelemetry;
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -854,6 +863,14 @@ public class ConnectionOptions {
       }
     }
     return null;
+  }
+
+  /**
+   * @return an instance of OpenTelemetry. If OpenTelemetry object is not set then <code>null</code>
+   *     will be returned.
+   */
+  OpenTelemetry getOpenTelemetry() {
+    return this.openTelemetry;
   }
 
   SpannerOptionsConfigurator getConfigurator() {

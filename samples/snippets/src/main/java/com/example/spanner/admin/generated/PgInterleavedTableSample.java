@@ -18,16 +18,17 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_postgresql_interleaved_table]
 
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 public class PgInterleavedTableSample {
 
-  static void pgInterleavedTable() throws IOException {
+  static void pgInterleavedTable() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -35,10 +36,11 @@ public class PgInterleavedTableSample {
     pgInterleavedTable(projectId, instanceId, databaseId);
   }
 
-  static void pgInterleavedTable(String projectId, String instanceId, String databaseId)
-      throws IOException {
-    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
-    try {
+  static void pgInterleavedTable(String projectId, String instanceId, String databaseId) {
+
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       // The Spanner PostgreSQL dialect extends the PostgreSQL dialect with certain Spanner
       // specific features, such as interleaved tables.
       // See https://cloud.google.com/spanner/docs/postgresql/data-definition-language#create_table

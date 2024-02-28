@@ -18,19 +18,20 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_database_with_version_retention_period]
 
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.Lists;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.InstanceName;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public class CreateDatabaseWithVersionRetentionPeriodSample {
 
-  static void createDatabaseWithVersionRetentionPeriod() throws IOException {
+  static void createDatabaseWithVersionRetentionPeriod() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -42,10 +43,10 @@ public class CreateDatabaseWithVersionRetentionPeriodSample {
   }
 
   static void createDatabaseWithVersionRetentionPeriod(String projectId,
-      String instanceId, String databaseId, String versionRetentionPeriod) throws IOException {
-    DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
-
-    try {
+      String instanceId, String databaseId, String versionRetentionPeriod) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       CreateDatabaseRequest request =
           CreateDatabaseRequest.newBuilder()
               .setParent(InstanceName.of(projectId, instanceId).toString())

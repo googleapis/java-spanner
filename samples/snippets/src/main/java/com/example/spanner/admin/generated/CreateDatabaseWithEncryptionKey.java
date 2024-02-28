@@ -18,21 +18,22 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_database_with_encryption_key]
 
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.InstanceName;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class CreateDatabaseWithEncryptionKey {
 
-  static void createDatabaseWithEncryptionKey() throws IOException {
+  static void createDatabaseWithEncryptionKey() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -40,7 +41,9 @@ public class CreateDatabaseWithEncryptionKey {
     String kmsKeyName =
         "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
-    try (DatabaseAdminClient adminClient = DatabaseAdminClient.create()) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient adminClient = spanner.createDatabaseAdminClient()) {
       createDatabaseWithEncryptionKey(
           adminClient,
           projectId,

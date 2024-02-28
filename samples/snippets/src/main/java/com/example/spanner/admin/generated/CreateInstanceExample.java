@@ -18,26 +18,25 @@ package com.example.spanner.admin.generated;
 
 //[START spanner_create_instance]
 
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.ProjectName;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 class CreateInstanceExample {
 
-  static void createInstance() throws IOException {
+  static void createInstance() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     createInstance(projectId, instanceId);
   }
 
-  static void createInstance(String projectId, String instanceId) throws IOException {
-    InstanceAdminClient instanceAdminClient = InstanceAdminClient.create();
-
+  static void createInstance(String projectId, String instanceId) {
     // Set Instance configuration.
     int nodeCount = 2;
     String displayName = "Descriptive name";
@@ -50,7 +49,14 @@ class CreateInstanceExample {
             .setConfig(
                 InstanceConfigName.of(projectId, "regional-us-central1").toString())
             .build();
-    try {
+    
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
+
       // Wait for the createInstance operation to finish.
       Instance createdInstance = instanceAdminClient.createInstanceAsync(
           CreateInstanceRequest.newBuilder()

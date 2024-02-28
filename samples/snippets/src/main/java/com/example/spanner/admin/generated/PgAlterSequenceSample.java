@@ -28,7 +28,6 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.DatabaseName;
-import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +35,7 @@ import java.util.concurrent.TimeoutException;
 
 public class PgAlterSequenceSample {
 
-  static void pgAlterSequence() throws IOException {
+  static void pgAlterSequence() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
     final String instanceId = "my-instance";
@@ -44,11 +43,11 @@ public class PgAlterSequenceSample {
     pgAlterSequence(projectId, instanceId, databaseId);
   }
 
-  static void pgAlterSequence(String projectId, String instanceId, String databaseId)
-      throws IOException {
+  static void pgAlterSequence(String projectId, String instanceId, String databaseId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final DatabaseAdminClient databaseAdminClient = DatabaseAdminClient.create();
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+
       databaseAdminClient
           .updateDatabaseDdlAsync(
               DatabaseName.of(projectId, instanceId, databaseId),

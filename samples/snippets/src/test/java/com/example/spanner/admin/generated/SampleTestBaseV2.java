@@ -113,6 +113,7 @@ public class SampleTestBaseV2 {
       }
     }
     for (String backupId : idGenerator.getBackupIds()) {
+      System.out.println("Trying to delete " + backupId);
       try {
         // If the backup is not found, it is ignored (no exception is thrown)
         databaseAdminClient.deleteBackup(
@@ -125,6 +126,7 @@ public class SampleTestBaseV2 {
       }
     }
     for (String configId : idGenerator.getInstanceConfigIds()) {
+      System.out.println("Trying to delete " + configId);
       try {
         // If the config is not found, it is ignored (no exception is thrown)
         instanceAdminClient.deleteInstanceConfig(getInstanceConfigName(projectId, configId));

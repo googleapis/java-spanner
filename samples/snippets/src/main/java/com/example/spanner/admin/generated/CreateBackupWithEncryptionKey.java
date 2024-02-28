@@ -18,19 +18,18 @@ package com.example.spanner.admin.generated;
 
 // [START spanner_create_backup_with_encryption_key]
 
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
-import com.google.cloud.spanner.encryption.EncryptionConfigs;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
 import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType;
-import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.InstanceName;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -39,7 +38,7 @@ import org.threeten.bp.OffsetDateTime;
 
 public class CreateBackupWithEncryptionKey {
 
-  static void createBackupWithEncryptionKey() throws IOException {
+  static void createBackupWithEncryptionKey() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
@@ -48,7 +47,9 @@ public class CreateBackupWithEncryptionKey {
     String kmsKeyName =
         "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
-    try (DatabaseAdminClient adminClient = DatabaseAdminClient.create()) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient adminClient = spanner.createDatabaseAdminClient()) {
       createBackupWithEncryptionKey(
           adminClient,
           projectId,
