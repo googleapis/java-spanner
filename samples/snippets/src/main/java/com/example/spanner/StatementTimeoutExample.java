@@ -54,6 +54,9 @@ class StatementTimeoutExample {
           MethodDescriptor<ReqT, RespT> method) {
         // DML uses the ExecuteSql RPC.
         if (method == SpannerGrpc.getExecuteSqlMethod()) {
+          // NOTE: You can use a GrpcCallContext to set a custom timeout for a single RPC invocation.
+          // This timeout can however ONLY BE SHORTER than the default timeout for the RPC. If you set
+          // a timeout that is longer than the default timeout, then the default timeout will be used.
           return GrpcCallContext.createDefault()
               .withCallOptions(CallOptions.DEFAULT.withDeadlineAfter(60L, TimeUnit.SECONDS));
         }
