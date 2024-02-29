@@ -31,6 +31,8 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import java.util.Random;
 
+/** @deprecated Use {@link com.google.cloud.spanner.connection.RandomResultSetGenerator} instead. */
+@Deprecated
 public class RandomResultSetGenerator {
   private static final Type[] TYPES =
       new Type[] {

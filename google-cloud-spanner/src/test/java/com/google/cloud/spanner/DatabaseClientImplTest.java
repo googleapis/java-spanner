@@ -4083,6 +4083,7 @@ public class DatabaseClientImplTest {
         int col = 0;
         assertAsString("true", resultSet, col++);
         assertAsString("100", resultSet, col++);
+        assertAsString("-3.14", resultSet, col++);
         assertAsString("3.14", resultSet, col++);
         assertAsString("6.626", resultSet, col++);
         assertAsString("test-string", resultSet, col++);
@@ -4098,6 +4099,15 @@ public class DatabaseClientImplTest {
         assertAsString(
             ImmutableList.of(
                 String.format("%d", Long.MAX_VALUE), String.format("%d", Long.MIN_VALUE), "NULL"),
+            resultSet,
+            col++);
+        assertAsString(
+            ImmutableList.of(
+                "NULL",
+                Float.valueOf(Float.MAX_VALUE).toString(),
+                Float.valueOf(Float.MIN_VALUE).toString(),
+                "NaN",
+                "3.14"),
             resultSet,
             col++);
         assertAsString(ImmutableList.of("NULL", "-12345.6789", "3.14"), resultSet, col++);
@@ -4561,6 +4571,7 @@ public class DatabaseClientImplTest {
         ListValue.newBuilder()
             .addValues(com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
             .addValues(com.google.protobuf.Value.newBuilder().setStringValue("100").build())
+            .addValues(com.google.protobuf.Value.newBuilder().setNumberValue(-3.14f).build())
             .addValues(com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build())
             .addValues(com.google.protobuf.Value.newBuilder().setStringValue("6.626").build())
             .addValues(com.google.protobuf.Value.newBuilder().setStringValue("test-string").build())
@@ -4607,6 +4618,31 @@ public class DatabaseClientImplTest {
                             .addValues(
                                 com.google.protobuf.Value.newBuilder()
                                     .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(Float.MAX_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(Float.MIN_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("NaN")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(3.14f)
                                     .build())
                             .build()))
             .addValues(

@@ -193,6 +193,7 @@ public class ValueTest {
     assertThat(v.getFloat32()).isWithin(0.0001f).of(1.23f);
     assertThat(v.toString()).isEqualTo("1.23");
     assertEquals("1.23", v.getAsString());
+    assertEquals(Value.float32(Float.NaN), Value.float32(Float.NaN));
   }
 
   @Test
@@ -224,6 +225,7 @@ public class ValueTest {
     assertThat(v.getFloat64()).isWithin(0.0001).of(1.23);
     assertThat(v.toString()).isEqualTo("1.23");
     assertEquals("1.23", v.getAsString());
+    assertEquals(Value.float64(Double.NaN), Value.float64(Double.NaN));
   }
 
   @Test
@@ -267,6 +269,7 @@ public class ValueTest {
     assertEquals(1234.5678D, value.getFloat64(), 0.00001);
     assertEquals("1234.5678", value.toString());
     assertEquals("1234.5678", value.getAsString());
+    assertEquals(Value.pgNumeric("NaN"), Value.pgNumeric("NaN"));
   }
 
   @Test
