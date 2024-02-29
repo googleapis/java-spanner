@@ -678,10 +678,6 @@ class ConnectionImpl implements Connection {
    */
   private void checkSetRetryAbortsInternallyAvailable() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
-    ConnectionPreconditions.checkState(
-        getTransactionMode() == TransactionMode.READ_WRITE_TRANSACTION,
-        "RetryAbortsInternally is only available for read-write transactions");
     ConnectionPreconditions.checkState(
         !isTransactionStarted(),
         "RetryAbortsInternally cannot be set after the transaction has started");
