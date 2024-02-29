@@ -58,15 +58,20 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
 
   @Parameter public Dialect dialect;
 
+  private Dialect currentDialect;
+
   @Before
   public void setupDialect() {
-    mockSpanner.putStatementResult(StatementResult.detectDialectResult(dialect));
+    if (currentDialect != dialect) {
+      mockSpanner.putStatementResult(StatementResult.detectDialectResult(dialect));
+      SpannerPool.closeSpannerPool();
+      currentDialect = dialect;
+    }
   }
 
   @After
   public void clearRequests() {
     mockSpanner.clearRequests();
-    SpannerPool.closeSpannerPool();
   }
 
   @Test
@@ -349,9 +354,9 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
               statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
         assertFalse(resultSet.next());
         assertNotNull(resultSet.getMetadata());
-        assertEquals(22, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
         assertNotNull(resultSet.getType());
-        assertEquals(22, resultSet.getType().getStructFields().size());
+        assertEquals(24, resultSet.getType().getStructFields().size());
       }
     }
     assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
