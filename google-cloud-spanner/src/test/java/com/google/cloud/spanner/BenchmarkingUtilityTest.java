@@ -85,7 +85,7 @@ public class BenchmarkingUtilityTest {
   }
 
   /**
-   * A utility which bulk inserts 10^5 records into the database in batches. The method assumes that
+   * A utility which bulk inserts 10^6 records into the database in batches. The method assumes that
    * the instance/database/table is already created. It does not perform any admin operations.
    *
    * <p>Table schema used here: CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, )
