@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.BenchmarkingUtilityTest.collectResults;
-import static com.google.cloud.spanner.BenchmarkingUtilityTest.printResults;
+import static com.google.cloud.spanner.BenchmarkingUtilityScripts.collectResults;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.base.Stopwatch;
@@ -55,17 +54,17 @@ import org.openjdk.jmh.annotations.Warmup;
  * <p>Below are a few considerations here: 1. We use all default options for this test because that
  * is what most customers would be using. 2. The test schema uses a numeric primary key. To ensure
  * that the reads/updates are distributed across a large query space, we insert 10^5 records.
- * Utility at {@link BenchmarkingUtilityTest} can be used for loading data. 3. For queries, we make
- * sure that the query is sampled randomly across a large query space. This ensure we don't cause
- * hot-spots. 4. For avoid cold start issues, we execute 1 query/update and ignore its latency from
- * the final reported metrics.
+ * Utility at {@link BenchmarkingUtilityScripts} can be used for loading data. 3. For queries, we
+ * make sure that the query is sampled randomly across a large query space. This ensure we don't
+ * cause hot-spots. 4. For avoid cold start issues, we execute 1 query/update and ignore its latency
+ * from the final reported metrics.
  */
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 0)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 1)
-public class DefaultBenchmark {
+public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
   private static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
   private static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
@@ -139,9 +138,7 @@ public class DefaultBenchmark {
     }
   }
 
-  /**
-   * Measures the time needed to execute a burst of queries.
-   */
+  /** Measures the time needed to execute a burst of queries. */
   @Benchmark
   public void burstQueries(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -158,9 +155,7 @@ public class DefaultBenchmark {
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
 
-  /**
-   * Measures the time needed to execute a burst of read and write requests.
-   */
+  /** Measures the time needed to execute a burst of read and write requests. */
   @Benchmark
   public void burstQueriesAndWrites(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -181,17 +176,7 @@ public class DefaultBenchmark {
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN + TOTAL_WRITES_PER_RUN);
   }
 
-  /**
-   * Measures the time needed to execute a burst of read and write requests.
-   *
-   * <p>Some read requests will be long-running and will cause session leaks. Such sessions will be
-   * removed by the session maintenance background task if SessionPool Option
-   * ActionOnInactiveTransaction is set as WARN_AND_CLOSE.
-   *
-   * <p>Some write requests will be long-running. The test asserts that no sessions are removed by
-   * the session maintenance background task with SessionPool Option ActionOnInactiveTransaction set
-   * as WARN_AND_CLOSE. This is because PDML writes are expected to be long-running.
-   */
+  /** Measures the time needed to execute a burst of read and write requests. */
   @Benchmark
   public void burstUpdates(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -241,6 +226,9 @@ public class DefaultBenchmark {
   private List<java.time.Duration> runBenchmarkForUpdates(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
+    // Execute one query to make sure everything has been warmed up.
+    executeWarmup(server);
+
     // Execute one update to make sure everything has been warmed up.
     executeUpdate(server);
 
@@ -269,14 +257,14 @@ public class DefaultBenchmark {
     return Statement.newBuilder(UPDATE_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
   }
 
-  static void collectResultsAndPrint(
+  void collectResultsAndPrint(
       ListeningScheduledExecutorService service,
       List<ListenableFuture<List<Duration>>> results,
       int numOperationsPerThread)
       throws Exception {
     final List<java.time.Duration> collectResults =
-        collectResults(service, results,
-            numOperationsPerThread * PARALLEL_THREADS, Duration.ofMinutes(60));
+        collectResults(
+            service, results, numOperationsPerThread * PARALLEL_THREADS, Duration.ofMinutes(60));
     printResults(collectResults);
   }
 }
