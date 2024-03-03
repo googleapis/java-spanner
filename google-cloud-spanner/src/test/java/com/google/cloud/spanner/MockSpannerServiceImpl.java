@@ -1396,6 +1396,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.date(), value.getListValue()));
                 break;
+              case FLOAT32:
+                builder
+                    .bind(fieldName)
+                    .toFloat32Array(
+                        (Iterable<Float>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.float32(), value.getListValue()));
+                break;
               case FLOAT64:
                 builder
                     .bind(fieldName)
@@ -1479,6 +1487,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
           case DATE:
             builder.bind(fieldName).to(Date.parseDate(value.getStringValue()));
             break;
+          case FLOAT32:
           case FLOAT64:
             builder.bind(fieldName).to(value.getNumberValue());
             break;
