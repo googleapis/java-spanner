@@ -16,9 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -29,15 +27,21 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SingerProto.Genre;
 import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.Statement;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Value;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +63,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
 
   private Dialect currentDialect;
 
-  public static final Statement STATEMENT = Statement.of("select * from all_types");
+  public static final Statement SELECT_STATEMENT = Statement.of("select * from all_types");
 
   public static final boolean BOOL_VALUE = true;
   public static final long INT64_VALUE = 1L;
@@ -130,6 +134,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
     if (currentDialect != dialect) {
       mockSpanner.putStatementResult(StatementResult.detectDialectResult(dialect));
       setupAllTypesResultSet(dialect);
+      mockSpanner.putStatementResult(StatementResult.update(createInsertStatement(dialect), 1L));
       SpannerPool.closeSpannerPool();
       currentDialect = dialect;
     }
@@ -435,7 +440,74 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                     RandomResultSetGenerator.generateAllTypes(dialect)))
             .addRows(row1Builder.build())
             .build();
-    mockSpanner.putStatementResults(StatementResult.query(STATEMENT, resultSet));
+    mockSpanner.putStatementResults(StatementResult.query(SELECT_STATEMENT, resultSet));
+  }
+
+  public static Statement createInsertStatement(Dialect dialect) {
+    Statement.Builder builder = Statement.newBuilder("insert into all_types (");
+    builder.append(
+        IntStream.rangeClosed(1, RandomResultSetGenerator.generateAllTypes(dialect).length)
+            .mapToObj(col -> "COL" + col)
+            .collect(Collectors.joining(", ", "", ") values (")));
+    builder.append(
+        IntStream.rangeClosed(1, RandomResultSetGenerator.generateAllTypes(dialect).length)
+            .mapToObj(col -> "@p" + col)
+            .collect(Collectors.joining(", ", "", ")")));
+    int param = 0;
+    return builder
+        .bind("p" + ++param)
+        .to(BOOL_VALUE)
+        .bind("p" + ++param)
+        .to(INT64_VALUE)
+        .bind("p" + ++param)
+        .to(FLOAT32_VALUE)
+        .bind("p" + ++param)
+        .to(FLOAT64_VALUE)
+        .bind("p" + ++param)
+        .to(
+            dialect == Dialect.POSTGRESQL
+                ? com.google.cloud.spanner.Value.pgNumeric(PG_NUMERIC_VALUE)
+                : com.google.cloud.spanner.Value.numeric(NUMERIC_VALUE))
+        .bind("p" + ++param)
+        .to(STRING_VALUE)
+        .bind("p" + ++param)
+        .to(
+            dialect == Dialect.POSTGRESQL
+                ? com.google.cloud.spanner.Value.pgJsonb(JSON_VALUE)
+                : com.google.cloud.spanner.Value.json(JSON_VALUE))
+        .bind("p" + ++param)
+        .to(ByteArray.copyFrom(BYTES_VALUE))
+        .bind("p" + ++param)
+        .to(DATE_VALUE)
+        .bind("p" + ++param)
+        .to(TIMESTAMP_VALUE)
+        .bind("p" + ++param)
+        .toBoolArray(BOOL_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .toInt64Array(INT64_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .toFloat32Array(FLOAT32_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .toFloat64Array(FLOAT64_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .to(
+            dialect == Dialect.POSTGRESQL
+                ? com.google.cloud.spanner.Value.pgNumericArray(PG_NUMERIC_ARRAY_VALUE)
+                : com.google.cloud.spanner.Value.numericArray(NUMERIC_ARRAY_VALUE))
+        .bind("p" + ++param)
+        .toStringArray(STRING_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .to(
+            dialect == Dialect.POSTGRESQL
+                ? com.google.cloud.spanner.Value.pgJsonbArray(JSON_ARRAY_VALUE)
+                : com.google.cloud.spanner.Value.jsonArray(JSON_ARRAY_VALUE))
+        .bind("p" + ++param)
+        .toBytesArray(BYTES_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .toDateArray(DATE_ARRAY_VALUE)
+        .bind("p" + ++param)
+        .toTimestampArray(TIMESTAMP_ARRAY_VALUE)
+        .build();
   }
 
   @After
@@ -446,8 +518,9 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
   @Test
   public void testSelectAllTypes() {
     try (Connection connection = createConnection()) {
-      try (ResultSet resultSet = connection.executeQuery(STATEMENT)) {
+      try (ResultSet resultSet = connection.executeQuery(SELECT_STATEMENT)) {
         assertTrue(resultSet.next());
+
         int col = -1;
         assertEquals(BOOL_VALUE, resultSet.getBoolean(++col));
         assertEquals(INT64_VALUE, resultSet.getLong(++col));
@@ -484,12 +557,127 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         assertEquals(BYTES_ARRAY_VALUE, resultSet.getBytesList(++col));
         assertEquals(DATE_ARRAY_VALUE, resultSet.getDateList(++col));
         assertEquals(TIMESTAMP_ARRAY_VALUE, resultSet.getTimestampList(++col));
+
+        assertFalse(resultSet.next());
       }
     }
   }
 
   @Test
   public void testInsertAllTypes() {
-    // TODO: Implement
+    try (Connection connection = createConnection()) {
+      assertEquals(1L, connection.executeUpdate(createInsertStatement(dialect)));
+
+      assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
+      Map<String, Type> paramTypes = request.getParamTypesMap();
+      Map<String, Value> params = request.getParams().getFieldsMap();
+      assertEquals(20, paramTypes.size());
+      assertEquals(20, params.size());
+
+      // Verify param types.
+      ImmutableList<TypeCode> expectedTypes =
+          ImmutableList.of(
+              TypeCode.BOOL,
+              TypeCode.INT64,
+              TypeCode.FLOAT32,
+              TypeCode.FLOAT64,
+              TypeCode.NUMERIC,
+              TypeCode.STRING,
+              TypeCode.JSON,
+              TypeCode.BYTES,
+              TypeCode.DATE,
+              TypeCode.TIMESTAMP);
+      for (int col = 0; col < expectedTypes.size(); col++) {
+        assertEquals(expectedTypes.get(col), paramTypes.get("p" + (col + 1)).getCode());
+        int arrayCol = col + expectedTypes.size();
+        assertEquals(TypeCode.ARRAY, paramTypes.get("p" + (arrayCol + 1)).getCode());
+        assertEquals(
+            expectedTypes.get(col),
+            paramTypes.get("p" + (arrayCol + 1)).getArrayElementType().getCode());
+      }
+
+      // Verify param values.
+      int col = 0;
+      assertEquals(BOOL_VALUE, params.get("p" + ++col).getBoolValue());
+      assertEquals(String.valueOf(INT64_VALUE), params.get("p" + ++col).getStringValue());
+      assertEquals(FLOAT32_VALUE, params.get("p" + ++col).getNumberValue(), 0.0d);
+      assertEquals(FLOAT64_VALUE, params.get("p" + ++col).getNumberValue(), 0.0d);
+      assertEquals(
+          dialect == Dialect.POSTGRESQL ? PG_NUMERIC_VALUE : NUMERIC_VALUE.toEngineeringString(),
+          params.get("p" + ++col).getStringValue());
+      assertEquals(STRING_VALUE, params.get("p" + ++col).getStringValue());
+      assertEquals(JSON_VALUE, params.get("p" + ++col).getStringValue());
+      assertEquals(
+          Base64.getEncoder().encodeToString(BYTES_VALUE),
+          params.get("p" + ++col).getStringValue());
+      assertEquals(DATE_VALUE.toString(), params.get("p" + ++col).getStringValue());
+      assertEquals(TIMESTAMP_VALUE.toString(), params.get("p" + ++col).getStringValue());
+
+      assertEquals(
+          BOOL_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : value.getBoolValue())
+              .collect(Collectors.toList()));
+      assertEquals(
+          INT64_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : Long.valueOf(value.getStringValue()))
+              .collect(Collectors.toList()));
+      assertEquals(
+          FLOAT32_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : (float) value.getNumberValue())
+              .collect(Collectors.toList()));
+      assertEquals(
+          FLOAT64_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : value.getNumberValue())
+              .collect(Collectors.toList()));
+      if (dialect == Dialect.POSTGRESQL) {
+        assertEquals(
+            PG_NUMERIC_ARRAY_VALUE,
+            params.get("p" + ++col).getListValue().getValuesList().stream()
+                .map(value -> value.hasNullValue() ? null : value.getStringValue())
+                .collect(Collectors.toList()));
+      } else {
+        assertEquals(
+            NUMERIC_ARRAY_VALUE,
+            params.get("p" + ++col).getListValue().getValuesList().stream()
+                .map(value -> value.hasNullValue() ? null : new BigDecimal(value.getStringValue()))
+                .collect(Collectors.toList()));
+      }
+      assertEquals(
+          STRING_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : value.getStringValue())
+              .collect(Collectors.toList()));
+      assertEquals(
+          JSON_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : value.getStringValue())
+              .collect(Collectors.toList()));
+      assertEquals(
+          BYTES_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(
+                  value ->
+                      value.hasNullValue() ? null : ByteArray.fromBase64(value.getStringValue()))
+              .collect(Collectors.toList()));
+      assertEquals(
+          DATE_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(value -> value.hasNullValue() ? null : Date.parseDate(value.getStringValue()))
+              .collect(Collectors.toList()));
+      assertEquals(
+          TIMESTAMP_ARRAY_VALUE,
+          params.get("p" + ++col).getListValue().getValuesList().stream()
+              .map(
+                  value ->
+                      value.hasNullValue()
+                          ? null
+                          : Timestamp.parseTimestamp(value.getStringValue()))
+              .collect(Collectors.toList()));
+    }
   }
 }
