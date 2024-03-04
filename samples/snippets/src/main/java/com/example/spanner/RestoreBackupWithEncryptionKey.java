@@ -18,17 +18,17 @@ package com.example.spanner;
 
 // [START spanner_restore_backup_with_encryption_key]
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.BackupId;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Restore;
+import static com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType.CUSTOMER_MANAGED_ENCRYPTION;
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.cloud.spanner.encryption.EncryptionConfigs;
-import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.InstanceName;
+import com.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
+import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import java.util.concurrent.ExecutionException;
 
 public class RestoreBackupWithEncryptionKey {
@@ -43,8 +43,8 @@ public class RestoreBackupWithEncryptionKey {
         "projects/" + projectId + "/locations/<location>/keyRings/<keyRing>/cryptoKeys/<keyId>";
 
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient adminClient = spanner.createDatabaseAdminClient()) {
       restoreBackupWithEncryptionKey(
           adminClient,
           projectId,
@@ -57,19 +57,18 @@ public class RestoreBackupWithEncryptionKey {
 
   static Void restoreBackupWithEncryptionKey(DatabaseAdminClient adminClient,
       String projectId, String instanceId, String backupId, String restoreId, String kmsKeyName) {
-    final Restore restore = adminClient
-        .newRestoreBuilder(
-            BackupId.of(projectId, instanceId, backupId),
-            DatabaseId.of(projectId, instanceId, restoreId))
-        .setEncryptionConfig(EncryptionConfigs.customerManagedEncryption(kmsKeyName))
-        .build();
-    final OperationFuture<Database, RestoreDatabaseMetadata> operation = adminClient
-        .restoreDatabase(restore);
-
+    RestoreDatabaseRequest request =
+        RestoreDatabaseRequest.newBuilder()
+            .setParent(InstanceName.of(projectId, instanceId).toString())
+            .setDatabaseId(restoreId)
+            .setBackup(BackupName.of(projectId, instanceId, backupId).toString())
+            .setEncryptionConfig(RestoreDatabaseEncryptionConfig.newBuilder()
+                .setEncryptionType(CUSTOMER_MANAGED_ENCRYPTION).setKmsKeyName(kmsKeyName)).build();
     Database database;
     try {
       System.out.println("Waiting for operation to complete...");
-      database = operation.get();
+      database = adminClient.restoreDatabaseAsync(request).get();
+      ;
     } catch (ExecutionException e) {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());
@@ -81,9 +80,9 @@ public class RestoreBackupWithEncryptionKey {
 
     System.out.printf(
         "Database %s restored to %s from backup %s using encryption key %s%n",
-        database.getRestoreInfo().getSourceDatabase(),
-        database.getId(),
-        database.getRestoreInfo().getBackup(),
+        database.getRestoreInfo().getBackupInfo().getSourceDatabase(),
+        database.getName(),
+        database.getRestoreInfo().getBackupInfo().getBackup(),
         database.getEncryptionConfig().getKmsKeyName()
     );
     return null;

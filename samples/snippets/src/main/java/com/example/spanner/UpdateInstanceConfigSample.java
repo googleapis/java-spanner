@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,21 @@
 package com.example.spanner;
 
 // [START spanner_update_instance_config]
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfig;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceConfigInfo;
-import com.google.cloud.spanner.InstanceConfigInfo.InstanceConfigField;
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
 import com.google.common.collect.ImmutableList;
-import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
+import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 class UpdateInstanceConfigSample {
+
   static void updateInstanceConfig() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
@@ -41,27 +41,42 @@ class UpdateInstanceConfigSample {
 
   static void updateInstanceConfig(String projectId, String instanceConfigId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-      InstanceConfigInfo instanceConfigInfo =
-          InstanceConfig.newBuilder(InstanceConfigId.of(projectId, instanceConfigId))
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
+      final InstanceConfigName instanceConfigName =
+          InstanceConfigName.of(projectId, instanceConfigId);
+      final InstanceConfig instanceConfig =
+          InstanceConfig.newBuilder()
+              .setName(instanceConfigName.toString())
               .setDisplayName("updated custom instance config")
-              .addLabel("updated", "true")
-              .build();
-      final OperationFuture<InstanceConfig, UpdateInstanceConfigMetadata> operation =
-          instanceAdminClient.updateInstanceConfig(
-              instanceConfigInfo,
-              ImmutableList.of(InstanceConfigField.DISPLAY_NAME, InstanceConfigField.LABELS));
+              .putLabels("updated", "true").build();
+      /**
+       * The field mask must always be specified; this prevents any future
+       * fields in [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig]
+       * from being erased accidentally by clients that do not know about them.
+       */
+      final UpdateInstanceConfigRequest updateInstanceConfigRequest =
+          UpdateInstanceConfigRequest.newBuilder()
+              .setInstanceConfig(instanceConfig)
+              .setUpdateMask(
+                  FieldMask.newBuilder().addAllPaths(ImmutableList.of("display_name", "labels"))
+                      .build()).build();
       try {
-        System.out.printf("Waiting for update operation on %s to complete...\n", instanceConfigId);
-        InstanceConfig instanceConfig = operation.get(5, TimeUnit.MINUTES);
+        System.out.printf("Waiting for update operation on %s to complete...\n",
+            instanceConfigName);
+        InstanceConfig instanceConfigResult =
+            instanceAdminClient.updateInstanceConfigAsync(
+                updateInstanceConfigRequest).get(5, TimeUnit.MINUTES);
         System.out.printf(
             "Updated instance configuration %s with new display name %s\n",
-            instanceConfig.getId(), instanceConfig.getDisplayName());
+            instanceConfigResult.getName(), instanceConfig.getDisplayName());
       } catch (ExecutionException | TimeoutException e) {
         System.out.printf(
             "Error: Updating instance config %s failed with error message %s\n",
-            instanceConfigInfo.getId(), e.getMessage());
+            instanceConfig.getName(), e.getMessage());
         e.printStackTrace();
       } catch (InterruptedException e) {
         System.out.println(
