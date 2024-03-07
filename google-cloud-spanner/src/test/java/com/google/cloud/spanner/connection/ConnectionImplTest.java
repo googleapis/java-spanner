@@ -1863,6 +1863,50 @@ public class ConnectionImplTest {
     checkResultTypeAllowed(parser.parse(Statement.of(start)), allowedResultTypes);
   }
 
+  @Test
+  public void testSetRetryAbortsInternally() {
+    try (ConnectionImpl connection =
+        createConnection(
+            ConnectionOptions.newBuilder()
+                .setCredentials(NoCredentials.getInstance())
+                .setUri(URI)
+                .build())) {
+      assertFalse("Read-only should be disabled by default", connection.isReadOnly());
+      assertTrue("Autocommit should be enabled by default", connection.isAutocommit());
+      assertFalse(
+          "Retry aborts internally should be disabled by default on test connections",
+          connection.isRetryAbortsInternally());
+
+      // It should be possible to change this value also when in auto-commit mode.
+      connection.setRetryAbortsInternally(true);
+      assertTrue(connection.isRetryAbortsInternally());
+
+      // It should be possible to change this value also when in transactional mode, as long as
+      // there is no active transaction.
+      connection.setAutocommit(false);
+      connection.setRetryAbortsInternally(false);
+      assertFalse(connection.isRetryAbortsInternally());
+
+      // It should be possible to change the value when in read-only mode.
+      connection.setReadOnly(true);
+      connection.setRetryAbortsInternally(true);
+      assertTrue(connection.isRetryAbortsInternally());
+
+      // It should not be possible to change the value when there is an active transaction.
+      connection.setReadOnly(false);
+      connection.setAutocommit(false);
+      connection.execute(Statement.of(SELECT));
+      assertThrows(SpannerException.class, () -> connection.setRetryAbortsInternally(false));
+      // Verify that the value did not change.
+      assertTrue(connection.isRetryAbortsInternally());
+
+      // Rolling back the connection should allow us to set the property again.
+      connection.rollback();
+      connection.setRetryAbortsInternally(false);
+      assertFalse(connection.isRetryAbortsInternally());
+    }
+  }
+
   private void assertThrowResultNotAllowed(
       AbstractStatementParser parser, String sql, ImmutableSet<ResultType> allowedResultTypes) {
     SpannerException exception =

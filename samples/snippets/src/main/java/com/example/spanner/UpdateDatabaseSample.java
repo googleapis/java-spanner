@@ -17,15 +17,18 @@
 package com.example.spanner;
 
 // [START spanner_update_database]
+
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.common.collect.Lists;
+import com.google.protobuf.FieldMask;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -37,22 +40,31 @@ public class UpdateDatabaseSample {
     final String projectId = "my-project";
     final String instanceId = "my-instance";
     final String databaseId = "my-database";
+
     updateDatabase(projectId, instanceId, databaseId);
   }
 
-  static void updateDatabase(String projectId, String instanceId, String databaseId) {
+  static void updateDatabase(
+      String projectId, String instanceId, String databaseId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-
-      DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
-      Database databaseToUpdate =
-          databaseAdminClient.newDatabaseBuilder(dbId).enableDropProtection().build();
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      final Database database =
+          Database.newBuilder()
+              .setName(DatabaseName.of(projectId, instanceId, databaseId).toString())
+              .setEnableDropProtection(true).build();
+      final UpdateDatabaseRequest updateDatabaseRequest =
+          UpdateDatabaseRequest.newBuilder()
+              .setDatabase(database)
+              .setUpdateMask(
+                  FieldMask.newBuilder().addAllPaths(
+                      Lists.newArrayList("enable_drop_protection")).build())
+              .build();
       OperationFuture<Database, UpdateDatabaseMetadata> operation =
-          databaseAdminClient.updateDatabase(databaseToUpdate, DatabaseField.DROP_PROTECTION);
-      System.out.printf("Waiting for update operation for %s to complete...\n", dbId);
+          databaseAdminClient.updateDatabaseAsync(updateDatabaseRequest);
+      System.out.printf("Waiting for update operation for %s to complete...\n", databaseId);
       Database updatedDb = operation.get(5, TimeUnit.MINUTES);
-      System.out.printf("Updated database %s.\n", updatedDb.getId().getName());
+      System.out.printf("Updated database %s.\n", updatedDb.getName());
     } catch (ExecutionException | TimeoutException e) {
       // If the operation failed during execution, expose the cause.
       throw SpannerExceptionFactory.asSpannerException(e.getCause());

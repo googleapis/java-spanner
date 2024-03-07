@@ -18,42 +18,44 @@ package com.example.spanner;
 
 import static org.junit.Assert.assertTrue;
 
-import com.google.cloud.spanner.InstanceConfig;
-import com.google.cloud.spanner.InstanceConfigId;
-import java.util.Arrays;
+import com.google.common.collect.Lists;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstanceName;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class GetDatabaseDdlSampleIT extends SampleTestBase {
+public class GetDatabaseDdlSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testGetDatabaseDdl() throws Exception {
     // Finds a possible new leader option
-    final InstanceConfigId instanceConfigId = instanceAdminClient
-        .getInstance(multiRegionalInstanceId)
-        .getInstanceConfigId();
-    final InstanceConfig config = instanceAdminClient
-        .getInstanceConfig(instanceConfigId.getInstanceConfig());
+    final String instanceConfigId = instanceAdminClient.getInstance(
+        InstanceName.of(projectId, multiRegionalInstanceId)).getConfig();
+    final InstanceConfig config = instanceAdminClient.getInstanceConfig(instanceConfigId);
     assertTrue(
         "Expected instance config " + instanceConfigId + " to have at least one leader option",
-        config.getLeaderOptions().size() > 0
+        config.getLeaderOptionsList().size() > 0
     );
-    final String defaultLeader = config.getLeaderOptions().get(0);
+    final String defaultLeader = config.getLeaderOptions(0);
 
     // Creates database
     final String databaseId = idGenerator.generateDatabaseId();
-    databaseAdminClient.createDatabase(
-        multiRegionalInstanceId,
-        databaseId,
-        Arrays.asList(
-            "CREATE TABLE Singers (Id INT64 NOT NULL) PRIMARY KEY (Id)",
-            "ALTER DATABASE `"
-                + databaseId
-                + "` SET OPTIONS ( default_leader = '"
-                + defaultLeader
-                + "')"
-        )
-    ).get(5, TimeUnit.MINUTES);
+    final CreateDatabaseRequest request =
+        CreateDatabaseRequest.newBuilder()
+            .setParent(
+                com.google.spanner.admin.database.v1.InstanceName.of(projectId,
+                    multiRegionalInstanceId).toString())
+            .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
+            .addAllExtraStatements(Lists.newArrayList(
+                "CREATE TABLE Singers (Id INT64 NOT NULL) PRIMARY KEY (Id)",
+                "ALTER DATABASE `"
+                    + databaseId
+                    + "` SET OPTIONS ( default_leader = '"
+                    + defaultLeader
+                    + "')"
+            )).build();
+    databaseAdminClient.createDatabaseAsync(request).get(5, TimeUnit.MINUTES);
 
     // Runs sample
     final String out = SampleRunner.runSample(() -> GetDatabaseDdlSample

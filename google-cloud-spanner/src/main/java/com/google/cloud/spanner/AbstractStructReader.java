@@ -43,6 +43,10 @@ public abstract class AbstractStructReader implements StructReader {
 
   protected abstract long getLongInternal(int columnIndex);
 
+  protected float getFloatInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
   protected abstract double getDoubleInternal(int columnIndex);
 
   protected abstract BigDecimal getBigDecimalInternal(int columnIndex);
@@ -93,6 +97,14 @@ public abstract class AbstractStructReader implements StructReader {
   protected abstract long[] getLongArrayInternal(int columnIndex);
 
   protected abstract List<Long> getLongListInternal(int columnIndex);
+
+  protected float[] getFloatArrayInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  protected List<Float> getFloatListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract double[] getDoubleArrayInternal(int columnIndex);
 
@@ -162,6 +174,19 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
     return getLongInternal(columnIndex);
+  }
+
+  @Override
+  public float getFloat(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.float32(), columnIndex);
+    return getFloatInternal(columnIndex);
+  }
+
+  @Override
+  public float getFloat(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.float32(), columnName);
+    return getFloatInternal(columnIndex);
   }
 
   @Override
@@ -366,6 +391,32 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
     checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
     return getLongListInternal(columnIndex);
+  }
+
+  @Override
+  public float[] getFloatArray(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.float32()), columnIndex);
+    return getFloatArrayInternal(columnIndex);
+  }
+
+  @Override
+  public float[] getFloatArray(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.float32()), columnName);
+    return getFloatArrayInternal(columnIndex);
+  }
+
+  @Override
+  public List<Float> getFloatList(int columnIndex) {
+    checkNonNullOfType(columnIndex, Type.array(Type.float32()), columnIndex);
+    return getFloatListInternal(columnIndex);
+  }
+
+  @Override
+  public List<Float> getFloatList(String columnName) {
+    int columnIndex = getColumnIndex(columnName);
+    checkNonNullOfType(columnIndex, Type.array(Type.float32()), columnName);
+    return getFloatListInternal(columnIndex);
   }
 
   @Override

@@ -125,6 +125,22 @@ public interface StructReader {
 
   /**
    * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#float32()}.
+   */
+  default float getFloat(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@link Type#float32()}.
+   */
+  default float getFloat(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * @param columnIndex index of the column
    * @return the value of a non-{@code NULL} column with type {@link Type#float64()}.
    */
   double getDouble(int columnIndex);
@@ -360,6 +376,44 @@ public interface StructReader {
    *     access each element in the list multiple times.
    */
   List<Long> getLongList(String columnName);
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float32())}.
+   * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
+   *     may contain {@code NULL} values, use {@link #getFloatList(int)} instead.
+   */
+  default float[] getFloatArray(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float32())}.
+   * @throws NullPointerException if any element of the array value is {@code NULL}. If the array
+   *     may contain {@code NULL} values, use {@link #getFloatList(String)} instead.
+   */
+  default float[] getFloatArray(String columnName) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * @param columnIndex index of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float32())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
+   */
+  default List<Float> getFloatList(int columnIndex) {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * @param columnName name of the column
+   * @return the value of a non-{@code NULL} column with type {@code Type.array(Type.float32())} The
+   *     list returned by this method is lazily constructed. Create a copy of it if you intend to
+   *     access each element in the list multiple times.
+   */
+  List<Float> getFloatList(String columnName);
 
   /**
    * @param columnIndex index of the column

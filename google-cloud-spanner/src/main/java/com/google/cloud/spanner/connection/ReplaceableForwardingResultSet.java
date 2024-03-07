@@ -190,6 +190,18 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   }
 
   @Override
+  public float getFloat(int columnIndex) {
+    checkClosed();
+    return delegate.getFloat(columnIndex);
+  }
+
+  @Override
+  public float getFloat(String columnName) {
+    checkClosed();
+    return delegate.getFloat(columnName);
+  }
+
+  @Override
   public double getDouble(int columnIndex) {
     checkClosed();
     return delegate.getDouble(columnIndex);
@@ -343,6 +355,30 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   public List<Long> getLongList(String columnName) {
     checkClosed();
     return delegate.getLongList(columnName);
+  }
+
+  @Override
+  public float[] getFloatArray(int columnIndex) {
+    checkClosed();
+    return delegate.getFloatArray(columnIndex);
+  }
+
+  @Override
+  public float[] getFloatArray(String columnName) {
+    checkClosed();
+    return delegate.getFloatArray(columnName);
+  }
+
+  @Override
+  public List<Float> getFloatList(int columnIndex) {
+    checkClosed();
+    return delegate.getFloatList(columnIndex);
+  }
+
+  @Override
+  public List<Float> getFloatList(String columnName) {
+    checkClosed();
+    return delegate.getFloatList(columnName);
   }
 
   @Override

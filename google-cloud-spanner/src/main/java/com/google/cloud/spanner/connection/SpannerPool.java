@@ -29,6 +29,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Ticker;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -156,6 +157,7 @@ public class SpannerPool {
     private final String databaseRole;
     private final boolean routeToLeader;
     private final boolean useVirtualGrpcTransportThreads;
+    private final OpenTelemetry openTelemetry;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -183,6 +185,7 @@ public class SpannerPool {
       this.userAgent = options.getUserAgent();
       this.routeToLeader = options.isRouteToLeader();
       this.useVirtualGrpcTransportThreads = options.isUseVirtualGrpcTransportThreads();
+      this.openTelemetry = options.getOpenTelemetry();
     }
 
     @Override
@@ -201,7 +204,8 @@ public class SpannerPool {
           && Objects.equals(this.userAgent, other.userAgent)
           && Objects.equals(this.routeToLeader, other.routeToLeader)
           && Objects.equals(
-              this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads);
+              this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
+          && Objects.equals(this.openTelemetry, other.openTelemetry);
     }
 
     @Override
@@ -216,7 +220,8 @@ public class SpannerPool {
           this.databaseRole,
           this.userAgent,
           this.routeToLeader,
-          this.useVirtualGrpcTransportThreads);
+          this.useVirtualGrpcTransportThreads,
+          this.openTelemetry);
     }
   }
 
@@ -349,6 +354,9 @@ public class SpannerPool {
         .setDatabaseRole(options.getDatabaseRole())
         .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);
+    if (key.openTelemetry != null) {
+      builder.setOpenTelemetry(key.openTelemetry);
+    }
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
     }

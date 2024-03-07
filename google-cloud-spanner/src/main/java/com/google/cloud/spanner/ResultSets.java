@@ -237,6 +237,16 @@ public final class ResultSets {
     }
 
     @Override
+    public float getFloat(int columnIndex) {
+      return getCurrentRowAsStruct().getFloat(columnIndex);
+    }
+
+    @Override
+    public float getFloat(String columnName) {
+      return getCurrentRowAsStruct().getFloat(columnName);
+    }
+
+    @Override
     public double getDouble(int columnIndex) {
       return getCurrentRowAsStruct().getDouble(columnIndex);
     }
@@ -386,6 +396,26 @@ public final class ResultSets {
     @Override
     public List<Long> getLongList(String columnName) {
       return getCurrentRowAsStruct().getLongList(columnName);
+    }
+
+    @Override
+    public float[] getFloatArray(int columnIndex) {
+      return getCurrentRowAsStruct().getFloatArray(columnIndex);
+    }
+
+    @Override
+    public float[] getFloatArray(String columnName) {
+      return getCurrentRowAsStruct().getFloatArray(columnName);
+    }
+
+    @Override
+    public List<Float> getFloatList(int columnIndex) {
+      return getCurrentRowAsStruct().getFloatList(columnIndex);
+    }
+
+    @Override
+    public List<Float> getFloatList(String columnName) {
+      return getCurrentRowAsStruct().getFloatList(columnName);
     }
 
     @Override

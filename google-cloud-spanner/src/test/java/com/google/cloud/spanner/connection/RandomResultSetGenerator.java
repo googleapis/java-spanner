@@ -51,6 +51,7 @@ public class RandomResultSetGenerator {
             Arrays.asList(
                 Type.newBuilder().setCode(TypeCode.BOOL).build(),
                 Type.newBuilder().setCode(TypeCode.INT64).build(),
+                Type.newBuilder().setCode(TypeCode.FLOAT32).build(),
                 Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
                 dialect == Dialect.POSTGRESQL
                     ? Type.newBuilder()
@@ -75,6 +76,10 @@ public class RandomResultSetGenerator {
                 Type.newBuilder()
                     .setCode(TypeCode.ARRAY)
                     .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
+                    .build(),
+                Type.newBuilder()
+                    .setCode(TypeCode.ARRAY)
+                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT32))
                     .build(),
                 Type.newBuilder()
                     .setCode(TypeCode.ARRAY)
@@ -228,6 +233,13 @@ public class RandomResultSetGenerator {
               Date.fromYearMonthDay(
                   random.nextInt(2019) + 1, random.nextInt(11) + 1, random.nextInt(28) + 1);
           builder.setStringValue(date.toString());
+          break;
+        case FLOAT32:
+          if (randomNaN()) {
+            builder.setNumberValue(Float.NaN);
+          } else {
+            builder.setNumberValue(random.nextFloat());
+          }
           break;
         case FLOAT64:
           if (randomNaN()) {

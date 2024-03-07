@@ -17,7 +17,7 @@
 package com.example.spanner;
 
 // [START spanner_postgresql_create_sequence]
-import com.google.cloud.spanner.DatabaseAdminClient;
+
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
@@ -25,13 +25,16 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PgCreateSequenceSample {
+
   static void pgCreateSequence() {
     // TODO(developer): Replace these variables before running the sample.
     final String projectId = "my-project";
@@ -42,22 +45,18 @@ public class PgCreateSequenceSample {
 
   static void pgCreateSequence(String projectId, String instanceId, String databaseId) {
     try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      final DatabaseAdminClient dbAdminClient = spanner.getDatabaseAdminClient();
-
-      dbAdminClient
-          .updateDatabaseDdl(
-              instanceId,
-              databaseId,
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      databaseAdminClient
+          .updateDatabaseDdlAsync(DatabaseName.of(projectId, instanceId, databaseId).toString(),
               ImmutableList.of(
                   "CREATE SEQUENCE Seq BIT_REVERSED_POSITIVE;",
                   "CREATE TABLE Customers (CustomerId BIGINT DEFAULT nextval('Seq'), "
-                      + "CustomerName character varying(1024), PRIMARY KEY (CustomerId))"),
-              null)
+                      + "CustomerName character varying(1024), PRIMARY KEY (CustomerId))"))
           .get(5, TimeUnit.MINUTES);
 
       System.out.println(
-          "Created Seq sequence and Customers table, where its key column "
+          "Created Seq sequence and Customers table, where the key column "
               + "CustomerId uses the sequence as a default value");
 
       final DatabaseClient dbClient =

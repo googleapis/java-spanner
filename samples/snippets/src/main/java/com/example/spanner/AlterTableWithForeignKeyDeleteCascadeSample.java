@@ -17,10 +17,12 @@
 package com.example.spanner;
 
 // [START spanner_alter_table_with_foreign_key_delete_cascade]
-import com.google.cloud.spanner.DatabaseAdminClient;
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.DatabaseName;
 
 class AlterTableWithForeignKeyDeleteCascadeSample {
 
@@ -30,30 +32,28 @@ class AlterTableWithForeignKeyDeleteCascadeSample {
     String instanceId = "my-instance";
     String databaseId = "my-database";
 
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      alterForeignKeyDeleteCascadeConstraint(adminClient, instanceId, databaseId);
-    }
+    alterForeignKeyDeleteCascadeConstraint(projectId, instanceId, databaseId);
   }
 
   static void alterForeignKeyDeleteCascadeConstraint(
-      DatabaseAdminClient adminClient, String instanceId, String databaseId) {
-    adminClient.updateDatabaseDdl(
-        instanceId,
-        databaseId,
-        ImmutableList.of(
-            "ALTER TABLE ShoppingCarts\n"
-                + "              ADD CONSTRAINT FKShoppingCartsCustomerName\n"
-                + "              FOREIGN KEY (CustomerName)\n"
-                + "              REFERENCES Customers(CustomerName)\n"
-                + "              ON DELETE CASCADE\n"),
-        null);
-    System.out.printf(
-        String.format(
-            "Altered ShoppingCarts table with FKShoppingCartsCustomerName\n"
-                + "foreign key constraint on database %s on instance %s",
-            databaseId, instanceId));
+      String projectId, String instanceId, String databaseId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      databaseAdminClient.updateDatabaseDdlAsync(DatabaseName.of(projectId, instanceId,
+              databaseId),
+          ImmutableList.of(
+              "ALTER TABLE ShoppingCarts\n"
+                  + "              ADD CONSTRAINT FKShoppingCartsCustomerName\n"
+                  + "              FOREIGN KEY (CustomerName)\n"
+                  + "              REFERENCES Customers(CustomerName)\n"
+                  + "              ON DELETE CASCADE\n"));
+      System.out.printf(
+          String.format(
+              "Altered ShoppingCarts table with FKShoppingCartsCustomerName\n"
+                  + "foreign key constraint on database %s on instance %s",
+              databaseId, instanceId));
+    }
   }
 }
 // [END spanner_alter_table_with_foreign_key_delete_cascade]
