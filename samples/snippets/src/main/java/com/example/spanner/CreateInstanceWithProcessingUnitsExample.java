@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,13 @@ package com.example.spanner;
 
 //[START spanner_create_instance_with_processing_units]
 
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.InstanceInfo;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.Instance;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
+import com.google.spanner.admin.instance.v1.ProjectName;
 
 class CreateInstanceWithProcessingUnitsExample {
 
@@ -38,39 +36,45 @@ class CreateInstanceWithProcessingUnitsExample {
   }
 
   static void createInstance(String projectId, String instanceId) {
-    Spanner spanner = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
-    InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
 
-    // Set Instance configuration.
-    String configId = "regional-us-central1";
-    // This will create an instance with the processing power of 0.2 nodes.
-    int processingUnits = 500;
-    String displayName = "Descriptive name";
+      // Set Instance configuration.
+      String configId = "regional-us-central1";
+      // This will create an instance with the processing power of 0.2 nodes.
+      int processingUnits = 500;
+      String displayName = "Descriptive name";
 
-    try {
-      // Creates a new instance
-      System.out.printf("Creating instance %s.%n", instanceId);
-      OperationFuture<Instance, CreateInstanceMetadata> operation =
-          instanceAdminClient.createInstance(InstanceInfo
-              .newBuilder(InstanceId.of(projectId, instanceId))
-              .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
-              .setProcessingUnits(processingUnits)
-              .setDisplayName(displayName)
-              .build());
+      try {
+        // Creates a new instance
+        System.out.printf("Creating instance %s.%n", instanceId);
+        Instance instance =
+            Instance.newBuilder()
+                .setDisplayName(displayName)
+                .setProcessingUnits(processingUnits)
+                .setConfig(
+                    InstanceConfigName.of(projectId, configId).toString())
+                .build();
+        // Wait for the createInstance operation to finish.
+        System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
+        Instance createdInstance = instanceAdminClient.createInstanceAsync(
+            CreateInstanceRequest.newBuilder()
+                .setParent(ProjectName.of(projectId).toString())
+                .setInstanceId(instanceId)
+                .setInstance(instance)
+                .build()).get();
 
-      // Wait for the createInstance operation to finish.
-      System.out.printf("Waiting for operation on %s to complete...%n", instanceId);
-      Instance createdInstance = operation.get();
-
-      System.out.printf("Created instance %s.%n", createdInstance.getId().getInstance());
-
-      Instance instance = instanceAdminClient.getInstance(instanceId);
-      System.out.printf("Instance %s has %d processing units.%n", instance.getId().getInstance(),
-          instance.getProcessingUnits());
-    } catch (Exception e) {
-      System.out.printf("Error: %s.%n", e.getMessage());
+        System.out.printf("Created instance %s.%n", createdInstance.getName());
+        System.out.printf("Instance %s has %d processing units.%n", createdInstance.getName(),
+            createdInstance.getProcessingUnits());
+      } catch (Exception e) {
+        System.out.printf("Error: %s.%n", e.getMessage());
+      }
     }
-    spanner.close();
   }
 }
 //[END spanner_create_instance_with_processing_units]
