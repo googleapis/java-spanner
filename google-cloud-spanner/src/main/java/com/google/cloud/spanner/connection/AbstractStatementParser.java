@@ -23,6 +23,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
@@ -32,6 +33,8 @@ import com.google.common.cache.Weigher;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import io.grpc.MethodDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,12 +74,7 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  /**
-   * Get an instance of {@link AbstractStatementParser} for the specified dialect.
-   *
-   * @param dialect
-   * @return
-   */
+  /** Get an instance of {@link AbstractStatementParser} for the specified dialect. */
   public static AbstractStatementParser getInstance(Dialect dialect) {
     synchronized (lock) {
       if (!INSTANCES.containsKey(dialect)) {
@@ -86,8 +84,11 @@ public abstract class AbstractStatementParser {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "There is no known statement parser for dialect " + dialect);
           }
-          INSTANCES.put(dialect, clazz.newInstance());
-        } catch (InstantiationException | IllegalAccessException e) {
+          INSTANCES.put(dialect, clazz.getDeclaredConstructor().newInstance());
+        } catch (InstantiationException
+            | IllegalAccessException
+            | NoSuchMethodException
+            | InvocationTargetException e) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INTERNAL,
               "Could not instantiate statement parser for dialect " + dialect.name(),
@@ -98,7 +99,7 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  /**
+  /*
    * The following fixed pre-parsed statements are used internally by the Connection API. These do
    * not need to be parsed using a specific dialect, as they are equal for all dialects, and
    * pre-parsing them avoids the need to repeatedly parse statements that are used internally.
@@ -108,14 +109,16 @@ public abstract class AbstractStatementParser {
   static final ParsedStatement BEGIN_STATEMENT;
 
   /**
-   * Create a COMMIT statement to use with the {@link #commit()} method to allow it to be cancelled,
-   * time out or retried.
+   * Create a COMMIT statement to use with the {@link Connection#commit()} method to allow it to be
+   * cancelled, time out or retried.
    *
-   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
-   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
-   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
-   * #commit()} method is called directly, we do not have a {@link ParsedStatement}, and the method
-   * uses this statement instead in order to use the same logic as the other statements.
+   * <p>{@link ReadWriteTransaction} uses the generic methods {@link
+   * ReadWriteTransaction#executeStatementAsync(CallType, ParsedStatement, Callable,
+   * MethodDescriptor)} and {@link ReadWriteTransaction#runWithRetry(Callable)} to allow statements
+   * to be cancelled, to timeout and to be retried. These methods require a {@link ParsedStatement}
+   * as input. When the {@link Connection#commit()} method is called directly, we do not have a
+   * {@link ParsedStatement}, and the method uses this statement instead in order to use the same
+   * logic as the other statements.
    */
   static final ParsedStatement COMMIT_STATEMENT;
 
@@ -123,15 +126,16 @@ public abstract class AbstractStatementParser {
   static final ParsedStatement ROLLBACK_STATEMENT;
 
   /**
-   * Create a RUN BATCH statement to use with the {@link #executeBatchUpdate(Iterable)} method to
-   * allow it to be cancelled, time out or retried.
+   * Create a RUN BATCH statement to use with the {@link Connection#executeBatchUpdate(Iterable)}
+   * method to allow it to be cancelled, time out or retried.
    *
-   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
-   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
-   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
-   * #executeBatchUpdate(Iterable)} method is called, we do not have one {@link ParsedStatement},
-   * and the method uses this statement instead in order to use the same logic as the other
-   * statements.
+   * <p>{@link ReadWriteTransaction} uses the generic methods {@link
+   * ReadWriteTransaction#executeStatementAsync(CallType, ParsedStatement, Callable,
+   * MethodDescriptor)}} and {@link ReadWriteTransaction#runWithRetry(Callable)} to allow statements
+   * to be cancelled, to timeout and to be retried. These methods require a {@link ParsedStatement}
+   * as input. When the {@link Connection#executeBatchUpdate(Iterable)} method is called, we do not
+   * have one {@link ParsedStatement}, and the method uses this statement instead in order to use
+   * the same logic as the other statements.
    */
   static final ParsedStatement RUN_BATCH_STATEMENT;
 
@@ -595,6 +599,7 @@ public abstract class AbstractStatementParser {
   static final char CLOSE_PARENTHESIS = ')';
   static final char COMMA = ',';
   static final char UNDERSCORE = '_';
+  static final char BACKSLASH = '\\';
 
   /**
    * Removes comments from and trims the given sql statement using the dialect of this parser.
@@ -631,21 +636,8 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  /**
-   * Converts all positional parameters (?) in the given sql string into named parameters. The
-   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
-   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
-   * parameters. The input SQL string may not contain any comments, except for PostgreSQL-dialect
-   * SQL strings.
-   *
-   * @param sql The sql string that should be converted
-   * @return A {@link ParametersInfo} object containing a string with named parameters instead of
-   *     positional parameters and the number of parameters.
-   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
-   */
-  @InternalApi
-  abstract ParametersInfo convertPositionalParametersToNamedParametersInternal(
-      char paramChar, String sql);
+  /** Returns the named parameter prefix that should be used for this dialect. */
+  abstract String getNamedParameterPrefix();
 
   /**
    * Converts all positional parameters (?) in the given sql string into named parameters. The
@@ -662,7 +654,22 @@ public abstract class AbstractStatementParser {
    */
   @InternalApi
   public ParametersInfo convertPositionalParametersToNamedParameters(char paramChar, String sql) {
-    return convertPositionalParametersToNamedParametersInternal(paramChar, sql);
+    Preconditions.checkNotNull(sql);
+    final String namedParamPrefix = getNamedParameterPrefix();
+    StringBuilder named = new StringBuilder(sql.length() + countOccurrencesOf(paramChar, sql));
+    int index = 0;
+    int paramIndex = 1;
+    while (index < sql.length()) {
+      char c = sql.charAt(index);
+      if (c == paramChar) {
+        named.append(namedParamPrefix).append(paramIndex);
+        paramIndex++;
+        index++;
+      } else {
+        index = skipCommentsAndLiterals(sql, index, named);
+      }
+    }
+    return new ParametersInfo(paramIndex - 1, named.toString());
   }
 
   /** Convenience method that is used to estimate the number of parameters in a SQL statement. */
@@ -706,6 +713,14 @@ public abstract class AbstractStatementParser {
 
   abstract boolean supportsTripleQuotedStrings();
 
+  /**
+   * Returns true if the dialect supports escaping a quote character within a literal with the same
+   * quote as the literal is using. That is: 'foo''bar' means "foo'bar".
+   */
+  abstract boolean supportsEscapeQuoteWithQuote();
+
+  abstract boolean supportsBackslashEscape();
+
   abstract boolean supportsHashSingleLineComments();
 
   /**
@@ -720,9 +735,11 @@ public abstract class AbstractStatementParser {
     return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
   }
 
-  int skip(String sql, int currentIndex, @Nullable StringBuilder result) {
+  int skipCommentsAndLiterals(String sql, int currentIndex, @Nullable StringBuilder result) {
+    if (currentIndex >= sql.length()) {
+      return currentIndex;
+    }
     char currentChar = sql.charAt(currentIndex);
-    char nextChar = sql.length() > (currentIndex + 1) ? sql.charAt(currentIndex + 1) : 0;
 
     if (currentChar == SINGLE_QUOTE
         || currentChar == DOUBLE_QUOTE
@@ -761,9 +778,18 @@ public abstract class AbstractStatementParser {
       String sql,
       int startIndex,
       char startQuote,
-      String dollarTag,
+      @Nullable String dollarTag,
       @Nullable StringBuilder result) {
-    int currentIndex = startIndex + 1;
+    boolean isTripleQuoted =
+        supportsTripleQuotedStrings()
+            && sql.length() > startIndex + 2
+            && sql.charAt(startIndex + 1) == startQuote
+            && sql.charAt(startIndex + 2) == startQuote;
+    int currentIndex = startIndex + (isTripleQuoted ? 3 : 1);
+    if (isTripleQuoted) {
+      appendIfNotNull(result, startQuote);
+      appendIfNotNull(result, startQuote);
+    }
     while (currentIndex < sql.length()) {
       char currentChar = sql.charAt(currentIndex);
       if (currentChar == startQuote) {
@@ -774,16 +800,39 @@ public abstract class AbstractStatementParser {
             appendIfNotNull(result, currentChar, dollarTag, currentChar);
             return currentIndex + tag.length() + 2;
           }
-        } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
+        } else if (supportsEscapeQuoteWithQuote()
+            && sql.length() > currentIndex + 1
+            && sql.charAt(currentIndex + 1) == startQuote) {
           // This is an escaped quote (e.g. 'foo''bar')
           appendIfNotNull(result, currentChar);
           appendIfNotNull(result, currentChar);
           currentIndex += 2;
           continue;
+        } else if (isTripleQuoted) {
+          // Check if this is the end of the triple-quoted string.
+          if (sql.length() > currentIndex + 2
+              && sql.charAt(currentIndex + 1) == startQuote
+              && sql.charAt(currentIndex + 2) == startQuote) {
+            appendIfNotNull(result, currentChar);
+            appendIfNotNull(result, currentChar);
+            appendIfNotNull(result, currentChar);
+            return currentIndex + 3;
+          }
         } else {
           appendIfNotNull(result, currentChar);
           return currentIndex + 1;
         }
+      } else if (supportsBackslashEscape()
+          && currentChar == BACKSLASH
+          && sql.length() > currentIndex + 1
+          && sql.charAt(currentIndex + 1) == startQuote) {
+        // This is an escaped quote (e.g. 'foo\'bar').
+        // Note that in raw strings, the \ officially does not start an escape sequence, but the
+        // result is still the same, as in a raw string 'both characters are preserved'.
+        appendIfNotNull(result, currentChar);
+        appendIfNotNull(result, sql.charAt(currentIndex + 1));
+        currentIndex += 2;
+        continue;
       }
       currentIndex++;
       appendIfNotNull(result, currentChar);

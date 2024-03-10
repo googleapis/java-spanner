@@ -118,7 +118,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
           index += 2;
           continue;
         } else {
-          index = skip(sql, index, res);
+          index = skipCommentsAndLiterals(sql, index, res);
           continue;
         }
       }
@@ -141,25 +141,9 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     return sql;
   }
 
-  @InternalApi
   @Override
-  ParametersInfo convertPositionalParametersToNamedParametersInternal(char paramChar, String sql) {
-    Preconditions.checkNotNull(sql);
-    final String namedParamPrefix = "$";
-    StringBuilder named = new StringBuilder(sql.length() + countOccurrencesOf(paramChar, sql));
-    int index = 0;
-    int paramIndex = 1;
-    while (index < sql.length()) {
-      char c = sql.charAt(index);
-      if (c == paramChar) {
-        named.append(namedParamPrefix).append(paramIndex);
-        paramIndex++;
-        index++;
-      } else {
-        index = skip(sql, index, named);
-      }
-    }
-    return new ParametersInfo(paramIndex - 1, named.toString());
+  String getNamedParameterPrefix() {
+    return "$";
   }
 
   /**
@@ -196,7 +180,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
         parameters.add(sql.substring(currentIndex, endIndex));
         currentIndex = endIndex;
       } else {
-        currentIndex = skip(sql, currentIndex, null);
+        currentIndex = skipCommentsAndLiterals(sql, currentIndex, null);
       }
     }
     return parameters;
@@ -219,6 +203,16 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
 
   @Override
   boolean supportsTripleQuotedStrings() {
+    return false;
+  }
+
+  @Override
+  boolean supportsEscapeQuoteWithQuote() {
+    return true;
+  }
+
+  @Override
+  boolean supportsBackslashEscape() {
     return false;
   }
 
@@ -286,7 +280,7 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       if (isReturning(sql, index)) {
         return true;
       } else {
-        index = skip(sql, index, null);
+        index = skipCommentsAndLiterals(sql, index, null);
       }
     }
     return false;

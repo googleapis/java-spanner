@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -211,68 +210,6 @@ public class SpannerStatementParser extends AbstractStatementParser {
     return sql;
   }
 
-  @InternalApi
-  @Override
-  ParametersInfo convertPositionalParametersToNamedParametersInternal(char paramChar, String sql) {
-    boolean isInQuoted = false;
-    char startQuote = 0;
-    boolean lastCharWasEscapeChar = false;
-    boolean isTripleQuoted = false;
-    int paramIndex = 1;
-    StringBuilder named = new StringBuilder(sql.length() + countOccurrencesOf(paramChar, sql));
-    for (int index = 0; index < sql.length(); index++) {
-      char c = sql.charAt(index);
-      if (isInQuoted) {
-        if ((c == '\n' || c == '\r') && !isTripleQuoted) {
-          throw SpannerExceptionFactory.newSpannerException(
-              ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-        } else if (c == startQuote) {
-          if (lastCharWasEscapeChar) {
-            lastCharWasEscapeChar = false;
-          } else if (isTripleQuoted) {
-            if (sql.length() > index + 2
-                && sql.charAt(index + 1) == startQuote
-                && sql.charAt(index + 2) == startQuote) {
-              isInQuoted = false;
-              startQuote = 0;
-              isTripleQuoted = false;
-            }
-          } else {
-            isInQuoted = false;
-            startQuote = 0;
-          }
-        } else if (c == '\\') {
-          lastCharWasEscapeChar = true;
-        } else {
-          lastCharWasEscapeChar = false;
-        }
-        named.append(c);
-      } else {
-        if (c == paramChar) {
-          named.append("@p" + paramIndex);
-          paramIndex++;
-        } else {
-          if (c == SINGLE_QUOTE || c == DOUBLE_QUOTE || c == BACKTICK_QUOTE) {
-            isInQuoted = true;
-            startQuote = c;
-            // check whether it is a triple-quote
-            if (sql.length() > index + 2
-                && sql.charAt(index + 1) == startQuote
-                && sql.charAt(index + 2) == startQuote) {
-              isTripleQuoted = true;
-            }
-          }
-          named.append(c);
-        }
-      }
-    }
-    if (isInQuoted) {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-    }
-    return new ParametersInfo(paramIndex - 1, named.toString());
-  }
-
   @Override
   boolean supportsNestedComments() {
     return false;
@@ -294,8 +231,23 @@ public class SpannerStatementParser extends AbstractStatementParser {
   }
 
   @Override
+  boolean supportsEscapeQuoteWithQuote() {
+    return false;
+  }
+
+  @Override
+  boolean supportsBackslashEscape() {
+    return true;
+  }
+
+  @Override
   boolean supportsHashSingleLineComments() {
     return true;
+  }
+
+  @Override
+  String getNamedParameterPrefix() {
+    return "@p";
   }
 
   private boolean isReturning(String sql, int index) {

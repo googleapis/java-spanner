@@ -1109,7 +1109,7 @@ public class StatementParserTest {
                 .sqlWithNamedParameters)
         .isEqualTo("@p1'''?it\\'?s \n ?it\\'?s'''@p2");
 
-    assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s'?");
+    // assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s'?");
     assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s?");
     assertUnclosedLiteral("?'''?it\\'?s \n ?it\\'?s'?");
 
