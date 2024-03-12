@@ -62,7 +62,7 @@ public class SetMaxCommitDelaySample {
             .set("MarketingBudget")
             .to("400000")
             .build()
-    ), Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    ), Options.maxCommitDelay(Duration.ofMillis(100)));
 
     System.out.println(
         "Updated data with timestamp + " + commitResponse.getCommitTimestamp() + ".");
