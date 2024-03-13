@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 
 @InternalApi
 public class PostgreSQLStatementParser extends AbstractStatementParser {
@@ -136,23 +135,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     return res.toString().trim();
   }
 
-  String parseDollarQuotedString(String sql, int index) {
-    // Look ahead to the next dollar sign (if any). Everything in between is the quote tag.
-    StringBuilder tag = new StringBuilder();
-    while (index < sql.length()) {
-      char c = sql.charAt(index);
-      if (c == DOLLAR) {
-        return tag.toString();
-      }
-      if (!isValidIdentifierChar(c)) {
-        break;
-      }
-      tag.append(c);
-      index++;
-    }
-    return null;
-  }
-
   /** PostgreSQL does not support statement hints. */
   @Override
   String removeStatementHint(String sql) {
@@ -218,135 +200,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
       }
     }
     return parameters;
-  }
-
-  private int skip(String sql, int currentIndex, @Nullable StringBuilder result) {
-    char currentChar = sql.charAt(currentIndex);
-    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
-      appendIfNotNull(result, currentChar);
-      return skipQuoted(sql, currentIndex, currentChar, result);
-    } else if (currentChar == DOLLAR) {
-      String dollarTag = parseDollarQuotedString(sql, currentIndex + 1);
-      if (dollarTag != null) {
-        appendIfNotNull(result, currentChar, dollarTag, currentChar);
-        return skipQuoted(
-            sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
-      }
-    } else if (currentChar == HYPHEN
-        && sql.length() > (currentIndex + 1)
-        && sql.charAt(currentIndex + 1) == HYPHEN) {
-      return skipSingleLineComment(sql, currentIndex, result);
-    } else if (currentChar == SLASH
-        && sql.length() > (currentIndex + 1)
-        && sql.charAt(currentIndex + 1) == ASTERISK) {
-      return skipMultiLineComment(sql, currentIndex, result);
-    }
-
-    appendIfNotNull(result, currentChar);
-    return currentIndex + 1;
-  }
-
-  static int skipSingleLineComment(String sql, int currentIndex, @Nullable StringBuilder result) {
-    int endIndex = sql.indexOf('\n', currentIndex + 2);
-    if (endIndex == -1) {
-      endIndex = sql.length();
-    } else {
-      // Include the newline character.
-      endIndex++;
-    }
-    appendIfNotNull(result, sql.substring(currentIndex, endIndex));
-    return endIndex;
-  }
-
-  static int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
-    // Current position is start + '/*'.length().
-    int pos = startIndex + 2;
-    // PostgreSQL allows comments to be nested. That is, the following is allowed:
-    // '/* test /* inner comment */ still a comment */'
-    int level = 1;
-    while (pos < sql.length()) {
-      if (sql.charAt(pos) == SLASH && sql.length() > (pos + 1) && sql.charAt(pos + 1) == ASTERISK) {
-        level++;
-      }
-      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
-        level--;
-        if (level == 0) {
-          pos += 2;
-          appendIfNotNull(result, sql.substring(startIndex, pos));
-          return pos;
-        }
-      }
-      pos++;
-    }
-    appendIfNotNull(result, sql.substring(startIndex));
-    return sql.length();
-  }
-
-  private int skipQuoted(
-      String sql, int startIndex, char startQuote, @Nullable StringBuilder result) {
-    return skipQuoted(sql, startIndex, startQuote, null, result);
-  }
-
-  private int skipQuoted(
-      String sql,
-      int startIndex,
-      char startQuote,
-      String dollarTag,
-      @Nullable StringBuilder result) {
-    int currentIndex = startIndex + 1;
-    while (currentIndex < sql.length()) {
-      char currentChar = sql.charAt(currentIndex);
-      if (currentChar == startQuote) {
-        if (currentChar == DOLLAR) {
-          // Check if this is the end of the current dollar quoted string.
-          String tag = parseDollarQuotedString(sql, currentIndex + 1);
-          if (tag != null && tag.equals(dollarTag)) {
-            appendIfNotNull(result, currentChar, dollarTag, currentChar);
-            return currentIndex + tag.length() + 2;
-          }
-        } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
-          // This is an escaped quote (e.g. 'foo''bar')
-          appendIfNotNull(result, currentChar);
-          appendIfNotNull(result, currentChar);
-          currentIndex += 2;
-          continue;
-        } else {
-          appendIfNotNull(result, currentChar);
-          return currentIndex + 1;
-        }
-      }
-      currentIndex++;
-      appendIfNotNull(result, currentChar);
-    }
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
-  }
-
-  private void appendIfNotNull(@Nullable StringBuilder result, char currentChar) {
-    if (result != null) {
-      result.append(currentChar);
-    }
-  }
-
-  private static void appendIfNotNull(@Nullable StringBuilder result, String suffix) {
-    if (result != null) {
-      result.append(suffix);
-    }
-  }
-
-  private void appendIfNotNull(
-      @Nullable StringBuilder result, char prefix, String tag, char suffix) {
-    if (result != null) {
-      result.append(prefix).append(tag).append(suffix);
-    }
-  }
-
-  private boolean isValidIdentifierFirstChar(char c) {
-    return Character.isLetter(c) || c == UNDERSCORE;
-  }
-
-  private boolean isValidIdentifierChar(char c) {
-    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
   }
 
   private boolean checkCharPrecedingReturning(char ch) {

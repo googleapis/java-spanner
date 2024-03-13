@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Internal class for the Spanner Connection API.
@@ -695,5 +696,170 @@ public abstract class AbstractStatementParser {
   @InternalApi
   public boolean checkReturningClause(String sql) {
     return checkReturningClauseInternal(sql);
+  }
+
+  /**
+   * Returns true for characters that can be used as the first character in unquoted identifiers.
+   */
+  boolean isValidIdentifierFirstChar(char c) {
+    return Character.isLetter(c) || c == UNDERSCORE;
+  }
+
+  /** Returns true for characters that can be used in unquoted identifiers. */
+  boolean isValidIdentifierChar(char c) {
+    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
+  }
+
+  /** Reads a dollar-quoted string literal from position index in the given sql string. */
+  String parseDollarQuotedString(String sql, int index) {
+    // Look ahead to the next dollar sign (if any). Everything in between is the quote tag.
+    StringBuilder tag = new StringBuilder();
+    while (index < sql.length()) {
+      char c = sql.charAt(index);
+      if (c == DOLLAR) {
+        return tag.toString();
+      }
+      if (!isValidIdentifierChar(c)) {
+        break;
+      }
+      tag.append(c);
+      index++;
+    }
+    return null;
+  }
+
+  /**
+   * Skips the next character, literal, identifier, or comment in the given sql string from the
+   * given index. The skipped characters are added to result if it is not null.
+   */
+  int skip(String sql, int currentIndex, @Nullable StringBuilder result) {
+    char currentChar = sql.charAt(currentIndex);
+    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+      appendIfNotNull(result, currentChar);
+      return skipQuoted(sql, currentIndex, currentChar, result);
+    } else if (currentChar == DOLLAR) {
+      String dollarTag = parseDollarQuotedString(sql, currentIndex + 1);
+      if (dollarTag != null) {
+        appendIfNotNull(result, currentChar, dollarTag, currentChar);
+        return skipQuoted(
+            sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
+      }
+    } else if (currentChar == HYPHEN
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == HYPHEN) {
+      return skipSingleLineComment(sql, currentIndex, result);
+    } else if (currentChar == SLASH
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == ASTERISK) {
+      return skipMultiLineComment(sql, currentIndex, result);
+    }
+
+    appendIfNotNull(result, currentChar);
+    return currentIndex + 1;
+  }
+
+  /** Skips a single-line comment from startIndex and adds it to result if result is not null. */
+  static int skipSingleLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    int endIndex = sql.indexOf('\n', startIndex + 2);
+    if (endIndex == -1) {
+      endIndex = sql.length();
+    } else {
+      // Include the newline character.
+      endIndex++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex, endIndex));
+    return endIndex;
+  }
+
+  /** Skips a multi-line comment from startIndex and adds it to result if result is not null. */
+  static int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    // Current position is start + '/*'.length().
+    int pos = startIndex + 2;
+    // PostgreSQL allows comments to be nested. That is, the following is allowed:
+    // '/* test /* inner comment */ still a comment */'
+    int level = 1;
+    while (pos < sql.length()) {
+      if (sql.charAt(pos) == SLASH && sql.length() > (pos + 1) && sql.charAt(pos + 1) == ASTERISK) {
+        level++;
+      }
+      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
+        level--;
+        if (level == 0) {
+          pos += 2;
+          appendIfNotNull(result, sql.substring(startIndex, pos));
+          return pos;
+        }
+      }
+      pos++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex));
+    return sql.length();
+  }
+
+  /** Skips a quoted string from startIndex. */
+  private int skipQuoted(
+      String sql, int startIndex, char startQuote, @Nullable StringBuilder result) {
+    return skipQuoted(sql, startIndex, startQuote, null, result);
+  }
+
+  /**
+   * Skips a quoted string from startIndex. The quote character is assumed to be $ if dollarTag is
+   * not null.
+   */
+  private int skipQuoted(
+      String sql,
+      int startIndex,
+      char startQuote,
+      String dollarTag,
+      @Nullable StringBuilder result) {
+    int currentIndex = startIndex + 1;
+    while (currentIndex < sql.length()) {
+      char currentChar = sql.charAt(currentIndex);
+      if (currentChar == startQuote) {
+        if (currentChar == DOLLAR) {
+          // Check if this is the end of the current dollar quoted string.
+          String tag = parseDollarQuotedString(sql, currentIndex + 1);
+          if (tag != null && tag.equals(dollarTag)) {
+            appendIfNotNull(result, currentChar, dollarTag, currentChar);
+            return currentIndex + tag.length() + 2;
+          }
+        } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
+          // This is an escaped quote (e.g. 'foo''bar')
+          appendIfNotNull(result, currentChar);
+          appendIfNotNull(result, currentChar);
+          currentIndex += 2;
+          continue;
+        } else {
+          appendIfNotNull(result, currentChar);
+          return currentIndex + 1;
+        }
+      }
+      currentIndex++;
+      appendIfNotNull(result, currentChar);
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
+  }
+
+  /** Appends the given character to result if result is not null. */
+  private void appendIfNotNull(@Nullable StringBuilder result, char currentChar) {
+    if (result != null) {
+      result.append(currentChar);
+    }
+  }
+
+  /** Appends the given suffix to result if result is not null. */
+  private static void appendIfNotNull(@Nullable StringBuilder result, String suffix) {
+    if (result != null) {
+      result.append(suffix);
+    }
+  }
+
+  /** Appends the given prefix, tag, and suffix to result if result is not null. */
+  private static void appendIfNotNull(
+      @Nullable StringBuilder result, char prefix, String tag, char suffix) {
+    if (result != null) {
+      result.append(prefix).append(tag).append(suffix);
+    }
   }
 }
