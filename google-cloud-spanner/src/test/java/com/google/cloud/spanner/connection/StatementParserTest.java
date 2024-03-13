@@ -1600,11 +1600,11 @@ public class StatementParserTest {
   }
 
   int skipSingleLineComment(String sql, int startIndex) {
-    return PostgreSQLStatementParser.skipSingleLineComment(sql, startIndex, null);
+    return AbstractStatementParser.skipSingleLineComment(sql, startIndex, null);
   }
 
   int skipMultiLineComment(String sql, int startIndex) {
-    return PostgreSQLStatementParser.skipMultiLineComment(sql, startIndex, null);
+    return parser.skipMultiLineComment(sql, startIndex, null);
   }
 
   @Test
