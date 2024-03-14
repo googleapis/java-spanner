@@ -634,36 +634,33 @@ public abstract class AbstractStatementParser {
 
   /**
    * Converts all positional parameters (?) in the given sql string into named parameters. The
-   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
-   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
-   * parameters. The input SQL string may not contain any comments, except for PostgreSQL-dialect
-   * SQL strings.
+   * parameters are named @p1, @p2, etc. for GoogleSQL, and $1, $2, etc. for PostgreSQL. This method
+   * is used when converting a JDBC statement that uses positional parameters to a Cloud Spanner
+   * {@link Statement} instance that requires named parameters.
    *
-   * @param sql The sql string that should be converted
-   * @return A {@link ParametersInfo} object containing a string with named parameters instead of
-   *     positional parameters and the number of parameters.
-   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
-   */
-  @InternalApi
-  abstract ParametersInfo convertPositionalParametersToNamedParametersInternal(
-      char paramChar, String sql);
-
-  /**
-   * Converts all positional parameters (?) in the given sql string into named parameters. The
-   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
-   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
-   * parameters. The input SQL string may not contain any comments. There is an exception case if
-   * the statement starts with a GSQL comment which forces it to be interpreted as a GoogleSql
-   * statement.
-   *
-   * @param sql The sql string without comments that should be converted
+   * @param sql The sql string that should be converted to use named parameters
    * @return A {@link ParametersInfo} object containing a string with named parameters instead of
    *     positional parameters and the number of parameters.
    * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
    */
   @InternalApi
   public ParametersInfo convertPositionalParametersToNamedParameters(char paramChar, String sql) {
-    return convertPositionalParametersToNamedParametersInternal(paramChar, sql);
+    Preconditions.checkNotNull(sql);
+    final String namedParamPrefix = getQueryParameterPrefix();
+    StringBuilder named = new StringBuilder(sql.length() + countOccurrencesOf(paramChar, sql));
+    int index = 0;
+    int paramIndex = 1;
+    while (index < sql.length()) {
+      char c = sql.charAt(index);
+      if (c == paramChar) {
+        named.append(namedParamPrefix).append(paramIndex);
+        paramIndex++;
+        index++;
+      } else {
+        index = skip(sql, index, named);
+      }
+    }
+    return new ParametersInfo(paramIndex - 1, named.toString());
   }
 
   /** Convenience method that is used to estimate the number of parameters in a SQL statement. */
@@ -754,6 +751,9 @@ public abstract class AbstractStatementParser {
    * support line-feeds.
    */
   abstract boolean supportsLineFeedInQuotedString();
+
+  /** Returns the query parameter prefix that should be used for this dialect. */
+  abstract String getQueryParameterPrefix();
 
   /**
    * Returns true for characters that can be used as the first character in unquoted identifiers.
