@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@
 package com.example.spanner;
 
 //[START spanner_create_instance]
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.cloud.spanner.Instance;
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfigId;
-import com.google.cloud.spanner.InstanceId;
-import com.google.cloud.spanner.InstanceInfo;
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.spanner.admin.instance.v1.Instance;
+import com.google.spanner.admin.instance.v1.InstanceConfigName;
+import com.google.spanner.admin.instance.v1.ProjectName;
 import java.util.concurrent.ExecutionException;
 
 class CreateInstanceExample {
@@ -38,35 +37,40 @@ class CreateInstanceExample {
   }
 
   static void createInstance(String projectId, String instanceId) {
-    Spanner spanner = SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
-    InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-
     // Set Instance configuration.
-    String configId = "regional-us-central1";
     int nodeCount = 2;
     String displayName = "Descriptive name";
 
-    // Create an InstanceInfo object that will be used to create the instance.
-    InstanceInfo instanceInfo =
-        InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-            .setInstanceConfigId(InstanceConfigId.of(projectId, configId))
-            .setNodeCount(nodeCount)
+    // Create an Instance object that will be used to create the instance.
+    Instance instance =
+        Instance.newBuilder()
             .setDisplayName(displayName)
+            .setNodeCount(nodeCount)
+            .setConfig(
+                InstanceConfigName.of(projectId, "regional-us-central1").toString())
             .build();
-    OperationFuture<Instance, CreateInstanceMetadata> operation =
-        instanceAdminClient.createInstance(instanceInfo);
-    try {
+    
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
+
       // Wait for the createInstance operation to finish.
-      Instance instance = operation.get();
-      System.out.printf("Instance %s was successfully created%n", instance.getId());
+      Instance createdInstance = instanceAdminClient.createInstanceAsync(
+          CreateInstanceRequest.newBuilder()
+              .setParent(ProjectName.of(projectId).toString())
+              .setInstanceId(instanceId)
+              .setInstance(instance)
+              .build()).get();
+      System.out.printf("Instance %s was successfully created%n", createdInstance.getName());
     } catch (ExecutionException e) {
       System.out.printf(
           "Error: Creating instance %s failed with error message %s%n",
-          instanceInfo.getId(), e.getMessage());
+          instance.getName(), e.getMessage());
     } catch (InterruptedException e) {
       System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
-    } finally {
-      spanner.close();
     }
   }
 }

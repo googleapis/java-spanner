@@ -18,22 +18,24 @@ package com.example.spanner;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
+import com.google.common.collect.Lists;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.InstanceName;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class DropForeignKeyConstraintDeleteCascadeSampleIT extends SampleTestBase {
+public class DropForeignKeyConstraintDeleteCascadeSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testDropForeignKeyConstraintDeleteCascade() throws Exception {
 
     // Creates database
     final String databaseId = idGenerator.generateDatabaseId();
-    databaseAdminClient
-        .createDatabase(
-            instanceId,
-            databaseId,
-            Arrays.asList(
+    final CreateDatabaseRequest request =
+        CreateDatabaseRequest.newBuilder()
+            .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
+            .setParent(InstanceName.of(projectId, instanceId).toString())
+            .addAllExtraStatements(Lists.newArrayList(
                 "CREATE TABLE Customers (\n"
                     + "              CustomerId INT64 NOT NULL,\n"
                     + "              CustomerName STRING(62) NOT NULL,\n"
@@ -45,15 +47,15 @@ public class DropForeignKeyConstraintDeleteCascadeSampleIT extends SampleTestBas
                     + "              CONSTRAINT FKShoppingCartsCustomerName"
                     + " FOREIGN KEY (CustomerName)\n"
                     + "              REFERENCES Customers (CustomerName) ON DELETE CASCADE\n"
-                    + "              ) PRIMARY KEY (CartId)\n"))
-        .get(5, TimeUnit.MINUTES);
+                    + "              ) PRIMARY KEY (CartId)\n")).build();
+    databaseAdminClient.createDatabaseAsync(request).get(5, TimeUnit.MINUTES);
 
     // Runs sample
     final String out =
         SampleRunner.runSample(
             () ->
                 DropForeignKeyConstraintDeleteCascadeSample.deleteForeignKeyDeleteCascadeConstraint(
-                    databaseAdminClient, instanceId, databaseId));
+                    projectId, instanceId, databaseId));
 
     assertTrue(
         "Expected to have dropped foreign-key constraints from tables in created database "

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,32 +18,34 @@ package com.example.spanner;
 
 //[START spanner_list_instance_configs]
 
-import com.google.cloud.spanner.InstanceAdminClient;
-import com.google.cloud.spanner.InstanceConfig;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
+import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.ProjectName;
 
 public class ListInstanceConfigsSample {
 
   static void listInstanceConfigs() {
     // TODO(developer): Replace these variables before running the sample.
-    final String projectId = "my-project";
+    String projectId = "my-project";
     listInstanceConfigs(projectId);
   }
 
   static void listInstanceConfigs(String projectId) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
-      final InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
-
-      for (InstanceConfig instanceConfig : instanceAdminClient.listInstanceConfigs().iterateAll()) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(projectId)
+            .build()
+            .getService();
+        InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
+      final ProjectName projectName = ProjectName.of(projectId);
+      for (InstanceConfig instanceConfig :
+          instanceAdminClient.listInstanceConfigs(projectName).iterateAll()) {
         System.out.printf(
             "Available leader options for instance config %s: %s%n",
-            instanceConfig.getId(),
-            instanceConfig.getLeaderOptions()
+            instanceConfig.getName(),
+            instanceConfig.getLeaderOptionsList()
         );
       }
     }

@@ -104,9 +104,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
   }
 
   private static class TestCaseRunner {
-    private AbstractResultSet.GrpcResultSet resultSet;
+    private GrpcResultSet resultSet;
     private SpannerRpc.ResultStreamConsumer consumer;
-    private AbstractResultSet.GrpcStreamIterator stream;
+    private GrpcStreamIterator stream;
     private JSONObject testCase;
 
     TestCaseRunner(JSONObject testCase) {
@@ -114,7 +114,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
     }
 
     private void run() throws Exception {
-      stream = new AbstractResultSet.GrpcStreamIterator(10);
+      stream = new GrpcStreamIterator(10);
       stream.setCall(
           new SpannerRpc.StreamingCall() {
             @Override
@@ -130,7 +130,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
           },
           false);
       consumer = stream.consumer();
-      resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+      resultSet = new GrpcResultSet(stream, new NoOpListener());
 
       JSONArray chunks = testCase.getJSONArray("chunks");
       JSONObject expectedResult = testCase.getJSONObject("result");
@@ -143,8 +143,7 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
       assertResultSet(resultSet, expectedResult.getJSONArray("value"));
     }
 
-    private void assertResultSet(AbstractResultSet.GrpcResultSet actual, JSONArray expected)
-        throws Exception {
+    private void assertResultSet(GrpcResultSet actual, JSONArray expected) throws Exception {
       int i = 0;
       while (actual.next()) {
         Struct actualRow = actual.getCurrentRowAsStruct();
@@ -170,6 +169,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
             break;
           case INT64:
             assertThat(actualRow.getLong(i)).isEqualTo(expectedRow.getLong(i));
+            break;
+          case FLOAT32:
+            assertThat(actualRow.getFloat(i)).isEqualTo(expectedRow.getFloat(i));
             break;
           case FLOAT64:
             assertThat(actualRow.getDouble(i)).isEqualTo(expectedRow.getDouble(i));
@@ -208,6 +210,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
           break;
         case INT64:
           rawList = actualRow.getLongList(index);
+          break;
+        case FLOAT32:
+          rawList = actualRow.getFloatList(index);
           break;
         case FLOAT64:
           rawList = actualRow.getDoubleList(index);

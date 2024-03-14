@@ -19,16 +19,20 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * {@link ResultSet} implementation used by the Spanner connection API to ensure that the query for
@@ -37,7 +41,7 @@ import java.util.List;
  * to the actual query execution. It also ensures that any invalid query will throw an exception at
  * execution instead of the first next() call by a client.
  */
-class DirectExecuteResultSet implements ResultSet {
+class DirectExecuteResultSet implements ProtobufResultSet {
   private static final String MISSING_NEXT_CALL = "Must be preceded by a next() call";
   private final ResultSet delegate;
   private boolean nextCalledByClient = false;
@@ -74,6 +78,21 @@ class DirectExecuteResultSet implements ResultSet {
     nextCalledByClient = true;
     nextHasReturnedFalse = !initialNextResult;
     return initialNextResult;
+  }
+
+  @Override
+  public boolean canGetProtobufValue(int columnIndex) {
+    return nextCalledByClient
+        && delegate instanceof ProtobufResultSet
+        && ((ProtobufResultSet) delegate).canGetProtobufValue(columnIndex);
+  }
+
+  @Override
+  public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    Preconditions.checkState(
+        delegate instanceof ProtobufResultSet, "The result set does not support protobuf values");
+    return ((ProtobufResultSet) delegate).getProtobufValue(columnIndex);
   }
 
   @Override
@@ -162,6 +181,12 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public float getFloat(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloat(columnIndex);
+  }
+
+  @Override
   public double getDouble(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDouble(columnIndex);
@@ -177,6 +202,12 @@ class DirectExecuteResultSet implements ResultSet {
   public BigDecimal getBigDecimal(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getBigDecimal(columnIndex);
+  }
+
+  @Override
+  public float getFloat(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloat(columnName);
   }
 
   @Override
@@ -330,6 +361,30 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public float[] getFloatArray(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatArray(columnIndex);
+  }
+
+  @Override
+  public float[] getFloatArray(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatArray(columnName);
+  }
+
+  @Override
+  public List<Float> getFloatList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatList(columnIndex);
+  }
+
+  @Override
+  public List<Float> getFloatList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatList(columnName);
+  }
+
+  @Override
   public double[] getDoubleArray(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDoubleArray(columnIndex);
@@ -462,6 +517,32 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessageList(columnIndex, message);
+  }
+
+  @Override
+  public <T extends AbstractMessage> List<T> getProtoMessageList(String columnName, T message) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessageList(columnName, message);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnumList(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumList(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnumList(columnName, method);
+  }
+
+  @Override
   public List<Struct> getStructList(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getStructList(columnIndex);
@@ -471,6 +552,32 @@ class DirectExecuteResultSet implements ResultSet {
   public List<Struct> getStructList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getStructList(columnName);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnum(columnIndex, method);
+  }
+
+  @Override
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      String columnName, Function<Integer, ProtocolMessageEnum> method) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoEnum(columnName, method);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(int columnIndex, T message) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessage(columnIndex, message);
+  }
+
+  @Override
+  public <T extends AbstractMessage> T getProtoMessage(String columnName, T message) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getProtoMessage(columnName, message);
   }
 
   @Override

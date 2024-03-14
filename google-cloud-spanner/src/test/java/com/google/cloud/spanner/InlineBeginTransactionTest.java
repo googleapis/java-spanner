@@ -37,6 +37,7 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
+import com.google.cloud.spanner.connection.RandomResultSetGenerator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;

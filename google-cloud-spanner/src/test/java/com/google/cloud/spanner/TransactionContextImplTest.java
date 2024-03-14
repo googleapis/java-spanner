@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,6 +50,9 @@ public class TransactionContextImplTest {
 
   @Mock private SessionImpl session;
 
+  @Mock private ISpan span;
+  @Mock private TraceWrapper tracer;
+
   @SuppressWarnings("unchecked")
   @Before
   public void setup() {
@@ -60,12 +64,18 @@ public class TransactionContextImplTest {
                     .setCommitTimestamp(Timestamp.newBuilder().setSeconds(99L).setNanos(10).build())
                     .build()));
     when(session.getName()).thenReturn("test");
+    doNothing().when(span).setStatus(any(Throwable.class));
+    doNothing().when(span).end();
+    doNothing().when(span).addAnnotation("Starting Commit");
+    when(tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span)).thenReturn(span);
   }
 
   private TransactionContextImpl createContext() {
     return TransactionContextImpl.newBuilder()
         .setSession(session)
         .setRpc(rpc)
+        .setSpan(span)
+        .setTracer(tracer)
         .setTransactionId(ByteString.copyFromUtf8("test"))
         .setOptions(Options.fromTransactionOptions())
         .build();
@@ -165,6 +175,8 @@ public class TransactionContextImplTest {
         TransactionContextImpl.newBuilder()
             .setSession(session)
             .setRpc(rpc)
+            .setSpan(span)
+            .setTracer(tracer)
             .setTransactionId(transactionId)
             .setOptions(Options.fromTransactionOptions(Options.commitStats()))
             .build()) {

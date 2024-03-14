@@ -25,15 +25,20 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -54,6 +59,7 @@ public class DirectExecuteResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",
@@ -74,6 +80,7 @@ public class DirectExecuteResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",
@@ -96,6 +103,7 @@ public class DirectExecuteResultSetTest {
       throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
     List<String> excludedMethods =
         Arrays.asList(
+            "canGetProtobufValue",
             "getStats",
             "getMetadata",
             "next",
@@ -123,7 +131,7 @@ public class DirectExecuteResultSetTest {
         boolean exception = false;
         int numberOfParameters = method.getParameterTypes().length;
         Class<?> firstParameterType = null;
-        if (numberOfParameters == 1) {
+        if (numberOfParameters >= 1) {
           firstParameterType = method.getParameterTypes()[0];
         }
         try {
@@ -140,8 +148,32 @@ public class DirectExecuteResultSetTest {
                 fail("unknown parameter type");
               }
               break;
+            case 2:
+              Class<?> secondParameterType = method.getParameterTypes()[1];
+              Object firstArgument = null, secondArgument = null;
+
+              if (firstParameterType == String.class) {
+                firstArgument = "test";
+              } else if (firstParameterType == int.class) {
+                firstArgument = 0;
+              }
+
+              if (secondParameterType == Function.class) {
+                Function<Long, ProtocolMessageEnum> lambdaFunction =
+                    (val) -> Genre.forNumber(val.intValue());
+                secondArgument = lambdaFunction;
+              } else if (secondParameterType == AbstractMessage.class) {
+                secondArgument = SingerInfo.getDefaultInstance();
+              }
+
+              if (firstArgument != null && secondArgument != null) {
+                method.invoke(subject, firstArgument, secondArgument);
+              } else {
+                fail("unknown parameter type");
+              }
+              break;
             default:
-              fail("method with more than 1 parameter is unknown");
+              fail("method with more than 2 parameters is unknown");
           }
         } catch (InvocationTargetException e) {
           if (e.getCause().getClass().equals(expectedException)) {
@@ -273,6 +305,25 @@ public class DirectExecuteResultSetTest {
     verify(delegate).getPgOidList(2);
     subject.getPgOidList("test2");
     verify(delegate).getPgOidList("test2");
+
+    subject.getProtoMessage(0, SingerInfo.getDefaultInstance());
+    verify(delegate).getProtoMessage(0, SingerInfo.getDefaultInstance());
+    subject.getProtoMessage("test0", SingerInfo.getDefaultInstance());
+    verify(delegate).getProtoMessage("test0", SingerInfo.getDefaultInstance());
+    subject.getProtoMessageList(0, SingerInfo.getDefaultInstance());
+    verify(delegate).getProtoMessageList(0, SingerInfo.getDefaultInstance());
+    subject.getProtoMessageList("test0", SingerInfo.getDefaultInstance());
+    verify(delegate).getProtoMessageList("test0", SingerInfo.getDefaultInstance());
+
+    Function<Integer, ProtocolMessageEnum> lambdaFunction = Genre::forNumber;
+    subject.getProtoEnum(0, lambdaFunction);
+    verify(delegate).getProtoEnum(0, lambdaFunction);
+    subject.getProtoEnum("test0", lambdaFunction);
+    verify(delegate).getProtoEnum("test0", lambdaFunction);
+    subject.getProtoEnumList(0, lambdaFunction);
+    verify(delegate).getProtoEnumList(0, lambdaFunction);
+    subject.getProtoEnumList("test0", lambdaFunction);
+    verify(delegate).getProtoEnumList("test0", lambdaFunction);
 
     subject.getStructList(0);
     subject.getStructList("test0");
