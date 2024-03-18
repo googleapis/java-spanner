@@ -185,7 +185,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
             .addValues(Value.newBuilder().setStringValue(DATE_VALUE.toString()))
             .addValues(Value.newBuilder().setStringValue(TIMESTAMP_VALUE.toString()));
     if (dialect == Dialect.POSTGRESQL) {
-      row1Builder.addValues(Value.newBuilder().setStringValue(String.valueOf(PG_OID_VALUE)).build());
+      row1Builder.addValues(
+          Value.newBuilder().setStringValue(String.valueOf(PG_OID_VALUE)).build());
     }
 
     row1Builder
@@ -274,9 +275,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                                                 ? Value.newBuilder()
                                                     .setNullValue(NullValue.NULL_VALUE)
                                                     .build()
-                                                : Value.newBuilder()
-                                                    .setStringValue(string)
-                                                    .build())
+                                                : Value.newBuilder().setStringValue(string).build())
                                     .collect(Collectors.toList())
                                 : NUMERIC_ARRAY_VALUE.stream()
                                     .map(
@@ -336,8 +335,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                                             : Value.newBuilder()
                                                 .setStringValue(
                                                     Base64.getEncoder()
-                                                        .encodeToString(
-                                                            byteArray.toByteArray()))
+                                                        .encodeToString(byteArray.toByteArray()))
                                                 .build())
                                 .collect(Collectors.toList()))
                         .build()))
@@ -445,24 +443,23 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
 
     if (dialect == Dialect.POSTGRESQL) {
       // Add ARRAY<PG.OID> values.
-      row1Builder
-          .addValues(
-              Value.newBuilder()
-                  .setListValue(
-                      ListValue.newBuilder()
-                          .addAllValues(
-                              PG_OID_ARRAY_VALUE.stream()
-                                  .map(
-                                      l ->
-                                          l == null
-                                              ? Value.newBuilder()
+      row1Builder.addValues(
+          Value.newBuilder()
+              .setListValue(
+                  ListValue.newBuilder()
+                      .addAllValues(
+                          PG_OID_ARRAY_VALUE.stream()
+                              .map(
+                                  l ->
+                                      l == null
+                                          ? Value.newBuilder()
                                               .setNullValue(NullValue.NULL_VALUE)
                                               .build()
-                                              : Value.newBuilder()
+                                          : Value.newBuilder()
                                               .setStringValue(String.valueOf(l))
                                               .build())
-                                  .collect(Collectors.toList()))
-                          .build()));
+                              .collect(Collectors.toList()))
+                      .build()));
     }
 
     com.google.spanner.v1.ResultSet resultSet =
@@ -514,9 +511,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .bind("p" + ++param)
         .to(TIMESTAMP_VALUE);
     if (dialect == Dialect.POSTGRESQL) {
-      builder
-          .bind("p" + ++param)
-          .to(PG_OID_VALUE);
+      builder.bind("p" + ++param).to(PG_OID_VALUE);
     }
     builder
         .bind("p" + ++param)
@@ -546,9 +541,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .bind("p" + ++param)
         .toTimestampArray(TIMESTAMP_ARRAY_VALUE);
     if (dialect == Dialect.POSTGRESQL) {
-      builder
-          .bind("p" + ++param)
-          .toInt64Array(PG_OID_ARRAY_VALUE);
+      builder.bind("p" + ++param).toInt64Array(PG_OID_ARRAY_VALUE);
     }
     return builder.build();
   }
@@ -627,7 +620,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
       // Verify param types.
       ImmutableList<TypeCode> expectedTypes;
       if (dialect == Dialect.POSTGRESQL) {
-        expectedTypes = ImmutableList.of(
+        expectedTypes =
+            ImmutableList.of(
                 TypeCode.BOOL,
                 TypeCode.INT64,
                 TypeCode.FLOAT32,
@@ -640,7 +634,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                 TypeCode.TIMESTAMP,
                 TypeCode.INT64);
       } else {
-        expectedTypes = ImmutableList.of(
+        expectedTypes =
+            ImmutableList.of(
                 TypeCode.BOOL,
                 TypeCode.INT64,
                 TypeCode.FLOAT32,
@@ -747,10 +742,10 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
               .collect(Collectors.toList()));
       if (dialect == Dialect.POSTGRESQL) {
         assertEquals(
-                PG_OID_ARRAY_VALUE,
-                params.get("p" + ++col).getListValue().getValuesList().stream()
-                        .map(value -> value.hasNullValue() ? null : Long.valueOf(value.getStringValue()))
-                        .collect(Collectors.toList()));
+            PG_OID_ARRAY_VALUE,
+            params.get("p" + ++col).getListValue().getValuesList().stream()
+                .map(value -> value.hasNullValue() ? null : Long.valueOf(value.getStringValue()))
+                .collect(Collectors.toList()));
       }
     }
   }

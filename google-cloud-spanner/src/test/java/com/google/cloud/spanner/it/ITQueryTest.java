@@ -288,7 +288,10 @@ public class ITQueryTest {
   @Test
   public void bindPgOid() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(1234)), Type.pgOid());
+      Struct row =
+          execute(
+              Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(1234)),
+              Type.pgOid());
       assertThat(row.isNull(0)).isFalse();
       assertThat(row.getPgOid(0)).isEqualTo(1234);
     }
@@ -297,7 +300,10 @@ public class ITQueryTest {
   @Test
   public void bindPgOidNull() {
     if (dialect.dialect == Dialect.POSTGRESQL) {
-      Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(null)), Type.pgOid());
+      Struct row =
+          execute(
+              Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(null)),
+              Type.pgOid());
       assertThat(row.isNull(0)).isTrue();
     }
   }
