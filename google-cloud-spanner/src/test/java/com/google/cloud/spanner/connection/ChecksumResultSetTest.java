@@ -162,8 +162,7 @@ public class ChecksumResultSetTest {
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
             Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
-            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())));
-            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())),
             Type.StructField.of(
                 "protoMessageArray",
                 Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),

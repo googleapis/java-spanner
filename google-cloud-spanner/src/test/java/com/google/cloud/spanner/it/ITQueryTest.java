@@ -287,19 +287,19 @@ public class ITQueryTest {
 
   @Test
   public void bindPgOid() {
-    Struct row =
-        execute(
-            Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(1234)), Type.pgOid());
-    assertThat(row.isNull(0)).isFalse();
-    assertThat(row.getPgOid(0)).isEqualTo(1234);
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(1234)), Type.pgOid());
+      assertThat(row.isNull(0)).isFalse();
+      assertThat(row.getPgOid(0)).isEqualTo(1234);
+    }
   }
 
   @Test
   public void bindPgOidNull() {
-    Struct row =
-        execute(
-            Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(null)), Type.pgOid());
-    assertThat(row.isNull(0)).isTrue();
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(null)), Type.pgOid());
+      assertThat(row.isNull(0)).isTrue();
+    }
   }
 
   @Test

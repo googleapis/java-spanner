@@ -73,6 +73,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
   public static final String PG_NUMERIC_VALUE = "3.14";
   public static final String STRING_VALUE = "test-string";
   public static final String JSON_VALUE = "{\"key1\":\"value1\", \"key2\":\"value2\"}";
+  public static final long PG_OID_VALUE = 1L;
   public static final byte[] BYTES_VALUE = "test-bytes".getBytes(StandardCharsets.UTF_8);
   public static final Date DATE_VALUE = Date.fromYearMonthDay(2024, 3, 2);
   public static final Timestamp TIMESTAMP_VALUE =
@@ -112,6 +113,8 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           "{\"key1\":\"value1.1\", \"key2\":\"value1.2\"}",
           null,
           "{\"key1\":\"value3.1\", \"key2\":\"value3.2\"}");
+  public static final List<Long> PG_OID_ARRAY_VALUE =
+      Arrays.asList(100L, null, 200L, Long.MIN_VALUE, Long.MAX_VALUE);
   public static final List<ByteArray> BYTES_ARRAY_VALUE =
       Arrays.asList(ByteArray.copyFrom("test-bytes1"), null, ByteArray.copyFrom("test-bytes2"));
   public static final List<Date> DATE_ARRAY_VALUE =
@@ -155,12 +158,14 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
     // COL8: BYTES
     // COL9: DATE
     // COL10: TIMESTAMP
-    // COL11-20: ARRAY<..> for the types above.
+    // COL11: PG_OID (added only for POSTGRESQL dialect)
+    // COL12-21: ARRAY<..> for the types above.
     // Only for GoogleSQL:
-    // COL21: PROTO
-    // COL22: ENUM
-    // COL23: ARRAY<PROTO>
-    // COL24: ARRAY<ENUM>
+    // COL22: PROTO
+    // COL23: ENUM
+    // COL24: ARRAY<PROTO>
+    // COL25: ARRAY<ENUM>
+    // COL26: ARRAY<PG_OID> (added only for POSTGRESQL dialect)
     ListValue.Builder row1Builder =
         ListValue.newBuilder()
             .addValues(Value.newBuilder().setBoolValue(BOOL_VALUE))
@@ -178,193 +183,198 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
             .addValues(
                 Value.newBuilder().setStringValue(Base64.getEncoder().encodeToString(BYTES_VALUE)))
             .addValues(Value.newBuilder().setStringValue(DATE_VALUE.toString()))
-            .addValues(Value.newBuilder().setStringValue(TIMESTAMP_VALUE.toString()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                BOOL_ARRAY_VALUE.stream()
-                                    .map(
-                                        b ->
-                                            b == null
-                                                ? Value.newBuilder()
-                                                    .setNullValue(NullValue.NULL_VALUE)
-                                                    .build()
-                                                : Value.newBuilder().setBoolValue(b).build())
-                                    .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                INT64_ARRAY_VALUE.stream()
-                                    .map(
-                                        l ->
-                                            l == null
-                                                ? Value.newBuilder()
-                                                    .setNullValue(NullValue.NULL_VALUE)
-                                                    .build()
-                                                : Value.newBuilder()
-                                                    .setStringValue(String.valueOf(l))
-                                                    .build())
-                                    .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                FLOAT32_ARRAY_VALUE.stream()
-                                    .map(
-                                        f -> {
-                                          if (f == null) {
-                                            return Value.newBuilder()
+            .addValues(Value.newBuilder().setStringValue(TIMESTAMP_VALUE.toString()));
+    if (dialect == Dialect.POSTGRESQL) {
+      row1Builder.addValues(Value.newBuilder().setStringValue(String.valueOf(PG_OID_VALUE)).build());
+    }
+
+    row1Builder
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            BOOL_ARRAY_VALUE.stream()
+                                .map(
+                                    b ->
+                                        b == null
+                                            ? Value.newBuilder()
                                                 .setNullValue(NullValue.NULL_VALUE)
-                                                .build();
-                                          } else if (Float.isNaN(f)) {
-                                            return Value.newBuilder().setStringValue("NaN").build();
-                                          } else {
-                                            return Value.newBuilder().setNumberValue(f).build();
-                                          }
-                                        })
-                                    .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                FLOAT64_ARRAY_VALUE.stream()
-                                    .map(
-                                        d -> {
-                                          if (d == null) {
-                                            return Value.newBuilder()
+                                                .build()
+                                            : Value.newBuilder().setBoolValue(b).build())
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            INT64_ARRAY_VALUE.stream()
+                                .map(
+                                    l ->
+                                        l == null
+                                            ? Value.newBuilder()
                                                 .setNullValue(NullValue.NULL_VALUE)
-                                                .build();
-                                          } else if (Double.isNaN(d)) {
-                                            return Value.newBuilder().setStringValue("NaN").build();
-                                          } else {
-                                            return Value.newBuilder().setNumberValue(d).build();
-                                          }
-                                        })
-                                    .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                dialect == Dialect.POSTGRESQL
-                                    ? PG_NUMERIC_ARRAY_VALUE.stream()
-                                        .map(
-                                            string ->
-                                                string == null
-                                                    ? Value.newBuilder()
-                                                        .setNullValue(NullValue.NULL_VALUE)
-                                                        .build()
-                                                    : Value.newBuilder()
-                                                        .setStringValue(string)
-                                                        .build())
-                                        .collect(Collectors.toList())
-                                    : NUMERIC_ARRAY_VALUE.stream()
-                                        .map(
-                                            bigDecimal ->
-                                                bigDecimal == null
-                                                    ? Value.newBuilder()
-                                                        .setNullValue(NullValue.NULL_VALUE)
-                                                        .build()
-                                                    : Value.newBuilder()
-                                                        .setStringValue(
-                                                            bigDecimal.toEngineeringString())
-                                                        .build())
-                                        .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                STRING_ARRAY_VALUE.stream()
+                                                .build()
+                                            : Value.newBuilder()
+                                                .setStringValue(String.valueOf(l))
+                                                .build())
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            FLOAT32_ARRAY_VALUE.stream()
+                                .map(
+                                    f -> {
+                                      if (f == null) {
+                                        return Value.newBuilder()
+                                            .setNullValue(NullValue.NULL_VALUE)
+                                            .build();
+                                      } else if (Float.isNaN(f)) {
+                                        return Value.newBuilder().setStringValue("NaN").build();
+                                      } else {
+                                        return Value.newBuilder().setNumberValue(f).build();
+                                      }
+                                    })
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            FLOAT64_ARRAY_VALUE.stream()
+                                .map(
+                                    d -> {
+                                      if (d == null) {
+                                        return Value.newBuilder()
+                                            .setNullValue(NullValue.NULL_VALUE)
+                                            .build();
+                                      } else if (Double.isNaN(d)) {
+                                        return Value.newBuilder().setStringValue("NaN").build();
+                                      } else {
+                                        return Value.newBuilder().setNumberValue(d).build();
+                                      }
+                                    })
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            dialect == Dialect.POSTGRESQL
+                                ? PG_NUMERIC_ARRAY_VALUE.stream()
                                     .map(
                                         string ->
                                             string == null
                                                 ? Value.newBuilder()
                                                     .setNullValue(NullValue.NULL_VALUE)
                                                     .build()
-                                                : Value.newBuilder().setStringValue(string).build())
-                                    .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                JSON_ARRAY_VALUE.stream()
+                                                : Value.newBuilder()
+                                                    .setStringValue(string)
+                                                    .build())
+                                    .collect(Collectors.toList())
+                                : NUMERIC_ARRAY_VALUE.stream()
                                     .map(
-                                        json ->
-                                            json == null
-                                                ? Value.newBuilder()
-                                                    .setNullValue(NullValue.NULL_VALUE)
-                                                    .build()
-                                                : Value.newBuilder().setStringValue(json).build())
-                                    .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                BYTES_ARRAY_VALUE.stream()
-                                    .map(
-                                        byteArray ->
-                                            byteArray == null
+                                        bigDecimal ->
+                                            bigDecimal == null
                                                 ? Value.newBuilder()
                                                     .setNullValue(NullValue.NULL_VALUE)
                                                     .build()
                                                 : Value.newBuilder()
                                                     .setStringValue(
-                                                        Base64.getEncoder()
-                                                            .encodeToString(
-                                                                byteArray.toByteArray()))
+                                                        bigDecimal.toEngineeringString())
                                                     .build())
                                     .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                DATE_ARRAY_VALUE.stream()
-                                    .map(
-                                        date ->
-                                            date == null
-                                                ? Value.newBuilder()
-                                                    .setNullValue(NullValue.NULL_VALUE)
-                                                    .build()
-                                                : Value.newBuilder()
-                                                    .setStringValue(date.toString())
-                                                    .build())
-                                    .collect(Collectors.toList()))
-                            .build()))
-            .addValues(
-                Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addAllValues(
-                                TIMESTAMP_ARRAY_VALUE.stream()
-                                    .map(
-                                        timestamp ->
-                                            timestamp == null
-                                                ? Value.newBuilder()
-                                                    .setNullValue(NullValue.NULL_VALUE)
-                                                    .build()
-                                                : Value.newBuilder()
-                                                    .setStringValue(timestamp.toString())
-                                                    .build())
-                                    .collect(Collectors.toList()))
-                            .build()));
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            STRING_ARRAY_VALUE.stream()
+                                .map(
+                                    string ->
+                                        string == null
+                                            ? Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()
+                                            : Value.newBuilder().setStringValue(string).build())
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            JSON_ARRAY_VALUE.stream()
+                                .map(
+                                    json ->
+                                        json == null
+                                            ? Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()
+                                            : Value.newBuilder().setStringValue(json).build())
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            BYTES_ARRAY_VALUE.stream()
+                                .map(
+                                    byteArray ->
+                                        byteArray == null
+                                            ? Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()
+                                            : Value.newBuilder()
+                                                .setStringValue(
+                                                    Base64.getEncoder()
+                                                        .encodeToString(
+                                                            byteArray.toByteArray()))
+                                                .build())
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            DATE_ARRAY_VALUE.stream()
+                                .map(
+                                    date ->
+                                        date == null
+                                            ? Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()
+                                            : Value.newBuilder()
+                                                .setStringValue(date.toString())
+                                                .build())
+                                .collect(Collectors.toList()))
+                        .build()))
+        .addValues(
+            Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addAllValues(
+                            TIMESTAMP_ARRAY_VALUE.stream()
+                                .map(
+                                    timestamp ->
+                                        timestamp == null
+                                            ? Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()
+                                            : Value.newBuilder()
+                                                .setStringValue(timestamp.toString())
+                                                .build())
+                                .collect(Collectors.toList()))
+                        .build()));
 
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
       // Add PROTO values.
@@ -433,6 +443,28 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                   .build());
     }
 
+    if (dialect == Dialect.POSTGRESQL) {
+      // Add ARRAY<PG.OID> values.
+      row1Builder
+          .addValues(
+              Value.newBuilder()
+                  .setListValue(
+                      ListValue.newBuilder()
+                          .addAllValues(
+                              PG_OID_ARRAY_VALUE.stream()
+                                  .map(
+                                      l ->
+                                          l == null
+                                              ? Value.newBuilder()
+                                              .setNullValue(NullValue.NULL_VALUE)
+                                              .build()
+                                              : Value.newBuilder()
+                                              .setStringValue(String.valueOf(l))
+                                              .build())
+                                  .collect(Collectors.toList()))
+                          .build()));
+    }
+
     com.google.spanner.v1.ResultSet resultSet =
         com.google.spanner.v1.ResultSet.newBuilder()
             .setMetadata(
@@ -454,7 +486,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
             .mapToObj(col -> "@p" + col)
             .collect(Collectors.joining(", ", "", ")")));
     int param = 0;
-    return builder
+    builder
         .bind("p" + ++param)
         .to(BOOL_VALUE)
         .bind("p" + ++param)
@@ -480,7 +512,13 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .bind("p" + ++param)
         .to(DATE_VALUE)
         .bind("p" + ++param)
-        .to(TIMESTAMP_VALUE)
+        .to(TIMESTAMP_VALUE);
+    if (dialect == Dialect.POSTGRESQL) {
+      builder
+          .bind("p" + ++param)
+          .to(PG_OID_VALUE);
+    }
+    builder
         .bind("p" + ++param)
         .toBoolArray(BOOL_ARRAY_VALUE)
         .bind("p" + ++param)
@@ -506,8 +544,13 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         .bind("p" + ++param)
         .toDateArray(DATE_ARRAY_VALUE)
         .bind("p" + ++param)
-        .toTimestampArray(TIMESTAMP_ARRAY_VALUE)
-        .build();
+        .toTimestampArray(TIMESTAMP_ARRAY_VALUE);
+    if (dialect == Dialect.POSTGRESQL) {
+      builder
+          .bind("p" + ++param)
+          .toInt64Array(PG_OID_ARRAY_VALUE);
+    }
+    return builder.build();
   }
 
   @After
@@ -538,6 +581,9 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         assertArrayEquals(BYTES_VALUE, resultSet.getBytes(++col).toByteArray());
         assertEquals(DATE_VALUE, resultSet.getDate(++col));
         assertEquals(TIMESTAMP_VALUE, resultSet.getTimestamp(++col));
+        if (dialect == Dialect.POSTGRESQL) {
+          assertEquals(PG_OID_VALUE, resultSet.getPgOid(++col));
+        }
 
         assertEquals(BOOL_ARRAY_VALUE, resultSet.getBooleanList(++col));
         assertEquals(INT64_ARRAY_VALUE, resultSet.getLongList(++col));
@@ -557,7 +603,9 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         assertEquals(BYTES_ARRAY_VALUE, resultSet.getBytesList(++col));
         assertEquals(DATE_ARRAY_VALUE, resultSet.getDateList(++col));
         assertEquals(TIMESTAMP_ARRAY_VALUE, resultSet.getTimestampList(++col));
-
+        if (dialect == Dialect.POSTGRESQL) {
+          assertEquals(PG_OID_ARRAY_VALUE, resultSet.getPgOidList(++col));
+        }
         assertFalse(resultSet.next());
       }
     }
@@ -572,22 +620,38 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
       ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
       Map<String, Type> paramTypes = request.getParamTypesMap();
       Map<String, Value> params = request.getParams().getFieldsMap();
-      assertEquals(20, paramTypes.size());
-      assertEquals(20, params.size());
+      System.out.println("Dialect = " + dialect);
+      assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, paramTypes.size());
+      assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, params.size());
 
       // Verify param types.
-      ImmutableList<TypeCode> expectedTypes =
-          ImmutableList.of(
-              TypeCode.BOOL,
-              TypeCode.INT64,
-              TypeCode.FLOAT32,
-              TypeCode.FLOAT64,
-              TypeCode.NUMERIC,
-              TypeCode.STRING,
-              TypeCode.JSON,
-              TypeCode.BYTES,
-              TypeCode.DATE,
-              TypeCode.TIMESTAMP);
+      ImmutableList<TypeCode> expectedTypes;
+      if (dialect == Dialect.POSTGRESQL) {
+        expectedTypes = ImmutableList.of(
+                TypeCode.BOOL,
+                TypeCode.INT64,
+                TypeCode.FLOAT32,
+                TypeCode.FLOAT64,
+                TypeCode.NUMERIC,
+                TypeCode.STRING,
+                TypeCode.JSON,
+                TypeCode.BYTES,
+                TypeCode.DATE,
+                TypeCode.TIMESTAMP,
+                TypeCode.INT64);
+      } else {
+        expectedTypes = ImmutableList.of(
+                TypeCode.BOOL,
+                TypeCode.INT64,
+                TypeCode.FLOAT32,
+                TypeCode.FLOAT64,
+                TypeCode.NUMERIC,
+                TypeCode.STRING,
+                TypeCode.JSON,
+                TypeCode.BYTES,
+                TypeCode.DATE,
+                TypeCode.TIMESTAMP);
+      }
       for (int col = 0; col < expectedTypes.size(); col++) {
         assertEquals(expectedTypes.get(col), paramTypes.get("p" + (col + 1)).getCode());
         int arrayCol = col + expectedTypes.size();
@@ -613,6 +677,9 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
           params.get("p" + ++col).getStringValue());
       assertEquals(DATE_VALUE.toString(), params.get("p" + ++col).getStringValue());
       assertEquals(TIMESTAMP_VALUE.toString(), params.get("p" + ++col).getStringValue());
+      if (dialect == Dialect.POSTGRESQL) {
+        assertEquals(String.valueOf(PG_OID_VALUE), params.get("p" + ++col).getStringValue());
+      }
 
       assertEquals(
           BOOL_ARRAY_VALUE,
@@ -678,6 +745,13 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
                           ? null
                           : Timestamp.parseTimestamp(value.getStringValue()))
               .collect(Collectors.toList()));
+      if (dialect == Dialect.POSTGRESQL) {
+        assertEquals(
+                PG_OID_ARRAY_VALUE,
+                params.get("p" + ++col).getListValue().getValuesList().stream()
+                        .map(value -> value.hasNullValue() ? null : Long.valueOf(value.getStringValue()))
+                        .collect(Collectors.toList()));
+      }
     }
   }
 }

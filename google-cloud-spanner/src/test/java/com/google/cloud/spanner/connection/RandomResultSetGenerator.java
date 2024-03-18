@@ -68,7 +68,15 @@ public class RandomResultSetGenerator {
                     : Type.newBuilder().setCode(TypeCode.JSON).build(),
                 Type.newBuilder().setCode(TypeCode.BYTES).build(),
                 Type.newBuilder().setCode(TypeCode.DATE).build(),
-                Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
+                Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()));
+    if (dialect == Dialect.POSTGRESQL) {
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.INT64)
+              .setTypeAnnotation(TypeAnnotationCode.PG_OID)
+              .build());
+    }
+    types.addAll(Arrays.asList(
                 Type.newBuilder()
                     .setCode(TypeCode.ARRAY)
                     .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
@@ -121,7 +129,17 @@ public class RandomResultSetGenerator {
                     .build()));
 
     appendProtoTypes(types, dialect);
-    appendOidType(types, dialect);
+
+    if (dialect == Dialect.POSTGRESQL) {
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(
+                  Type.newBuilder()
+                      .setCode(TypeCode.INT64)
+                      .setTypeAnnotation(TypeAnnotationCode.PG_OID))
+              .build());
+    }
 
     Type[] typeArray = new Type[types.size()];
     typeArray = types.toArray(typeArray);
@@ -157,25 +175,6 @@ public class RandomResultSetGenerator {
                       .setCode(TypeCode.ENUM)
                       .setProtoTypeFqn(Genre.getDescriptor().getFullName()))
               .build());
-    }
-  }
-
-  /** To append OID type **/
-  private static void appendOidType(List<Type> types, Dialect dialect) {
-    if (dialect == Dialect.POSTGRESQL) {
-      types.add(
-              Type.newBuilder()
-                      .setCode(TypeCode.INT64)
-                      .setTypeAnnotation(TypeAnnotationCode.PG_OID)
-                      .build());
-      types.add(
-              Type.newBuilder()
-                      .setCode(TypeCode.ARRAY)
-                      .setArrayElementType(
-                              Type.newBuilder()
-                                      .setCode(TypeCode.INT64)
-                                      .setTypeAnnotation(TypeAnnotationCode.PG_OID))
-                      .build());
     }
   }
 

@@ -4094,7 +4094,10 @@ public class DatabaseClientImplTest {
             col++);
         assertAsString("2023-01-11", resultSet, col++);
         assertAsString("2023-01-11T11:55:18.123456789Z", resultSet, col++);
-
+        if (dialect == Dialect.POSTGRESQL) {
+          // Check PG_OID value
+          assertAsString("100", resultSet, col++);
+        }
         assertAsString(ImmutableList.of("true", "NULL", "false"), resultSet, col++);
         assertAsString(
             ImmutableList.of(
@@ -4135,16 +4138,6 @@ public class DatabaseClientImplTest {
             ImmutableList.of("2023-01-11T11:55:18.123456789Z", "NULL", "2023-01-12T11:55:18Z"),
             resultSet,
             col++);
-
-        if (dialect == Dialect.POSTGRESQL) {
-          assertAsString("100", resultSet, col++);
-          assertAsString(
-              ImmutableList.of(
-                  String.format("%d", Long.MAX_VALUE), String.format("%d", Long.MIN_VALUE), "NULL"),
-              resultSet,
-              col++);
-        }
-
         if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
           assertAsString(Base64.getEncoder().encodeToString(info.toByteArray()), resultSet, col++);
           assertAsString(String.valueOf(Genre.JAZZ_VALUE), resultSet, col++);
@@ -4156,6 +4149,14 @@ public class DatabaseClientImplTest {
               col++);
           assertAsString(
               ImmutableList.of(String.format("%d", Genre.JAZZ_VALUE), "NULL"), resultSet, col++);
+        }
+        if (dialect == Dialect.POSTGRESQL) {
+          // Check ARRAY<PG_OID> value
+          assertAsString(
+              ImmutableList.of(
+                      String.format("%d", Long.MAX_VALUE), String.format("%d", Long.MIN_VALUE), "NULL"),
+              resultSet,
+              col++);
         }
         assertFalse(resultSet.next());
       }
@@ -4599,7 +4600,13 @@ public class DatabaseClientImplTest {
             .addValues(
                 com.google.protobuf.Value.newBuilder()
                     .setStringValue("2023-01-11T11:55:18.123456789Z")
-                    .build())
+                    .build());
+    if (dialect == Dialect.POSTGRESQL) {
+      // Add PG_OID value
+      valuesBuilder
+          .addValues(com.google.protobuf.Value.newBuilder().setStringValue("100").build());
+    }
+    valuesBuilder
             .addValues(
                 com.google.protobuf.Value.newBuilder()
                     .setListValue(
@@ -4781,28 +4788,6 @@ public class DatabaseClientImplTest {
                                     .build())
                             .build()));
 
-    if (dialect == Dialect.POSTGRESQL) {
-      valuesBuilder
-          .addValues(com.google.protobuf.Value.newBuilder().setStringValue("100").build())
-          .addValues(
-                  com.google.protobuf.Value.newBuilder()
-                          .setListValue(
-                                  ListValue.newBuilder()
-                                          .addValues(
-                                                  com.google.protobuf.Value.newBuilder()
-                                                          .setStringValue(String.valueOf(Long.MAX_VALUE))
-                                                          .build())
-                                          .addValues(
-                                                  com.google.protobuf.Value.newBuilder()
-                                                          .setStringValue(String.valueOf(Long.MIN_VALUE))
-                                                          .build())
-                                          .addValues(
-                                                  com.google.protobuf.Value.newBuilder()
-                                                          .setNullValue(NullValue.NULL_VALUE)
-                                                          .build())
-                                          .build()));
-    }
-
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
       // Proto columns is supported only for GOOGLE_STANDARD_SQL
       valuesBuilder
@@ -4842,6 +4827,28 @@ public class DatabaseClientImplTest {
                                   .build())
                           .build()));
     }
+    if (dialect == Dialect.POSTGRESQL) {
+      // Add ARRAY<PG_OID> value
+      valuesBuilder
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setListValue(
+                      ListValue.newBuilder()
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setStringValue(String.valueOf(Long.MAX_VALUE))
+                                  .build())
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setStringValue(String.valueOf(Long.MIN_VALUE))
+                                  .build())
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setNullValue(NullValue.NULL_VALUE)
+                                  .build())
+                          .build()));
+    }
+
     return valuesBuilder.build();
   }
 }
