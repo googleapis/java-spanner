@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -348,6 +349,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME, ""),
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
+                  ConnectionProperty.createStringProperty(
+                      "maxCommitDelay",
+                      "The maximum commit delay in milliseconds that should be applied to commit requests from this connection."),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
                       "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
@@ -680,6 +684,7 @@ public class ConnectionOptions {
   private final String userAgent;
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
+  private final Long maxCommitDelay;
   private final boolean autoConfigEmulator;
   private final Dialect dialect;
   private final RpcPriority rpcPriority;
@@ -735,6 +740,7 @@ public class ConnectionOptions {
     queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
+    this.maxCommitDelay = parseMaxCommitDelay(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
@@ -1049,6 +1055,27 @@ public class ConnectionOptions {
   static boolean parseReturnCommitStats(String uri) {
     String value = parseUriProperty(uri, "returnCommitStats");
     return Boolean.parseBoolean(value);
+  }
+
+  @VisibleForTesting
+  static Long parseMaxCommitDelay(String uri) {
+    String value = parseUriProperty(uri, "maxCommitDelay");
+    try {
+      Long millis = value == null ? null : Long.valueOf(value);
+      if (millis != null && millis < 0L) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxCommitDelay must be >=0");
+      }
+      return millis;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Invalid value for maxCommitDelay: "
+              + value
+              + "\n"
+              + "The value must be a positive integer indicating the number of "
+              + "milliseconds to use as the max delay.");
+    }
   }
 
   static boolean parseAutoConfigEmulator(String uri) {
@@ -1380,6 +1407,11 @@ public class ConnectionOptions {
   /** Whether connections created by this {@link ConnectionOptions} return commit stats. */
   public boolean isReturnCommitStats() {
     return returnCommitStats;
+  }
+
+  /** The max_commit_delay that should be applied to commit operations on this connection. */
+  public Duration getMaxCommitDelay() {
+    return maxCommitDelay == null ? null : Duration.ofMillis(maxCommitDelay);
   }
 
   /**
