@@ -141,7 +141,7 @@ public final class Options implements Serializable {
     return new PriorityOption(priority);
   }
 
-  public static ReadQueryUpdateTransactionOption maxCommitDelay(Duration maxCommitDelay) {
+  public static TransactionOption maxCommitDelay(Duration maxCommitDelay) {
     Preconditions.checkArgument(!maxCommitDelay.isNegative(), "maxCommitDelay should be positive");
     return new MaxCommitDelayOption(maxCommitDelay);
   }
@@ -258,8 +258,7 @@ public final class Options implements Serializable {
   static final CommitStatsOption COMMIT_STATS_OPTION = new CommitStatsOption();
 
   /** Option to request {@link MaxCommitDelayOption} for read/write transactions. */
-  static final class MaxCommitDelayOption extends InternalOption
-      implements ReadQueryUpdateTransactionOption {
+  static final class MaxCommitDelayOption extends InternalOption implements TransactionOption {
     final Duration maxCommitDelay;
 
     MaxCommitDelayOption(Duration maxCommitDelay) {
