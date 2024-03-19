@@ -700,7 +700,7 @@ public abstract class AbstractStatementParser {
   }
 
   /**
-   * Returns true if this dialect supports nested comments.
+   * <<<<<<< HEAD Returns true if this dialect supports nested comments.
    *
    * <ul>
    *   <li>This method should return false for dialects that consider this to be a valid comment:
