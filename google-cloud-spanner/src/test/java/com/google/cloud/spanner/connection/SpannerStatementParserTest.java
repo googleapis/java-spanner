@@ -21,9 +21,6 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.StatementParserTest.CommentInjector;
-import static org.junit.Assert.assertEquals;
-
-import com.google.cloud.spanner.Dialect;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
