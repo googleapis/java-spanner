@@ -1535,8 +1535,6 @@ public class DatabaseClientImplTest {
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.excludeTxnFromChangeStreams());
 
-    System.out.println(mockSpanner.getRequests());
-
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
     CommitRequest commit = commitRequests.get(0);
