@@ -662,6 +662,14 @@
     <method>com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings getInstanceAdminStubSettings()</method>
   </difference>
 
+  <!-- (Modify return type of maxCommitDelay. Feature not announced) -->
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/Options</className>
+    <method>com.google.cloud.spanner.Options$ReadQueryUpdateTransactionOption maxCommitDelay(java.time.Duration)</method>
+    <to>com.google.cloud.spanner.Options$TransactionOption</to>
+  </difference>
+
   <difference>
     <differenceType>7005</differenceType>
     <className>com/google/cloud/spanner/PartitionedDmlTransaction</className>
