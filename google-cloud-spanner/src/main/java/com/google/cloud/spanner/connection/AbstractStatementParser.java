@@ -595,6 +595,7 @@ public abstract class AbstractStatementParser {
   static final char CLOSE_PARENTHESIS = ')';
   static final char COMMA = ',';
   static final char UNDERSCORE = '_';
+  static final char BACKSLASH = '\\';
 
   /**
    * Removes comments from and trims the given sql statement using the dialect of this parser.
@@ -699,6 +700,62 @@ public abstract class AbstractStatementParser {
   }
 
   /**
+   * <<<<<<< HEAD Returns true if this dialect supports nested comments.
+   *
+   * <ul>
+   *   <li>This method should return false for dialects that consider this to be a valid comment:
+   *       <code>/* A comment /* still a comment *&#47;</code>.
+   *   <li>This method should return true for dialects that require all comment start sequences to
+   *       be balanced with a comment end sequence: <code>
+   *       /* A comment /* still a comment *&#47; Also still a comment *&#47;</code>.
+   * </ul>
+   */
+  abstract boolean supportsNestedComments();
+
+  /**
+   * Returns true for dialects that support dollar-quoted string literals.
+   *
+   * <p>Example: <code>$tag$This is a string$tag$</code>.
+   */
+  abstract boolean supportsDollarQuotedStrings();
+
+  /**
+   * Returns true for dialects that support backticks as a quoting character, either for string
+   * literals or identifiers.
+   */
+  abstract boolean supportsBacktickQuote();
+
+  /**
+   * Returns true for dialects that support triple-quoted string literals and identifiers.
+   *
+   * <p>Example: ```This is a triple-quoted string```
+   */
+  abstract boolean supportsTripleQuotedStrings();
+
+  /**
+   * Returns true if the dialect supports escaping a quote character within a literal with the same
+   * quote as the literal is using. That is: 'foo''bar' means "foo'bar".
+   */
+  abstract boolean supportsEscapeQuoteWithQuote();
+
+  /** Returns true if the dialect supports starting an escape sequence with a backslash. */
+  abstract boolean supportsBackslashEscape();
+
+  /**
+   * Returns true if the dialect supports single-line comments that start with a dash.
+   *
+   * <p>Example: # This is a comment
+   */
+  abstract boolean supportsHashSingleLineComments();
+
+  /**
+   * Returns true for dialects that allow line-feeds in quoted strings. Note that the return value
+   * of this is not used for triple-quoted strings. Triple-quoted strings are assumed to always
+   * support line-feeds.
+   */
+  abstract boolean supportsLineFeedInQuotedString();
+
+  /**
    * Returns true for characters that can be used as the first character in unquoted identifiers.
    */
   boolean isValidIdentifierFirstChar(char c) {
@@ -733,11 +790,17 @@ public abstract class AbstractStatementParser {
    * given index. The skipped characters are added to result if it is not null.
    */
   int skip(String sql, int currentIndex, @Nullable StringBuilder result) {
+    if (currentIndex >= sql.length()) {
+      return currentIndex;
+    }
     char currentChar = sql.charAt(currentIndex);
-    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+
+    if (currentChar == SINGLE_QUOTE
+        || currentChar == DOUBLE_QUOTE
+        || (supportsBacktickQuote() && currentChar == BACKTICK_QUOTE)) {
       appendIfNotNull(result, currentChar);
       return skipQuoted(sql, currentIndex, currentChar, result);
-    } else if (currentChar == DOLLAR) {
+    } else if (supportsDollarQuotedStrings() && currentChar == DOLLAR) {
       String dollarTag = parseDollarQuotedString(sql, currentIndex + 1);
       if (dollarTag != null) {
         appendIfNotNull(result, currentChar, dollarTag, currentChar);
@@ -747,6 +810,8 @@ public abstract class AbstractStatementParser {
     } else if (currentChar == HYPHEN
         && sql.length() > (currentIndex + 1)
         && sql.charAt(currentIndex + 1) == HYPHEN) {
+      return skipSingleLineComment(sql, currentIndex, result);
+    } else if (currentChar == DASH && supportsHashSingleLineComments()) {
       return skipSingleLineComment(sql, currentIndex, result);
     } else if (currentChar == SLASH
         && sql.length() > (currentIndex + 1)
@@ -772,14 +837,17 @@ public abstract class AbstractStatementParser {
   }
 
   /** Skips a multi-line comment from startIndex and adds it to result if result is not null. */
-  static int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+  int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
     // Current position is start + '/*'.length().
     int pos = startIndex + 2;
     // PostgreSQL allows comments to be nested. That is, the following is allowed:
     // '/* test /* inner comment */ still a comment */'
     int level = 1;
     while (pos < sql.length()) {
-      if (sql.charAt(pos) == SLASH && sql.length() > (pos + 1) && sql.charAt(pos + 1) == ASTERISK) {
+      if (supportsNestedComments()
+          && sql.charAt(pos) == SLASH
+          && sql.length() > (pos + 1)
+          && sql.charAt(pos + 1) == ASTERISK) {
         level++;
       }
       if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
@@ -806,33 +874,67 @@ public abstract class AbstractStatementParser {
    * Skips a quoted string from startIndex. The quote character is assumed to be $ if dollarTag is
    * not null.
    */
-  private int skipQuoted(
+  int skipQuoted(
       String sql,
       int startIndex,
       char startQuote,
-      String dollarTag,
+      @Nullable String dollarTag,
       @Nullable StringBuilder result) {
-    int currentIndex = startIndex + 1;
+    boolean isTripleQuoted =
+        supportsTripleQuotedStrings()
+            && sql.length() > startIndex + 2
+            && sql.charAt(startIndex + 1) == startQuote
+            && sql.charAt(startIndex + 2) == startQuote;
+    int currentIndex = startIndex + (isTripleQuoted ? 3 : 1);
+    if (isTripleQuoted) {
+      appendIfNotNull(result, startQuote);
+      appendIfNotNull(result, startQuote);
+    }
     while (currentIndex < sql.length()) {
       char currentChar = sql.charAt(currentIndex);
       if (currentChar == startQuote) {
-        if (currentChar == DOLLAR) {
+        if (supportsDollarQuotedStrings() && currentChar == DOLLAR) {
           // Check if this is the end of the current dollar quoted string.
           String tag = parseDollarQuotedString(sql, currentIndex + 1);
           if (tag != null && tag.equals(dollarTag)) {
             appendIfNotNull(result, currentChar, dollarTag, currentChar);
             return currentIndex + tag.length() + 2;
           }
-        } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
+        } else if (supportsEscapeQuoteWithQuote()
+            && sql.length() > currentIndex + 1
+            && sql.charAt(currentIndex + 1) == startQuote) {
           // This is an escaped quote (e.g. 'foo''bar')
           appendIfNotNull(result, currentChar);
           appendIfNotNull(result, currentChar);
           currentIndex += 2;
           continue;
+        } else if (isTripleQuoted) {
+          // Check if this is the end of the triple-quoted string.
+          if (sql.length() > currentIndex + 2
+              && sql.charAt(currentIndex + 1) == startQuote
+              && sql.charAt(currentIndex + 2) == startQuote) {
+            appendIfNotNull(result, currentChar);
+            appendIfNotNull(result, currentChar);
+            appendIfNotNull(result, currentChar);
+            return currentIndex + 3;
+          }
         } else {
           appendIfNotNull(result, currentChar);
           return currentIndex + 1;
         }
+      } else if (supportsBackslashEscape()
+          && currentChar == BACKSLASH
+          && sql.length() > currentIndex + 1
+          && sql.charAt(currentIndex + 1) == startQuote) {
+        // This is an escaped quote (e.g. 'foo\'bar').
+        // Note that in raw strings, the \ officially does not start an escape sequence, but the
+        // result is still the same, as in a raw string 'both characters are preserved'.
+        appendIfNotNull(result, currentChar);
+        appendIfNotNull(result, sql.charAt(currentIndex + 1));
+        currentIndex += 2;
+        continue;
+      } else if (currentChar == '\n' && !isTripleQuoted && !supportsLineFeedInQuotedString()) {
+        break;
       }
       currentIndex++;
       appendIfNotNull(result, currentChar);
