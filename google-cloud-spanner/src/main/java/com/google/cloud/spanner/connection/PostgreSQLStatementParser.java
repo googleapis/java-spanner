@@ -88,6 +88,11 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     return true;
   }
 
+  @Override
+  String getQueryParameterPrefix() {
+    return "$";
+  }
+
   /**
    * Removes comments from and trims the given sql statement. PostgreSQL supports two types of
    * comments:
@@ -179,27 +184,6 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
   @Override
   String removeStatementHint(String sql) {
     return sql;
-  }
-
-  @InternalApi
-  @Override
-  ParametersInfo convertPositionalParametersToNamedParametersInternal(char paramChar, String sql) {
-    Preconditions.checkNotNull(sql);
-    final String namedParamPrefix = "$";
-    StringBuilder named = new StringBuilder(sql.length() + countOccurrencesOf(paramChar, sql));
-    int index = 0;
-    int paramIndex = 1;
-    while (index < sql.length()) {
-      char c = sql.charAt(index);
-      if (c == paramChar) {
-        named.append(namedParamPrefix).append(paramIndex);
-        paramIndex++;
-        index++;
-      } else {
-        index = skip(sql, index, named);
-      }
-    }
-    return new ParametersInfo(paramIndex - 1, named.toString());
   }
 
   /**
