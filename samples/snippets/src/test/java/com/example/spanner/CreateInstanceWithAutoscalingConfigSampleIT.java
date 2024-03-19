@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,19 @@ package com.example.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.cloud.spanner.InstanceId;
-import java.util.UUID;
+import com.google.spanner.admin.database.v1.InstanceName;
 import org.junit.Test;
 
-public class CreateInstanceWithAutoscalingConfigSampleIT extends SampleTestBase {
+public class CreateInstanceWithAutoscalingConfigSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testCreateInstanceWithAutoscalingConfig() throws Exception {
-    String instanceId = String.format("autoscaler-%s", UUID.randomUUID());
+    String instanceId = idGenerator.generateInstanceId();
     String out =
         SampleRunner.runSample(
-            () -> {
-              try {
-                CreateInstanceWithAutoscalingConfigExample.createInstance(projectId, instanceId);
-              } finally {
-                spanner.getInstanceAdminClient().deleteInstance(instanceId);
-              }
-            });
+            () -> CreateInstanceWithAutoscalingConfigExample.createInstance(projectId, instanceId));
     assertThat(out)
-        .contains(String.format("Autoscaler instance %s", InstanceId.of(projectId, instanceId)));
+        .contains(String.format("Autoscaler instance %s",
+            InstanceName.of(projectId, instanceId).toString()));
   }
 }

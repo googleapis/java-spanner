@@ -27,12 +27,16 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Longs;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -178,6 +182,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected float getFloatInternal(int columnIndex) {
+      return values.get(columnIndex).getFloat32();
+    }
+
+    @Override
     protected double getDoubleInternal(int columnIndex) {
       return values.get(columnIndex).getFloat64();
     }
@@ -218,6 +227,17 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
+      return values.get(columnIndex).getProtoMessage(message);
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return values.get(columnIndex).getProtoEnum(method);
+    }
+
+    @Override
     protected Value getValueInternal(int columnIndex) {
       return values.get(columnIndex);
     }
@@ -245,6 +265,16 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     @Override
     protected List<Long> getLongListInternal(int columnIndex) {
       return values.get(columnIndex).getInt64Array();
+    }
+
+    @Override
+    protected float[] getFloatArrayInternal(int columnIndex) {
+      return Floats.toArray(getFloatListInternal(columnIndex));
+    }
+
+    @Override
+    protected List<Float> getFloatListInternal(int columnIndex) {
+      return values.get(columnIndex).getFloat32Array();
     }
 
     @Override
@@ -285,6 +315,18 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     @Override
     protected List<Timestamp> getTimestampListInternal(int columnIndex) {
       return values.get(columnIndex).getTimestampArray();
+    }
+
+    @Override
+    protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
+        int columnIndex, T message) {
+      return values.get(columnIndex).getProtoMessageArray(message);
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> List<T> getProtoEnumListInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return values.get(columnIndex).getProtoEnumArray(method);
     }
 
     @Override
@@ -354,7 +396,10 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case BOOL:
         return getBooleanInternal(columnIndex);
       case INT64:
+      case ENUM:
         return getLongInternal(columnIndex);
+      case FLOAT32:
+        return getFloatInternal(columnIndex);
       case FLOAT64:
         return getDoubleInternal(columnIndex);
       case NUMERIC:
@@ -368,6 +413,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case PG_JSONB:
         return getPgJsonbInternal(columnIndex);
       case BYTES:
+      case PROTO:
         return getBytesInternal(columnIndex);
       case TIMESTAMP:
         return getTimestampInternal(columnIndex);
@@ -380,7 +426,10 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case BOOL:
             return getBooleanListInternal(columnIndex);
           case INT64:
+          case ENUM:
             return getLongListInternal(columnIndex);
+          case FLOAT32:
+            return getFloatListInternal(columnIndex);
           case FLOAT64:
             return getDoubleListInternal(columnIndex);
           case NUMERIC:
@@ -394,6 +443,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case PG_JSONB:
             return getPgJsonbListInternal(columnIndex);
           case BYTES:
+          case PROTO:
             return getBytesListInternal(columnIndex);
           case TIMESTAMP:
             return getTimestampListInternal(columnIndex);

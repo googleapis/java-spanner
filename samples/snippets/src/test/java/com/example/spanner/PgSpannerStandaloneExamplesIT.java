@@ -16,6 +16,7 @@
 
 package com.example.spanner;
 
+import static com.example.spanner.SpannerSampleIT.formatForTest;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.api.gax.longrunning.OperationFuture;
@@ -52,7 +53,7 @@ public class PgSpannerStandaloneExamplesIT {
   // The instance needs to exist for tests to pass.
   private static String instanceId = System.getProperty("spanner.test.instance");
   private static String baseDatabaseId = System.getProperty("spanner.sample.database", "mysample");
-  private static String databaseId = SpannerSampleIT.formatForTest(baseDatabaseId);
+  private static String databaseId = formatForTest(baseDatabaseId);
   private static DatabaseId dbId;
   private static DatabaseAdminClient dbClient;
   private static Spanner spanner;
@@ -157,7 +158,7 @@ public class PgSpannerStandaloneExamplesIT {
             () -> {
               try {
                 AddNumericColumnSample.addNumericColumn(
-                    spanner.getDatabaseAdminClient(), instanceId, databaseId);
+                    spanner.getOptions().getProjectId(), instanceId, databaseId);
               } catch (ExecutionException e) {
                 System.out.printf(
                     "Adding column `Revenue` failed: %s%n", e.getCause().getMessage());
@@ -226,7 +227,7 @@ public class PgSpannerStandaloneExamplesIT {
             () -> {
               try {
                 AddJsonbColumnSample.addJsonbColumn(
-                    spanner.getDatabaseAdminClient(), instanceId, databaseId);
+                    spanner.getOptions().getProjectId(), instanceId, databaseId);
               } catch (ExecutionException e) {
                 System.out.printf(
                     "Adding column `VenueDetails` failed: %s%n", e.getCause().getMessage());

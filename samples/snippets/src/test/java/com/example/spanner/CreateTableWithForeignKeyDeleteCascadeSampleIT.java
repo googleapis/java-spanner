@@ -18,28 +18,30 @@ package com.example.spanner;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.InstanceName;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class CreateTableWithForeignKeyDeleteCascadeSampleIT extends SampleTestBase {
+public class CreateTableWithForeignKeyDeleteCascadeSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testCreateTableWithForeignKeyDeleteCascade() throws Exception {
 
     // Creates database
     final String databaseId = idGenerator.generateDatabaseId();
-    databaseAdminClient
-        .createDatabase(instanceId, databaseId, Arrays.asList())
-        .get(5, TimeUnit.MINUTES);
+    final CreateDatabaseRequest request =
+        CreateDatabaseRequest.newBuilder()
+            .setCreateStatement("CREATE DATABASE `" + databaseId + "`")
+            .setParent(InstanceName.of(projectId, instanceId).toString()).build();
+    databaseAdminClient.createDatabaseAsync(request).get(5, TimeUnit.MINUTES);
 
     // Runs sample
     final String out =
         SampleRunner.runSample(
             () ->
                 CreateTableWithForeignKeyDeleteCascadeSample
-                    .createForeignKeyDeleteCascadeConstraint(
-                        databaseAdminClient, instanceId, databaseId));
+                    .createForeignKeyDeleteCascadeConstraint(projectId, instanceId, databaseId));
 
     assertTrue(
         "Expected to have created database "

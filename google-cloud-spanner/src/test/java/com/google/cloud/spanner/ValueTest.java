@@ -33,6 +33,8 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Strings;
 import com.google.common.collect.ForwardingList;
@@ -184,6 +186,38 @@ public class ValueTest {
   }
 
   @Test
+  public void float32() {
+    Value v = Value.float32(1.23f);
+    assertThat(v.getType()).isEqualTo(Type.float32());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getFloat32()).isWithin(0.0001f).of(1.23f);
+    assertThat(v.toString()).isEqualTo("1.23");
+    assertEquals("1.23", v.getAsString());
+    assertEquals(Value.float32(Float.NaN), Value.float32(Float.NaN));
+  }
+
+  @Test
+  public void float32Wrapper() {
+    Value v = Value.float32(Float.valueOf(1.23f));
+    assertThat(v.getType()).isEqualTo(Type.float32());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getFloat32()).isWithin(0.0001f).of(1.23f);
+    assertThat(v.toString()).isEqualTo("1.23");
+    assertEquals("1.23", v.getAsString());
+  }
+
+  @Test
+  public void float32WrapperNull() {
+    Value v = Value.float32(null);
+    assertThat(v.getType()).isEqualTo(Type.float32());
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getFloat32);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
   public void float64() {
     Value v = Value.float64(1.23);
     assertThat(v.getType()).isEqualTo(Type.float64());
@@ -191,6 +225,7 @@ public class ValueTest {
     assertThat(v.getFloat64()).isWithin(0.0001).of(1.23);
     assertThat(v.toString()).isEqualTo("1.23");
     assertEquals("1.23", v.getAsString());
+    assertEquals(Value.float64(Double.NaN), Value.float64(Double.NaN));
   }
 
   @Test
@@ -234,6 +269,7 @@ public class ValueTest {
     assertEquals(1234.5678D, value.getFloat64(), 0.00001);
     assertEquals("1234.5678", value.toString());
     assertEquals("1234.5678", value.getAsString());
+    assertEquals(Value.pgNumeric("NaN"), Value.pgNumeric("NaN"));
   }
 
   @Test
@@ -675,6 +711,56 @@ public class ValueTest {
   }
 
   @Test
+  public void protoMessage() {
+    SingerInfo singerInfo = SingerInfo.newBuilder().setSingerId(111).setGenre(Genre.FOLK).build();
+    Value v = Value.protoMessage(singerInfo);
+    assertThat(v.getType()).isEqualTo(Type.proto(SingerInfo.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getProtoMessage(SingerInfo.getDefaultInstance())).isEqualTo(singerInfo);
+    assertThat(v.getBytes().toByteArray()).isEqualTo(singerInfo.toByteArray());
+  }
+
+  @Test
+  public void protoMessageNull() {
+    Value v = Value.protoMessage(null, SingerInfo.getDescriptor().getFullName());
+    assertThat(v.getType()).isEqualTo(Type.proto(SingerInfo.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoMessage(SingerInfo.getDefaultInstance());
+            });
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
+  public void protoEnum() {
+    Genre genre = Genre.FOLK;
+    Value v = Value.protoEnum(genre);
+    assertThat(v.getType()).isEqualTo(Type.protoEnum(Genre.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getInt64()).isEqualTo(genre.getNumber());
+    assertEquals(genre, v.getProtoEnum(Genre::forNumber));
+  }
+
+  @Test
+  public void protoEnumNull() {
+    Value v = Value.protoEnum(null, Genre.getDescriptor().getFullName());
+    assertThat(v.getType()).isEqualTo(Type.protoEnum(Genre.getDescriptor().getFullName()));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoEnum(Genre::forNumber);
+            });
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
   public void boolArray() {
     Value v = Value.boolArray(new boolean[] {true, false});
     assertThat(v.isNull()).isFalse();
@@ -809,6 +895,60 @@ public class ValueTest {
     Value value = Value.int64Array((Iterable<Long>) null);
     IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
     assertThat(e.getMessage()).contains("Expected: BOOL actual: ARRAY<INT64>");
+  }
+
+  @Test
+  public void float32Array() {
+    Value v = Value.float32Array(new float[] {.1f, .2f});
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getFloat32Array()).containsExactly(.1f, .2f).inOrder();
+    assertThat(v.toString()).isEqualTo("[0.1,0.2]");
+    assertEquals("[0.1,0.2]", v.getAsString());
+  }
+
+  @Test
+  public void float32ArrayRange() {
+    Value v = Value.float32Array(new float[] {.1f, .2f, .3f, .4f, .5f}, 1, 3);
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getFloat32Array()).containsExactly(.2f, .3f, .4f).inOrder();
+    assertThat(v.toString()).isEqualTo("[0.2,0.3,0.4]");
+    assertEquals("[0.2,0.3,0.4]", v.getAsString());
+  }
+
+  @Test
+  public void float32ArrayNull() {
+    Value v = Value.float32Array((float[]) null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getFloat32Array);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
+  public void float32ArrayWrapper() {
+    Value v = Value.float32Array(Arrays.asList(.1f, null, .3f));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getFloat32Array()).containsExactly(.1f, null, .3f).inOrder();
+    assertThat(v.toString()).isEqualTo("[0.1,NULL,0.3]");
+    assertEquals("[0.1,NULL,0.3]", v.getAsString());
+  }
+
+  @Test
+  public void float32ArrayWrapperNull() {
+    Value v = Value.float32Array((Iterable<Float>) null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getFloat32Array);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
+  public void float32ArrayTryGetFloat64Array() {
+    Value value = Value.float32Array(Collections.singletonList(.1f));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getFloat64Array);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<FLOAT64> actual: ARRAY<FLOAT32>");
   }
 
   @Test
@@ -1138,6 +1278,70 @@ public class ValueTest {
   }
 
   @Test
+  public void protoMessageArray() {
+    SingerInfo singerInfo1 = SingerInfo.newBuilder().setSingerId(111).setGenre(Genre.FOLK).build();
+    SingerInfo singerInfo2 = SingerInfo.newBuilder().setSingerId(222).build();
+    Value v =
+        Value.protoMessageArray(
+            Arrays.asList(singerInfo1, null, singerInfo2), SingerInfo.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.proto(SingerInfo.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getProtoMessageArray(SingerInfo.getDefaultInstance()))
+        .containsExactly(singerInfo1, null, singerInfo2);
+    assertThat(v.getBytesArray())
+        .containsExactly(
+            ByteArray.copyFrom(singerInfo1.toByteArray()),
+            null,
+            ByteArray.copyFrom(singerInfo2.toByteArray()));
+  }
+
+  @Test
+  public void protoMessageNullArray() {
+    Value v = Value.protoMessageArray(null, SingerInfo.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.proto(SingerInfo.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoMessageArray(SingerInfo.getDefaultInstance());
+            });
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
+  public void protoEnumArray() {
+    Genre genre1 = Genre.ROCK;
+    Genre genre2 = Genre.JAZZ;
+    Value v = Value.protoEnumArray(Arrays.asList(genre1, null, genre2), Genre.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.protoEnum(Genre.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getProtoEnumArray(Genre::forNumber)).containsExactly(genre1, null, genre2);
+    assertThat(v.getInt64Array())
+        .containsExactly((long) genre1.getNumber(), null, (long) genre2.getNumber());
+  }
+
+  @Test
+  public void protoEnumNullArray() {
+    Value v = Value.protoEnumArray(null, Genre.getDescriptor());
+    assertThat(v.getType())
+        .isEqualTo(Type.array(Type.protoEnum(Genre.getDescriptor().getFullName())));
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e =
+        assertThrows(
+            IllegalStateException.class,
+            () -> {
+              v.getProtoEnumArray(Genre::forNumber);
+            });
+    assertThat(e.getMessage()).contains("null value");
+  }
+
+  @Test
   public void struct() {
     Struct struct = Struct.newBuilder().set("f1").to("v1").set("f2").to(30).build();
     Value v1 = Value.struct(struct);
@@ -1311,6 +1515,13 @@ public class ValueTest {
         Value.int64(null).toProto());
 
     assertEquals(
+        com.google.protobuf.Value.newBuilder().setNumberValue(3.14f).build(),
+        Value.float32(3.14f).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build(),
+        Value.float32(null).toProto());
+
+    assertEquals(
         com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build(),
         Value.float64(3.14d).toProto());
     assertEquals(
@@ -1396,6 +1607,18 @@ public class ValueTest {
                                 .build())))
             .build(),
         Value.int64Array(Arrays.asList(1L, null)).toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addAllValues(
+                        Arrays.asList(
+                            com.google.protobuf.Value.newBuilder().setNumberValue(3.14f).build(),
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())))
+            .build(),
+        Value.float32Array(Arrays.asList(3.14f, null)).toProto());
     assertEquals(
         com.google.protobuf.Value.newBuilder()
             .setListValue(
@@ -1550,6 +1773,29 @@ public class ValueTest {
                     .build())
             .build(),
         Value.struct(Struct.newBuilder().add(Value.int64Array(Arrays.asList(1L, null))).build())
+            .toProto());
+    assertEquals(
+        com.google.protobuf.Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(
+                        com.google.protobuf.Value.newBuilder()
+                            .setListValue(
+                                ListValue.newBuilder()
+                                    .addAllValues(
+                                        Arrays.asList(
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNumberValue(3.14f)
+                                                .build(),
+                                            com.google.protobuf.Value.newBuilder()
+                                                .setNullValue(NullValue.NULL_VALUE)
+                                                .build()))
+                                    .build())
+                            .build())
+                    .build())
+            .build(),
+        Value.struct(
+                Struct.newBuilder().add(Value.float32Array(Arrays.asList(3.14f, null))).build())
             .toProto());
     assertEquals(
         com.google.protobuf.Value.newBuilder()
@@ -1756,6 +2002,10 @@ public class ValueTest {
     tester.addEqualityGroup(Value.int64(456));
     tester.addEqualityGroup(Value.int64(null));
 
+    tester.addEqualityGroup(Value.float32(1.23f), Value.float32(Float.valueOf(1.23f)));
+    tester.addEqualityGroup(Value.float32(4.56f));
+    tester.addEqualityGroup(Value.float32(null));
+
     tester.addEqualityGroup(Value.float64(1.23), Value.float64(Double.valueOf(1.23)));
     tester.addEqualityGroup(Value.float64(4.56));
     tester.addEqualityGroup(Value.float64(null));
@@ -1821,6 +2071,14 @@ public class ValueTest {
         Value.int64Array(plainIterable(1L, 2L)));
     tester.addEqualityGroup(Value.int64Array(Collections.singletonList(3L)));
     tester.addEqualityGroup(Value.int64Array((Iterable<Long>) null));
+
+    tester.addEqualityGroup(
+        Value.float32Array(Arrays.asList(.1f, .2f)),
+        Value.float32Array(new float[] {.1f, .2f}),
+        Value.float32Array(new float[] {.0f, .1f, .2f, .3f}, 1, 2),
+        Value.float32Array(plainIterable(.1f, .2f)));
+    tester.addEqualityGroup(Value.float32Array(Collections.singletonList(.3f)));
+    tester.addEqualityGroup(Value.float32Array((Iterable<Float>) null));
 
     tester.addEqualityGroup(
         Value.float64Array(Arrays.asList(.1, .2)),
@@ -1893,6 +2151,11 @@ public class ValueTest {
     assertEquals(String.valueOf(Long.MAX_VALUE), Value.int64(Long.MAX_VALUE).getAsString());
     assertEquals(String.valueOf(Long.MIN_VALUE), Value.int64(Long.MIN_VALUE).getAsString());
 
+    assertEquals("3.14", Value.float32(3.14f).getAsString());
+    assertEquals("NaN", Value.float32(Float.NaN).getAsString());
+    assertEquals(String.valueOf(Float.MIN_VALUE), Value.float32(Float.MIN_VALUE).getAsString());
+    assertEquals(String.valueOf(Float.MAX_VALUE), Value.float32(Float.MAX_VALUE).getAsString());
+
     assertEquals("3.14", Value.float64(3.14d).getAsString());
     assertEquals("NaN", Value.float64(Double.NaN).getAsString());
     assertEquals(String.valueOf(Double.MIN_VALUE), Value.float64(Double.MIN_VALUE).getAsString());
@@ -1936,6 +2199,9 @@ public class ValueTest {
     reserializeAndAssert(Value.int64(123));
     reserializeAndAssert(Value.int64(null));
 
+    reserializeAndAssert(Value.float32(1.23f));
+    reserializeAndAssert(Value.float32(null));
+
     reserializeAndAssert(Value.float64(1.23));
     reserializeAndAssert(Value.float64(null));
 
@@ -1972,6 +2238,10 @@ public class ValueTest {
     reserializeAndAssert(Value.int64Array(BrokenSerializationList.of(1L, 2L)));
     reserializeAndAssert(Value.int64Array(new long[] {1L, 2L}));
     reserializeAndAssert(Value.int64Array((Iterable<Long>) null));
+
+    reserializeAndAssert(Value.float32Array(new float[] {.1f, .2f}));
+    reserializeAndAssert(Value.float32Array(BrokenSerializationList.of(.1f, .2f, .3f)));
+    reserializeAndAssert(Value.float32Array((Iterable<Float>) null));
 
     reserializeAndAssert(Value.float64Array(new double[] {.1, .2}));
     reserializeAndAssert(Value.float64Array(BrokenSerializationList.of(.1, .2, .3)));

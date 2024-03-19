@@ -25,6 +25,10 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheStats;
+import com.google.common.cache.Weigher;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -36,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Internal class for the Spanner Connection API.
@@ -58,6 +63,13 @@ public abstract class AbstractStatementParser {
               SpannerStatementParser.class,
               Dialect.POSTGRESQL,
               PostgreSQLStatementParser.class);
+
+  @VisibleForTesting
+  static void resetParsers() {
+    synchronized (lock) {
+      INSTANCES.clear();
+    }
+  }
 
   /**
    * Get an instance of {@link AbstractStatementParser} for the specified dialect.
@@ -171,7 +183,7 @@ public abstract class AbstractStatementParser {
     private static ParsedStatement query(
         Statement statement, String sqlWithoutComments, QueryOptions defaultQueryOptions) {
       return new ParsedStatement(
-          StatementType.QUERY, statement, sqlWithoutComments, defaultQueryOptions, false);
+          StatementType.QUERY, null, statement, sqlWithoutComments, defaultQueryOptions, false);
     }
 
     private static ParsedStatement update(
@@ -193,7 +205,7 @@ public abstract class AbstractStatementParser {
       this.type = StatementType.CLIENT_SIDE;
       this.clientSideStatement = clientSideStatement;
       this.statement = statement;
-      this.sqlWithoutComments = sqlWithoutComments;
+      this.sqlWithoutComments = Preconditions.checkNotNull(sqlWithoutComments);
       this.returningClause = false;
     }
 
@@ -202,26 +214,46 @@ public abstract class AbstractStatementParser {
         Statement statement,
         String sqlWithoutComments,
         boolean returningClause) {
-      this(type, statement, sqlWithoutComments, null, returningClause);
+      this(type, null, statement, sqlWithoutComments, null, returningClause);
     }
 
     private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
-      this(type, statement, sqlWithoutComments, null, false);
+      this(type, null, statement, sqlWithoutComments, null, false);
     }
 
     private ParsedStatement(
         StatementType type,
+        ClientSideStatementImpl clientSideStatement,
         Statement statement,
         String sqlWithoutComments,
         QueryOptions defaultQueryOptions,
         boolean returningClause) {
       Preconditions.checkNotNull(type);
-      Preconditions.checkNotNull(statement);
       this.type = type;
-      this.clientSideStatement = null;
-      this.statement = mergeQueryOptions(statement, defaultQueryOptions);
-      this.sqlWithoutComments = sqlWithoutComments;
+      this.clientSideStatement = clientSideStatement;
+      this.statement = statement == null ? null : mergeQueryOptions(statement, defaultQueryOptions);
+      this.sqlWithoutComments = Preconditions.checkNotNull(sqlWithoutComments);
       this.returningClause = returningClause;
+    }
+
+    private ParsedStatement copy(Statement statement, QueryOptions defaultQueryOptions) {
+      return new ParsedStatement(
+          this.type,
+          this.clientSideStatement,
+          statement,
+          this.sqlWithoutComments,
+          defaultQueryOptions,
+          this.returningClause);
+    }
+
+    private ParsedStatement forCache() {
+      return new ParsedStatement(
+          this.type,
+          this.clientSideStatement,
+          null,
+          this.sqlWithoutComments,
+          null,
+          this.returningClause);
     }
 
     @Override
@@ -356,13 +388,63 @@ public abstract class AbstractStatementParser {
   }
 
   static final Set<String> ddlStatements =
-      ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE", "GRANT", "REVOKE");
+      ImmutableSet.of("CREATE", "DROP", "ALTER", "ANALYZE", "GRANT", "REVOKE", "RENAME");
   static final Set<String> selectStatements = ImmutableSet.of("SELECT", "WITH", "SHOW");
   static final Set<String> dmlStatements = ImmutableSet.of("INSERT", "UPDATE", "DELETE");
   private final Set<ClientSideStatementImpl> statements;
 
+  /** The default maximum size of the statement cache in Mb. */
+  public static final int DEFAULT_MAX_STATEMENT_CACHE_SIZE_MB = 5;
+
+  private static int getMaxStatementCacheSize() {
+    String stringValue = System.getProperty("spanner.statement_cache_size_mb");
+    if (stringValue == null) {
+      return DEFAULT_MAX_STATEMENT_CACHE_SIZE_MB;
+    }
+    int value = 0;
+    try {
+      value = Integer.parseInt(stringValue);
+    } catch (NumberFormatException ignore) {
+    }
+    return Math.max(value, 0);
+  }
+
+  private static boolean isRecordStatementCacheStats() {
+    return "true"
+        .equalsIgnoreCase(System.getProperty("spanner.record_statement_cache_stats", "false"));
+  }
+
+  /**
+   * Cache for parsed statements. This prevents statements that are executed multiple times by the
+   * application to be parsed over and over again. The default maximum size is 5Mb.
+   */
+  private final Cache<String, ParsedStatement> statementCache;
+
   AbstractStatementParser(Set<ClientSideStatementImpl> statements) {
     this.statements = Collections.unmodifiableSet(statements);
+    int maxCacheSize = getMaxStatementCacheSize();
+    if (maxCacheSize > 0) {
+      CacheBuilder<String, ParsedStatement> cacheBuilder =
+          CacheBuilder.newBuilder()
+              // Set the max size to (approx) 5MB (by default).
+              .maximumWeight(maxCacheSize * 1024L * 1024L)
+              // We do length*2 because Java uses 2 bytes for each char.
+              .weigher(
+                  (Weigher<String, ParsedStatement>)
+                      (key, value) -> 2 * key.length() + 2 * value.sqlWithoutComments.length())
+              .concurrencyLevel(Runtime.getRuntime().availableProcessors());
+      if (isRecordStatementCacheStats()) {
+        cacheBuilder.recordStats();
+      }
+      this.statementCache = cacheBuilder.build();
+    } else {
+      this.statementCache = null;
+    }
+  }
+
+  @VisibleForTesting
+  CacheStats getStatementCacheStats() {
+    return statementCache == null ? null : statementCache.stats();
   }
 
   @VisibleForTesting
@@ -383,6 +465,20 @@ public abstract class AbstractStatementParser {
   }
 
   ParsedStatement parse(Statement statement, QueryOptions defaultQueryOptions) {
+    if (statementCache == null) {
+      return internalParse(statement, defaultQueryOptions);
+    }
+
+    ParsedStatement parsedStatement = statementCache.getIfPresent(statement.getSql());
+    if (parsedStatement == null) {
+      parsedStatement = internalParse(statement, defaultQueryOptions);
+      statementCache.put(statement.getSql(), parsedStatement.forCache());
+      return parsedStatement;
+    }
+    return parsedStatement.copy(statement, defaultQueryOptions);
+  }
+
+  private ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
     String sql = removeCommentsAndTrim(statement.getSql());
     ClientSideStatementImpl client = parseClientSideStatement(sql);
     if (client != null) {
@@ -600,5 +696,170 @@ public abstract class AbstractStatementParser {
   @InternalApi
   public boolean checkReturningClause(String sql) {
     return checkReturningClauseInternal(sql);
+  }
+
+  /**
+   * Returns true for characters that can be used as the first character in unquoted identifiers.
+   */
+  boolean isValidIdentifierFirstChar(char c) {
+    return Character.isLetter(c) || c == UNDERSCORE;
+  }
+
+  /** Returns true for characters that can be used in unquoted identifiers. */
+  boolean isValidIdentifierChar(char c) {
+    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
+  }
+
+  /** Reads a dollar-quoted string literal from position index in the given sql string. */
+  String parseDollarQuotedString(String sql, int index) {
+    // Look ahead to the next dollar sign (if any). Everything in between is the quote tag.
+    StringBuilder tag = new StringBuilder();
+    while (index < sql.length()) {
+      char c = sql.charAt(index);
+      if (c == DOLLAR) {
+        return tag.toString();
+      }
+      if (!isValidIdentifierChar(c)) {
+        break;
+      }
+      tag.append(c);
+      index++;
+    }
+    return null;
+  }
+
+  /**
+   * Skips the next character, literal, identifier, or comment in the given sql string from the
+   * given index. The skipped characters are added to result if it is not null.
+   */
+  int skip(String sql, int currentIndex, @Nullable StringBuilder result) {
+    char currentChar = sql.charAt(currentIndex);
+    if (currentChar == SINGLE_QUOTE || currentChar == DOUBLE_QUOTE) {
+      appendIfNotNull(result, currentChar);
+      return skipQuoted(sql, currentIndex, currentChar, result);
+    } else if (currentChar == DOLLAR) {
+      String dollarTag = parseDollarQuotedString(sql, currentIndex + 1);
+      if (dollarTag != null) {
+        appendIfNotNull(result, currentChar, dollarTag, currentChar);
+        return skipQuoted(
+            sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
+      }
+    } else if (currentChar == HYPHEN
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == HYPHEN) {
+      return skipSingleLineComment(sql, currentIndex, result);
+    } else if (currentChar == SLASH
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == ASTERISK) {
+      return skipMultiLineComment(sql, currentIndex, result);
+    }
+
+    appendIfNotNull(result, currentChar);
+    return currentIndex + 1;
+  }
+
+  /** Skips a single-line comment from startIndex and adds it to result if result is not null. */
+  static int skipSingleLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    int endIndex = sql.indexOf('\n', startIndex + 2);
+    if (endIndex == -1) {
+      endIndex = sql.length();
+    } else {
+      // Include the newline character.
+      endIndex++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex, endIndex));
+    return endIndex;
+  }
+
+  /** Skips a multi-line comment from startIndex and adds it to result if result is not null. */
+  static int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    // Current position is start + '/*'.length().
+    int pos = startIndex + 2;
+    // PostgreSQL allows comments to be nested. That is, the following is allowed:
+    // '/* test /* inner comment */ still a comment */'
+    int level = 1;
+    while (pos < sql.length()) {
+      if (sql.charAt(pos) == SLASH && sql.length() > (pos + 1) && sql.charAt(pos + 1) == ASTERISK) {
+        level++;
+      }
+      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
+        level--;
+        if (level == 0) {
+          pos += 2;
+          appendIfNotNull(result, sql.substring(startIndex, pos));
+          return pos;
+        }
+      }
+      pos++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex));
+    return sql.length();
+  }
+
+  /** Skips a quoted string from startIndex. */
+  private int skipQuoted(
+      String sql, int startIndex, char startQuote, @Nullable StringBuilder result) {
+    return skipQuoted(sql, startIndex, startQuote, null, result);
+  }
+
+  /**
+   * Skips a quoted string from startIndex. The quote character is assumed to be $ if dollarTag is
+   * not null.
+   */
+  private int skipQuoted(
+      String sql,
+      int startIndex,
+      char startQuote,
+      String dollarTag,
+      @Nullable StringBuilder result) {
+    int currentIndex = startIndex + 1;
+    while (currentIndex < sql.length()) {
+      char currentChar = sql.charAt(currentIndex);
+      if (currentChar == startQuote) {
+        if (currentChar == DOLLAR) {
+          // Check if this is the end of the current dollar quoted string.
+          String tag = parseDollarQuotedString(sql, currentIndex + 1);
+          if (tag != null && tag.equals(dollarTag)) {
+            appendIfNotNull(result, currentChar, dollarTag, currentChar);
+            return currentIndex + tag.length() + 2;
+          }
+        } else if (sql.length() > currentIndex + 1 && sql.charAt(currentIndex + 1) == startQuote) {
+          // This is an escaped quote (e.g. 'foo''bar')
+          appendIfNotNull(result, currentChar);
+          appendIfNotNull(result, currentChar);
+          currentIndex += 2;
+          continue;
+        } else {
+          appendIfNotNull(result, currentChar);
+          return currentIndex + 1;
+        }
+      }
+      currentIndex++;
+      appendIfNotNull(result, currentChar);
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
+  }
+
+  /** Appends the given character to result if result is not null. */
+  private void appendIfNotNull(@Nullable StringBuilder result, char currentChar) {
+    if (result != null) {
+      result.append(currentChar);
+    }
+  }
+
+  /** Appends the given suffix to result if result is not null. */
+  private static void appendIfNotNull(@Nullable StringBuilder result, String suffix) {
+    if (result != null) {
+      result.append(suffix);
+    }
+  }
+
+  /** Appends the given prefix, tag, and suffix to result if result is not null. */
+  private static void appendIfNotNull(
+      @Nullable StringBuilder result, char prefix, String tag, char suffix) {
+    if (result != null) {
+      result.append(prefix).append(tag).append(suffix);
+    }
   }
 }

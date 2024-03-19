@@ -46,7 +46,6 @@ import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.ByteArray;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
@@ -57,6 +56,8 @@ import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.SpannerOptions.SpannerCallContextTimeoutConfigurator;
@@ -100,6 +101,8 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -131,6 +134,7 @@ import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class DatabaseClientImplTest {
+
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";
@@ -277,7 +281,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -285,52 +289,53 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+      poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      mockSpanner.setCommitExecutionTime(
-          SimulatedExecutionTime.ofException(
-              mockSpanner.createSessionNotFoundException("TEST_SESSION_NAME")));
-      while (true) {
-        try {
-          transaction.executeUpdate(UPDATE_STATEMENT);
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        mockSpanner.setCommitExecutionTime(
+            SimulatedExecutionTime.ofException(
+                mockSpanner.createSessionNotFoundException("TEST_SESSION_NAME")));
+        while (true) {
+          try {
+            transaction.executeUpdate(UPDATE_STATEMENT);
 
-          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
-          // one.
-          // As per this test, anything which takes more than 2s is long-running
-          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+            // one.
+            // As per this test, anything which takes more than 2s is long-running
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
+          }
+          mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(0, 0));
         }
-        mockSpanner.setCommitExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(0, 0));
       }
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+
+      // first session executed update, session found to be long-running and cleaned up.
+      // During commit, SessionNotFound exception from backend caused replacement of session and
+      // transaction needs to be retried.
+      // On retry, session again found to be long-running and cleaned up.
+      // During commit, there was no exception from backend.
+
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(2, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
     }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
-
-    // first session executed update, session found to be long-running and cleaned up.
-    // During commit, SessionNotFound exception from backend caused replacement of session and
-    // transaction needs to be retried.
-    // On retry, session again found to be long-running and cleaned up.
-    // During commit, there was no exception from backend.
-
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(2, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
   }
 
   @Test
@@ -353,7 +358,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -361,47 +366,48 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+      poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          transaction.executeUpdate(UPDATE_STATEMENT);
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            transaction.executeUpdate(UPDATE_STATEMENT);
 
-          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
-          // one.
-          // As per this test, anything which takes more than 2s is long-running
-          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+            // one.
+            // As per this test, anything which takes more than 2s is long-running
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
+          }
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    // first session executed update, session found to be long-running and cleaned up.
-    // During commit, SessionNotFound exception from backend caused replacement of session and
-    // transaction needs to be retried.
-    // On retry, session again found to be long-running and cleaned up.
-    // During commit, there was no exception from backend.
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(1, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      // first session executed update, session found to be long-running and cleaned up.
+      // During commit, SessionNotFound exception from backend caused replacement of session and
+      // transaction needs to be retried.
+      // On retry, session again found to be long-running and cleaned up.
+      // During commit, there was no exception from backend.
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(1, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -424,7 +430,7 @@ public class DatabaseClientImplTest {
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
 
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -432,29 +438,30 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
 
-    client.executePartitionedUpdate(UPDATE_STATEMENT);
+      client.executePartitionedUpdate(UPDATE_STATEMENT);
 
-    // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running one.
-    // As per this test, anything which takes more than 2s is long-running
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+      // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running one.
+      // As per this test, anything which takes more than 2s is long-running
+      poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
 
-    // force trigger pool maintainer to check for long-running sessions
-    client.pool.poolMaintainer.maintainPool();
+      // force trigger pool maintainer to check for long-running sessions
+      client.pool.poolMaintainer.maintainPool();
 
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   /**
@@ -486,7 +493,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -494,66 +501,67 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+      poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
 
-    client.executePartitionedUpdate(UPDATE_STATEMENT);
+      client.executePartitionedUpdate(UPDATE_STATEMENT);
 
-    // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running one.
-    // As per this test, anything which takes more than 2s is long-running
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+      // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running one.
+      // As per this test, anything which takes more than 2s is long-running
+      poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
 
-    // force trigger pool maintainer to check for long-running sessions
-    client.pool.poolMaintainer.maintainPool();
+      // force trigger pool maintainer to check for long-running sessions
+      client.pool.poolMaintainer.maintainPool();
 
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
 
-    poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
+      poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          transaction.executeUpdate(UPDATE_STATEMENT);
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            transaction.executeUpdate(UPDATE_STATEMENT);
 
-          // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
-          // one.
-          // As per this test, anything which takes more than 2s is long-running
-          poolMaintainerClock.currentTimeMillis += Duration.ofMinutes(3).toMillis();
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // Simulate a delay of 3 minutes to ensure that the below transaction is a long-running
+            // one.
+            // As per this test, anything which takes more than 2s is long-running
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMinutes(3).toMillis());
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
+          }
         }
       }
-    }
-    endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    // first session executed update, session found to be long-running and cleaned up.
-    // During commit, SessionNotFound exception from backend caused replacement of session and
-    // transaction needs to be retried.
-    // On retry, session again found to be long-running and cleaned up.
-    // During commit, there was no exception from backend.
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(1, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      // first session executed update, session found to be long-running and cleaned up.
+      // During commit, SessionNotFound exception from backend caused replacement of session and
+      // transaction needs to be retried.
+      // On retry, session again found to be long-running and cleaned up.
+      // During commit, there was no exception from backend.
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(1, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -577,7 +585,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -585,53 +593,53 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    TransactionRunner runner = client.readWriteTransaction();
-    runner.run(
-        transaction -> {
-          try (ResultSet resultSet =
-              transaction.read(
-                  READ_TABLE_NAME,
-                  KeySet.singleKey(Key.of(1L)),
-                  READ_COLUMN_NAMES,
-                  Options.priority(RpcPriority.HIGH))) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+      TransactionRunner runner = client.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            try (ResultSet resultSet =
+                transaction.read(
+                    READ_TABLE_NAME,
+                    KeySet.singleKey(Key.of(1L)),
+                    READ_COLUMN_NAMES,
+                    Options.priority(RpcPriority.HIGH))) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
 
-          try (ResultSet resultSet =
-              transaction.read(
-                  READ_TABLE_NAME,
-                  KeySet.singleKey(Key.of(1L)),
-                  READ_COLUMN_NAMES,
-                  Options.priority(RpcPriority.HIGH))) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+            try (ResultSet resultSet =
+                transaction.read(
+                    READ_TABLE_NAME,
+                    KeySet.singleKey(Key.of(1L)),
+                    READ_COLUMN_NAMES,
+                    Options.priority(RpcPriority.HIGH))) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
 
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          return null;
-        });
+            return null;
+          });
 
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+    }
   }
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningQueriesUsingTransactionRunner_retainSessionForTransaction()
-          throws Exception {
+      testPoolMaintainer_whenLongRunningQueriesUsingTransactionRunner_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -649,7 +657,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -657,43 +665,43 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    TransactionRunner runner = client.readWriteTransaction();
-    runner.run(
-        transaction -> {
-          try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+      TransactionRunner runner = client.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
 
-          try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+            try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
 
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          return null;
-        });
+            return null;
+          });
 
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+    }
   }
 
   @Test
   public void
-      testPoolMaintainer_whenLongRunningUpdatesUsingTransactionManager_retainSessionForTransaction()
-          throws Exception {
+      testPoolMaintainer_whenLongRunningUpdatesUsingTransactionManager_retainSessionForTransaction() {
     FakeClock poolMaintainerClock = new FakeClock();
     InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder()
@@ -711,7 +719,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -719,40 +727,41 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          transaction.executeUpdate(UPDATE_STATEMENT);
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            transaction.executeUpdate(UPDATE_STATEMENT);
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
 
-          transaction.executeUpdate(UPDATE_STATEMENT);
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+            transaction.executeUpdate(UPDATE_STATEMENT);
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
 
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
+          }
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -775,7 +784,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -783,56 +792,55 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          try (ResultSet resultSet =
-              transaction.read(
-                  READ_TABLE_NAME,
-                  KeySet.singleKey(Key.of(1L)),
-                  READ_COLUMN_NAMES,
-                  Options.priority(RpcPriority.HIGH))) {
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            try (ResultSet resultSet =
+                transaction.read(
+                    READ_TABLE_NAME,
+                    KeySet.singleKey(Key.of(1L)),
+                    READ_COLUMN_NAMES,
+                    Options.priority(RpcPriority.HIGH))) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
 
-            while (resultSet.next()) {}
+            try (ResultSet resultSet =
+                transaction.read(
+                    READ_TABLE_NAME,
+                    KeySet.singleKey(Key.of(1L)),
+                    READ_COLUMN_NAMES,
+                    Options.priority(RpcPriority.HIGH))) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
+
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
+
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
           }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
-
-          try (ResultSet resultSet =
-              transaction.read(
-                  READ_TABLE_NAME,
-                  KeySet.singleKey(Key.of(1L)),
-                  READ_COLUMN_NAMES,
-                  Options.priority(RpcPriority.HIGH))) {
-
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
-
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
-
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -855,7 +863,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -863,42 +871,43 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          transaction.readRow(READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES);
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            transaction.readRow(READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES);
 
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
 
-          transaction.readRow(READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES);
+            transaction.readRow(READ_TABLE_NAME, Key.of(1L), READ_COLUMN_NAMES);
 
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
 
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
+          }
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -921,7 +930,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -929,46 +938,47 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          try (ResultSet resultSet =
-              transaction.analyzeUpdateStatement(UPDATE_STATEMENT, QueryAnalyzeMode.PROFILE); ) {
-            while (resultSet.next()) {}
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            try (ResultSet resultSet =
+                transaction.analyzeUpdateStatement(UPDATE_STATEMENT, QueryAnalyzeMode.PROFILE)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
+
+            try (ResultSet resultSet =
+                transaction.analyzeUpdateStatement(UPDATE_STATEMENT, QueryAnalyzeMode.PROFILE)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
+
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
+
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
           }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
-
-          try (ResultSet resultSet =
-              transaction.analyzeUpdateStatement(UPDATE_STATEMENT, QueryAnalyzeMode.PROFILE); ) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
-
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
-
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -991,7 +1001,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -999,42 +1009,43 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
 
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
 
-          transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
+            transaction.batchUpdate(Lists.newArrayList(UPDATE_STATEMENT));
 
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
 
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
+          }
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -1057,7 +1068,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -1065,42 +1076,43 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          transaction.batchUpdateAsync(Lists.newArrayList(UPDATE_STATEMENT));
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            transaction.batchUpdateAsync(Lists.newArrayList(UPDATE_STATEMENT));
 
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
 
-          transaction.batchUpdateAsync(Lists.newArrayList(UPDATE_STATEMENT));
+            transaction.batchUpdateAsync(Lists.newArrayList(UPDATE_STATEMENT));
 
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
 
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
 
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
+          }
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -1123,7 +1135,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -1131,44 +1143,45 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-            while (resultSet.next()) {}
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
+
+            try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
+
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
+
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
           }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
-
-          try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
-
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
-
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -1191,7 +1204,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -1199,44 +1212,45 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          try (ResultSet resultSet = transaction.executeQueryAsync(SELECT1)) {
-            while (resultSet.next()) {}
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            try (ResultSet resultSet = transaction.executeQueryAsync(SELECT1)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
+
+            try (ResultSet resultSet = transaction.executeQueryAsync(SELECT1)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
+
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
+
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
           }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
-
-          try (ResultSet resultSet = transaction.executeQueryAsync(SELECT1)) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
-
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
-
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -1259,7 +1273,7 @@ public class DatabaseClientImplTest {
             .setLoopFrequency(1000L) // main thread runs every 1s
             .setPoolMaintainerClock(poolMaintainerClock)
             .build();
-    spanner =
+    try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
@@ -1267,44 +1281,47 @@ public class DatabaseClientImplTest {
             .setCredentials(NoCredentials.getInstance())
             .setSessionPoolOption(sessionPoolOptions)
             .build()
-            .getService();
-    DatabaseClientImpl client =
-        (DatabaseClientImpl)
-            spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+            .getService()) {
+      DatabaseClientImpl client =
+          (DatabaseClientImpl)
+              spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      Instant initialExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          try (ResultSet resultSet = transaction.analyzeQuery(SELECT1, QueryAnalyzeMode.PROFILE)) {
-            while (resultSet.next()) {}
+      try (TransactionManager manager = client.transactionManager()) {
+        TransactionContext transaction = manager.begin();
+        while (true) {
+          try {
+            try (ResultSet resultSet =
+                transaction.analyzeQuery(SELECT1, QueryAnalyzeMode.PROFILE)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(1050).toMillis());
+
+            try (ResultSet resultSet =
+                transaction.analyzeQuery(SELECT1, QueryAnalyzeMode.PROFILE)) {
+              consumeResults(resultSet);
+            }
+            poolMaintainerClock.currentTimeMillis.addAndGet(Duration.ofMillis(2050).toMillis());
+
+            // force trigger pool maintainer to check for long-running sessions
+            client.pool.poolMaintainer.maintainPool();
+
+            manager.commit();
+            assertNotNull(manager.getCommitTimestamp());
+            break;
+          } catch (AbortedException e) {
+            transaction = manager.resetForRetry();
           }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(1050).toMillis();
-
-          try (ResultSet resultSet = transaction.analyzeQuery(SELECT1, QueryAnalyzeMode.PROFILE)) {
-            while (resultSet.next()) {}
-          }
-          poolMaintainerClock.currentTimeMillis += Duration.ofMillis(2050).toMillis();
-
-          // force trigger pool maintainer to check for long-running sessions
-          client.pool.poolMaintainer.maintainPool();
-
-          manager.commit();
-          assertNotNull(manager.getCommitTimestamp());
-          break;
-        } catch (AbortedException e) {
-          transaction = manager.resetForRetry();
         }
       }
-    }
-    Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
+      Instant endExecutionTime = client.pool.poolMaintainer.lastExecutionTime;
 
-    assertNotEquals(
-        endExecutionTime,
-        initialExecutionTime); // if session clean up task runs then these timings won't match
-    assertEquals(0, client.pool.numLeakedSessionsRemoved());
-    assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+      assertNotEquals(
+          endExecutionTime,
+          initialExecutionTime); // if session clean up task runs then these timings won't match
+      assertEquals(0, client.pool.numLeakedSessionsRemoved());
+      assertTrue(client.pool.getNumberOfSessionsInPool() <= client.pool.totalSessions());
+    }
   }
 
   @Test
@@ -1489,11 +1506,9 @@ public class DatabaseClientImplTest {
   public void testBatchWriteAtLeastOnceWithOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.priority(RpcPriority.LOW));
-    for (BatchWriteResponse response : responseStream) {}
+    consumeBatchWriteStream(
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.priority(RpcPriority.LOW)));
 
-    assertNotNull(responseStream);
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
@@ -1505,11 +1520,9 @@ public class DatabaseClientImplTest {
   public void testBatchWriteAtLeastOnceWithTagOptions() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    ServerStream<BatchWriteResponse> responseStream =
-        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.tag("app=spanner,env=test"));
-    for (BatchWriteResponse response : responseStream) {}
+    consumeBatchWriteStream(
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.tag("app=spanner,env=test")));
 
-    assertNotNull(responseStream);
     List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
     assertEquals(requests.size(), 1);
     BatchWriteRequest request = requests.get(0);
@@ -1526,7 +1539,7 @@ public class DatabaseClientImplTest {
         client
             .singleUse()
             .executeQuery(SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
-      while (resultSet.next()) {}
+      consumeResults(resultSet);
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -1544,7 +1557,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet =
         client.singleUse().executeQuery(SELECT1, Options.directedRead(DIRECTED_READ_OPTIONS1))) {
-      while (resultSet.next()) {}
+      consumeResults(resultSet);
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -1567,7 +1580,7 @@ public class DatabaseClientImplTest {
         spannerWithDirectedReadOptions.getDatabaseClient(
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
-      while (resultSet.next()) {}
+      consumeResults(resultSet);
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -1591,7 +1604,7 @@ public class DatabaseClientImplTest {
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet =
         client.singleUse().executeQuery(SELECT1, Options.directedRead(DIRECTED_READ_OPTIONS1))) {
-      while (resultSet.next()) {}
+      consumeResults(resultSet);
     }
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
@@ -1613,7 +1626,7 @@ public class DatabaseClientImplTest {
                 KeySet.singleKey(Key.of(1L)),
                 READ_COLUMN_NAMES,
                 Options.tag("app=spanner,env=test,action=read"))) {
-      while (resultSet.next()) {}
+      consumeResults(resultSet);
     }
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -1637,7 +1650,7 @@ public class DatabaseClientImplTest {
                 KeySet.singleKey(Key.of(1L)),
                 READ_COLUMN_NAMES,
                 Options.directedRead(DIRECTED_READ_OPTIONS1))) {
-      while (resultSet.next()) {}
+      consumeResults(resultSet);
     }
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -1661,7 +1674,7 @@ public class DatabaseClientImplTest {
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet =
         client.singleUse().read(READ_TABLE_NAME, KeySet.singleKey(Key.of(1L)), READ_COLUMN_NAMES)) {
-      while (resultSet.next()) {}
+      consumeResults(resultSet);
     }
 
     List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
@@ -1687,7 +1700,7 @@ public class DatabaseClientImplTest {
     runner.run(
         transaction -> {
           try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-            while (resultSet.next()) {}
+            consumeResults(resultSet);
           }
           return null;
         });
@@ -1708,7 +1721,7 @@ public class DatabaseClientImplTest {
         transaction -> {
           try (ResultSet resultSet =
               transaction.executeQuery(SELECT1, Options.tag("app=spanner,env=test,action=query"))) {
-            while (resultSet.next()) {}
+            consumeResults(resultSet);
           }
           return null;
         });
@@ -1737,7 +1750,7 @@ public class DatabaseClientImplTest {
                   KeySet.singleKey(Key.of(1L)),
                   READ_COLUMN_NAMES,
                   Options.tag("app=spanner,env=test,action=read"))) {
-            while (resultSet.next()) {}
+            consumeResults(resultSet);
           }
           return null;
         });
@@ -1835,11 +1848,12 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithTag() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionManager manager =
-        client.transactionManager(Options.tag("app=spanner,env=test,action=manager"));
-    TransactionContext transaction = manager.begin();
-    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-    manager.commit();
+    try (TransactionManager manager =
+        client.transactionManager(Options.tag("app=spanner,env=test,action=manager"))) {
+      TransactionContext transaction = manager.begin();
+      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+      manager.commit();
+    }
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -2257,7 +2271,7 @@ public class DatabaseClientImplTest {
             txn -> ApiFutures.immediateFuture(txn.executeUpdate(INVALID_UPDATE_STATEMENT)),
             executor);
 
-    ExecutionException e = assertThrows(ExecutionException.class, () -> fut.get());
+    ExecutionException e = assertThrows(ExecutionException.class, fut::get);
     assertThat(e.getCause()).isInstanceOf(SpannerException.class);
     SpannerException se = (SpannerException) e.getCause();
     assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
@@ -2265,7 +2279,6 @@ public class DatabaseClientImplTest {
     executor.shutdown();
   }
 
-  @SuppressWarnings("resource")
   @Test
   public void testTransactionManager() {
     DatabaseClient client =
@@ -2285,7 +2298,6 @@ public class DatabaseClientImplTest {
     }
   }
 
-  @SuppressWarnings("resource")
   @Test
   public void testTransactionManager_returnsCommitStats() {
     DatabaseClient client =
@@ -2307,7 +2319,6 @@ public class DatabaseClientImplTest {
     }
   }
 
-  @SuppressWarnings("resource")
   @Test
   public void transactionManagerIsNonBlocking() throws Exception {
     mockSpanner.freeze();
@@ -2323,6 +2334,7 @@ public class DatabaseClientImplTest {
           txManager.commit();
           break;
         } catch (AbortedException e) {
+          //noinspection BusyWait
           Thread.sleep(e.getRetryDelayInMillis());
           transaction = txManager.resetForRetry();
         }
@@ -2330,9 +2342,8 @@ public class DatabaseClientImplTest {
     }
   }
 
-  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerExecuteQueryAsync() throws Exception {
+  public void transactionManagerExecuteQueryAsync() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     final AtomicInteger rowCount = new AtomicInteger();
@@ -2470,7 +2481,7 @@ public class DatabaseClientImplTest {
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       assertThat(spanner.getOptions().getPartitionedDmlTimeout()).isEqualTo(Duration.ofMillis(10L));
-      // PDML should timeout with these settings.
+      // PDML should time out with these settings.
       mockSpanner.setExecuteSqlExecutionTime(
           SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0));
       SpannerException e =
@@ -2478,9 +2489,9 @@ public class DatabaseClientImplTest {
               SpannerException.class, () -> client.executePartitionedUpdate(UPDATE_STATEMENT));
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
 
-      // Normal DML should not timeout.
+      // Normal DML should not time out.
       mockSpanner.setExecuteSqlExecutionTime(SimulatedExecutionTime.ofMinimumAndRandomTime(10, 0));
-      long updateCount =
+      Long updateCount =
           client
               .readWriteTransaction()
               .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
@@ -2580,6 +2591,7 @@ public class DatabaseClientImplTest {
         Stopwatch watch = Stopwatch.createStarted();
         while (watch.elapsed(TimeUnit.SECONDS) < 5
             && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
+          //noinspection BusyWait
           Thread.sleep(1L);
         }
         // All session creation should fail and stop trying.
@@ -2618,11 +2630,11 @@ public class DatabaseClientImplTest {
                     DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
         // The create session failure should propagate to the client and not retry.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          assertThrows(ResourceNotFoundException.class, () -> rs.next());
+          assertThrows(ResourceNotFoundException.class, rs::next);
           // The server should only receive one BatchCreateSessions request.
           assertThat(mockSpanner.getRequests()).hasSize(1);
         }
-        assertThrows(ResourceNotFoundException.class, () -> dbClient.readWriteTransaction());
+        assertThrows(ResourceNotFoundException.class, dbClient::readWriteTransaction);
         // No additional requests should have been sent by the client.
         assertThat(mockSpanner.getRequests()).hasSize(1);
       }
@@ -2658,6 +2670,7 @@ public class DatabaseClientImplTest {
         Stopwatch watch = Stopwatch.createStarted();
         while (watch.elapsed(TimeUnit.SECONDS) < 5
             && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
+          //noinspection BusyWait
           Thread.sleep(1L);
         }
         // All session creation should fail and stop trying.
@@ -2666,9 +2679,10 @@ public class DatabaseClientImplTest {
         // Force a maintainer run. This should schedule new session creation.
         dbClient.pool.poolMaintainer.maintainPool();
         // Wait until the replenish has finished.
-        watch = watch.reset().start();
+        watch.reset().start();
         while (watch.elapsed(TimeUnit.SECONDS) < 5
             && dbClient.pool.getNumberOfSessionsBeingCreated() > 0) {
+          //noinspection BusyWait
           Thread.sleep(1L);
         }
         // All session creation from replenishPool should fail and stop trying.
@@ -2710,6 +2724,7 @@ public class DatabaseClientImplTest {
         Stopwatch watch = Stopwatch.createStarted();
         while (watch.elapsed(TimeUnit.SECONDS) < 5
             && (dbClient.pool.getNumberOfSessionsBeingCreated() > 0)) {
+          //noinspection BusyWait
           Thread.sleep(1L);
         }
         // Simulate that the database or instance has been deleted.
@@ -2718,7 +2733,7 @@ public class DatabaseClientImplTest {
 
         // All subsequent calls should fail with a DatabaseNotFoundException.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          assertThrows(ResourceNotFoundException.class, () -> rs.next());
+          assertThrows(ResourceNotFoundException.class, rs::next);
         }
         assertThrows(
             ResourceNotFoundException.class,
@@ -2745,7 +2760,7 @@ public class DatabaseClientImplTest {
         assertThat(newClient).isNotSameInstanceAs(dbClient);
         // Executing a query should now work without problems.
         try (ResultSet rs = newClient.singleUse().executeQuery(SELECT1)) {
-          while (rs.next()) {}
+          consumeResults(rs);
         }
         assertThat(mockSpanner.getRequests()).isNotEmpty();
       }
@@ -2807,6 +2822,7 @@ public class DatabaseClientImplTest {
     Stopwatch watch = Stopwatch.createStarted();
     while (watch.elapsed(TimeUnit.SECONDS) < 5
         && client.pool.getNumberOfSessionsInPool() < minSessions) {
+      //noinspection BusyWait
       Thread.sleep(1L);
     }
     assertThat(client.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
@@ -2838,6 +2854,7 @@ public class DatabaseClientImplTest {
     while (watch.elapsed(TimeUnit.SECONDS) < 5
         && (client1.pool.getNumberOfSessionsInPool() < minSessions
             || client2.pool.getNumberOfSessionsInPool() < minSessions)) {
+      //noinspection BusyWait
       Thread.sleep(1L);
     }
     assertThat(client1.pool.getNumberOfSessionsInPool()).isEqualTo(minSessions);
@@ -2869,6 +2886,7 @@ public class DatabaseClientImplTest {
                                   return 0L;
                                 }
                               });
+                  assertNotNull(add);
                   try (ResultSet rs = transaction.executeQuery(SELECT1)) {
                     if (rs.next()) {
                       return add + rs.getLong(0);
@@ -2908,7 +2926,7 @@ public class DatabaseClientImplTest {
                               .build())
                       .build())) {
         // Just iterate over the results to execute the query.
-        while (rs.next()) {}
+        consumeResults(rs);
       }
       // Check that the last query was executed using a custom optimizer version and statistics
       // package.
@@ -2949,7 +2967,7 @@ public class DatabaseClientImplTest {
                     .build(),
                 QueryAnalyzeMode.PROFILE)) {
           // Just iterate over the results to execute the query.
-          while (rs.next()) {}
+          consumeResults(rs);
         }
       }
       // Check that the last query was executed using a custom optimizer version and statistics
@@ -2996,7 +3014,7 @@ public class DatabaseClientImplTest {
               Options.directedRead(DIRECTED_READ_OPTIONS1));
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
-        while (rs.next()) {}
+        consumeResults(rs);
       } finally {
         transaction.cleanup();
       }
@@ -3046,7 +3064,7 @@ public class DatabaseClientImplTest {
                   .build());
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
-        while (rs.next()) {}
+        consumeResults(rs);
       } finally {
         transaction.cleanup();
       }
@@ -3092,7 +3110,7 @@ public class DatabaseClientImplTest {
               Options.directedRead(DIRECTED_READ_OPTIONS1));
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
-        while (rs.next()) {}
+        consumeResults(rs);
       } finally {
         transaction.cleanup();
       }
@@ -3134,6 +3152,7 @@ public class DatabaseClientImplTest {
               Lists.newArrayList("1"));
       try (ResultSet rs = transaction.execute(partitions.get(0))) {
         // Just iterate over the results to execute the query.
+        //noinspection StatementWithEmptyBody
         while (rs.next()) {}
       } finally {
         transaction.cleanup();
@@ -3245,7 +3264,7 @@ public class DatabaseClientImplTest {
       // The following call is non-blocking and will not generate an exception.
       ResultSet rs = client.singleUse().executeQuery(SELECT1);
       // Actually trying to get any results will cause an exception.
-      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      SpannerException e = assertThrows(SpannerException.class, rs::next);
       assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
     }
   }
@@ -3262,7 +3281,7 @@ public class DatabaseClientImplTest {
             .singleUse()
             .executeQuery(
                 Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
-      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      SpannerException e = assertThrows(SpannerException.class, rs::next);
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id'");
       // The error message should normally not include the parameter values to prevent sensitive
@@ -3281,7 +3300,7 @@ public class DatabaseClientImplTest {
             .executeQuery(
                 Statement.newBuilder("SELECT * FROM FOO WHERE ID=@id").bind("id").to(1L).build())) {
       logger.setLevel(Level.FINEST);
-      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      SpannerException e = assertThrows(SpannerException.class, rs::next);
       // With log level set to FINEST the error should also include the parameter values.
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("Statement: 'SELECT * FROM FOO WHERE ID=@id {id: 1}'");
@@ -3299,7 +3318,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet rs =
         client.singleUse().read("FOO", KeySet.singleKey(Key.of(1L)), ImmutableList.of("BAR"))) {
-      SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+      SpannerException e = assertThrows(SpannerException.class, rs::next);
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).doesNotContain("Statement:");
     }
@@ -3320,7 +3339,7 @@ public class DatabaseClientImplTest {
             () -> {
               // Query should fail with a timeout.
               try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
-                SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+                SpannerException e = assertThrows(SpannerException.class, rs::next);
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.DEADLINE_EXCEEDED);
               }
               // Update should succeed.
@@ -3342,7 +3361,7 @@ public class DatabaseClientImplTest {
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
-        SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
+        SpannerException e = assertThrows(SpannerException.class, rs::next);
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
       }
     } finally {
@@ -3357,7 +3376,10 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    TraceWrapper traceWrapper =
+        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, traceWrapper);
     client.readWriteTransaction(option);
 
     verify(session).readWriteTransaction(option);
@@ -3370,10 +3392,10 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
-    client.transactionManager(option);
-
-    verify(session).transactionManager(option);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+    try (TransactionManager ignore = client.transactionManager(option)) {
+      verify(session).transactionManager(option);
+    }
   }
 
   @Test
@@ -3383,7 +3405,7 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
     client.runAsync(option);
 
     verify(session).runAsync(option);
@@ -3396,10 +3418,10 @@ public class DatabaseClientImplTest {
     when(pool.getSession()).thenReturn(session);
     TransactionOption option = mock(TransactionOption.class);
 
-    DatabaseClientImpl client = new DatabaseClientImpl(pool);
-    client.transactionManagerAsync(option);
-
-    verify(session).transactionManagerAsync(option);
+    DatabaseClientImpl client = new DatabaseClientImpl(pool, mock(TraceWrapper.class));
+    try (AsyncTransactionManager ignore = client.transactionManagerAsync(option)) {
+      verify(session).transactionManagerAsync(option);
+    }
   }
 
   @Test
@@ -3408,6 +3430,7 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     try (ResultSet resultSet =
         client.singleUse().executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
+      //noinspection StatementWithEmptyBody
       while (resultSet.next()) {}
     }
 
@@ -3430,6 +3453,7 @@ public class DatabaseClientImplTest {
                 KeySet.singleKey(Key.of(1L)),
                 READ_COLUMN_NAMES,
                 Options.priority(RpcPriority.HIGH))) {
+      //noinspection StatementWithEmptyBody
       while (resultSet.next()) {}
     }
 
@@ -3449,6 +3473,7 @@ public class DatabaseClientImplTest {
         transaction -> {
           try (ResultSet resultSet =
               transaction.executeQuery(SELECT1, Options.priority(RpcPriority.HIGH))) {
+            //noinspection StatementWithEmptyBody
             while (resultSet.next()) {}
           }
           return null;
@@ -3474,6 +3499,7 @@ public class DatabaseClientImplTest {
                   KeySet.singleKey(Key.of(1L)),
                   READ_COLUMN_NAMES,
                   Options.priority(RpcPriority.HIGH))) {
+            //noinspection StatementWithEmptyBody
             while (resultSet.next()) {}
           }
           return null;
@@ -3555,10 +3581,12 @@ public class DatabaseClientImplTest {
   public void testTransactionManagerCommitWithPriority() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-    TransactionManager manager = client.transactionManager(Options.priority(RpcPriority.HIGH));
-    TransactionContext transaction = manager.begin();
-    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
-    manager.commit();
+    try (TransactionManager manager =
+        client.transactionManager(Options.priority(RpcPriority.HIGH))) {
+      TransactionContext transaction = manager.begin();
+      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+      manager.commit();
+    }
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -3610,6 +3638,112 @@ public class DatabaseClientImplTest {
     CommitRequest request = requests.get(0);
     assertNotNull(request.getRequestOptions());
     assertEquals(Priority.PRIORITY_HIGH, request.getRequestOptions().getPriority());
+  }
+
+  @Test
+  public void testCommitWithoutMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertFalse(request.hasMaxCommitDelay());
+  }
+
+  @Test
+  public void testCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner =
+        client.readWriteTransaction(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testTransactionManagerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionManager manager =
+        client.transactionManager(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    TransactionContext transaction = manager.begin();
+    transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+    manager.commit();
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testAsyncRunnerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    get(
+        runner.runAsync(
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
+            },
+            executor));
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommitWithMaxCommitDelay() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (AsyncTransactionManager manager =
+        client.transactionManagerAsync(Options.maxCommitDelay(java.time.Duration.ofMillis(100)))) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      get(
+          transaction
+              .then(
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
+                  executor)
+              .commitAsync());
+    }
+
+    List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(requests).hasSize(1);
+    CommitRequest request = requests.get(0);
+    assertNotNull(request.getMaxCommitDelay());
+    assertEquals(
+        com.google.protobuf.Duration.newBuilder().setNanos(100000000).build(),
+        request.getMaxCommitDelay());
   }
 
   @Test
@@ -3694,16 +3828,16 @@ public class DatabaseClientImplTest {
               ctx = transactionContext;
             }
             try (ResultSet rs = ctx.executeQuery(SELECT1)) {
+              //noinspection StatementWithEmptyBody
               while (rs.next()) {}
             }
             return 1L;
           }
         };
-    assertEquals(Long.valueOf(1L), client.readWriteTransaction().run(tx -> function.apply(tx)));
+    assertEquals(Long.valueOf(1L), client.readWriteTransaction().run(function::apply));
     SpannerException exception =
         assertThrows(
-            SpannerException.class,
-            () -> client.readWriteTransaction().run(tx -> function.apply(tx)));
+            SpannerException.class, () -> client.readWriteTransaction().run(function::apply));
     assertTrue(exception.getMessage().contains("Context has been closed"));
   }
 
@@ -3929,6 +4063,7 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testGetAllTypesAsString() {
+    SingerInfo info = SingerInfo.newBuilder().setSingerId(1).build();
     for (Dialect dialect : Dialect.values()) {
       Statement statement = Statement.of("select * from all_types");
       mockSpanner.putStatementResult(
@@ -3938,205 +4073,7 @@ public class DatabaseClientImplTest {
                   .setMetadata(
                       RandomResultSetGenerator.generateAllTypesMetadata(
                           RandomResultSetGenerator.generateAllTypes(dialect)))
-                  .addRows(
-                      ListValue.newBuilder()
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder().setStringValue("100").build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("6.626")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("test-string")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("{\"key1\": \"value1\"}")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue(
-                                      Base64.getEncoder()
-                                          .encodeToString(
-                                              "test-bytes".getBytes(StandardCharsets.UTF_8)))
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("2023-01-11")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setStringValue("2023-01-11T11:55:18.123456789Z")
-                                  .build())
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setBoolValue(true)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setBoolValue(false)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(String.valueOf(Long.MAX_VALUE))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(String.valueOf(Long.MIN_VALUE))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNumberValue(-12345.6789d)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNumberValue(3.14d)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("6.626")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("-8.9123")
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("test-string1")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("test-string2")
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("{\"key\": \"value1\"}")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("{\"key\": \"value2\"}")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(
-                                                      Base64.getEncoder()
-                                                          .encodeToString(
-                                                              "test-bytes1"
-                                                                  .getBytes(
-                                                                      StandardCharsets.UTF_8)))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue(
-                                                      Base64.getEncoder()
-                                                          .encodeToString(
-                                                              "test-bytes2"
-                                                                  .getBytes(
-                                                                      StandardCharsets.UTF_8)))
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2000-02-29")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2000-01-01")
-                                                  .build())
-                                          .build()))
-                          .addValues(
-                              com.google.protobuf.Value.newBuilder()
-                                  .setListValue(
-                                      ListValue.newBuilder()
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2023-01-11T11:55:18.123456789Z")
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setNullValue(NullValue.NULL_VALUE)
-                                                  .build())
-                                          .addValues(
-                                              com.google.protobuf.Value.newBuilder()
-                                                  .setStringValue("2023-01-12T11:55:18Z")
-                                                  .build())
-                                          .build()))
-                          .build())
+                  .addRows(getRows(dialect))
                   .build()));
 
       DatabaseClient client =
@@ -4146,6 +4083,7 @@ public class DatabaseClientImplTest {
         int col = 0;
         assertAsString("true", resultSet, col++);
         assertAsString("100", resultSet, col++);
+        assertAsString("-3.14", resultSet, col++);
         assertAsString("3.14", resultSet, col++);
         assertAsString("6.626", resultSet, col++);
         assertAsString("test-string", resultSet, col++);
@@ -4161,6 +4099,15 @@ public class DatabaseClientImplTest {
         assertAsString(
             ImmutableList.of(
                 String.format("%d", Long.MAX_VALUE), String.format("%d", Long.MIN_VALUE), "NULL"),
+            resultSet,
+            col++);
+        assertAsString(
+            ImmutableList.of(
+                "NULL",
+                Float.valueOf(Float.MAX_VALUE).toString(),
+                Float.valueOf(Float.MIN_VALUE).toString(),
+                "NaN",
+                "3.14"),
             resultSet,
             col++);
         assertAsString(ImmutableList.of("NULL", "-12345.6789", "3.14"), resultSet, col++);
@@ -4188,7 +4135,18 @@ public class DatabaseClientImplTest {
             ImmutableList.of("2023-01-11T11:55:18.123456789Z", "NULL", "2023-01-12T11:55:18Z"),
             resultSet,
             col++);
-
+        if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+          assertAsString(Base64.getEncoder().encodeToString(info.toByteArray()), resultSet, col++);
+          assertAsString(String.valueOf(Genre.JAZZ_VALUE), resultSet, col++);
+          assertAsString(
+              ImmutableList.of(
+                  String.format("%s", Base64.getEncoder().encodeToString(info.toByteArray())),
+                  "NULL"),
+              resultSet,
+              col++);
+          assertAsString(
+              ImmutableList.of(String.format("%d", Genre.JAZZ_VALUE), "NULL"), resultSet, col++);
+        }
         assertFalse(resultSet.next());
       }
     }
@@ -4595,5 +4553,262 @@ public class DatabaseClientImplTest {
     assertEquals(
         expected.stream().collect(Collectors.joining(",", "[", "]")),
         resultSet.getValue(col).getAsString());
+  }
+
+  private void consumeResults(ResultSet resultSet) {
+    //noinspection StatementWithEmptyBody
+    while (resultSet.next()) {}
+  }
+
+  private void consumeBatchWriteStream(ServerStream<BatchWriteResponse> stream) {
+    //noinspection StatementWithEmptyBody
+    for (BatchWriteResponse ignore : stream) {}
+  }
+
+  private ListValue getRows(Dialect dialect) {
+    SingerInfo info = SingerInfo.newBuilder().setSingerId(1).build();
+    ListValue.Builder valuesBuilder =
+        ListValue.newBuilder()
+            .addValues(com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("100").build())
+            .addValues(com.google.protobuf.Value.newBuilder().setNumberValue(-3.14f).build())
+            .addValues(com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("6.626").build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("test-string").build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setStringValue("{\"key1\": \"value1\"}")
+                    .build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setStringValue(
+                        Base64.getEncoder()
+                            .encodeToString("test-bytes".getBytes(StandardCharsets.UTF_8)))
+                    .build())
+            .addValues(com.google.protobuf.Value.newBuilder().setStringValue("2023-01-11").build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setStringValue("2023-01-11T11:55:18.123456789Z")
+                    .build())
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder().setBoolValue(false).build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(String.valueOf(Long.MAX_VALUE))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(String.valueOf(Long.MIN_VALUE))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(Float.MAX_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(Float.MIN_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("NaN")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(3.14f)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(-12345.6789d)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNumberValue(3.14d)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("6.626")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("-8.9123")
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("test-string1")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("test-string2")
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("{\"key\": \"value1\"}")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("{\"key\": \"value2\"}")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(
+                                        Base64.getEncoder()
+                                            .encodeToString(
+                                                "test-bytes1".getBytes(StandardCharsets.UTF_8)))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue(
+                                        Base64.getEncoder()
+                                            .encodeToString(
+                                                "test-bytes2".getBytes(StandardCharsets.UTF_8)))
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2000-02-29")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2000-01-01")
+                                    .build())
+                            .build()))
+            .addValues(
+                com.google.protobuf.Value.newBuilder()
+                    .setListValue(
+                        ListValue.newBuilder()
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2023-01-11T11:55:18.123456789Z")
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setNullValue(NullValue.NULL_VALUE)
+                                    .build())
+                            .addValues(
+                                com.google.protobuf.Value.newBuilder()
+                                    .setStringValue("2023-01-12T11:55:18Z")
+                                    .build())
+                            .build()));
+    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+      // Proto columns is supported only for GOOGLE_STANDARD_SQL
+      valuesBuilder
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setStringValue(Base64.getEncoder().encodeToString(info.toByteArray()))
+                  .build())
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setStringValue(String.valueOf(Genre.JAZZ_VALUE))
+                  .build())
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setListValue(
+                      ListValue.newBuilder()
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setStringValue(
+                                      Base64.getEncoder().encodeToString(info.toByteArray()))
+                                  .build())
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setNullValue(NullValue.NULL_VALUE)
+                                  .build())
+                          .build()))
+          .addValues(
+              com.google.protobuf.Value.newBuilder()
+                  .setListValue(
+                      ListValue.newBuilder()
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setStringValue(String.valueOf(Genre.JAZZ_VALUE))
+                                  .build())
+                          .addValues(
+                              com.google.protobuf.Value.newBuilder()
+                                  .setNullValue(NullValue.NULL_VALUE)
+                                  .build())
+                          .build()));
+    }
+    return valuesBuilder.build();
   }
 }

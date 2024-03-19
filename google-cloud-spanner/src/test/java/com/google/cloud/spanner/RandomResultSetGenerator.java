@@ -31,12 +31,15 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import java.util.Random;
 
+/** @deprecated Use {@link com.google.cloud.spanner.connection.RandomResultSetGenerator} instead. */
+@Deprecated
 public class RandomResultSetGenerator {
   private static final Type[] TYPES =
       new Type[] {
         Type.newBuilder().setCode(TypeCode.BOOL).build(),
         Type.newBuilder().setCode(TypeCode.INT64).build(),
         Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
+        Type.newBuilder().setCode(TypeCode.FLOAT32).build(),
         Type.newBuilder().setCode(TypeCode.STRING).build(),
         Type.newBuilder().setCode(TypeCode.BYTES).build(),
         Type.newBuilder().setCode(TypeCode.DATE).build(),
@@ -52,6 +55,10 @@ public class RandomResultSetGenerator {
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
             .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
+            .build(),
+        Type.newBuilder()
+            .setCode(TypeCode.ARRAY)
+            .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT32))
             .build(),
         Type.newBuilder()
             .setCode(TypeCode.ARRAY)
@@ -137,6 +144,9 @@ public class RandomResultSetGenerator {
           break;
         case FLOAT64:
           builder.setNumberValue(random.nextDouble());
+          break;
+        case FLOAT32:
+          builder.setNumberValue(random.nextFloat());
           break;
         case INT64:
           builder.setStringValue(String.valueOf(random.nextLong()));

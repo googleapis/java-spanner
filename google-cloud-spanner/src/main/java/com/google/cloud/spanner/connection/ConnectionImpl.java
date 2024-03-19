@@ -53,6 +53,7 @@ import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
@@ -236,6 +237,7 @@ class ConnectionImpl implements Connection {
    */
   private int maxPartitionedParallelism;
 
+  private DirectedReadOptions directedReadOptions = null;
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
   private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
@@ -248,7 +250,9 @@ class ConnectionImpl implements Connection {
     Preconditions.checkNotNull(options);
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
-    this.statementExecutor = new StatementExecutor(options.getStatementExecutionInterceptors());
+    this.statementExecutor =
+        new StatementExecutor(
+            options.isUseVirtualThreads(), options.getStatementExecutionInterceptors());
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
@@ -283,7 +287,8 @@ class ConnectionImpl implements Connection {
       BatchClient batchClient) {
     this.leakedException =
         options.isTrackConnectionLeaks() ? new LeakedConnectionException() : null;
-    this.statementExecutor = new StatementExecutor(Collections.emptyList());
+    this.statementExecutor =
+        new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
     this.spanner = spannerPool.getSpanner(options, this);
@@ -508,6 +513,21 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setDirectedRead(DirectedReadOptions directedReadOptions) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "Cannot set directed read options when a transaction has been started");
+    this.directedReadOptions = directedReadOptions;
+  }
+
+  @Override
+  public DirectedReadOptions getDirectedRead() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.directedReadOptions;
+  }
+
+  @Override
   public void setOptimizerVersion(String optimizerVersion) {
     Preconditions.checkNotNull(optimizerVersion);
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
@@ -658,10 +678,6 @@ class ConnectionImpl implements Connection {
    */
   private void checkSetRetryAbortsInternallyAvailable() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    ConnectionPreconditions.checkState(isInTransaction(), "This connection has no transaction");
-    ConnectionPreconditions.checkState(
-        getTransactionMode() == TransactionMode.READ_WRITE_TRANSACTION,
-        "RetryAbortsInternally is only available for read-write transactions");
     ConnectionPreconditions.checkState(
         !isTransactionStarted(),
         "RetryAbortsInternally cannot be set after the transaction has started");
@@ -1128,7 +1144,8 @@ class ConnectionImpl implements Connection {
             CallType.SYNC,
             parsedStatement,
             getEffectivePartitionOptions(partitionOptions),
-            mergeDataBoost(mergeQueryRequestOptions(mergeQueryStatementTag(options)))));
+            mergeDataBoost(
+                mergeQueryRequestOptions(parsedStatement, mergeQueryStatementTag(options)))));
   }
 
   private PartitionOptions getEffectivePartitionOptions(
@@ -1424,41 +1441,38 @@ class ConnectionImpl implements Connection {
 
   private QueryOption[] mergeDataBoost(QueryOption... options) {
     if (this.dataBoostEnabled) {
-
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.dataBoostEnabled(true)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.dataBoostEnabled(true);
-      }
+      options = appendQueryOption(options, Options.dataBoostEnabled(true));
     }
     return options;
   }
 
   private QueryOption[] mergeQueryStatementTag(QueryOption... options) {
     if (this.statementTag != null) {
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.tag(statementTag)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.tag(statementTag);
-      }
+      options = appendQueryOption(options, Options.tag(statementTag));
       this.statementTag = null;
     }
     return options;
   }
 
-  private QueryOption[] mergeQueryRequestOptions(QueryOption... options) {
+  private QueryOption[] mergeQueryRequestOptions(
+      ParsedStatement parsedStatement, QueryOption... options) {
     if (this.rpcPriority != null) {
-      // Shortcut for the most common scenario.
-      if (options == null || options.length == 0) {
-        options = new QueryOption[] {Options.priority(this.rpcPriority)};
-      } else {
-        options = Arrays.copyOf(options, options.length + 1);
-        options[options.length - 1] = Options.priority(this.rpcPriority);
-      }
+      options = appendQueryOption(options, Options.priority(this.rpcPriority));
+    }
+    if (this.directedReadOptions != null
+        && currentUnitOfWork != null
+        && currentUnitOfWork.supportsDirectedReads(parsedStatement)) {
+      options = appendQueryOption(options, Options.directedRead(this.directedReadOptions));
+    }
+    return options;
+  }
+
+  private QueryOption[] appendQueryOption(QueryOption[] options, QueryOption append) {
+    if (options == null || options.length == 0) {
+      options = new QueryOption[] {append};
+    } else {
+      options = Arrays.copyOf(options, options.length + 1);
+      options[options.length - 1] = append;
     }
     return options;
   }
@@ -1513,7 +1527,7 @@ class ConnectionImpl implements Connection {
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(mergeQueryStatementTag(options))));
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -1535,7 +1549,7 @@ class ConnectionImpl implements Connection {
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(mergeQueryStatementTag(options))),
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))),
         spanner.getAsyncExecutorProvider(),
         options);
   }

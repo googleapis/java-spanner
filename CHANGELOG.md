@@ -1,5 +1,131 @@
 # Changelog
 
+## [6.61.0](https://github.com/googleapis/java-spanner/compare/v6.60.1...v6.61.0) (2024-03-04)
+
+
+### Features
+
+* Support float32 type ([#2894](https://github.com/googleapis/java-spanner/issues/2894)) ([19b7976](https://github.com/googleapis/java-spanner/commit/19b79764294e938ad85d02b7c0662db6ec3afeda))
+
+
+### Bug Fixes
+
+* Flaky test issue due to AbortedException. ([#2925](https://github.com/googleapis/java-spanner/issues/2925)) ([cd34c1d](https://github.com/googleapis/java-spanner/commit/cd34c1d3ae9a5a36f4d5516dcf7c3667a9cf015a))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.27.0 ([#2935](https://github.com/googleapis/java-spanner/issues/2935)) ([f8f835a](https://github.com/googleapis/java-spanner/commit/f8f835a9da705605c492e232a58276c39d1d7e6c))
+* Update dependency org.json:json to v20240303 ([#2936](https://github.com/googleapis/java-spanner/issues/2936)) ([1d7044e](https://github.com/googleapis/java-spanner/commit/1d7044e97d16f5296b7de020cd24b11cbe2a7df0))
+
+
+### Documentation
+
+* Samples and tests for backup Admin APIs and overall spanner Admin APIs. ([#2882](https://github.com/googleapis/java-spanner/issues/2882)) ([de13636](https://github.com/googleapis/java-spanner/commit/de1363645e03f46deed5be41f90ddfed72766751))
+* Update all public documents to use auto-generated admin clients. ([#2928](https://github.com/googleapis/java-spanner/issues/2928)) ([ccb110a](https://github.com/googleapis/java-spanner/commit/ccb110ad6835557870933c95cfd76580fd317a16))
+
+## [6.60.1](https://github.com/googleapis/java-spanner/compare/v6.60.0...v6.60.1) (2024-02-23)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.37.0 ([#2920](https://github.com/googleapis/java-spanner/issues/2920)) ([a3441bb](https://github.com/googleapis/java-spanner/commit/a3441bbad546a1aac1349d6e142a4ac8d32d2a90))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.10.0 ([#2861](https://github.com/googleapis/java-spanner/issues/2861)) ([a652c3b](https://github.com/googleapis/java-spanner/commit/a652c3b6ef6d6ed87d581e73a26a5086acdc5f07))
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.10.1 ([#2919](https://github.com/googleapis/java-spanner/issues/2919)) ([8800a28](https://github.com/googleapis/java-spanner/commit/8800a2894a1c17bde1a0da3ffcc868f10f7690d5))
+* Update dependency org.json:json to v20240205 ([#2913](https://github.com/googleapis/java-spanner/issues/2913)) ([277ed81](https://github.com/googleapis/java-spanner/commit/277ed81a0beb95ea57f95a9660a4a6b6adea645b))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.10.2 ([#2868](https://github.com/googleapis/java-spanner/issues/2868)) ([71a65ec](https://github.com/googleapis/java-spanner/commit/71a65ecee5af63996297f8692d569d2a9acfd8ac))
+* Update opentelemetry.version to v1.35.0 ([#2902](https://github.com/googleapis/java-spanner/issues/2902)) ([3286eae](https://github.com/googleapis/java-spanner/commit/3286eaea96a40c6ace8abed22040a637d291b09c))
+
+## [6.60.0](https://github.com/googleapis/java-spanner/compare/v6.59.0...v6.60.0) (2024-02-21)
+
+
+### Features
+
+* Add an API method for reordering firewall policies ([62319f0](https://github.com/googleapis/java-spanner/commit/62319f032163c4ad3e8771dd5f92e7b8a086b5ee))
+* **spanner:** Add field for multiplexed session in spanner.proto ([62319f0](https://github.com/googleapis/java-spanner/commit/62319f032163c4ad3e8771dd5f92e7b8a086b5ee))
+* Update TransactionOptions to include new option exclude_txn_from_change_streams ([#2853](https://github.com/googleapis/java-spanner/issues/2853)) ([62319f0](https://github.com/googleapis/java-spanner/commit/62319f032163c4ad3e8771dd5f92e7b8a086b5ee))
+
+
+### Bug Fixes
+
+* Add ensureDecoded to proto type ([#2897](https://github.com/googleapis/java-spanner/issues/2897)) ([e99b78c](https://github.com/googleapis/java-spanner/commit/e99b78c5d810195d368112eed2b185d2d99e62a9))
+* **spanner:** Fix write replace used by dataflow template and import export ([#2901](https://github.com/googleapis/java-spanner/issues/2901)) ([64b9042](https://github.com/googleapis/java-spanner/commit/64b90429d4fe53f8509a3923e046406b4bc5876a))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-trace to v2.36.0 ([#2749](https://github.com/googleapis/java-spanner/issues/2749)) ([51a348a](https://github.com/googleapis/java-spanner/commit/51a348a0c2b84106ea763721bed3420a0d07f30a))
+
+
+### Documentation
+
+* Update comments ([62319f0](https://github.com/googleapis/java-spanner/commit/62319f032163c4ad3e8771dd5f92e7b8a086b5ee))
+* Update the comment regarding eligible SQL shapes for PartitionQuery ([62319f0](https://github.com/googleapis/java-spanner/commit/62319f032163c4ad3e8771dd5f92e7b8a086b5ee))
+
+## [6.59.0](https://github.com/googleapis/java-spanner/compare/v6.58.0...v6.59.0) (2024-02-15)
+
+
+### Features
+
+* Support public methods to use autogenerated admin clients. ([#2878](https://github.com/googleapis/java-spanner/issues/2878)) ([53bcb3e](https://github.com/googleapis/java-spanner/commit/53bcb3eca2e814472c3def24e8e03d47652a8e42))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.25.0 ([#2888](https://github.com/googleapis/java-spanner/issues/2888)) ([8e2da51](https://github.com/googleapis/java-spanner/commit/8e2da5126263c7acd134fb7fcfeb590ca190ce8e))
+
+
+### Documentation
+
+* README for OpenTelemetry metrics and traces ([#2880](https://github.com/googleapis/java-spanner/issues/2880)) ([c8632f5](https://github.com/googleapis/java-spanner/commit/c8632f5b2f462420a8c2a1f4308a68a18a414472))
+* Samples and tests for database Admin APIs. ([#2775](https://github.com/googleapis/java-spanner/issues/2775)) ([14ae01c](https://github.com/googleapis/java-spanner/commit/14ae01cd82e455a0dc22d7e3bb8c362e541ede12))
+
+## [6.58.0](https://github.com/googleapis/java-spanner/compare/v6.57.0...v6.58.0) (2024-02-08)
+
+
+### Features
+
+* Open telemetry implementation ([#2770](https://github.com/googleapis/java-spanner/issues/2770)) ([244d6a8](https://github.com/googleapis/java-spanner/commit/244d6a836795bf07dacd6b766436dbd6bf5fa912))
+* **spanner:** Support max_commit_delay in Spanner transactions ([#2854](https://github.com/googleapis/java-spanner/issues/2854)) ([e2b7ae6](https://github.com/googleapis/java-spanner/commit/e2b7ae66648ea775c18c71ab353edd6c0f50e7ac))
+* Support Directed Read in Connection API ([#2855](https://github.com/googleapis/java-spanner/issues/2855)) ([ee477c2](https://github.com/googleapis/java-spanner/commit/ee477c2e7c509ce4b7c43da3b68c1433c59e46fb))
+
+
+### Bug Fixes
+
+* Cast for Proto type ([#2862](https://github.com/googleapis/java-spanner/issues/2862)) ([0a95dba](https://github.com/googleapis/java-spanner/commit/0a95dba47681c9c4cc4e41ecfb5dadec6357bff6))
+* Ignore UnsupportedOperationException for virtual threads ([#2866](https://github.com/googleapis/java-spanner/issues/2866)) ([aa9ad7f](https://github.com/googleapis/java-spanner/commit/aa9ad7f5a5e2405e8082a542916c3d1fa7d0fa25))
+* Use default query options with statement cache ([#2860](https://github.com/googleapis/java-spanner/issues/2860)) ([741e4cf](https://github.com/googleapis/java-spanner/commit/741e4cf4eb51c4635078cfe2c52b7462bd4cbbd8))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.24.0 ([#2856](https://github.com/googleapis/java-spanner/issues/2856)) ([968877e](https://github.com/googleapis/java-spanner/commit/968877e4eff7da3ff27180c2a6129b04922d1af4))
+
+## [6.57.0](https://github.com/googleapis/java-spanner/compare/v6.56.0...v6.57.0) (2024-01-29)
+
+
+### Features
+
+* Add FLOAT32 enum to TypeCode ([#2800](https://github.com/googleapis/java-spanner/issues/2800)) ([383fea5](https://github.com/googleapis/java-spanner/commit/383fea5b5dc434621585a1b5cfd128a01780472a))
+* Add support for Proto Columns ([#2779](https://github.com/googleapis/java-spanner/issues/2779)) ([30d37dd](https://github.com/googleapis/java-spanner/commit/30d37dd80c91b2dffdfee732677607ce028fb8d2))
+* **spanner:** Add proto descriptors for proto and enum types in create/update/get database ddl requests ([#2774](https://github.com/googleapis/java-spanner/issues/2774)) ([4a906bf](https://github.com/googleapis/java-spanner/commit/4a906bf2719c30dcd7371f497a8a28c250db77be))
+
+
+### Bug Fixes
+
+* Remove google-cloud-spanner-executor from the BOM ([#2844](https://github.com/googleapis/java-spanner/issues/2844)) ([655000a](https://github.com/googleapis/java-spanner/commit/655000a3b0471b279cbcbe8a4a601337e7274ef8))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.22.0 ([#2785](https://github.com/googleapis/java-spanner/issues/2785)) ([f689f74](https://github.com/googleapis/java-spanner/commit/f689f742d8754134523ed0394b9c1b8256adcae2))
+* Update dependency com.google.cloud:google-cloud-shared-dependencies to v3.23.0 ([#2801](https://github.com/googleapis/java-spanner/issues/2801)) ([95f064f](https://github.com/googleapis/java-spanner/commit/95f064f9f60a17de375e532ec6dd78dca0743e79))
+
+
+### Documentation
+
+* Samples and tests for instance APIs. ([#2768](https://github.com/googleapis/java-spanner/issues/2768)) ([88e24c7](https://github.com/googleapis/java-spanner/commit/88e24c7a7d046056605a2a824450e0153b339c86))
+
 ## [6.56.0](https://github.com/googleapis/java-spanner/compare/v6.55.0...v6.56.0) (2024-01-05)
 
 

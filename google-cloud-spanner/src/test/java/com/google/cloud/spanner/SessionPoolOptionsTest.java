@@ -19,6 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -217,5 +218,32 @@ public class SessionPoolOptionsTest {
     SessionPoolOptions sessionPoolOptions = SessionPoolOptions.newBuilder().build();
 
     assertEquals(Duration.ofSeconds(60), sessionPoolOptions.getAcquireSessionTimeout());
+  }
+
+  @Test
+  public void testRandomizePositionQPSThreshold() {
+    assertEquals(0L, SessionPoolOptions.newBuilder().build().getRandomizePositionQPSThreshold());
+    assertEquals(
+        4L,
+        SessionPoolOptions.newBuilder()
+            .setRandomizePositionQPSThreshold(4L)
+            .build()
+            .getRandomizePositionQPSThreshold());
+    assertEquals(
+        10L,
+        SessionPoolOptions.newBuilder()
+            .setRandomizePositionQPSThreshold(4L)
+            .setRandomizePositionQPSThreshold(10L)
+            .build()
+            .getRandomizePositionQPSThreshold());
+    assertEquals(
+        0L,
+        SessionPoolOptions.newBuilder()
+            .setRandomizePositionQPSThreshold(0L)
+            .build()
+            .getRandomizePositionQPSThreshold());
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> SessionPoolOptions.newBuilder().setRandomizePositionQPSThreshold(-1L));
   }
 }

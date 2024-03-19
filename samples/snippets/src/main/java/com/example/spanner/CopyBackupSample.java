@@ -18,84 +18,80 @@ package com.example.spanner;
 
 // [START spanner_copy_backup]
 
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Backup;
-import com.google.cloud.spanner.BackupId;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.spanner.admin.database.v1.CopyBackupMetadata;
-import java.time.LocalDateTime;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.InstanceName;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class CopyBackupSample {
+
   static void copyBackup() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
     String sourceBackupId = "my-backup";
     String destinationBackupId = "my-destination-backup";
+
     try (Spanner spanner =
-                 SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
       copyBackup(databaseAdminClient, projectId, instanceId, sourceBackupId, destinationBackupId);
     }
   }
 
   static void copyBackup(
-          DatabaseAdminClient databaseAdminClient,
-          String projectId,
-          String instanceId,
-          String sourceBackupId,
-          String destinationBackupId) {
+      DatabaseAdminClient databaseAdminClient,
+      String projectId,
+      String instanceId,
+      String sourceBackupId,
+      String destinationBackupId) {
 
     Timestamp expireTime =
-            Timestamp.ofTimeMicroseconds(
-                  TimeUnit.MICROSECONDS.convert(
-                          System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14),
-                          TimeUnit.MILLISECONDS));
-    // Creates a copy of an existing backup.
-    Backup destinationBackup =
-          databaseAdminClient
-                  .newBackupBuilder(BackupId.of(projectId, instanceId, destinationBackupId))
-                  .setExpireTime(expireTime)
-                   .build();
+        Timestamp.ofTimeMicroseconds(
+            TimeUnit.MICROSECONDS.convert(
+                System.currentTimeMillis() + TimeUnit.DAYS.toMillis(14),
+                TimeUnit.MILLISECONDS));
 
     // Initiate the request which returns an OperationFuture.
-    System.out.println("Copying backup [" + destinationBackup.getId() + "]...");
-    OperationFuture<Backup, CopyBackupMetadata> operation =
-          databaseAdminClient.copyBackup(
-                  BackupId.of(projectId, instanceId, sourceBackupId), destinationBackup);
+    System.out.println("Copying backup [" + destinationBackupId + "]...");
+    Backup destinationBackup;
     try {
+      // Creates a copy of an existing backup.
       // Wait for the backup operation to complete.
-      destinationBackup = operation.get();
-      System.out.println("Copied backup [" + destinationBackup.getId() + "]");
+      destinationBackup = databaseAdminClient.copyBackupAsync(
+          InstanceName.of(projectId, instanceId), destinationBackupId,
+          BackupName.of(projectId, instanceId, sourceBackupId), expireTime.toProto()).get();
+      System.out.println("Copied backup [" + destinationBackup.getName() + "]");
     } catch (ExecutionException e) {
       throw (SpannerException) e.getCause();
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     }
     // Load the metadata of the new backup from the server.
-    destinationBackup = destinationBackup.reload();
+    destinationBackup = databaseAdminClient.getBackup(destinationBackup.getName());
     System.out.println(
-              String.format(
-                      "Backup %s of size %d bytes was copied at %s for version of database at %s",
-                      destinationBackup.getId().getName(),
-                      destinationBackup.getSize(),
-                      LocalDateTime.ofEpochSecond(
-                              destinationBackup.getProto().getCreateTime().getSeconds(),
-                              destinationBackup.getProto().getCreateTime().getNanos(),
-                              OffsetDateTime.now().getOffset()),
-                      LocalDateTime.ofEpochSecond(
-                              destinationBackup.getProto().getVersionTime().getSeconds(),
-                              destinationBackup.getProto().getVersionTime().getNanos(),
-                              OffsetDateTime.now().getOffset())));
-    return;
+        String.format(
+            "Backup %s of size %d bytes was copied at %s for version of database at %s",
+            destinationBackup.getName(),
+            destinationBackup.getSizeBytes(),
+            OffsetDateTime.ofInstant(
+                Instant.ofEpochSecond(destinationBackup.getCreateTime().getSeconds(),
+                    destinationBackup.getCreateTime().getNanos()),
+                ZoneId.systemDefault()),
+            OffsetDateTime.ofInstant(
+                Instant.ofEpochSecond(destinationBackup.getVersionTime().getSeconds(),
+                    destinationBackup.getVersionTime().getNanos()),
+                ZoneId.systemDefault())));
   }
 }
 // [END spanner_copy_backup]

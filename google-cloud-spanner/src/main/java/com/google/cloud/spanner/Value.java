@@ -26,19 +26,28 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharSource;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.EnumDescriptor;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.google.protobuf.Value.KindCase;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -141,6 +150,20 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns a {@code FLOAT32} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value float32(@Nullable Float v) {
+    return new Float32Impl(v == null, v == null ? 0 : v);
+  }
+
+  /** Returns a {@code FLOAT32} value. */
+  public static Value float32(float v) {
+    return new Float32Impl(false, v);
+  }
+
+  /**
    * Returns a {@code FLOAT64} value.
    *
    * @param v the value, which may be null
@@ -232,7 +255,87 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns a {@code BYTES} value.
+   * Return a {@code PROTO} value for not null proto messages.
+   *
+   * @param v Not null Proto message.
+   */
+  public static Value protoMessage(AbstractMessage v) {
+    Preconditions.checkNotNull(
+        v, "Use protoMessage((ByteArray) null, MyProtoClass.getDescriptor()) for null values.");
+    return protoMessage(
+        ByteArray.copyFrom(v.toByteArray()), v.getDescriptorForType().getFullName());
+  }
+
+  /**
+   * Return a {@code PROTO} value
+   *
+   * @param v Serialized Proto Array, which may be null.
+   * @param protoTypeFqn Fully qualified name of proto representing the proto definition. Use static
+   *     method from proto class {@code MyProtoClass.getDescriptor().getFullName()}
+   */
+  public static Value protoMessage(@Nullable ByteArray v, String protoTypeFqn) {
+    return new ProtoMessageImpl(v == null, v, protoTypeFqn);
+  }
+
+  /**
+   * Return a {@code PROTO} value
+   *
+   * @param v Serialized Proto Array, which may be null.
+   * @param descriptor Proto Type Descriptor, use static method from proto class {@code
+   *     MyProtoClass.getDescriptor()}.
+   */
+  public static Value protoMessage(@Nullable ByteArray v, Descriptor descriptor) {
+    Preconditions.checkNotNull(descriptor, "descriptor can't be null.");
+    return protoMessage(v, descriptor.getFullName());
+  }
+
+  /**
+   * Return a {@code ENUM} value for not null proto messages.
+   *
+   * @param v Proto Enum, which may be null.
+   */
+  public static Value protoEnum(ProtocolMessageEnum v) {
+    Preconditions.checkNotNull(
+        v, "Use protoEnum((Long) null, MyProtoEnum.getDescriptor()) for null values.");
+    return protoEnum(v.getNumber(), v.getDescriptorForType().getFullName());
+  }
+
+  /**
+   * Return a {@code ENUM} value.
+   *
+   * @param v Enum non-primitive Integer constant.
+   * @param protoTypeFqn Fully qualified name of proto representing the enum definition. Use static
+   *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
+   */
+  public static Value protoEnum(@Nullable Long v, String protoTypeFqn) {
+    return new ProtoEnumImpl(v == null, v, protoTypeFqn);
+  }
+
+  /**
+   * Return a {@code ENUM} value.
+   *
+   * @param v Enum non-primitive Integer constant.
+   * @param enumDescriptor Enum Type Descriptor. Use static method from proto class {@code *
+   *     MyProtoEnum.getDescriptor()}.
+   */
+  public static Value protoEnum(@Nullable Long v, EnumDescriptor enumDescriptor) {
+    Preconditions.checkNotNull(enumDescriptor, "descriptor can't be null.");
+    return protoEnum(v, enumDescriptor.getFullName());
+  }
+
+  /**
+   * Return a {@code ENUM} value.
+   *
+   * @param v Enum integer primitive constant.
+   * @param protoTypeFqn Fully qualified name of proto representing the enum definition. Use static
+   *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
+   */
+  public static Value protoEnum(long v, String protoTypeFqn) {
+    return new ProtoEnumImpl(false, v, protoTypeFqn);
+  }
+
+  /**
+   * e Returns a {@code BYTES} value. Returns a {@code BYTES} value.
    *
    * @param v the value, which may be null
    */
@@ -366,6 +469,40 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<FLOAT32>} value.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   */
+  public static Value float32Array(@Nullable float[] v) {
+    return float32Array(v, 0, v == null ? 0 : v.length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<FLOAT32>} value that takes its elements from a region of an array.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   * @param pos the start position of {@code v} to copy values from. Ignored if {@code v} is {@code
+   *     null}.
+   * @param length the number of values to copy from {@code v}. Ignored if {@code v} is {@code
+   *     null}.
+   */
+  public static Value float32Array(@Nullable float[] v, int pos, int length) {
+    return float32ArrayFactory.create(v, pos, length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<FLOAT32>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value float32Array(@Nullable Iterable<Float> v) {
+    return float32ArrayFactory.create(v);
+  }
+
+  /**
    * Returns an {@code ARRAY<FLOAT64>} value.
    *
    * @param v the source of element values, which may be null to produce a value for which {@code
@@ -448,6 +585,85 @@ public abstract class Value implements Serializable {
    */
   public static Value pgJsonbArray(@Nullable Iterable<String> v) {
     return new PgJsonbArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
+   * Returns an {@code ARRAY<PROTO>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param descriptor Proto Type Descriptor, use static method from proto class {@code
+   *     MyProtoClass.getDescriptor()}.
+   */
+  public static Value protoMessageArray(
+      @Nullable Iterable<AbstractMessage> v, Descriptor descriptor) {
+    if (v == null) {
+      return new ProtoMessageArrayImpl(true, null, descriptor.getFullName());
+    }
+
+    List<ByteArray> serializedArray = new ArrayList<>();
+    v.forEach(
+        (message) -> {
+          if (message != null) {
+            serializedArray.add(ByteArray.copyFrom(message.toByteArray()));
+          } else {
+            serializedArray.add(null);
+          }
+        });
+
+    return new ProtoMessageArrayImpl(false, serializedArray, descriptor.getFullName());
+  }
+
+  /**
+   * Returns an {@code ARRAY<PROTO>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param protoTypeFqn Fully qualified name of proto representing the proto definition. Use static
+   *     method from proto class {@code MyProtoClass.getDescriptor().getFullName()}
+   */
+  public static Value protoMessageArray(@Nullable Iterable<ByteArray> v, String protoTypeFqn) {
+    return new ProtoMessageArrayImpl(
+        v == null, v != null ? immutableCopyOf(v) : null, protoTypeFqn);
+  }
+
+  /**
+   * Returns an {@code ARRAY<ENUM>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param descriptor Proto Type Descriptor, use static method from proto class {@code
+   *     MyProtoClass.getDescriptor()}.
+   */
+  public static Value protoEnumArray(
+      @Nullable Iterable<ProtocolMessageEnum> v, EnumDescriptor descriptor) {
+    if (v == null) {
+      return new ProtoEnumArrayImpl(true, null, descriptor.getFullName());
+    }
+
+    List<Long> enumConstValues = new ArrayList<>();
+    v.forEach(
+        (protoEnum) -> {
+          if (protoEnum != null) {
+            enumConstValues.add((long) protoEnum.getNumber());
+          } else {
+            enumConstValues.add(null);
+          }
+        });
+
+    return new ProtoEnumArrayImpl(false, enumConstValues, descriptor.getFullName());
+  }
+
+  /**
+   * Returns an {@code ARRAY<ENUM>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   * @param protoTypeFqn Fully qualified name of proto representing the enum definition. Use static
+   *     method from proto class {@code MyProtoEnum.getDescriptor().getFullName()}
+   */
+  public static Value protoEnumArray(@Nullable Iterable<Long> v, String protoTypeFqn) {
+    return new ProtoEnumArrayImpl(v == null, v != null ? immutableCopyOf(v) : null, protoTypeFqn);
   }
 
   /**
@@ -562,6 +778,13 @@ public abstract class Value implements Serializable {
   public abstract long getInt64();
 
   /**
+   * Returns the value of a {@code FLOAT32}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract float getFloat32();
+
+  /**
    * Returns the value of a {@code FLOAT64}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -597,6 +820,25 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public String getPgJsonb() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns the value of a {@code PROTO}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public <T extends AbstractMessage> T getProtoMessage(T m) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns the value of a {@code ENUM}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public <T extends ProtocolMessageEnum> T getProtoEnum(
+      Function<Integer, ProtocolMessageEnum> method) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -649,6 +891,14 @@ public abstract class Value implements Serializable {
   public abstract List<Long> getInt64Array();
 
   /**
+   * Returns the value of an {@code ARRAY<FLOAT32>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<Float> getFloat32Array();
+
+  /**
    * Returns the value of an {@code ARRAY<FLOAT64>}-typed instance. While the returned list itself
    * will never be {@code null}, elements of that list may be null.
    *
@@ -689,6 +939,27 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public List<String> getPgJsonbArray() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns the value of an {@code ARRAY<PROTO>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns the value of an {@code ARRAY<ENUM>}-typed instance. While the returned list itself will
+   * never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
+      Function<Integer, ProtocolMessageEnum> method) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -844,6 +1115,23 @@ public abstract class Value implements Serializable {
           return new Int64ArrayImpl(isNull, nulls, values);
         }
       };
+  private static final PrimitiveArrayValueFactory<float[], Float> float32ArrayFactory =
+      new PrimitiveArrayValueFactory<float[], Float>() {
+        @Override
+        float[] newArray(int size) {
+          return new float[size];
+        }
+
+        @Override
+        void set(float[] arr, int i, Float value) {
+          arr[i] = value;
+        }
+
+        @Override
+        Value newValue(boolean isNull, BitSet nulls, float[] values) {
+          return new Float32ArrayImpl(isNull, nulls, values);
+        }
+      };
   private static final PrimitiveArrayValueFactory<double[], Double> float64ArrayFactory =
       new PrimitiveArrayValueFactory<double[], Double>() {
         @Override
@@ -915,6 +1203,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public float getFloat32() {
+      throw defaultGetter(Type.float32());
+    }
+
+    @Override
     public double getFloat64() {
       throw defaultGetter(Type.float64());
     }
@@ -971,6 +1264,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<Long> getInt64Array() {
       throw defaultGetter(Type.array(Type.int64()));
+    }
+
+    @Override
+    public List<Float> getFloat32Array() {
+      throw defaultGetter(Type.array(Type.float32()));
     }
 
     @Override
@@ -1077,9 +1375,29 @@ public abstract class Value implements Serializable {
 
     @Override
     public final int hashCode() {
-      int result = Objects.hash(getType(), isNull);
+      Type typeToHash = getType();
+      int valueHash = isNull ? 0 : valueHash();
+
+      /**
+       * We are relaxing equality values here, making sure that Double.NaNs and Float.NaNs are equal
+       * to each other. This is because our Cloud Spanner Import / Export template in Apache Beam
+       * uses the mutation equality to check for modifications before committing. We noticed that
+       * when NaNs where used the template would always indicate a modification was present, when it
+       * turned out not to be the case.
+       *
+       * <p>With FLOAT32 being introduced, we want to ensure the backward compatibility of the NaN
+       * equality checks that existed for FLOAT64. We're promoting the type to FLOAT64 while
+       * calculating the type hash when the value is a NaN. We're doing a similar type promotion
+       * while calculating valueHash of Float32 type. Note that this is not applicable for composite
+       * types containing FLOAT32.
+       */
+      if (type.getCode() == Type.Code.FLOAT32 && !isNull && Float.isNaN(getFloat32())) {
+        typeToHash = Type.float64();
+      }
+
+      int result = Objects.hash(typeToHash, isNull);
       if (!isNull) {
-        result = 31 * result + valueHash();
+        result = 31 * result + valueHash;
       }
       return result;
     }
@@ -1255,6 +1573,15 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
+      checkNotNull();
+      return (T) method.apply((int) value);
+    }
+
+    @Override
     com.google.protobuf.Value valueToProto() {
       return com.google.protobuf.Value.newBuilder().setStringValue(Long.toString(value)).build();
     }
@@ -1272,6 +1599,50 @@ public abstract class Value implements Serializable {
     @Override
     int valueHash() {
       return Long.valueOf(value).hashCode();
+    }
+  }
+
+  private static class Float32Impl extends AbstractValue {
+    private final float value;
+
+    private Float32Impl(boolean isNull, float value) {
+      super(isNull, Type.float32());
+      this.value = value;
+    }
+
+    @Override
+    public float getFloat32() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder().setNumberValue(value).build();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      // NaN == NaN always returns false, so we need a custom check.
+      if (Float.isNaN(this.value)) {
+        return Float.isNaN(((Float32Impl) v).value);
+      }
+      return ((Float32Impl) v).value == value;
+    }
+
+    @Override
+    int valueHash() {
+      // For backward compatibility of NaN equality checks with Float64 NaNs.
+      // Refer the comment in `Value.hashCode()` for more details.
+      if (!isNull() && Float.isNaN(value)) {
+        return Double.valueOf(Double.NaN).hashCode();
+      }
+      return Float.valueOf(value).hashCode();
     }
   }
 
@@ -1301,6 +1672,10 @@ public abstract class Value implements Serializable {
 
     @Override
     boolean valueEquals(Value v) {
+      // NaN == NaN always returns false, so we need a custom check.
+      if (Double.isNaN(this.value)) {
+        return Double.isNaN(((Float64Impl) v).value);
+      }
       return ((Float64Impl) v).value == value;
     }
 
@@ -1464,6 +1839,27 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public <T extends AbstractMessage> T getProtoMessage(T m) {
+      Preconditions.checkNotNull(
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+      checkNotNull();
+      try {
+        return (T)
+            m.toBuilder()
+                .mergeFrom(
+                    Base64.getDecoder()
+                        .wrap(
+                            CharSource.wrap(value.getBase64String())
+                                .asByteSource(StandardCharsets.UTF_8)
+                                .openStream()))
+                .build();
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.asSpannerException(ioException);
+      }
+    }
+
+    @Override
     com.google.protobuf.Value valueToProto() {
       return com.google.protobuf.Value.newBuilder().setStringValue(value.getBase64String()).build();
     }
@@ -1477,6 +1873,81 @@ public abstract class Value implements Serializable {
     @Override
     void valueToString(StringBuilder b) {
       b.append(value == null ? null : value.toString());
+    }
+  }
+
+  private static class ProtoMessageImpl extends AbstractObjectValue<ByteArray> {
+
+    private ProtoMessageImpl(boolean isNull, ByteArray serializedProtoArray, String protoTypeFqn) {
+      super(isNull, Type.proto(protoTypeFqn), serializedProtoArray);
+    }
+
+    @Override
+    public ByteArray getBytes() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public <T extends AbstractMessage> T getProtoMessage(T m) {
+      Preconditions.checkNotNull(
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+      checkNotNull();
+      try {
+        return (T) m.toBuilder().mergeFrom(value.toByteArray()).build();
+      } catch (InvalidProtocolBufferException e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      String base64EncodedString = value.toBase64();
+      return com.google.protobuf.Value.newBuilder().setStringValue(base64EncodedString).build();
+    }
+
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return value == null ? NULL_STRING : value.toBase64();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value.toBase64());
+    }
+  }
+
+  private static class ProtoEnumImpl extends AbstractObjectValue<Long> {
+
+    private ProtoEnumImpl(boolean isNull, Long enumValue, String protoTypeFqn) {
+      super(isNull, Type.protoEnum(protoTypeFqn), enumValue);
+    }
+
+    @Override
+    public long getInt64() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> T getProtoEnum(
+        Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
+      checkNotNull();
+      return (T) method.apply(value.intValue());
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value.toString());
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder().setStringValue(Long.toString(value)).build();
     }
   }
 
@@ -1743,6 +2214,24 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
+        Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
+      checkNotNull();
+
+      List<T> protoEnumList = new ArrayList<>();
+      for (Long enumIntValue : values) {
+        if (enumIntValue == null) {
+          protoEnumList.add(null);
+        } else {
+          protoEnumList.add((T) method.apply(enumIntValue.intValue()));
+        }
+      }
+      return protoEnumList;
+    }
+
+    @Override
     boolean valueEquals(Value v) {
       Int64ArrayImpl that = (Int64ArrayImpl) v;
       return Arrays.equals(values, that.values);
@@ -1763,6 +2252,46 @@ public abstract class Value implements Serializable {
       return com.google.protobuf.Value.newBuilder()
           .setStringValue(Long.toString(values[i]))
           .build();
+    }
+
+    @Override
+    int arrayHash() {
+      return Arrays.hashCode(values);
+    }
+  }
+
+  private static class Float32ArrayImpl extends PrimitiveArrayImpl<Float> {
+    private final float[] values;
+
+    private Float32ArrayImpl(boolean isNull, BitSet nulls, float[] values) {
+      super(isNull, Type.float32(), nulls);
+      this.values = values;
+    }
+
+    @Override
+    public List<Float> getFloat32Array() {
+      return getArray();
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      Float32ArrayImpl that = (Float32ArrayImpl) v;
+      return Arrays.equals(values, that.values);
+    }
+
+    @Override
+    int size() {
+      return values.length;
+    }
+
+    @Override
+    Float getValue(int i) {
+      return values[i];
+    }
+
+    @Override
+    com.google.protobuf.Value getValueAsProto(int i) {
+      return com.google.protobuf.Value.newBuilder().setNumberValue(values[i]).build();
     }
 
     @Override
@@ -1963,6 +2492,36 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
+      Preconditions.checkNotNull(
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+      checkNotNull();
+      try {
+        List<T> protoMessagesList = new ArrayList<>(value.size());
+        for (LazyByteArray protoMessageBytes : value) {
+          if (protoMessageBytes == null) {
+            protoMessagesList.add(null);
+          } else {
+            protoMessagesList.add(
+                (T)
+                    m.toBuilder()
+                        .mergeFrom(
+                            Base64.getDecoder()
+                                .wrap(
+                                    CharSource.wrap(protoMessageBytes.getBase64String())
+                                        .asByteSource(StandardCharsets.UTF_8)
+                                        .openStream()))
+                        .build());
+          }
+        }
+        return protoMessagesList;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
     String elementToString(LazyByteArray element) {
       return element.getBase64String();
     }
@@ -1987,6 +2546,91 @@ public abstract class Value implements Serializable {
 
     @Override
     void appendElement(StringBuilder b, Timestamp element) {
+      b.append(element);
+    }
+  }
+
+  private static class ProtoMessageArrayImpl extends AbstractArrayValue<ByteArray> {
+
+    private ProtoMessageArrayImpl(
+        boolean isNull, @Nullable List<ByteArray> values, String protoTypeFqn) {
+      super(isNull, Type.proto(protoTypeFqn), values);
+    }
+
+    @Override
+    public List<ByteArray> getBytesArray() {
+      return value;
+    }
+
+    @Override
+    public <T extends AbstractMessage> List<T> getProtoMessageArray(T m) {
+      Preconditions.checkNotNull(
+          m,
+          "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
+      checkNotNull();
+      try {
+        List<T> protoMessagesList = new ArrayList<>(value.size());
+        for (ByteArray protoMessageBytes : value) {
+          if (protoMessageBytes == null) {
+            protoMessagesList.add(null);
+          } else {
+            protoMessagesList.add(
+                (T) m.toBuilder().mergeFrom(protoMessageBytes.toByteArray()).build());
+          }
+        }
+        return protoMessagesList;
+      } catch (InvalidProtocolBufferException e) {
+        throw SpannerExceptionFactory.asSpannerException(e);
+      }
+    }
+
+    @Override
+    String elementToString(ByteArray element) {
+      return element.toBase64();
+    }
+
+    @Override
+    void appendElement(StringBuilder b, ByteArray element) {
+      b.append(element.toBase64());
+    }
+  }
+
+  private static class ProtoEnumArrayImpl extends AbstractArrayValue<Long> {
+
+    private ProtoEnumArrayImpl(boolean isNull, @Nullable List<Long> values, String protoTypeFqn) {
+      super(isNull, Type.protoEnum(protoTypeFqn), values);
+    }
+
+    @Override
+    public List<Long> getInt64Array() {
+      return value;
+    }
+
+    @Override
+    public <T extends ProtocolMessageEnum> List<T> getProtoEnumArray(
+        Function<Integer, ProtocolMessageEnum> method) {
+      Preconditions.checkNotNull(
+          method, "Method may not be null. Use 'MyProtoEnum::forNumber' as a parameter value.");
+      checkNotNull();
+
+      List<T> protoEnumList = new ArrayList<>();
+      for (Long enumIntValue : value) {
+        if (enumIntValue == null) {
+          protoEnumList.add(null);
+        } else {
+          protoEnumList.add((T) method.apply(enumIntValue.intValue()));
+        }
+      }
+      return protoEnumList;
+    }
+
+    @Override
+    String elementToString(Long element) {
+      return Long.toString(element);
+    }
+
+    @Override
+    void appendElement(StringBuilder b, Long element) {
       b.append(element);
     }
   }
@@ -2138,6 +2782,8 @@ public abstract class Value implements Serializable {
           return Value.pgJsonb(value.getPgJsonb(fieldIndex));
         case BYTES:
           return Value.bytes(value.getBytes(fieldIndex));
+        case FLOAT32:
+          return Value.float32(value.getFloat(fieldIndex));
         case FLOAT64:
           return Value.float64(value.getDouble(fieldIndex));
         case NUMERIC:
@@ -2148,6 +2794,10 @@ public abstract class Value implements Serializable {
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
           return Value.timestamp(value.getTimestamp(fieldIndex));
+        case PROTO:
+          return Value.protoMessage(value.getBytes(fieldIndex), fieldType.getProtoTypeFqn());
+        case ENUM:
+          return Value.protoEnum(value.getLong(fieldIndex), fieldType.getProtoTypeFqn());
         case STRUCT:
           return Value.struct(value.getStruct(fieldIndex));
         case ARRAY:
@@ -2157,6 +2807,7 @@ public abstract class Value implements Serializable {
               case BOOL:
                 return Value.boolArray(value.getBooleanList(fieldIndex));
               case INT64:
+              case ENUM:
                 return Value.int64Array(value.getLongList(fieldIndex));
               case STRING:
                 return Value.stringArray(value.getStringList(fieldIndex));
@@ -2165,7 +2816,10 @@ public abstract class Value implements Serializable {
               case PG_JSONB:
                 return Value.pgJsonbArray(value.getPgJsonbList(fieldIndex));
               case BYTES:
+              case PROTO:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
+              case FLOAT32:
+                return Value.float32Array(value.getFloatList(fieldIndex));
               case FLOAT64:
                 return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:

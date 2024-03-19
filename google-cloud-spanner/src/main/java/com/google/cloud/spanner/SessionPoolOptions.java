@@ -64,7 +64,7 @@ public class SessionPoolOptions {
   private final Duration waitForMinSessions;
   private final Duration acquireSessionTimeout;
   private final Position releaseToPosition;
-  private final long randomizePositionTransactionsPerSecondThreshold;
+  private final long randomizePositionQPSThreshold;
 
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
@@ -90,8 +90,7 @@ public class SessionPoolOptions {
     this.waitForMinSessions = builder.waitForMinSessions;
     this.acquireSessionTimeout = builder.acquireSessionTimeout;
     this.releaseToPosition = builder.releaseToPosition;
-    this.randomizePositionTransactionsPerSecondThreshold =
-        builder.randomizePositionTransactionsPerSecondThreshold;
+    this.randomizePositionQPSThreshold = builder.randomizePositionQPSThreshold;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
   }
@@ -121,9 +120,7 @@ public class SessionPoolOptions {
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
         && Objects.equals(this.acquireSessionTimeout, other.acquireSessionTimeout)
         && Objects.equals(this.releaseToPosition, other.releaseToPosition)
-        && Objects.equals(
-            this.randomizePositionTransactionsPerSecondThreshold,
-            other.randomizePositionTransactionsPerSecondThreshold)
+        && Objects.equals(this.randomizePositionQPSThreshold, other.randomizePositionQPSThreshold)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
@@ -149,7 +146,7 @@ public class SessionPoolOptions {
         this.waitForMinSessions,
         this.acquireSessionTimeout,
         this.releaseToPosition,
-        this.randomizePositionTransactionsPerSecondThreshold,
+        this.randomizePositionQPSThreshold,
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock);
   }
@@ -270,8 +267,8 @@ public class SessionPoolOptions {
     return releaseToPosition;
   }
 
-  long getRandomizePositionTransactionsPerSecondThreshold() {
-    return randomizePositionTransactionsPerSecondThreshold;
+  long getRandomizePositionQPSThreshold() {
+    return randomizePositionQPSThreshold;
   }
 
   public static Builder newBuilder() {
@@ -468,7 +465,7 @@ public class SessionPoolOptions {
      * the session pool will use a random order for the sessions instead of LIFO. The default is 0,
      * which means that the option is disabled.
      */
-    private long randomizePositionTransactionsPerSecondThreshold = 0L;
+    private long randomizePositionQPSThreshold = 0L;
 
     private Clock poolMaintainerClock;
 
@@ -505,8 +502,7 @@ public class SessionPoolOptions {
       this.autoDetectDialect = options.autoDetectDialect;
       this.waitForMinSessions = options.waitForMinSessions;
       this.acquireSessionTimeout = options.acquireSessionTimeout;
-      this.randomizePositionTransactionsPerSecondThreshold =
-          options.randomizePositionTransactionsPerSecondThreshold;
+      this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -784,10 +780,10 @@ public class SessionPoolOptions {
       return this;
     }
 
-    Builder setRandomizePositionTransactionsPerSecondThreshold(
-        long randomizePositionTransactionsPerSecondThreshold) {
-      this.randomizePositionTransactionsPerSecondThreshold =
-          randomizePositionTransactionsPerSecondThreshold;
+    Builder setRandomizePositionQPSThreshold(long randomizePositionQPSThreshold) {
+      Preconditions.checkArgument(
+          randomizePositionQPSThreshold >= 0L, "randomizePositionQPSThreshold must be >= 0");
+      this.randomizePositionQPSThreshold = randomizePositionQPSThreshold;
       return this;
     }
 

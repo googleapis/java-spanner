@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
@@ -31,6 +32,8 @@ import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
 import com.google.common.base.Preconditions;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,7 +127,13 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // otherwise impossible to know which session exactly is getting pinged at what point in time.
     SessionPool pool =
         SessionPool.createPool(
-            options, new TestExecutorFactory(), client.getSessionClient(db), clock, Position.FIRST);
+            options,
+            new TestExecutorFactory(),
+            client.getSessionClient(db),
+            clock,
+            Position.FIRST,
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            OpenTelemetry.noop());
     pool.idleSessionRemovedListener =
         input -> {
           idledSessions.add(input);
@@ -161,7 +170,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // Now advance the time enough for both sessions in the pool to be idled. Then do one
     // maintenance loop. This should cause the last session to have been checked back into the pool
     // to get a ping, but not the second session.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 1);
     assertThat(pingedSessions).containsExactly(session1.getName(), 1);
     // Do another maintenance loop. This should cause the other session to also get a ping.
@@ -173,31 +183,41 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     Session session3 = pool.getSession();
     Session session4 = pool.getSession();
     Session session5 = pool.getSession();
-    // Note that session2 was now the first session in the pool as it was the last to receive a
-    // ping.
-    assertThat(session3.getName()).isEqualTo(session2.getName());
-    assertThat(session4.getName()).isEqualTo(session1.getName());
+    // Pinging a session will put it at the back of the pool. A session that needed a ping to be
+    // kept alive is not one that should be preferred for use. This means that session2 is the last
+    // session in the pool, and session1 the second-to-last.
+    assertEquals(session1.getName(), session3.getName());
+    assertEquals(session2.getName(), session4.getName());
     session5.close();
     session4.close();
     session3.close();
     // Advance the clock to force pings for the sessions in the pool and do three maintenance loops.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    // This should ping the sessions in the following order:
+    // 1. session3 (=session1)
+    // 2. session4 (=session2)
+    // The pinged sessions already contains: {session1: 1, session2: 1}
+    // Note that the pool only pings up to MinSessions sessions.
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 3);
     assertThat(pingedSessions).containsExactly(session1.getName(), 2, session2.getName(), 2);
 
     // Advance the clock to idle all sessions in the pool again and then check out one session. This
     // should cause only one session to get a ping.
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
-    // We are now checking out session2 because
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
+    // This will be session1, as all sessions were pinged in the previous 3 maintenance loops, and
+    // this will have brought session1 back to the front of the pool.
     Session session6 = pool.getSession();
     // The session that was first in the pool now is equal to the initial first session as each full
     // round of pings will swap the order of the first MinSessions sessions in the pool.
     assertThat(session6.getName()).isEqualTo(session1.getName());
     runMaintenanceLoop(clock, pool, 3);
+    // Running 3 cycles will only ping the 2 sessions in the pool once.
     assertThat(pool.totalSessions()).isEqualTo(3);
     assertThat(pingedSessions).containsExactly(session1.getName(), 2, session2.getName(), 3);
     // Update the last use date and release the session to the pool and do another maintenance
-    // cycle.
+    // cycle. This should not ping any sessions.
     ((PooledSessionFuture) session6).get().markUsed();
     session6.close();
     runMaintenanceLoop(clock, pool, 3);
@@ -217,7 +237,8 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     session8.close();
     session9.close();
 
-    clock.currentTimeMillis += TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1;
+    clock.currentTimeMillis.addAndGet(
+        TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 3);
     // session1 will not get a ping this time, as it was checked in first and is now the last
     // session in the pool.
@@ -262,10 +283,10 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     Session session3 = pool.getSession().get();
     Session session4 = pool.getSession().get();
     Session session5 = pool.getSession().get();
-    // Note that session2 was now the first session in the pool as it was the last to receive a
-    // ping.
-    assertThat(session3.getName()).isEqualTo(session2.getName());
-    assertThat(session4.getName()).isEqualTo(session1.getName());
+    // Note that pinging sessions does not change the order of the pool. This means that session2
+    // is still the last session in the pool.
+    assertThat(session3.getName()).isEqualTo(session1.getName());
+    assertThat(session4.getName()).isEqualTo(session2.getName());
     session5.close();
     session4.close();
     session3.close();
@@ -319,7 +340,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
                 .toBuilder()
                 .setMaxSessions(400)
                 .setLoopFrequency(1000L)
-                .setRandomizePositionTransactionsPerSecondThreshold(4)
+                .setRandomizePositionQPSThreshold(4)
                 .build());
     List<Session> sessions;
 
