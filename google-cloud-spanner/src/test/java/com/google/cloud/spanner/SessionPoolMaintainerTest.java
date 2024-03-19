@@ -17,6 +17,9 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -28,6 +31,7 @@ import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
+import com.google.common.base.Preconditions;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
@@ -115,6 +119,10 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool() throws Exception {
+    return createPool(this.options);
+  }
+
+  private SessionPool createPool(SessionPoolOptions options) throws Exception {
     // Allow sessions to be added to the head of the pool in all cases in this test, as it is
     // otherwise impossible to know which session exactly is getting pinged at what point in time.
     SessionPool pool =
@@ -175,14 +183,20 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     Session session3 = pool.getSession();
     Session session4 = pool.getSession();
     Session session5 = pool.getSession();
-    // Note that session2 was now the first session in the pool as it was the last to receive a
-    // ping.
-    assertThat(session3.getName()).isEqualTo(session2.getName());
-    assertThat(session4.getName()).isEqualTo(session1.getName());
+    // Pinging a session will put it at the back of the pool. A session that needed a ping to be
+    // kept alive is not one that should be preferred for use. This means that session2 is the last
+    // session in the pool, and session1 the second-to-last.
+    assertEquals(session1.getName(), session3.getName());
+    assertEquals(session2.getName(), session4.getName());
     session5.close();
     session4.close();
     session3.close();
     // Advance the clock to force pings for the sessions in the pool and do three maintenance loops.
+    // This should ping the sessions in the following order:
+    // 1. session3 (=session1)
+    // 2. session4 (=session2)
+    // The pinged sessions already contains: {session1: 1, session2: 1}
+    // Note that the pool only pings up to MinSessions sessions.
     clock.currentTimeMillis.addAndGet(
         TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
     runMaintenanceLoop(clock, pool, 3);
@@ -192,16 +206,18 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     // should cause only one session to get a ping.
     clock.currentTimeMillis.addAndGet(
         TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()) + 1);
-    // We are now checking out session2 because
+    // This will be session1, as all sessions were pinged in the previous 3 maintenance loops, and
+    // this will have brought session1 back to the front of the pool.
     Session session6 = pool.getSession();
     // The session that was first in the pool now is equal to the initial first session as each full
     // round of pings will swap the order of the first MinSessions sessions in the pool.
     assertThat(session6.getName()).isEqualTo(session1.getName());
     runMaintenanceLoop(clock, pool, 3);
+    // Running 3 cycles will only ping the 2 sessions in the pool once.
     assertThat(pool.totalSessions()).isEqualTo(3);
     assertThat(pingedSessions).containsExactly(session1.getName(), 2, session2.getName(), 3);
     // Update the last use date and release the session to the pool and do another maintenance
-    // cycle.
+    // cycle. This should not ping any sessions.
     ((PooledSessionFuture) session6).get().markUsed();
     session6.close();
     runMaintenanceLoop(clock, pool, 3);
@@ -267,10 +283,10 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     Session session3 = pool.getSession().get();
     Session session4 = pool.getSession().get();
     Session session5 = pool.getSession().get();
-    // Note that session2 was now the first session in the pool as it was the last to receive a
-    // ping.
-    assertThat(session3.getName()).isEqualTo(session2.getName());
-    assertThat(session4.getName()).isEqualTo(session1.getName());
+    // Note that pinging sessions does not change the order of the pool. This means that session2
+    // is still the last session in the pool.
+    assertThat(session3.getName()).isEqualTo(session1.getName());
+    assertThat(session4.getName()).isEqualTo(session2.getName());
     session5.close();
     session4.close();
     session3.close();
@@ -314,5 +330,68 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
       Thread.sleep(1L);
     }
     assertThat(pool.totalSessions()).isEqualTo(options.getMinSessions());
+  }
+
+  @Test
+  public void testRandomizeThreshold() throws Exception {
+    SessionPool pool =
+        createPool(
+            this.options
+                .toBuilder()
+                .setMaxSessions(400)
+                .setLoopFrequency(1000L)
+                .setRandomizePositionQPSThreshold(4)
+                .build());
+    List<Session> sessions;
+
+    // Run a maintenance loop. No sessions have been checked out so far, so the TPS should be 0.
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get and return one session. This means TPS == 1.
+    returnSessions(1, useSessions(1, pool));
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get and return four sessions. This means TPS == 4, and that no sessions are checked out.
+    returnSessions(4, useSessions(4, pool));
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get four sessions without returning them.
+    // This means TPS == 4 and that they are all still checked out.
+    sessions = useSessions(4, pool);
+    runMaintenanceLoop(clock, pool, 1);
+    assertTrue(pool.shouldRandomize());
+    // Returning one of the sessions reduces the number of checked out sessions enough to stop the
+    // randomizing.
+    returnSessions(1, sessions);
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get three more session and run the maintenance loop.
+    // The TPS is then 3, as we've only gotten 3 sessions since the last maintenance run.
+    // That means that we should not randomize.
+    sessions.addAll(useSessions(3, pool));
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    returnSessions(sessions.size(), sessions);
+  }
+
+  private List<Session> useSessions(int numSessions, SessionPool pool) {
+    List<Session> sessions = new ArrayList<>(numSessions);
+    for (int i = 0; i < numSessions; i++) {
+      sessions.add(pool.getSession());
+      sessions.get(sessions.size() - 1).singleUse().executeQuery(Statement.of("SELECT 1")).next();
+    }
+    return sessions;
+  }
+
+  private void returnSessions(int numSessions, List<Session> sessions) {
+    Preconditions.checkArgument(numSessions <= sessions.size());
+    for (int i = 0; i < numSessions; i++) {
+      sessions.remove(0).close();
+    }
   }
 }

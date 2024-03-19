@@ -49,6 +49,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
+import com.google.cloud.Tuple;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -1750,6 +1751,13 @@ class SessionPool {
      */
     @VisibleForTesting Instant lastExecutionTime;
 
+    /**
+     * The previous numSessionsAcquired seen by the maintainer. This is used to calculate the
+     * transactions per second, which again is used to determine whether to randomize the order of
+     * the session pool.
+     */
+    private long prevNumSessionsAcquired;
+
     boolean closed = false;
 
     @GuardedBy("lock")
@@ -1793,6 +1801,12 @@ class SessionPool {
           return;
         }
         running = true;
+        if (loopFrequency >= 1000L) {
+          SessionPool.this.transactionsPerSecond =
+              (SessionPool.this.numSessionsAcquired - prevNumSessionsAcquired)
+                  / (loopFrequency / 1000L);
+        }
+        this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
       }
       Instant currTime = clock.instant();
       removeIdleSessions(currTime);
@@ -1854,7 +1868,7 @@ class SessionPool {
 
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {
-        PooledSession sessionToKeepAlive = null;
+        Tuple<PooledSession, Integer> sessionToKeepAlive;
         synchronized (lock) {
           sessionToKeepAlive = findSessionToKeepAlive(sessions, keepAliveThreshold, 0);
         }
@@ -1862,10 +1876,10 @@ class SessionPool {
           break;
         }
         try {
-          logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.getName());
+          logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.x().getName());
           numSessionsToKeepAlive--;
-          sessionToKeepAlive.keepAlive();
-          releaseSession(sessionToKeepAlive, false);
+          sessionToKeepAlive.x().keepAlive();
+          releaseSession(sessionToKeepAlive);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
@@ -1994,6 +2008,7 @@ class SessionPool {
   private final SettableFuture<Dialect> dialect = SettableFuture.create();
   private final String databaseRole;
   private final SessionClient sessionClient;
+  private final int numChannels;
   private final ScheduledExecutorService executor;
   private final ExecutorFactory<ScheduledExecutorService> executorFactory;
 
@@ -2052,6 +2067,9 @@ class SessionPool {
 
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
+
+  @GuardedBy("lock")
+  private long transactionsPerSecond = 0L;
 
   @GuardedBy("lock")
   private long numLeakedSessionsRemoved = 0;
@@ -2189,6 +2207,7 @@ class SessionPool {
     this.executorFactory = executorFactory;
     this.executor = executor;
     this.sessionClient = sessionClient;
+    this.numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
     this.clock = clock;
     this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
@@ -2314,11 +2333,11 @@ class SessionPool {
     }
   }
 
-  private void handleException(SpannerException e, PooledSession session) {
+  private void handleException(SpannerException e, Tuple<PooledSession, Integer> session) {
     if (isSessionNotFound(e)) {
-      invalidateSession(session);
+      invalidateSession(session.x());
     } else {
-      releaseSession(session, false);
+      releaseSession(session);
     }
   }
 
@@ -2342,7 +2361,7 @@ class SessionPool {
     }
   }
 
-  private PooledSession findSessionToKeepAlive(
+  private Tuple<PooledSession, Integer> findSessionToKeepAlive(
       Queue<PooledSession> queue, Instant keepAliveThreshold, int numAlreadyChecked) {
     int numChecked = 0;
     Iterator<PooledSession> iterator = queue.iterator();
@@ -2352,7 +2371,7 @@ class SessionPool {
       PooledSession session = iterator.next();
       if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
         iterator.remove();
-        return session;
+        return Tuple.of(session, numChecked);
       }
       numChecked++;
     }
@@ -2476,18 +2495,29 @@ class SessionPool {
     }
   }
 
-  /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
+  private void releaseSession(Tuple<PooledSession, Integer> sessionWithPosition) {
+    releaseSession(sessionWithPosition.x(), false, sessionWithPosition.y());
+  }
+
   private void releaseSession(PooledSession session, boolean isNewSession) {
+    releaseSession(session, isNewSession, null);
+  }
+
+  /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
+  private void releaseSession(
+      PooledSession session, boolean isNewSession, @Nullable Integer position) {
     Preconditions.checkNotNull(session);
     synchronized (lock) {
       if (closureFuture != null) {
         return;
       }
-      if (waiters.size() == 0) {
+      if (waiters.isEmpty()) {
         // There are no pending waiters.
-        // Add to a random position if the head of the session pool already contains many sessions
-        // with the same channel as this one.
-        if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
+        // Add to a random position if the transactions per second is high or the head of the
+        // session pool already contains many sessions with the same channel as this one.
+        if (session.releaseToPosition != Position.RANDOM && shouldRandomize()) {
+          session.releaseToPosition = Position.RANDOM;
+        } else if (session.releaseToPosition == Position.FIRST && isUnbalanced(session)) {
           session.releaseToPosition = Position.RANDOM;
         } else if (session.releaseToPosition == Position.RANDOM
             && !isNewSession
@@ -2497,7 +2527,12 @@ class SessionPool {
           // more efficient.
           session.releaseToPosition = options.getReleaseToPosition();
         }
-        if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
+        if (position != null) {
+          // Make sure we use a valid position, as the number of sessions could have changed in the
+          // meantime.
+          int actualPosition = Math.min(position, sessions.size());
+          sessions.add(actualPosition, session);
+        } else if (session.releaseToPosition == Position.RANDOM && !sessions.isEmpty()) {
           // A session should only be added at a random position the first time it is added to
           // the pool or if the pool was deemed unbalanced. All following releases into the pool
           // should normally happen at the default release position (unless the pool is again deemed
@@ -2510,10 +2545,30 @@ class SessionPool {
         } else {
           sessions.addFirst(session);
         }
+        session.releaseToPosition = options.getReleaseToPosition();
       } else {
         waiters.poll().put(session);
       }
     }
+  }
+
+  /**
+   * Returns true if the position where we return the session should be random if:
+   *
+   * <ol>
+   *   <li>The current TPS is higher than the configured threshold.
+   *   <li>AND the number of sessions checked out is larger than the number of channels.
+   * </ol>
+   *
+   * The second check prevents the session pool from being randomized when the application is
+   * running many small, quick queries using a small number of parallel threads. This can cause a
+   * high TPS, without actually having a high degree of parallelism.
+   */
+  @VisibleForTesting
+  boolean shouldRandomize() {
+    return this.options.getRandomizePositionQPSThreshold() > 0
+        && this.transactionsPerSecond >= this.options.getRandomizePositionQPSThreshold()
+        && this.numSessionsInUse >= this.numChannels;
   }
 
   private boolean isUnbalanced(PooledSession session) {

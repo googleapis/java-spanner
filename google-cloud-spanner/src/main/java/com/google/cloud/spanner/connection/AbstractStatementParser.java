@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Internal class for the Spanner Connection API.
@@ -594,6 +595,7 @@ public abstract class AbstractStatementParser {
   static final char CLOSE_PARENTHESIS = ')';
   static final char COMMA = ',';
   static final char UNDERSCORE = '_';
+  static final char BACKSLASH = '\\';
 
   /**
    * Removes comments from and trims the given sql statement using the dialect of this parser.
@@ -632,36 +634,33 @@ public abstract class AbstractStatementParser {
 
   /**
    * Converts all positional parameters (?) in the given sql string into named parameters. The
-   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
-   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
-   * parameters. The input SQL string may not contain any comments, except for PostgreSQL-dialect
-   * SQL strings.
+   * parameters are named @p1, @p2, etc. for GoogleSQL, and $1, $2, etc. for PostgreSQL. This method
+   * is used when converting a JDBC statement that uses positional parameters to a Cloud Spanner
+   * {@link Statement} instance that requires named parameters.
    *
-   * @param sql The sql string that should be converted
-   * @return A {@link ParametersInfo} object containing a string with named parameters instead of
-   *     positional parameters and the number of parameters.
-   * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
-   */
-  @InternalApi
-  abstract ParametersInfo convertPositionalParametersToNamedParametersInternal(
-      char paramChar, String sql);
-
-  /**
-   * Converts all positional parameters (?) in the given sql string into named parameters. The
-   * parameters are named @p1, @p2, etc. This method is used when converting a JDBC statement that
-   * uses positional parameters to a Cloud Spanner {@link Statement} instance that requires named
-   * parameters. The input SQL string may not contain any comments. There is an exception case if
-   * the statement starts with a GSQL comment which forces it to be interpreted as a GoogleSql
-   * statement.
-   *
-   * @param sql The sql string without comments that should be converted
+   * @param sql The sql string that should be converted to use named parameters
    * @return A {@link ParametersInfo} object containing a string with named parameters instead of
    *     positional parameters and the number of parameters.
    * @throws SpannerException If the input sql string contains an unclosed string/byte literal.
    */
   @InternalApi
   public ParametersInfo convertPositionalParametersToNamedParameters(char paramChar, String sql) {
-    return convertPositionalParametersToNamedParametersInternal(paramChar, sql);
+    Preconditions.checkNotNull(sql);
+    final String namedParamPrefix = getQueryParameterPrefix();
+    StringBuilder named = new StringBuilder(sql.length() + countOccurrencesOf(paramChar, sql));
+    int index = 0;
+    int paramIndex = 1;
+    while (index < sql.length()) {
+      char c = sql.charAt(index);
+      if (c == paramChar) {
+        named.append(namedParamPrefix).append(paramIndex);
+        paramIndex++;
+        index++;
+      } else {
+        index = skip(sql, index, named);
+      }
+    }
+    return new ParametersInfo(paramIndex - 1, named.toString());
   }
 
   /** Convenience method that is used to estimate the number of parameters in a SQL statement. */
@@ -695,5 +694,275 @@ public abstract class AbstractStatementParser {
   @InternalApi
   public boolean checkReturningClause(String sql) {
     return checkReturningClauseInternal(sql);
+  }
+
+  /**
+   * <<<<<<< HEAD Returns true if this dialect supports nested comments. ======= <<<<<<< HEAD
+   * Returns true if this dialect supports nested comments. >>>>>>> main
+   *
+   * <ul>
+   *   <li>This method should return false for dialects that consider this to be a valid comment:
+   *       <code>/* A comment /* still a comment *&#47;</code>.
+   *   <li>This method should return true for dialects that require all comment start sequences to
+   *       be balanced with a comment end sequence: <code>
+   *       /* A comment /* still a comment *&#47; Also still a comment *&#47;</code>.
+   * </ul>
+   */
+  abstract boolean supportsNestedComments();
+
+  /**
+   * Returns true for dialects that support dollar-quoted string literals.
+   *
+   * <p>Example: <code>$tag$This is a string$tag$</code>.
+   */
+  abstract boolean supportsDollarQuotedStrings();
+
+  /**
+   * Returns true for dialects that support backticks as a quoting character, either for string
+   * literals or identifiers.
+   */
+  abstract boolean supportsBacktickQuote();
+
+  /**
+   * Returns true for dialects that support triple-quoted string literals and identifiers.
+   *
+   * <p>Example: ```This is a triple-quoted string```
+   */
+  abstract boolean supportsTripleQuotedStrings();
+
+  /**
+   * Returns true if the dialect supports escaping a quote character within a literal with the same
+   * quote as the literal is using. That is: 'foo''bar' means "foo'bar".
+   */
+  abstract boolean supportsEscapeQuoteWithQuote();
+
+  /** Returns true if the dialect supports starting an escape sequence with a backslash. */
+  abstract boolean supportsBackslashEscape();
+
+  /**
+   * Returns true if the dialect supports single-line comments that start with a dash.
+   *
+   * <p>Example: # This is a comment
+   */
+  abstract boolean supportsHashSingleLineComments();
+
+  /**
+   * Returns true for dialects that allow line-feeds in quoted strings. Note that the return value
+   * of this is not used for triple-quoted strings. Triple-quoted strings are assumed to always
+   * support line-feeds.
+   */
+  abstract boolean supportsLineFeedInQuotedString();
+
+  /** Returns the query parameter prefix that should be used for this dialect. */
+  abstract String getQueryParameterPrefix();
+
+  /**
+   * Returns true for characters that can be used as the first character in unquoted identifiers.
+   */
+  boolean isValidIdentifierFirstChar(char c) {
+    return Character.isLetter(c) || c == UNDERSCORE;
+  }
+
+  /** Returns true for characters that can be used in unquoted identifiers. */
+  boolean isValidIdentifierChar(char c) {
+    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
+  }
+
+  /** Reads a dollar-quoted string literal from position index in the given sql string. */
+  String parseDollarQuotedString(String sql, int index) {
+    // Look ahead to the next dollar sign (if any). Everything in between is the quote tag.
+    StringBuilder tag = new StringBuilder();
+    while (index < sql.length()) {
+      char c = sql.charAt(index);
+      if (c == DOLLAR) {
+        return tag.toString();
+      }
+      if (!isValidIdentifierChar(c)) {
+        break;
+      }
+      tag.append(c);
+      index++;
+    }
+    return null;
+  }
+
+  /**
+   * Skips the next character, literal, identifier, or comment in the given sql string from the
+   * given index. The skipped characters are added to result if it is not null.
+   */
+  int skip(String sql, int currentIndex, @Nullable StringBuilder result) {
+    if (currentIndex >= sql.length()) {
+      return currentIndex;
+    }
+    char currentChar = sql.charAt(currentIndex);
+
+    if (currentChar == SINGLE_QUOTE
+        || currentChar == DOUBLE_QUOTE
+        || (supportsBacktickQuote() && currentChar == BACKTICK_QUOTE)) {
+      appendIfNotNull(result, currentChar);
+      return skipQuoted(sql, currentIndex, currentChar, result);
+    } else if (supportsDollarQuotedStrings() && currentChar == DOLLAR) {
+      String dollarTag = parseDollarQuotedString(sql, currentIndex + 1);
+      if (dollarTag != null) {
+        appendIfNotNull(result, currentChar, dollarTag, currentChar);
+        return skipQuoted(
+            sql, currentIndex + dollarTag.length() + 1, currentChar, dollarTag, result);
+      }
+    } else if (currentChar == HYPHEN
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == HYPHEN) {
+      return skipSingleLineComment(sql, currentIndex, result);
+    } else if (currentChar == DASH && supportsHashSingleLineComments()) {
+      return skipSingleLineComment(sql, currentIndex, result);
+    } else if (currentChar == SLASH
+        && sql.length() > (currentIndex + 1)
+        && sql.charAt(currentIndex + 1) == ASTERISK) {
+      return skipMultiLineComment(sql, currentIndex, result);
+    }
+
+    appendIfNotNull(result, currentChar);
+    return currentIndex + 1;
+  }
+
+  /** Skips a single-line comment from startIndex and adds it to result if result is not null. */
+  static int skipSingleLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    int endIndex = sql.indexOf('\n', startIndex + 2);
+    if (endIndex == -1) {
+      endIndex = sql.length();
+    } else {
+      // Include the newline character.
+      endIndex++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex, endIndex));
+    return endIndex;
+  }
+
+  /** Skips a multi-line comment from startIndex and adds it to result if result is not null. */
+  int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
+    // Current position is start + '/*'.length().
+    int pos = startIndex + 2;
+    // PostgreSQL allows comments to be nested. That is, the following is allowed:
+    // '/* test /* inner comment */ still a comment */'
+    int level = 1;
+    while (pos < sql.length()) {
+      if (supportsNestedComments()
+          && sql.charAt(pos) == SLASH
+          && sql.length() > (pos + 1)
+          && sql.charAt(pos + 1) == ASTERISK) {
+        level++;
+      }
+      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
+        level--;
+        if (level == 0) {
+          pos += 2;
+          appendIfNotNull(result, sql.substring(startIndex, pos));
+          return pos;
+        }
+      }
+      pos++;
+    }
+    appendIfNotNull(result, sql.substring(startIndex));
+    return sql.length();
+  }
+
+  /** Skips a quoted string from startIndex. */
+  private int skipQuoted(
+      String sql, int startIndex, char startQuote, @Nullable StringBuilder result) {
+    return skipQuoted(sql, startIndex, startQuote, null, result);
+  }
+
+  /**
+   * Skips a quoted string from startIndex. The quote character is assumed to be $ if dollarTag is
+   * not null.
+   */
+  int skipQuoted(
+      String sql,
+      int startIndex,
+      char startQuote,
+      @Nullable String dollarTag,
+      @Nullable StringBuilder result) {
+    boolean isTripleQuoted =
+        supportsTripleQuotedStrings()
+            && sql.length() > startIndex + 2
+            && sql.charAt(startIndex + 1) == startQuote
+            && sql.charAt(startIndex + 2) == startQuote;
+    int currentIndex = startIndex + (isTripleQuoted ? 3 : 1);
+    if (isTripleQuoted) {
+      appendIfNotNull(result, startQuote);
+      appendIfNotNull(result, startQuote);
+    }
+    while (currentIndex < sql.length()) {
+      char currentChar = sql.charAt(currentIndex);
+      if (currentChar == startQuote) {
+        if (supportsDollarQuotedStrings() && currentChar == DOLLAR) {
+          // Check if this is the end of the current dollar quoted string.
+          String tag = parseDollarQuotedString(sql, currentIndex + 1);
+          if (tag != null && tag.equals(dollarTag)) {
+            appendIfNotNull(result, currentChar, dollarTag, currentChar);
+            return currentIndex + tag.length() + 2;
+          }
+        } else if (supportsEscapeQuoteWithQuote()
+            && sql.length() > currentIndex + 1
+            && sql.charAt(currentIndex + 1) == startQuote) {
+          // This is an escaped quote (e.g. 'foo''bar')
+          appendIfNotNull(result, currentChar);
+          appendIfNotNull(result, currentChar);
+          currentIndex += 2;
+          continue;
+        } else if (isTripleQuoted) {
+          // Check if this is the end of the triple-quoted string.
+          if (sql.length() > currentIndex + 2
+              && sql.charAt(currentIndex + 1) == startQuote
+              && sql.charAt(currentIndex + 2) == startQuote) {
+            appendIfNotNull(result, currentChar);
+            appendIfNotNull(result, currentChar);
+            appendIfNotNull(result, currentChar);
+            return currentIndex + 3;
+          }
+        } else {
+          appendIfNotNull(result, currentChar);
+          return currentIndex + 1;
+        }
+      } else if (supportsBackslashEscape()
+          && currentChar == BACKSLASH
+          && sql.length() > currentIndex + 1
+          && sql.charAt(currentIndex + 1) == startQuote) {
+        // This is an escaped quote (e.g. 'foo\'bar').
+        // Note that in raw strings, the \ officially does not start an escape sequence, but the
+        // result is still the same, as in a raw string 'both characters are preserved'.
+        appendIfNotNull(result, currentChar);
+        appendIfNotNull(result, sql.charAt(currentIndex + 1));
+        currentIndex += 2;
+        continue;
+      } else if (currentChar == '\n' && !isTripleQuoted && !supportsLineFeedInQuotedString()) {
+        break;
+      }
+      currentIndex++;
+      appendIfNotNull(result, currentChar);
+    }
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.INVALID_ARGUMENT, "SQL statement contains an unclosed literal: " + sql);
+  }
+
+  /** Appends the given character to result if result is not null. */
+  private void appendIfNotNull(@Nullable StringBuilder result, char currentChar) {
+    if (result != null) {
+      result.append(currentChar);
+    }
+  }
+
+  /** Appends the given suffix to result if result is not null. */
+  private static void appendIfNotNull(@Nullable StringBuilder result, String suffix) {
+    if (result != null) {
+      result.append(suffix);
+    }
+  }
+
+  /** Appends the given prefix, tag, and suffix to result if result is not null. */
+  private static void appendIfNotNull(
+      @Nullable StringBuilder result, char prefix, String tag, char suffix) {
+    if (result != null) {
+      result.append(prefix).append(tag).append(suffix);
+    }
   }
 }
