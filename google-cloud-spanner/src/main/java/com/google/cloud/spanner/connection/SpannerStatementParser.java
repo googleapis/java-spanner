@@ -50,6 +50,46 @@ public class SpannerStatementParser extends AbstractStatementParser {
     return true;
   }
 
+  @Override
+  boolean supportsNestedComments() {
+    return false;
+  }
+
+  @Override
+  boolean supportsDollarQuotedStrings() {
+    return false;
+  }
+
+  @Override
+  boolean supportsBacktickQuote() {
+    return true;
+  }
+
+  @Override
+  boolean supportsTripleQuotedStrings() {
+    return true;
+  }
+
+  @Override
+  boolean supportsEscapeQuoteWithQuote() {
+    return false;
+  }
+
+  @Override
+  boolean supportsBackslashEscape() {
+    return true;
+  }
+
+  @Override
+  boolean supportsHashSingleLineComments() {
+    return true;
+  }
+
+  @Override
+  boolean supportsLineFeedInQuotedString() {
+    return false;
+  }
+
   /**
    * Removes comments from and trims the given sql statement. Spanner supports three types of
    * comments:

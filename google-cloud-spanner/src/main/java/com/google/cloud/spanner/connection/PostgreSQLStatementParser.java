@@ -48,6 +48,46 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     return false;
   }
 
+  @Override
+  boolean supportsNestedComments() {
+    return true;
+  }
+
+  @Override
+  boolean supportsDollarQuotedStrings() {
+    return true;
+  }
+
+  @Override
+  boolean supportsBacktickQuote() {
+    return false;
+  }
+
+  @Override
+  boolean supportsTripleQuotedStrings() {
+    return false;
+  }
+
+  @Override
+  boolean supportsEscapeQuoteWithQuote() {
+    return true;
+  }
+
+  @Override
+  boolean supportsBackslashEscape() {
+    return false;
+  }
+
+  @Override
+  boolean supportsHashSingleLineComments() {
+    return false;
+  }
+
+  @Override
+  boolean supportsLineFeedInQuotedString() {
+    return true;
+  }
+
   /**
    * Removes comments from and trims the given sql statement. PostgreSQL supports two types of
    * comments:
