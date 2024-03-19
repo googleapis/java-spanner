@@ -371,7 +371,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           if (transactionId == null && transactionIdFuture == null) {
             requestBuilder.setSingleUseTransaction(
                 TransactionOptions.newBuilder()
-                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
+                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance())
+                    .setExcludeTxnFromChangeStreams(
+                        options.withExcludeTxnFromChangeStreams() == Boolean.TRUE));
           } else {
             requestBuilder.setTransactionId(
                 transactionId == null

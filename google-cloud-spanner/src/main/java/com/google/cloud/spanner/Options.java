@@ -61,6 +61,9 @@ public final class Options implements Serializable {
   public interface ReadQueryUpdateTransactionOption
       extends ReadOption, QueryOption, UpdateOption, TransactionOption {}
 
+  /** Marker interface to mark options applicable to Update and Write operations */
+  public interface UpdateTransactionOption extends UpdateOption, TransactionOption {}
+
   /**
    * Marker interface to mark options applicable to Create, Update and Delete operations in admin
    * API.
@@ -108,6 +111,17 @@ public final class Options implements Serializable {
   public static TransactionOption optimisticLock() {
     return OPTIMISTIC_LOCK_OPTION;
   }
+
+  /**
+   * Specifying this instructs the transaction to be excluded from being recorded in change streams
+   * with the DDL option `allow_txn_exclusion=true`. This does not exclude the transaction from
+   * being recorded in the change streams with the DDL option `allow_txn_exclusion` being false or
+   * unset.
+   */
+  public static UpdateTransactionOption excludeTxnFromChangeStreams() {
+    return EXCLUDE_TXN_FROM_CHANGE_STREAMS_OPTION;
+  }
+
   /**
    * Specifying this will cause the read to yield at most this many rows. This should be greater
    * than 0.
@@ -282,6 +296,18 @@ public final class Options implements Serializable {
 
   static final OptimisticLockOption OPTIMISTIC_LOCK_OPTION = new OptimisticLockOption();
 
+  /** Option to request the transaction to be excluded from change streams. */
+  static final class ExcludeTxnFromChangeStreamsOption extends InternalOption
+      implements UpdateTransactionOption {
+    @Override
+    void appendToOptions(Options options) {
+      options.withExcludeTxnFromChangeStreams = true;
+    }
+  }
+
+  static final ExcludeTxnFromChangeStreamsOption EXCLUDE_TXN_FROM_CHANGE_STREAMS_OPTION =
+      new ExcludeTxnFromChangeStreamsOption();
+
   /** Option pertaining to flow control. */
   static final class FlowControlOption extends InternalOption implements ReadAndQueryOption {
     final int prefetchChunks;
@@ -406,6 +432,7 @@ public final class Options implements Serializable {
   private String etag;
   private Boolean validateOnly;
   private Boolean withOptimisticLock;
+  private Boolean withExcludeTxnFromChangeStreams;
   private Boolean dataBoostEnabled;
   private DirectedReadOptions directedReadOptions;
   private DecodeMode decodeMode;
@@ -509,6 +536,10 @@ public final class Options implements Serializable {
     return withOptimisticLock;
   }
 
+  Boolean withExcludeTxnFromChangeStreams() {
+    return withExcludeTxnFromChangeStreams;
+  }
+
   boolean hasDataBoostEnabled() {
     return dataBoostEnabled != null;
   }
@@ -572,6 +603,11 @@ public final class Options implements Serializable {
     if (withOptimisticLock != null) {
       b.append("withOptimisticLock: ").append(withOptimisticLock).append(' ');
     }
+    if (withExcludeTxnFromChangeStreams != null) {
+      b.append("withExcludeTxnFromChangeStreams: ")
+          .append(withExcludeTxnFromChangeStreams)
+          .append(' ');
+    }
     if (dataBoostEnabled != null) {
       b.append("dataBoostEnabled: ").append(dataBoostEnabled).append(' ');
     }
@@ -617,6 +653,7 @@ public final class Options implements Serializable {
         && Objects.equals(etag(), that.etag())
         && Objects.equals(validateOnly(), that.validateOnly())
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
+        && Objects.equals(withExcludeTxnFromChangeStreams(), that.withExcludeTxnFromChangeStreams())
         && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
         && Objects.equals(directedReadOptions(), that.directedReadOptions());
   }
@@ -662,6 +699,9 @@ public final class Options implements Serializable {
     }
     if (withOptimisticLock != null) {
       result = 31 * result + withOptimisticLock.hashCode();
+    }
+    if (withExcludeTxnFromChangeStreams != null) {
+      result = 31 * result + withExcludeTxnFromChangeStreams.hashCode();
     }
     if (dataBoostEnabled != null) {
       result = 31 * result + dataBoostEnabled.hashCode();

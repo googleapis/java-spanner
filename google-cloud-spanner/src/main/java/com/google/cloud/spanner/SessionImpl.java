@@ -69,11 +69,16 @@ class SessionImpl implements Session {
   }
 
   static TransactionOptions createReadWriteTransactionOptions(Options options) {
+    TransactionOptions.Builder transactionOptions = TransactionOptions.newBuilder();
+    if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
+      transactionOptions.setExcludeTxnFromChangeStreams(true);
+    }
     TransactionOptions.ReadWrite.Builder readWrite = TransactionOptions.ReadWrite.newBuilder();
     if (options.withOptimisticLock() == Boolean.TRUE) {
       readWrite.setReadLockMode(TransactionOptions.ReadWrite.ReadLockMode.OPTIMISTIC);
     }
-    return TransactionOptions.newBuilder().setReadWrite(readWrite).build();
+    transactionOptions.setReadWrite(readWrite);
+    return transactionOptions.build();
   }
 
   /**
@@ -181,10 +186,16 @@ class SessionImpl implements Session {
         CommitRequest.newBuilder()
             .setSession(name)
             .setReturnCommitStats(options.withCommitStats())
-            .addAllMutations(mutationsProto)
-            .setSingleUseTransaction(
-                TransactionOptions.newBuilder()
-                    .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance()));
+            .addAllMutations(mutationsProto);
+
+    TransactionOptions.Builder transactionOptionsBuilder =
+        TransactionOptions.newBuilder()
+            .setReadWrite(TransactionOptions.ReadWrite.getDefaultInstance());
+    if (options.withExcludeTxnFromChangeStreams() == Boolean.TRUE) {
+      transactionOptionsBuilder.setExcludeTxnFromChangeStreams(true);
+    }
+    requestBuilder.setSingleUseTransaction(transactionOptionsBuilder);
+
     if (options.hasMaxCommitDelay()) {
       requestBuilder.setMaxCommitDelay(
           Duration.newBuilder()
@@ -237,6 +248,10 @@ class SessionImpl implements Session {
     RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
+    }
+    if (Options.fromTransactionOptions(transactionOptions).withExcludeTxnFromChangeStreams()
+        == Boolean.TRUE) {
+      requestBuilder.setExcludeTxnFromChangeStreams(true);
     }
     ISpan span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE);
     try (IScope s = tracer.withSpan(span)) {
