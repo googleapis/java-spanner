@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -29,6 +31,7 @@ import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionConsumerImpl;
+import com.google.common.base.Preconditions;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
@@ -116,6 +119,10 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
   }
 
   private SessionPool createPool() throws Exception {
+    return createPool(this.options);
+  }
+
+  private SessionPool createPool(SessionPoolOptions options) throws Exception {
     // Allow sessions to be added to the head of the pool in all cases in this test, as it is
     // otherwise impossible to know which session exactly is getting pinged at what point in time.
     SessionPool pool =
@@ -323,5 +330,68 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
       Thread.sleep(1L);
     }
     assertThat(pool.totalSessions()).isEqualTo(options.getMinSessions());
+  }
+
+  @Test
+  public void testRandomizeThreshold() throws Exception {
+    SessionPool pool =
+        createPool(
+            this.options
+                .toBuilder()
+                .setMaxSessions(400)
+                .setLoopFrequency(1000L)
+                .setRandomizePositionQPSThreshold(4)
+                .build());
+    List<Session> sessions;
+
+    // Run a maintenance loop. No sessions have been checked out so far, so the TPS should be 0.
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get and return one session. This means TPS == 1.
+    returnSessions(1, useSessions(1, pool));
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get and return four sessions. This means TPS == 4, and that no sessions are checked out.
+    returnSessions(4, useSessions(4, pool));
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get four sessions without returning them.
+    // This means TPS == 4 and that they are all still checked out.
+    sessions = useSessions(4, pool);
+    runMaintenanceLoop(clock, pool, 1);
+    assertTrue(pool.shouldRandomize());
+    // Returning one of the sessions reduces the number of checked out sessions enough to stop the
+    // randomizing.
+    returnSessions(1, sessions);
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    // Get three more session and run the maintenance loop.
+    // The TPS is then 3, as we've only gotten 3 sessions since the last maintenance run.
+    // That means that we should not randomize.
+    sessions.addAll(useSessions(3, pool));
+    runMaintenanceLoop(clock, pool, 1);
+    assertFalse(pool.shouldRandomize());
+
+    returnSessions(sessions.size(), sessions);
+  }
+
+  private List<Session> useSessions(int numSessions, SessionPool pool) {
+    List<Session> sessions = new ArrayList<>(numSessions);
+    for (int i = 0; i < numSessions; i++) {
+      sessions.add(pool.getSession());
+      sessions.get(sessions.size() - 1).singleUse().executeQuery(Statement.of("SELECT 1")).next();
+    }
+    return sessions;
+  }
+
+  private void returnSessions(int numSessions, List<Session> sessions) {
+    Preconditions.checkArgument(numSessions <= sessions.size());
+    for (int i = 0; i < numSessions; i++) {
+      sessions.remove(0).close();
+    }
   }
 }
