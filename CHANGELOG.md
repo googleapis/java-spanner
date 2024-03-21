@@ -1,5 +1,36 @@
 # Changelog
 
+## [6.62.0](https://github.com/googleapis/java-spanner/compare/v6.61.0...v6.62.0) (2024-03-19)
+
+
+### Features
+
+* Allow attempt direct path xds via env var ([#2950](https://github.com/googleapis/java-spanner/issues/2950)) ([247a15f](https://github.com/googleapis/java-spanner/commit/247a15f2b8b858143bc906e0619f95a017ffe5c3))
+* Next release from main branch is 6.56.0 ([#2929](https://github.com/googleapis/java-spanner/issues/2929)) ([66374b1](https://github.com/googleapis/java-spanner/commit/66374b1c4ed88e01ff60fb8e1b7409e5dbbcb811))
+
+
+### Bug Fixes
+
+* Return type of max commit delay option. ([#2953](https://github.com/googleapis/java-spanner/issues/2953)) ([6e937ab](https://github.com/googleapis/java-spanner/commit/6e937ab16d130e72d633979c1a76bf7b3edbe7b6))
+
+
+### Performance Improvements
+
+* Keep comments when searching for params ([#2951](https://github.com/googleapis/java-spanner/issues/2951)) ([b782725](https://github.com/googleapis/java-spanner/commit/b782725b92a2662c42ad35647b23009ad95a99a5))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.38.0 ([#2942](https://github.com/googleapis/java-spanner/issues/2942)) ([ba665bd](https://github.com/googleapis/java-spanner/commit/ba665bd483ba70f09770d92028355ad499003fed))
+* Update dependency com.google.cloud:google-cloud-trace to v2.37.0 ([#2944](https://github.com/googleapis/java-spanner/issues/2944)) ([b5e608e](https://github.com/googleapis/java-spanner/commit/b5e608ef001473ab5575f1619804b351053c57f2))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.28.1 ([#2952](https://github.com/googleapis/java-spanner/issues/2952)) ([1e45237](https://github.com/googleapis/java-spanner/commit/1e45237dd235484a6a279f71ae7e126727382f9c))
+* Update opentelemetry.version to v1.36.0 ([#2945](https://github.com/googleapis/java-spanner/issues/2945)) ([e70b035](https://github.com/googleapis/java-spanner/commit/e70b0357543d38b6e9265e04444cec494ebd6885))
+
+
+### Documentation
+
+* **samples:** Add tag to statement timeout sample ([#2931](https://github.com/googleapis/java-spanner/issues/2931)) ([2392afe](https://github.com/googleapis/java-spanner/commit/2392afed0d25266294e0ce11c6ae32d7307e6830))
+
 ## [6.61.0](https://github.com/googleapis/java-spanner/compare/v6.60.1...v6.61.0) (2024-03-04)
 
 
