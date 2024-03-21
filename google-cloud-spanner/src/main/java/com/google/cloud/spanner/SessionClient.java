@@ -229,7 +229,7 @@ class SessionClient implements AutoCloseable {
    * Create a multiplexed session and returns it to the given {@link SessionConsumer}. A multiplexed
    * session is not affiliated with any GRPC channel. The given {@link SessionConsumer} is
    * guaranteed to eventually get exactly 1 multiplexed session unless an error occurs. In case of
-   * an error on the gRPC calls, the consumer will receive one or more {@link
+   * an error on the gRPC calls, the consumer will receive one {@link
    * SessionConsumer#onSessionCreateFailure(Throwable, int)} calls with the error.
    *
    * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
