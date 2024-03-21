@@ -69,6 +69,10 @@ public class SessionPoolOptions {
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
 
+  private final Duration waitForMultiplexedSession;
+  private final boolean useMultiplexedSession;
+  private final Duration multiplexedSessionMaintenanceDuration;
+
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
     // We allow that to prevent code that only sets a value for maxSessions to break if the
@@ -93,6 +97,9 @@ public class SessionPoolOptions {
     this.randomizePositionQPSThreshold = builder.randomizePositionQPSThreshold;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
+    this.useMultiplexedSession = builder.useMultiplexedSession;
+    this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
+    this.waitForMultiplexedSession = builder.waitForMultiplexedSession;
   }
 
   @Override
@@ -123,7 +130,11 @@ public class SessionPoolOptions {
         && Objects.equals(this.randomizePositionQPSThreshold, other.randomizePositionQPSThreshold)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
-        && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
+        && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock)
+        && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
+        && Objects.equals(
+            this.multiplexedSessionMaintenanceDuration, other.multiplexedSessionMaintenanceDuration)
+        && Objects.equals(this.waitForMultiplexedSession, other.waitForMultiplexedSession);
   }
 
   @Override
@@ -148,7 +159,10 @@ public class SessionPoolOptions {
         this.releaseToPosition,
         this.randomizePositionQPSThreshold,
         this.inactiveTransactionRemovalOptions,
-        this.poolMaintainerClock);
+        this.poolMaintainerClock,
+        this.useMultiplexedSession,
+        this.multiplexedSessionMaintenanceDuration,
+        this.waitForMultiplexedSession);
   }
 
   public Builder toBuilder() {
@@ -269,6 +283,18 @@ public class SessionPoolOptions {
 
   long getRandomizePositionQPSThreshold() {
     return randomizePositionQPSThreshold;
+  }
+
+  boolean getUseMultiplexedSession() {
+    return useMultiplexedSession;
+  }
+
+  Duration getMultiplexedSessionMaintenanceDuration() {
+    return multiplexedSessionMaintenanceDuration;
+  }
+
+  Duration getWaitForMultiplexedSession() {
+    return waitForMultiplexedSession;
   }
 
   public static Builder newBuilder() {
@@ -467,6 +493,9 @@ public class SessionPoolOptions {
      */
     private long randomizePositionQPSThreshold = 0L;
 
+    private boolean useMultiplexedSession = false;
+    private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
+    private Duration waitForMultiplexedSession = Duration.ofSeconds(10);
     private Clock poolMaintainerClock;
 
     private static Position getReleaseToPositionFromSystemProperty() {
@@ -666,6 +695,49 @@ public class SessionPoolOptions {
     @VisibleForTesting
     Builder setPoolMaintainerClock(Clock poolMaintainerClock) {
       this.poolMaintainerClock = poolMaintainerClock;
+      return this;
+    }
+
+    /**
+     * Sets whether the client should use multiplexed session or not. If set to true, the client
+     * optimises and runs multiple applicable requests concurrently on a single session. A single
+     * multiplexed session is sufficient to handle all concurrent traffic, so we don't require to
+     * provision any additional sessions.
+     *
+     * <p>When set to false, the client uses the regular session cached in the session pool for
+     * running 1 concurrent transaction per session. We require to provision sufficient sessions by
+     * making use of {@link SessionPoolOptions#minSessions} and {@link
+     * SessionPoolOptions#maxSessions} based on the traffic load. Failing to do so will result in
+     * higher latencies.
+     *
+     * @param useMultiplexedSession
+     */
+    Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
+      this.useMultiplexedSession = useMultiplexedSession;
+      return this;
+    }
+
+    @VisibleForTesting
+    Builder setMultiplexedSessionMaintenanceDuration(
+        Duration multiplexedSessionMaintenanceDuration) {
+      this.multiplexedSessionMaintenanceDuration = multiplexedSessionMaintenanceDuration;
+      return this;
+    }
+
+    /**
+     * This option is only useful when {@link SessionPoolOptions#useMultiplexedSession} is set to
+     * true. If greater than zero, we wait for the said duration at time of client initialization to
+     * ensure that the multiplexed session is initialised. The default value for this is 10s.
+     *
+     * <p>If this is set to null, the client does not wait for session is initialised which means
+     * that the first few requests would see more latency since they will need to wait till the
+     * multiplexed session is initialised.
+     *
+     * @param waitForMultiplexedSession
+     * @return
+     */
+    Builder setWaitForMultiplexedSession(Duration waitForMultiplexedSession) {
+      this.waitForMultiplexedSession = waitForMultiplexedSession;
       return this;
     }
 
