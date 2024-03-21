@@ -354,6 +354,11 @@ public class GapicSpannerRpc implements SpannerRpc {
                   options.isAttemptDirectPath()
                       && !Objects.equals(
                           options.getScopedCredentials(), NoCredentials.getInstance()));
+      String directPathXdsEnv = System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS");
+      boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
+      if (isAttemptDirectPathXds) {
+        defaultChannelProviderBuilder.setAttemptDirectPathXds();
+      }
       if (options.isUseVirtualThreads()) {
         ExecutorService executor =
             tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");

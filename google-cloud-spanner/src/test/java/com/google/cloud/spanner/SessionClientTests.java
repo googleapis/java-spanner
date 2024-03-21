@@ -29,6 +29,7 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
+import com.google.common.collect.ImmutableMap;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
@@ -149,6 +150,82 @@ public class SessionClientTests {
       // The same channelHint is passed for deleteSession (contained in "options").
       Mockito.verify(rpc).deleteSession(sessionName, options.getValue());
     }
+  }
+
+  @Test
+  public void createAndCloseMultiplexedSession() {
+    DatabaseId db = DatabaseId.of(dbName);
+    String sessionName = dbName + "/sessions/s1";
+    Map<String, String> labels = ImmutableMap.of("env", "dev");
+    String databaseRole = "role";
+    when(spannerOptions.getSessionLabels()).thenReturn(labels);
+    when(spannerOptions.getDatabaseRole()).thenReturn(databaseRole);
+    com.google.spanner.v1.Session sessionProto =
+        com.google.spanner.v1.Session.newBuilder()
+            .setName(sessionName)
+            .setMultiplexed(true)
+            .putAllLabels(labels)
+            .build();
+    when(rpc.createSession(
+            Mockito.eq(dbName),
+            Mockito.eq(databaseRole),
+            Mockito.eq(labels),
+            options.capture(),
+            Mockito.eq(true)))
+        .thenReturn(sessionProto);
+    final AtomicInteger returnedSessionCount = new AtomicInteger();
+    final SessionConsumer consumer =
+        new SessionConsumer() {
+          @Override
+          public void onSessionReady(SessionImpl session) {
+            assertThat(session.getName()).isEqualTo(sessionName);
+            returnedSessionCount.incrementAndGet();
+
+            session.close();
+            Mockito.verify(rpc).deleteSession(sessionName, options.getValue());
+          }
+
+          @Override
+          public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {}
+        };
+    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+      client.createMultiplexedSession(consumer);
+    }
+    // for multiplexed session there is no channel hint pass in the RPC options
+    assertThat(options.getValue()).isNull();
+    assertThat(returnedSessionCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void createAndCloseMultiplexedSession_whenRPCThrowsException_thenAssertException() {
+    DatabaseId db = DatabaseId.of(dbName);
+    Map<String, String> labels = ImmutableMap.of("env", "dev");
+    String databaseRole = "role";
+    when(spannerOptions.getSessionLabels()).thenReturn(labels);
+    when(spannerOptions.getDatabaseRole()).thenReturn(databaseRole);
+    when(rpc.createSession(
+            Mockito.eq(dbName),
+            Mockito.eq(databaseRole),
+            Mockito.eq(labels),
+            options.capture(),
+            Mockito.eq(true)))
+        .thenThrow(RuntimeException.class);
+    final AtomicInteger returnedSessionCount = new AtomicInteger();
+    final SessionConsumer consumer =
+        new SessionConsumer() {
+          @Override
+          public void onSessionReady(SessionImpl session) {}
+
+          @Override
+          public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+            assertThat(t).isInstanceOf(RuntimeException.class);
+          }
+        };
+    try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
+      client.createMultiplexedSession(consumer);
+    }
+    // for multiplexed session there is no channel hint pass in the RPC options
+    assertThat(options.getValue()).isNull();
   }
 
   @SuppressWarnings("unchecked")

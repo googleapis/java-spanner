@@ -34,6 +34,7 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.Timestamp;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.ByteString;
@@ -60,6 +61,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -272,6 +274,49 @@ public class SessionImplTest {
     GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
     calendar.set(year, month, day, hour, min, secs);
     return calendar.getTimeInMillis() / 1000;
+  }
+
+  @Test
+  public void multiplesSingleUseContext_whenMultiplexedSession_assertValidContext() {
+    final String dbName = "projects/p1/instances/i1/databases/d1";
+    final DatabaseId db = DatabaseId.of(dbName);
+    final String sessionName = dbName + "/sessions/s1";
+    final SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);
+    final SessionConsumer consumer =
+        new SessionConsumer() {
+          @Override
+          public void onSessionReady(SessionImpl session) {
+            ReadContext ctx1 = session.singleUse(TimestampBound.strong());
+            session.singleUse(TimestampBound.strong());
+            try {
+              ResultSet resultSet =
+                  ctx1.read("Dummy", KeySet.all(), Collections.singletonList("C"));
+              assertNotNull(resultSet);
+            } catch (IllegalStateException ex) {
+              // in case of multiplexed session we should allow concurrent requests on same session
+              // and should not receive a IllegalStateException
+              Assert.fail();
+            }
+          }
+
+          @Override
+          public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {}
+        };
+    Session sessionProto =
+        Session.newBuilder()
+            .setCreateTime(getCurrentGoogleTimestamp())
+            .setName(sessionName)
+            .setMultiplexed(true)
+            .build();
+    Mockito.when(
+            rpc.createSession(
+                Mockito.eq(dbName),
+                Mockito.anyString(),
+                Mockito.anyMap(),
+                optionsCaptor.capture(),
+                Mockito.eq(true)))
+        .thenReturn(sessionProto);
+    spanner.getSessionClient(db).createMultiplexedSession(consumer);
   }
 
   @Test
@@ -514,5 +559,12 @@ public class SessionImplTest {
             SpannerException.class,
             () -> txn.readRow("Dummy", Key.of(), Collections.singletonList("C")));
     assertEquals(ErrorCode.INTERNAL, e.getErrorCode());
+  }
+
+  private com.google.protobuf.Timestamp getCurrentGoogleTimestamp() {
+    long current = System.currentTimeMillis();
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(current);
+    int nanos = (int) TimeUnit.MILLISECONDS.toNanos(current - TimeUnit.SECONDS.toMillis(seconds));
+    return com.google.protobuf.Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
   }
 }
