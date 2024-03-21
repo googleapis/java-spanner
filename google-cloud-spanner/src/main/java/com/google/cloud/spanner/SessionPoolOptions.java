@@ -708,8 +708,6 @@ public class SessionPoolOptions {
      * making use of {@link SessionPoolOptions#minSessions} and {@link
      * SessionPoolOptions#maxSessions} based on the traffic load. Failing to do so will result in
      * higher latencies.
-     *
-     * @param useMultiplexedSession
      */
     Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
       this.useMultiplexedSession = useMultiplexedSession;
@@ -733,8 +731,8 @@ public class SessionPoolOptions {
      * that the first read requests could see more latency, as they will need to wait until the
      * multiplexed session has been created.
      *
-     * @param waitForMultiplexedSession
-     * @return
+     * <p>Note that we would need to use the option {@link SessionPoolOptions#waitForMinSessions} if
+     * we want a similar blocking behavior for the other sessions within the session pool.
      */
     Builder setWaitForMultiplexedSession(Duration waitForMultiplexedSession) {
       this.waitForMultiplexedSession = waitForMultiplexedSession;
