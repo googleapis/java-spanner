@@ -701,8 +701,7 @@ public class SessionPoolOptions {
     /**
      * Sets whether the client should use multiplexed session or not. If set to true, the client
      * optimises and runs multiple applicable requests concurrently on a single session. A single
-     * multiplexed session is sufficient to handle all concurrent traffic, so we don't require to
-     * provision any additional sessions.
+     * multiplexed session is sufficient to handle all concurrent traffic.
      *
      * <p>When set to false, the client uses the regular session cached in the session pool for
      * running 1 concurrent transaction per session. We require to provision sufficient sessions by
