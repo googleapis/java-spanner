@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options.PartitionedUpdateOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
@@ -600,5 +601,5 @@ public interface DatabaseClient {
    * <p>Given the above, Partitioned DML is good fit for large, database-wide, operations that are
    * idempotent, such as deleting old rows from a very large table.
    */
-  long executePartitionedUpdate(Statement stmt, UpdateOption... options);
+  long executePartitionedUpdate(Statement stmt, PartitionedUpdateOption... options);
 }

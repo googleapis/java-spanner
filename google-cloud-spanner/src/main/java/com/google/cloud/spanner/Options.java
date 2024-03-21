@@ -61,9 +61,6 @@ public final class Options implements Serializable {
   public interface ReadQueryUpdateTransactionOption
       extends ReadOption, QueryOption, UpdateOption, TransactionOption {}
 
-  /** Marker interface to mark options applicable to Update and Write operations */
-  public interface UpdateTransactionOption extends UpdateOption, TransactionOption {}
-
   /**
    * Marker interface to mark options applicable to Create, Update and Delete operations in admin
    * API.
@@ -86,8 +83,15 @@ public final class Options implements Serializable {
   /** Marker interface to mark options applicable to write operations */
   public interface TransactionOption {}
 
+  /** Marker interface to mark options applicable to partitioned update */
+  public interface PartitionedUpdateOption {}
+
   /** Marker interface to mark options applicable to update operation. */
-  public interface UpdateOption {}
+  public interface UpdateOption extends PartitionedUpdateOption {}
+
+  /** Marker interface to mark options applicable to partitioned update and write operations */
+  public interface PartitionedUpdateTransactionOption
+      extends PartitionedUpdateOption, TransactionOption {}
 
   /** Marker interface to mark options applicable to list operations in admin API. */
   public interface ListOption {}
@@ -118,7 +122,7 @@ public final class Options implements Serializable {
    * being recorded in the change streams with the DDL option `allow_txn_exclusion` being false or
    * unset.
    */
-  public static UpdateTransactionOption excludeTxnFromChangeStreams() {
+  public static PartitionedUpdateTransactionOption excludeTxnFromChangeStreams() {
     return EXCLUDE_TXN_FROM_CHANGE_STREAMS_OPTION;
   }
 
@@ -297,7 +301,7 @@ public final class Options implements Serializable {
 
   /** Option to request the transaction to be excluded from change streams. */
   static final class ExcludeTxnFromChangeStreamsOption extends InternalOption
-      implements UpdateTransactionOption {
+      implements PartitionedUpdateTransactionOption {
     @Override
     void appendToOptions(Options options) {
       options.withExcludeTxnFromChangeStreams = true;
@@ -742,6 +746,16 @@ public final class Options implements Serializable {
       }
     }
     return updateOptions;
+  }
+
+  static Options fromPartitinoedUpdateOptions(PartitionedUpdateOption... options) {
+    Options partitionedUpdateOptions = new Options();
+    for (PartitionedUpdateOption option : options) {
+      if (option instanceof InternalOption) {
+        ((InternalOption) option).appendToOptions(partitionedUpdateOptions);
+      }
+    }
+    return partitionedUpdateOptions;
   }
 
   static Options fromTransactionOptions(TransactionOption... options) {
