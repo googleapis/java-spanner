@@ -724,12 +724,12 @@ public class SessionPoolOptions {
     /**
      * This option is only used when {@link SessionPoolOptions#useMultiplexedSession} is set to
      * true. If greater than zero, calls to {@link Spanner#getDatabaseClient(DatabaseId)} will block
-     * for up to the given duration while waiting for the multiplexed session to be created.
-     * The default value for this is 10 seconds.
+     * for up to the given duration while waiting for the multiplexed session to be created. The
+     * default value for this is 10 seconds.
      *
-     * <p>If this is set to null or zero, the client does not wait for the session to be created, which means
-     * that the first read requests could see more latency, as they will need to wait until the
-     * multiplexed session has been created.
+     * <p>If this is set to null or zero, the client does not wait for the session to be created,
+     * which means that the first read requests could see more latency, as they will need to wait
+     * until the multiplexed session has been created.
      *
      * <p>Note that we would need to use the option {@link SessionPoolOptions#waitForMinSessions} if
      * we want a similar blocking behavior for the other sessions within the session pool.
