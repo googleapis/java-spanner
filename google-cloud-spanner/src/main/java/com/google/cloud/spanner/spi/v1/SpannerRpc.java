@@ -340,6 +340,14 @@ public interface SpannerRpc extends ServiceRpc {
       @Nullable Map<Option, ?> options)
       throws SpannerException;
 
+  Session createSession(
+      String databaseName,
+      @Nullable String databaseRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options,
+      boolean isMultiplexed)
+      throws SpannerException;
+
   void deleteSession(String sessionName, @Nullable Map<Option, ?> options) throws SpannerException;
 
   ApiFuture<Empty> asyncDeleteSession(String sessionName, @Nullable Map<Option, ?> options)

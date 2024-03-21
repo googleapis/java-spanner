@@ -215,9 +215,37 @@ class SessionClient implements AutoCloseable {
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
                   options);
-      return new SessionImpl(spanner, session.getName(), options);
+      return new SessionImpl(
+          spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
     } catch (RuntimeException e) {
       span.setStatus(e);
+      throw e;
+    } finally {
+      span.end();
+    }
+  }
+
+  /** Create a multiplexed session. These sessions are not affiliated with any GRPC channel. */
+  SessionImpl createMultiplexedSession(SessionConsumer consumer) {
+    ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION);
+    try (IScope s = spanner.getTracer().withSpan(span)) {
+      com.google.spanner.v1.Session session =
+          spanner
+              .getRpc()
+              .createSession(
+                  db.getName(),
+                  spanner.getOptions().getDatabaseRole(),
+                  spanner.getOptions().getSessionLabels(),
+                  null,
+                  true);
+      SessionImpl sessionImpl =
+          new SessionImpl(
+              spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), null);
+      consumer.onSessionReady(sessionImpl);
+      return sessionImpl;
+    } catch (RuntimeException e) {
+      span.setStatus(e);
+      consumer.onSessionCreateFailure(e, 1);
       throw e;
     } finally {
       span.end();
@@ -311,7 +339,13 @@ class SessionClient implements AutoCloseable {
       span.end();
       List<SessionImpl> res = new ArrayList<>(sessionCount);
       for (com.google.spanner.v1.Session session : sessions) {
-        res.add(new SessionImpl(spanner, session.getName(), options));
+        res.add(
+            new SessionImpl(
+                spanner,
+                session.getName(),
+                session.getCreateTime(),
+                session.getMultiplexed(),
+                options));
       }
       return res;
     } catch (RuntimeException e) {
