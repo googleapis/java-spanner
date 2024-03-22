@@ -1852,6 +1852,13 @@ class SessionPool {
      */
     @VisibleForTesting Instant lastExecutionTime;
 
+    /**
+     * The previous numSessionsAcquired seen by the maintainer. This is used to calculate the
+     * transactions per second, which again is used to determine whether to randomize the order of
+     * the session pool.
+     */
+    private long prevNumSessionsAcquired;
+
     boolean closed = false;
 
     @GuardedBy("lock")
@@ -1895,6 +1902,12 @@ class SessionPool {
           return;
         }
         running = true;
+        if (loopFrequency >= 1000L) {
+          SessionPool.this.transactionsPerSecond =
+              (SessionPool.this.numSessionsAcquired - prevNumSessionsAcquired)
+                  / (loopFrequency / 1000L);
+        }
+        this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
       }
       Instant currTime = clock.instant();
       removeIdleSessions(currTime);
