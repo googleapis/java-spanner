@@ -246,4 +246,62 @@ public class SessionPoolOptionsTest {
         IllegalArgumentException.class,
         () -> SessionPoolOptions.newBuilder().setRandomizePositionQPSThreshold(-1L));
   }
+
+  @Test
+  public void testUseMultiplexedSession() {
+    assertEquals(false, SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
+    assertEquals(
+        true,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(true)
+            .build()
+            .getUseMultiplexedSession());
+    assertEquals(
+        false,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(true)
+            .setUseMultiplexedSession(false)
+            .build()
+            .getUseMultiplexedSession());
+  }
+
+  @Test
+  public void testMultiplexedSessionMaintenanceDuration() {
+    assertEquals(
+        Duration.ofDays(7),
+        SessionPoolOptions.newBuilder().build().getMultiplexedSessionMaintenanceDuration());
+    assertEquals(
+        Duration.ofDays(2),
+        SessionPoolOptions.newBuilder()
+            .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(2))
+            .build()
+            .getMultiplexedSessionMaintenanceDuration());
+    assertEquals(
+        Duration.ofDays(10),
+        SessionPoolOptions.newBuilder()
+            .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(2))
+            .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(10))
+            .build()
+            .getMultiplexedSessionMaintenanceDuration());
+  }
+
+  @Test
+  public void testWaitForMultiplexedSession() {
+    assertEquals(
+        Duration.ofSeconds(10),
+        SessionPoolOptions.newBuilder().build().getWaitForMultiplexedSession());
+    assertEquals(
+        Duration.ofSeconds(20),
+        SessionPoolOptions.newBuilder()
+            .setWaitForMultiplexedSession(Duration.ofSeconds(20))
+            .build()
+            .getWaitForMultiplexedSession());
+    assertEquals(
+        Duration.ofSeconds(10),
+        SessionPoolOptions.newBuilder()
+            .setWaitForMultiplexedSession(Duration.ofSeconds(2))
+            .setWaitForMultiplexedSession(Duration.ofSeconds(10))
+            .build()
+            .getWaitForMultiplexedSession());
+  }
 }
