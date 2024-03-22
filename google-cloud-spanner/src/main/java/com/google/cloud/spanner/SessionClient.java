@@ -250,9 +250,9 @@ class SessionClient implements AutoCloseable {
           new SessionImpl(
               spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), null);
       consumer.onSessionReady(sessionImpl);
-    } catch (RuntimeException e) {
-      span.setStatus(e);
-      consumer.onSessionCreateFailure(e, 1);
+    } catch (Throwable t) {
+      span.setStatus(t);
+      consumer.onSessionCreateFailure(t, 1);
     } finally {
       span.end();
     }
