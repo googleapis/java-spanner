@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -180,7 +181,7 @@ public class SessionClientTests {
         new SessionConsumer() {
           @Override
           public void onSessionReady(SessionImpl session) {
-            assertThat(session.getName()).isEqualTo(sessionName);
+            assertEquals(sessionName, session.getName());
             returnedSessionCount.incrementAndGet();
 
             session.close();
@@ -212,7 +213,6 @@ public class SessionClientTests {
             options.capture(),
             Mockito.eq(true)))
         .thenThrow(RuntimeException.class);
-    final AtomicInteger returnedSessionCount = new AtomicInteger();
     final SessionConsumer consumer =
         new SessionConsumer() {
           @Override
@@ -220,7 +220,7 @@ public class SessionClientTests {
 
           @Override
           public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
-            assertThat(t).isInstanceOf(RuntimeException.class);
+            assertTrue(t instanceof RuntimeException);
           }
         };
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
