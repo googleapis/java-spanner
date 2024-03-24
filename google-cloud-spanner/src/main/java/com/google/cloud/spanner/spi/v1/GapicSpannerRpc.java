@@ -1605,6 +1605,18 @@ public class GapicSpannerRpc implements SpannerRpc {
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException {
+    // By default sessions are not multiplexed
+    return createSession(databaseName, databaseRole, labels, options, false);
+  }
+
+  @Override
+  public Session createSession(
+      String databaseName,
+      @Nullable String databaseRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options,
+      boolean isMultiplexed)
+      throws SpannerException {
     CreateSessionRequest.Builder requestBuilder =
         CreateSessionRequest.newBuilder().setDatabase(databaseName);
     Session.Builder sessionBuilder = Session.newBuilder();
@@ -1614,6 +1626,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (databaseRole != null && !databaseRole.isEmpty()) {
       sessionBuilder.setCreatorRole(databaseRole);
     }
+    sessionBuilder.setMultiplexed(isMultiplexed);
     requestBuilder.setSession(sessionBuilder);
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context =

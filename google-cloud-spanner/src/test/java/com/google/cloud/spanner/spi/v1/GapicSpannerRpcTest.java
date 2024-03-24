@@ -57,6 +57,7 @@ import com.google.rpc.ErrorInfo;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
@@ -665,6 +666,42 @@ public class GapicSpannerRpcTest {
     assertNull(rpc.getDatabaseAdminStubSettings());
     assertNull(rpc.getInstanceAdminStubSettings());
 
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testCreateSession_assertSessionProto() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    Session session = rpc.createSession("DATABASE_NAME", null, null, null);
+    assertNotNull(session);
+    assertNotNull(session.getCreateTime());
+    assertEquals(false, session.getMultiplexed());
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testCreateSession_whenMultiplexedSessionIsTrue_assertSessionProto() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    Session session = rpc.createSession("DATABASE_NAME", null, null, null, true);
+    assertNotNull(session);
+    assertNotNull(session.getCreateTime());
+    assertEquals(true, session.getMultiplexed());
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testCreateSession_whenMultiplexedSessionIsFalse_assertSessionProto() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    Session session = rpc.createSession("DATABASE_NAME", null, null, null, false);
+    assertNotNull(session);
+    assertNotNull(session.getCreateTime());
+    assertEquals(false, session.getMultiplexed());
     rpc.shutdown();
   }
 
