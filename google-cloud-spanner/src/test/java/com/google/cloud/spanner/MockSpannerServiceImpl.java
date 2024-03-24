@@ -858,7 +858,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       CreateSessionRequest request, StreamObserver<Session> responseObserver) {
     requests.add(request);
     Preconditions.checkNotNull(request.getDatabase());
+    Preconditions.checkNotNull(request.getSession());
     String name = generateSessionName(request.getDatabase());
+    Session requestSession = request.getSession();
     try {
       createSessionExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
@@ -868,6 +870,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               .setCreateTime(now)
               .setName(name)
               .setApproximateLastUseTime(now)
+              .setMultiplexed(requestSession.getMultiplexed())
               .build();
       Session prev = sessions.putIfAbsent(name, session);
       if (prev == null) {
