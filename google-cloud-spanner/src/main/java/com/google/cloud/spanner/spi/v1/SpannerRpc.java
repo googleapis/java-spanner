@@ -340,13 +340,15 @@ public interface SpannerRpc extends ServiceRpc {
       @Nullable Map<Option, ?> options)
       throws SpannerException;
 
-  Session createSession(
+  default Session createSession(
       String databaseName,
       @Nullable String databaseRole,
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options,
       boolean isMultiplexed)
-      throws SpannerException;
+      throws SpannerException {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   void deleteSession(String sessionName, @Nullable Map<Option, ?> options) throws SpannerException;
 
