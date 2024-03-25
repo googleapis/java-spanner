@@ -166,7 +166,8 @@ class SessionPool {
    * Wrapper around {@code ReadContext} that releases the session to the pool once the call is
    * finished, if it is a single use context.
    */
-  private static class AutoClosingReadContext<T extends ReadContext> implements ReadContext {
+  private static class AutoClosingReadContext<I extends SessionFuture, T extends ReadContext>
+      implements ReadContext {
     /**
      * {@link AsyncResultSet} implementation that keeps track of the async operations that are still
      * running for this {@link ReadContext} and that should finish before the {@link ReadContext}
@@ -201,9 +202,10 @@ class SessionPool {
       }
     }
 
-    private final Function<PooledSessionFuture, T> readContextDelegateSupplier;
+    private final Function<I, T> readContextDelegateSupplier;
     private T readContextDelegate;
     private final SessionPool sessionPool;
+    private final SessionReplacementHandler<I> sessionReplacementHandler;
     private final boolean isSingleUse;
     private final AtomicInteger asyncOperationsCount = new AtomicInteger();
 
@@ -213,7 +215,7 @@ class SessionPool {
     private boolean sessionUsedForQuery = false;
 
     @GuardedBy("lock")
-    private PooledSessionFuture session;
+    private I session;
 
     @GuardedBy("lock")
     private boolean closed;
@@ -222,12 +224,14 @@ class SessionPool {
     private boolean delegateClosed;
 
     private AutoClosingReadContext(
-        Function<PooledSessionFuture, T> delegateSupplier,
+        Function<I, T> delegateSupplier,
         SessionPool sessionPool,
-        PooledSessionFuture session,
+        SessionReplacementHandler sessionReplacementHandler,
+        I session,
         boolean isSingleUse) {
       this.readContextDelegateSupplier = delegateSupplier;
       this.sessionPool = sessionPool;
+      this.sessionReplacementHandler = sessionReplacementHandler;
       this.session = session;
       this.isSingleUse = isSingleUse;
     }
@@ -293,7 +297,7 @@ class SessionPool {
           } catch (SpannerException e) {
             synchronized (lock) {
               if (!closed && isSingleUse) {
-                session.get().lastException = e;
+                session.get().setLastException(e);
                 AutoClosingReadContext.this.close();
               }
             }
@@ -319,7 +323,7 @@ class SessionPool {
         if (isSingleUse || !sessionUsedForQuery) {
           // This class is only used by read-only transactions, so we know that we only need a
           // read-only session.
-          session = sessionPool.replaceSession(notFound, session);
+          session = sessionReplacementHandler.replaceSession(notFound, session);
           readContextDelegate = readContextDelegateSupplier.apply(session);
         } else {
           throw notFound;
@@ -529,20 +533,44 @@ class SessionPool {
     }
   }
 
-  private static class AutoClosingReadTransaction
-      extends AutoClosingReadContext<ReadOnlyTransaction> implements ReadOnlyTransaction {
+  private static class AutoClosingReadTransaction<I extends SessionFuture>
+      extends AutoClosingReadContext<I, ReadOnlyTransaction> implements ReadOnlyTransaction {
 
     AutoClosingReadTransaction(
-        Function<PooledSessionFuture, ReadOnlyTransaction> txnSupplier,
+        Function<I, ReadOnlyTransaction> txnSupplier,
         SessionPool sessionPool,
-        PooledSessionFuture session,
+        SessionReplacementHandler sessionReplacementHandler,
+        I session,
         boolean isSingleUse) {
-      super(txnSupplier, sessionPool, session, isSingleUse);
+      super(txnSupplier, sessionPool, sessionReplacementHandler, session, isSingleUse);
     }
 
     @Override
     public Timestamp getReadTimestamp() {
       return getReadContextDelegate().getReadTimestamp();
+    }
+  }
+
+  interface SessionReplacementHandler<T extends SessionFuture> {
+    T replaceSession(SessionNotFoundException notFound, T sessionFuture);
+  }
+
+  class PooledSessionReplacementHandler implements SessionReplacementHandler<PooledSessionFuture> {
+    @Override
+    public PooledSessionFuture replaceSession(
+        SessionNotFoundException e, PooledSessionFuture session) {
+      if (!options.isFailIfSessionNotFound() && session.get().isAllowReplacing()) {
+        synchronized (lock) {
+          numSessionsInUse--;
+          numSessionsReleased++;
+          checkedOutSessions.remove(session);
+        }
+        session.leakedException = null;
+        invalidateSession(session.get());
+        return getSession();
+      } else {
+        throw e;
+      }
     }
   }
 
@@ -798,20 +826,22 @@ class SessionPool {
     }
   }
 
-  private static class AutoClosingTransactionManager
+  private static class AutoClosingTransactionManager<T extends SessionFuture>
       implements TransactionManager, SessionNotFoundHandler {
     private TransactionManager delegate;
-    private final SessionPool sessionPool;
-    private PooledSessionFuture session;
+    private T session;
+    private final SessionReplacementHandler<T> sessionReplacementHandler;
     private final TransactionOption[] options;
     private boolean closed;
     private boolean restartedAfterSessionNotFound;
 
     AutoClosingTransactionManager(
-        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
-      this.sessionPool = sessionPool;
+        T session,
+        SessionReplacementHandler sessionReplacementHandler,
+        TransactionOption... options) {
       this.session = session;
       this.options = options;
+      this.sessionReplacementHandler = sessionReplacementHandler;
     }
 
     @Override
@@ -830,9 +860,9 @@ class SessionPool {
 
     @Override
     public SpannerException handleSessionNotFound(SessionNotFoundException notFoundException) {
-      session = sessionPool.replaceSession(notFoundException, session);
-      PooledSession pooledSession = session.get();
-      delegate = pooledSession.delegate.transactionManager(options);
+      session = sessionReplacementHandler.replaceSession(notFoundException, session);
+      CachedSession cachedSession = session.get();
+      delegate = cachedSession.getDelegate().transactionManager(options);
       restartedAfterSessionNotFound = true;
       return createAbortedExceptionWithMinimalRetryDelay(notFoundException);
     }
@@ -880,9 +910,9 @@ class SessionPool {
             return new SessionPoolTransactionContext(this, delegate.resetForRetry());
           }
         } catch (SessionNotFoundException e) {
-          session = sessionPool.replaceSession(e, session);
-          PooledSession pooledSession = session.get();
-          delegate = pooledSession.delegate.transactionManager(options);
+          session = sessionReplacementHandler.replaceSession(e, session);
+          CachedSession cachedSession = session.get();
+          delegate = cachedSession.getDelegate().transactionManager(options);
           restartedAfterSessionNotFound = true;
         }
       }
@@ -927,17 +957,21 @@ class SessionPool {
    * {@link TransactionRunner} that automatically handles {@link SessionNotFoundException}s by
    * replacing the underlying session and then restarts the transaction.
    */
-  private static final class SessionPoolTransactionRunner implements TransactionRunner {
-    private final SessionPool sessionPool;
-    private PooledSessionFuture session;
+  private static final class SessionPoolTransactionRunner<I extends SessionFuture>
+      implements TransactionRunner {
+
+    private I session;
+    private final SessionReplacementHandler<I> sessionReplacementHandler;
     private final TransactionOption[] options;
     private TransactionRunner runner;
 
     private SessionPoolTransactionRunner(
-        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
-      this.sessionPool = sessionPool;
+        I session,
+        SessionReplacementHandler sessionReplacementHandler,
+        TransactionOption... options) {
       this.session = session;
       this.options = options;
+      this.sessionReplacementHandler = sessionReplacementHandler;
     }
 
     private TransactionRunner getRunner() {
@@ -957,15 +991,16 @@ class SessionPool {
             result = getRunner().run(callable);
             break;
           } catch (SessionNotFoundException e) {
-            session = sessionPool.replaceSession(e, session);
-            PooledSession ps = session.get();
-            runner = ps.delegate.readWriteTransaction();
+            session = sessionReplacementHandler.replaceSession(e, session);
+            CachedSession cachedSession = session.get();
+            runner = cachedSession.getDelegate().readWriteTransaction();
           }
         }
         session.get().markUsed();
         return result;
       } catch (SpannerException e) {
-        throw session.get().lastException = e;
+        session.get().setLastException(e);
+        throw e;
       } finally {
         session.close();
       }
@@ -988,17 +1023,19 @@ class SessionPool {
     }
   }
 
-  private static class SessionPoolAsyncRunner implements AsyncRunner {
-    private final SessionPool sessionPool;
-    private volatile PooledSessionFuture session;
+  private static class SessionPoolAsyncRunner<I extends SessionFuture> implements AsyncRunner {
+    private volatile I session;
+    private final SessionReplacementHandler<I> sessionReplacementHandler;
     private final TransactionOption[] options;
     private SettableApiFuture<CommitResponse> commitResponse;
 
     private SessionPoolAsyncRunner(
-        SessionPool sessionPool, PooledSessionFuture session, TransactionOption... options) {
-      this.sessionPool = sessionPool;
+        I session,
+        SessionReplacementHandler sessionReplacementHandler,
+        TransactionOption... options) {
       this.session = session;
       this.options = options;
+      this.sessionReplacementHandler = sessionReplacementHandler;
     }
 
     @Override
@@ -1027,7 +1064,9 @@ class SessionPool {
                   try {
                     // The replaceSession method will re-throw the SessionNotFoundException if the
                     // session cannot be replaced with a new one.
-                    session = sessionPool.replaceSession((SessionNotFoundException) se, session);
+                    session =
+                        sessionReplacementHandler.replaceSession(
+                            (SessionNotFoundException) se, session);
                     se = null;
                   } catch (SessionNotFoundException e) {
                     exception = e;
@@ -1098,8 +1137,24 @@ class SessionPool {
     return new PooledSessionFuture(future, span);
   }
 
+  interface SessionFuture extends Session {
+
+    /**
+     * We need to do this because every implementation of {@link SessionFuture} today extends {@link
+     * SimpleForwardingListenableFuture}. The get() method in parent {@link
+     * java.util.concurrent.Future} classes specifies checked exceptions in method signature.
+     *
+     * <p>This method is a workaround we don't have to handle checked exceptions specified by other
+     * interfaces.
+     */
+    CachedSession get();
+
+    default void addListener(Runnable listener, Executor exec) {}
+  }
+
   class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
-      implements Session {
+      implements SessionFuture {
+
     private volatile LeakedSessionException leakedException;
     private volatile AtomicBoolean inUse = new AtomicBoolean();
     private volatile CountDownLatch initialized = new CountDownLatch(1);
@@ -1172,6 +1227,7 @@ class SessionPool {
               return ps.delegate.singleUse();
             },
             SessionPool.this,
+            pooledSessionReplacementHandler,
             this,
             true);
       } catch (Exception e) {
@@ -1189,6 +1245,7 @@ class SessionPool {
               return ps.delegate.singleUse(bound);
             },
             SessionPool.this,
+            pooledSessionReplacementHandler,
             this,
             true);
       } catch (Exception e) {
@@ -1241,8 +1298,12 @@ class SessionPool {
         Function<PooledSessionFuture, ReadOnlyTransaction> transactionSupplier,
         boolean isSingleUse) {
       try {
-        return new AutoClosingReadTransaction(
-            transactionSupplier, SessionPool.this, this, isSingleUse);
+        return new AutoClosingReadTransaction<>(
+            transactionSupplier,
+            SessionPool.this,
+            pooledSessionReplacementHandler,
+            this,
+            isSingleUse);
       } catch (Exception e) {
         close();
         throw e;
@@ -1251,22 +1312,23 @@ class SessionPool {
 
     @Override
     public TransactionRunner readWriteTransaction(TransactionOption... options) {
-      return new SessionPoolTransactionRunner(SessionPool.this, this, options);
+      return new SessionPoolTransactionRunner<>(this, pooledSessionReplacementHandler, options);
     }
 
     @Override
     public TransactionManager transactionManager(TransactionOption... options) {
-      return new AutoClosingTransactionManager(SessionPool.this, this, options);
+      return new AutoClosingTransactionManager<>(this, pooledSessionReplacementHandler, options);
     }
 
     @Override
     public AsyncRunner runAsync(TransactionOption... options) {
-      return new SessionPoolAsyncRunner(SessionPool.this, this, options);
+      return new SessionPoolAsyncRunner(this, pooledSessionReplacementHandler, options);
     }
 
     @Override
     public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
-      return new SessionPoolAsyncTransactionManager(SessionPool.this, this, options);
+      return new SessionPoolAsyncTransactionManager<>(
+          pooledSessionReplacementHandler, this, options);
     }
 
     @Override
@@ -1358,7 +1420,25 @@ class SessionPool {
     }
   }
 
-  class PooledSession implements Session {
+  interface CachedSession extends Session {
+
+    SessionImpl getDelegate();
+
+    void markBusy(ISpan span);
+
+    void markUsed();
+
+    SpannerException setLastException(SpannerException exception);
+
+    boolean isAllowReplacing();
+
+    AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options);
+
+    void setAllowReplacing(boolean b);
+  }
+
+  class PooledSession implements CachedSession {
+
     @VisibleForTesting SessionImpl delegate;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
@@ -1416,7 +1496,8 @@ class SessionPool {
     }
 
     @VisibleForTesting
-    void setAllowReplacing(boolean allowReplacing) {
+    @Override
+    public void setAllowReplacing(boolean allowReplacing) {
       this.allowReplacing = allowReplacing;
     }
 
@@ -1612,7 +1693,13 @@ class SessionPool {
       }
     }
 
-    private void markBusy(ISpan span) {
+    @Override
+    public SessionImpl getDelegate() {
+      return this.delegate;
+    }
+
+    @Override
+    public void markBusy(ISpan span) {
       this.delegate.setCurrentSpan(span);
       this.state = SessionState.BUSY;
     }
@@ -1621,8 +1708,20 @@ class SessionPool {
       this.state = SessionState.CLOSING;
     }
 
-    void markUsed() {
+    @Override
+    public void markUsed() {
       delegate.markUsed(clock.instant());
+    }
+
+    @Override
+    public SpannerException setLastException(SpannerException exception) {
+      this.lastException = exception;
+      return exception;
+    }
+
+    @Override
+    public boolean isAllowReplacing() {
+      return this.allowReplacing;
     }
 
     @Override
@@ -1728,6 +1827,7 @@ class SessionPool {
    * </ul>
    */
   final class PoolMaintainer {
+
     // Length of the window in millis over which we keep track of maximum number of concurrent
     // sessions in use.
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
@@ -1932,9 +2032,9 @@ class SessionPool {
             // the below get() call on future object is non-blocking since checkedOutSessions
             // collection is populated only when the get() method in {@code PooledSessionFuture} is
             // called.
-            final PooledSession session = sessionFuture.get();
+            final PooledSession session = (PooledSession) sessionFuture.get();
             final Duration durationFromLastUse =
-                Duration.between(session.delegate.getLastUseTime(), currentTime);
+                Duration.between(session.getDelegate().getLastUseTime(), currentTime);
             if (!session.eligibleForLongRunning
                 && durationFromLastUse.compareTo(
                         inactiveTransactionRemovalOptions.getIdleTimeThreshold())
@@ -2090,6 +2190,8 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
 
   private final CountDownLatch waitOnMinSessionsLatch;
+  private final SessionReplacementHandler pooledSessionReplacementHandler =
+      new PooledSessionReplacementHandler();
 
   /**
    * Create a session pool with the given options and for the given database. It will also start
@@ -2237,7 +2339,7 @@ class SessionPool {
     }
     if (mustDetectDialect) {
       try (PooledSessionFuture session = getSession()) {
-        dialect.set(session.get().determineDialect());
+        dialect.set(((PooledSession) session.get()).determineDialect());
       }
     }
     try {
@@ -2249,6 +2351,10 @@ class SessionPool {
     } catch (TimeoutException timeoutException) {
       throw SpannerExceptionFactory.propagateTimeout(timeoutException);
     }
+  }
+
+  SessionReplacementHandler getPooledSessionReplacementHandler() {
+    return pooledSessionReplacementHandler;
   }
 
   @Nullable
@@ -2449,21 +2555,6 @@ class SessionPool {
     PooledSessionFuture res = createPooledSessionFuture(sessionFuture, span);
     res.markCheckedOut();
     return res;
-  }
-
-  PooledSessionFuture replaceSession(SessionNotFoundException e, PooledSessionFuture session) {
-    if (!options.isFailIfSessionNotFound() && session.get().allowReplacing) {
-      synchronized (lock) {
-        numSessionsInUse--;
-        numSessionsReleased++;
-        checkedOutSessions.remove(session);
-      }
-      session.leakedException = null;
-      invalidateSession(session.get());
-      return getSession();
-    } else {
-      throw e;
-    }
   }
 
   private void incrementNumSessionsInUse() {
