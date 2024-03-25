@@ -194,21 +194,6 @@
   </difference>
   <!-- PG OID -->
   <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>long[] getPgOidArrayInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>long getPgOidInternal(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7013</differenceType>
-    <className>com/google/cloud/spanner/AbstractStructReader</className>
-    <method>java.util.List getPgOidListInternal(int)</method>
-  </difference>
-  <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/StructReader</className>
     <method>long getPgOid(int)</method>

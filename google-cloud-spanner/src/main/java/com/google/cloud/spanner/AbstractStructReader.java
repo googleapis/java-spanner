@@ -61,7 +61,9 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected abstract long getPgOidInternal(int columnIndex);
+  protected abstract long getPgOidInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract ByteArray getBytesInternal(int columnIndex);
 
@@ -124,9 +126,13 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected abstract long[] getPgOidArrayInternal(int columnIndex);
+  protected abstract long[] getPgOidArrayInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
-  protected abstract List<Long> getPgOidListInternal(int columnIndex);
+  protected abstract List<Long> getPgOidListInternal(int columnIndex) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   protected abstract List<ByteArray> getBytesListInternal(int columnIndex);
 
