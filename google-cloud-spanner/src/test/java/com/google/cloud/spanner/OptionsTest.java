@@ -461,37 +461,6 @@ public class OptionsTest {
   }
 
   @Test
-  public void testPartitionedUpdateOptions() {
-    Options option1 = Options.fromPartitinoedUpdateOptions();
-    Options option2 = Options.fromPartitinoedUpdateOptions();
-    assertEquals(option1, option2);
-    assertEquals(option1.hashCode(), option2.hashCode());
-    assertEquals(option1.toString(), option2.toString());
-    assertEquals("", option1.toString());
-  }
-
-  @Test
-  public void testPartitionedUpdateOptionsWithPriority() {
-    Options optionsWithHighPriority1 =
-        Options.fromPartitinoedUpdateOptions(Options.priority(RpcPriority.HIGH));
-    assertEquals(Priority.PRIORITY_HIGH, optionsWithHighPriority1.priority());
-    assertEquals("priority: HIGH ", optionsWithHighPriority1.toString());
-
-    Options optionsWithHighPriority2 =
-        Options.fromPartitinoedUpdateOptions(Options.priority(RpcPriority.HIGH));
-    assertEquals(optionsWithHighPriority1, optionsWithHighPriority2);
-    assertEquals(optionsWithHighPriority1.hashCode(), optionsWithHighPriority2.hashCode());
-    assertEquals(optionsWithHighPriority1.toString(), optionsWithHighPriority2.toString());
-
-    Options optionsWithMediumPriority =
-        Options.fromPartitinoedUpdateOptions(Options.priority(RpcPriority.MEDIUM));
-    assertEquals(Priority.PRIORITY_MEDIUM, optionsWithMediumPriority.priority());
-    assertEquals("priority: MEDIUM ", optionsWithMediumPriority.toString());
-    assertNotEquals(optionsWithHighPriority1, optionsWithMediumPriority);
-    assertNotEquals(optionsWithHighPriority1.hashCode(), optionsWithMediumPriority.hashCode());
-  }
-
-  @Test
   public void testQueryOptionsEquality() {
     Options option1 = Options.fromQueryOptions();
     Options option2 = Options.fromQueryOptions();
@@ -649,26 +618,6 @@ public class OptionsTest {
   }
 
   @Test
-  public void partitionedUpdateWithTag() {
-    String tag1 = "app=spanner,env=test";
-    Options o1 = Options.fromPartitinoedUpdateOptions(Options.tag(tag1));
-    assertEquals(tag1, o1.tag());
-    assertEquals("tag: " + tag1 + " ", o1.toString());
-
-    Options o2 = Options.fromPartitinoedUpdateOptions(Options.tag(tag1));
-    assertEquals(o1, o2);
-    assertEquals(o1.hashCode(), o2.hashCode());
-    assertEquals(o1.toString(), o2.toString());
-
-    String tag2 = "app=spanner,env=stage";
-    Options o3 = Options.fromPartitinoedUpdateOptions(Options.tag(tag2));
-    assertEquals("tag: " + tag2 + " ", o3.toString());
-    assertNotEquals(o2, o3);
-    assertNotEquals(o2.hashCode(), o3.hashCode());
-    assertNotEquals(o2.toString(), o3.toString());
-  }
-
-  @Test
   public void transactionOptionsTest() {
     String tag = "app=spanner,env=test";
     Options options = Options.fromTransactionOptions(Options.tag(tag));
@@ -757,17 +706,17 @@ public class OptionsTest {
     assertNotEquals(option1.hashCode(), option3.hashCode());
 
     assertTrue(option1.withExcludeTxnFromChangeStreams());
-    assertEquals("withExcludeTxnFromChangeStreams: true ", option1.toString());
+    assertThat(option1.toString()).contains("withExcludeTxnFromChangeStreams: true");
 
     assertNull(option3.withExcludeTxnFromChangeStreams());
-    assertEquals("", option3.toString());
+    assertThat(option3.toString()).doesNotContain("withExcludeTxnFromChangeStreams: true");
   }
 
   @Test
-  public void partitionedUpdateOptionsExcludeTxnFromChangeStreams() {
-    Options option1 = Options.fromPartitinoedUpdateOptions(Options.excludeTxnFromChangeStreams());
-    Options option2 = Options.fromPartitinoedUpdateOptions(Options.excludeTxnFromChangeStreams());
-    Options option3 = Options.fromPartitinoedUpdateOptions();
+  public void updateOptionsExcludeTxnFromChangeStreams() {
+    Options option1 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
+    Options option2 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
+    Options option3 = Options.fromUpdateOptions();
 
     assertEquals(option1, option2);
     assertEquals(option1.hashCode(), option2.hashCode());
@@ -775,9 +724,9 @@ public class OptionsTest {
     assertNotEquals(option1.hashCode(), option3.hashCode());
 
     assertTrue(option1.withExcludeTxnFromChangeStreams());
-    assertEquals("withExcludeTxnFromChangeStreams: true ", option1.toString());
+    assertThat(option1.toString()).contains("withExcludeTxnFromChangeStreams: true");
 
     assertNull(option3.withExcludeTxnFromChangeStreams());
-    assertEquals("", option3.toString());
+    assertThat(option3.toString()).doesNotContain("withExcludeTxnFromChangeStreams: true");
   }
 }

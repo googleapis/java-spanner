@@ -25,7 +25,7 @@ import com.google.api.gax.rpc.DeadlineExceededException;
 import com.google.api.gax.rpc.InternalException;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.UnavailableException;
-import com.google.cloud.spanner.Options.PartitionedUpdateOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
@@ -71,9 +71,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
    * last seen resume token if the server returns any.
    */
   long executeStreamingPartitionedUpdate(
-      final Statement statement,
-      final Duration timeout,
-      final PartitionedUpdateOption... partitionedUpdateOptions) {
+      final Statement statement, final Duration timeout, final UpdateOption... updateOptions) {
     checkState(isValid, "Partitioned DML has been invalidated by a new operation on the session");
     LOGGER.log(Level.FINER, "Starting PartitionedUpdate statement");
 
@@ -81,7 +79,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     boolean foundStats = false;
     long updateCount = 0L;
     Stopwatch stopwatch = Stopwatch.createStarted(ticker);
-    Options options = Options.fromPartitinoedUpdateOptions(partitionedUpdateOptions);
+    Options options = Options.fromUpdateOptions(updateOptions);
 
     try {
       ExecuteSqlRequest request = newTransactionRequestFrom(statement, options);

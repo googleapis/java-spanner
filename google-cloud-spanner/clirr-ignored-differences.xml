@@ -631,11 +631,4 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setDirectedRead(com.google.spanner.v1.DirectedReadOptions)</method>
   </difference>
-
-  <difference>
-    <differenceType>7005</differenceType>
-    <className>com/google/cloud/spanner/DatabaseClient</className>
-    <method>long executePartitionedUpdate(com.google.cloud.spanner.Statement, com.google.cloud.spanner.Options$UpdateOption[])</method>
-    <to>long executePartitionedUpdate(com.google.cloud.spanner.Statement, com.google.cloud.spanner.Options$PartitionedUpdateOption[])</to>
-  </difference>
 </differences>

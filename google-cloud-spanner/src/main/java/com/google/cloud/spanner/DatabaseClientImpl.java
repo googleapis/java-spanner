@@ -18,8 +18,8 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Options.PartitionedUpdateOption;
 import com.google.cloud.spanner.Options.TransactionOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
@@ -240,8 +240,7 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @Override
-  public long executePartitionedUpdate(
-      final Statement stmt, final PartitionedUpdateOption... options) {
+  public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));

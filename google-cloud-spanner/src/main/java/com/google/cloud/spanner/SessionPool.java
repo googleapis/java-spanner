@@ -52,7 +52,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.Tuple;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
-import com.google.cloud.spanner.Options.PartitionedUpdateOption;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
@@ -1271,7 +1270,7 @@ class SessionPool {
     }
 
     @Override
-    public long executePartitionedUpdate(Statement stmt, PartitionedUpdateOption... options) {
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
       try {
         return get(true).executePartitionedUpdate(stmt, options);
       } finally {
@@ -1471,7 +1470,7 @@ class SessionPool {
     }
 
     @Override
-    public long executePartitionedUpdate(Statement stmt, PartitionedUpdateOption... options)
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options)
         throws SpannerException {
       try {
         markUsed();
