@@ -1146,8 +1146,6 @@ class SessionPool {
      *
      * <p>This method is a workaround we don't have to handle checked exceptions specified by other
      * interfaces.
-     *
-     * @return
      */
     CachedSession get();
 
@@ -1710,6 +1708,7 @@ class SessionPool {
       this.state = SessionState.CLOSING;
     }
 
+    @Override
     public void markUsed() {
       delegate.markUsed(clock.instant());
     }
