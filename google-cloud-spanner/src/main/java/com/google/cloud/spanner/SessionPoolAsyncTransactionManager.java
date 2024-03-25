@@ -22,15 +22,16 @@ import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
-import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.SessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionNotFoundHandler;
+import com.google.cloud.spanner.SessionPool.SessionReplacementHandler;
 import com.google.cloud.spanner.TransactionContextFutureImpl.CommittableAsyncTransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import javax.annotation.concurrent.GuardedBy;
 
-class SessionPoolAsyncTransactionManager
+class SessionPoolAsyncTransactionManager<I extends SessionFuture>
     implements CommittableAsyncTransactionManager, SessionNotFoundHandler {
   private final Object lock = new Object();
 
@@ -40,20 +41,22 @@ class SessionPoolAsyncTransactionManager
   @GuardedBy("lock")
   private AbortedException abortedException;
 
-  private final SessionPool pool;
+  private final SessionReplacementHandler<I> sessionReplacementHandler;
   private final TransactionOption[] options;
-  private volatile PooledSessionFuture session;
+  private volatile I session;
   private volatile SettableApiFuture<AsyncTransactionManagerImpl> delegate;
   private boolean restartedAfterSessionNotFound;
 
   SessionPoolAsyncTransactionManager(
-      SessionPool pool, PooledSessionFuture session, TransactionOption... options) {
-    this.pool = Preconditions.checkNotNull(pool);
+      SessionReplacementHandler<I> sessionReplacementHandler,
+      I session,
+      TransactionOption... options) {
     this.options = options;
+    this.sessionReplacementHandler = sessionReplacementHandler;
     createTransaction(session);
   }
 
-  private void createTransaction(PooledSessionFuture session) {
+  private void createTransaction(I session) {
     this.session = session;
     this.delegate = SettableApiFuture.create();
     this.session.addListener(
@@ -75,7 +78,7 @@ class SessionPoolAsyncTransactionManager
   public SpannerException handleSessionNotFound(SessionNotFoundException notFound) {
     // Restart the entire transaction with a new session and throw an AbortedException to force the
     // client application to retry.
-    createTransaction(pool.replaceSession(notFound, session));
+    createTransaction(sessionReplacementHandler.replaceSession(notFound, session));
     restartedAfterSessionNotFound = true;
     return SpannerExceptionFactory.newSpannerException(
         ErrorCode.ABORTED, notFound.getMessage(), notFound);
