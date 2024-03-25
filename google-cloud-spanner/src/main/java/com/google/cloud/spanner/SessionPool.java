@@ -574,6 +574,16 @@ class SessionPool {
     }
   }
 
+  class MultiplexedSessionReplacementHandler
+      implements SessionReplacementHandler<MultiplexedSessionFuture> {
+    @Override
+    public MultiplexedSessionFuture replaceSession(
+        SessionNotFoundException e, MultiplexedSessionFuture session) {
+      // TODO arpanmishra add this handling
+      return null;
+    }
+  }
+
   interface SessionNotFoundHandler {
     /**
      * Handles the given {@link SessionNotFoundException} by possibly converting it to a different
@@ -1420,6 +1430,246 @@ class SessionPool {
     }
   }
 
+  class MultiplexedSessionFuture extends SimpleForwardingListenableFuture<MultiplexedSession>
+      implements SessionFuture {
+
+    private volatile CountDownLatch initialized = new CountDownLatch(1);
+    private final ISpan span;
+
+    @VisibleForTesting
+    MultiplexedSessionFuture(ListenableFuture<MultiplexedSession> delegate, ISpan span) {
+      super(delegate);
+      this.span = span;
+    }
+
+    @Override
+    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+      return writeWithOptions(mutations).getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse writeWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      try {
+        return get().writeWithOptions(mutations, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+      return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      try {
+        return get().writeAtLeastOnceWithOptions(mutations, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      try {
+        return get().batchWriteAtLeastOnce(mutationGroups, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public ReadContext singleUse() {
+      try {
+        return new AutoClosingReadContext<>(
+            session -> {
+              MultiplexedSession ms = session.get();
+              return ms.getDelegate().singleUse();
+            },
+            SessionPool.this,
+            multiplexedSessionReplacementHandler,
+            this,
+            true);
+      } catch (Exception e) {
+        close();
+        throw e;
+      }
+    }
+
+    @Override
+    public ReadContext singleUse(final TimestampBound bound) {
+      try {
+        return new AutoClosingReadContext<>(
+            session -> {
+              CachedSession ps = session.get();
+              return ps.getDelegate().singleUse(bound);
+            },
+            SessionPool.this,
+            multiplexedSessionReplacementHandler,
+            this,
+            true);
+      } catch (Exception e) {
+        close();
+        throw e;
+      }
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction() {
+      return internalReadOnlyTransaction(
+          session -> {
+            MultiplexedSession ms = session.get();
+            return ms.getDelegate().singleUseReadOnlyTransaction();
+          },
+          true);
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
+      return internalReadOnlyTransaction(
+          session -> {
+            MultiplexedSession ms = session.get();
+            return ms.getDelegate().singleUseReadOnlyTransaction(bound);
+          },
+          true);
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction() {
+      return internalReadOnlyTransaction(
+          session -> {
+            MultiplexedSession ms = session.get();
+            return ms.getDelegate().readOnlyTransaction();
+          },
+          false);
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
+      return internalReadOnlyTransaction(
+          session -> {
+            MultiplexedSession ms = session.get();
+            return ms.getDelegate().readOnlyTransaction(bound);
+          },
+          false);
+    }
+
+    private ReadOnlyTransaction internalReadOnlyTransaction(
+        Function<MultiplexedSessionFuture, ReadOnlyTransaction> transactionSupplier,
+        boolean isSingleUse) {
+      try {
+        return new AutoClosingReadTransaction<>(
+            transactionSupplier,
+            SessionPool.this,
+            multiplexedSessionReplacementHandler,
+            this,
+            isSingleUse);
+      } catch (Exception e) {
+        close();
+        throw e;
+      }
+    }
+
+    @Override
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      return new SessionPoolTransactionRunner<>(
+          this, multiplexedSessionReplacementHandler, options);
+    }
+
+    @Override
+    public TransactionManager transactionManager(TransactionOption... options) {
+      return new AutoClosingTransactionManager<>(
+          this, multiplexedSessionReplacementHandler, options);
+    }
+
+    @Override
+    public AsyncRunner runAsync(TransactionOption... options) {
+      return new SessionPoolAsyncRunner(this, multiplexedSessionReplacementHandler, options);
+    }
+
+    @Override
+    public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
+      return new SessionPoolAsyncTransactionManager<>(
+          multiplexedSessionReplacementHandler, this, options);
+    }
+
+    @Override
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+      try {
+        return get().executePartitionedUpdate(stmt, options);
+      } finally {
+        close();
+      }
+    }
+
+    @Override
+    public String getName() {
+      return get().getName();
+    }
+
+    @Override
+    public void prepareReadWriteTransaction() {
+      get().prepareReadWriteTransaction();
+    }
+
+    @Override
+    public void close() {
+      try {
+        asyncClose().get();
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.asSpannerException(e.getCause());
+      }
+    }
+
+    @Override
+    public ApiFuture<Empty> asyncClose() {
+      MultiplexedSession delegate = getOrNull();
+      if (delegate != null) {
+        return delegate.asyncClose();
+      }
+      return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+    }
+
+    private MultiplexedSession getOrNull() {
+      try {
+        return get();
+      } catch (Throwable t) {
+        return null;
+      }
+    }
+
+    @Override
+    public MultiplexedSession get() {
+      MultiplexedSession res = null;
+      try {
+        res = super.get();
+      } catch (Throwable e) {
+        // ignore the exception as it will be handled by the call to super.get() below.
+      }
+      if (res != null) {
+        res.markBusy(span);
+      }
+      initialized.countDown();
+
+      try {
+        // TODO arpanmishra@ do we really need this latch?
+        initialized.await();
+        return super.get();
+      } catch (ExecutionException e) {
+        throw SpannerExceptionFactory.newSpannerException(e.getCause());
+      } catch (InterruptedException e) {
+        throw SpannerExceptionFactory.propagateInterrupt(e);
+      }
+    }
+  }
+
   interface CachedSession extends Session {
 
     SessionImpl getDelegate();
@@ -1727,6 +1977,161 @@ class SessionPool {
     @Override
     public TransactionManager transactionManager(TransactionOption... options) {
       return delegate.transactionManager(options);
+    }
+  }
+
+  class MultiplexedSession implements CachedSession {
+    SessionImpl delegate;
+
+    MultiplexedSession(SessionImpl session) {
+      this.delegate = session;
+    }
+
+    @Override
+    public boolean isAllowReplacing() {
+      return false;
+    }
+
+    @Override
+    public void setAllowReplacing(boolean allowReplacing) {}
+
+    @Override
+    public void markBusy(ISpan span) {
+      this.delegate.setCurrentSpan(span);
+    }
+
+    @Override
+    public void markUsed() {}
+
+    @Override
+    public SpannerException setLastException(SpannerException exception) {
+      return exception;
+    }
+
+    @Override
+    public SessionImpl getDelegate() {
+      return delegate;
+    }
+
+    @Override
+    public Timestamp write(Iterable<Mutation> mutations) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public CommitResponse writeWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+        Iterable<MutationGroup> mutationGroups, TransactionOption... options)
+        throws SpannerException {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public ReadContext singleUse() {
+      return delegate.singleUse();
+    }
+
+    @Override
+    public ReadContext singleUse(TimestampBound bound) {
+      return delegate.singleUse(bound);
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction() {
+      return delegate.singleUseReadOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
+      return delegate.singleUseReadOnlyTransaction(bound);
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction() {
+      return delegate.readOnlyTransaction();
+    }
+
+    @Override
+    public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
+      return delegate.readOnlyTransaction(bound);
+    }
+
+    @Override
+    public TransactionRunner readWriteTransaction(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public TransactionManager transactionManager(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public AsyncRunner runAsync(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public String getName() {
+      return delegate.getName();
+    }
+
+    @Override
+    public void prepareReadWriteTransaction() {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+    }
+
+    @Override
+    public void close() {
+      synchronized (lock) {
+        numMultiplexedSessionsReleased++;
+      }
+    }
+
+    private final ApiFuture<Empty> CLOSE_RESULT =
+        ApiFutures.immediateFuture(Empty.getDefaultInstance());
+
+    @Override
+    public ApiFuture<Empty> asyncClose() {
+      close();
+      return ApiFutures.immediateFuture(Empty.getDefaultInstance());
     }
   }
 
@@ -2163,7 +2568,13 @@ class SessionPool {
   private long numSessionsAcquired = 0;
 
   @GuardedBy("lock")
+  private long numMultiplexedSessionsAcquired = 0;
+
+  @GuardedBy("lock")
   private long numSessionsReleased = 0;
+
+  @GuardedBy("lock")
+  private long numMultiplexedSessionsReleased = 0;
 
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
@@ -2192,7 +2603,8 @@ class SessionPool {
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
-
+  private final SessionReplacementHandler multiplexedSessionReplacementHandler =
+      new MultiplexedSessionReplacementHandler();
   /**
    * Create a session pool with the given options and for the given database. It will also start
    * eagerly creating sessions if {@link SessionPoolOptions#getMinSessions()} is greater than 0.
