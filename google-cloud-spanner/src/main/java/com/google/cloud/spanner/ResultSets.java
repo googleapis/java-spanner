@@ -297,16 +297,6 @@ public final class ResultSets {
     }
 
     @Override
-    public long getPgOid(int columnIndex) {
-      return getCurrentRowAsStruct().getPgOid(columnIndex);
-    }
-
-    @Override
-    public long getPgOid(String columnName) {
-      return getCurrentRowAsStruct().getPgOid(columnName);
-    }
-
-    @Override
     public ByteArray getBytes(int columnIndex) {
       return getCurrentRowAsStruct().getBytes(columnIndex);
     }
@@ -486,26 +476,6 @@ public final class ResultSets {
     @Override
     public List<String> getPgJsonbList(String columnName) {
       return getCurrentRowAsStruct().getPgJsonbList(columnName);
-    }
-
-    @Override
-    public long[] getPgOidArray(int columnIndex) {
-      return getCurrentRowAsStruct().getPgOidArray(columnIndex);
-    }
-
-    @Override
-    public long[] getPgOidArray(String columnName) {
-      return getCurrentRowAsStruct().getPgOidArray(columnName);
-    }
-
-    @Override
-    public List<Long> getPgOidList(int columnIndex) {
-      return getCurrentRowAsStruct().getPgOidList(columnIndex);
-    }
-
-    @Override
-    public List<Long> getPgOidList(String columnName) {
-      return getCurrentRowAsStruct().getPgOidList(columnName);
     }
 
     @Override

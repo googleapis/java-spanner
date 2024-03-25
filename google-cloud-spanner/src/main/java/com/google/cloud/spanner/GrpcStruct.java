@@ -29,7 +29,6 @@ import com.google.cloud.spanner.AbstractResultSet.Float32Array;
 import com.google.cloud.spanner.AbstractResultSet.Float64Array;
 import com.google.cloud.spanner.AbstractResultSet.Int64Array;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
-import com.google.cloud.spanner.AbstractResultSet.PgOidArray;
 import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Preconditions;
@@ -327,6 +326,7 @@ class GrpcStruct extends Struct implements Serializable {
   static Object decodeArrayValue(Type elementType, ListValue listValue) {
     switch (elementType.getCode()) {
       case INT64:
+      case PG_OID:
       case ENUM:
         // For int64/float64/float32/enum types, use custom containers.
         // These avoid wrapper object creation for non-null arrays.
@@ -347,8 +347,6 @@ class GrpcStruct extends Struct implements Serializable {
       case STRUCT:
       case PROTO:
         return Lists.transform(listValue.getValuesList(), input -> decodeValue(elementType, input));
-      case PG_OID:
-        return new PgOidArray(listValue);
       default:
         throw new AssertionError("Unhandled type code: " + elementType.getCode());
     }
@@ -580,7 +578,7 @@ class GrpcStruct extends Struct implements Serializable {
       case PG_JSONB:
         return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
       case PG_OID:
-        return Value.pgOid(isNull ? null : getPgOidInternal(columnIndex));
+        return Value.pgOid(isNull ? null : getLongInternal(columnIndex));
       case BYTES:
         return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
       case PROTO:
@@ -617,7 +615,7 @@ class GrpcStruct extends Struct implements Serializable {
           case PG_JSONB:
             return Value.pgJsonbArray(isNull ? null : getPgJsonbListInternal(columnIndex));
           case PG_OID:
-            return Value.pgOidArray(isNull ? null : getPgOidListInternal(columnIndex));
+            return Value.pgOidArray(isNull ? null : getLongListInternal(columnIndex));
           case BYTES:
             return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
           case PROTO:
@@ -792,9 +790,9 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   @Override
-  protected PgOidArray getPgOidListInternal(int columnIndex) {
+  protected Int64Array getPgOidListInternal(int columnIndex) {
     ensureDecoded(columnIndex);
-    return (PgOidArray) rowData.get(columnIndex);
+    return (Int64Array) rowData.get(columnIndex);
   }
 
   @Override

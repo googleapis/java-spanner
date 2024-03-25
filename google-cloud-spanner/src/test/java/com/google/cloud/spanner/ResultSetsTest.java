@@ -319,7 +319,7 @@ public class ResultSetsTest {
     assertEquals(jsonVal, rs.getPgJsonb("pgJsonbVal"));
     assertEquals(Value.pgJsonb(jsonVal), rs.getValue("pgJsonbVal"));
 
-    assertThat(rs.getPgOid(columnIndex)).isEqualTo(2L);
+    assertThat(rs.getLong(columnIndex)).isEqualTo(2L);
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.pgOid(2L));
     assertThat(rs.getColumnType("pgOidVal")).isEqualTo(Type.pgOid());
 
@@ -410,12 +410,12 @@ public class ResultSetsTest {
     assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList(columnIndex++));
     assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList("pgJsonbArray"));
 
-    assertThat(rs.getPgOidArray(columnIndex)).isEqualTo(longArray);
+    assertThat(rs.getLongArray(columnIndex)).isEqualTo(longArray);
     assertThat(rs.getValue(columnIndex)).isEqualTo(Value.pgOidArray(longArray));
-    assertThat(rs.getPgOidArray("pgOidArray")).isEqualTo(longArray);
+    assertThat(rs.getLongArray("pgOidArray")).isEqualTo(longArray);
     assertThat(rs.getValue("pgOidArray")).isEqualTo(Value.pgOidArray(longArray));
-    assertThat(rs.getPgOidList(columnIndex++)).isEqualTo(Longs.asList(longArray));
-    assertThat(rs.getPgOidList("pgOidArray")).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getLongList(columnIndex++)).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getLongList("pgOidArray")).isEqualTo(Longs.asList(longArray));
 
     assertThat(rs.getProtoMessageList(columnIndex, SingerInfo.getDefaultInstance()))
         .isEqualTo(Arrays.asList(protoMessageArray));

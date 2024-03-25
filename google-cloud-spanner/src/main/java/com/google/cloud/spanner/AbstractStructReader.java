@@ -61,7 +61,7 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected abstract long getPgOidInternal(int columnIndex) {
+  protected long getPgOidInternal(int columnIndex) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -126,11 +126,11 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected abstract long[] getPgOidArrayInternal(int columnIndex) {
+  protected long[] getPgOidArrayInternal(int columnIndex) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected abstract List<Long> getPgOidListInternal(int columnIndex) {
+  protected List<Long> getPgOidListInternal(int columnIndex) {
     throw new UnsupportedOperationException("Not implemented");
   }
 
@@ -177,15 +177,20 @@ public abstract class AbstractStructReader implements StructReader {
 
   @Override
   public long getLong(int columnIndex) {
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
-    return getLongInternal(columnIndex);
+    checkNonNullOfCodes(
+        columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnIndex);
+    return getColumnType(columnIndex).getCode() == Code.PG_OID
+        ? getPgOidInternal(columnIndex)
+        : getLongInternal(columnIndex);
   }
 
   @Override
   public long getLong(String columnName) {
     int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
-    return getLongInternal(columnIndex);
+    checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnName);
+    return getColumnType(columnIndex).getCode() == Code.PG_OID
+        ? getPgOidInternal(columnIndex)
+        : getLongInternal(columnIndex);
   }
 
   @Override
@@ -269,19 +274,6 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.pgJsonb(), columnName);
     return getPgJsonbInternal(columnIndex);
-  }
-
-  @Override
-  public long getPgOid(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.pgOid(), columnIndex);
-    return getPgOidInternal(columnIndex);
-  }
-
-  @Override
-  public long getPgOid(String columnName) {
-    int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.pgOid(), columnName);
-    return getPgOidInternal(columnIndex);
   }
 
   @Override
@@ -391,31 +383,43 @@ public abstract class AbstractStructReader implements StructReader {
   @Override
   public long[] getLongArray(int columnIndex) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
-    return getLongArrayInternal(columnIndex);
+    checkArrayElementType(
+        columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnIndex);
+    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
+        ? getPgOidArrayInternal(columnIndex)
+        : getLongArrayInternal(columnIndex);
   }
 
   @Override
   public long[] getLongArray(String columnName) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
-    return getLongArrayInternal(columnIndex);
+    checkArrayElementType(
+        columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnName);
+    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
+        ? getPgOidArrayInternal(columnIndex)
+        : getLongArrayInternal(columnIndex);
   }
 
   @Override
   public List<Long> getLongList(int columnIndex) {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnIndex);
-    return getLongListInternal(columnIndex);
+    checkArrayElementType(
+        columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnIndex);
+    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
+        ? getPgOidListInternal(columnIndex)
+        : getLongListInternal(columnIndex);
   }
 
   @Override
   public List<Long> getLongList(String columnName) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
-    checkArrayElementType(columnIndex, Arrays.asList(Code.ENUM, Code.INT64), columnName);
-    return getLongListInternal(columnIndex);
+    checkArrayElementType(
+        columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnName);
+    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
+        ? getPgOidListInternal(columnIndex)
+        : getLongListInternal(columnIndex);
   }
 
   @Override
@@ -528,32 +532,6 @@ public abstract class AbstractStructReader implements StructReader {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfType(columnIndex, Type.array(Type.pgJsonb()), columnName);
     return getPgJsonbListInternal(columnIndex);
-  }
-
-  @Override
-  public long[] getPgOidArray(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnIndex);
-    return getPgOidArrayInternal(columnIndex);
-  }
-
-  @Override
-  public long[] getPgOidArray(String columnName) {
-    int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnName);
-    return getPgOidArrayInternal(columnIndex);
-  }
-
-  @Override
-  public List<Long> getPgOidList(int columnIndex) {
-    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnIndex);
-    return getPgOidListInternal(columnIndex);
-  }
-
-  @Override
-  public List<Long> getPgOidList(String columnName) {
-    int columnIndex = getColumnIndex(columnName);
-    checkNonNullOfType(columnIndex, Type.array(Type.pgOid()), columnName);
-    return getPgOidListInternal(columnIndex);
   }
 
   @Override

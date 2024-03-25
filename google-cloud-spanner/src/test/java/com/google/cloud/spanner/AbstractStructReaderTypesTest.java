@@ -302,11 +302,7 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {
-            Type.pgOid(),
-            "getPgOidInternal",
-            123L,
-            "getPgOid",
-            Collections.singletonList("getValue")
+            Type.pgOid(), "getPgOidInternal", 123L, "getLong", Collections.singletonList("getValue")
           },
           {
             Type.timestamp(),
@@ -410,8 +406,15 @@ public class AbstractStructReaderTypesTest {
             Type.array(Type.pgOid()),
             "getPgOidArrayInternal",
             new long[] {1, 2},
-            "getPgOidArray",
-            Arrays.asList("getPgOidList", "getValue")
+            "getLongArray",
+            Arrays.asList("getLongList", "getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getPgOidListInternal",
+            Arrays.asList(3L, 4L),
+            "getLongList",
+            Arrays.asList("getLongArray", "getValue")
           },
           {
             Type.array(Type.bytes()),

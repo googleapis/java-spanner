@@ -798,9 +798,9 @@ public class GrpcResultSetTest {
     consumer.onCompleted();
 
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getPgOid(0)).isEqualTo(Long.MIN_VALUE);
+    assertThat(resultSet.getLong(0)).isEqualTo(Long.MIN_VALUE);
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getPgOid(0)).isEqualTo(Long.MAX_VALUE);
+    assertThat(resultSet.getLong(0)).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
@@ -1038,7 +1038,7 @@ public class GrpcResultSetTest {
             .build());
     consumer.onCompleted();
     assertThat(resultSet.next()).isTrue();
-    assertThat(resultSet.getPgOidArray(0)).isEqualTo(longArray);
+    assertThat(resultSet.getLongArray(0)).isEqualTo(longArray);
   }
 
   @Test

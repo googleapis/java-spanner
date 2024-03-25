@@ -293,7 +293,7 @@ public class ITQueryTest {
               Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(1234)),
               Type.pgOid());
       assertThat(row.isNull(0)).isFalse();
-      assertThat(row.getPgOid(0)).isEqualTo(1234);
+      assertThat(row.getLong(0)).isEqualTo(1234);
     }
   }
 

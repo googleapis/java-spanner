@@ -2960,7 +2960,7 @@ public abstract class Value implements Serializable {
         case PG_NUMERIC:
           return Value.pgNumeric(value.getString(fieldIndex));
         case PG_OID:
-          return Value.pgOid(value.getPgOid(fieldIndex));
+          return Value.pgOid(value.getLong(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
@@ -2987,7 +2987,7 @@ public abstract class Value implements Serializable {
               case PG_JSONB:
                 return Value.pgJsonbArray(value.getPgJsonbList(fieldIndex));
               case PG_OID:
-                return Value.pgOidArray(value.getPgOidList(fieldIndex));
+                return Value.pgOidArray(value.getLongList(fieldIndex));
               case BYTES:
               case PROTO:
                 return Value.bytesArray(value.getBytesList(fieldIndex));

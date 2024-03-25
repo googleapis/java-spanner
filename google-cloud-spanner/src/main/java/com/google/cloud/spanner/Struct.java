@@ -411,6 +411,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case BOOL:
         return getBooleanInternal(columnIndex);
       case INT64:
+      case PG_OID:
       case ENUM:
         return getLongInternal(columnIndex);
       case FLOAT32:
@@ -427,8 +428,6 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getJsonInternal(columnIndex);
       case PG_JSONB:
         return getPgJsonbInternal(columnIndex);
-      case PG_OID:
-        return getPgOidInternal(columnIndex);
       case BYTES:
       case PROTO:
         return getBytesInternal(columnIndex);
@@ -443,6 +442,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case BOOL:
             return getBooleanListInternal(columnIndex);
           case INT64:
+          case PG_OID:
           case ENUM:
             return getLongListInternal(columnIndex);
           case FLOAT32:
@@ -459,8 +459,6 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
             return getJsonListInternal(columnIndex);
           case PG_JSONB:
             return getPgJsonbListInternal(columnIndex);
-          case PG_OID:
-            return getPgOidListInternal(columnIndex);
           case BYTES:
           case PROTO:
             return getBytesListInternal(columnIndex);

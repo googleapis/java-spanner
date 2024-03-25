@@ -342,31 +342,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
     }
   }
 
-  static class PgOidArray extends PrimitiveArray<Long, long[]> {
-    PgOidArray(ListValue protoList) {
-      super(protoList);
-    }
-
-    PgOidArray(long[] data, BitSet nulls) {
-      super(data, nulls, data.length);
-    }
-
-    @Override
-    long[] newArray(int size) {
-      return new long[size];
-    }
-
-    @Override
-    void setProto(long[] array, int i, com.google.protobuf.Value protoValue) {
-      array[i] = Long.parseLong(protoValue.getStringValue());
-    }
-
-    @Override
-    Long get(long[] array, int i) {
-      return array[i];
-    }
-  }
-
   protected abstract GrpcStruct currRow();
 
   @Override

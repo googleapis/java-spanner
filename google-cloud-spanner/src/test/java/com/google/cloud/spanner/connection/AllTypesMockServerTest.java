@@ -575,7 +575,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         assertEquals(DATE_VALUE, resultSet.getDate(++col));
         assertEquals(TIMESTAMP_VALUE, resultSet.getTimestamp(++col));
         if (dialect == Dialect.POSTGRESQL) {
-          assertEquals(PG_OID_VALUE, resultSet.getPgOid(++col));
+          assertEquals(PG_OID_VALUE, resultSet.getLong(++col));
         }
 
         assertEquals(BOOL_ARRAY_VALUE, resultSet.getBooleanList(++col));
@@ -597,7 +597,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
         assertEquals(DATE_ARRAY_VALUE, resultSet.getDateList(++col));
         assertEquals(TIMESTAMP_ARRAY_VALUE, resultSet.getTimestampList(++col));
         if (dialect == Dialect.POSTGRESQL) {
-          assertEquals(PG_OID_ARRAY_VALUE, resultSet.getPgOidList(++col));
+          assertEquals(PG_OID_ARRAY_VALUE, resultSet.getLongList(++col));
         }
         assertFalse(resultSet.next());
       }
