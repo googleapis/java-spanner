@@ -18,6 +18,8 @@ package com.google.cloud.spanner.admin.instance.v1.stub;
 
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
 import com.google.api.gax.core.BackgroundResource;
@@ -39,22 +41,33 @@ import com.google.protobuf.Empty;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstancePartition;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import io.grpc.MethodDescriptor;
 import io.grpc.protobuf.ProtoUtils;
@@ -151,6 +164,20 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   ProtoUtils.marshaller(ListInstancesResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<
+          ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+      listInstancePartitionsMethodDescriptor =
+          MethodDescriptor
+              .<ListInstancePartitionsRequest, ListInstancePartitionsResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/ListInstancePartitions")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(ListInstancePartitionsRequest.getDefaultInstance()))
+              .setResponseMarshaller(
+                  ProtoUtils.marshaller(ListInstancePartitionsResponse.getDefaultInstance()))
+              .build();
+
   private static final MethodDescriptor<GetInstanceRequest, Instance> getInstanceMethodDescriptor =
       MethodDescriptor.<GetInstanceRequest, Instance>newBuilder()
           .setType(MethodDescriptor.MethodType.UNARY)
@@ -217,6 +244,67 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   ProtoUtils.marshaller(TestIamPermissionsResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionMethodDescriptor =
+          MethodDescriptor.<GetInstancePartitionRequest, InstancePartition>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/GetInstancePartition")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(GetInstancePartitionRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(InstancePartition.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionMethodDescriptor =
+          MethodDescriptor.<CreateInstancePartitionRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/CreateInstancePartition")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(CreateInstancePartitionRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionMethodDescriptor =
+          MethodDescriptor.<DeleteInstancePartitionRequest, Empty>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/DeleteInstancePartition")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(DeleteInstancePartitionRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionMethodDescriptor =
+          MethodDescriptor.<UpdateInstancePartitionRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/UpdateInstancePartition")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(UpdateInstancePartitionRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+      listInstancePartitionOperationsMethodDescriptor =
+          MethodDescriptor
+              .<ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+                  newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/ListInstancePartitionOperations")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(
+                      ListInstancePartitionOperationsRequest.getDefaultInstance()))
+              .setResponseMarshaller(
+                  ProtoUtils.marshaller(
+                      ListInstancePartitionOperationsResponse.getDefaultInstance()))
+              .build();
+
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable;
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
@@ -240,6 +328,10 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable;
   private final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
       listInstancesPagedCallable;
+  private final UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+      listInstancePartitionsCallable;
+  private final UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsPagedResponse>
+      listInstancePartitionsPagedCallable;
   private final UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable;
   private final UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable;
   private final OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
@@ -252,6 +344,26 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable;
   private final UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable;
+  private final UnaryCallable<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionCallable;
+  private final UnaryCallable<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionCallable;
+  private final OperationCallable<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationCallable;
+  private final UnaryCallable<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionCallable;
+  private final UnaryCallable<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionCallable;
+  private final OperationCallable<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationCallable;
+  private final UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+      listInstancePartitionOperationsCallable;
+  private final UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsPagedCallable;
 
   private final BackgroundResource backgroundResources;
   private final GrpcOperationsStub operationsStub;
@@ -371,6 +483,18 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                   return builder.build();
                 })
             .build();
+    GrpcCallSettings<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+        listInstancePartitionsTransportSettings =
+            GrpcCallSettings
+                .<ListInstancePartitionsRequest, ListInstancePartitionsResponse>newBuilder()
+                .setMethodDescriptor(listInstancePartitionsMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
     GrpcCallSettings<GetInstanceRequest, Instance> getInstanceTransportSettings =
         GrpcCallSettings.<GetInstanceRequest, Instance>newBuilder()
             .setMethodDescriptor(getInstanceMethodDescriptor)
@@ -442,6 +566,66 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                       return builder.build();
                     })
                 .build();
+    GrpcCallSettings<GetInstancePartitionRequest, InstancePartition>
+        getInstancePartitionTransportSettings =
+            GrpcCallSettings.<GetInstancePartitionRequest, InstancePartition>newBuilder()
+                .setMethodDescriptor(getInstancePartitionMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("name", String.valueOf(request.getName()));
+                      return builder.build();
+                    })
+                .build();
+    GrpcCallSettings<CreateInstancePartitionRequest, Operation>
+        createInstancePartitionTransportSettings =
+            GrpcCallSettings.<CreateInstancePartitionRequest, Operation>newBuilder()
+                .setMethodDescriptor(createInstancePartitionMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
+    GrpcCallSettings<DeleteInstancePartitionRequest, Empty>
+        deleteInstancePartitionTransportSettings =
+            GrpcCallSettings.<DeleteInstancePartitionRequest, Empty>newBuilder()
+                .setMethodDescriptor(deleteInstancePartitionMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("name", String.valueOf(request.getName()));
+                      return builder.build();
+                    })
+                .build();
+    GrpcCallSettings<UpdateInstancePartitionRequest, Operation>
+        updateInstancePartitionTransportSettings =
+            GrpcCallSettings.<UpdateInstancePartitionRequest, Operation>newBuilder()
+                .setMethodDescriptor(updateInstancePartitionMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add(
+                          "instance_partition.name",
+                          String.valueOf(request.getInstancePartition().getName()));
+                      return builder.build();
+                    })
+                .build();
+    GrpcCallSettings<
+            ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+        listInstancePartitionOperationsTransportSettings =
+            GrpcCallSettings
+                .<ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+                    newBuilder()
+                .setMethodDescriptor(listInstancePartitionOperationsMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
 
     this.listInstanceConfigsCallable =
         callableFactory.createUnaryCallable(
@@ -501,6 +685,16 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
     this.listInstancesPagedCallable =
         callableFactory.createPagedCallable(
             listInstancesTransportSettings, settings.listInstancesSettings(), clientContext);
+    this.listInstancePartitionsCallable =
+        callableFactory.createUnaryCallable(
+            listInstancePartitionsTransportSettings,
+            settings.listInstancePartitionsSettings(),
+            clientContext);
+    this.listInstancePartitionsPagedCallable =
+        callableFactory.createPagedCallable(
+            listInstancePartitionsTransportSettings,
+            settings.listInstancePartitionsSettings(),
+            clientContext);
     this.getInstanceCallable =
         callableFactory.createUnaryCallable(
             getInstanceTransportSettings, settings.getInstanceSettings(), clientContext);
@@ -535,6 +729,48 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
         callableFactory.createUnaryCallable(
             testIamPermissionsTransportSettings,
             settings.testIamPermissionsSettings(),
+            clientContext);
+    this.getInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            getInstancePartitionTransportSettings,
+            settings.getInstancePartitionSettings(),
+            clientContext);
+    this.createInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            createInstancePartitionTransportSettings,
+            settings.createInstancePartitionSettings(),
+            clientContext);
+    this.createInstancePartitionOperationCallable =
+        callableFactory.createOperationCallable(
+            createInstancePartitionTransportSettings,
+            settings.createInstancePartitionOperationSettings(),
+            clientContext,
+            operationsStub);
+    this.deleteInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            deleteInstancePartitionTransportSettings,
+            settings.deleteInstancePartitionSettings(),
+            clientContext);
+    this.updateInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            updateInstancePartitionTransportSettings,
+            settings.updateInstancePartitionSettings(),
+            clientContext);
+    this.updateInstancePartitionOperationCallable =
+        callableFactory.createOperationCallable(
+            updateInstancePartitionTransportSettings,
+            settings.updateInstancePartitionOperationSettings(),
+            clientContext,
+            operationsStub);
+    this.listInstancePartitionOperationsCallable =
+        callableFactory.createUnaryCallable(
+            listInstancePartitionOperationsTransportSettings,
+            settings.listInstancePartitionOperationsSettings(),
+            clientContext);
+    this.listInstancePartitionOperationsPagedCallable =
+        callableFactory.createPagedCallable(
+            listInstancePartitionOperationsTransportSettings,
+            settings.listInstancePartitionOperationsSettings(),
             clientContext);
 
     this.backgroundResources =
@@ -616,6 +852,18 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   }
 
   @Override
+  public UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+      listInstancePartitionsCallable() {
+    return listInstancePartitionsCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsPagedResponse>
+      listInstancePartitionsPagedCallable() {
+    return listInstancePartitionsPagedCallable;
+  }
+
+  @Override
   public UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
     return getInstanceCallable;
   }
@@ -661,6 +909,57 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   public UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {
     return testIamPermissionsCallable;
+  }
+
+  @Override
+  public UnaryCallable<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionCallable() {
+    return getInstancePartitionCallable;
+  }
+
+  @Override
+  public UnaryCallable<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionCallable() {
+    return createInstancePartitionCallable;
+  }
+
+  @Override
+  public OperationCallable<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationCallable() {
+    return createInstancePartitionOperationCallable;
+  }
+
+  @Override
+  public UnaryCallable<DeleteInstancePartitionRequest, Empty> deleteInstancePartitionCallable() {
+    return deleteInstancePartitionCallable;
+  }
+
+  @Override
+  public UnaryCallable<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionCallable() {
+    return updateInstancePartitionCallable;
+  }
+
+  @Override
+  public OperationCallable<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationCallable() {
+    return updateInstancePartitionOperationCallable;
+  }
+
+  @Override
+  public UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+      listInstancePartitionOperationsCallable() {
+    return listInstancePartitionOperationsCallable;
+  }
+
+  @Override
+  public UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsPagedCallable() {
+    return listInstancePartitionOperationsPagedCallable;
   }
 
   @Override

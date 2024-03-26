@@ -18,6 +18,8 @@ package com.google.cloud.spanner.admin.instance.v1;
 
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
 import com.google.api.gax.core.NoCredentialsProvider;
@@ -46,24 +48,34 @@ import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.instance.v1.AutoscalingConfig;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.InstanceName;
+import com.google.spanner.admin.instance.v1.InstancePartition;
+import com.google.spanner.admin.instance.v1.InstancePartitionName;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import com.google.spanner.admin.instance.v1.ReplicaInfo;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import io.grpc.StatusRuntimeException;
 import java.io.IOException;
@@ -733,6 +745,96 @@ public class InstanceAdminClientTest {
   }
 
   @Test
+  public void listInstancePartitionsTest() throws Exception {
+    InstancePartition responsesElement = InstancePartition.newBuilder().build();
+    ListInstancePartitionsResponse expectedResponse =
+        ListInstancePartitionsResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllInstancePartitions(Arrays.asList(responsesElement))
+            .build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+    ListInstancePartitionsPagedResponse pagedListResponse = client.listInstancePartitions(parent);
+
+    List<InstancePartition> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getInstancePartitionsList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListInstancePartitionsRequest actualRequest =
+        ((ListInstancePartitionsRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listInstancePartitionsExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+      client.listInstancePartitions(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listInstancePartitionsTest2() throws Exception {
+    InstancePartition responsesElement = InstancePartition.newBuilder().build();
+    ListInstancePartitionsResponse expectedResponse =
+        ListInstancePartitionsResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllInstancePartitions(Arrays.asList(responsesElement))
+            .build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    String parent = "parent-995424086";
+
+    ListInstancePartitionsPagedResponse pagedListResponse = client.listInstancePartitions(parent);
+
+    List<InstancePartition> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getInstancePartitionsList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListInstancePartitionsRequest actualRequest =
+        ((ListInstancePartitionsRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listInstancePartitionsExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      client.listInstancePartitions(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
   public void getInstanceTest() throws Exception {
     Instance expectedResponse =
         Instance.newBuilder()
@@ -1316,6 +1418,454 @@ public class InstanceAdminClientTest {
       String resource = "resource-341064690";
       List<String> permissions = new ArrayList<>();
       client.testIamPermissions(resource, permissions);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void getInstancePartitionTest() throws Exception {
+    InstancePartition expectedResponse =
+        InstancePartition.newBuilder()
+            .setName(
+                InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+                    .toString())
+            .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+            .setDisplayName("displayName1714148973")
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setEtag("etag3123477")
+            .build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    InstancePartitionName name =
+        InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]");
+
+    InstancePartition actualResponse = client.getInstancePartition(name);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    GetInstancePartitionRequest actualRequest =
+        ((GetInstancePartitionRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name.toString(), actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void getInstancePartitionExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      InstancePartitionName name =
+          InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]");
+      client.getInstancePartition(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void getInstancePartitionTest2() throws Exception {
+    InstancePartition expectedResponse =
+        InstancePartition.newBuilder()
+            .setName(
+                InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+                    .toString())
+            .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+            .setDisplayName("displayName1714148973")
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setEtag("etag3123477")
+            .build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    String name = "name3373707";
+
+    InstancePartition actualResponse = client.getInstancePartition(name);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    GetInstancePartitionRequest actualRequest =
+        ((GetInstancePartitionRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name, actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void getInstancePartitionExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      String name = "name3373707";
+      client.getInstancePartition(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void createInstancePartitionTest() throws Exception {
+    InstancePartition expectedResponse =
+        InstancePartition.newBuilder()
+            .setName(
+                InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+                    .toString())
+            .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+            .setDisplayName("displayName1714148973")
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setEtag("etag3123477")
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("createInstancePartitionTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockInstanceAdmin.addResponse(resultOperation);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+    InstancePartition instancePartition = InstancePartition.newBuilder().build();
+    String instancePartitionId = "instancePartitionId1364450768";
+
+    InstancePartition actualResponse =
+        client.createInstancePartitionAsync(parent, instancePartition, instancePartitionId).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CreateInstancePartitionRequest actualRequest =
+        ((CreateInstancePartitionRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertEquals(instancePartition, actualRequest.getInstancePartition());
+    Assert.assertEquals(instancePartitionId, actualRequest.getInstancePartitionId());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void createInstancePartitionExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+      InstancePartition instancePartition = InstancePartition.newBuilder().build();
+      String instancePartitionId = "instancePartitionId1364450768";
+      client.createInstancePartitionAsync(parent, instancePartition, instancePartitionId).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  public void createInstancePartitionTest2() throws Exception {
+    InstancePartition expectedResponse =
+        InstancePartition.newBuilder()
+            .setName(
+                InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+                    .toString())
+            .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+            .setDisplayName("displayName1714148973")
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setEtag("etag3123477")
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("createInstancePartitionTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockInstanceAdmin.addResponse(resultOperation);
+
+    String parent = "parent-995424086";
+    InstancePartition instancePartition = InstancePartition.newBuilder().build();
+    String instancePartitionId = "instancePartitionId1364450768";
+
+    InstancePartition actualResponse =
+        client.createInstancePartitionAsync(parent, instancePartition, instancePartitionId).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CreateInstancePartitionRequest actualRequest =
+        ((CreateInstancePartitionRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertEquals(instancePartition, actualRequest.getInstancePartition());
+    Assert.assertEquals(instancePartitionId, actualRequest.getInstancePartitionId());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void createInstancePartitionExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      InstancePartition instancePartition = InstancePartition.newBuilder().build();
+      String instancePartitionId = "instancePartitionId1364450768";
+      client.createInstancePartitionAsync(parent, instancePartition, instancePartitionId).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  public void deleteInstancePartitionTest() throws Exception {
+    Empty expectedResponse = Empty.newBuilder().build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    InstancePartitionName name =
+        InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]");
+
+    client.deleteInstancePartition(name);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    DeleteInstancePartitionRequest actualRequest =
+        ((DeleteInstancePartitionRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name.toString(), actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void deleteInstancePartitionExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      InstancePartitionName name =
+          InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]");
+      client.deleteInstancePartition(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void deleteInstancePartitionTest2() throws Exception {
+    Empty expectedResponse = Empty.newBuilder().build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    String name = "name3373707";
+
+    client.deleteInstancePartition(name);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    DeleteInstancePartitionRequest actualRequest =
+        ((DeleteInstancePartitionRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name, actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void deleteInstancePartitionExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      String name = "name3373707";
+      client.deleteInstancePartition(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void updateInstancePartitionTest() throws Exception {
+    InstancePartition expectedResponse =
+        InstancePartition.newBuilder()
+            .setName(
+                InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+                    .toString())
+            .setConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+            .setDisplayName("displayName1714148973")
+            .setCreateTime(Timestamp.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .addAllReferencingDatabases(new ArrayList<String>())
+            .addAllReferencingBackups(new ArrayList<String>())
+            .setEtag("etag3123477")
+            .build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("updateInstancePartitionTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockInstanceAdmin.addResponse(resultOperation);
+
+    InstancePartition instancePartition = InstancePartition.newBuilder().build();
+    FieldMask fieldMask = FieldMask.newBuilder().build();
+
+    InstancePartition actualResponse =
+        client.updateInstancePartitionAsync(instancePartition, fieldMask).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    UpdateInstancePartitionRequest actualRequest =
+        ((UpdateInstancePartitionRequest) actualRequests.get(0));
+
+    Assert.assertEquals(instancePartition, actualRequest.getInstancePartition());
+    Assert.assertEquals(fieldMask, actualRequest.getFieldMask());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void updateInstancePartitionExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      InstancePartition instancePartition = InstancePartition.newBuilder().build();
+      FieldMask fieldMask = FieldMask.newBuilder().build();
+      client.updateInstancePartitionAsync(instancePartition, fieldMask).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
+    }
+  }
+
+  @Test
+  public void listInstancePartitionOperationsTest() throws Exception {
+    Operation responsesElement = Operation.newBuilder().build();
+    ListInstancePartitionOperationsResponse expectedResponse =
+        ListInstancePartitionOperationsResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllOperations(Arrays.asList(responsesElement))
+            .build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+
+    ListInstancePartitionOperationsPagedResponse pagedListResponse =
+        client.listInstancePartitionOperations(parent);
+
+    List<Operation> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getOperationsList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListInstancePartitionOperationsRequest actualRequest =
+        ((ListInstancePartitionOperationsRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listInstancePartitionOperationsExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+      client.listInstancePartitionOperations(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listInstancePartitionOperationsTest2() throws Exception {
+    Operation responsesElement = Operation.newBuilder().build();
+    ListInstancePartitionOperationsResponse expectedResponse =
+        ListInstancePartitionOperationsResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllOperations(Arrays.asList(responsesElement))
+            .build();
+    mockInstanceAdmin.addResponse(expectedResponse);
+
+    String parent = "parent-995424086";
+
+    ListInstancePartitionOperationsPagedResponse pagedListResponse =
+        client.listInstancePartitionOperations(parent);
+
+    List<Operation> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getOperationsList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListInstancePartitionOperationsRequest actualRequest =
+        ((ListInstancePartitionOperationsRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listInstancePartitionOperationsExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      client.listInstancePartitionOperations(parent);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
