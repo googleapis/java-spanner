@@ -98,6 +98,8 @@ class SessionImpl implements Session {
   ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
   private volatile Instant lastUseTime;
+  @Nullable private final Instant createTime;
+  private final boolean isMultiplexed;
   private ISpan currentSpan;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
@@ -107,6 +109,24 @@ class SessionImpl implements Session {
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
     this.lastUseTime = Instant.now();
+    this.createTime = null;
+    this.isMultiplexed = false;
+  }
+
+  SessionImpl(
+      SpannerImpl spanner,
+      String name,
+      com.google.protobuf.Timestamp createTime,
+      boolean isMultiplexed,
+      Map<SpannerRpc.Option, ?> options) {
+    this.spanner = spanner;
+    this.tracer = spanner.getTracer();
+    this.options = options;
+    this.name = checkNotNull(name);
+    this.databaseId = SessionId.of(name).getDatabaseId();
+    this.lastUseTime = Instant.now();
+    this.createTime = convert(createTime);
+    this.isMultiplexed = isMultiplexed;
   }
 
   @Override
@@ -128,6 +148,14 @@ class SessionImpl implements Session {
 
   Instant getLastUseTime() {
     return lastUseTime;
+  }
+
+  Instant getCreateTime() {
+    return createTime;
+  }
+
+  boolean getIsMultiplexed() {
+    return isMultiplexed;
   }
 
   void markUsed(Instant instant) {
@@ -454,5 +482,12 @@ class SessionImpl implements Session {
 
   TraceWrapper getTracer() {
     return tracer;
+  }
+
+  private Instant convert(com.google.protobuf.Timestamp timestamp) {
+    if (timestamp == null) {
+      return null;
+    }
+    return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
   }
 }

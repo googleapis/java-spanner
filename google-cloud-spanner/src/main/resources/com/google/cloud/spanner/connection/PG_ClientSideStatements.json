@@ -645,12 +645,13 @@
         "set spanner.statement_tag=''",
         "set spanner.statement_tag to 'tag1'",
         "set spanner.statement_tag to 'tag2'",
-        "set spanner.statement_tag to ''"
+        "set spanner.statement_tag to ''",
+        "set spanner.statement_tag to 'test_tag'"
       ],
       "setStatement": {
         "propertyName": "SPANNER.STATEMENT_TAG",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+        "allowedValues": "'(.*)'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },
@@ -667,13 +668,14 @@
         "set spanner.transaction_tag=''",
         "set spanner.transaction_tag to 'tag1'",
         "set spanner.transaction_tag to 'tag2'",
-        "set spanner.transaction_tag to ''"
+        "set spanner.transaction_tag to ''",
+        "set spanner.transaction_tag to 'test_tag'"
       ],
       "examplePrerequisiteStatements": ["set autocommit = false"],
       "setStatement": {
         "propertyName": "SPANNER.TRANSACTION_TAG",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+        "allowedValues": "'(.*)'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },

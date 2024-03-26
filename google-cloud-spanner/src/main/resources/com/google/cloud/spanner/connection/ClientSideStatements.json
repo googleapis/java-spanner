@@ -473,11 +473,11 @@
 	  "statementType": "SET_STATEMENT_TAG",
 	  "regex": "(?is)\\A\\s*set\\s+statement_tag\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetStatementTag",
-	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''"],
+	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''", "set statement_tag='test_tag'"],
 	  "setStatement": {
 	    "propertyName": "STATEMENT_TAG",
 	    "separator": "=",
-	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "allowedValues": "'(.*)'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},
@@ -488,12 +488,12 @@
 	  "statementType": "SET_TRANSACTION_TAG",
 	  "regex": "(?is)\\A\\s*set\\s+transaction_tag\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetTransactionTag",
-	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''"],
+	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''", "set transaction_tag='test_tag'"],
 	  "examplePrerequisiteStatements": ["set autocommit = false"],
 	  "setStatement": {
 	    "propertyName": "TRANSACTION_TAG",
 	    "separator": "=",
-	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "allowedValues": "'(.*)'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},
