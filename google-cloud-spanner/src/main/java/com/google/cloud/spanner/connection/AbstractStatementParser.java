@@ -22,7 +22,9 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.connection.AbstractBaseUnitOfWork.InterceptorsUsage;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
+import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
@@ -32,6 +34,7 @@ import com.google.common.cache.Weigher;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,12 +74,7 @@ public abstract class AbstractStatementParser {
     }
   }
 
-  /**
-   * Get an instance of {@link AbstractStatementParser} for the specified dialect.
-   *
-   * @param dialect
-   * @return
-   */
+  /** Get an instance of {@link AbstractStatementParser} for the specified dialect. */
   public static AbstractStatementParser getInstance(Dialect dialect) {
     synchronized (lock) {
       if (!INSTANCES.containsKey(dialect)) {
@@ -86,19 +84,19 @@ public abstract class AbstractStatementParser {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "There is no known statement parser for dialect " + dialect);
           }
-          INSTANCES.put(dialect, clazz.newInstance());
-        } catch (InstantiationException | IllegalAccessException e) {
+          INSTANCES.put(dialect, clazz.getDeclaredConstructor().newInstance());
+        } catch (Exception exception) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INTERNAL,
               "Could not instantiate statement parser for dialect " + dialect.name(),
-              e);
+              exception);
         }
       }
       return INSTANCES.get(dialect);
     }
   }
 
-  /**
+  /*
    * The following fixed pre-parsed statements are used internally by the Connection API. These do
    * not need to be parsed using a specific dialect, as they are equal for all dialects, and
    * pre-parsing them avoids the need to repeatedly parse statements that are used internally.
@@ -108,14 +106,16 @@ public abstract class AbstractStatementParser {
   static final ParsedStatement BEGIN_STATEMENT;
 
   /**
-   * Create a COMMIT statement to use with the {@link #commit()} method to allow it to be cancelled,
-   * time out or retried.
+   * Create a COMMIT statement to use with the {@link Connection#commit()} method to allow it to be
+   * cancelled, time out or retried.
    *
-   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
-   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
-   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
-   * #commit()} method is called directly, we do not have a {@link ParsedStatement}, and the method
-   * uses this statement instead in order to use the same logic as the other statements.
+   * <p>{@link ReadWriteTransaction} uses the generic methods {@link
+   * ReadWriteTransaction#executeStatementAsync(CallType, ParsedStatement, Callable,
+   * InterceptorsUsage, Collection)} and {@link ReadWriteTransaction#runWithRetry(Callable)} to
+   * allow statements to be cancelled, to timeout and to be retried. These methods require a {@link
+   * ParsedStatement} as input. When the {@link Connection#commit()} method is called directly, we
+   * do not have a {@link ParsedStatement}, and the method uses this statement instead in order to
+   * use the same logic as the other statements.
    */
   static final ParsedStatement COMMIT_STATEMENT;
 
@@ -123,15 +123,16 @@ public abstract class AbstractStatementParser {
   static final ParsedStatement ROLLBACK_STATEMENT;
 
   /**
-   * Create a RUN BATCH statement to use with the {@link #executeBatchUpdate(Iterable)} method to
-   * allow it to be cancelled, time out or retried.
+   * Create a RUN BATCH statement to use with the {@link Connection#executeBatchUpdate(Iterable)}
+   * method to allow it to be cancelled, time out or retried.
    *
-   * <p>{@link ReadWriteTransaction} uses the generic methods {@link #executeAsync(ParsedStatement,
-   * Callable)} and {@link #runWithRetry(Callable)} to allow statements to be cancelled, to timeout
-   * and to be retried. These methods require a {@link ParsedStatement} as input. When the {@link
-   * #executeBatchUpdate(Iterable)} method is called, we do not have one {@link ParsedStatement},
-   * and the method uses this statement instead in order to use the same logic as the other
-   * statements.
+   * <p>{@link ReadWriteTransaction} uses the generic methods {@link
+   * ReadWriteTransaction#executeStatementAsync(CallType, ParsedStatement, Callable, Collection)}
+   * and {@link ReadWriteTransaction#runWithRetry(Callable)} to allow statements to be cancelled, to
+   * timeout and to be retried. These methods require a {@link ParsedStatement} as input. When the
+   * {@link Connection#executeBatchUpdate(Iterable)} method is called, we do not have one {@link
+   * ParsedStatement}, and the method uses this statement instead in order to use the same logic as
+   * the other statements.
    */
   static final ParsedStatement RUN_BATCH_STATEMENT;
 
