@@ -19,6 +19,8 @@ package com.google.cloud.spanner.connection;
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.ReadQueryUpdateTransactionOption;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -619,6 +621,29 @@ public abstract class AbstractStatementParser {
 
   /** Removes any statement hints at the beginning of the statement. */
   abstract String removeStatementHint(String sql);
+
+  @VisibleForTesting
+  static final ReadQueryUpdateTransactionOption[] EMPTY_OPTIONS =
+      new ReadQueryUpdateTransactionOption[0];
+
+  /**
+   * Extracts any query/update options from the SQL string. Currently, this only supports extracting
+   * a statement tag, and the statement tag must be given as a statement hint in a comment at the
+   * start of the query string.
+   */
+  ReadQueryUpdateTransactionOption[] extractOptions(ParsedStatement statement) {
+    final String statementTagPrefix = "/*@{STATEMENT_TAG=";
+
+    String sql = statement.getStatement().getSql();
+    if (sql.startsWith(statementTagPrefix)) {
+      int endIndex = sql.indexOf("}*/", statementTagPrefix.length());
+      if (endIndex > -1) {
+        String tag = sql.substring(statementTagPrefix.length(), endIndex);
+        return new ReadQueryUpdateTransactionOption[] {Options.tag(tag)};
+      }
+    }
+    return EMPTY_OPTIONS;
+  }
 
   /** Parameter information with positional parameters translated to named parameters. */
   @InternalApi

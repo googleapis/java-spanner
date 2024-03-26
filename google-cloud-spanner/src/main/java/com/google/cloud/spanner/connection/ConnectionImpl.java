@@ -32,6 +32,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.ReadQueryUpdateTransactionOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.PartitionOptions;
@@ -1138,6 +1139,8 @@ class ConnectionImpl implements Connection {
           "Only queries can be partitioned. Invalid statement: " + query.getSql());
     }
 
+    QueryOption[] combinedOptions =
+        concat(getStatementParser().extractOptions(parsedStatement), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
         transaction.partitionQueryAsync(
@@ -1145,7 +1148,8 @@ class ConnectionImpl implements Connection {
             parsedStatement,
             getEffectivePartitionOptions(partitionOptions),
             mergeDataBoost(
-                mergeQueryRequestOptions(parsedStatement, mergeQueryStatementTag(options)))));
+                mergeQueryRequestOptions(
+                    parsedStatement, mergeQueryStatementTag(combinedOptions)))));
   }
 
   private PartitionOptions getEffectivePartitionOptions(
@@ -1439,6 +1443,34 @@ class ConnectionImpl implements Connection {
     return parsedStatements;
   }
 
+  private UpdateOption[] concat(
+      ReadQueryUpdateTransactionOption[] statementOptions, UpdateOption[] argumentOptions) {
+    if (statementOptions == null || statementOptions.length == 0) {
+      return argumentOptions;
+    }
+    if (argumentOptions == null || argumentOptions.length == 0) {
+      return statementOptions;
+    }
+    UpdateOption[] result =
+        Arrays.copyOf(statementOptions, statementOptions.length + argumentOptions.length);
+    System.arraycopy(argumentOptions, 0, result, statementOptions.length, argumentOptions.length);
+    return result;
+  }
+
+  private QueryOption[] concat(
+      ReadQueryUpdateTransactionOption[] statementOptions, QueryOption[] argumentOptions) {
+    if (statementOptions == null || statementOptions.length == 0) {
+      return argumentOptions;
+    }
+    if (argumentOptions == null || argumentOptions.length == 0) {
+      return statementOptions;
+    }
+    QueryOption[] result =
+        Arrays.copyOf(statementOptions, statementOptions.length + argumentOptions.length);
+    System.arraycopy(argumentOptions, 0, result, statementOptions.length, argumentOptions.length);
+    return result;
+  }
+
   private QueryOption[] mergeDataBoost(QueryOption... options) {
     if (this.dataBoostEnabled) {
       options = appendQueryOption(options, Options.dataBoostEnabled(true));
@@ -1515,19 +1547,20 @@ class ConnectionImpl implements Connection {
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
+    QueryOption[] combinedOptions = concat(getStatementParser().extractOptions(statement), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
     if (autoPartitionMode
         && statement.getType() == StatementType.QUERY
         && !isInternalMetadataQuery) {
       return runPartitionedQuery(
-          statement.getStatement(), PartitionOptions.getDefaultInstance(), options);
+          statement.getStatement(), PartitionOptions.getDefaultInstance(), combinedOptions);
     }
     return get(
         transaction.executeQueryAsync(
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))));
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(combinedOptions))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -1542,44 +1575,54 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !(autoPartitionMode && statement.getType() == StatementType.QUERY),
         "Partitioned queries cannot be executed asynchronously");
-    UnitOfWork transaction =
-        getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery(options));
+    boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
+    QueryOption[] combinedOptions = concat(getStatementParser().extractOptions(statement), options);
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))),
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(combinedOptions))),
         spanner.getAsyncExecutorProvider(),
-        options);
+        combinedOptions);
   }
 
   private ApiFuture<Long> internalExecuteUpdateAsync(
-      final CallType callType, final ParsedStatement update, UpdateOption... options) {
+      final CallType callType, final ParsedStatement update, final UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
+    UpdateOption[] combinedOptions = concat(getStatementParser().extractOptions(update), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.executeUpdateAsync(
-        callType, update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType, update, mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
 
   private ApiFuture<ResultSet> internalAnalyzeUpdateAsync(
       final CallType callType,
       final ParsedStatement update,
-      AnalyzeMode analyzeMode,
-      UpdateOption... options) {
+      final AnalyzeMode analyzeMode,
+      final UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
+    UpdateOption[] combinedOptions = concat(getStatementParser().extractOptions(update), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.analyzeUpdateAsync(
-        callType, update, analyzeMode, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType,
+        update,
+        analyzeMode,
+        mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
 
   private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
-      CallType callType, List<ParsedStatement> updates, UpdateOption... options) {
+      final CallType callType, final List<ParsedStatement> updates, final UpdateOption... options) {
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
+    UpdateOption[] combinedOptions =
+        concat(
+            getStatementParser().extractOptions(updates.isEmpty() ? null : updates.get(0)),
+            options);
     return transaction.executeBatchUpdateAsync(
-        callType, updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType, updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
 
   private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
