@@ -574,7 +574,7 @@ class SessionPool {
     }
   }
 
-  class MultiplexedSessionReplacementHandler
+  static class MultiplexedSessionReplacementHandler
       implements SessionReplacementHandler<MultiplexedSessionFuture> {
     @Override
     public MultiplexedSessionFuture replaceSession(
@@ -587,7 +587,7 @@ class SessionPool {
           Level.WARNING,
           String.format(
               "Replace session invoked for multiplexed " + "session => %s", session.getName()));
-      return session;
+      throw e;
     }
   }
 
@@ -1439,8 +1439,6 @@ class SessionPool {
 
   class MultiplexedSessionFuture extends SimpleForwardingListenableFuture<MultiplexedSession>
       implements SessionFuture {
-
-    private volatile CountDownLatch initialized = new CountDownLatch(1);
     private final ISpan span;
 
     @VisibleForTesting
@@ -1495,8 +1493,8 @@ class SessionPool {
       try {
         return new AutoClosingReadContext<>(
             session -> {
-              MultiplexedSession ms = session.get();
-              return ms.getDelegate().singleUse();
+              MultiplexedSession multiplexedSession = session.get();
+              return multiplexedSession.getDelegate().singleUse();
             },
             SessionPool.this,
             multiplexedSessionReplacementHandler,
@@ -1513,8 +1511,8 @@ class SessionPool {
       try {
         return new AutoClosingReadContext<>(
             session -> {
-              CachedSession ps = session.get();
-              return ps.getDelegate().singleUse(bound);
+              MultiplexedSession multiplexedSession = session.get();
+              return multiplexedSession.getDelegate().singleUse(bound);
             },
             SessionPool.this,
             multiplexedSessionReplacementHandler,
@@ -1530,8 +1528,8 @@ class SessionPool {
     public ReadOnlyTransaction singleUseReadOnlyTransaction() {
       return internalReadOnlyTransaction(
           session -> {
-            MultiplexedSession ms = session.get();
-            return ms.getDelegate().singleUseReadOnlyTransaction();
+            MultiplexedSession multiplexedSession = session.get();
+            return multiplexedSession.getDelegate().singleUseReadOnlyTransaction();
           },
           true);
     }
@@ -1540,8 +1538,8 @@ class SessionPool {
     public ReadOnlyTransaction singleUseReadOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
           session -> {
-            MultiplexedSession ms = session.get();
-            return ms.getDelegate().singleUseReadOnlyTransaction(bound);
+            MultiplexedSession multiplexedSession = session.get();
+            return multiplexedSession.getDelegate().singleUseReadOnlyTransaction(bound);
           },
           true);
     }
@@ -1550,8 +1548,8 @@ class SessionPool {
     public ReadOnlyTransaction readOnlyTransaction() {
       return internalReadOnlyTransaction(
           session -> {
-            MultiplexedSession ms = session.get();
-            return ms.getDelegate().readOnlyTransaction();
+            MultiplexedSession multiplexedSession = session.get();
+            return multiplexedSession.getDelegate().readOnlyTransaction();
           },
           false);
     }
@@ -1560,8 +1558,8 @@ class SessionPool {
     public ReadOnlyTransaction readOnlyTransaction(final TimestampBound bound) {
       return internalReadOnlyTransaction(
           session -> {
-            MultiplexedSession ms = session.get();
-            return ms.getDelegate().readOnlyTransaction(bound);
+            MultiplexedSession multiplexedSession = session.get();
+            return multiplexedSession.getDelegate().readOnlyTransaction(bound);
           },
           false);
     }
@@ -1648,6 +1646,8 @@ class SessionPool {
       try {
         return get();
       } catch (Throwable t) {
+        // this exception will never be thrown for a multiplexed session since the Future
+        // object is already initialised.
         return null;
       }
     }
@@ -1663,12 +1663,7 @@ class SessionPool {
       if (res != null) {
         res.markBusy(span);
       }
-      initialized.countDown();
-
       try {
-        span.addAnnotation("Awaiting multiplexed session to be initialized");
-        initialized.await();
-        span.addAnnotation("Multiplexed session initialized");
         return super.get();
       } catch (ExecutionException e) {
         throw SpannerExceptionFactory.newSpannerException(e.getCause());
@@ -1989,7 +1984,7 @@ class SessionPool {
   }
 
   class MultiplexedSession implements CachedSession {
-    SessionImpl delegate;
+    final SessionImpl delegate;
 
     MultiplexedSession(SessionImpl session) {
       this.delegate = session;
@@ -2618,7 +2613,7 @@ class SessionPool {
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
-  private final SessionReplacementHandler multiplexedSessionReplacementHandler =
+  private static final SessionReplacementHandler multiplexedSessionReplacementHandler =
       new MultiplexedSessionReplacementHandler();
   /**
    * Create a session pool with the given options and for the given database. It will also start
