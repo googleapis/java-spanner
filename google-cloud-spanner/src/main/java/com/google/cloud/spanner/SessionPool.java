@@ -1659,8 +1659,9 @@ class SessionPool {
       initialized.countDown();
 
       try {
-        // TODO arpanmishra@ do we really need this latch?
+        span.addAnnotation("Awaiting multiplexed session to be initialized");
         initialized.await();
+        span.addAnnotation("Multiplexed session initialized");
         return super.get();
       } catch (ExecutionException e) {
         throw SpannerExceptionFactory.newSpannerException(e.getCause());
@@ -1989,11 +1990,16 @@ class SessionPool {
 
     @Override
     public boolean isAllowReplacing() {
+      // for multiplexed session there is only 1 session, hence there is nothing that we
+      // can replace.
       return false;
     }
 
     @Override
-    public void setAllowReplacing(boolean allowReplacing) {}
+    public void setAllowReplacing(boolean allowReplacing) {
+      // for multiplexed session there is only 1 session, there is nothing that can be replaced.
+      // hence this is no-op.
+    }
 
     @Override
     public void markBusy(ISpan span) {
@@ -2001,10 +2007,15 @@ class SessionPool {
     }
 
     @Override
-    public void markUsed() {}
+    public void markUsed() {
+      // no-op for a multiplexed session since we don't track the last-used time
+      // in case of multiplexed session
+    }
 
     @Override
     public SpannerException setLastException(SpannerException exception) {
+      // multiplexed sessions run more than one transaction concurrently. we cannot store the
+      // exception state as that is not applicable to all transactions running on the session.
       return exception;
     }
 
@@ -2124,9 +2135,6 @@ class SessionPool {
         numMultiplexedSessionsReleased++;
       }
     }
-
-    private final ApiFuture<Empty> CLOSE_RESULT =
-        ApiFutures.immediateFuture(Empty.getDefaultInstance());
 
     @Override
     public ApiFuture<Empty> asyncClose() {
