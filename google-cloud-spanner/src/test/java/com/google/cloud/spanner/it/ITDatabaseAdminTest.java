@@ -45,9 +45,12 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -259,8 +262,14 @@ public class ITDatabaseAdminTest {
     OperationFuture<Database, UpdateDatabaseMetadata> op =
         dbAdminClient.updateDatabase(databaseToUpdate);
 
-    SpannerException e = assertThrows(SpannerException.class, () -> op.get(5, TimeUnit.MINUTES));
-    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
+    try {
+      op.get(5, TimeUnit.MINUTES);
+      Assert.fail("No exception thrown");
+    } catch (ExecutionException | InterruptedException | TimeoutException e) {
+      Assert.assertTrue(e.getCause() instanceof SpannerException);
+      SpannerException exception = ((SpannerException) e.getCause());
+      assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    }
   }
 
   @Test
