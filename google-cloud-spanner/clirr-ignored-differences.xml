@@ -631,4 +631,16 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setDirectedRead(com.google.spanner.v1.DirectedReadOptions)</method>
   </difference>
+
+  <!-- Added MaxCommitDelay -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.time.Duration getMaxCommitDelay()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxCommitDelay(java.time.Duration)</method>
+  </difference>
 </differences>

@@ -82,6 +82,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReturnCommitStats();
 
+  StatementResult statementSetMaxCommitDelay(Duration maxCommitDelay);
+
+  StatementResult statementShowMaxCommitDelay();
+
   StatementResult statementSetDelayTransactionStartUntilFirstWrite(
       Boolean delayTransactionStartUntilFirstWrite);
 

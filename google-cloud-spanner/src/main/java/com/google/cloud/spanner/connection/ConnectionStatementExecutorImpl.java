@@ -29,6 +29,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
@@ -51,6 +52,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
@@ -341,6 +343,26 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sRETURN_COMMIT_STATS", getNamespace(connection.getDialect())),
         getConnection().isReturnCommitStats(),
         SHOW_RETURN_COMMIT_STATS);
+  }
+
+  @Override
+  public StatementResult statementSetMaxCommitDelay(Duration duration) {
+    getConnection()
+        .setMaxCommitDelay(
+            duration == null || duration.equals(Duration.getDefaultInstance())
+                ? null
+                : java.time.Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
+    return noResult(SET_MAX_COMMIT_DELAY);
+  }
+
+  @Override
+  public StatementResult statementShowMaxCommitDelay() {
+    return resultSet(
+        "MAX_COMMIT_DELAY",
+        getConnection().getMaxCommitDelay() == null
+            ? null
+            : getConnection().getMaxCommitDelay().toMillis() + "ms",
+        SHOW_MAX_COMMIT_DELAY);
   }
 
   @Override

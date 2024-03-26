@@ -113,6 +113,15 @@
       "exampleStatements": ["show spanner.return_commit_stats","show variable spanner.return_commit_stats"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.MAX_COMMIT_DELAY",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_MAX_COMMIT_DELAY",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.max_commit_delay\\s*\\z",
+      "method": "statementShowMaxCommitDelay",
+      "exampleStatements": ["show spanner.max_commit_delay", "show variable spanner.max_commit_delay"]
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.COMMIT_RESPONSE",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -606,6 +615,21 @@
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.MAX_COMMIT_DELAY =|TO '<duration>'|NULL",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_MAX_COMMIT_DELAY",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.max_commit_delay(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetMaxCommitDelay",
+      "exampleStatements": ["set spanner.max_commit_delay=null", "set spanner.max_commit_delay='1s'", "set spanner.max_commit_delay='100ms'", "set spanner.max_commit_delay to '10000us'", "set spanner.max_commit_delay TO '9223372036854775807ns'"],
+      "setStatement": {
+        "propertyName": "SPANNER.MAX_COMMIT_DELAY",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+        "converterName": "ClientSideStatementValueConverters$DurationConverter"
       }
     },
     {

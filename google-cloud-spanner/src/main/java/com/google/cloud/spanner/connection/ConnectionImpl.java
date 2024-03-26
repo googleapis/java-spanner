@@ -56,6 +56,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -245,6 +246,8 @@ class ConnectionImpl implements Connection {
   private String transactionTag;
   private String statementTag;
 
+  private Duration maxCommitDelay;
+
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
     Preconditions.checkNotNull(options);
@@ -273,6 +276,7 @@ class ConnectionImpl implements Connection {
     this.autoPartitionMode = options.isAutoPartitionMode();
     this.maxPartitions = options.getMaxPartitions();
     this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
+    this.maxCommitDelay = options.getMaxCommitDelay();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -789,6 +793,18 @@ class ConnectionImpl implements Connection {
   public boolean isReturnCommitStats() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.returnCommitStats;
+  }
+
+  @Override
+  public void setMaxCommitDelay(Duration maxCommitDelay) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.maxCommitDelay = maxCommitDelay;
+  }
+
+  @Override
+  public Duration getMaxCommitDelay() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.maxCommitDelay;
   }
 
   @Override
@@ -1614,6 +1630,7 @@ class ConnectionImpl implements Connection {
           .setReadOnlyStaleness(readOnlyStaleness)
           .setAutocommitDmlMode(autocommitDmlMode)
           .setReturnCommitStats(returnCommitStats)
+          .setMaxCommitDelay(maxCommitDelay)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
           .build();
@@ -1636,6 +1653,7 @@ class ConnectionImpl implements Connection {
               .setRetryAbortsInternally(retryAbortsInternally)
               .setSavepointSupport(savepointSupport)
               .setReturnCommitStats(returnCommitStats)
+              .setMaxCommitDelay(maxCommitDelay)
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

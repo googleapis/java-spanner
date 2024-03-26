@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -111,6 +112,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private Boolean retryAbortsInternally;
     private boolean delayTransactionStartUntilFirstWrite;
     private boolean returnCommitStats;
+    private Duration maxCommitDelay;
     private SavepointSupport savepointSupport;
     private List<TransactionRetryListener> transactionRetryListeners;
 
@@ -134,6 +136,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
     Builder setReturnCommitStats(boolean returnCommitStats) {
       this.returnCommitStats = returnCommitStats;
+      return this;
+    }
+
+    Builder setMaxCommitDelay(Duration maxCommitDelay) {
+      this.maxCommitDelay = maxCommitDelay;
       return this;
     }
 
@@ -180,6 +187,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (builder.returnCommitStats) {
       numOptions++;
     }
+    if (builder.maxCommitDelay != null) {
+      numOptions++;
+    }
     if (this.transactionTag != null) {
       numOptions++;
     }
@@ -190,6 +200,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     int index = 0;
     if (builder.returnCommitStats) {
       options[index++] = Options.commitStats();
+    }
+    if (builder.maxCommitDelay != null) {
+      options[index++] = Options.maxCommitDelay(builder.maxCommitDelay);
     }
     if (this.transactionTag != null) {
       options[index++] = Options.tag(this.transactionTag);
