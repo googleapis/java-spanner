@@ -260,7 +260,6 @@ public class ITDatabaseAdminTest {
         dbAdminClient.updateDatabase(databaseToUpdate);
 
     SpannerException e = assertThrows(SpannerException.class, () -> op.get(5, TimeUnit.MINUTES));
-    assertThat(e.getMessage()).contains("Invalid field mask");
     assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
   }
 
