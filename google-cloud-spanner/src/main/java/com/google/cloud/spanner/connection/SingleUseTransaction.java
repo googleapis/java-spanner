@@ -372,7 +372,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
             if (DdlClient.isCreateDatabaseStatement(ddl.getSqlWithoutComments())) {
               operation =
                   ddlClient.executeCreateDatabase(
-                      ddl.getSqlWithoutComments(), dbClient.getDialect());
+                      ddl.getSqlWithoutComments(), dbClient.getDatabaseDialect());
             } else {
               operation = ddlClient.executeDdl(ddl.getSqlWithoutComments());
             }

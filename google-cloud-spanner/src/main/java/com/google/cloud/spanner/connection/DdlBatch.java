@@ -35,6 +35,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.ArrayList;
@@ -212,7 +213,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     Callable<long[]> callable =
         () -> {
           try {
-            OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+            OperationFuture<Empty, UpdateDatabaseDdlMetadata> operation =
                 ddlClient.executeDdl(statements);
             try {
               // Wait until the operation has finished.
@@ -236,7 +237,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
         callType, RUN_BATCH_STATEMENT, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
   }
 
-  long[] extractUpdateCounts(OperationFuture<Void, UpdateDatabaseDdlMetadata> operation) {
+  long[] extractUpdateCounts(OperationFuture<Empty, UpdateDatabaseDdlMetadata> operation) {
     try {
       return extractUpdateCounts(operation.getMetadata().get());
     } catch (Throwable t) {

@@ -57,6 +57,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.Arrays;
@@ -297,7 +298,7 @@ public class SingleUseTransactionTest {
     try {
       DdlClient ddlClient = mock(DdlClient.class);
       @SuppressWarnings("unchecked")
-      final OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
+      final OperationFuture<Empty, UpdateDatabaseDdlMetadata> operation =
           mock(OperationFuture.class);
       when(operation.get()).thenReturn(null);
       when(ddlClient.executeDdl(anyString())).thenCallRealMethod();
@@ -369,6 +370,7 @@ public class SingleUseTransactionTest {
     com.google.cloud.spanner.ReadOnlyTransaction singleUse =
         new SimpleReadOnlyTransaction(staleness);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
+    when(dbClient.getDatabaseDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL.toProto());
     when(dbClient.singleUseReadOnlyTransaction(staleness)).thenReturn(singleUse);
 
     final TransactionContext txContext = mock(TransactionContext.class);
@@ -547,12 +549,12 @@ public class SingleUseTransactionTest {
     String sql = "CREATE DATABASE FOO";
     ParsedStatement ddl = createParsedDdl(sql);
     DdlClient ddlClient = createDefaultMockDdlClient();
-    when(ddlClient.executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL))
+    when(ddlClient.executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL.toProto()))
         .thenReturn(mock(OperationFuture.class));
 
     SingleUseTransaction singleUseTransaction = createDdlSubject(ddlClient);
     get(singleUseTransaction.executeDdlAsync(CallType.SYNC, ddl));
-    verify(ddlClient).executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL);
+    verify(ddlClient).executeCreateDatabase(sql, Dialect.GOOGLE_STANDARD_SQL.toProto());
   }
 
   @Test

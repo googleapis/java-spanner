@@ -21,6 +21,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.v1.BatchWriteResponse;
 
 /**
@@ -35,6 +36,15 @@ public interface DatabaseClient {
    * @return the SQL dialect that is used by the database.
    */
   default Dialect getDialect() {
+    throw new UnsupportedOperationException("method should be overwritten");
+  }
+
+  /**
+   * Returns the SQL dialect that is used by the database.
+   *
+   * @return the SQL dialect that is used by the database.
+   */
+  default DatabaseDialect getDatabaseDialect() {
     throw new UnsupportedOperationException("method should be overwritten");
   }
 
