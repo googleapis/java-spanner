@@ -333,6 +333,20 @@ public final class Options implements Serializable {
     void appendToOptions(Options options) {
       options.tag = tag;
     }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.tag);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof TagOption)) {
+        return false;
+      }
+      TagOption other = (TagOption) o;
+      return Objects.equals(this.tag, other.tag);
+    }
   }
 
   static final class EtagOption extends InternalOption implements DeleteAdminApiOption {

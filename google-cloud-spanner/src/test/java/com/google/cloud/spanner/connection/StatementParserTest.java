@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.AbstractStatementParser.EMPTY_OPTIONS;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -28,6 +30,8 @@ import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.ReadQueryUpdateTransactionOption;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
@@ -1688,6 +1692,30 @@ public class StatementParserTest {
     // The first query had a cache miss. The second a cache hit.
     assertEquals(1, stats.missCount());
     assertEquals(1, stats.hitCount());
+  }
+
+  @Test
+  public void testExtractOptions() {
+    assertArrayEquals(EMPTY_OPTIONS, parser.extractOptions(parser.parse(Statement.of("select 1"))));
+
+    assertArrayEquals(
+        new ReadQueryUpdateTransactionOption[] {Options.tag("foo")},
+        parser.extractOptions(parser.parse(Statement.of("/*@{STATEMENT_TAG=foo}*/ select 1"))));
+    assertArrayEquals(
+        new ReadQueryUpdateTransactionOption[] {Options.tag("tag with space")},
+        parser.extractOptions(
+            parser.parse(Statement.of("/*@{STATEMENT_TAG=tag with space}*/ select 1"))));
+    assertArrayEquals(
+        new ReadQueryUpdateTransactionOption[] {Options.tag("foo}")},
+        parser.extractOptions(parser.parse(Statement.of("/*@{STATEMENT_TAG=foo}}*/ select 1"))));
+
+    assertArrayEquals(
+        EMPTY_OPTIONS,
+        parser.extractOptions(parser.parse(Statement.of("/*@{STATEMENT_TAG=not_a_tag*/select 1"))));
+    assertArrayEquals(
+        EMPTY_OPTIONS,
+        parser.extractOptions(
+            parser.parse(Statement.of("/*@{STATEMENT_TAG=not_a_tag} */select 1"))));
   }
 
   static void assertUnclosedLiteral(AbstractStatementParser parser, String sql) {
