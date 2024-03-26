@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.COUNT;
 import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
+import static com.google.cloud.spanner.MetricRegistryConstants.IS_MULTIPLEXED;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS_DESCRIPTION;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
@@ -1419,7 +1420,7 @@ class SessionPool {
           res.markBusy(span);
           span.addAnnotation("Using Session", "sessionId", res.getName());
           synchronized (lock) {
-            incrementNumSessionsInUse();
+            incrementNumSessionsInUse(false);
             checkedOutSessions.add(this);
           }
           res.eligibleForLongRunning = eligibleForLongRunning;
@@ -2605,6 +2606,7 @@ class SessionPool {
   private long numLeakedSessionsRemoved = 0;
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
+  private AtomicLong numMultiplexedSessionWaiterTimeouts = new AtomicLong();
 
   @GuardedBy("lock")
   private final Set<PooledSession> allSessions = new HashSet<>();
@@ -2614,16 +2616,15 @@ class SessionPool {
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
-
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
-
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
   private static final SessionReplacementHandler multiplexedSessionReplacementHandler =
       new MultiplexedSessionReplacementHandler();
+
   /**
    * Create a session pool with the given options and for the given database. It will also start
    * eagerly creating sessions if {@link SessionPoolOptions#getMinSessions()} is greater than 0.
@@ -2855,6 +2856,10 @@ class SessionPool {
     return numWaiterTimeouts.get();
   }
 
+  long getNumMultiplexedSessionWaiterTimeouts() {
+    return numMultiplexedSessionWaiterTimeouts.get();
+  }
+
   private void initPool() {
     synchronized (lock) {
       poolMaintainer.init();
@@ -2988,12 +2993,16 @@ class SessionPool {
     return res;
   }
 
-  private void incrementNumSessionsInUse() {
+  private void incrementNumSessionsInUse(boolean isMultiplexed) {
     synchronized (lock) {
-      if (maxSessionsInUse < ++numSessionsInUse) {
-        maxSessionsInUse = numSessionsInUse;
+      if (!isMultiplexed) {
+        if (maxSessionsInUse < ++numSessionsInUse) {
+          maxSessionsInUse = numSessionsInUse;
+        }
+        numSessionsAcquired++;
+      } else {
+        numMultiplexedSessionsAcquired++;
       }
-      numSessionsAcquired++;
     }
   }
 
@@ -3570,13 +3579,25 @@ class SessionPool {
               measurement.record(this.sessions.size(), attributesAvailableSessions);
             });
 
+    AttributesBuilder attributesBuilderIsMultiplexed;
+    if (attributes != null) {
+      attributesBuilderIsMultiplexed = attributes.toBuilder();
+    } else {
+      attributesBuilderIsMultiplexed = Attributes.builder();
+    }
+    Attributes attributesRegularSession =
+        attributesBuilderIsMultiplexed.put(IS_MULTIPLEXED, false).build();
+    Attributes attributesMultiplexedSession =
+        attributesBuilderIsMultiplexed.put(IS_MULTIPLEXED, true).build();
     meter
         .counterBuilder(GET_SESSION_TIMEOUTS)
         .setDescription(SESSIONS_TIMEOUTS_DESCRIPTION)
         .setUnit(COUNT)
         .buildWithCallback(
             measurement -> {
-              measurement.record(this.getNumWaiterTimeouts(), attributes);
+              measurement.record(this.getNumWaiterTimeouts(), attributesRegularSession);
+              measurement.record(
+                  this.getNumMultiplexedSessionWaiterTimeouts(), attributesMultiplexedSession);
             });
 
     meter
@@ -3585,7 +3606,8 @@ class SessionPool {
         .setUnit(COUNT)
         .buildWithCallback(
             measurement -> {
-              measurement.record(this.numSessionsAcquired, attributes);
+              measurement.record(this.numSessionsAcquired, attributesRegularSession);
+              measurement.record(this.numMultiplexedSessionsAcquired, attributesMultiplexedSession);
             });
 
     meter
@@ -3594,7 +3616,8 @@ class SessionPool {
         .setUnit(COUNT)
         .buildWithCallback(
             measurement -> {
-              measurement.record(this.numSessionsReleased, attributes);
+              measurement.record(this.numSessionsReleased, attributesRegularSession);
+              measurement.record(this.numMultiplexedSessionsReleased, attributesMultiplexedSession);
             });
   }
 }
