@@ -579,8 +579,15 @@ class SessionPool {
     @Override
     public MultiplexedSessionFuture replaceSession(
         SessionNotFoundException e, MultiplexedSessionFuture session) {
-      // TODO arpanmishra add this handling
-      return null;
+      /**
+       * For multiplexed sessions, we would never obtain a {@link SessionNotFoundException}. Hence,
+       * this method will ideally never be invoked.
+       */
+      logger.log(
+          Level.WARNING,
+          String.format(
+              "Replace session invoked for multiplexed " + "session => %s", session.getName()));
+      return session;
     }
   }
 
