@@ -45,7 +45,6 @@ import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -260,9 +259,9 @@ public class ITDatabaseAdminTest {
     OperationFuture<Database, UpdateDatabaseMetadata> op =
         dbAdminClient.updateDatabase(databaseToUpdate);
 
-    ExecutionException e =
-        assertThrows(ExecutionException.class, () -> op.get(5, TimeUnit.MINUTES));
+    SpannerException e = assertThrows(SpannerException.class, () -> op.get(5, TimeUnit.MINUTES));
     assertThat(e.getMessage()).contains("Invalid field mask");
+    assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
   }
 
   @Test
