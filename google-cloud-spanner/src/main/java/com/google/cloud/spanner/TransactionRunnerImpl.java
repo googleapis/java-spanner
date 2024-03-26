@@ -76,6 +76,10 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   private static final String TRANSACTION_ALREADY_COMMITTED_MESSAGE =
       "Transaction has already committed";
 
+  private static final String DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE =
+      "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests. "
+          + "This option should be set at the transaction level.";
+
   @VisibleForTesting
   static class TransactionContextImpl extends AbstractReadContext implements TransactionContext {
 
@@ -727,14 +731,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     private ResultSet internalExecuteUpdate(
-        Statement statement, QueryMode queryMode, UpdateOption... options) {
+        Statement statement, QueryMode queryMode, UpdateOption... updateOptions) {
       beforeReadOrQuery();
+      final Options options = Options.fromUpdateOptions(updateOptions);
+      if (options.withExcludeTxnFromChangeStreams() != null) {
+        throw newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
+      }
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
-              statement,
-              queryMode,
-              Options.fromUpdateOptions(options),
-              /* withTransactionSelector = */ true);
+              statement, queryMode, options, /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
             rpc.executeQuery(builder.build(), session.getOptions(), isRouteToLeader());
@@ -755,14 +761,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
-    public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... options) {
+    public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... updateOptions) {
       beforeReadOrQuery();
+      final Options options = Options.fromUpdateOptions(updateOptions);
+      if (options.withExcludeTxnFromChangeStreams() != null) {
+        throw newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
+      }
       final ExecuteSqlRequest.Builder builder =
           getExecuteSqlRequestBuilder(
-              statement,
-              QueryMode.NORMAL,
-              Options.fromUpdateOptions(options),
-              /* withTransactionSelector = */ true);
+              statement, QueryMode.NORMAL, options, /* withTransactionSelector = */ true);
       final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
       try {
         // Register the update as an async operation that must finish before the transaction may
@@ -834,10 +842,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
-    public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... options) {
+    public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... updateOptions) {
       beforeReadOrQuery();
+      final Options options = Options.fromUpdateOptions(updateOptions);
+      if (options.withExcludeTxnFromChangeStreams() != null) {
+        throw newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
+      }
       final ExecuteBatchDmlRequest.Builder builder =
-          getExecuteBatchDmlRequestBuilder(statements, Options.fromUpdateOptions(options));
+          getExecuteBatchDmlRequestBuilder(statements, options);
       try {
         com.google.spanner.v1.ExecuteBatchDmlResponse response =
             rpc.executeBatchDml(builder.build(), session.getOptions());
@@ -871,10 +884,15 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public ApiFuture<long[]> batchUpdateAsync(
-        Iterable<Statement> statements, UpdateOption... options) {
+        Iterable<Statement> statements, UpdateOption... updateOptions) {
       beforeReadOrQuery();
+      final Options options = Options.fromUpdateOptions(updateOptions);
+      if (options.withExcludeTxnFromChangeStreams() != null) {
+        throw newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
+      }
       final ExecuteBatchDmlRequest.Builder builder =
-          getExecuteBatchDmlRequestBuilder(statements, Options.fromUpdateOptions(options));
+          getExecuteBatchDmlRequestBuilder(statements, options);
       ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
       try {
         // Register the update as an async operation that must finish before the transaction may

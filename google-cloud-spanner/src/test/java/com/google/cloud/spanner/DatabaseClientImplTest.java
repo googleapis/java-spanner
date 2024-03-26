@@ -2041,7 +2041,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testExecuteUpdateWithExcludeTxnFromChangeStreams() {
+  public void testReadWriteTxnWithExcludeTxnFromChangeStreams_executeUpdate() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
@@ -2056,7 +2056,7 @@ public class DatabaseClientImplTest {
   }
 
   @Test
-  public void testBatchUpdateWithExcludeTxnFromChangeStreams() {
+  public void testReadWriteTxnWithExcludeTxnFromChangeStreams_batchUpdate() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
@@ -2173,6 +2173,140 @@ public class DatabaseClientImplTest {
     assertNotNull(beginTransaction.getOptions());
     assertTrue(beginTransaction.getOptions().hasReadWrite());
     assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testExecuteUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.executeUpdate(
+                            UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testExecuteUpdateAsyncWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                get(
+                    runner.runAsync(
+                        txn -> {
+                          txn.executeUpdateAsync(
+                              UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams());
+                          return ApiFutures.immediateFuture(null);
+                        },
+                        executor)));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testAnalyzeUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.analyzeUpdate(
+                            UPDATE_STATEMENT,
+                            QueryAnalyzeMode.PROFILE,
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.analyzeUpdateStatement(
+                            UPDATE_STATEMENT,
+                            QueryAnalyzeMode.PROFILE,
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testBatchUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.batchUpdate(
+                            Collections.singletonList(UPDATE_STATEMENT),
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testBatchUpdateAsyncWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                get(
+                    runner.runAsync(
+                        txn -> {
+                          txn.batchUpdateAsync(
+                              Collections.singletonList(UPDATE_STATEMENT),
+                              Options.excludeTxnFromChangeStreams());
+                          return ApiFutures.immediateFuture(null);
+                        },
+                        executor)));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
   }
 
   @Test
