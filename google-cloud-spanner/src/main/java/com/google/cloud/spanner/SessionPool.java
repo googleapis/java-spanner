@@ -45,6 +45,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.ServerStream;
@@ -586,7 +587,7 @@ class SessionPool {
       logger.log(
           Level.WARNING,
           String.format(
-              "Replace session invoked for multiplexed " + "session => %s", session.getName()));
+              "Replace session invoked for multiplexed session => %s", session.getName()));
       throw e;
     }
   }
@@ -1645,7 +1646,7 @@ class SessionPool {
     private MultiplexedSession getOrNull() {
       try {
         return get();
-      } catch (Throwable t) {
+      } catch (Throwable ignore) {
         // this exception will never be thrown for a multiplexed session since the Future
         // object is already initialised.
         return null;
@@ -1677,12 +1678,14 @@ class SessionPool {
 
     SessionImpl getDelegate();
 
+    @ObsoleteApi("This method can be removed once we fully migrate to multiplexed sessions.")
     void markBusy(ISpan span);
 
     void markUsed();
 
     SpannerException setLastException(SpannerException exception);
 
+    @ObsoleteApi("This method can be removed once we fully migrate to multiplexed sessions.")
     boolean isAllowReplacing();
 
     AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options);
@@ -1985,6 +1988,7 @@ class SessionPool {
 
   class MultiplexedSession implements CachedSession {
     final SessionImpl delegate;
+    private volatile SpannerException lastException;
 
     MultiplexedSession(SessionImpl session) {
       this.delegate = session;
@@ -2005,7 +2009,8 @@ class SessionPool {
 
     @Override
     public void markBusy(ISpan span) {
-      this.delegate.setCurrentSpan(span);
+      // no-op for a multiplexed session since a new span is already created and set in context
+      // for every handler invocation.
     }
 
     @Override
@@ -2016,8 +2021,7 @@ class SessionPool {
 
     @Override
     public SpannerException setLastException(SpannerException exception) {
-      // multiplexed sessions run more than one transaction concurrently. we cannot store the
-      // exception state as that is not applicable to all transactions running on the session.
+      this.lastException = exception;
       return exception;
     }
 
@@ -2135,6 +2139,16 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numMultiplexedSessionsReleased++;
+        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
+          // Mark this session pool as no longer valid and then release the session into the pool as
+          // there is nothing we can do with it anyways.
+          synchronized (lock) {
+            SessionPool.this.resourceNotFoundException =
+                MoreObjects.firstNonNull(
+                    SessionPool.this.resourceNotFoundException,
+                    (ResourceNotFoundException) lastException);
+          }
+        }
       }
     }
 
