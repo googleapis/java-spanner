@@ -279,6 +279,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 labelValues,
                 attributesBuilder.build());
         pool.maybeWaitOnMinSessions();
+        pool.waitOnMultiplexedSession();
         DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
         dbClients.put(db, dbClient);
         return dbClient;
