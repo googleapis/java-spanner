@@ -15965,6 +15965,204 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-statement_tag='';
 NEW_CONNECTION;
+set statement_tag='test_tag';
+NEW_CONNECTION;
+SET STATEMENT_TAG='TEST_TAG';
+NEW_CONNECTION;
+set statement_tag='test_tag';
+NEW_CONNECTION;
+   set statement_tag='test_tag';
+NEW_CONNECTION;
+			set statement_tag='test_tag';
+NEW_CONNECTION;
+
+
+
+set statement_tag='test_tag';
+NEW_CONNECTION;
+set statement_tag='test_tag'  ;
+NEW_CONNECTION;
+set statement_tag='test_tag'		;
+NEW_CONNECTION;
+set statement_tag='test_tag'
+
+;
+NEW_CONNECTION;
+set   statement_tag='test_tag';
+NEW_CONNECTION;
+set	statement_tag='test_tag';
+NEW_CONNECTION;
+set
+statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-statement_tag='test_tag';
+NEW_CONNECTION;
 set autocommit = false;
 set transaction_tag='tag1';
 NEW_CONNECTION;
@@ -16762,6 +16960,272 @@ NEW_CONNECTION;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-transaction_tag='';
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+SET TRANSACTION_TAG='TEST_TAG';
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+   set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+			set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+
+
+
+set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag'  ;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag'		;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag'
+
+;
+NEW_CONNECTION;
+set autocommit = false;
+set   transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set	transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set
+transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag' bar;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'%;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'_;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'&;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'$;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'@;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'!;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'*;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'(;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag');
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'+;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'-#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'\;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'?;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'-/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'/#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'/-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_tag='test_tag';
 NEW_CONNECTION;
 set rpc_priority='HIGH';
 NEW_CONNECTION;
