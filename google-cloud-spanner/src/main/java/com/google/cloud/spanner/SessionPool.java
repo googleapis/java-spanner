@@ -70,7 +70,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
@@ -124,7 +123,6 @@ class SessionPool {
   private final TraceWrapper tracer;
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
   static final String WAIT_FOR_MULTIPLEXED_SESSION = "SessionPool.WaitForMultiplexedSession";
-
 
   /**
    * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
@@ -1180,7 +1178,6 @@ class SessionPool {
     return new PooledSessionFuture(future, span);
   }
 
-
   private MultiplexedSessionFuture createMultiplexedSessionFuture(
       ListenableFuture<MultiplexedSession> future, ISpan span) {
     return new MultiplexedSessionFuture(future, span);
@@ -2002,7 +1999,6 @@ class SessionPool {
   }
 
   class MultiplexedSession implements CachedSession {
-
     final SessionImpl delegate;
     private volatile SpannerException lastException;
 
@@ -2164,6 +2160,7 @@ class SessionPool {
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
     }
   }
+
   private final class MultiplexedSessionWaiterFuture
       extends ForwardingListenableFuture<MultiplexedSession> {
     private final SettableFuture<MultiplexedSession> waiter = SettableFuture.create();
@@ -2189,7 +2186,7 @@ class SessionPool {
           MultiplexedSession s = pollUninterruptedlyWithTimeout(options.getAcquireSessionTimeout());
           if (s == null) {
             // Set the status to DEADLINE_EXCEEDED and retry.
-            numWaiterTimeouts.incrementAndGet();
+            numMultiplexedSessionWaiterTimeouts.incrementAndGet();
             tracer.getCurrentSpan().setStatus(ErrorCode.DEADLINE_EXCEEDED);
           } else {
             return s;
@@ -2197,7 +2194,7 @@ class SessionPool {
         } catch (Exception e) {
           if (e instanceof SpannerException
               && ErrorCode.RESOURCE_EXHAUSTED.equals(((SpannerException) e).getErrorCode())) {
-            numWaiterTimeouts.incrementAndGet();
+            numMultiplexedSessionWaiterTimeouts.incrementAndGet();
             tracer.getCurrentSpan().setStatus(ErrorCode.RESOURCE_EXHAUSTED);
           }
           span.setStatus(e);
@@ -2209,11 +2206,12 @@ class SessionPool {
     }
 
     /**
-     * Method which allows to obtain a multiplexed session after blocking for a configurable duration
-     * {@link SessionPoolOptions#getAcquireSessionTimeout()}. Note that this duration becomes
-     * obsolete in case we have set {@link SessionPoolOptions#getWaitForMultiplexedSession()}. Because
-     * {@link SessionPoolOptions#getWaitForMultiplexedSession()} will ensure that the multiplexed
-     * session is initialized and available during application start up.
+     * Method which allows to obtain a multiplexed session after blocking for a configurable
+     * duration {@link SessionPoolOptions#getAcquireSessionTimeout()}. Note that this duration
+     * becomes obsolete in case we have set {@link
+     * SessionPoolOptions#getWaitForMultiplexedSession()}. Because {@link
+     * SessionPoolOptions#getWaitForMultiplexedSession()} will ensure that the multiplexed session
+     * is initialized and available during application start up.
      */
     private MultiplexedSession pollUninterruptedlyWithTimeout(Duration acquireSessionTimeout) {
       boolean interrupted = false;
@@ -2227,7 +2225,8 @@ class SessionPool {
             if (acquireSessionTimeout != null) {
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.RESOURCE_EXHAUSTED,
-                  String.format("Timed out after waiting %s ms to acquire multiplexed session.",
+                  String.format(
+                      "Timed out after waiting %s ms to acquire multiplexed session.",
                       acquireSessionTimeout.toMillis()));
             }
             return null;
@@ -2422,6 +2421,7 @@ class SessionPool {
         this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
       }
       Instant currTime = clock.instant();
+      maintainMultiplexedSession(currTime);
       removeIdleSessions(currTime);
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
       keepAliveSessions(currTime);
@@ -2590,6 +2590,51 @@ class SessionPool {
         }
       }
     }
+
+    void maintainMultiplexedSession(Instant currentTime) {
+      try {
+        if (options.getUseMultiplexedSession()) {
+          Iterator<MultiplexedSession> iterator = multiplexedSessions.iterator();
+          while (iterator.hasNext()) {
+            final MultiplexedSession session = iterator.next();
+            final Duration durationFromCreationTime =
+                Duration.between(session.getDelegate().getCreateTime(), currentTime);
+            if (durationFromCreationTime.compareTo(
+                        options.getMultiplexedSessionMaintenanceDuration())
+                    > 0
+                && numMultiplexedSessionsBeingCreated == 0) {
+              logger.log(
+                  Level.INFO,
+                  String.format(
+                      "Replacing Multiplexed Session => %s since it's created before maintenance "
+                          + "window => %s days",
+                      session.getName(),
+                      options.getMultiplexedSessionMaintenanceDuration().toDays()));
+              createMultiplexedSessions();
+            }
+
+            // if there is are > 1 multiplexed sessions, this means there are some stale sessions
+            // since a multiplexed session is only created if a previous one is stale.
+            // remove all stale sessions. Note that there may be active transaction which are
+            // running
+            // on the stale sessions, hence we do not issue a DeleteSession RPC.
+            synchronized (lock) {
+              while (multiplexedSessions.size() > 1) {
+                final MultiplexedSession lastSession = multiplexedSessions.pollLast();
+                logger.log(
+                    Level.INFO,
+                    String.format("Removed Multiplexed Session => %s", lastSession.getName()));
+                if (multiplexedSessionRemovedListener != null) {
+                  multiplexedSessionRemovedListener.apply(lastSession);
+                }
+              }
+            }
+          }
+        }
+      } catch (final Throwable t) {
+        logger.log(Level.WARNING, "Failed to maintain multiplexed session", t);
+      }
+    }
   }
 
   enum Position {
@@ -2701,6 +2746,7 @@ class SessionPool {
   private long numLeakedSessionsRemoved = 0;
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
+  private AtomicLong numMultiplexedSessionWaiterTimeouts = new AtomicLong();
 
   @GuardedBy("lock")
   private final Deque<MultiplexedSession> multiplexedSessions;
@@ -2722,6 +2768,7 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
+  @VisibleForTesting Function<MultiplexedSession, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
@@ -2961,6 +3008,10 @@ class SessionPool {
     return numWaiterTimeouts.get();
   }
 
+  long getNumMultiplexedSessionWaiterTimeouts() {
+    return numMultiplexedSessionWaiterTimeouts.get();
+  }
+
   private void initPool() {
     synchronized (lock) {
       poolMaintainer.init();
@@ -3043,18 +3094,18 @@ class SessionPool {
       synchronized (lock) {
         MultiplexedSession session = multiplexedSessions.peek();
         if (session != null) {
-          span.addAnnotation("Acquired multiplexed session", "sessionId",
-              session.getName());
+          span.addAnnotation("Acquired multiplexed session", "sessionId", session.getName());
           incrementNumSessionsInUse(true);
-          return createMultiplexedSessionFuture(Futures.immediateFuture(session), span);
         } else {
           span.addAnnotation("Multiplexed session un-available. Adding to waiter queue.");
           waiter = new MultiplexedSessionWaiterFuture();
           multiplexedSessionWaiters.add(waiter);
         }
+        return checkoutMultiplexedSession(span, session, waiter);
       }
+    } else {
+      return getSession();
     }
-    return getSession();
   }
 
   /**
@@ -3102,6 +3153,26 @@ class SessionPool {
       }
       return checkoutSession(span, sess, waiter);
     }
+  }
+
+  private MultiplexedSessionFuture checkoutMultiplexedSession(
+      final ISpan span,
+      final MultiplexedSession readySession,
+      MultiplexedSessionWaiterFuture waiter) {
+    ListenableFuture<MultiplexedSession> sessionFuture;
+    if (waiter != null) {
+      logger.log(
+          Level.FINE,
+          "No multiplexed session available. Blocking for one to become available/created");
+      span.addAnnotation("Waiting for a multiplexed session to come available");
+      sessionFuture = waiter;
+    } else {
+      SettableFuture<MultiplexedSession> fut = SettableFuture.create();
+      fut.set(readySession);
+      sessionFuture = fut;
+    }
+    MultiplexedSessionFuture res = createMultiplexedSessionFuture(sessionFuture, span);
+    return res;
   }
 
   private PooledSessionFuture checkoutSession(
