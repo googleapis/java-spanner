@@ -175,6 +175,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_MIN_SESSIONS = null;
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
+  static final String DEFAULT_ENDPOINT = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
   private static final String DEFAULT_DATABASE_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
@@ -234,6 +235,8 @@ public class ConnectionOptions {
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
+  /** Name of the 'endpoint' connection property. */
+  public static final String ENDPOINT_PROPERTY_NAME = "endpoint";
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
 
@@ -332,6 +335,12 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       NUM_CHANNELS_PROPERTY_NAME,
                       "The number of gRPC channels to use to communicate with Cloud Spanner. The default is 4."),
+                  ConnectionProperty.createStringProperty(
+                      ENDPOINT_PROPERTY_NAME,
+                      "The endpoint that the JDBC driver should connect to. "
+                          + "The default is the default Spanner production endpoint when autoConfigEmulator=false, "
+                          + "and the default Spanner emulator endpoint (localhost:9010) when autoConfigEmulator=true. "
+                          + "This property takes precedence over any host name at the start of the connection URL."),
                   ConnectionProperty.createStringProperty(
                       CHANNEL_PROVIDER_PROPERTY_NAME,
                       "The name of the channel provider class. The name must reference an implementation of ExternalChannelProvider. If this property is not set, the connection will use the default grpc channel provider."),
@@ -738,7 +747,9 @@ public class ConnectionOptions {
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
-    this.host = determineHost(matcher, autoConfigEmulator, usePlainText, System.getenv());
+    this.host =
+        determineHost(
+            matcher, parseEndpoint(this.uri), autoConfigEmulator, usePlainText, System.getenv());
     this.rpcPriority = parseRPCPriority(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
@@ -829,10 +840,12 @@ public class ConnectionOptions {
   @VisibleForTesting
   static String determineHost(
       Matcher matcher,
+      String endpoint,
       boolean autoConfigEmulator,
       boolean usePlainText,
       Map<String, String> environment) {
-    if (matcher.group(Builder.HOST_GROUP) == null) {
+    String host;
+    if (Objects.equals(endpoint, DEFAULT_ENDPOINT) && matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
         if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
           return DEFAULT_EMULATOR_HOST;
@@ -842,13 +855,18 @@ public class ConnectionOptions {
       } else {
         return DEFAULT_HOST;
       }
+    } else if (!Objects.equals(endpoint, DEFAULT_ENDPOINT)) {
+      // Add '//' at the start of the endpoint to conform to the standard URL specification.
+      host = "//" + endpoint;
     } else {
-      if (usePlainText) {
-        return PLAIN_TEXT_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      } else {
-        return HOST_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      }
+      // The leading '//' is already included in the regex for the connection URL, so we don't need
+      // to add the leading '//' to the host name here.
+      host = matcher.group(Builder.HOST_GROUP);
     }
+    if (usePlainText) {
+      return PLAIN_TEXT_PROTOCOL + host;
+    }
+    return HOST_PROTOCOL + host;
   }
 
   private static Integer parseIntegerProperty(String propertyName, String value) {
@@ -1011,6 +1029,11 @@ public class ConnectionOptions {
   static String parseNumChannels(String uri) {
     String value = parseUriProperty(uri, NUM_CHANNELS_PROPERTY_NAME);
     return value != null ? value : DEFAULT_NUM_CHANNELS;
+  }
+
+  private static String parseEndpoint(String uri) {
+    String value = parseUriProperty(uri, ENDPOINT_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_ENDPOINT;
   }
 
   @VisibleForTesting
