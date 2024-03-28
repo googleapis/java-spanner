@@ -81,7 +81,6 @@ class MetricRegistryConstants {
   static final String SESSIONS_TYPE = "session_type";
   static final String IS_MULTIPLEXED = "is_multiplexed";
 
-
   static final String MAX_IN_USE_SESSIONS_DESCRIPTION =
       "The maximum number of sessions in use during the last 10 minute interval.";
   static final String MAX_ALLOWED_SESSIONS_DESCRIPTION =
