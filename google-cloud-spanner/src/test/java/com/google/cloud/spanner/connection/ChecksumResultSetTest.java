@@ -69,6 +69,8 @@ public class ChecksumResultSetTest {
           .to(Value.json("{\"color\":\"red\",\"value\":\"#ff0\"}"))
           .set("pgJsonbVal")
           .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#00f\"}"))
+          .set("pgOidVal")
+          .to(Value.pgOid(2 * 2))
           .set("protoMessageVal")
           .to(SingerInfo.newBuilder().setSingerId(23).build())
           .set("protoEnumVal")
@@ -114,6 +116,8 @@ public class ChecksumResultSetTest {
           .to(
               Value.pgJsonbArray(
                   Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "[]")))
+          .set("pgOidArray")
+          .to(Value.pgOidArray(Arrays.asList(2L, null, 1L, 0L)))
           .set("protoMessageArray")
           .to(
               Value.protoMessageArray(
@@ -138,6 +142,7 @@ public class ChecksumResultSetTest {
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
+            Type.StructField.of("pgOidVal", Type.pgOid()),
             Type.StructField.of(
                 "protoMessageVal", Type.proto(SingerInfo.getDescriptor().getFullName())),
             Type.StructField.of(
@@ -157,6 +162,7 @@ public class ChecksumResultSetTest {
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
             Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())),
             Type.StructField.of(
                 "protoMessageArray",
                 Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),
@@ -182,6 +188,8 @@ public class ChecksumResultSetTest {
             .to(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}"))
             .set("pgJsonbVal")
             .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#f00\"}"))
+            .set("pgOidVal")
+            .to(Value.pgOid(2))
             .set("protoMessageVal")
             .to(SingerInfo.newBuilder().setSingerId(98).setNationality("C1").build())
             .set("protoEnumVal")
@@ -230,6 +238,8 @@ public class ChecksumResultSetTest {
             .to(
                 Value.pgJsonbArray(
                     Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "{}")))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(Arrays.asList(1L, null, 2L)))
             .set("protoMessageArray")
             .to(
                 Value.protoMessageArray(
@@ -260,6 +270,8 @@ public class ChecksumResultSetTest {
             .to(Value.json(null))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(null))
+            .set("pgOidVal")
+            .to(Value.pgOid(null))
             .set("protoMessageVal")
             .to(Value.protoMessage(null, SingerInfo.getDescriptor().getFullName()))
             .set("protoEnumVal")
@@ -294,6 +306,8 @@ public class ChecksumResultSetTest {
             .toJsonArray(null)
             .set("pgJsonbArray")
             .toPgJsonbArray(null)
+            .set("pgOidArray")
+            .toPgOidArray((Iterable<Long>) null)
             .set("protoMessageArray")
             .to(Value.protoMessageArray(null, SingerInfo.getDescriptor()))
             .set("protoEnumArray")

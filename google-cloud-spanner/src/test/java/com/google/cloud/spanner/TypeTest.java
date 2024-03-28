@@ -181,6 +181,16 @@ public class TypeTest {
   }
 
   @Test
+  public void pgOid() {
+    new ScalarTypeTester(Type.Code.PG_OID, TypeCode.INT64, TypeAnnotationCode.PG_OID) {
+      @Override
+      Type newType() {
+        return Type.pgOid();
+      }
+    }.test();
+  }
+
+  @Test
   public void bytes() {
     new ScalarTypeTester(Type.Code.BYTES, TypeCode.BYTES) {
       @Override

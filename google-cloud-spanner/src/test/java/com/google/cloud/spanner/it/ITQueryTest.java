@@ -286,6 +286,29 @@ public class ITQueryTest {
   }
 
   @Test
+  public void bindPgOid() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      Struct row =
+          execute(
+              Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(1234)),
+              Type.pgOid());
+      assertThat(row.isNull(0)).isFalse();
+      assertThat(row.getLong(0)).isEqualTo(1234);
+    }
+  }
+
+  @Test
+  public void bindPgOidNull() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      Struct row =
+          execute(
+              Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(null)),
+              Type.pgOid());
+      assertThat(row.isNull(0)).isTrue();
+    }
+  }
+
+  @Test
   public void bindFloat64() {
     Struct row = execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0), Type.float64());
     assertThat(row.isNull(0)).isFalse();

@@ -212,6 +212,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected long getPgOidInternal(int columnIndex) {
+      return values.get(columnIndex).getPgOid();
+    }
+
+    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return values.get(columnIndex).getBytes();
     }
@@ -308,6 +313,16 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected long[] getPgOidArrayInternal(int columnIndex) {
+      return Longs.toArray(getPgOidListInternal(columnIndex));
+    }
+
+    @Override
+    protected List<Long> getPgOidListInternal(int columnIndex) {
+      return values.get(columnIndex).getPgOidArray();
+    }
+
+    @Override
     protected List<ByteArray> getBytesListInternal(int columnIndex) {
       return values.get(columnIndex).getBytesArray();
     }
@@ -396,6 +411,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case BOOL:
         return getBooleanInternal(columnIndex);
       case INT64:
+      case PG_OID:
       case ENUM:
         return getLongInternal(columnIndex);
       case FLOAT32:
@@ -426,6 +442,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case BOOL:
             return getBooleanListInternal(columnIndex);
           case INT64:
+          case PG_OID:
           case ENUM:
             return getLongListInternal(columnIndex);
           case FLOAT32:

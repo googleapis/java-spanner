@@ -255,6 +255,20 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code PG_OID} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value pgOid(@Nullable Long v) {
+    return new PgOidImpl(v == null, v == null ? 0 : v);
+  }
+
+  /** Returns an {@code PG_OID} value. */
+  public static Value pgOid(long v) {
+    return new PgOidImpl(false, v);
+  }
+
+  /**
    * Return a {@code PROTO} value for not null proto messages.
    *
    * @param v Not null Proto message.
@@ -588,6 +602,40 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<PG_OID>} value.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   */
+  public static Value pgOidArray(@Nullable long[] v) {
+    return pgOidArray(v, 0, v == null ? 0 : v.length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<PG_OID>} value that takes its elements from a region of an array.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   * @param pos the start position of {@code v} to copy values from. Ignored if {@code v} is {@code
+   *     null}.
+   * @param length the number of values to copy from {@code v}. Ignored if {@code v} is {@code
+   *     null}.
+   */
+  public static Value pgOidArray(@Nullable long[] v, int pos, int length) {
+    return pgOidArrayFactory.create(v, pos, length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<PG_OID>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value pgOidArray(@Nullable Iterable<Long> v) {
+    return pgOidArrayFactory.create(v);
+  }
+
+  /**
    * Returns an {@code ARRAY<PROTO>} value.
    *
    * @param v the source of element values. This may be {@code null} to produce a value for which
@@ -824,6 +872,13 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns the value of a {@code PG_OID}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract long getPgOid();
+
+  /**
    * Returns the value of a {@code PROTO}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -941,6 +996,14 @@ public abstract class Value implements Serializable {
   public List<String> getPgJsonbArray() {
     throw new UnsupportedOperationException("Not implemented");
   }
+
+  /**
+   * Returns the value of an {@code ARRAY<PG_OID>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<Long> getPgOidArray();
 
   /**
    * Returns the value of an {@code ARRAY<PROTO>}-typed instance. While the returned list itself
@@ -1115,6 +1178,25 @@ public abstract class Value implements Serializable {
           return new Int64ArrayImpl(isNull, nulls, values);
         }
       };
+
+  private static final PrimitiveArrayValueFactory<long[], Long> pgOidArrayFactory =
+      new PrimitiveArrayValueFactory<long[], Long>() {
+        @Override
+        long[] newArray(int size) {
+          return new long[size];
+        }
+
+        @Override
+        void set(long[] arr, int i, Long value) {
+          arr[i] = value;
+        }
+
+        @Override
+        Value newValue(boolean isNull, BitSet nulls, long[] values) {
+          return new PgOidArrayImpl(isNull, nulls, values);
+        }
+      };
+
   private static final PrimitiveArrayValueFactory<float[], Float> float32ArrayFactory =
       new PrimitiveArrayValueFactory<float[], Float>() {
         @Override
@@ -1233,6 +1315,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public long getPgOid() {
+      throw defaultGetter(Type.pgOid());
+    }
+
+    @Override
     public ByteArray getBytes() {
       throw defaultGetter(Type.bytes());
     }
@@ -1294,6 +1381,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<String> getPgJsonbArray() {
       throw defaultGetter(Type.array(Type.pgJsonb()));
+    }
+
+    @Override
+    public List<Long> getPgOidArray() {
+      throw defaultGetter(Type.array(Type.pgOid()));
     }
 
     @Override
@@ -1819,6 +1911,41 @@ public abstract class Value implements Serializable {
       } else {
         b.append(value);
       }
+    }
+  }
+
+  private static class PgOidImpl extends AbstractValue {
+    private final long value;
+
+    private PgOidImpl(boolean isNull, long value) {
+      super(isNull, Type.pgOid());
+      this.value = value;
+    }
+
+    @Override
+    public long getPgOid() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder().setStringValue(Long.toString(value)).build();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      return ((PgOidImpl) v).value == value;
+    }
+
+    @Override
+    int valueHash() {
+      return Long.valueOf(value).hashCode();
     }
   }
 
@@ -2457,6 +2584,48 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgOidArrayImpl extends PrimitiveArrayImpl<Long> {
+    private final long[] values;
+
+    private PgOidArrayImpl(boolean isNull, BitSet nulls, long[] values) {
+      super(isNull, Type.pgOid(), nulls);
+      this.values = values;
+    }
+
+    @Override
+    public List<Long> getPgOidArray() {
+      return getArray();
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      PgOidArrayImpl that = (PgOidArrayImpl) v;
+      return Arrays.equals(values, that.values);
+    }
+
+    @Override
+    int size() {
+      return values.length;
+    }
+
+    @Override
+    Long getValue(int i) {
+      return values[i];
+    }
+
+    @Override
+    com.google.protobuf.Value getValueAsProto(int i) {
+      return com.google.protobuf.Value.newBuilder()
+          .setStringValue(Long.toString(values[i]))
+          .build();
+    }
+
+    @Override
+    int arrayHash() {
+      return Arrays.hashCode(values);
+    }
+  }
+
   private static class LazyBytesArrayImpl extends AbstractArrayValue<LazyByteArray> {
     private transient AbstractLazyInitializer<List<ByteArray>> bytesArray = defaultInitializer();
 
@@ -2790,6 +2959,8 @@ public abstract class Value implements Serializable {
           return Value.numeric(value.getBigDecimal(fieldIndex));
         case PG_NUMERIC:
           return Value.pgNumeric(value.getString(fieldIndex));
+        case PG_OID:
+          return Value.pgOid(value.getLong(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
@@ -2815,6 +2986,8 @@ public abstract class Value implements Serializable {
                 return Value.jsonArray(value.getJsonList(fieldIndex));
               case PG_JSONB:
                 return Value.pgJsonbArray(value.getPgJsonbList(fieldIndex));
+              case PG_OID:
+                return Value.pgOidArray(value.getLongList(fieldIndex));
               case BYTES:
               case PROTO:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
