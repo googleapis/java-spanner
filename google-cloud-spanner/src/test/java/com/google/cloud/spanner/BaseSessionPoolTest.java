@@ -29,6 +29,7 @@ import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.protobuf.Empty;
+import com.google.protobuf.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -92,6 +93,44 @@ abstract class BaseSessionPoolTest {
         new SessionImpl(
             spanner,
             "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+            options) {
+          @Override
+          public ReadContext singleUse(TimestampBound bound) {
+            // The below stubs are added so that we can mock keep-alive.
+            return context;
+          }
+
+          @Override
+          public ApiFuture<Empty> asyncClose() {
+            return ApiFutures.immediateFuture(Empty.getDefaultInstance());
+          }
+
+          @Override
+          public CommitResponse writeAtLeastOnceWithOptions(
+              Iterable<Mutation> mutations, TransactionOption... transactionOptions)
+              throws SpannerException {
+            return new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance());
+          }
+
+          @Override
+          public CommitResponse writeWithOptions(
+              Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+            return new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance());
+          }
+        };
+    sessionIndex++;
+    return session;
+  }
+
+  SessionImpl buildMockMultiplexedSession(ReadContext context, Timestamp creationTime) {
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    Map options = new HashMap<>();
+    final SessionImpl session =
+        new SessionImpl(
+            spanner,
+            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+            creationTime,
+            true,
             options) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
