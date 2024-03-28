@@ -52,6 +52,11 @@ class DatabaseClientImpl implements DatabaseClient {
     return pool.getSession();
   }
 
+  @VisibleForTesting
+  Session getMultiplexedSession() {
+    return pool.getMultiplexedSessionWithFallback();
+  }
+
   @Override
   public Dialect getDialect() {
     return pool.getDialect();
@@ -123,7 +128,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadContext singleUse() {
     ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().singleUse();
+      return getMultiplexedSession().singleUse();
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -135,7 +140,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadContext singleUse(TimestampBound bound) {
     ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().singleUse(bound);
+      return getMultiplexedSession().singleUse(bound);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -147,7 +152,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction singleUseReadOnlyTransaction() {
     ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().singleUseReadOnlyTransaction();
+      return getMultiplexedSession().singleUseReadOnlyTransaction();
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -159,7 +164,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
     ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().singleUseReadOnlyTransaction(bound);
+      return getMultiplexedSession().singleUseReadOnlyTransaction(bound);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -171,7 +176,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction readOnlyTransaction() {
     ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().readOnlyTransaction();
+      return getMultiplexedSession().readOnlyTransaction();
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
@@ -183,7 +188,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
     ISpan span = tracer.spanBuilder(READ_ONLY_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().readOnlyTransaction(bound);
+      return getMultiplexedSession().readOnlyTransaction(bound);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();

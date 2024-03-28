@@ -215,8 +215,7 @@ class SessionClient implements AutoCloseable {
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
                   options);
-      return new SessionImpl(
-          spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
+      return new SessionImpl(spanner, session.getName(), options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;

@@ -76,9 +76,9 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     PooledSessionFuture getSession() {
       PooledSessionFuture session = super.getSession();
       if (invalidateNextSession) {
-        session.get().delegate.close();
+        session.get().getDelegate().close();
         session.get().setAllowReplacing(false);
-        awaitDeleted(session.get().delegate);
+        awaitDeleted(session.get().getDelegate());
         session.get().setAllowReplacing(allowReplacing);
         invalidateNextSession = false;
       }

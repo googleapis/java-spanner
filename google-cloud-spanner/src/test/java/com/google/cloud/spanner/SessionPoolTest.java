@@ -62,6 +62,7 @@ import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPool.CachedSession;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -132,6 +133,7 @@ import org.threeten.bp.temporal.ChronoUnit;
 /** Tests for SessionPool that mock out the underlying stub. */
 @RunWith(Parameterized.class)
 public class SessionPoolTest extends BaseSessionPoolTest {
+
   private static Level originalLogLevel;
 
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -810,9 +812,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     PooledSessionFuture readSession3 = pool.getSession();
 
     // complete the async tasks
-    readSession1.get().setEligibleForLongRunning(false);
-    readSession2.get().setEligibleForLongRunning(false);
-    readSession3.get().setEligibleForLongRunning(true);
+    ((PooledSession) readSession1.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession2.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession3.get()).setEligibleForLongRunning(true);
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
@@ -854,9 +856,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     PooledSessionFuture readSession3 = pool.getSession();
 
     // complete the async tasks
-    readSession1.get().setEligibleForLongRunning(false);
-    readSession2.get().setEligibleForLongRunning(false);
-    readSession3.get().setEligibleForLongRunning(true);
+    ((PooledSession) readSession1.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession2.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession3.get()).setEligibleForLongRunning(true);
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
@@ -901,8 +903,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     PooledSessionFuture readSession2 = pool.getSession();
 
     // complete the async tasks and mark sessions as checked out
-    readSession1.get().setEligibleForLongRunning(false);
-    readSession2.get().setEligibleForLongRunning(false);
+    ((PooledSession) readSession1.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession2.get()).setEligibleForLongRunning(false);
 
     assertEquals(2, pool.totalSessions());
     assertEquals(2, pool.checkedOutSessions.size());
@@ -966,9 +968,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     PooledSessionFuture readSession3 = pool.getSession();
 
     // complete the async tasks
-    readSession1.get().setEligibleForLongRunning(true);
-    readSession2.get().setEligibleForLongRunning(true);
-    readSession3.get().setEligibleForLongRunning(true);
+    ((PooledSession) readSession1.get()).setEligibleForLongRunning(true);
+    ((PooledSession) readSession2.get()).setEligibleForLongRunning(true);
+    ((PooledSession) readSession3.get()).setEligibleForLongRunning(true);
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
@@ -1010,9 +1012,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     PooledSessionFuture readSession3 = pool.getSession();
 
     // complete the async tasks
-    readSession1.get().setEligibleForLongRunning(false);
-    readSession2.get().setEligibleForLongRunning(false);
-    readSession3.get().setEligibleForLongRunning(true);
+    ((PooledSession) readSession1.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession2.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession3.get()).setEligibleForLongRunning(true);
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
@@ -1053,9 +1055,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     PooledSessionFuture readSession3 = pool.getSession();
 
     // complete the async tasks
-    readSession1.get().setEligibleForLongRunning(false);
-    readSession2.get().setEligibleForLongRunning(false);
-    readSession3.get().setEligibleForLongRunning(true);
+    ((PooledSession) readSession1.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession2.get()).setEligibleForLongRunning(false);
+    ((PooledSession) readSession3.get()).setEligibleForLongRunning(true);
 
     assertEquals(3, pool.totalSessions());
     assertEquals(3, pool.checkedOutSessions.size());
@@ -2110,7 +2112,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     new Thread(
             () -> {
               try (PooledSessionFuture future = pool.getSession()) {
-                PooledSession session = future.get();
+                CachedSession session = future.get();
                 failed.compareAndSet(false, session == null);
                 Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
               } catch (Throwable e) {

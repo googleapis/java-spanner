@@ -463,15 +463,18 @@ class SessionImpl implements Session {
   }
 
   <T extends SessionTransaction> T setActive(@Nullable T ctx) {
-    throwIfTransactionsPending();
+    // TODO arpanmishra what about next transactions support
+    if (!isMultiplexed) {
+      throwIfTransactionsPending();
 
-    if (activeTransaction != null) {
-      activeTransaction.invalidate();
-    }
-    activeTransaction = ctx;
-    readyTransactionId = null;
-    if (activeTransaction != null) {
-      activeTransaction.setSpan(currentSpan);
+      if (activeTransaction != null) {
+        activeTransaction.invalidate();
+      }
+      activeTransaction = ctx;
+      readyTransactionId = null;
+      if (activeTransaction != null) {
+        activeTransaction.setSpan(currentSpan);
+      }
     }
     return ctx;
   }

@@ -79,6 +79,7 @@ class MetricRegistryConstants {
   static final String NUM_SESSIONS_IN_USE = "spanner/num_in_use_sessions";
   static final String NUM_SESSIONS_AVAILABLE = "spanner/num_available_sessions";
   static final String SESSIONS_TYPE = "session_type";
+  static final String IS_MULTIPLEXED = "is_multiplexed";
 
   static final String MAX_IN_USE_SESSIONS_DESCRIPTION =
       "The maximum number of sessions in use during the last 10 minute interval.";

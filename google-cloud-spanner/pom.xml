@@ -257,6 +257,26 @@
       <artifactId>opentelemetry-context</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.cloud.opentelemetry</groupId>
+      <artifactId>exporter-trace</artifactId>
+      <version>0.25.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud.opentelemetry</groupId>
+      <artifactId>exporter-metrics</artifactId>
+      <version>0.25.2</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opencensus</groupId>
+      <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
+      <version>0.31.1</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opencensus</groupId>
+      <artifactId>opencensus-exporter-trace-stackdriver</artifactId>
+      <version>0.31.1</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.auth</groupId>
       <artifactId>google-auth-library-oauth2-http</artifactId>
     </dependency>
@@ -439,6 +459,11 @@
       <artifactId>opentelemetry-sdk-testing</artifactId>
       <version>${opentelemetry.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.re2j</groupId>
+      <artifactId>re2j</artifactId>
+      <version>1.7</version>
     </dependency>
   </dependencies>
   <profiles>
