@@ -107,8 +107,10 @@ public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
       SdkTracerProvider tracerProvider =
           SdkTracerProvider.builder()
               .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
-              .setResource(Resource.create(
-                  Attributes.of(ResourceAttributes.SERVICE_NAME, "Java-MultiplexedSession-Benchmark")))
+              .setResource(
+                  Resource.create(
+                      Attributes.of(
+                          ResourceAttributes.SERVICE_NAME, "Java-MultiplexedSession-Benchmark")))
               .setSampler(Sampler.alwaysOn())
               .build();
       MetricExporter cloudMonitoringExporter =
@@ -118,8 +120,10 @@ public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
               .registerMetricReader(PeriodicMetricReader.create(cloudMonitoringExporter))
               .build();
       OpenTelemetry openTelemetry =
-          OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider)
-              .setTracerProvider(tracerProvider).build();
+          OpenTelemetrySdk.builder()
+              .setMeterProvider(sdkMeterProvider)
+              .setTracerProvider(tracerProvider)
+              .build();
       SpannerOptions.enableOpenTelemetryMetrics();
       SpannerOptions.enableOpenTelemetryTraces();
       SpannerOptions options =

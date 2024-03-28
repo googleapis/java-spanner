@@ -16,8 +16,6 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -26,7 +24,6 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
-import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
@@ -131,7 +128,7 @@ public class ITMultiplexedSessionsTest {
     for (int i = 0; i < 10; i++) {
       listenableFutures.add(service.submit(() -> runBenchmarksForQueries()));
     }
-    for(ListenableFuture<Struct> listenableFuture:listenableFutures) {
+    for (ListenableFuture<Struct> listenableFuture : listenableFutures) {
       Struct row = listenableFuture.get();
       assertThat(row).isNotNull();
       assertThat(row.getString(0)).isEqualTo("k1");

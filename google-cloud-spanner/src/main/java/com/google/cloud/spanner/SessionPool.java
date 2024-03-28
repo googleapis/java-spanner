@@ -125,12 +125,11 @@ class SessionPool {
   static final String WAIT_FOR_SESSION = "SessionPool.WaitForSession";
   static final String WAIT_FOR_MULTIPLEXED_SESSION = "SessionPool.WaitForMultiplexedSession";
 
-
   /**
    * If the {@link SessionPoolOptions#getWaitForMinSessions()} duration is greater than zero, waits
    * for the creation of at least {@link SessionPoolOptions#getMinSessions()} in the pool using the
-   * given duration. If the waiting times out, a {@link SpannerException} with the
-   * {@link ErrorCode#DEADLINE_EXCEEDED} is thrown.
+   * given duration. If the waiting times out, a {@link SpannerException} with the {@link
+   * ErrorCode#DEADLINE_EXCEEDED} is thrown.
    */
   void maybeWaitOnMinSessions() {
     final long timeoutNanos = options.getWaitForMinSessions().toNanos();
@@ -693,10 +692,10 @@ class SessionPool {
   }
 
   /**
-   * {@link TransactionContext} that is used in combination with an
-   * {@link AutoClosingTransactionManager}. This {@link TransactionContext} handles
-   * {@link SessionNotFoundException}s by replacing the underlying session with a fresh one, and
-   * then throws an {@link AbortedException} to trigger the retry-loop that has been created by the
+   * {@link TransactionContext} that is used in combination with an {@link
+   * AutoClosingTransactionManager}. This {@link TransactionContext} handles {@link
+   * SessionNotFoundException}s by replacing the underlying session with a fresh one, and then
+   * throws an {@link AbortedException} to trigger the retry-loop that has been created by the
    * caller.
    */
   static class SessionPoolTransactionContext implements TransactionContext {
@@ -1193,7 +1192,6 @@ class SessionPool {
     return new PooledSessionFuture(future, span);
   }
 
-
   private MultiplexedSessionFuture createMultiplexedSessionFuture(
       ListenableFuture<MultiplexedSession> future, ISpan span) {
     return new MultiplexedSessionFuture(future, span);
@@ -1202,18 +1200,16 @@ class SessionPool {
   interface SessionFuture extends Session {
 
     /**
-     * We need to do this because every implementation of {@link SessionFuture} today extends
-     * {@link SimpleForwardingListenableFuture}. The get() method in parent
-     * {@link java.util.concurrent.Future} classes specifies checked exceptions in method
-     * signature.
+     * We need to do this because every implementation of {@link SessionFuture} today extends {@link
+     * SimpleForwardingListenableFuture}. The get() method in parent {@link
+     * java.util.concurrent.Future} classes specifies checked exceptions in method signature.
      *
      * <p>This method is a workaround we don't have to handle checked exceptions specified by other
      * interfaces.
      */
     CachedSession get();
 
-    default void addListener(Runnable listener, Executor exec) {
-    }
+    default void addListener(Runnable listener, Executor exec) {}
   }
 
   class PooledSessionFuture extends SimpleForwardingListenableFuture<PooledSession>
@@ -1742,8 +1738,7 @@ class SessionPool {
 
   class PooledSession implements CachedSession {
 
-    @VisibleForTesting
-    SessionImpl delegate;
+    @VisibleForTesting SessionImpl delegate;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
 
@@ -2252,10 +2247,10 @@ class SessionPool {
     /**
      * Method which allows to obtain a multiplexed session after blocking for a configurable
      * duration {@link SessionPoolOptions#getAcquireSessionTimeout()}. Note that this duration
-     * becomes obsolete in case we have set
-     * {@link SessionPoolOptions#getWaitForMultiplexedSession()}. Because
-     * {@link SessionPoolOptions#getWaitForMultiplexedSession()} will ensure that the multiplexed
-     * session is initialized and available during application start up.
+     * becomes obsolete in case we have set {@link
+     * SessionPoolOptions#getWaitForMultiplexedSession()}. Because {@link
+     * SessionPoolOptions#getWaitForMultiplexedSession()} will ensure that the multiplexed session
+     * is initialized and available during application start up.
      */
     private MultiplexedSession pollUninterruptedlyWithTimeout(Duration acquireSessionTimeout) {
       boolean interrupted = false;
@@ -2269,7 +2264,8 @@ class SessionPool {
             if (acquireSessionTimeout != null) {
               throw SpannerExceptionFactory.newSpannerException(
                   ErrorCode.RESOURCE_EXHAUSTED,
-                  String.format("Timed out after waiting %s ms to acquire multiplexed session.",
+                  String.format(
+                      "Timed out after waiting %s ms to acquire multiplexed session.",
                       acquireSessionTimeout.toMillis()));
             }
             return null;
@@ -2388,16 +2384,13 @@ class SessionPool {
     // sessions in use.
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
     // Frequency of the timer loop.
-    @VisibleForTesting
-    final long loopFrequency = options.getLoopFrequency();
+    @VisibleForTesting final long loopFrequency = options.getLoopFrequency();
     // Number of loop iterations in which we need to close all the sessions waiting for closure.
-    @VisibleForTesting
-    final long numClosureCycles = windowLength.toMillis() / loopFrequency;
+    @VisibleForTesting final long numClosureCycles = windowLength.toMillis() / loopFrequency;
     private final Duration keepAliveMillis =
         Duration.ofMillis(TimeUnit.MINUTES.toMillis(options.getKeepAliveIntervalMinutes()));
     // Number of loop iterations in which we need to keep alive all the sessions
-    @VisibleForTesting
-    final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
+    @VisibleForTesting final long numKeepAliveCycles = keepAliveMillis.toMillis() / loopFrequency;
 
     /**
      * Variable maintaining the last execution time of the long-running transaction cleanup task.
@@ -2408,8 +2401,7 @@ class SessionPool {
      * every 2 minutes, then we need to keep a track of when was the last time that this task
      * executed and makes sure we only execute it every 2 minutes and not every 10 seconds.
      */
-    @VisibleForTesting
-    Instant lastExecutionTime;
+    @VisibleForTesting Instant lastExecutionTime;
 
     /**
      * The previous numSessionsAcquired seen by the maintainer. This is used to calculate the
@@ -2520,8 +2512,8 @@ class SessionPool {
             (long)
                 Math.ceil(
                     (double)
-                        ((options.getMinSessions() + options.getMaxIdleSessions())
-                            - numSessionsInUse)
+                            ((options.getMinSessions() + options.getMaxIdleSessions())
+                                - numSessionsInUse)
                         / numKeepAliveCycles);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
@@ -2598,8 +2590,8 @@ class SessionPool {
                 Duration.between(session.getDelegate().getLastUseTime(), currentTime);
             if (!session.eligibleForLongRunning
                 && durationFromLastUse.compareTo(
-                inactiveTransactionRemovalOptions.getIdleTimeThreshold())
-                > 0) {
+                        inactiveTransactionRemovalOptions.getIdleTimeThreshold())
+                    > 0) {
               if ((options.warnInactiveTransactions() || options.warnAndCloseInactiveTransactions())
                   && !session.isLeakedExceptionLogged) {
                 if (options.warnAndCloseInactiveTransactions()) {
@@ -2621,7 +2613,7 @@ class SessionPool {
                 }
               }
               if ((options.closeInactiveTransactions()
-                  || options.warnAndCloseInactiveTransactions())
+                      || options.warnAndCloseInactiveTransactions())
                   && session.state != SessionState.CLOSING) {
                 final boolean isRemoved = removeFromPool(session);
                 if (isRemoved) {
@@ -2648,13 +2640,15 @@ class SessionPool {
             final Duration durationFromCreationTime =
                 Duration.between(session.getDelegate().getCreateTime(), currentTime);
             if (durationFromCreationTime.compareTo(
-                options.getMultiplexedSessionMaintenanceDuration())
-                > 0 && numMultiplexedSessionsBeingCreated == 0) {
+                        options.getMultiplexedSessionMaintenanceDuration())
+                    > 0
+                && numMultiplexedSessionsBeingCreated == 0) {
               logger.log(
                   Level.INFO,
                   String.format(
                       "Replacing Multiplexed Session => %s since it's created before maintenance "
-                          + "window => %s days", session.getName(),
+                          + "window => %s days",
+                      session.getName(),
                       options.getMultiplexedSessionMaintenanceDuration().toDays()));
               createMultiplexedSessions();
             }
@@ -2806,13 +2800,10 @@ class SessionPool {
   private final MultiplexedSessionConsumer multiplexedSessionConsumer =
       new MultiplexedSessionConsumer();
 
-  @VisibleForTesting
-  Function<PooledSession, Void> idleSessionRemovedListener;
+  @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
-  @VisibleForTesting
-  Function<PooledSession, Void> longRunningSessionRemovedListener;
-  @VisibleForTesting
-  Function<MultiplexedSession, Void> multiplexedSessionRemovedListener;
+  @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
+  @VisibleForTesting Function<MultiplexedSession, Void> multiplexedSessionRemovedListener;
 
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
@@ -2954,10 +2945,9 @@ class SessionPool {
    *     dialect is available. It will potentially execute one or two RPCs to get the dialect if
    *     necessary: One to create a session if there are no sessions in the pool (yet), and one to
    *     query the database for the dialect that is used. It is recommended that clients that always
-   *     need to know the dialect set
-   *     {@link SessionPoolOptions.Builder#setAutoDetectDialect(boolean)} to true. This will ensure
-   *     that the dialect is fetched automatically in a background task when a session pool is
-   *     created.
+   *     need to know the dialect set {@link
+   *     SessionPoolOptions.Builder#setAutoDetectDialect(boolean)} to true. This will ensure that
+   *     the dialect is fetched automatically in a background task when a session pool is created.
    */
   Dialect getDialect() {
     boolean mustDetectDialect = false;
@@ -3106,7 +3096,7 @@ class SessionPool {
     Iterator<PooledSession> iterator = queue.iterator();
     while (iterator.hasNext()
         && (numChecked + numAlreadyChecked)
-        < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
+            < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
       if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
         iterator.remove();
@@ -3117,9 +3107,7 @@ class SessionPool {
     return null;
   }
 
-  /**
-   * @return true if this {@link SessionPool} is still valid.
-   */
+  /** @return true if this {@link SessionPool} is still valid. */
   boolean isValid() {
     synchronized (lock) {
       return closureFuture == null && resourceNotFoundException == null;
@@ -3138,8 +3126,7 @@ class SessionPool {
       synchronized (lock) {
         MultiplexedSession session = multiplexedSessions.peek();
         if (session != null) {
-          span.addAnnotation("Acquired multiplexed session", "sessionId",
-              session.getName());
+          span.addAnnotation("Acquired multiplexed session", "sessionId", session.getName());
           incrementNumSessionsInUse(true);
           return createMultiplexedSessionFuture(Futures.immediateFuture(session), span);
         } else {
@@ -3154,9 +3141,9 @@ class SessionPool {
 
   /**
    * Returns a session to be used for requests to spanner. This method is always non-blocking and
-   * returns a {@link PooledSessionFuture}. In case the pool is exhausted and
-   * {@link SessionPoolOptions#isFailIfPoolExhausted()} has been set, it will throw an exception.
-   * Returned session must be closed by calling {@link Session#close()}.
+   * returns a {@link PooledSessionFuture}. In case the pool is exhausted and {@link
+   * SessionPoolOptions#isFailIfPoolExhausted()} has been set, it will throw an exception. Returned
+   * session must be closed by calling {@link Session#close()}.
    *
    * <p>Implementation strategy:
    *
@@ -3255,16 +3242,12 @@ class SessionPool {
     releaseSession(sessionWithPosition.x(), false, sessionWithPosition.y());
   }
 
-  /**
-   * Releases a session back to the pool. This might cause one of the waiters to be unblocked.
-   */
+  /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
   private void releaseSession(PooledSession session, boolean isNewSession) {
     releaseSession(session, isNewSession, null);
   }
 
-  /**
-   * Releases a session back to the pool. This might cause one of the waiters to be unblocked.
-   */
+  /** Releases a session back to the pool. This might cause one of the waiters to be unblocked. */
   private void releaseSession(
       PooledSession session, boolean isNewSession, @Nullable Integer position) {
     Preconditions.checkNotNull(session);
@@ -3359,8 +3342,8 @@ class SessionPool {
    *       </ol>
    * </ol>
    *
-   * @param channelOfSessionBeingAdded the channel number being used by the session that is
-   *     about to be released into the pool
+   * @param channelOfSessionBeingAdded the channel number being used by the session that is about to
+   *     be released into the pool
    * @param sessions the list of all sessions in the pool
    * @param checkedOutSessions the currently checked out sessions of the pool
    * @param numChannels the number of channels in use
@@ -3641,9 +3624,7 @@ class SessionPool {
    */
   class SessionConsumerImpl implements SessionConsumer {
 
-    /**
-     * Release a new session to the pool.
-     */
+    /** Release a new session to the pool. */
     @Override
     public void onSessionReady(SessionImpl session) {
       PooledSession pooledSession = null;
