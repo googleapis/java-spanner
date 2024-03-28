@@ -63,7 +63,7 @@ import org.openjdk.jmh.annotations.Warmup;
 /**
  * Benchmarks for measuring existing latencies of various APIs using the Java Client. The benchmarks
  * are bound to the Maven profile `benchmark` and can be executed like this: <code>
- *   mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=DefaultBenchmark
+ *   mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=MultiplexedSessionsBenchmark
  * </code> Test Table Schema :
  *
  * <p>CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, ) PRIMARY KEY(id);
@@ -81,7 +81,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 0)
-public class DefaultBenchmark extends AbstractLatencyBenchmark {
+public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
 
   @State(Scope.Thread)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
@@ -108,7 +108,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
           SdkTracerProvider.builder()
               .addSpanProcessor(BatchSpanProcessor.builder(traceExporter).build())
               .setResource(Resource.create(
-                  Attributes.of(ResourceAttributes.SERVICE_NAME, "Java-Default-Benchmark")))
+                  Attributes.of(ResourceAttributes.SERVICE_NAME, "Java-MultiplexedSession-Benchmark")))
               .setSampler(Sampler.alwaysOn())
               .build();
       MetricExporter cloudMonitoringExporter =
@@ -130,6 +130,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
                       .setMinSessions(minSessions)
                       .setMaxSessions(maxSessions)
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20))
+                      .setUseMultiplexedSession(true)
                       .build())
               .setHost(SERVER_URL)
               .build();
@@ -193,38 +194,9 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     return watch.elapsed();
   }
 
-  private List<java.time.Duration> runBenchmarkForUpdates(
-      final BenchmarkState server, int numberOfOperations) {
-    List<Duration> results = new ArrayList<>(numberOfOperations);
-    // Execute one query to make sure everything has been warmed up.
-    executeWarmup(server);
-
-    // Execute one update to make sure everything has been warmed up.
-    executeUpdate(server);
-
-    for (int i = 0; i < numberOfOperations; i++) {
-      results.add(executeUpdate(server));
-    }
-    return results;
-  }
-
-  private Duration executeUpdate(final BenchmarkState server) {
-    Stopwatch watch = Stopwatch.createStarted();
-
-    TransactionRunner runner = server.client.readWriteTransaction();
-    runner.run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
-
-    return watch.elapsed();
-  }
-
   static Statement getRandomisedReadStatement() {
     int randomKey = ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
     return Statement.newBuilder(SELECT_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
-  }
-
-  static Statement getRandomisedUpdateStatement() {
-    int randomKey = ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
-    return Statement.newBuilder(UPDATE_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
   }
 
   void collectResultsAndPrint(
