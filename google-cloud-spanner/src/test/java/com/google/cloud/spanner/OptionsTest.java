@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -100,6 +101,7 @@ public class OptionsTest {
     assertThat(options.hasTag()).isFalse();
     assertThat(options.hasDataBoostEnabled()).isFalse();
     assertThat(options.hasDirectedReadOptions()).isFalse();
+    assertNull(options.withExcludeTxnFromChangeStreams());
     assertThat(options.toString()).isEqualTo("");
     assertThat(options.equals(options)).isTrue();
     assertThat(options.equals(null)).isFalse();
@@ -690,5 +692,41 @@ public class OptionsTest {
   @Test
   public void directedReadsNullNotAllowed() {
     assertThrows(NullPointerException.class, () -> Options.directedRead(null));
+  }
+
+  @Test
+  public void transactionOptionsExcludeTxnFromChangeStreams() {
+    Options option1 = Options.fromTransactionOptions(Options.excludeTxnFromChangeStreams());
+    Options option2 = Options.fromTransactionOptions(Options.excludeTxnFromChangeStreams());
+    Options option3 = Options.fromTransactionOptions();
+
+    assertEquals(option1, option2);
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertTrue(option1.withExcludeTxnFromChangeStreams());
+    assertThat(option1.toString()).contains("withExcludeTxnFromChangeStreams: true");
+
+    assertNull(option3.withExcludeTxnFromChangeStreams());
+    assertThat(option3.toString()).doesNotContain("withExcludeTxnFromChangeStreams: true");
+  }
+
+  @Test
+  public void updateOptionsExcludeTxnFromChangeStreams() {
+    Options option1 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
+    Options option2 = Options.fromUpdateOptions(Options.excludeTxnFromChangeStreams());
+    Options option3 = Options.fromUpdateOptions();
+
+    assertEquals(option1, option2);
+    assertEquals(option1.hashCode(), option2.hashCode());
+    assertNotEquals(option1, option3);
+    assertNotEquals(option1.hashCode(), option3.hashCode());
+
+    assertTrue(option1.withExcludeTxnFromChangeStreams());
+    assertThat(option1.toString()).contains("withExcludeTxnFromChangeStreams: true");
+
+    assertNull(option3.withExcludeTxnFromChangeStreams());
+    assertThat(option3.toString()).doesNotContain("withExcludeTxnFromChangeStreams: true");
   }
 }

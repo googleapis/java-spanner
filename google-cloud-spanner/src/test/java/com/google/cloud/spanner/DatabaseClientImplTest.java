@@ -75,6 +75,7 @@ import com.google.protobuf.NullValue;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.BatchWriteRequest;
 import com.google.spanner.v1.BatchWriteResponse;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.DirectedReadOptions;
@@ -1334,6 +1335,14 @@ public class DatabaseClientImplTest {
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
     CommitRequest commit = commitRequests.get(0);
@@ -1388,6 +1397,14 @@ public class DatabaseClientImplTest {
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.HIGH));
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commits).hasSize(1);
     CommitRequest commit = commits.get(0);
@@ -1410,6 +1427,24 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testWriteWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeWithOptions(
+        Collections.singletonList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.excludeTxnFromChangeStreams());
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
   public void testWriteAtLeastOnce() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -1418,6 +1453,15 @@ public class DatabaseClientImplTest {
             Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
+    assertNotNull(commit.getRequestOptions());
+    assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1438,6 +1482,7 @@ public class DatabaseClientImplTest {
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
   }
@@ -1456,6 +1501,7 @@ public class DatabaseClientImplTest {
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_LOW, commit.getRequestOptions().getPriority());
   }
@@ -1474,9 +1520,27 @@ public class DatabaseClientImplTest {
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
     assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+  }
+
+  @Test
+  public void testWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeAtLeastOnceWithOptions(
+        Collections.singletonList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.excludeTxnFromChangeStreams());
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertTrue(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1500,6 +1564,7 @@ public class DatabaseClientImplTest {
     BatchWriteRequest request = requests.get(0);
     assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
+    assertFalse(request.getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1514,6 +1579,7 @@ public class DatabaseClientImplTest {
     BatchWriteRequest request = requests.get(0);
     assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_LOW);
+    assertFalse(request.getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1529,6 +1595,21 @@ public class DatabaseClientImplTest {
     assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getTransactionTag(), "app=spanner,env=test");
     assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertFalse(request.getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    consumeBatchWriteStream(
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.excludeTxnFromChangeStreams()));
+
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertTrue(request.getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1782,6 +1863,9 @@ public class DatabaseClientImplTest {
     assertThat(request.getRequestOptions().getRequestTag())
         .isEqualTo("app=spanner,env=test,action=update");
     assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1805,6 +1889,9 @@ public class DatabaseClientImplTest {
         .isEqualTo("app=spanner,env=test,action=batch");
     assertThat(request.getRequestOptions().getTransactionTag())
         .isEqualTo("app=spanner,env=test,action=txn");
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1813,6 +1900,14 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.executePartitionedUpdate(
         UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=dml"));
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasPartitionedDml());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
@@ -1835,6 +1930,14 @@ public class DatabaseClientImplTest {
           return null;
         });
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
@@ -1854,6 +1957,14 @@ public class DatabaseClientImplTest {
       transaction.buffer(Mutation.delete("TEST", KeySet.all()));
       manager.commit();
     }
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -1876,6 +1987,14 @@ public class DatabaseClientImplTest {
               return ApiFutures.immediateFuture(null);
             },
             executor));
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -1904,6 +2023,14 @@ public class DatabaseClientImplTest {
               .commitAsync());
     }
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
@@ -1911,6 +2038,275 @@ public class DatabaseClientImplTest {
     assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
     assertThat(request.getRequestOptions().getTransactionTag())
         .isEqualTo("app=spanner,env=test,action=manager");
+  }
+
+  @Test
+  public void testReadWriteTxnWithExcludeTxnFromChangeStreams_executeUpdate() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
+    runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertTrue(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testReadWriteTxnWithExcludeTxnFromChangeStreams_batchUpdate() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
+    runner.run(transaction -> transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT)));
+
+    List<ExecuteBatchDmlRequest> requests =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteBatchDmlRequest request = requests.get(0);
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertTrue(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testPartitionedDMLWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.executePartitionedUpdate(UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams());
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasPartitionedDml());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (TransactionManager manager =
+        client.transactionManager(Options.excludeTxnFromChangeStreams())) {
+      TransactionContext transaction = manager.begin();
+      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+      manager.commit();
+    }
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testAsyncRunnerCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync(Options.excludeTxnFromChangeStreams());
+    get(
+        runner.runAsync(
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
+            },
+            executor));
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (AsyncTransactionManager manager =
+        client.transactionManagerAsync(Options.excludeTxnFromChangeStreams())) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      get(
+          transaction
+              .then(
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
+                  executor)
+              .commitAsync());
+    }
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testExecuteUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.executeUpdate(
+                            UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testExecuteUpdateAsyncWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                get(
+                    runner.runAsync(
+                        txn -> {
+                          txn.executeUpdateAsync(
+                              UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams());
+                          return ApiFutures.immediateFuture(null);
+                        },
+                        executor)));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testAnalyzeUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.analyzeUpdate(
+                            UPDATE_STATEMENT,
+                            QueryAnalyzeMode.PROFILE,
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.analyzeUpdateStatement(
+                            UPDATE_STATEMENT,
+                            QueryAnalyzeMode.PROFILE,
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testBatchUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.batchUpdate(
+                            Collections.singletonList(UPDATE_STATEMENT),
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testBatchUpdateAsyncWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                get(
+                    runner.runAsync(
+                        txn -> {
+                          txn.batchUpdateAsync(
+                              Collections.singletonList(UPDATE_STATEMENT),
+                              Options.excludeTxnFromChangeStreams());
+                          return ApiFutures.immediateFuture(null);
+                        },
+                        executor)));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
   }
 
   @Test
