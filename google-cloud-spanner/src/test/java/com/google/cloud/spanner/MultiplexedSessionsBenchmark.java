@@ -46,14 +46,20 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
+<<<<<<< HEAD
  * Benchmarks for measuring existing latencies of various APIs using the Java Client with
  * multiplexed sessions. The benchmarks are bound to the Maven profile `benchmark` and can be
  * executed like this: <code>
+=======
+ * Benchmarks for measuring existing latencies of various APIs using the Java Client. The benchmarks
+ * are bound to the Maven profile `benchmark` and can be executed like this: <code>
+>>>>>>> d7a108fca (chore: all dev for multiplexed session.)
  *   mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=MultiplexedSessionsBenchmark
  * </code> Test Table Schema :
  *
  * <p>CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, ) PRIMARY KEY(id);
  *
+<<<<<<< HEAD
  * <p>Below are a few considerations here: 1. We use all default options with multiplexed sessions
  * for this test because that is what most customers would be using. 2. The test schema uses a
  * numeric primary key. To ensure that the reads/updates are distributed across a large query space,
@@ -61,6 +67,15 @@ import org.openjdk.jmh.annotations.Warmup;
  * data. 3. For queries, we make sure that the query is sampled randomly across a large query space.
  * This ensure we don't cause hot-spots. 4. For avoid cold start issues, we execute 1 query/update
  * and ignore its latency from the final reported metrics.
+=======
+ * <p>Below are a few considerations here: 1. We use all default options for this test because that
+ * is what most customers would be using. 2. The test schema uses a numeric primary key. To ensure
+ * that the reads/updates are distributed across a large query space, we insert 10^5 records.
+ * Utility at {@link BenchmarkingUtilityScripts} can be used for loading data. 3. For queries, we
+ * make sure that the query is sampled randomly across a large query space. This ensure we don't
+ * cause hot-spots. 4. For avoid cold start issues, we execute 1 query/update and ignore its latency
+ * from the final reported metrics.
+>>>>>>> d7a108fca (chore: all dev for multiplexed session.)
  */
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 0)
@@ -73,8 +88,8 @@ public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
   public static class BenchmarkState {
 
     // TODO(developer): Add your values here for PROJECT_ID, INSTANCE_ID, DATABASE_ID
-    private static final String INSTANCE_ID = "";
-    private static final String DATABASE_ID = "";
+    private static final String INSTANCE_ID = "arpanmishra-dev-span";
+    private static final String DATABASE_ID = "anonymous-sessions";
     private static final String SERVER_URL = "https://staging-wrenchworks.sandbox.googleapis.com";
     private Spanner spanner;
     private DatabaseClientImpl client;
