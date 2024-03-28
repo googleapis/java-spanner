@@ -2055,6 +2055,7 @@ class SessionPool {
     public void markBusy(ISpan span) {
       // no-op for a multiplexed session since a new span is already created and set in context
       // for every handler invocation.
+      this.delegate.setCurrentSpan(span);
     }
 
     @Override
