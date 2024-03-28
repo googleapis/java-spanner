@@ -613,7 +613,6 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
       ExecuteSqlRequest request = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).get(0);
       Map<String, Type> paramTypes = request.getParamTypesMap();
       Map<String, Value> params = request.getParams().getFieldsMap();
-      System.out.println("Dialect = " + dialect);
       assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, paramTypes.size());
       assertEquals(dialect == Dialect.POSTGRESQL ? 22 : 20, params.size());
 
