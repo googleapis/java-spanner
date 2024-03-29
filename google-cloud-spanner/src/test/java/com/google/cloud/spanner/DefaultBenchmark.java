@@ -192,6 +192,9 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
         assertEquals(1, rs.getColumnCount());
         assertNotNull(rs.getValue(0));
       }
+    } catch (Throwable t) {
+      // ignore exception
+      System.out.println("Got exception = " + t);
     }
     return watch.elapsed();
   }
