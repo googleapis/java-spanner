@@ -43,6 +43,13 @@ public abstract class AbstractLatencyBenchmark {
   static final int TOTAL_READS_PER_RUN = 48000;
 
   /**
+   * Total number of writes per test run for 1 thread. Increasing the value here will increase the
+   * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_WRITES_PER_RUN = 200,
+   * there will be 400 write requests (200 on each thread).
+   */
+  static final int TOTAL_WRITES_PER_RUN = 4000;
+
+  /**
    * Number of requests which are used to initialise/warmup the benchmark. The latency number of
    * these runs are ignored from the final reported results.
    */

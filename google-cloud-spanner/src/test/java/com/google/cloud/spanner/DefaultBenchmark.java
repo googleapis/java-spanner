@@ -166,6 +166,45 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
 
+  /** Measures the time needed to execute a burst of read and write requests. */
+  @Benchmark
+  public void burstQueriesAndWrites(final BenchmarkState server) throws Exception {
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions())
+        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+
+    ListeningScheduledExecutorService service =
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
+    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
+    }
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
+    }
+
+    collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN + TOTAL_WRITES_PER_RUN);
+  }
+
+  /** Measures the time needed to execute a burst of read and write requests. */
+  @Benchmark
+  public void burstUpdates(final BenchmarkState server) throws Exception {
+    final DatabaseClientImpl client = server.client;
+    SessionPool pool = client.pool;
+    assertThat(pool.totalSessions())
+        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
+
+    ListeningScheduledExecutorService service =
+        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
+    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
+    for (int i = 0; i < PARALLEL_THREADS; i++) {
+      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
+    }
+
+    collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
+  }
+
   private List<java.time.Duration> runBenchmarksForQueries(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
