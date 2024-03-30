@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.63.0](https://github.com/googleapis/java-spanner/compare/v6.62.1...v6.63.0) (2024-03-30)
+
+
+### Features
+
+* Add support for transaction-level exclusion from change streams ([#2959](https://github.com/googleapis/java-spanner/issues/2959)) ([7ae376a](https://github.com/googleapis/java-spanner/commit/7ae376acea4dce7a0bb4565d6c9bfdbbb75146c6))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.40.0 ([#2987](https://github.com/googleapis/java-spanner/issues/2987)) ([0a1ffcb](https://github.com/googleapis/java-spanner/commit/0a1ffcb371bdee6e478e3aa53b0a4591055134e3))
+* Update dependency com.google.cloud:google-cloud-trace to v2.39.0 ([#2988](https://github.com/googleapis/java-spanner/issues/2988)) ([cf11641](https://github.com/googleapis/java-spanner/commit/cf116412d46c5047167d4dd60ef9c88c3d9c754b))
+* Update dependency commons-io:commons-io to v2.16.0 ([#2986](https://github.com/googleapis/java-spanner/issues/2986)) ([4697261](https://github.com/googleapis/java-spanner/commit/46972619f88018bad1b4e05526a618d38e2e0897))
+
 ## [6.62.1](https://github.com/googleapis/java-spanner/compare/v6.62.0...v6.62.1) (2024-03-28)
 
 
