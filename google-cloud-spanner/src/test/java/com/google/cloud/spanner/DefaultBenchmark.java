@@ -166,45 +166,6 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
 
-  /** Measures the time needed to execute a burst of read and write requests. */
-  @Benchmark
-  public void burstQueriesAndWrites(final BenchmarkState server) throws Exception {
-    final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
-
-    ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
-    for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
-    }
-    for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
-    }
-
-    collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN + TOTAL_WRITES_PER_RUN);
-  }
-
-  /** Measures the time needed to execute a burst of read and write requests. */
-  @Benchmark
-  public void burstUpdates(final BenchmarkState server) throws Exception {
-    final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
-
-    ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
-    for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
-    }
-
-    collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
-  }
-
   private List<java.time.Duration> runBenchmarksForQueries(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
@@ -212,7 +173,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     executeWarmup(server);
 
     for (int i = 0; i < numberOfOperations; i++) {
-      results.add(executeQuery(server));
+        results.add(executeQuery(server));
+        incOperations();
     }
     return results;
   }
@@ -231,9 +193,6 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
         assertEquals(1, rs.getColumnCount());
         assertNotNull(rs.getValue(0));
       }
-    } catch (Throwable t) {
-      // ignore exception
-      System.out.println("Got exception = " + t);
     }
     return watch.elapsed();
   }
@@ -279,7 +238,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
       throws Exception {
     final List<java.time.Duration> collectResults =
         collectResults(
-            service, results, numOperationsPerThread * PARALLEL_THREADS, Duration.ofMinutes(60));
+            service, results, numOperationsPerThread * PARALLEL_THREADS,
+            OPERATION_COUNTER.get(), Duration.ofMinutes(60));
     printResults(collectResults);
   }
 }

@@ -21,9 +21,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public abstract class AbstractLatencyBenchmark {
+  final AtomicInteger OPERATION_COUNTER = new AtomicInteger();
 
   static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
   static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
@@ -67,6 +69,10 @@ public abstract class AbstractLatencyBenchmark {
    */
   static final int TOTAL_RECORDS = 1000000;
 
+  protected void incOperations() {
+    OPERATION_COUNTER.incrementAndGet();
+  }
+
   /** Utility to print latency numbers. It computes metrics such as Average, P50, P95 and P99. */
   public void printResults(List<Duration> results) {
     if (results == null) {
@@ -75,7 +81,8 @@ public abstract class AbstractLatencyBenchmark {
     List<Duration> orderedResults = new ArrayList<>(results);
     Collections.sort(orderedResults);
     System.out.println();
-    System.out.printf("Total number of queries: %d\n", orderedResults.size());
+    System.out.printf("Total number of queries: %d and successful queries: %d\n",
+        orderedResults.size(), OPERATION_COUNTER.get());
     System.out.printf("Avg: %fms\n", avg(results));
     System.out.printf("P50: %fms\n", percentile(50, orderedResults));
     System.out.printf("P95: %fms\n", percentile(95, orderedResults));

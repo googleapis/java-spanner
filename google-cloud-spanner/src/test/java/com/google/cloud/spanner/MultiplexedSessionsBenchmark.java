@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 
 import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
+import com.google.cloud.spanner.DefaultBenchmark.BenchmarkState;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
@@ -176,6 +177,7 @@ public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
 
     for (int i = 0; i < numberOfOperations; i++) {
       results.add(executeQuery(server));
+      incOperations();
     }
     return results;
   }
@@ -213,7 +215,8 @@ public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
       throws Exception {
     final List<java.time.Duration> collectResults =
         collectResults(
-            service, results, numOperationsPerThread * PARALLEL_THREADS, Duration.ofMinutes(60));
+            service, results, numOperationsPerThread * PARALLEL_THREADS,
+            OPERATION_COUNTER.get(), Duration.ofMinutes(60));
     printResults(collectResults);
   }
 }
