@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.base.MoreObjects;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +34,9 @@ public abstract class AbstractLatencyBenchmark {
    * scenario, using 1 thread means there will be 1 request. Use a value > 1 to have concurrent
    * requests.
    */
-  static final int PARALLEL_THREADS = 30;
+  static final int PARALLEL_THREADS =
+      Integer.valueOf(MoreObjects.firstNonNull(
+          System.getenv("SPANNER_TEST_JMH_NUM_PARALLEL_THREADS"), "30"));
 
   /**
    * Total number of reads per test run for 1 thread. Increasing the value here will increase the
