@@ -71,6 +71,7 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    *
    * @return {@code InstanceAdminClient}
    */
+
   /*
    * <!--SNIPPET get_instance_admin_client-->
    * <pre>{@code

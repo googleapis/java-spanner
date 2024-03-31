@@ -25,6 +25,7 @@ import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.v1.BatchWriteResponse;
 import javax.annotation.Nullable;
 
@@ -55,6 +56,11 @@ class DatabaseClientImpl implements DatabaseClient {
   @Override
   public Dialect getDialect() {
     return pool.getDialect();
+  }
+
+  @Override
+  public DatabaseDialect getDatabaseDialect() {
+    return getDialect().toProto();
   }
 
   @Override
