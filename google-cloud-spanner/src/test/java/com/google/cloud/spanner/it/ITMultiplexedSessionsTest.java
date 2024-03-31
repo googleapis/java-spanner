@@ -121,7 +121,18 @@ public class ITMultiplexedSessionsTest {
   }
 
   @Test
-  public void pointRead() throws Exception {
+  public void pointRead() {
+    Struct row = runBenchmarksForQueries();
+    assertThat(row).isNotNull();
+    assertThat(row.getString(0)).isEqualTo("k1");
+    assertThat(row.getString(1)).isEqualTo("v1");
+    // Ensure that the Struct implementation supports equality properly.
+    assertThat(row)
+        .isEqualTo(Struct.newBuilder().set("key").to("k1").set("stringvalue").to("v1").build());
+  }
+
+  @Test
+  public void pointReadAsync() throws Exception {
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(10));
     List<ListenableFuture<Struct>> listenableFutures = new ArrayList();
