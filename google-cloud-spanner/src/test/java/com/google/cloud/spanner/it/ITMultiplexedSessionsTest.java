@@ -22,8 +22,10 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
+import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
@@ -121,8 +123,8 @@ public class ITMultiplexedSessionsTest {
   }
 
   @Test
-  public void pointRead() {
-    Struct row = runBenchmarksForQueries();
+  public void pointReadRow() {
+    Struct row = executeReadRow();
     assertThat(row).isNotNull();
     assertThat(row.getString(0)).isEqualTo("k1");
     assertThat(row.getString(1)).isEqualTo("v1");
@@ -132,12 +134,17 @@ public class ITMultiplexedSessionsTest {
   }
 
   @Test
+  public void pointRead() {
+    executeRead();
+  }
+
+  @Test
   public void pointReadAsync() throws Exception {
     ListeningScheduledExecutorService service =
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(10));
     List<ListenableFuture<Struct>> listenableFutures = new ArrayList();
     for (int i = 0; i < 10; i++) {
-      listenableFutures.add(service.submit(() -> runBenchmarksForQueries()));
+      listenableFutures.add(service.submit(() -> executeReadRow()));
     }
     for (ListenableFuture<Struct> listenableFuture : listenableFutures) {
       Struct row = listenableFuture.get();
@@ -150,7 +157,17 @@ public class ITMultiplexedSessionsTest {
     }
   }
 
-  private Struct runBenchmarksForQueries() {
+  private void executeRead() {
+    ResultSet resultSet =
+        client.singleUse(TimestampBound.strong()).read(TABLE_NAME, KeySet.singleKey(Key.of("k1")), ALL_COLUMNS);
+    while (resultSet.next()) {
+      assertThat(resultSet).isNotNull();
+      assertThat(resultSet.getString(0)).isEqualTo("k1");
+      assertThat(resultSet.getString(1)).isEqualTo("v1");
+    }
+  }
+
+  private Struct executeReadRow() {
     Struct row =
         client.singleUse(TimestampBound.strong()).readRow(TABLE_NAME, Key.of("k1"), ALL_COLUMNS);
     return row;
