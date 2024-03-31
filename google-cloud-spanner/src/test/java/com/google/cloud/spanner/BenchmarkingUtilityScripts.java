@@ -127,9 +127,15 @@ public class BenchmarkingUtilityScripts {
       final ListeningScheduledExecutorService service,
       final List<ListenableFuture<List<Duration>>> results,
       final int numOperations,
+      final int numSuccessfulOperations,
       final Duration timeoutDuration)
       throws Exception {
     service.shutdown();
+    while (!service.isTerminated()) {
+      //noinspection BusyWait
+      Thread.sleep(1000L);
+      System.out.printf("\r%d/%d", numSuccessfulOperations, numOperations);
+    }
     if (!service.awaitTermination(timeoutDuration.toMinutes(), TimeUnit.MINUTES)) {
       throw new TimeoutException();
     }
