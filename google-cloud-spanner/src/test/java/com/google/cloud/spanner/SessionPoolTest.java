@@ -88,12 +88,14 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
@@ -2001,8 +2003,24 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(metricDataFiltered.size(), size);
     MetricData metricData = metricDataFiltered.stream().findFirst().get();
-    assertEquals(
-        metricData.getLongSumData().getPoints().stream().findFirst().get().getValue(), value);
+    LongPointData regularSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.FALSE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    LongPointData multiplexedSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.TRUE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    assertEquals(value, regularSessionMetric.getValue());
+    assertEquals(0, multiplexedSessionMetric.getValue());
   }
 
   private static void verifyMetricData(
