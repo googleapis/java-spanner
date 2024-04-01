@@ -2748,6 +2748,10 @@ class SessionPool {
   private AtomicLong numWaiterTimeouts = new AtomicLong();
   private AtomicLong numMultiplexedSessionWaiterTimeouts = new AtomicLong();
 
+  /**
+   * A recently created multiplexed session is always added at the front/head of the queue. A stale
+   * session is removed from the last/back of the queue.
+   */
   @GuardedBy("lock")
   private final Deque<MultiplexedSession> multiplexedSessions;
 
@@ -3092,7 +3096,7 @@ class SessionPool {
       span.addAnnotation("Acquiring multiplexed session");
       MultiplexedSessionWaiterFuture waiter = null;
       synchronized (lock) {
-        MultiplexedSession session = multiplexedSessions.peek();
+        MultiplexedSession session = multiplexedSessions.peekFirst();
         if (session != null) {
           span.addAnnotation("Acquired multiplexed session", "sessionId", session.getName());
           incrementNumSessionsInUse(true);

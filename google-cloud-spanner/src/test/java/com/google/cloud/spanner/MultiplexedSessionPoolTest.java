@@ -19,8 +19,6 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -37,8 +35,6 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
   private final DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   private final TraceWrapper tracer =
       new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
-  private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
   SessionPoolOptions options;
   SessionPool pool;
 
@@ -150,7 +146,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
             invocation -> {
               MultiplexedSessionConsumer consumer =
                   invocation.getArgument(0, MultiplexedSessionConsumer.class);
-              consumer.onSessionReady(mockMultiplexedSession());
+              consumer.onSessionReady(mockSession());
               return null;
             })
         .when(sessionClient)

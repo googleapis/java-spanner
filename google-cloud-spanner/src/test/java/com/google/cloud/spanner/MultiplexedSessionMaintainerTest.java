@@ -48,6 +48,7 @@ import org.threeten.bp.Instant;
 
 @RunWith(JUnit4.class)
 public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
+
   private ExecutorService executor = Executors.newSingleThreadExecutor();
   private @Mock SpannerImpl client;
   private @Mock SessionClient sessionClient;
@@ -115,8 +116,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     clock.currentTimeMillis.addAndGet(Duration.ofDays(5).toMillis());
 
     // Run second maintenance loop. the first session would now be stale since it has now existed
-    // for
-    // more than 9 days.
+    // for more than 9 days.
     runMaintenanceLoop(clock, pool, 1);
 
     SessionFuture session2 = pool.getMultiplexedSessionWithFallback();
