@@ -21,7 +21,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -161,9 +160,17 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     SessionPool pool = createPool();
     SessionFuture session1 = pool.getMultiplexedSessionWithFallback();
 
-    doThrow(RuntimeException.class)
+    doAnswer(
+            invocation -> {
+              MultiplexedSessionConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionConsumer.class);
+              consumer.onSessionCreateFailure(
+                  SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
+              return null;
+            })
         .when(sessionClient)
-        .createMultiplexedSession(any(SessionConsumer.class));
+        .createMultiplexedSession(any(MultiplexedSessionConsumer.class));
+
     // Advance clock by 8 days
     clock.currentTimeMillis.addAndGet(Duration.ofDays(8).toMillis());
 
@@ -191,8 +198,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     assertEquals(session1.getName(), pool.getMultiplexedSessionWithFallback().getName());
 
     // Run second maintenance loop. the first session would now be stale since it has now existed
-    // for
-    // more than 7 days.
+    // for more than 7 days.
     runMaintenanceLoop(clock, pool, 1);
     SessionFuture session2 = pool.getMultiplexedSessionWithFallback();
 

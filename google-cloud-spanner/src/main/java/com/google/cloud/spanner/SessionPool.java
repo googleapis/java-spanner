@@ -108,6 +108,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.threeten.bp.Duration;
@@ -169,6 +170,7 @@ class SessionPool {
   }
 
   private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
+
     private ResultSet cached;
 
     abstract ResultSet load();
@@ -1673,17 +1675,12 @@ class SessionPool {
 
     @Override
     public MultiplexedSession get() {
-      MultiplexedSession res = null;
       try {
-        res = super.get();
-      } catch (Throwable e) {
-        // ignore the exception as it will be handled by the call to super.get() below.
-      }
-      if (res != null) {
-        res.markBusy(span);
-      }
-      try {
-        return super.get();
+        MultiplexedSession res = super.get();
+        if (res != null) {
+          res.markBusy(span);
+        }
+        return res;
       } catch (ExecutionException e) {
         throw SpannerExceptionFactory.newSpannerException(e.getCause());
       } catch (InterruptedException e) {
@@ -2163,6 +2160,8 @@ class SessionPool {
 
   private final class MultiplexedSessionWaiterFuture
       extends ForwardingListenableFuture<MultiplexedSession> {
+
+    private final Duration MAX_MULTIPLEXED_SESSION_WAIT_TIMEOUT = Duration.ofSeconds(60);
     private final SettableFuture<MultiplexedSession> waiter = SettableFuture.create();
 
     @Override
@@ -2183,19 +2182,15 @@ class SessionPool {
       while (true) {
         ISpan span = tracer.spanBuilder(WAIT_FOR_MULTIPLEXED_SESSION);
         try (IScope waitScope = tracer.withSpan(span)) {
-          MultiplexedSession s = pollUninterruptedlyWithTimeout(options.getAcquireSessionTimeout());
-          if (s == null) {
-            // Set the status to DEADLINE_EXCEEDED and retry.
-            numMultiplexedSessionWaiterTimeouts.incrementAndGet();
-            tracer.getCurrentSpan().setStatus(ErrorCode.DEADLINE_EXCEEDED);
-          } else {
-            return s;
-          }
+          final Duration timeout =
+              MoreObjects.firstNonNull(
+                  options.getAcquireSessionTimeout(), MAX_MULTIPLEXED_SESSION_WAIT_TIMEOUT);
+          return pollUninterruptedlyWithTimeout(timeout);
         } catch (Exception e) {
           if (e instanceof SpannerException
-              && ErrorCode.RESOURCE_EXHAUSTED.equals(((SpannerException) e).getErrorCode())) {
+              && ErrorCode.DEADLINE_EXCEEDED.equals(((SpannerException) e).getErrorCode())) {
             numMultiplexedSessionWaiterTimeouts.incrementAndGet();
-            tracer.getCurrentSpan().setStatus(ErrorCode.RESOURCE_EXHAUSTED);
+            tracer.getCurrentSpan().setStatus(ErrorCode.DEADLINE_EXCEEDED);
           }
           span.setStatus(e);
           throw e;
@@ -2222,14 +2217,11 @@ class SessionPool {
           } catch (InterruptedException e) {
             interrupted = true;
           } catch (TimeoutException e) {
-            if (acquireSessionTimeout != null) {
-              throw SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.RESOURCE_EXHAUSTED,
-                  String.format(
-                      "Timed out after waiting %s ms to acquire multiplexed session.",
-                      acquireSessionTimeout.toMillis()));
-            }
-            return null;
+            throw SpannerExceptionFactory.newSpannerException(
+                ErrorCode.DEADLINE_EXCEEDED,
+                String.format(
+                    "Timed out after waiting %s ms to acquire multiplexed session.",
+                    acquireSessionTimeout.toMillis()));
           } catch (ExecutionException e) {
             throw SpannerExceptionFactory.newSpannerException(e.getCause());
           }
@@ -2594,38 +2586,45 @@ class SessionPool {
     void maintainMultiplexedSession(Instant currentTime) {
       try {
         if (options.getUseMultiplexedSession()) {
-          Iterator<MultiplexedSession> iterator = multiplexedSessions.iterator();
-          while (iterator.hasNext()) {
-            final MultiplexedSession session = iterator.next();
-            final Duration durationFromCreationTime =
-                Duration.between(session.getDelegate().getCreateTime(), currentTime);
-            if (durationFromCreationTime.compareTo(
-                        options.getMultiplexedSessionMaintenanceDuration())
-                    > 0
-                && numMultiplexedSessionsBeingCreated == 0) {
-              logger.log(
-                  Level.INFO,
-                  String.format(
-                      "Replacing Multiplexed Session => %s since it's created before maintenance "
-                          + "window => %s days",
-                      session.getName(),
-                      options.getMultiplexedSessionMaintenanceDuration().toDays()));
-              createMultiplexedSessions();
-            }
+          if (multiplexedSessions.size() == 0 && numMultiplexedSessionsBeingCreated == 0) {
+            // this means that multiplexed session initialization during startup failed.
+            createMultiplexedSession();
+          } else {
+            List<MultiplexedSession> staleSessions = getStaleMultiplexedSession(currentTime);
+            if (!staleSessions.isEmpty()) {
+              Set<String> staleSessionNames =
+                  staleSessions.stream()
+                      .map(MultiplexedSession::getName)
+                      .collect(Collectors.toSet());
+              if (multiplexedSessions.size() == staleSessions.size()
+                  && numMultiplexedSessionsBeingCreated == 0) {
+                /**
+                 * All current multiplexed sessions are stale. We would create a new multiplexed
+                 * session only when all other sessions have gone stale.
+                 */
+                createMultiplexedSession();
+              }
 
-            // if there is are > 1 multiplexed sessions, this means there are some stale sessions
-            // since a multiplexed session is only created if a previous one is stale.
-            // remove all stale sessions. Note that there may be active transaction which are
-            // running
-            // on the stale sessions, hence we do not issue a DeleteSession RPC.
-            synchronized (lock) {
-              while (multiplexedSessions.size() > 1) {
-                final MultiplexedSession lastSession = multiplexedSessions.pollLast();
-                logger.log(
-                    Level.INFO,
-                    String.format("Removed Multiplexed Session => %s", lastSession.getName()));
-                if (multiplexedSessionRemovedListener != null) {
-                  multiplexedSessionRemovedListener.apply(lastSession);
+              /**
+               * Remove stale multiplexed sessions ensuring there is at-least 1 session in the pool.
+               * If there is only 1 session in the pool and it is stale, we would continue to keep
+               * it till a new session is created. Note that there may be active transaction which
+               * are running on the stale sessions, hence we do not issue a DeleteSession RPC.
+               */
+              synchronized (lock) {
+                while (multiplexedSessions.size() > 1) {
+                  final MultiplexedSession lastSession = multiplexedSessions.peekLast();
+                  if (staleSessionNames.contains(lastSession.getName())) {
+                    multiplexedSessions.pollLast();
+                    logger.log(
+                        Level.INFO,
+                        String.format(
+                            "Removed Multiplexed Session => %s created at => %s",
+                            lastSession.getName(), lastSession.getDelegate().getCreateTime()));
+                    if (multiplexedSessionRemovedListener != null) {
+                      multiplexedSessionRemovedListener.apply(lastSession);
+                    }
+                  }
                 }
               }
             }
@@ -2634,6 +2633,21 @@ class SessionPool {
       } catch (final Throwable t) {
         logger.log(Level.WARNING, "Failed to maintain multiplexed session", t);
       }
+    }
+
+    List<MultiplexedSession> getStaleMultiplexedSession(Instant currentTime) {
+      List<MultiplexedSession> staleSessions = new ArrayList<>();
+      Iterator<MultiplexedSession> iterator = multiplexedSessions.iterator();
+      while (iterator.hasNext()) {
+        final MultiplexedSession session = iterator.next();
+        final Duration durationFromCreationTime =
+            Duration.between(session.getDelegate().getCreateTime(), currentTime);
+        if (durationFromCreationTime.compareTo(options.getMultiplexedSessionMaintenanceDuration())
+            > 0) {
+          staleSessions.add(session);
+        }
+      }
+      return staleSessions;
     }
   }
 
@@ -3023,7 +3037,7 @@ class SessionPool {
         createSessions(options.getMinSessions(), true);
       }
       if (options.getUseMultiplexedSession()) {
-        createMultiplexedSessions();
+        createMultiplexedSession();
       }
     }
   }
@@ -3491,6 +3505,13 @@ class SessionPool {
   }
 
   @VisibleForTesting
+  int getNumMultiplexedSessionWaiters() {
+    synchronized (lock) {
+      return multiplexedSessionWaiters.size();
+    }
+  }
+
+  @VisibleForTesting
   int totalSessions() {
     synchronized (lock) {
       return allSessions.size();
@@ -3542,15 +3563,14 @@ class SessionPool {
     }
   }
 
-  private void createMultiplexedSessions() {
+  private void createMultiplexedSession() {
     logger.log(Level.FINE, String.format("Creating multiplexed sessions"));
     synchronized (lock) {
       try {
         numMultiplexedSessionsBeingCreated++;
         sessionClient.createMultiplexedSession(multiplexedSessionConsumer);
-      } catch (Throwable t) {
-        numMultiplexedSessionsBeingCreated--;
-        handleMultiplexedSessionsFailure(newSpannerException(t));
+      } catch (Throwable ignore) {
+        // such an exception will never be thrown. the exception will be passed onto the consumer.
       }
     }
   }
@@ -3604,6 +3624,7 @@ class SessionPool {
 
     @Override
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+      numMultiplexedSessionsBeingCreated--;
       handleMultiplexedSessionsFailure(newSpannerException(t));
     }
   }
