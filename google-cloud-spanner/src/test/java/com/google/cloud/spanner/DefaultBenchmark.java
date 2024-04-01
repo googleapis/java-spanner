@@ -167,6 +167,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
   }
 
   /** Measures the time needed to execute a burst of read and write requests. */
+  /**
   @Benchmark
   public void burstQueriesAndWrites(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -186,8 +187,10 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN + TOTAL_WRITES_PER_RUN);
   }
+  */
 
   /** Measures the time needed to execute a burst of read and write requests. */
+  /**
   @Benchmark
   public void burstUpdates(final BenchmarkState server) throws Exception {
     final DatabaseClientImpl client = server.client;
@@ -204,6 +207,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
     collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
   }
+  */
 
   private List<java.time.Duration> runBenchmarksForQueries(
       final BenchmarkState server, int numberOfOperations) {
