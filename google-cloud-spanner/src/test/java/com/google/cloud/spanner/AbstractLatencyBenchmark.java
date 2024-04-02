@@ -35,24 +35,28 @@ public abstract class AbstractLatencyBenchmark {
    * requests.
    */
   static final int PARALLEL_THREADS =
-      Integer.valueOf(MoreObjects.firstNonNull(
-          System.getenv("SPANNER_TEST_JMH_NUM_PARALLEL_THREADS"), "30"));
+      Integer.valueOf(
+          MoreObjects.firstNonNull(System.getenv("SPANNER_TEST_JMH_NUM_PARALLEL_THREADS"), "30"));
 
   /**
    * Total number of reads per test run for 1 thread. Increasing the value here will increase the
    * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_READS_PER_RUN = 200, there
    * will be 400 read requests (200 on each thread).
    */
-  static final int TOTAL_READS_PER_RUN = Integer.valueOf(MoreObjects.firstNonNull(
-      System.getenv("SPANNER_TEST_JMH_NUM_READS_PER_THREAD"), "48000"));
+  static final int TOTAL_READS_PER_RUN =
+      Integer.valueOf(
+          MoreObjects.firstNonNull(
+              System.getenv("SPANNER_TEST_JMH_NUM_READS_PER_THREAD"), "48000"));
 
   /**
    * Total number of writes per test run for 1 thread. Increasing the value here will increase the
    * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_WRITES_PER_RUN = 200,
    * there will be 400 write requests (200 on each thread).
    */
-  static final int TOTAL_WRITES_PER_RUN = Integer.valueOf(MoreObjects.firstNonNull(
-      System.getenv("SPANNER_TEST_JMH_NUM_WRITES_PER_THREAD"), "4000"));
+  static final int TOTAL_WRITES_PER_RUN =
+      Integer.valueOf(
+          MoreObjects.firstNonNull(
+              System.getenv("SPANNER_TEST_JMH_NUM_WRITES_PER_THREAD"), "4000"));
 
   /**
    * Number of requests which are used to initialise/warmup the benchmark. The latency number of
