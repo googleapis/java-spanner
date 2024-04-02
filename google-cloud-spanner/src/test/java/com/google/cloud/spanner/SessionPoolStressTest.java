@@ -278,7 +278,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                     PooledSessionFuture session = pool.getSession();
                     session.get();
                     Uninterruptibles.sleepUninterruptibly(random.nextInt(2), TimeUnit.MILLISECONDS);
-                    resetTransaction(session.get().getDelegate());
+                    resetTransaction(session.get().delegate);
                     session.close();
                   } catch (SpannerException e) {
                     if (e.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED || shouldBlock) {
