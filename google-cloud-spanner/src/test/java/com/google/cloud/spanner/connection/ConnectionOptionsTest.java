@@ -22,6 +22,7 @@ import static com.google.cloud.spanner.connection.ConnectionOptions.determineHos
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -41,6 +42,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.io.Files;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
@@ -1143,5 +1145,24 @@ public class ConnectionOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .build()
             .isUseVirtualThreads());
+  }
+
+  @Test
+  public void testMaxCommitDelay() {
+    assertNull(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getMaxCommitDelay());
+    assertEquals(
+        Duration.ofMillis(10L),
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxCommitDelay=10")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getMaxCommitDelay());
   }
 }
