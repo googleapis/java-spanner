@@ -317,7 +317,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
   }
 
   /** Returns a new REST builder for this class. */
-  @BetaApi
   public static Builder newHttpJsonBuilder() {
     return Builder.createHttpJsonDefault();
   }
@@ -359,7 +358,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
       return new Builder(DatabaseAdminStubSettings.newBuilder());
     }
 
-    @BetaApi
     private static Builder createHttpJsonDefault() {
       return new Builder(DatabaseAdminStubSettings.newHttpJsonBuilder());
     }

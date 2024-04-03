@@ -209,4 +209,42 @@ public interface CreateCloudBackupActionOrBuilder
    * <code>optional .google.protobuf.Timestamp version_time = 6;</code>
    */
   com.google.protobuf.TimestampOrBuilder getVersionTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * The KMS key(s) used to encrypt the backup to be created if the backup
+   * should be CMEK protected.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.EncryptionConfig encryption_config = 7;</code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  boolean hasEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * The KMS key(s) used to encrypt the backup to be created if the backup
+   * should be CMEK protected.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.EncryptionConfig encryption_config = 7;</code>
+   *
+   * @return The encryptionConfig.
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * The KMS key(s) used to encrypt the backup to be created if the backup
+   * should be CMEK protected.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.EncryptionConfig encryption_config = 7;</code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder getEncryptionConfigOrBuilder();
 }
