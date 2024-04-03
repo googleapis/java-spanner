@@ -212,11 +212,6 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
-    protected long getPgOidInternal(int columnIndex) {
-      return values.get(columnIndex).getPgOid();
-    }
-
-    @Override
     protected ByteArray getBytesInternal(int columnIndex) {
       return values.get(columnIndex).getBytes();
     }
@@ -310,16 +305,6 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     @Override
     protected List<String> getPgJsonbListInternal(int columnIndex) {
       return values.get(columnIndex).getPgJsonbArray();
-    }
-
-    @Override
-    protected long[] getPgOidArrayInternal(int columnIndex) {
-      return Longs.toArray(getPgOidListInternal(columnIndex));
-    }
-
-    @Override
-    protected List<Long> getPgOidListInternal(int columnIndex) {
-      return values.get(columnIndex).getPgOidArray();
     }
 
     @Override

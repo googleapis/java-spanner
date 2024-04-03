@@ -401,11 +401,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
-  protected long getPgOidInternal(int columnIndex) {
-    return currRow().getPgOidInternal(columnIndex);
-  }
-
-  @Override
   protected ByteArray getBytesInternal(int columnIndex) {
     return currRow().getBytesInternal(columnIndex);
   }
@@ -483,16 +478,6 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<String> getPgJsonbListInternal(int columnIndex) {
     return currRow().getJsonListInternal(columnIndex);
-  }
-
-  @Override
-  protected long[] getPgOidArrayInternal(int columnIndex) {
-    return currRow().getPgOidArrayInternal(columnIndex);
-  }
-
-  @Override
-  protected List<Long> getPgOidListInternal(int columnIndex) {
-    return currRow().getPgOidListInternal(columnIndex);
   }
 
   @Override

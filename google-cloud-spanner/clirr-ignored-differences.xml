@@ -194,36 +194,6 @@
   </difference>
   <!-- PG OID -->
   <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/StructReader</className>
-    <method>long getPgOid(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/StructReader</className>
-    <method>long getPgOid(java.lang.String)</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/StructReader</className>
-    <method>long[] getPgOidArray(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/StructReader</className>
-    <method>long[] getPgOidArray(java.lang.String)</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/StructReader</className>
-    <method>java.util.List getPgOidList(int)</method>
-  </difference>
-  <difference>
-    <differenceType>7012</differenceType>
-    <className>com/google/cloud/spanner/StructReader</className>
-    <method>java.util.List getPgOidList(java.lang.String)</method>
-  </difference>
-  <difference>
     <differenceType>7013</differenceType>
     <className>com/google/cloud/spanner/Value</className>
     <method>long getPgOid()</method>
@@ -233,7 +203,7 @@
     <className>com/google/cloud/spanner/Value</className>
     <method>java.util.List getPgOidArray()</method>
   </difference>
-  
+
   <difference>
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/StructReader</className>

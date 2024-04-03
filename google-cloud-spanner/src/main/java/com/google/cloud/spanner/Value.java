@@ -872,13 +872,6 @@ public abstract class Value implements Serializable {
   }
 
   /**
-   * Returns the value of a {@code PG_OID}-typed instance.
-   *
-   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
-   */
-  public abstract long getPgOid();
-
-  /**
    * Returns the value of a {@code PROTO}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -996,14 +989,6 @@ public abstract class Value implements Serializable {
   public List<String> getPgJsonbArray() {
     throw new UnsupportedOperationException("Not implemented");
   }
-
-  /**
-   * Returns the value of an {@code ARRAY<PG_OID>}-typed instance. While the returned list itself
-   * will never be {@code null}, elements of that list may be null.
-   *
-   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
-   */
-  public abstract List<Long> getPgOidArray();
 
   /**
    * Returns the value of an {@code ARRAY<PROTO>}-typed instance. While the returned list itself
@@ -1315,11 +1300,6 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public long getPgOid() {
-      throw defaultGetter(Type.pgOid());
-    }
-
-    @Override
     public ByteArray getBytes() {
       throw defaultGetter(Type.bytes());
     }
@@ -1381,11 +1361,6 @@ public abstract class Value implements Serializable {
     @Override
     public List<String> getPgJsonbArray() {
       throw defaultGetter(Type.array(Type.pgJsonb()));
-    }
-
-    @Override
-    public List<Long> getPgOidArray() {
-      throw defaultGetter(Type.array(Type.pgOid()));
     }
 
     @Override
@@ -1923,7 +1898,7 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public long getPgOid() {
+    public long getInt64() {
       checkNotNull();
       return value;
     }
@@ -2593,7 +2568,7 @@ public abstract class Value implements Serializable {
     }
 
     @Override
-    public List<Long> getPgOidArray() {
+    public List<Long> getInt64Array() {
       return getArray();
     }
 

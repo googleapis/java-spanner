@@ -619,7 +619,7 @@ public class ValueTest {
     Value v = Value.pgOid(Long.valueOf(123));
     assertThat(v.getType()).isEqualTo(Type.pgOid());
     assertThat(v.isNull()).isFalse();
-    assertThat(v.getPgOid()).isEqualTo(123);
+    assertThat(v.getInt64()).isEqualTo(123);
     assertThat(v.toString()).isEqualTo("123");
     assertEquals("123", v.getAsString());
   }
@@ -630,7 +630,7 @@ public class ValueTest {
     assertThat(v.getType()).isEqualTo(Type.pgOid());
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, v::getPgOid);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64);
     assertThat(e.getMessage()).contains("null value");
     assertEquals("NULL", v.getAsString());
   }
@@ -1212,19 +1212,19 @@ public class ValueTest {
   }
 
   @Test
-  public void pgOidArray() {
+  public void testPgOidArray() {
     Value v = Value.pgOidArray(new long[] {1, 2});
     assertThat(v.isNull()).isFalse();
-    assertThat(v.getPgOidArray()).containsExactly(1L, 2L).inOrder();
+    assertThat(v.getInt64Array()).containsExactly(1L, 2L).inOrder();
     assertThat(v.toString()).isEqualTo("[1,2]");
     assertEquals("[1,2]", v.getAsString());
   }
 
   @Test
-  public void pgOidArrayRange() {
+  public void testPgOidArrayRange() {
     Value v = Value.pgOidArray(new long[] {1, 2, 3, 4, 5}, 1, 3);
     assertThat(v.isNull()).isFalse();
-    assertThat(v.getPgOidArray()).containsExactly(2L, 3L, 4L).inOrder();
+    assertThat(v.getInt64Array()).containsExactly(2L, 3L, 4L).inOrder();
     assertThat(v.toString()).isEqualTo("[2,3,4]");
     assertEquals("[2,3,4]", v.getAsString());
   }
@@ -1234,42 +1234,42 @@ public class ValueTest {
     Value v = Value.pgOidArray((long[]) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, v::getPgOidArray);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64Array);
     assertThat(e.getMessage()).contains("null value");
     assertEquals("NULL", v.getAsString());
   }
 
   @Test
-  public void pgOidArrayWrapper() {
+  public void testPgOidArrayWrapper() {
     Value v = Value.pgOidArray(Arrays.asList(1L, null, 3L));
     assertThat(v.isNull()).isFalse();
-    assertThat(v.getPgOidArray()).containsExactly(1L, null, 3L).inOrder();
+    assertThat(v.getInt64Array()).containsExactly(1L, null, 3L).inOrder();
     assertThat(v.toString()).isEqualTo("[1,NULL,3]");
     assertEquals("[1,NULL,3]", v.getAsString());
   }
 
   @Test
-  public void pgOidArrayWrapperNull() {
+  public void testPgOidArrayWrapperNull() {
     Value v = Value.pgOidArray((Iterable<Long>) null);
     assertThat(v.isNull()).isTrue();
     assertThat(v.toString()).isEqualTo(NULL_STRING);
-    IllegalStateException e = assertThrows(IllegalStateException.class, v::getPgOidArray);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64Array);
     assertThat(e.getMessage()).contains("null value");
     assertEquals("NULL", v.getAsString());
   }
 
   @Test
-  public void pgOidArrayTryGetBool() {
+  public void testPgOidArrayTryGetBool() {
     Value value = Value.pgOidArray(Collections.singletonList(1234L));
     IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
     assertThat(e.getMessage()).contains("Expected: BOOL actual: ARRAY<INT64<PG_OID>>");
   }
 
   @Test
-  public void pgOidArrayNullTryGetBool() {
+  public void testPgOidArrayNullTryGetBool() {
     Value value = Value.pgOidArray((Iterable<Long>) null);
-    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
-    assertThat(e.getMessage()).contains("Expected: BOOL actual: ARRAY<INT64<PG_OID>>");
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBoolArray);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<BOOL> actual: ARRAY<INT64<PG_OID>>");
   }
 
   @Test

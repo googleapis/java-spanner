@@ -61,10 +61,6 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected long getPgOidInternal(int columnIndex) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
   protected abstract ByteArray getBytesInternal(int columnIndex);
 
   protected abstract Timestamp getTimestampInternal(int columnIndex);
@@ -126,14 +122,6 @@ public abstract class AbstractStructReader implements StructReader {
     throw new UnsupportedOperationException("Not implemented");
   }
 
-  protected long[] getPgOidArrayInternal(int columnIndex) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  protected List<Long> getPgOidListInternal(int columnIndex) {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
   protected abstract List<ByteArray> getBytesListInternal(int columnIndex);
 
   protected abstract List<Timestamp> getTimestampListInternal(int columnIndex);
@@ -179,18 +167,14 @@ public abstract class AbstractStructReader implements StructReader {
   public long getLong(int columnIndex) {
     checkNonNullOfCodes(
         columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnIndex);
-    return getColumnType(columnIndex).getCode() == Code.PG_OID
-        ? getPgOidInternal(columnIndex)
-        : getLongInternal(columnIndex);
+    return getLongInternal(columnIndex);
   }
 
   @Override
   public long getLong(String columnName) {
     int columnIndex = getColumnIndex(columnName);
     checkNonNullOfCodes(columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnName);
-    return getColumnType(columnIndex).getCode() == Code.PG_OID
-        ? getPgOidInternal(columnIndex)
-        : getLongInternal(columnIndex);
+    return getLongInternal(columnIndex);
   }
 
   @Override
@@ -385,9 +369,7 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
     checkArrayElementType(
         columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnIndex);
-    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
-        ? getPgOidArrayInternal(columnIndex)
-        : getLongArrayInternal(columnIndex);
+    return getLongArrayInternal(columnIndex);
   }
 
   @Override
@@ -396,9 +378,7 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
     checkArrayElementType(
         columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnName);
-    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
-        ? getPgOidArrayInternal(columnIndex)
-        : getLongArrayInternal(columnIndex);
+    return getLongArrayInternal(columnIndex);
   }
 
   @Override
@@ -406,9 +386,7 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnIndex);
     checkArrayElementType(
         columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnIndex);
-    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
-        ? getPgOidListInternal(columnIndex)
-        : getLongListInternal(columnIndex);
+    return getLongListInternal(columnIndex);
   }
 
   @Override
@@ -417,9 +395,7 @@ public abstract class AbstractStructReader implements StructReader {
     checkNonNullOfCodes(columnIndex, Collections.singletonList(Code.ARRAY), columnName);
     checkArrayElementType(
         columnIndex, Arrays.asList(Code.ENUM, Code.PG_OID, Code.INT64), columnName);
-    return getColumnType(columnIndex).getArrayElementType().getCode() == Code.PG_OID
-        ? getPgOidListInternal(columnIndex)
-        : getLongListInternal(columnIndex);
+    return getLongListInternal(columnIndex);
   }
 
   @Override

@@ -469,12 +469,6 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   @Override
-  protected long getPgOidInternal(int columnIndex) {
-    ensureDecoded(columnIndex);
-    return (Long) rowData.get(columnIndex);
-  }
-
-  @Override
   protected ByteArray getBytesInternal(int columnIndex) {
     ensureDecoded(columnIndex);
     return getLazyBytesInternal(columnIndex).getByteArray();
@@ -787,18 +781,6 @@ class GrpcStruct extends Struct implements Serializable {
   protected List<String> getPgJsonbListInternal(int columnIndex) {
     ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
-  }
-
-  @Override
-  protected Int64Array getPgOidListInternal(int columnIndex) {
-    ensureDecoded(columnIndex);
-    return (Int64Array) rowData.get(columnIndex);
-  }
-
-  @Override
-  protected long[] getPgOidArrayInternal(int columnIndex) {
-    ensureDecoded(columnIndex);
-    return getPgOidListInternal(columnIndex).toPrimitiveArray(columnIndex);
   }
 
   @Override
