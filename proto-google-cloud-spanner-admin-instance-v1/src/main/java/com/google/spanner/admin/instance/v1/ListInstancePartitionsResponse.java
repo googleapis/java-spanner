@@ -24,23 +24,24 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * The response for
- * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
+ * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions].
  * </pre>
  *
- * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancesResponse}
+ * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancePartitionsResponse}
  */
-public final class ListInstancesResponse extends com.google.protobuf.GeneratedMessageV3
+public final class ListInstancePartitionsResponse extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.ListInstancesResponse)
-    ListInstancesResponseOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.ListInstancePartitionsResponse)
+    ListInstancePartitionsResponseOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use ListInstancesResponse.newBuilder() to construct.
-  private ListInstancesResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use ListInstancePartitionsResponse.newBuilder() to construct.
+  private ListInstancePartitionsResponse(
+      com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private ListInstancesResponse() {
-    instances_ = java.util.Collections.emptyList();
+  private ListInstancePartitionsResponse() {
+    instancePartitions_ = java.util.Collections.emptyList();
     nextPageToken_ = "";
     unreachable_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
@@ -48,93 +49,101 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new ListInstancesResponse();
+    return new ListInstancePartitionsResponse();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_ListInstancesResponse_descriptor;
+        .internal_static_google_spanner_admin_instance_v1_ListInstancePartitionsResponse_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_ListInstancesResponse_fieldAccessorTable
+        .internal_static_google_spanner_admin_instance_v1_ListInstancePartitionsResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.admin.instance.v1.ListInstancesResponse.class,
-            com.google.spanner.admin.instance.v1.ListInstancesResponse.Builder.class);
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.class,
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.Builder.class);
   }
 
-  public static final int INSTANCES_FIELD_NUMBER = 1;
+  public static final int INSTANCE_PARTITIONS_FIELD_NUMBER = 1;
 
   @SuppressWarnings("serial")
-  private java.util.List<com.google.spanner.admin.instance.v1.Instance> instances_;
+  private java.util.List<com.google.spanner.admin.instance.v1.InstancePartition>
+      instancePartitions_;
   /**
    *
    *
    * <pre>
-   * The list of requested instances.
+   * The list of requested instancePartitions.
    * </pre>
    *
-   * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+   * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+   * </code>
    */
   @java.lang.Override
-  public java.util.List<com.google.spanner.admin.instance.v1.Instance> getInstancesList() {
-    return instances_;
+  public java.util.List<com.google.spanner.admin.instance.v1.InstancePartition>
+      getInstancePartitionsList() {
+    return instancePartitions_;
   }
   /**
    *
    *
    * <pre>
-   * The list of requested instances.
+   * The list of requested instancePartitions.
    * </pre>
    *
-   * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+   * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+   * </code>
    */
   @java.lang.Override
-  public java.util.List<? extends com.google.spanner.admin.instance.v1.InstanceOrBuilder>
-      getInstancesOrBuilderList() {
-    return instances_;
+  public java.util.List<? extends com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder>
+      getInstancePartitionsOrBuilderList() {
+    return instancePartitions_;
   }
   /**
    *
    *
    * <pre>
-   * The list of requested instances.
+   * The list of requested instancePartitions.
    * </pre>
    *
-   * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+   * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+   * </code>
    */
   @java.lang.Override
-  public int getInstancesCount() {
-    return instances_.size();
+  public int getInstancePartitionsCount() {
+    return instancePartitions_.size();
   }
   /**
    *
    *
    * <pre>
-   * The list of requested instances.
+   * The list of requested instancePartitions.
    * </pre>
    *
-   * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+   * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+   * </code>
    */
   @java.lang.Override
-  public com.google.spanner.admin.instance.v1.Instance getInstances(int index) {
-    return instances_.get(index);
+  public com.google.spanner.admin.instance.v1.InstancePartition getInstancePartitions(int index) {
+    return instancePartitions_.get(index);
   }
   /**
    *
    *
    * <pre>
-   * The list of requested instances.
+   * The list of requested instancePartitions.
    * </pre>
    *
-   * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+   * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+   * </code>
    */
   @java.lang.Override
-  public com.google.spanner.admin.instance.v1.InstanceOrBuilder getInstancesOrBuilder(int index) {
-    return instances_.get(index);
+  public com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder
+      getInstancePartitionsOrBuilder(int index) {
+    return instancePartitions_.get(index);
   }
 
   public static final int NEXT_PAGE_TOKEN_FIELD_NUMBER = 2;
@@ -146,8 +155,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
-   * call to fetch more of the matching instances.
+   * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions]
+   * call to fetch more of the matching instance partitions.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -171,8 +180,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
-   * call to fetch more of the matching instances.
+   * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions]
+   * call to fetch more of the matching instance partitions.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -201,10 +210,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The list of unreachable instances.
-   * It includes the names of instances whose metadata could not be retrieved
-   * within
-   * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+   * The list of unreachable instance partitions.
+   * It includes the names of instance partitions whose metadata could
+   * not be retrieved within
+   * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *
    * <code>repeated string unreachable = 3;</code>
@@ -218,10 +227,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The list of unreachable instances.
-   * It includes the names of instances whose metadata could not be retrieved
-   * within
-   * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+   * The list of unreachable instance partitions.
+   * It includes the names of instance partitions whose metadata could
+   * not be retrieved within
+   * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *
    * <code>repeated string unreachable = 3;</code>
@@ -235,10 +244,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The list of unreachable instances.
-   * It includes the names of instances whose metadata could not be retrieved
-   * within
-   * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+   * The list of unreachable instance partitions.
+   * It includes the names of instance partitions whose metadata could
+   * not be retrieved within
+   * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *
    * <code>repeated string unreachable = 3;</code>
@@ -253,10 +262,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The list of unreachable instances.
-   * It includes the names of instances whose metadata could not be retrieved
-   * within
-   * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+   * The list of unreachable instance partitions.
+   * It includes the names of instance partitions whose metadata could
+   * not be retrieved within
+   * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
    * </pre>
    *
    * <code>repeated string unreachable = 3;</code>
@@ -282,8 +291,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    for (int i = 0; i < instances_.size(); i++) {
-      output.writeMessage(1, instances_.get(i));
+    for (int i = 0; i < instancePartitions_.size(); i++) {
+      output.writeMessage(1, instancePartitions_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextPageToken_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, nextPageToken_);
@@ -300,8 +309,9 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     if (size != -1) return size;
 
     size = 0;
-    for (int i = 0; i < instances_.size(); i++) {
-      size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, instances_.get(i));
+    for (int i = 0; i < instancePartitions_.size(); i++) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(1, instancePartitions_.get(i));
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextPageToken_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, nextPageToken_);
@@ -324,13 +334,13 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.admin.instance.v1.ListInstancesResponse)) {
+    if (!(obj instanceof com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse)) {
       return super.equals(obj);
     }
-    com.google.spanner.admin.instance.v1.ListInstancesResponse other =
-        (com.google.spanner.admin.instance.v1.ListInstancesResponse) obj;
+    com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse other =
+        (com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse) obj;
 
-    if (!getInstancesList().equals(other.getInstancesList())) return false;
+    if (!getInstancePartitionsList().equals(other.getInstancePartitionsList())) return false;
     if (!getNextPageToken().equals(other.getNextPageToken())) return false;
     if (!getUnreachableList().equals(other.getUnreachableList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
@@ -344,9 +354,9 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (getInstancesCount() > 0) {
-      hash = (37 * hash) + INSTANCES_FIELD_NUMBER;
-      hash = (53 * hash) + getInstancesList().hashCode();
+    if (getInstancePartitionsCount() > 0) {
+      hash = (37 * hash) + INSTANCE_PARTITIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getInstancePartitionsList().hashCode();
     }
     hash = (37 * hash) + NEXT_PAGE_TOKEN_FIELD_NUMBER;
     hash = (53 * hash) + getNextPageToken().hashCode();
@@ -359,71 +369,72 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     return hash;
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(byte[] data)
-      throws com.google.protobuf.InvalidProtocolBufferException {
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
+      byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseDelimitedFrom(
-      java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+      parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseDelimitedFrom(
-      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws java.io.IOException {
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+      parseDelimitedFrom(
+          java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse parseFrom(
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -441,7 +452,7 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
   }
 
   public static Builder newBuilder(
-      com.google.spanner.admin.instance.v1.ListInstancesResponse prototype) {
+      com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -460,31 +471,32 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * The response for
-   * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances].
+   * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions].
    * </pre>
    *
-   * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancesResponse}
+   * Protobuf type {@code google.spanner.admin.instance.v1.ListInstancePartitionsResponse}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.ListInstancesResponse)
-      com.google.spanner.admin.instance.v1.ListInstancesResponseOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.ListInstancePartitionsResponse)
+      com.google.spanner.admin.instance.v1.ListInstancePartitionsResponseOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_ListInstancesResponse_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_ListInstancePartitionsResponse_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_ListInstancesResponse_fieldAccessorTable
+          .internal_static_google_spanner_admin_instance_v1_ListInstancePartitionsResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.admin.instance.v1.ListInstancesResponse.class,
-              com.google.spanner.admin.instance.v1.ListInstancesResponse.Builder.class);
+              com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.class,
+              com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.Builder.class);
     }
 
-    // Construct using com.google.spanner.admin.instance.v1.ListInstancesResponse.newBuilder()
+    // Construct using
+    // com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.newBuilder()
     private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
@@ -495,11 +507,11 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      if (instancesBuilder_ == null) {
-        instances_ = java.util.Collections.emptyList();
+      if (instancePartitionsBuilder_ == null) {
+        instancePartitions_ = java.util.Collections.emptyList();
       } else {
-        instances_ = null;
-        instancesBuilder_.clear();
+        instancePartitions_ = null;
+        instancePartitionsBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000001);
       nextPageToken_ = "";
@@ -510,17 +522,19 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_ListInstancesResponse_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_ListInstancePartitionsResponse_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.ListInstancesResponse getDefaultInstanceForType() {
-      return com.google.spanner.admin.instance.v1.ListInstancesResponse.getDefaultInstance();
+    public com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+        getDefaultInstanceForType() {
+      return com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+          .getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.ListInstancesResponse build() {
-      com.google.spanner.admin.instance.v1.ListInstancesResponse result = buildPartial();
+    public com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse build() {
+      com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -528,9 +542,9 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.ListInstancesResponse buildPartial() {
-      com.google.spanner.admin.instance.v1.ListInstancesResponse result =
-          new com.google.spanner.admin.instance.v1.ListInstancesResponse(this);
+    public com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse buildPartial() {
+      com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse result =
+          new com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse(this);
       buildPartialRepeatedFields(result);
       if (bitField0_ != 0) {
         buildPartial0(result);
@@ -540,19 +554,20 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
     }
 
     private void buildPartialRepeatedFields(
-        com.google.spanner.admin.instance.v1.ListInstancesResponse result) {
-      if (instancesBuilder_ == null) {
+        com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse result) {
+      if (instancePartitionsBuilder_ == null) {
         if (((bitField0_ & 0x00000001) != 0)) {
-          instances_ = java.util.Collections.unmodifiableList(instances_);
+          instancePartitions_ = java.util.Collections.unmodifiableList(instancePartitions_);
           bitField0_ = (bitField0_ & ~0x00000001);
         }
-        result.instances_ = instances_;
+        result.instancePartitions_ = instancePartitions_;
       } else {
-        result.instances_ = instancesBuilder_.build();
+        result.instancePartitions_ = instancePartitionsBuilder_.build();
       }
     }
 
-    private void buildPartial0(com.google.spanner.admin.instance.v1.ListInstancesResponse result) {
+    private void buildPartial0(
+        com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.nextPageToken_ = nextPageToken_;
@@ -598,41 +613,44 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.admin.instance.v1.ListInstancesResponse) {
-        return mergeFrom((com.google.spanner.admin.instance.v1.ListInstancesResponse) other);
+      if (other instanceof com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse) {
+        return mergeFrom(
+            (com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.google.spanner.admin.instance.v1.ListInstancesResponse other) {
-      if (other == com.google.spanner.admin.instance.v1.ListInstancesResponse.getDefaultInstance())
-        return this;
-      if (instancesBuilder_ == null) {
-        if (!other.instances_.isEmpty()) {
-          if (instances_.isEmpty()) {
-            instances_ = other.instances_;
+    public Builder mergeFrom(
+        com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse other) {
+      if (other
+          == com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+              .getDefaultInstance()) return this;
+      if (instancePartitionsBuilder_ == null) {
+        if (!other.instancePartitions_.isEmpty()) {
+          if (instancePartitions_.isEmpty()) {
+            instancePartitions_ = other.instancePartitions_;
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
-            ensureInstancesIsMutable();
-            instances_.addAll(other.instances_);
+            ensureInstancePartitionsIsMutable();
+            instancePartitions_.addAll(other.instancePartitions_);
           }
           onChanged();
         }
       } else {
-        if (!other.instances_.isEmpty()) {
-          if (instancesBuilder_.isEmpty()) {
-            instancesBuilder_.dispose();
-            instancesBuilder_ = null;
-            instances_ = other.instances_;
+        if (!other.instancePartitions_.isEmpty()) {
+          if (instancePartitionsBuilder_.isEmpty()) {
+            instancePartitionsBuilder_.dispose();
+            instancePartitionsBuilder_ = null;
+            instancePartitions_ = other.instancePartitions_;
             bitField0_ = (bitField0_ & ~0x00000001);
-            instancesBuilder_ =
+            instancePartitionsBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
-                    ? getInstancesFieldBuilder()
+                    ? getInstancePartitionsFieldBuilder()
                     : null;
           } else {
-            instancesBuilder_.addAllMessages(other.instances_);
+            instancePartitionsBuilder_.addAllMessages(other.instancePartitions_);
           }
         }
       }
@@ -679,14 +697,15 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
               break;
             case 10:
               {
-                com.google.spanner.admin.instance.v1.Instance m =
+                com.google.spanner.admin.instance.v1.InstancePartition m =
                     input.readMessage(
-                        com.google.spanner.admin.instance.v1.Instance.parser(), extensionRegistry);
-                if (instancesBuilder_ == null) {
-                  ensureInstancesIsMutable();
-                  instances_.add(m);
+                        com.google.spanner.admin.instance.v1.InstancePartition.parser(),
+                        extensionRegistry);
+                if (instancePartitionsBuilder_ == null) {
+                  ensureInstancePartitionsIsMutable();
+                  instancePartitions_.add(m);
                 } else {
-                  instancesBuilder_.addMessage(m);
+                  instancePartitionsBuilder_.addMessage(m);
                 }
                 break;
               } // case 10
@@ -722,90 +741,97 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
 
     private int bitField0_;
 
-    private java.util.List<com.google.spanner.admin.instance.v1.Instance> instances_ =
-        java.util.Collections.emptyList();
+    private java.util.List<com.google.spanner.admin.instance.v1.InstancePartition>
+        instancePartitions_ = java.util.Collections.emptyList();
 
-    private void ensureInstancesIsMutable() {
+    private void ensureInstancePartitionsIsMutable() {
       if (!((bitField0_ & 0x00000001) != 0)) {
-        instances_ =
-            new java.util.ArrayList<com.google.spanner.admin.instance.v1.Instance>(instances_);
+        instancePartitions_ =
+            new java.util.ArrayList<com.google.spanner.admin.instance.v1.InstancePartition>(
+                instancePartitions_);
         bitField0_ |= 0x00000001;
       }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            com.google.spanner.admin.instance.v1.Instance,
-            com.google.spanner.admin.instance.v1.Instance.Builder,
-            com.google.spanner.admin.instance.v1.InstanceOrBuilder>
-        instancesBuilder_;
+            com.google.spanner.admin.instance.v1.InstancePartition,
+            com.google.spanner.admin.instance.v1.InstancePartition.Builder,
+            com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder>
+        instancePartitionsBuilder_;
 
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public java.util.List<com.google.spanner.admin.instance.v1.Instance> getInstancesList() {
-      if (instancesBuilder_ == null) {
-        return java.util.Collections.unmodifiableList(instances_);
+    public java.util.List<com.google.spanner.admin.instance.v1.InstancePartition>
+        getInstancePartitionsList() {
+      if (instancePartitionsBuilder_ == null) {
+        return java.util.Collections.unmodifiableList(instancePartitions_);
       } else {
-        return instancesBuilder_.getMessageList();
+        return instancePartitionsBuilder_.getMessageList();
       }
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public int getInstancesCount() {
-      if (instancesBuilder_ == null) {
-        return instances_.size();
+    public int getInstancePartitionsCount() {
+      if (instancePartitionsBuilder_ == null) {
+        return instancePartitions_.size();
       } else {
-        return instancesBuilder_.getCount();
+        return instancePartitionsBuilder_.getCount();
       }
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public com.google.spanner.admin.instance.v1.Instance getInstances(int index) {
-      if (instancesBuilder_ == null) {
-        return instances_.get(index);
+    public com.google.spanner.admin.instance.v1.InstancePartition getInstancePartitions(int index) {
+      if (instancePartitionsBuilder_ == null) {
+        return instancePartitions_.get(index);
       } else {
-        return instancesBuilder_.getMessage(index);
+        return instancePartitionsBuilder_.getMessage(index);
       }
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder setInstances(int index, com.google.spanner.admin.instance.v1.Instance value) {
-      if (instancesBuilder_ == null) {
+    public Builder setInstancePartitions(
+        int index, com.google.spanner.admin.instance.v1.InstancePartition value) {
+      if (instancePartitionsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureInstancesIsMutable();
-        instances_.set(index, value);
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.set(index, value);
         onChanged();
       } else {
-        instancesBuilder_.setMessage(index, value);
+        instancePartitionsBuilder_.setMessage(index, value);
       }
       return this;
     }
@@ -813,19 +839,20 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder setInstances(
-        int index, com.google.spanner.admin.instance.v1.Instance.Builder builderForValue) {
-      if (instancesBuilder_ == null) {
-        ensureInstancesIsMutable();
-        instances_.set(index, builderForValue.build());
+    public Builder setInstancePartitions(
+        int index, com.google.spanner.admin.instance.v1.InstancePartition.Builder builderForValue) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.set(index, builderForValue.build());
         onChanged();
       } else {
-        instancesBuilder_.setMessage(index, builderForValue.build());
+        instancePartitionsBuilder_.setMessage(index, builderForValue.build());
       }
       return this;
     }
@@ -833,21 +860,23 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder addInstances(com.google.spanner.admin.instance.v1.Instance value) {
-      if (instancesBuilder_ == null) {
+    public Builder addInstancePartitions(
+        com.google.spanner.admin.instance.v1.InstancePartition value) {
+      if (instancePartitionsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureInstancesIsMutable();
-        instances_.add(value);
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(value);
         onChanged();
       } else {
-        instancesBuilder_.addMessage(value);
+        instancePartitionsBuilder_.addMessage(value);
       }
       return this;
     }
@@ -855,21 +884,23 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder addInstances(int index, com.google.spanner.admin.instance.v1.Instance value) {
-      if (instancesBuilder_ == null) {
+    public Builder addInstancePartitions(
+        int index, com.google.spanner.admin.instance.v1.InstancePartition value) {
+      if (instancePartitionsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
         }
-        ensureInstancesIsMutable();
-        instances_.add(index, value);
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(index, value);
         onChanged();
       } else {
-        instancesBuilder_.addMessage(index, value);
+        instancePartitionsBuilder_.addMessage(index, value);
       }
       return this;
     }
@@ -877,19 +908,20 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder addInstances(
-        com.google.spanner.admin.instance.v1.Instance.Builder builderForValue) {
-      if (instancesBuilder_ == null) {
-        ensureInstancesIsMutable();
-        instances_.add(builderForValue.build());
+    public Builder addInstancePartitions(
+        com.google.spanner.admin.instance.v1.InstancePartition.Builder builderForValue) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(builderForValue.build());
         onChanged();
       } else {
-        instancesBuilder_.addMessage(builderForValue.build());
+        instancePartitionsBuilder_.addMessage(builderForValue.build());
       }
       return this;
     }
@@ -897,19 +929,20 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder addInstances(
-        int index, com.google.spanner.admin.instance.v1.Instance.Builder builderForValue) {
-      if (instancesBuilder_ == null) {
-        ensureInstancesIsMutable();
-        instances_.add(index, builderForValue.build());
+    public Builder addInstancePartitions(
+        int index, com.google.spanner.admin.instance.v1.InstancePartition.Builder builderForValue) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.add(index, builderForValue.build());
         onChanged();
       } else {
-        instancesBuilder_.addMessage(index, builderForValue.build());
+        instancePartitionsBuilder_.addMessage(index, builderForValue.build());
       }
       return this;
     }
@@ -917,19 +950,21 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder addAllInstances(
-        java.lang.Iterable<? extends com.google.spanner.admin.instance.v1.Instance> values) {
-      if (instancesBuilder_ == null) {
-        ensureInstancesIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, instances_);
+    public Builder addAllInstancePartitions(
+        java.lang.Iterable<? extends com.google.spanner.admin.instance.v1.InstancePartition>
+            values) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(values, instancePartitions_);
         onChanged();
       } else {
-        instancesBuilder_.addAllMessages(values);
+        instancePartitionsBuilder_.addAllMessages(values);
       }
       return this;
     }
@@ -937,18 +972,19 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder clearInstances() {
-      if (instancesBuilder_ == null) {
-        instances_ = java.util.Collections.emptyList();
+    public Builder clearInstancePartitions() {
+      if (instancePartitionsBuilder_ == null) {
+        instancePartitions_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
       } else {
-        instancesBuilder_.clear();
+        instancePartitionsBuilder_.clear();
       }
       return this;
     }
@@ -956,18 +992,19 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public Builder removeInstances(int index) {
-      if (instancesBuilder_ == null) {
-        ensureInstancesIsMutable();
-        instances_.remove(index);
+    public Builder removeInstancePartitions(int index) {
+      if (instancePartitionsBuilder_ == null) {
+        ensureInstancePartitionsIsMutable();
+        instancePartitions_.remove(index);
         onChanged();
       } else {
-        instancesBuilder_.remove(index);
+        instancePartitionsBuilder_.remove(index);
       }
       return this;
     }
@@ -975,102 +1012,116 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public com.google.spanner.admin.instance.v1.Instance.Builder getInstancesBuilder(int index) {
-      return getInstancesFieldBuilder().getBuilder(index);
+    public com.google.spanner.admin.instance.v1.InstancePartition.Builder
+        getInstancePartitionsBuilder(int index) {
+      return getInstancePartitionsFieldBuilder().getBuilder(index);
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public com.google.spanner.admin.instance.v1.InstanceOrBuilder getInstancesOrBuilder(int index) {
-      if (instancesBuilder_ == null) {
-        return instances_.get(index);
+    public com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder
+        getInstancePartitionsOrBuilder(int index) {
+      if (instancePartitionsBuilder_ == null) {
+        return instancePartitions_.get(index);
       } else {
-        return instancesBuilder_.getMessageOrBuilder(index);
+        return instancePartitionsBuilder_.getMessageOrBuilder(index);
       }
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public java.util.List<? extends com.google.spanner.admin.instance.v1.InstanceOrBuilder>
-        getInstancesOrBuilderList() {
-      if (instancesBuilder_ != null) {
-        return instancesBuilder_.getMessageOrBuilderList();
+    public java.util.List<? extends com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder>
+        getInstancePartitionsOrBuilderList() {
+      if (instancePartitionsBuilder_ != null) {
+        return instancePartitionsBuilder_.getMessageOrBuilderList();
       } else {
-        return java.util.Collections.unmodifiableList(instances_);
+        return java.util.Collections.unmodifiableList(instancePartitions_);
       }
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public com.google.spanner.admin.instance.v1.Instance.Builder addInstancesBuilder() {
-      return getInstancesFieldBuilder()
-          .addBuilder(com.google.spanner.admin.instance.v1.Instance.getDefaultInstance());
+    public com.google.spanner.admin.instance.v1.InstancePartition.Builder
+        addInstancePartitionsBuilder() {
+      return getInstancePartitionsFieldBuilder()
+          .addBuilder(com.google.spanner.admin.instance.v1.InstancePartition.getDefaultInstance());
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public com.google.spanner.admin.instance.v1.Instance.Builder addInstancesBuilder(int index) {
-      return getInstancesFieldBuilder()
-          .addBuilder(index, com.google.spanner.admin.instance.v1.Instance.getDefaultInstance());
+    public com.google.spanner.admin.instance.v1.InstancePartition.Builder
+        addInstancePartitionsBuilder(int index) {
+      return getInstancePartitionsFieldBuilder()
+          .addBuilder(
+              index, com.google.spanner.admin.instance.v1.InstancePartition.getDefaultInstance());
     }
     /**
      *
      *
      * <pre>
-     * The list of requested instances.
+     * The list of requested instancePartitions.
      * </pre>
      *
-     * <code>repeated .google.spanner.admin.instance.v1.Instance instances = 1;</code>
+     * <code>repeated .google.spanner.admin.instance.v1.InstancePartition instance_partitions = 1;
+     * </code>
      */
-    public java.util.List<com.google.spanner.admin.instance.v1.Instance.Builder>
-        getInstancesBuilderList() {
-      return getInstancesFieldBuilder().getBuilderList();
+    public java.util.List<com.google.spanner.admin.instance.v1.InstancePartition.Builder>
+        getInstancePartitionsBuilderList() {
+      return getInstancePartitionsFieldBuilder().getBuilderList();
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-            com.google.spanner.admin.instance.v1.Instance,
-            com.google.spanner.admin.instance.v1.Instance.Builder,
-            com.google.spanner.admin.instance.v1.InstanceOrBuilder>
-        getInstancesFieldBuilder() {
-      if (instancesBuilder_ == null) {
-        instancesBuilder_ =
+            com.google.spanner.admin.instance.v1.InstancePartition,
+            com.google.spanner.admin.instance.v1.InstancePartition.Builder,
+            com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder>
+        getInstancePartitionsFieldBuilder() {
+      if (instancePartitionsBuilder_ == null) {
+        instancePartitionsBuilder_ =
             new com.google.protobuf.RepeatedFieldBuilderV3<
-                com.google.spanner.admin.instance.v1.Instance,
-                com.google.spanner.admin.instance.v1.Instance.Builder,
-                com.google.spanner.admin.instance.v1.InstanceOrBuilder>(
-                instances_, ((bitField0_ & 0x00000001) != 0), getParentForChildren(), isClean());
-        instances_ = null;
+                com.google.spanner.admin.instance.v1.InstancePartition,
+                com.google.spanner.admin.instance.v1.InstancePartition.Builder,
+                com.google.spanner.admin.instance.v1.InstancePartitionOrBuilder>(
+                instancePartitions_,
+                ((bitField0_ & 0x00000001) != 0),
+                getParentForChildren(),
+                isClean());
+        instancePartitions_ = null;
       }
-      return instancesBuilder_;
+      return instancePartitionsBuilder_;
     }
 
     private java.lang.Object nextPageToken_ = "";
@@ -1079,8 +1130,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
-     * call to fetch more of the matching instances.
+     * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions]
+     * call to fetch more of the matching instance partitions.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1103,8 +1154,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
-     * call to fetch more of the matching instances.
+     * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions]
+     * call to fetch more of the matching instance partitions.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1127,8 +1178,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
-     * call to fetch more of the matching instances.
+     * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions]
+     * call to fetch more of the matching instance partitions.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1150,8 +1201,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
-     * call to fetch more of the matching instances.
+     * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions]
+     * call to fetch more of the matching instance partitions.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1169,8 +1220,8 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListInstances][google.spanner.admin.instance.v1.InstanceAdmin.ListInstances]
-     * call to fetch more of the matching instances.
+     * [ListInstancePartitions][google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitions]
+     * call to fetch more of the matching instance partitions.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1202,10 +1253,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1220,10 +1271,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1237,10 +1288,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1255,10 +1306,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1273,10 +1324,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1299,10 +1350,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1324,10 +1375,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1346,10 +1397,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1367,10 +1418,10 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
      *
      *
      * <pre>
-     * The list of unreachable instances.
-     * It includes the names of instances whose metadata could not be retrieved
-     * within
-     * [instance_deadline][google.spanner.admin.instance.v1.ListInstancesRequest.instance_deadline].
+     * The list of unreachable instance partitions.
+     * It includes the names of instance partitions whose metadata could
+     * not be retrieved within
+     * [instance_partition_deadline][google.spanner.admin.instance.v1.ListInstancePartitionsRequest.instance_partition_deadline].
      * </pre>
      *
      * <code>repeated string unreachable = 3;</code>
@@ -1401,24 +1452,26 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.ListInstancesResponse)
+    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.ListInstancePartitionsResponse)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.ListInstancesResponse)
-  private static final com.google.spanner.admin.instance.v1.ListInstancesResponse DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.ListInstancePartitionsResponse)
+  private static final com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+      DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.ListInstancesResponse();
+    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse();
   }
 
-  public static com.google.spanner.admin.instance.v1.ListInstancesResponse getDefaultInstance() {
+  public static com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+      getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<ListInstancesResponse> PARSER =
-      new com.google.protobuf.AbstractParser<ListInstancesResponse>() {
+  private static final com.google.protobuf.Parser<ListInstancePartitionsResponse> PARSER =
+      new com.google.protobuf.AbstractParser<ListInstancePartitionsResponse>() {
         @java.lang.Override
-        public ListInstancesResponse parsePartialFrom(
+        public ListInstancePartitionsResponse parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1437,17 +1490,18 @@ public final class ListInstancesResponse extends com.google.protobuf.GeneratedMe
         }
       };
 
-  public static com.google.protobuf.Parser<ListInstancesResponse> parser() {
+  public static com.google.protobuf.Parser<ListInstancePartitionsResponse> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<ListInstancesResponse> getParserForType() {
+  public com.google.protobuf.Parser<ListInstancePartitionsResponse> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.admin.instance.v1.ListInstancesResponse getDefaultInstanceForType() {
+  public com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+      getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }
