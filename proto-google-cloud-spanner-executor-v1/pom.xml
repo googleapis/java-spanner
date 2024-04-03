@@ -65,6 +65,14 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
         </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <configuration>
+          <!-- Exclude (public) classes in this internal package -->
+          <excludes>com/google/spanner/executor/v1/**</excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
