@@ -137,6 +137,7 @@ public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
                       .setUseMultiplexedSession(true)
                       .build())
               .setHost(SERVER_URL)
+              .setNumChannels(NUM_GRPC_CHANNELS)
               .build();
       spanner = options.getService();
       client =

@@ -135,6 +135,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20))
                       .build())
               .setHost(SERVER_URL)
+              .setNumChannels(NUM_GRPC_CHANNELS)
               .build();
       spanner = options.getService();
       client =
