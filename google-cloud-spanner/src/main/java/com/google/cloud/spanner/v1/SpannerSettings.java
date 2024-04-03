@@ -234,7 +234,6 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
   }
 
   /** Returns a new REST builder for this class. */
-  @BetaApi
   public static Builder newHttpJsonBuilder() {
     return Builder.createHttpJsonDefault();
   }
@@ -276,7 +275,6 @@ public class SpannerSettings extends ClientSettings<SpannerSettings> {
       return new Builder(SpannerStubSettings.newBuilder());
     }
 
-    @BetaApi
     private static Builder createHttpJsonDefault() {
       return new Builder(SpannerStubSettings.newHttpJsonBuilder());
     }
