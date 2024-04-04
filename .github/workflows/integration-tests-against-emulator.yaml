@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - uses: stCarolas/setup-maven@v4
+    - uses: stCarolas/setup-maven@v5
       with:
         maven-version: 3.8.1
     # Build with JDK 11 and run tests with JDK 8
