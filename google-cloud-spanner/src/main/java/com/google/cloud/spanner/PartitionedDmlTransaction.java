@@ -167,7 +167,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
   @VisibleForTesting
   ExecuteSqlRequest newTransactionRequestFrom(final Statement statement, final Options options) {
-    ByteString transactionId = initTransaction();
+    ByteString transactionId = initTransaction(options);
 
     final TransactionSelector transactionSelector =
         TransactionSelector.newBuilder().setId(transactionId).build();
@@ -195,13 +195,15 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     return builder.build();
   }
 
-  private ByteString initTransaction() {
+  private ByteString initTransaction(final Options options) {
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(session.getName())
             .setOptions(
                 TransactionOptions.newBuilder()
-                    .setPartitionedDml(TransactionOptions.PartitionedDml.getDefaultInstance()))
+                    .setPartitionedDml(TransactionOptions.PartitionedDml.getDefaultInstance())
+                    .setExcludeTxnFromChangeStreams(
+                        options.withExcludeTxnFromChangeStreams() == Boolean.TRUE))
             .build();
     Transaction tx = rpc.beginTransaction(request, session.getOptions(), true);
     if (tx.getId().isEmpty()) {
