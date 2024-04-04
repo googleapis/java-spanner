@@ -148,6 +148,7 @@ class SessionPool {
   }
 
   private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
+
     private ResultSet cached;
 
     abstract ResultSet load();
@@ -2710,6 +2711,10 @@ class SessionPool {
   private AtomicLong numWaiterTimeouts = new AtomicLong();
   private AtomicLong numMultiplexedSessionWaiterTimeouts = new AtomicLong();
 
+  /**
+   * A recently created multiplexed session is always added at the front/head of the queue. A stale
+   * session is removed from the last/back of the queue.
+   */
   @GuardedBy("lock")
   private final AtomicReference<MultiplexedSession> multiplexedSession = new AtomicReference<>();
 
