@@ -23,12 +23,9 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.google.cloud.spanner.SessionPool.MultiplexedSession;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionConsumer;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionFuture;
 import com.google.cloud.spanner.SessionPool.SessionFuture;
@@ -37,8 +34,6 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -110,23 +105,6 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void testSynchronousSessionInitialization_hasAtMostOneMultiplexedSession() {
-    setupMockMultiplexedSessionCreation();
-
-    pool = createPool();
-    pool.waitOnMultiplexedSession();
-
-    assertEquals(1, pool.totalMultiplexedSessions());
-    Session session1 = pool.getMultiplexedSessionWithFallback().get();
-    Session session2 = pool.getMultiplexedSessionWithFallback().get();
-    assertEquals(session1, session2);
-
-    session2.close();
-    session1.close();
-    verify(sessionClient, times(1)).createMultiplexedSession(any(MultiplexedSessionConsumer.class));
-  }
-
-  @Test
   public void testGetMultiplexedSession_whenSessionCreationFailed_assertErrorForWaiters() {
     doAnswer(
             invocation -> {
@@ -158,70 +136,5 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
     assertEquals(5, pool.getNumMultiplexedSessionWaiterTimeouts());
     assertEquals(0, pool.getNumWaiterTimeouts());
     assertEquals(0, pool.getNumberOfSessionsInPool());
-  }
-
-  @Test
-  public void
-      testGetMultiplexedSession_whenSessionCreationSucceededOnSecondAttempt_assertWaitersAreUnblocked() {
-    doAnswer(
-            invocation -> {
-              MultiplexedSessionConsumer consumer =
-                  invocation.getArgument(0, MultiplexedSessionConsumer.class);
-              consumer.onSessionCreateFailure(
-                  SpannerExceptionFactory.newSpannerException(ErrorCode.INTERNAL, ""), 1);
-              return null;
-            })
-        .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionConsumer.class));
-    options =
-        options
-            .toBuilder()
-            .setMinSessions(2)
-            .setUseMultiplexedSession(true)
-            .setAcquireSessionTimeout(
-                Duration.ofHours(
-                    1)) // use a high value since the waiters will be eventually unblocked
-            .build();
-    pool = createPool();
-    assertEquals(0, pool.totalMultiplexedSessions());
-    assertEquals(0, pool.totalSessions());
-
-    // create 5 requests which require a session
-    List<SessionFuture> futures = new ArrayList<>();
-    for (int i = 0; i < 5; i++) {
-      // below request will be added to a waiter queue since no session is available
-      futures.add(pool.getMultiplexedSessionWithFallback());
-    }
-    // assert that all 5 requests are present in waiter queue
-    assertEquals(5, pool.getNumMultiplexedSessionWaiters());
-    assertEquals(0, pool.getNumMultiplexedSessionWaiterTimeouts());
-
-    // now mock a successful session creation
-    // run a background pool maintainer which should now create a multiplexed session
-    // this should unblock the waiters
-    setupMockMultiplexedSessionCreation();
-    pool.poolMaintainer.maintainPool();
-    assertEquals(1, pool.totalMultiplexedSessions());
-
-    for (SessionFuture future : futures) {
-      MultiplexedSession multiplexedSession = (MultiplexedSession) future.get();
-      assertNotNull(multiplexedSession);
-    }
-    assertEquals(1, pool.totalMultiplexedSessions());
-    assertEquals(0, pool.getNumMultiplexedSessionWaiterTimeouts());
-    assertEquals(0, pool.getNumWaiterTimeouts());
-    assertEquals(0, pool.getNumberOfSessionsInPool());
-  }
-
-  private void setupMockMultiplexedSessionCreation() {
-    doAnswer(
-            invocation -> {
-              MultiplexedSessionConsumer consumer =
-                  invocation.getArgument(0, MultiplexedSessionConsumer.class);
-              consumer.onSessionReady(mockSession());
-              return null;
-            })
-        .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionConsumer.class));
   }
 }
