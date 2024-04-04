@@ -39,6 +39,11 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
             ClientSideStatements.getInstance(Dialect.POSTGRESQL).getCompiledStatements()));
   }
 
+  @Override
+  Dialect getDialect() {
+    return Dialect.POSTGRESQL;
+  }
+
   /**
    * Indicates whether the parser supports the {@code EXPLAIN} clause. The PostgreSQL parser does
    * not support it.
