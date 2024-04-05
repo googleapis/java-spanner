@@ -1908,15 +1908,11 @@ class SessionPool {
 
     private void keepAlive() {
       markUsed();
-      final ISpan previousSpan = delegate.getCurrentSpan();
-      delegate.setCurrentSpan(tracer.getBlankSpan());
       try (ResultSet resultSet =
           delegate
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
               .executeQuery(Statement.newBuilder("SELECT 1").build())) {
         resultSet.next();
-      } finally {
-        delegate.setCurrentSpan(previousSpan);
       }
     }
 
@@ -1955,7 +1951,6 @@ class SessionPool {
 
     @Override
     public void markBusy(ISpan span) {
-      this.delegate.setCurrentSpan(span);
       this.state = SessionState.BUSY;
     }
 

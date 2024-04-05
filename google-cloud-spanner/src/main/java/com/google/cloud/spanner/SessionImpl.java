@@ -91,9 +91,6 @@ class SessionImpl implements Session {
 
     /** Invalidates the transaction, generally because a new one has been started on the session. */
     void invalidate();
-
-    /** Registers the current span on the transaction. */
-    void setSpan(ISpan span);
   }
 
   private final SpannerImpl spanner;
@@ -105,7 +102,6 @@ class SessionImpl implements Session {
   private volatile Instant lastUseTime;
   @Nullable private final Instant createTime;
   private final boolean isMultiplexed;
-  private ISpan currentSpan;
 
   SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
     this.spanner = spanner;
@@ -141,14 +137,6 @@ class SessionImpl implements Session {
 
   Map<SpannerRpc.Option, ?> getOptions() {
     return options;
-  }
-
-  void setCurrentSpan(ISpan span) {
-    currentSpan = span;
-  }
-
-  ISpan getCurrentSpan() {
-    return currentSpan;
   }
 
   Instant getLastUseTime() {
@@ -308,7 +296,7 @@ class SessionImpl implements Session {
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
-            .setSpan(currentSpan)
+            .setSpan(tracer.getCurrentSpan())
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
@@ -330,7 +318,7 @@ class SessionImpl implements Session {
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
-            .setSpan(currentSpan)
+            .setSpan(tracer.getCurrentSpan())
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .buildSingleUseReadOnlyTransaction());
@@ -352,7 +340,7 @@ class SessionImpl implements Session {
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
-            .setSpan(currentSpan)
+            .setSpan(tracer.getCurrentSpan())
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
             .build());
@@ -370,12 +358,12 @@ class SessionImpl implements Session {
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    return new TransactionManagerImpl(this, currentSpan, tracer, options);
+    return new TransactionManagerImpl(this, tracer.getCurrentSpan(), tracer, options);
   }
 
   @Override
   public AsyncTransactionManagerImpl transactionManagerAsync(TransactionOption... options) {
-    return new AsyncTransactionManagerImpl(this, currentSpan, options);
+    return new AsyncTransactionManagerImpl(this, tracer.getCurrentSpan(), options);
   }
 
   @Override
@@ -470,7 +458,7 @@ class SessionImpl implements Session {
         .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
         .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
-        .setSpan(currentSpan)
+        .setSpan(tracer.getCurrentSpan())
         .setTracer(tracer)
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
         .setClock(poolMaintainerClock == null ? new Clock() : poolMaintainerClock)
@@ -485,9 +473,6 @@ class SessionImpl implements Session {
     }
     activeTransaction = ctx;
     readyTransactionId = null;
-    if (activeTransaction != null) {
-      activeTransaction.setSpan(currentSpan);
-    }
     return ctx;
   }
 

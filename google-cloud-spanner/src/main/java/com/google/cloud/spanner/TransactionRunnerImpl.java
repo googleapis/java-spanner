@@ -985,11 +985,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     this.options = Options.fromTransactionOptions(options);
     this.txn = session.newTransaction(this.options);
     this.tracer = session.getTracer();
-  }
-
-  @Override
-  public void setSpan(ISpan span) {
-    this.span = span;
+    this.span = tracer.getCurrentSpan();
   }
 
   @Nullable

@@ -140,7 +140,6 @@ public class SessionImplTest {
     Span oTspan = mock(Span.class);
     ISpan span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
-    ((SessionImpl) session).setCurrentSpan(span);
     // We expect the same options, "options", on all calls on "session".
     options = optionsCaptor.getValue();
   }

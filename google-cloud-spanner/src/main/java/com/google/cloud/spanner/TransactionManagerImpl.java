@@ -40,15 +40,6 @@ final class TransactionManagerImpl implements TransactionManager, SessionTransac
     this.options = Options.fromTransactionOptions(options);
   }
 
-  ISpan getSpan() {
-    return span;
-  }
-
-  @Override
-  public void setSpan(ISpan span) {
-    this.span = span;
-  }
-
   @Override
   public TransactionContext begin() {
     Preconditions.checkState(txn == null, "begin can only be called once");

@@ -146,7 +146,6 @@ public class TransactionRunnerImplTest {
     Span oTspan = mock(Span.class);
     span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
-    transactionRunner.setSpan(span);
   }
 
   @SuppressWarnings("unchecked")
@@ -312,9 +311,7 @@ public class TransactionRunnerImplTest {
             throw new IllegalStateException();
           }
         };
-    session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
-    runner.setSpan(span);
     assertThat(usedInlinedBegin).isFalse();
     runner.run(
         transaction -> {
@@ -347,7 +344,6 @@ public class TransactionRunnerImplTest {
             ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
-    runner.setSpan(span);
     ExecuteBatchDmlResponse response1 =
         ExecuteBatchDmlResponse.newBuilder()
             .addResultSets(

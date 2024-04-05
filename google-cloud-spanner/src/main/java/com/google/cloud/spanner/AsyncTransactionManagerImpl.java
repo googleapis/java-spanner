@@ -48,11 +48,6 @@ final class AsyncTransactionManagerImpl
   }
 
   @Override
-  public void setSpan(ISpan span) {
-    this.span = span;
-  }
-
-  @Override
   public void close() {
     closeAsync();
   }

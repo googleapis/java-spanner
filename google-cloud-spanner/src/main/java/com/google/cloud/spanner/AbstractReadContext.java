@@ -451,11 +451,6 @@ abstract class AbstractReadContext
     this.tracer = builder.tracer;
   }
 
-  @Override
-  public void setSpan(ISpan span) {
-    this.span = span;
-  }
-
   long getSeqNo() {
     return seqNo.incrementAndGet();
   }
