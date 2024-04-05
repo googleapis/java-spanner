@@ -17,15 +17,20 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.spanner.BatchTransactionId;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Partition;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -35,7 +40,7 @@ import java.util.zip.GZIPOutputStream;
  * {@link PartitionId} can safely be given to a different connection and/or host to be executed
  * there.
  */
-public class PartitionId implements Serializable {
+public final class PartitionId implements Serializable {
   private static final long serialVersionUID = 239487275L;
 
   private final BatchTransactionId transactionId;
@@ -46,10 +51,28 @@ public class PartitionId implements Serializable {
    * created with the {@link #encodeToString(BatchTransactionId, Partition)} method.
    */
   public static PartitionId decodeFromString(String id) {
+    AtomicBoolean classNameVerified = new AtomicBoolean(false);
     try (ObjectInputStream objectInputStream =
         new ObjectInputStream(
-            new GZIPInputStream(new ByteArrayInputStream(Base64.getUrlDecoder().decode(id))))) {
+            new GZIPInputStream(new ByteArrayInputStream(Base64.getUrlDecoder().decode(id)))) {
+          @Override
+          protected Class<?> resolveClass(ObjectStreamClass desc)
+              throws IOException, ClassNotFoundException {
+            if (!classNameVerified.get()) {
+              if (desc.getName().equals(PartitionId.class.getName())) {
+                classNameVerified.set(true);
+              } else {
+                throw new InvalidClassException(
+                    "The id does not contain a valid PartitionId instance", desc.getName());
+              }
+            }
+            return super.resolveClass(desc);
+          }
+        }) {
       return (PartitionId) objectInputStream.readObject();
+    } catch (InvalidClassException invalidClassException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT, invalidClassException.getMessage(), invalidClassException);
     } catch (Exception exception) {
       throw SpannerExceptionFactory.newSpannerException(exception);
     }
