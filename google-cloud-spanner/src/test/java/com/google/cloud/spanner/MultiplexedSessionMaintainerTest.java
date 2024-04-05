@@ -78,8 +78,8 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void
-      testMaintainMultiplexedSession_whenNewSessionCreated_assertThatStaleSessionIsRemoved() {
+  public void testMaintainMultiplexedSession_whenNewSessionCreated_assertThatStaleSessionIsRemoved()
+      throws InterruptedException {
     doAnswer(
             invocation -> {
               MultiplexedSessionConsumer consumer =
@@ -115,7 +115,9 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     // Run second maintenance loop. the first session would now be stale since it has now existed
     // for more than 9 days.
     runMaintenanceLoop(clock, pool, 1);
-
+    while (multiplexedSessionsRemoved.isEmpty()) {
+      Thread.sleep(1);
+    }
     SessionFuture session2 = pool.getMultiplexedSessionWithFallback();
     assertNotEquals(session1.getName(), session2.getName());
     assertEquals(1, multiplexedSessionsRemoved.size());
