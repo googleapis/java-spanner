@@ -2483,8 +2483,7 @@ class SessionPool {
       try {
         if (options.getUseMultiplexedSession()) {
           synchronized (lock) {
-            if (multiplexedSessionFuture.get().get().get() != null
-                && isMultiplexedSessionStale(currentTime)) {
+            if (getMultiplexedSession().get() != null && isMultiplexedSessionStale(currentTime)) {
               /*
                This will attempt to create a new multiplexed session. if successfully created then
                the existing session will be replaced. Note that there maybe active transactions
