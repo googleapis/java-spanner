@@ -83,7 +83,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 0)
 public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
-  @State(Scope.Thread)
+  @State(Scope.Benchmark)
   @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
   public static class BenchmarkState {
 
