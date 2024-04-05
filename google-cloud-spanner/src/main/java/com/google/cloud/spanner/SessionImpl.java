@@ -479,20 +479,17 @@ class SessionImpl implements Session {
 
   <T extends SessionTransaction> T setActive(@Nullable T ctx) {
     throwIfTransactionsPending();
-
-    if (activeTransaction != null) {
-      activeTransaction.invalidate();
-    }
-    activeTransaction = ctx;
-    readyTransactionId = null;
-    if (activeTransaction != null) {
-      activeTransaction.setSpan(currentSpan);
+    if (!this.isMultiplexed) {
+      if (activeTransaction != null) {
+        activeTransaction.invalidate();
+      }
+      activeTransaction = ctx;
+      readyTransactionId = null;
+      if (activeTransaction != null) {
+        activeTransaction.setSpan(currentSpan);
+      }
     }
     return ctx;
-  }
-
-  boolean hasReadyTransaction() {
-    return readyTransactionId != null;
   }
 
   TraceWrapper getTracer() {
