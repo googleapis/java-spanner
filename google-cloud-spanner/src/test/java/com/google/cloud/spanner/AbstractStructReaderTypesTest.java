@@ -286,6 +286,7 @@ public class AbstractStructReaderTypesTest {
             "getJson",
             Collections.singletonList("getValue")
           },
+          {Type.pgOid(), "getLongInternal", 123L, "getLong", Collections.singletonList("getValue")},
           {
             Type.timestamp(),
             "getTimestampInternal",
@@ -383,6 +384,20 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
             "getJsonList",
             Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getLongArrayInternal",
+            new long[] {1, 2},
+            "getLongArray",
+            Arrays.asList("getLongList", "getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getLongListInternal",
+            Arrays.asList(3L, 4L),
+            "getLongList",
+            Arrays.asList("getLongArray", "getValue")
           },
           {
             Type.array(Type.bytes()),
