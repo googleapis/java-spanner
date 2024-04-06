@@ -493,7 +493,7 @@ public class SessionPoolOptions {
      */
     private long randomizePositionQPSThreshold = 0L;
 
-    private boolean useMultiplexedSession = false;
+    private boolean useMultiplexedSession = true;
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Duration waitForMultiplexedSession = Duration.ofSeconds(10);
     private Clock poolMaintainerClock;
