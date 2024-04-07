@@ -23,11 +23,14 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.google.cloud.spanner.SessionPool.MultiplexedSessionConsumer;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionFuture;
+import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
+import com.google.cloud.spanner.SessionPool.SessionFuture;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
@@ -81,6 +84,23 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
   }
 
   @Test
+  public void testGetMultiplexedSession_whenSessionInitializationSucceeded_assertSessionReturned() {
+    setupMockMultiplexedSessionCreation();
+
+    pool = createPool();
+    assertTrue(pool.isValid());
+
+    // create 5 requests which require a session
+    for (int i = 0; i < 5; i++) {
+      // checking out a multiplexed session
+      SessionFuture multiplexedSessionFuture = pool.getMultiplexedSessionWithFallback();
+      assertNotNull(multiplexedSessionFuture.get());
+    }
+    verify(sessionClient, times(1))
+        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+  }
+
+  @Test
   public void testGetMultiplexedSession_whenClosedPool_assertSessionReturned() {
     setupMockMultiplexedSessionCreation();
 
@@ -109,14 +129,14 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
   public void testGetMultiplexedSession_whenSessionCreationFailed_assertErrorForWaiters() {
     doAnswer(
             invocation -> {
-              MultiplexedSessionConsumer consumer =
-                  invocation.getArgument(0, MultiplexedSessionConsumer.class);
+              MultiplexedSessionInitializationConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
               consumer.onSessionCreateFailure(
                   SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED, ""), 1);
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionConsumer.class));
+        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
     options =
         options
             .toBuilder()
@@ -141,12 +161,12 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
   private void setupMockMultiplexedSessionCreation() {
     doAnswer(
             invocation -> {
-              MultiplexedSessionConsumer consumer =
-                  invocation.getArgument(0, MultiplexedSessionConsumer.class);
+              MultiplexedSessionInitializationConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
               consumer.onSessionReady(mockSession());
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionConsumer.class));
+        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
   }
 }

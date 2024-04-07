@@ -22,13 +22,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SessionPool.MultiplexedSession;
-import com.google.cloud.spanner.SessionPool.MultiplexedSessionConsumer;
+import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
+import com.google.cloud.spanner.SessionPool.MultiplexedSessionMaintainerConsumer;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.cloud.spanner.SessionPool.SessionFuture;
 import io.opencensus.trace.Tracing;
@@ -78,12 +80,12 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void testMaintainMultiplexedSession_whenNewSessionCreated_assertThatStaleSessionIsRemoved()
-      throws InterruptedException {
+  public void
+      testMaintainMultiplexedSession_whenNewSessionCreated_assertThatStaleSessionIsRemoved() {
     doAnswer(
             invocation -> {
-              MultiplexedSessionConsumer consumer =
-                  invocation.getArgument(0, MultiplexedSessionConsumer.class);
+              MultiplexedSessionInitializationConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
               ReadContext mockContext = mock(ReadContext.class);
               Timestamp timestamp =
                   Timestamp.ofTimeSecondsAndNanos(
@@ -94,7 +96,56 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(SessionConsumer.class));
+        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+    SessionPool pool = createPool();
+
+    // Run one maintenance loop.
+    SessionFuture session1 = pool.getMultiplexedSessionWithFallback();
+    runMaintenanceLoop(clock, pool, 1);
+    assertTrue(multiplexedSessionsRemoved.isEmpty());
+
+    // Advance clock by 8 days
+    clock.currentTimeMillis.addAndGet(Duration.ofDays(8).toMillis());
+
+    // Run second maintenance loop. the first session would now be stale since it has now existed
+    // for more than 7 days.
+    runMaintenanceLoop(clock, pool, 1);
+    SessionFuture session2 = pool.getMultiplexedSessionWithFallback();
+    assertNotEquals(session1.getName(), session2.getName());
+    assertEquals(1, multiplexedSessionsRemoved.size());
+    assertTrue(multiplexedSessionsRemoved.contains(session1.get()));
+
+    // Advance clock by 8 days
+    clock.currentTimeMillis.addAndGet(Duration.ofDays(8).toMillis());
+
+    // Run third maintenance loop. the second session would now be stale since it has now existed
+    // for more than 7 days
+    runMaintenanceLoop(clock, pool, 1);
+
+    SessionFuture session3 = pool.getMultiplexedSessionWithFallback();
+    assertNotEquals(session2.getName(), session3.getName());
+    assertEquals(2, multiplexedSessionsRemoved.size());
+    assertTrue(multiplexedSessionsRemoved.contains(session2.get()));
+  }
+
+  @Test
+  public void
+      testMaintainMultiplexedSession_whenMultiplexedSessionNotStale_assertThatSessionIsNotRemoved() {
+    doAnswer(
+            invocation -> {
+              MultiplexedSessionInitializationConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
+              ReadContext mockContext = mock(ReadContext.class);
+              Timestamp timestamp =
+                  Timestamp.ofTimeSecondsAndNanos(
+                      Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
+              consumer.onSessionReady(
+                  setupMockSession(
+                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+              return null;
+            })
+        .when(sessionClient)
+        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
     SessionPool pool = createPool();
 
     // Run one maintenance loop.
@@ -107,31 +158,87 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     // Run one maintenance loop. the first session would not be stale yet since it has now existed
     // for less than 7 days.
     runMaintenanceLoop(clock, pool, 1);
-    assertTrue(multiplexedSessionsRemoved.isEmpty());
-
-    // Advance clock by 5 days
-    clock.currentTimeMillis.addAndGet(Duration.ofDays(5).toMillis());
-
-    // Run second maintenance loop. the first session would now be stale since it has now existed
-    // for more than 9 days.
-    runMaintenanceLoop(clock, pool, 1);
     SessionFuture session2 = pool.getMultiplexedSessionWithFallback();
-    assertNotEquals(session1.getName(), session2.getName());
-    assertEquals(1, multiplexedSessionsRemoved.size());
-    assertTrue(multiplexedSessionsRemoved.contains(session1.get()));
+    assertTrue(multiplexedSessionsRemoved.isEmpty());
+    assertEquals(session1.getName(), session2.getName());
+  }
+
+  @Test
+  public void
+      testMaintainMultiplexedSession_whenMultiplexedSessionCreationFailed_testRetryAfterDelay() {
+    doAnswer(
+            invocation -> {
+              MultiplexedSessionInitializationConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
+              ReadContext mockContext = mock(ReadContext.class);
+              Timestamp timestamp =
+                  Timestamp.ofTimeSecondsAndNanos(
+                      Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
+              consumer.onSessionReady(
+                  setupMockSession(
+                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+              return null;
+            })
+        .when(sessionClient)
+        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+    doAnswer(
+            invocation -> {
+              MultiplexedSessionMaintainerConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionMaintainerConsumer.class);
+              consumer.onSessionCreateFailure(
+                  SpannerExceptionFactory.newSpannerException(ErrorCode.DEADLINE_EXCEEDED, ""), 1);
+              return null;
+            })
+        .when(sessionClient)
+        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+    SessionPool pool = createPool();
 
     // Advance clock by 8 days
     clock.currentTimeMillis.addAndGet(Duration.ofDays(8).toMillis());
 
-    // Run third maintenance loop. the second session would now be stale since it has now existed
-    // for
-    // more than 7 days
+    // Run one maintenance loop. Attempt replacing stale session should fail.
+    SessionFuture session1 = pool.getMultiplexedSessionWithFallback();
     runMaintenanceLoop(clock, pool, 1);
+    assertTrue(multiplexedSessionsRemoved.isEmpty());
+    verify(sessionClient, times(1))
+        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
 
+    // Advance clock by 10s and now mock session creation to be successful.
+    clock.currentTimeMillis.addAndGet(Duration.ofSeconds(10).toMillis());
+    doAnswer(
+            invocation -> {
+              MultiplexedSessionMaintainerConsumer consumer =
+                  invocation.getArgument(0, MultiplexedSessionMaintainerConsumer.class);
+              ReadContext mockContext = mock(ReadContext.class);
+              Timestamp timestamp =
+                  Timestamp.ofTimeSecondsAndNanos(
+                      Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
+              consumer.onSessionReady(
+                  setupMockSession(
+                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+              return null;
+            })
+        .when(sessionClient)
+        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+    // Run one maintenance loop. Attempt should be ignored as it has not been 10 minutes since last
+    // attempt.
+    runMaintenanceLoop(clock, pool, 1);
+    SessionFuture session2 = pool.getMultiplexedSessionWithFallback();
+    assertTrue(multiplexedSessionsRemoved.isEmpty());
+    assertEquals(session1.getName(), session2.getName());
+    verify(sessionClient, times(1))
+        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+
+    // Advance clock by 15 minutes
+    clock.currentTimeMillis.addAndGet(Duration.ofMinutes(15).toMillis());
+    // Run one maintenance loop. Attempt should succeed since its already more than 10 minutes since
+    // the last attempt.
+    runMaintenanceLoop(clock, pool, 1);
     SessionFuture session3 = pool.getMultiplexedSessionWithFallback();
-    assertNotEquals(session2.getName(), session3.getName());
-    assertEquals(2, multiplexedSessionsRemoved.size());
-    assertTrue(multiplexedSessionsRemoved.contains(session2.get()));
+    assertTrue(multiplexedSessionsRemoved.contains(session1.get()));
+    assertNotEquals(session1.getName(), session3.getName());
+    verify(sessionClient, times(2))
+        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
   }
 
   private SessionImpl setupMockSession(final SessionImpl session, final ReadContext mockContext) {

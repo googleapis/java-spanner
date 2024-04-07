@@ -2222,6 +2222,9 @@ class SessionPool {
    */
   final class PoolMaintainer {
 
+    // Delay post which the maintainer will retry creating/replacing the current multiplexed session
+    private final Duration multiplexedSessionCreationRetryDelay = Duration.ofMinutes(10);
+
     // Length of the window in millis over which we keep track of maximum number of concurrent
     // sessions in use.
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
@@ -2245,6 +2248,8 @@ class SessionPool {
      */
     @VisibleForTesting Instant lastExecutionTime;
 
+    @VisibleForTesting Instant multiplexedSessionReplacementAttemptTime;
+
     /**
      * The previous numSessionsAcquired seen by the maintainer. This is used to calculate the
      * transactions per second, which again is used to determine whether to randomize the order of
@@ -2262,6 +2267,8 @@ class SessionPool {
 
     void init() {
       lastExecutionTime = clock.instant();
+      multiplexedSessionReplacementAttemptTime = clock.instant();
+
       // Scheduled pool maintenance worker.
       synchronized (lock) {
         scheduledFuture =
@@ -2478,13 +2485,23 @@ class SessionPool {
         if (options.getUseMultiplexedSession()) {
           synchronized (lock) {
             if (getMultiplexedSession().get() != null && isMultiplexedSessionStale(currentTime)) {
+              final Instant minExecutionTime =
+                  multiplexedSessionReplacementAttemptTime.plus(
+                      multiplexedSessionCreationRetryDelay);
+              if (currentTime.isBefore(minExecutionTime)) {
+                return;
+              }
+
               /*
                This will attempt to create a new multiplexed session. if successfully created then
                the existing session will be replaced. Note that there maybe active transactions
                running on the stale session. Hence, it is important that we only replace the reference
                and not invoke a DeleteSession RPC.
               */
-              maybeCreateMultiplexedSession();
+              maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
+
+              // update this only after we have attempted to replace the multiplexed session
+              multiplexedSessionReplacementAttemptTime = currentTime;
             }
           }
         }
@@ -2620,8 +2637,10 @@ class SessionPool {
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
-  private final MultiplexedSessionConsumer multiplexedSessionConsumer =
-      new MultiplexedSessionConsumer();
+  private final MultiplexedSessionInitializationConsumer multiplexedSessionInitializationConsumer =
+      new MultiplexedSessionInitializationConsumer();
+  private final MultiplexedSessionMaintainerConsumer multiplexedMaintainerConsumer =
+      new MultiplexedSessionMaintainerConsumer();
 
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
@@ -2871,7 +2890,7 @@ class SessionPool {
         createSessions(options.getMinSessions(), true);
       }
       if (options.getUseMultiplexedSession()) {
-        maybeCreateMultiplexedSession();
+        maybeCreateMultiplexedSession(multiplexedSessionInitializationConsumer);
       }
     }
   }
@@ -3369,13 +3388,13 @@ class SessionPool {
     }
   }
 
-  private void maybeCreateMultiplexedSession() {
+  private void maybeCreateMultiplexedSession(SessionConsumer sessionConsumer) {
     synchronized (lock) {
       if (!multiplexedSessionBeingCreated) {
         logger.log(Level.FINE, String.format("Creating multiplexed sessions"));
         try {
           multiplexedSessionBeingCreated = true;
-          sessionClient.createMultiplexedSession(multiplexedSessionConsumer);
+          sessionClient.createMultiplexedSession(sessionConsumer);
         } catch (Throwable ignore) {
           // such an exception will never be thrown. the exception will be passed onto the consumer.
         }
@@ -3411,8 +3430,42 @@ class SessionPool {
     }
   }
 
-  class MultiplexedSessionConsumer implements SessionConsumer {
+  /**
+   * Callback interface which is invoked when a multiplexed session is being replaced by the
+   * background maintenance thread. When a multiplexed session creation fails during background
+   * thread, it would simply log the exception and retry the session creation in the next background
+   * thread invocation.
+   *
+   * <p>This consumer is not used when the multiplexed session is getting initialized for the first
+   * time during application startup. We instead use {@link
+   * MultiplexedSessionInitializationConsumer} for the first time when multiplexed session is
+   * getting created.
+   */
+  class MultiplexedSessionMaintainerConsumer extends MultiplexedSessionInitializationConsumer {
 
+    /**
+     * Method which logs the exception so that session creation can be re-attempted in the next
+     * background thread invocation.
+     */
+    @Override
+    public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+      synchronized (lock) {
+        multiplexedSessionBeingCreated = false;
+      }
+      logger.log(
+          Level.WARNING,
+          String.format(
+              "Failed to create multiplexed session. "
+                  + "Pending replacing stale multiplexed session",
+              t));
+    }
+  }
+
+  /**
+   * Callback interface which is invoked when a multiplexed session is getting initialised for the
+   * first time when a session is getting created.
+   */
+  class MultiplexedSessionInitializationConsumer implements SessionConsumer {
     @Override
     public void onSessionReady(SessionImpl sessionImpl) {
       final SettableFuture settableFuture = SettableFuture.create();
@@ -3442,6 +3495,11 @@ class SessionPool {
       }
     }
 
+    /**
+     * When a multiplexed session fails during initialization we would like all pending threads to
+     * receive the exception and throw the error. This is done because at the time of start up there
+     * is no other multiplexed session which could have been assigned to the pending requests.
+     */
     @Override
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
       synchronized (lock) {
