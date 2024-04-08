@@ -1157,14 +1157,10 @@ class SessionPool {
     return new PooledSessionFuture(future, span);
   }
 
-  /**
-   * Wrapper class for the {@link SessionFuture} implementations.
-   */
+  /** Wrapper class for the {@link SessionFuture} implementations. */
   interface SessionFutureWrapper<T extends CachedSession> {
 
-    /**
-     * Method to resolve {@link SessionFuture} implementation for different use-cases.
-     */
+    /** Method to resolve {@link SessionFuture} implementation for different use-cases. */
     T get();
   }
 
@@ -3533,12 +3529,13 @@ class SessionPool {
   class MultiplexedSessionInitializationConsumer implements SessionConsumer {
     @Override
     public void onSessionReady(SessionImpl sessionImpl) {
-      final SettableFuture settableFuture = SettableFuture.create();
+      final SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
       final MultiplexedSession newSession = new MultiplexedSession(sessionImpl);
       settableFuture.set(newSession);
 
       synchronized (lock) {
-        SettableApiFuture settableApiFuture = currentMultiplexedSessionReference.get();
+        SettableApiFuture<MultiplexedSessionFuture> settableApiFuture =
+            currentMultiplexedSessionReference.get();
         settableApiFuture.set(new MultiplexedSessionFuture(settableFuture));
         currentMultiplexedSessionReference.set(settableApiFuture);
         multiplexedSessionBeingCreated = false;

@@ -150,7 +150,8 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
     // create 5 requests which require a session
     for (int i = 0; i < 5; i++) {
       SpannerException e =
-          assertThrows(SpannerException.class, () -> pool.getMultiplexedSessionWithFallback().get());
+          assertThrows(
+              SpannerException.class, () -> pool.getMultiplexedSessionWithFallback().get());
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
     // assert that all 5 requests failed with exception
