@@ -28,9 +28,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.google.cloud.spanner.SessionPool.MultiplexedSessionFuture;
+import com.google.cloud.spanner.SessionPool.MultiplexedSession;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
-import com.google.cloud.spanner.SessionPool.SessionFuture;
+import com.google.cloud.spanner.SessionPool.SessionFutureWrapper;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
@@ -93,7 +93,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
     // create 5 requests which require a session
     for (int i = 0; i < 5; i++) {
       // checking out a multiplexed session
-      SessionFuture multiplexedSessionFuture = pool.getMultiplexedSessionWithFallback();
+      SessionFutureWrapper multiplexedSessionFuture = pool.getMultiplexedSessionWithFallback();
       assertNotNull(multiplexedSessionFuture.get());
     }
     verify(sessionClient, times(1))
@@ -109,8 +109,8 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
     closePoolWithStacktrace();
 
     // checking out a multiplexed session does not throw error even if pool is closed
-    MultiplexedSessionFuture multiplexedSessionFuture =
-        (MultiplexedSessionFuture) pool.getMultiplexedSessionWithFallback();
+    MultiplexedSession multiplexedSessionFuture =
+        (MultiplexedSession) pool.getMultiplexedSessionWithFallback().get();
     assertNotNull(multiplexedSessionFuture);
 
     // checking out a regular session throws error.
@@ -150,7 +150,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
     // create 5 requests which require a session
     for (int i = 0; i < 5; i++) {
       SpannerException e =
-          assertThrows(SpannerException.class, () -> pool.getMultiplexedSessionWithFallback());
+          assertThrows(SpannerException.class, () -> pool.getMultiplexedSessionWithFallback().get());
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
     // assert that all 5 requests failed with exception
