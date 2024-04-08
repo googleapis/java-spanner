@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.google.cloud.spanner.SessionPool.MultiplexedSession;
+import com.google.cloud.spanner.SessionPool.MultiplexedSessionFuture;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
 import com.google.cloud.spanner.SessionPool.SessionFutureWrapper;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
@@ -109,8 +109,8 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
     closePoolWithStacktrace();
 
     // checking out a multiplexed session does not throw error even if pool is closed
-    MultiplexedSession multiplexedSessionFuture =
-        (MultiplexedSession) pool.getMultiplexedSessionWithFallback().get();
+    MultiplexedSessionFuture multiplexedSessionFuture =
+        (MultiplexedSessionFuture) pool.getMultiplexedSessionWithFallback().get();
     assertNotNull(multiplexedSessionFuture);
 
     // checking out a regular session throws error.
