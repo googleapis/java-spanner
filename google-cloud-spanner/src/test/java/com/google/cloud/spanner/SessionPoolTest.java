@@ -139,6 +139,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
   @Parameter public int minSessions;
 
+  @Parameter(1)
+  public boolean useMultiplexed;
+
   @Mock SpannerImpl client;
   @Mock SessionClient sessionClient;
   @Mock SpannerOptions spannerOptions;
@@ -151,9 +154,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final TraceWrapper tracer =
       new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
 
-  @Parameters(name = "min sessions = {0}")
+  @Parameters(name = "min sessions = {0}, use multiplexed = {1}")
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{0}, {1}});
+    List<Object[]> params = new ArrayList<>();
+    params.add(new Object[] {0, false});
+    params.add(new Object[] {1, false});
+    params.add(new Object[] {1, true});
+
+    return params;
   }
 
   private SessionPool createPool() {
@@ -241,6 +249,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMaxSessions(2)
             .setIncStep(1)
             .setBlockIfPoolExhausted()
+            .setUseMultiplexedSession(useMultiplexed)
             .build();
   }
 

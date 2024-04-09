@@ -100,7 +100,6 @@ class SessionImpl implements Session {
   private final String name;
   private final DatabaseId databaseId;
   private SessionTransaction activeTransaction;
-  ByteString readyTransactionId;
   private final Map<SpannerRpc.Option, ?> options;
   private volatile Instant lastUseTime;
   @Nullable private final Instant createTime;
@@ -379,12 +378,6 @@ class SessionImpl implements Session {
   }
 
   @Override
-  public void prepareReadWriteTransaction() {
-    setActive(null);
-    readyTransactionId = beginTransaction(true);
-  }
-
-  @Override
   public ApiFuture<Empty> asyncClose() {
     return spanner.getRpc().asyncDeleteSession(name, options);
   }
@@ -400,20 +393,6 @@ class SessionImpl implements Session {
     } finally {
       span.end();
     }
-  }
-
-  ByteString beginTransaction(boolean routeToLeader) {
-    try {
-      return beginTransactionAsync(routeToLeader).get();
-    } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
-    } catch (InterruptedException e) {
-      throw SpannerExceptionFactory.propagateInterrupt(e);
-    }
-  }
-
-  ApiFuture<ByteString> beginTransactionAsync(boolean routeToLeader) {
-    return beginTransactionAsync(Options.fromTransactionOptions(), routeToLeader);
   }
 
   ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
@@ -463,7 +442,7 @@ class SessionImpl implements Session {
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
-        .setTransactionId(readyTransactionId)
+        .setTransactionId(null)
         .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
@@ -484,15 +463,10 @@ class SessionImpl implements Session {
       activeTransaction.invalidate();
     }
     activeTransaction = ctx;
-    readyTransactionId = null;
     if (activeTransaction != null) {
       activeTransaction.setSpan(currentSpan);
     }
     return ctx;
-  }
-
-  boolean hasReadyTransaction() {
-    return readyTransactionId != null;
   }
 
   TraceWrapper getTracer() {

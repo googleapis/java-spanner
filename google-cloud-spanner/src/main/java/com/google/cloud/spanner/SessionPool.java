@@ -104,6 +104,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -146,6 +147,7 @@ class SessionPool {
   }
 
   private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
+
     private ResultSet cached;
 
     abstract ResultSet load();
@@ -1155,6 +1157,46 @@ class SessionPool {
     return new PooledSessionFuture(future, span);
   }
 
+  /** Wrapper class for the {@link SessionFuture} implementations. */
+  interface SessionFutureWrapper<T extends SessionFuture> {
+
+    /** Method to resolve {@link SessionFuture} implementation for different use-cases. */
+    T get();
+  }
+
+  class PooledSessionFutureWrapper implements SessionFutureWrapper<PooledSessionFuture> {
+    PooledSessionFuture pooledSessionFuture;
+
+    public PooledSessionFutureWrapper(PooledSessionFuture pooledSessionFuture) {
+      this.pooledSessionFuture = pooledSessionFuture;
+    }
+
+    @Override
+    public PooledSessionFuture get() {
+      return this.pooledSessionFuture;
+    }
+  }
+
+  class MultiplexedSessionFutureWrapper implements SessionFutureWrapper<MultiplexedSessionFuture> {
+    SettableApiFuture<MultiplexedSessionFuture> multiplexedSessionSettableApiFuture;
+
+    public MultiplexedSessionFutureWrapper(
+        SettableApiFuture<MultiplexedSessionFuture> multiplexedSessionSettableApiFuture) {
+      this.multiplexedSessionSettableApiFuture = multiplexedSessionSettableApiFuture;
+    }
+
+    @Override
+    public MultiplexedSessionFuture get() {
+      try {
+        return this.multiplexedSessionSettableApiFuture.get();
+      } catch (InterruptedException interruptedException) {
+        throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+      } catch (ExecutionException executionException) {
+        throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+      }
+    }
+  }
+
   interface SessionFuture extends Session {
 
     /**
@@ -1364,11 +1406,6 @@ class SessionPool {
     }
 
     @Override
-    public void prepareReadWriteTransaction() {
-      get().prepareReadWriteTransaction();
-    }
-
-    @Override
     public void close() {
       try {
         asyncClose().get();
@@ -1440,12 +1477,9 @@ class SessionPool {
 
   class MultiplexedSessionFuture extends SimpleForwardingListenableFuture<MultiplexedSession>
       implements SessionFuture {
-    private final ISpan span;
-
     @VisibleForTesting
-    MultiplexedSessionFuture(ListenableFuture<MultiplexedSession> delegate, ISpan span) {
+    MultiplexedSessionFuture(ListenableFuture<MultiplexedSession> delegate) {
       super(delegate);
-      this.span = span;
     }
 
     @Override
@@ -1619,11 +1653,6 @@ class SessionPool {
     }
 
     @Override
-    public void prepareReadWriteTransaction() {
-      get().prepareReadWriteTransaction();
-    }
-
-    @Override
     public void close() {
       try {
         asyncClose().get();
@@ -1655,15 +1684,6 @@ class SessionPool {
 
     @Override
     public MultiplexedSession get() {
-      MultiplexedSession res = null;
-      try {
-        res = super.get();
-      } catch (Throwable e) {
-        // ignore the exception as it will be handled by the call to super.get() below.
-      }
-      if (res != null) {
-        res.markBusy(span);
-      }
       try {
         return super.get();
       } catch (ExecutionException e) {
@@ -1901,12 +1921,6 @@ class SessionPool {
       return delegate.getName();
     }
 
-    @Override
-    public void prepareReadWriteTransaction() {
-      markUsed();
-      delegate.prepareReadWriteTransaction();
-    }
-
     private void keepAlive() {
       markUsed();
       final ISpan previousSpan = delegate.getCurrentSpan();
@@ -2130,12 +2144,6 @@ class SessionPool {
     }
 
     @Override
-    public void prepareReadWriteTransaction() {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
-    }
-
-    @Override
     public void close() {
       synchronized (lock) {
         numMultiplexedSessionsReleased++;
@@ -2253,6 +2261,9 @@ class SessionPool {
    */
   final class PoolMaintainer {
 
+    // Delay post which the maintainer will retry creating/replacing the current multiplexed session
+    private final Duration multiplexedSessionCreationRetryDelay = Duration.ofMinutes(10);
+
     // Length of the window in millis over which we keep track of maximum number of concurrent
     // sessions in use.
     private final Duration windowLength = Duration.ofMillis(TimeUnit.MINUTES.toMillis(10));
@@ -2276,6 +2287,8 @@ class SessionPool {
      */
     @VisibleForTesting Instant lastExecutionTime;
 
+    @VisibleForTesting Instant multiplexedSessionReplacementAttemptTime;
+
     /**
      * The previous numSessionsAcquired seen by the maintainer. This is used to calculate the
      * transactions per second, which again is used to determine whether to randomize the order of
@@ -2293,6 +2306,8 @@ class SessionPool {
 
     void init() {
       lastExecutionTime = clock.instant();
+      multiplexedSessionReplacementAttemptTime = clock.instant();
+
       // Scheduled pool maintenance worker.
       synchronized (lock) {
         scheduledFuture =
@@ -2334,6 +2349,7 @@ class SessionPool {
         this.prevNumSessionsAcquired = SessionPool.this.numSessionsAcquired;
       }
       Instant currTime = clock.instant();
+      maintainMultiplexedSession(currTime);
       removeIdleSessions(currTime);
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
       keepAliveSessions(currTime);
@@ -2502,6 +2518,46 @@ class SessionPool {
         }
       }
     }
+
+    void maintainMultiplexedSession(Instant currentTime) {
+      try {
+        if (options.getUseMultiplexedSession()) {
+          synchronized (lock) {
+            if (getMultiplexedSession().isDone()
+                && getMultiplexedSession().get() != null
+                && isMultiplexedSessionStale(currentTime)) {
+              final Instant minExecutionTime =
+                  multiplexedSessionReplacementAttemptTime.plus(
+                      multiplexedSessionCreationRetryDelay);
+              if (currentTime.isBefore(minExecutionTime)) {
+                return;
+              }
+
+              /*
+               This will attempt to create a new multiplexed session. if successfully created then
+               the existing session will be replaced. Note that there maybe active transactions
+               running on the stale session. Hence, it is important that we only replace the reference
+               and not invoke a DeleteSession RPC.
+              */
+              maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
+
+              // update this only after we have attempted to replace the multiplexed session
+              multiplexedSessionReplacementAttemptTime = currentTime;
+            }
+          }
+        }
+      } catch (final Throwable t) {
+        logger.log(Level.WARNING, "Failed to maintain multiplexed session", t);
+      }
+    }
+
+    boolean isMultiplexedSessionStale(Instant currentTime) {
+      final CachedSession session = getMultiplexedSession().get();
+      final Duration durationFromCreationTime =
+          Duration.between(session.getDelegate().getCreateTime(), currentTime);
+      return durationFromCreationTime.compareTo(options.getMultiplexedSessionMaintenanceDuration())
+          > 0;
+    }
   }
 
   enum Position {
@@ -2579,6 +2635,9 @@ class SessionPool {
   private int numSessionsBeingCreated = 0;
 
   @GuardedBy("lock")
+  private boolean multiplexedSessionBeingCreated = false;
+
+  @GuardedBy("lock")
   private int numSessionsInUse = 0;
 
   @GuardedBy("lock")
@@ -2607,6 +2666,10 @@ class SessionPool {
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
+  private final AtomicReference<SettableApiFuture<MultiplexedSessionFuture>>
+      currentMultiplexedSessionReference = new AtomicReference<>(SettableApiFuture.create());
+  MultiplexedSessionFutureWrapper wrappedMultiplexedSessionFuture = null;
+
   @GuardedBy("lock")
   private final Set<PooledSession> allSessions = new HashSet<>();
 
@@ -2615,9 +2678,16 @@ class SessionPool {
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
+
+  private final MultiplexedSessionInitializationConsumer multiplexedSessionInitializationConsumer =
+      new MultiplexedSessionInitializationConsumer();
+  private final MultiplexedSessionMaintainerConsumer multiplexedMaintainerConsumer =
+      new MultiplexedSessionMaintainerConsumer();
+
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
+  @VisibleForTesting Function<MultiplexedSession, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
@@ -2861,6 +2931,9 @@ class SessionPool {
       if (options.getMinSessions() > 0) {
         createSessions(options.getMinSessions(), true);
       }
+      if (options.getUseMultiplexedSession()) {
+        maybeCreateMultiplexedSession(multiplexedSessionInitializationConsumer);
+      }
     }
   }
 
@@ -2920,6 +2993,38 @@ class SessionPool {
     synchronized (lock) {
       return closureFuture == null && resourceNotFoundException == null;
     }
+  }
+
+  /**
+   * Returns a multiplexed session. The method fallbacks to a regular session if {@link
+   * SessionPoolOptions#useMultiplexedSession} is not set.
+   */
+  SessionFutureWrapper getMultiplexedSessionWithFallback() throws SpannerException {
+    if (options.getUseMultiplexedSession()) {
+      try {
+        SessionFutureWrapper sessionFuture = getWrappedMultiplexedSessionFuture();
+        incrementNumSessionsInUse(true);
+        return sessionFuture;
+      } catch (Throwable t) {
+        ISpan span = tracer.getCurrentSpan();
+        span.addAnnotation("No multiplexed session available.");
+        throw SpannerExceptionFactory.asSpannerException(t.getCause());
+      }
+    } else {
+      return new PooledSessionFutureWrapper(getSession());
+    }
+  }
+
+  SessionFutureWrapper getWrappedMultiplexedSessionFuture() {
+    return wrappedMultiplexedSessionFuture;
+  }
+
+  /**
+   * This method is a blocking method. It will block until the underlying {@code
+   * SettableApiFuture<MultiplexedSessionFuture>} is resolved.
+   */
+  MultiplexedSessionFuture getMultiplexedSession() {
+    return (MultiplexedSessionFuture) getWrappedMultiplexedSessionFuture().get();
   }
 
   /**
@@ -3325,6 +3430,20 @@ class SessionPool {
     }
   }
 
+  private void maybeCreateMultiplexedSession(SessionConsumer sessionConsumer) {
+    synchronized (lock) {
+      if (!multiplexedSessionBeingCreated) {
+        logger.log(Level.FINE, String.format("Creating multiplexed sessions"));
+        try {
+          multiplexedSessionBeingCreated = true;
+          sessionClient.createMultiplexedSession(sessionConsumer);
+        } catch (Throwable ignore) {
+          // such an exception will never be thrown. the exception will be passed onto the consumer.
+        }
+      }
+    }
+  }
+
   private void createSessions(final int sessionCount, boolean distributeOverChannels) {
     logger.log(Level.FINE, String.format("Creating %d sessions", sessionCount));
     synchronized (lock) {
@@ -3343,6 +3462,103 @@ class SessionPool {
           decrementPendingClosures(sessionCount);
         }
         handleCreateSessionsFailure(newSpannerException(t), sessionCount);
+      }
+    }
+  }
+
+  /**
+   * Callback interface which is invoked when a multiplexed session is being replaced by the
+   * background maintenance thread. When a multiplexed session creation fails during background
+   * thread, it would simply log the exception and retry the session creation in the next background
+   * thread invocation.
+   *
+   * <p>This consumer is not used when the multiplexed session is getting initialized for the first
+   * time during application startup. We instead use {@link
+   * MultiplexedSessionInitializationConsumer} for the first time when multiplexed session is
+   * getting created.
+   */
+  class MultiplexedSessionMaintainerConsumer implements SessionConsumer {
+    @Override
+    public void onSessionReady(SessionImpl sessionImpl) {
+      final SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
+      final MultiplexedSession newSession = new MultiplexedSession(sessionImpl);
+      settableFuture.set(newSession);
+
+      synchronized (lock) {
+        MultiplexedSession oldSession = null;
+        if (currentMultiplexedSessionReference.get().isDone()) {
+          oldSession = getMultiplexedSession().get();
+        }
+        SettableApiFuture<MultiplexedSessionFuture> settableApiFuture = SettableApiFuture.create();
+        settableApiFuture.set(new MultiplexedSessionFuture(settableFuture));
+        currentMultiplexedSessionReference.set(settableApiFuture);
+        wrappedMultiplexedSessionFuture = new MultiplexedSessionFutureWrapper(settableApiFuture);
+        if (oldSession != null) {
+          logger.log(
+              Level.INFO,
+              String.format(
+                  "Removed Multiplexed Session => %s created at => %s and",
+                  oldSession.getName(), oldSession.getDelegate().getCreateTime()));
+          if (multiplexedSessionRemovedListener != null) {
+            multiplexedSessionRemovedListener.apply(oldSession);
+          }
+        }
+        multiplexedSessionBeingCreated = false;
+      }
+    }
+
+    /**
+     * Method which logs the exception so that session creation can be re-attempted in the next
+     * background thread invocation.
+     */
+    @Override
+    public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+      synchronized (lock) {
+        multiplexedSessionBeingCreated = false;
+        wrappedMultiplexedSessionFuture =
+            new MultiplexedSessionFutureWrapper(currentMultiplexedSessionReference.get());
+      }
+      logger.log(
+          Level.WARNING,
+          String.format(
+              "Failed to create multiplexed session. "
+                  + "Pending replacing stale multiplexed session",
+              t));
+    }
+  }
+
+  /**
+   * Callback interface which is invoked when a multiplexed session is getting initialised for the
+   * first time when a session is getting created.
+   */
+  class MultiplexedSessionInitializationConsumer implements SessionConsumer {
+    @Override
+    public void onSessionReady(SessionImpl sessionImpl) {
+      final SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
+      final MultiplexedSession newSession = new MultiplexedSession(sessionImpl);
+      settableFuture.set(newSession);
+
+      synchronized (lock) {
+        SettableApiFuture<MultiplexedSessionFuture> settableApiFuture =
+            currentMultiplexedSessionReference.get();
+        settableApiFuture.set(new MultiplexedSessionFuture(settableFuture));
+        wrappedMultiplexedSessionFuture = new MultiplexedSessionFutureWrapper(settableApiFuture);
+        multiplexedSessionBeingCreated = false;
+      }
+    }
+
+    /**
+     * When a multiplexed session fails during initialization we would like all pending threads to
+     * receive the exception and throw the error. This is done because at the time of start up there
+     * is no other multiplexed session which could have been assigned to the pending requests.
+     */
+    @Override
+    public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+      synchronized (lock) {
+        multiplexedSessionBeingCreated = false;
+        wrappedMultiplexedSessionFuture =
+            new MultiplexedSessionFutureWrapper(currentMultiplexedSessionReference.get());
+        currentMultiplexedSessionReference.get().setException(newSpannerException(t));
       }
     }
   }
