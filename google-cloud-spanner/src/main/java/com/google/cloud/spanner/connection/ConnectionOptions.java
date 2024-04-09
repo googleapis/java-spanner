@@ -1447,6 +1447,14 @@ public class ConnectionOptions {
     return autoConfigEmulator;
   }
 
+  /**
+   * Returns true if a connection should generate auto-savepoints for retrying transactions on the
+   * emulator. This allows some more concurrent transactions on the emulator.
+   */
+  boolean useAutoSavepointsForEmulator() {
+    return autoConfigEmulator;
+  }
+
   public Dialect getDialect() {
     return dialect;
   }

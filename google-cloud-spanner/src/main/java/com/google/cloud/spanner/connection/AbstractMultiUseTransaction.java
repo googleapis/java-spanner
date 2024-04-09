@@ -42,13 +42,15 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   /** In-memory savepoint implementation that is used by the Connection API. */
   static class Savepoint {
     private final String name;
+    private final boolean autoSavepoint;
 
     static Savepoint of(String name) {
-      return new Savepoint(name);
+      return new Savepoint(name, false);
     }
 
-    Savepoint(String name) {
+    Savepoint(String name, boolean autoSavepoint) {
       this.name = name;
+      this.autoSavepoint = autoSavepoint;
     }
 
     /** Returns the index of the first statement that was executed after this savepoint. */
@@ -61,17 +63,23 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       return -1;
     }
 
+    boolean isAutoSavepoint() {
+      return this.autoSavepoint;
+    }
+
     @Override
     public boolean equals(Object o) {
       if (!(o instanceof Savepoint)) {
         return false;
       }
-      return Objects.equals(((Savepoint) o).name, name);
+      Savepoint other = (Savepoint) o;
+      return Objects.equals(other.name, this.name)
+          && Objects.equals(other.autoSavepoint, this.autoSavepoint);
     }
 
     @Override
     public int hashCode() {
-      return name.hashCode();
+      return Objects.hash(this.name, this.autoSavepoint);
     }
 
     @Override
