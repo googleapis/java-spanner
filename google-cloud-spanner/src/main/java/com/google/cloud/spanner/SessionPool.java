@@ -1364,11 +1364,6 @@ class SessionPool {
     }
 
     @Override
-    public void prepareReadWriteTransaction() {
-      get().prepareReadWriteTransaction();
-    }
-
-    @Override
     public void close() {
       try {
         asyncClose().get();
@@ -1616,11 +1611,6 @@ class SessionPool {
     @Override
     public String getName() {
       return get().getName();
-    }
-
-    @Override
-    public void prepareReadWriteTransaction() {
-      get().prepareReadWriteTransaction();
     }
 
     @Override
@@ -1901,12 +1891,6 @@ class SessionPool {
       return delegate.getName();
     }
 
-    @Override
-    public void prepareReadWriteTransaction() {
-      markUsed();
-      delegate.prepareReadWriteTransaction();
-    }
-
     private void keepAlive() {
       markUsed();
       final ISpan previousSpan = delegate.getCurrentSpan();
@@ -2127,12 +2111,6 @@ class SessionPool {
     @Override
     public String getName() {
       return delegate.getName();
-    }
-
-    @Override
-    public void prepareReadWriteTransaction() {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
     }
 
     @Override
