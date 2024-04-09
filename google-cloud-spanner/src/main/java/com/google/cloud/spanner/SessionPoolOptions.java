@@ -16,13 +16,13 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.util.Locale;
 import java.util.Objects;
-import org.apache.http.annotation.Experimental;
 import org.threeten.bp.Duration;
 
 /** Options for the session pool used by {@code DatabaseClient}. */
@@ -520,7 +520,7 @@ public class SessionPoolOptions {
      * multiplexed sessions.
      */
     @InternalApi
-    @Experimental
+    @BetaApi
     private static boolean getUseMultiplexedSessionFromEnvVariable() {
       return Boolean.parseBoolean(
           System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
