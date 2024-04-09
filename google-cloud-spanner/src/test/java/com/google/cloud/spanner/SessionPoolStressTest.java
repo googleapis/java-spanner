@@ -32,7 +32,6 @@ import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
@@ -161,21 +160,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             }
             return ApiFutures.immediateFuture(Empty.getDefaultInstance());
           }
-
-          @Override
-          public void prepareReadWriteTransaction() {
-            if (random.nextInt(100) < 10) {
-              expireSession(this);
-              throw SpannerExceptionFactoryTest.newSessionNotFoundException(this.getName());
-            }
-            String name = this.getName();
-            synchronized (lock) {
-              if (sessions.put(name, true)) {
-                setFailed();
-              }
-              this.readyTransactionId = ByteString.copyFromUtf8("foo");
-            }
-          }
         };
     sessionIndex++;
     return session;
@@ -192,18 +176,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     when(mockResult.next()).thenReturn(true);
   }
 
-  private void expireSession(Session session) {
-    String name = session.getName();
-    synchronized (lock) {
-      sessions.remove(name);
-      expiredSessions.add(name);
-    }
-  }
-
   private void resetTransaction(SessionImpl session) {
     String name = session.getName();
     synchronized (lock) {
-      session.readyTransactionId = null;
       sessions.put(name, false);
     }
   }
