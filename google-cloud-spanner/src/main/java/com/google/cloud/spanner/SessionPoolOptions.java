@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.BetaApi;
+import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -493,7 +495,8 @@ public class SessionPoolOptions {
      */
     private long randomizePositionQPSThreshold = 0L;
 
-    private boolean useMultiplexedSession = false;
+    private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
+
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Duration waitForMultiplexedSession = Duration.ofSeconds(10);
     private Clock poolMaintainerClock;
@@ -509,6 +512,18 @@ public class SessionPoolOptions {
         }
       }
       return Position.FIRST;
+    }
+
+    /**
+     * This environment is only added to support internal spanner testing. Support for it can be
+     * removed in the future. Use {@link SessionPoolOptions#useMultiplexedSession} instead to use
+     * multiplexed sessions.
+     */
+    @InternalApi
+    @BetaApi
+    private static boolean getUseMultiplexedSessionFromEnvVariable() {
+      return Boolean.parseBoolean(
+          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
     }
 
     public Builder() {}
