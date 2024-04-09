@@ -2606,7 +2606,6 @@ class SessionPool {
   private long numLeakedSessionsRemoved = 0;
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
-  private AtomicLong numMultiplexedSessionWaiterTimeouts = new AtomicLong();
 
   @GuardedBy("lock")
   private final Set<PooledSession> allSessions = new HashSet<>();
@@ -2854,10 +2853,6 @@ class SessionPool {
   @VisibleForTesting
   long getNumWaiterTimeouts() {
     return numWaiterTimeouts.get();
-  }
-
-  long getNumMultiplexedSessionWaiterTimeouts() {
-    return numMultiplexedSessionWaiterTimeouts.get();
   }
 
   private void initPool() {
@@ -3595,9 +3590,7 @@ class SessionPool {
         .setUnit(COUNT)
         .buildWithCallback(
             measurement -> {
-              measurement.record(this.getNumWaiterTimeouts(), attributesRegularSession);
-              measurement.record(
-                  this.getNumMultiplexedSessionWaiterTimeouts(), attributesMultiplexedSession);
+              measurement.record(this.getNumWaiterTimeouts(), attributes);
             });
 
     meter
