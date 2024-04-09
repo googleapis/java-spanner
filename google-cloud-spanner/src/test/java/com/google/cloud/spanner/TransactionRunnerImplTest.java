@@ -335,9 +335,6 @@ public class TransactionRunnerImplTest {
             .setSpan(session.getTracer().getCurrentSpan())
             .build();
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);
-    when(session.beginTransactionAsync(true))
-        .thenReturn(
-            ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);
