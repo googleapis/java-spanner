@@ -23,23 +23,23 @@ package com.google.spanner.executor.v1;
  *
  *
  * <pre>
- * Action that reconfigures a Cloud Spanner database.
+ * Action that changes quorum of a Cloud Spanner database.
  * </pre>
  *
- * Protobuf type {@code google.spanner.executor.v1.ReconfigureCloudDatabaseAction}
+ * Protobuf type {@code google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction}
  */
-public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.GeneratedMessageV3
+public final class ChangeQuorumCloudDatabaseAction extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.ReconfigureCloudDatabaseAction)
-    ReconfigureCloudDatabaseActionOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction)
+    ChangeQuorumCloudDatabaseActionOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use ReconfigureCloudDatabaseAction.newBuilder() to construct.
-  private ReconfigureCloudDatabaseAction(
+  // Use ChangeQuorumCloudDatabaseAction.newBuilder() to construct.
+  private ChangeQuorumCloudDatabaseAction(
       com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private ReconfigureCloudDatabaseAction() {
+  private ChangeQuorumCloudDatabaseAction() {
     databaseUri_ = "";
     servingLocations_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
@@ -47,22 +47,22 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new ReconfigureCloudDatabaseAction();
+    return new ChangeQuorumCloudDatabaseAction();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.executor.v1.CloudExecutorProto
-        .internal_static_google_spanner_executor_v1_ReconfigureCloudDatabaseAction_descriptor;
+        .internal_static_google_spanner_executor_v1_ChangeQuorumCloudDatabaseAction_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.executor.v1.CloudExecutorProto
-        .internal_static_google_spanner_executor_v1_ReconfigureCloudDatabaseAction_fieldAccessorTable
+        .internal_static_google_spanner_executor_v1_ChangeQuorumCloudDatabaseAction_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction.class,
-            com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction.Builder.class);
+            com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.class,
+            com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.Builder.class);
   }
 
   private int bitField0_;
@@ -74,7 +74,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
    *
    *
    * <pre>
-   * The fully qualified uri of the database to be reconfigured.
+   * The fully qualified uri of the database whose quorum has to be changed.
    * </pre>
    *
    * <code>optional string database_uri = 1;</code>
@@ -89,7 +89,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
    *
    *
    * <pre>
-   * The fully qualified uri of the database to be reconfigured.
+   * The fully qualified uri of the database whose quorum has to be changed.
    * </pre>
    *
    * <code>optional string database_uri = 1;</code>
@@ -112,7 +112,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
    *
    *
    * <pre>
-   * The fully qualified uri of the database to be reconfigured.
+   * The fully qualified uri of the database whose quorum has to be changed.
    * </pre>
    *
    * <code>optional string database_uri = 1;</code>
@@ -246,11 +246,11 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction)) {
+    if (!(obj instanceof com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction)) {
       return super.equals(obj);
     }
-    com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction other =
-        (com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction) obj;
+    com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction other =
+        (com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction) obj;
 
     if (hasDatabaseUri() != other.hasDatabaseUri()) return false;
     if (hasDatabaseUri()) {
@@ -281,71 +281,71 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
     return hash;
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(byte[] data)
-      throws com.google.protobuf.InvalidProtocolBufferException {
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
+      byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseDelimitedFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseDelimitedFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseDelimitedFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction parseFrom(
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -363,7 +363,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
   }
 
   public static Builder newBuilder(
-      com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction prototype) {
+      com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -381,31 +381,31 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
    *
    *
    * <pre>
-   * Action that reconfigures a Cloud Spanner database.
+   * Action that changes quorum of a Cloud Spanner database.
    * </pre>
    *
-   * Protobuf type {@code google.spanner.executor.v1.ReconfigureCloudDatabaseAction}
+   * Protobuf type {@code google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.executor.v1.ReconfigureCloudDatabaseAction)
-      com.google.spanner.executor.v1.ReconfigureCloudDatabaseActionOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction)
+      com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseActionOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.executor.v1.CloudExecutorProto
-          .internal_static_google_spanner_executor_v1_ReconfigureCloudDatabaseAction_descriptor;
+          .internal_static_google_spanner_executor_v1_ChangeQuorumCloudDatabaseAction_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.executor.v1.CloudExecutorProto
-          .internal_static_google_spanner_executor_v1_ReconfigureCloudDatabaseAction_fieldAccessorTable
+          .internal_static_google_spanner_executor_v1_ChangeQuorumCloudDatabaseAction_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction.class,
-              com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction.Builder.class);
+              com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.class,
+              com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.Builder.class);
     }
 
-    // Construct using com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction.newBuilder()
+    // Construct using com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.newBuilder()
     private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
@@ -424,18 +424,18 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.executor.v1.CloudExecutorProto
-          .internal_static_google_spanner_executor_v1_ReconfigureCloudDatabaseAction_descriptor;
+          .internal_static_google_spanner_executor_v1_ChangeQuorumCloudDatabaseAction_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction
+    public com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction
         getDefaultInstanceForType() {
-      return com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction.getDefaultInstance();
+      return com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction build() {
-      com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction result = buildPartial();
+    public com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction build() {
+      com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -443,9 +443,9 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
     }
 
     @java.lang.Override
-    public com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction buildPartial() {
-      com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction result =
-          new com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction(this);
+    public com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction buildPartial() {
+      com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction result =
+          new com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction(this);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
@@ -454,7 +454,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
     }
 
     private void buildPartial0(
-        com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction result) {
+        com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction result) {
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -503,17 +503,17 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction) {
-        return mergeFrom((com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction) other);
+      if (other instanceof com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction) {
+        return mergeFrom((com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction other) {
+    public Builder mergeFrom(com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction other) {
       if (other
-          == com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction.getDefaultInstance())
+          == com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.getDefaultInstance())
         return this;
       if (other.hasDatabaseUri()) {
         databaseUri_ = other.databaseUri_;
@@ -593,7 +593,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
      *
      *
      * <pre>
-     * The fully qualified uri of the database to be reconfigured.
+     * The fully qualified uri of the database whose quorum has to be changed.
      * </pre>
      *
      * <code>optional string database_uri = 1;</code>
@@ -607,7 +607,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
      *
      *
      * <pre>
-     * The fully qualified uri of the database to be reconfigured.
+     * The fully qualified uri of the database whose quorum has to be changed.
      * </pre>
      *
      * <code>optional string database_uri = 1;</code>
@@ -629,7 +629,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
      *
      *
      * <pre>
-     * The fully qualified uri of the database to be reconfigured.
+     * The fully qualified uri of the database whose quorum has to be changed.
      * </pre>
      *
      * <code>optional string database_uri = 1;</code>
@@ -651,7 +651,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
      *
      *
      * <pre>
-     * The fully qualified uri of the database to be reconfigured.
+     * The fully qualified uri of the database whose quorum has to be changed.
      * </pre>
      *
      * <code>optional string database_uri = 1;</code>
@@ -672,7 +672,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
      *
      *
      * <pre>
-     * The fully qualified uri of the database to be reconfigured.
+     * The fully qualified uri of the database whose quorum has to be changed.
      * </pre>
      *
      * <code>optional string database_uri = 1;</code>
@@ -689,7 +689,7 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
      *
      *
      * <pre>
-     * The fully qualified uri of the database to be reconfigured.
+     * The fully qualified uri of the database whose quorum has to be changed.
      * </pre>
      *
      * <code>optional string database_uri = 1;</code>
@@ -893,25 +893,26 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.executor.v1.ReconfigureCloudDatabaseAction)
+    // @@protoc_insertion_point(builder_scope:google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.executor.v1.ReconfigureCloudDatabaseAction)
-  private static final com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction
+  // @@protoc_insertion_point(class_scope:google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction)
+  private static final com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction
       DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction();
+    DEFAULT_INSTANCE = new com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction();
   }
 
-  public static com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction getDefaultInstance() {
+  public static com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction
+      getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<ReconfigureCloudDatabaseAction> PARSER =
-      new com.google.protobuf.AbstractParser<ReconfigureCloudDatabaseAction>() {
+  private static final com.google.protobuf.Parser<ChangeQuorumCloudDatabaseAction> PARSER =
+      new com.google.protobuf.AbstractParser<ChangeQuorumCloudDatabaseAction>() {
         @java.lang.Override
-        public ReconfigureCloudDatabaseAction parsePartialFrom(
+        public ChangeQuorumCloudDatabaseAction parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
@@ -930,17 +931,18 @@ public final class ReconfigureCloudDatabaseAction extends com.google.protobuf.Ge
         }
       };
 
-  public static com.google.protobuf.Parser<ReconfigureCloudDatabaseAction> parser() {
+  public static com.google.protobuf.Parser<ChangeQuorumCloudDatabaseAction> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<ReconfigureCloudDatabaseAction> getParserForType() {
+  public com.google.protobuf.Parser<ChangeQuorumCloudDatabaseAction> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.executor.v1.ReconfigureCloudDatabaseAction getDefaultInstanceForType() {
+  public com.google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction
+      getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

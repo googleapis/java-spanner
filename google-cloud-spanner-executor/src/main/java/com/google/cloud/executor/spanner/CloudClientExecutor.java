@@ -59,6 +59,7 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ReplicaInfo;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SessionPoolOptionsHelper;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
@@ -134,6 +135,7 @@ import com.google.spanner.executor.v1.PartitionedUpdateAction.ExecutePartitioned
 import com.google.spanner.executor.v1.QueryAction;
 import com.google.spanner.executor.v1.ReadAction;
 import com.google.spanner.executor.v1.RestoreCloudDatabaseAction;
+import com.google.spanner.executor.v1.SessionPoolOptions;
 import com.google.spanner.executor.v1.SpannerAction;
 import com.google.spanner.executor.v1.SpannerActionOutcome;
 import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
@@ -740,24 +742,26 @@ public class CloudClientExecutor extends CloudExecutor {
       Executors.newCachedThreadPool(
           new ThreadFactoryBuilder().setNameFormat("action-pool-%d").build());
 
-  private synchronized Spanner getClientWithTimeout(long timeoutSeconds) throws IOException {
+  private synchronized Spanner getClientWithTimeout(
+      long timeoutSeconds, boolean useMultiplexedSession) throws IOException {
     if (clientWithTimeout != null) {
       return clientWithTimeout;
     }
-    clientWithTimeout = getClient(timeoutSeconds);
+    clientWithTimeout = getClient(timeoutSeconds, useMultiplexedSession);
     return clientWithTimeout;
   }
 
-  private synchronized Spanner getClient() throws IOException {
+  private synchronized Spanner getClient(boolean useMultiplexedSession) throws IOException {
     if (client != null) {
       return client;
     }
-    client = getClient(/*timeoutSeconds=*/ 0);
+    client = getClient(/*timeoutSeconds=*/ 0, useMultiplexedSession);
     return client;
   }
 
   // Return the spanner client, create one if not exists.
-  private synchronized Spanner getClient(long timeoutSeconds) throws IOException {
+  private synchronized Spanner getClient(long timeoutSeconds, boolean useMultiplexedSession)
+      throws IOException {
     // Create a cloud spanner client
     Credentials credentials;
     if (WorkerProxy.serviceKeyFile.isEmpty()) {
@@ -788,6 +792,10 @@ public class CloudClientExecutor extends CloudExecutor {
             .setTotalTimeout(rpcTimeout)
             .build();
 
+    com.google.cloud.spanner.SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptionsHelper.setUseMultiplexedSession(
+                com.google.cloud.spanner.SessionPoolOptions.newBuilder(), useMultiplexedSession)
+            .build();
     // Cloud Spanner Client does not support global retry settings,
     // Thus, we need to add retry settings to each individual stub.
     SpannerOptions.Builder optionsBuilder =
@@ -795,7 +803,8 @@ public class CloudClientExecutor extends CloudExecutor {
             .setProjectId(PROJECT_ID)
             .setHost(HOST_PREFIX + WorkerProxy.spannerPort)
             .setCredentials(credentials)
-            .setChannelProvider(channelProvider);
+            .setChannelProvider(channelProvider)
+            .setSessionPoolOption(sessionPoolOptions);
 
     SpannerStubSettings.Builder stubSettingsBuilder =
         optionsBuilder.getSpannerStubSettingsBuilder();
@@ -833,10 +842,19 @@ public class CloudClientExecutor extends CloudExecutor {
 
     // Update dbPath
     String dbPath = executionContext.getDatabasePath(action.getDatabasePath());
+    // Update session pool options
+    boolean useMultiplexedSession;
+    if (action.hasSpannerOptions() && action.getSpannerOptions().hasSessionPoolOptions()) {
+      SessionPoolOptions sessionPoolOptions = action.getSpannerOptions().getSessionPoolOptions();
+      useMultiplexedSession = sessionPoolOptions.getUseMultiplexed();
+    } else {
+      useMultiplexedSession = false;
+    }
 
     actionThreadPool.execute(
         () -> {
-          Status status = executeAction(outcomeSender, action, dbPath, executionContext);
+          Status status =
+              executeAction(outcomeSender, action, dbPath, useMultiplexedSession, executionContext);
           if (!status.isOk()) {
             LOGGER.log(
                 Level.WARNING,
@@ -852,17 +870,19 @@ public class CloudClientExecutor extends CloudExecutor {
       OutcomeSender outcomeSender,
       SpannerAction action,
       String dbPath,
+      boolean useMultiplexedSession,
       ExecutionFlowContext executionContext) {
 
     try {
       if (action.hasAdmin()) {
-        return executeAdminAction(action.getAdmin(), outcomeSender);
+        return executeAdminAction(useMultiplexedSession, action.getAdmin(), outcomeSender);
       } else if (action.hasStart()) {
         if (dbPath == null) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
         }
-        DatabaseClient dbClient = getClient().getDatabaseClient(DatabaseId.of(dbPath));
+        DatabaseClient dbClient =
+            getClient(useMultiplexedSession).getDatabaseClient(DatabaseId.of(dbPath));
         return executeStartTxn(action.getStart(), dbClient, outcomeSender, executionContext);
       } else if (action.hasFinish()) {
         return executeFinishTxn(action.getFinish(), outcomeSender, executionContext);
@@ -870,11 +890,14 @@ public class CloudClientExecutor extends CloudExecutor {
         return executeMutation(
             action.getMutation(), outcomeSender, executionContext, /*isWrite=*/ false);
       } else if (action.hasRead()) {
-        return executeRead(action.getRead(), outcomeSender, executionContext);
+        return executeRead(
+            useMultiplexedSession, action.getRead(), outcomeSender, executionContext);
       } else if (action.hasQuery()) {
-        return executeQuery(action.getQuery(), outcomeSender, executionContext);
+        return executeQuery(
+            useMultiplexedSession, action.getQuery(), outcomeSender, executionContext);
       } else if (action.hasDml()) {
-        return executeCloudDmlUpdate(action.getDml(), outcomeSender, executionContext);
+        return executeCloudDmlUpdate(
+            useMultiplexedSession, action.getDml(), outcomeSender, executionContext);
       } else if (action.hasBatchDml()) {
         return executeCloudBatchDmlUpdates(action.getBatchDml(), outcomeSender, executionContext);
       } else if (action.hasWrite()) {
@@ -885,7 +908,8 @@ public class CloudClientExecutor extends CloudExecutor {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "database path must be set for this action");
         }
-        BatchClient batchClient = getClient().getBatchClient(DatabaseId.of(dbPath));
+        BatchClient batchClient =
+            getClient(useMultiplexedSession).getBatchClient(DatabaseId.of(dbPath));
         return executeStartBatchTxn(
             action.getStartBatchTxn(), batchClient, outcomeSender, executionContext);
       } else if (action.hasGenerateDbPartitionsRead()) {
@@ -896,13 +920,14 @@ public class CloudClientExecutor extends CloudExecutor {
             action.getGenerateDbPartitionsQuery(), outcomeSender, executionContext);
       } else if (action.hasExecutePartition()) {
         return executeExecutePartition(
-            action.getExecutePartition(), outcomeSender, executionContext);
+            useMultiplexedSession, action.getExecutePartition(), outcomeSender, executionContext);
       } else if (action.hasPartitionedUpdate()) {
         if (dbPath == null) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
         }
-        DatabaseClient dbClient = getClient().getDatabaseClient(DatabaseId.of(dbPath));
+        DatabaseClient dbClient =
+            getClient(useMultiplexedSession).getDatabaseClient(DatabaseId.of(dbPath));
         return executePartitionedUpdate(action.getPartitionedUpdate(), dbClient, outcomeSender);
       } else if (action.hasCloseBatchTxn()) {
         return executeCloseBatchTxn(action.getCloseBatchTxn(), outcomeSender, executionContext);
@@ -912,7 +937,7 @@ public class CloudClientExecutor extends CloudExecutor {
               ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
         }
         return executeExecuteChangeStreamQuery(
-            dbPath, action.getExecuteChangeStreamQuery(), outcomeSender);
+            dbPath, useMultiplexedSession, action.getExecuteChangeStreamQuery(), outcomeSender);
       } else {
         return outcomeSender.finishWithError(
             toStatus(
@@ -929,60 +954,83 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute admin actions by action case, using OutcomeSender to send status and results back. */
-  private Status executeAdminAction(AdminAction action, OutcomeSender outcomeSender) {
+  private Status executeAdminAction(
+      boolean useMultiplexedSession, AdminAction action, OutcomeSender outcomeSender) {
     try {
       if (action.hasCreateCloudInstance()) {
-        return executeCreateCloudInstance(action.getCreateCloudInstance(), outcomeSender);
+        return executeCreateCloudInstance(
+            useMultiplexedSession, action.getCreateCloudInstance(), outcomeSender);
       } else if (action.hasUpdateCloudInstance()) {
-        return executeUpdateCloudInstance(action.getUpdateCloudInstance(), outcomeSender);
+        return executeUpdateCloudInstance(
+            useMultiplexedSession, action.getUpdateCloudInstance(), outcomeSender);
       } else if (action.hasDeleteCloudInstance()) {
-        return executeDeleteCloudInstance(action.getDeleteCloudInstance(), outcomeSender);
+        return executeDeleteCloudInstance(
+            useMultiplexedSession, action.getDeleteCloudInstance(), outcomeSender);
       } else if (action.hasListCloudInstances()) {
-        return executeListCloudInstances(action.getListCloudInstances(), outcomeSender);
+        return executeListCloudInstances(
+            useMultiplexedSession, action.getListCloudInstances(), outcomeSender);
       } else if (action.hasListInstanceConfigs()) {
-        return executeListCloudInstanceConfigs(action.getListInstanceConfigs(), outcomeSender);
+        return executeListCloudInstanceConfigs(
+            useMultiplexedSession, action.getListInstanceConfigs(), outcomeSender);
       } else if (action.hasGetCloudInstanceConfig()) {
-        return executeGetCloudInstanceConfig(action.getGetCloudInstanceConfig(), outcomeSender);
+        return executeGetCloudInstanceConfig(
+            useMultiplexedSession, action.getGetCloudInstanceConfig(), outcomeSender);
       } else if (action.hasGetCloudInstance()) {
-        return executeGetCloudInstance(action.getGetCloudInstance(), outcomeSender);
+        return executeGetCloudInstance(
+            useMultiplexedSession, action.getGetCloudInstance(), outcomeSender);
       } else if (action.hasCreateUserInstanceConfig()) {
-        return executeCreateUserInstanceConfig(action.getCreateUserInstanceConfig(), outcomeSender);
+        return executeCreateUserInstanceConfig(
+            useMultiplexedSession, action.getCreateUserInstanceConfig(), outcomeSender);
       } else if (action.hasDeleteUserInstanceConfig()) {
-        return executeDeleteUserInstanceConfig(action.getDeleteUserInstanceConfig(), outcomeSender);
+        return executeDeleteUserInstanceConfig(
+            useMultiplexedSession, action.getDeleteUserInstanceConfig(), outcomeSender);
       } else if (action.hasCreateCloudDatabase()) {
-        return executeCreateCloudDatabase(action.getCreateCloudDatabase(), outcomeSender);
+        return executeCreateCloudDatabase(
+            useMultiplexedSession, action.getCreateCloudDatabase(), outcomeSender);
       } else if (action.hasUpdateCloudDatabaseDdl()) {
-        return executeUpdateCloudDatabaseDdl(action.getUpdateCloudDatabaseDdl(), outcomeSender);
+        return executeUpdateCloudDatabaseDdl(
+            useMultiplexedSession, action.getUpdateCloudDatabaseDdl(), outcomeSender);
       } else if (action.hasDropCloudDatabase()) {
-        return executeDropCloudDatabase(action.getDropCloudDatabase(), outcomeSender);
+        return executeDropCloudDatabase(
+            useMultiplexedSession, action.getDropCloudDatabase(), outcomeSender);
       } else if (action.hasCreateCloudBackup()) {
-        return executeCreateCloudBackup(action.getCreateCloudBackup(), outcomeSender);
+        return executeCreateCloudBackup(
+            useMultiplexedSession, action.getCreateCloudBackup(), outcomeSender);
       } else if (action.hasCopyCloudBackup()) {
-        return executeCopyCloudBackup(action.getCopyCloudBackup(), outcomeSender);
+        return executeCopyCloudBackup(
+            useMultiplexedSession, action.getCopyCloudBackup(), outcomeSender);
       } else if (action.hasGetCloudBackup()) {
-        return executeGetCloudBackup(action.getGetCloudBackup(), outcomeSender);
+        return executeGetCloudBackup(
+            useMultiplexedSession, action.getGetCloudBackup(), outcomeSender);
       } else if (action.hasUpdateCloudBackup()) {
-        return executeUpdateCloudBackup(action.getUpdateCloudBackup(), outcomeSender);
+        return executeUpdateCloudBackup(
+            useMultiplexedSession, action.getUpdateCloudBackup(), outcomeSender);
       } else if (action.hasDeleteCloudBackup()) {
-        return executeDeleteCloudBackup(action.getDeleteCloudBackup(), outcomeSender);
+        return executeDeleteCloudBackup(
+            useMultiplexedSession, action.getDeleteCloudBackup(), outcomeSender);
       } else if (action.hasListCloudBackups()) {
-        return executeListCloudBackups(action.getListCloudBackups(), outcomeSender);
+        return executeListCloudBackups(
+            useMultiplexedSession, action.getListCloudBackups(), outcomeSender);
       } else if (action.hasListCloudBackupOperations()) {
         return executeListCloudBackupOperations(
-            action.getListCloudBackupOperations(), outcomeSender);
+            useMultiplexedSession, action.getListCloudBackupOperations(), outcomeSender);
       } else if (action.hasListCloudDatabases()) {
-        return executeListCloudDatabases(action.getListCloudDatabases(), outcomeSender);
+        return executeListCloudDatabases(
+            useMultiplexedSession, action.getListCloudDatabases(), outcomeSender);
       } else if (action.hasListCloudDatabaseOperations()) {
         return executeListCloudDatabaseOperations(
-            action.getListCloudDatabaseOperations(), outcomeSender);
+            useMultiplexedSession, action.getListCloudDatabaseOperations(), outcomeSender);
       } else if (action.hasRestoreCloudDatabase()) {
-        return executeRestoreCloudDatabase(action.getRestoreCloudDatabase(), outcomeSender);
+        return executeRestoreCloudDatabase(
+            useMultiplexedSession, action.getRestoreCloudDatabase(), outcomeSender);
       } else if (action.hasGetCloudDatabase()) {
-        return executeGetCloudDatabase(action.getGetCloudDatabase(), outcomeSender);
+        return executeGetCloudDatabase(
+            useMultiplexedSession, action.getGetCloudDatabase(), outcomeSender);
       } else if (action.hasGetOperation()) {
-        return executeGetOperation(action.getGetOperation(), outcomeSender);
+        return executeGetOperation(useMultiplexedSession, action.getGetOperation(), outcomeSender);
       } else if (action.hasCancelOperation()) {
-        return executeCancelOperation(action.getCancelOperation(), outcomeSender);
+        return executeCancelOperation(
+            useMultiplexedSession, action.getCancelOperation(), outcomeSender);
       } else {
         return outcomeSender.finishWithError(
             toStatus(
@@ -1000,10 +1048,11 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that creates a cloud instance. */
   private Status executeCreateCloudInstance(
-      CreateCloudInstanceAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, CreateCloudInstanceAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Creating instance: \n%s", action));
-      InstanceAdminClient instanceAdminClient = getClient().getInstanceAdminClient();
+      InstanceAdminClient instanceAdminClient =
+          getClient(useMultiplexedSession).getInstanceAdminClient();
       final String instanceId = action.getInstanceId();
       InstanceId instance = InstanceId.of(action.getProjectId(), instanceId);
       InstanceInfo.Builder builder =
@@ -1041,10 +1090,11 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that updates a cloud instance. */
   private Status executeUpdateCloudInstance(
-      UpdateCloudInstanceAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, UpdateCloudInstanceAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Updating instance: \n%s", action));
-      InstanceAdminClient instanceAdminClient = getClient().getInstanceAdminClient();
+      InstanceAdminClient instanceAdminClient =
+          getClient(useMultiplexedSession).getInstanceAdminClient();
       final String instanceId = action.getInstanceId();
       final InstanceId instance = InstanceId.of(action.getProjectId(), instanceId);
       final InstanceInfo.Builder builder = InstanceInfo.newBuilder(instance);
@@ -1088,10 +1138,11 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that deletes a cloud instance. */
   private Status executeDeleteCloudInstance(
-      DeleteCloudInstanceAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, DeleteCloudInstanceAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Deleting instance: \n%s", action));
-      InstanceAdminClient instanceAdminClient = getClient().getInstanceAdminClient();
+      InstanceAdminClient instanceAdminClient =
+          getClient(useMultiplexedSession).getInstanceAdminClient();
       final String instanceId = action.getInstanceId();
       final InstanceId instance = InstanceId.of(action.getProjectId(), instanceId);
       instanceAdminClient.deleteInstance(instance.getInstance());
@@ -1108,7 +1159,8 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that lists cloud instances. */
-  private Status executeListCloudInstances(ListCloudInstancesAction action, OutcomeSender sender) {
+  private Status executeListCloudInstances(
+      boolean useMultiplexedSession, ListCloudInstancesAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Listing instances:\n%s", action));
       ArrayList<Options.ListOption> options = new ArrayList<>();
@@ -1123,7 +1175,7 @@ public class CloudClientExecutor extends CloudExecutor {
       }
 
       Page<com.google.cloud.spanner.Instance> response =
-          getClient()
+          getClient(useMultiplexedSession)
               .getInstanceAdminClient()
               .listInstances(options.toArray(new Options.ListOption[0]));
       List<com.google.spanner.admin.instance.v1.Instance> instanceList = new ArrayList<>();
@@ -1155,7 +1207,7 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that lists cloud instance configs. */
   private Status executeListCloudInstanceConfigs(
-      ListCloudInstanceConfigsAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, ListCloudInstanceConfigsAction action, OutcomeSender sender) {
     LOGGER.log(Level.INFO, String.format("Listing instance configs:\n%s", action));
     ArrayList<Options.ListOption> options = new ArrayList<>();
     if (action.hasPageSize()) {
@@ -1166,7 +1218,7 @@ public class CloudClientExecutor extends CloudExecutor {
     }
     try {
       Page<InstanceConfig> response =
-          getClient()
+          getClient(useMultiplexedSession)
               .getInstanceAdminClient()
               .listInstanceConfigs(options.toArray(new Options.ListOption[0]));
       List<com.google.spanner.admin.instance.v1.InstanceConfig> instanceConfigList =
@@ -1199,11 +1251,13 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that gets a cloud instance config. */
   private Status executeGetCloudInstanceConfig(
-      GetCloudInstanceConfigAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, GetCloudInstanceConfigAction action, OutcomeSender sender) {
     LOGGER.log(Level.INFO, String.format("Getting instance config:\n%s", action));
     try {
       InstanceConfig instanceConfig =
-          getClient().getInstanceAdminClient().getInstanceConfig(action.getInstanceConfigId());
+          getClient(useMultiplexedSession)
+              .getInstanceAdminClient()
+              .getInstanceConfig(action.getInstanceConfigId());
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))
@@ -1227,10 +1281,14 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that retrieves a cloud instance. */
-  private Status executeGetCloudInstance(GetCloudInstanceAction action, OutcomeSender sender) {
+  private Status executeGetCloudInstance(
+      boolean useMultiplexedSession, GetCloudInstanceAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Retrieving instance:\n%s", action));
-      Instance instance = getClient().getInstanceAdminClient().getInstance(action.getInstanceId());
+      Instance instance =
+          getClient(useMultiplexedSession)
+              .getInstanceAdminClient()
+              .getInstance(action.getInstanceId());
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))
@@ -1255,18 +1313,23 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that creates a user instance config. */
   private Status executeCreateUserInstanceConfig(
-      CreateUserInstanceConfigAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, CreateUserInstanceConfigAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Creating user instance config:\n%s", action));
       final InstanceConfig baseConfig =
-          getClient().getInstanceAdminClient().getInstanceConfig(action.getBaseConfigId());
+          getClient(useMultiplexedSession)
+              .getInstanceAdminClient()
+              .getInstanceConfig(action.getBaseConfigId());
       InstanceConfigInfo instanceConfigInfo =
           InstanceConfig.newBuilder(
                   InstanceConfigId.of(action.getProjectId(), action.getUserConfigId()), baseConfig)
               .setDisplayName(action.getUserConfigId())
               .addReadOnlyReplicas(baseConfig.getOptionalReplicas())
               .build();
-      getClient().getInstanceAdminClient().createInstanceConfig(instanceConfigInfo).get();
+      getClient(useMultiplexedSession)
+          .getInstanceAdminClient()
+          .createInstanceConfig(instanceConfigInfo)
+          .get();
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
@@ -1281,10 +1344,12 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that deletes a user instance config. */
   private Status executeDeleteUserInstanceConfig(
-      DeleteUserInstanceConfigAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, DeleteUserInstanceConfigAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Deleting user instance config:\n%s", action));
-      getClient().getInstanceAdminClient().deleteInstanceConfig(action.getUserConfigId());
+      getClient(useMultiplexedSession)
+          .getInstanceAdminClient()
+          .deleteInstanceConfig(action.getUserConfigId());
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
@@ -1299,11 +1364,11 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that creates a cloud custom encrypted database. */
   private Status executeCreateCloudCustomEncryptedDatabase(
-      CreateCloudDatabaseAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, CreateCloudDatabaseAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Creating database: \n%s", action));
       Database dbInfo =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .newDatabaseBuilder(
                   DatabaseId.of(
@@ -1311,7 +1376,9 @@ public class CloudClientExecutor extends CloudExecutor {
               .setEncryptionConfig(
                   CustomerManagedEncryption.fromProtoOrNull(action.getEncryptionConfig()))
               .build();
-      getClient().getDatabaseAdminClient().createDatabase(dbInfo, action.getSdlStatementList());
+      getClient(useMultiplexedSession)
+          .getDatabaseAdminClient()
+          .createDatabase(dbInfo, action.getSdlStatementList());
     } catch (SpannerException se) {
       return sender.finishWithError(toStatus(se));
     } catch (Exception e) {
@@ -1326,15 +1393,15 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that creates a cloud database. */
   private Status executeCreateCloudDatabase(
-      CreateCloudDatabaseAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, CreateCloudDatabaseAction action, OutcomeSender sender) {
     if (action.hasEncryptionConfig()) {
-      return executeCreateCloudCustomEncryptedDatabase(action, sender);
+      return executeCreateCloudCustomEncryptedDatabase(useMultiplexedSession, action, sender);
     }
     try {
       LOGGER.log(Level.INFO, String.format("Creating database: \n%s", action));
       final String instanceId = action.getInstanceId();
       final String databaseId = action.getDatabaseId();
-      getClient()
+      getClient(useMultiplexedSession)
           .getDatabaseAdminClient()
           .createDatabase(instanceId, databaseId, action.getSdlStatementList())
           .get();
@@ -1361,10 +1428,10 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that updates a cloud database. */
   private Status executeUpdateCloudDatabaseDdl(
-      UpdateCloudDatabaseDdlAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, UpdateCloudDatabaseDdlAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Updating database: \n%s", action));
-      DatabaseAdminClient dbAdminClient = getClient().getDatabaseAdminClient();
+      DatabaseAdminClient dbAdminClient = getClient(useMultiplexedSession).getDatabaseAdminClient();
       final String instanceId = action.getInstanceId();
       final String databaseId = action.getDatabaseId();
       UpdateDatabaseDdlMetadata metadata;
@@ -1394,10 +1461,11 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that updates a cloud database. */
-  private Status executeDropCloudDatabase(DropCloudDatabaseAction action, OutcomeSender sender) {
+  private Status executeDropCloudDatabase(
+      boolean useMultiplexedSession, DropCloudDatabaseAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Dropping database: \n%s", action));
-      DatabaseAdminClient dbAdminClient = getClient().getDatabaseAdminClient();
+      DatabaseAdminClient dbAdminClient = getClient(useMultiplexedSession).getDatabaseAdminClient();
       final String instanceId = action.getInstanceId();
       final String databaseId = action.getDatabaseId();
       dbAdminClient.dropDatabase(instanceId, databaseId);
@@ -1414,11 +1482,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that creates a cloud database backup. */
-  private Status executeCreateCloudBackup(CreateCloudBackupAction action, OutcomeSender sender) {
+  private Status executeCreateCloudBackup(
+      boolean useMultiplexedSession, CreateCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Creating backup: \n%s", action));
       Backup backupResult =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .createBackup(
                   action.getInstanceId(),
@@ -1449,11 +1518,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that copies a cloud database backup. */
-  private Status executeCopyCloudBackup(CopyCloudBackupAction action, OutcomeSender sender) {
+  private Status executeCopyCloudBackup(
+      boolean useMultiplexedSession, CopyCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Copying backup: \n%s", action));
       Backup backupResult =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .copyBackup(
                   action.getInstanceId(),
@@ -1484,11 +1554,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that gets a cloud database backup. */
-  private Status executeGetCloudBackup(GetCloudBackupAction action, OutcomeSender sender) {
+  private Status executeGetCloudBackup(
+      boolean useMultiplexedSession, GetCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Getting backup: \n%s", action));
       Backup backupResult =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .getBackup(action.getInstanceId(), action.getBackupId());
       SpannerActionOutcome outcome =
@@ -1514,11 +1585,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that updates a cloud database backup. */
-  private Status executeUpdateCloudBackup(UpdateCloudBackupAction action, OutcomeSender sender) {
+  private Status executeUpdateCloudBackup(
+      boolean useMultiplexedSession, UpdateCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Updating backup: \n%s", action));
       Backup backupResult =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .updateBackup(
                   action.getInstanceId(),
@@ -1547,10 +1619,11 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that deletes a cloud database backup. */
-  private Status executeDeleteCloudBackup(DeleteCloudBackupAction action, OutcomeSender sender) {
+  private Status executeDeleteCloudBackup(
+      boolean useMultiplexedSession, DeleteCloudBackupAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, "Deleting backup: \n%s", action);
-      getClient()
+      getClient(useMultiplexedSession)
           .getDatabaseAdminClient()
           .deleteBackup(action.getInstanceId(), action.getBackupId());
       return sender.finishWithOK();
@@ -1566,11 +1639,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that lists cloud database backups. */
-  private Status executeListCloudBackups(ListCloudBackupsAction action, OutcomeSender sender) {
+  private Status executeListCloudBackups(
+      boolean useMultiplexedSession, ListCloudBackupsAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Listing backup: \n%s", action));
       Page<Backup> response =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .listBackups(
                   action.getInstanceId(),
@@ -1606,12 +1680,12 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that lists cloud database backup operations. */
   private Status executeListCloudBackupOperations(
-      ListCloudBackupOperationsAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, ListCloudBackupOperationsAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Listing backup operation: \n%s", action));
 
       Page<com.google.longrunning.Operation> response =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .listBackupOperations(
                   action.getInstanceId(),
@@ -1642,11 +1716,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that list cloud databases. */
-  private Status executeListCloudDatabases(ListCloudDatabasesAction action, OutcomeSender sender) {
+  private Status executeListCloudDatabases(
+      boolean useMultiplexedSession, ListCloudDatabasesAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Listing database: \n%s", action));
       Page<com.google.cloud.spanner.Database> response =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .listDatabases(
                   action.getInstanceId(),
@@ -1681,12 +1756,14 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that lists cloud database operations. */
   private Status executeListCloudDatabaseOperations(
-      ListCloudDatabaseOperationsAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession,
+      ListCloudDatabaseOperationsAction action,
+      OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Listing database operation: \n%s", action));
 
       Page<com.google.longrunning.Operation> response =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .listDatabaseOperations(
                   action.getInstanceId(),
@@ -1718,11 +1795,11 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that restores a cloud database. */
   private Status executeRestoreCloudDatabase(
-      RestoreCloudDatabaseAction action, OutcomeSender sender) {
+      boolean useMultiplexedSession, RestoreCloudDatabaseAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Restoring database: \n%s", action));
       Database db =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .restoreDatabase(
                   action.getBackupInstanceId(),
@@ -1751,11 +1828,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that gets a cloud database. */
-  private Status executeGetCloudDatabase(GetCloudDatabaseAction action, OutcomeSender sender) {
+  private Status executeGetCloudDatabase(
+      boolean useMultiplexedSession, GetCloudDatabaseAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Getting database: \n%s", action));
       Database databaseResult =
-          getClient()
+          getClient(useMultiplexedSession)
               .getDatabaseAdminClient()
               .getDatabase(action.getInstanceId(), action.getDatabaseId());
       SpannerActionOutcome outcome =
@@ -1781,11 +1859,13 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that gets an operation. */
-  private Status executeGetOperation(GetOperationAction action, OutcomeSender sender) {
+  private Status executeGetOperation(
+      boolean useMultiplexedSession, GetOperationAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Getting operation: \n%s", action));
       final String operationName = action.getOperation();
-      Operation operationResult = getClient().getDatabaseAdminClient().getOperation(operationName);
+      Operation operationResult =
+          getClient(useMultiplexedSession).getDatabaseAdminClient().getOperation(operationName);
       SpannerActionOutcome outcome =
           SpannerActionOutcome.newBuilder()
               .setStatus(toProto(Status.OK))
@@ -1807,11 +1887,12 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /** Execute action that cancels an operation. */
-  private Status executeCancelOperation(CancelOperationAction action, OutcomeSender sender) {
+  private Status executeCancelOperation(
+      boolean useMultiplexedSession, CancelOperationAction action, OutcomeSender sender) {
     try {
       LOGGER.log(Level.INFO, String.format("Cancelling operation: \n%s", action));
       final String operationName = action.getOperation();
-      getClient().getDatabaseAdminClient().cancelOperation(operationName);
+      getClient(useMultiplexedSession).getDatabaseAdminClient().cancelOperation(operationName);
       return sender.finishWithOK();
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
@@ -1965,7 +2046,10 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute a read or query for the given partitions. */
   private Status executeExecutePartition(
-      ExecutePartitionAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+      boolean useMultiplexedSession,
+      ExecutePartitionAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
     try {
       BatchReadOnlyTransaction batchTxn = executionContext.getBatchTxn();
       ByteString partitionBinary = action.getPartition().getPartition();
@@ -1981,7 +2065,7 @@ public class CloudClientExecutor extends CloudExecutor {
       Partition partition = unmarshall(partitionBinary);
       executionContext.startRead();
       ResultSet result = batchTxn.execute(partition);
-      return processResults(result, 0, sender, executionContext);
+      return processResults(useMultiplexedSession, result, 0, sender, executionContext);
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     } catch (Exception e) {
@@ -2101,7 +2185,10 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute action that executes a change stream query. */
   private Status executeExecuteChangeStreamQuery(
-      String dbPath, ExecuteChangeStreamQuery action, OutcomeSender sender) {
+      String dbPath,
+      boolean useMultiplexedSession,
+      ExecuteChangeStreamQuery action,
+      OutcomeSender sender) {
     try {
       LOGGER.log(
           Level.INFO, String.format("Start executing change change stream query: \n%s", action));
@@ -2139,9 +2226,9 @@ public class CloudClientExecutor extends CloudExecutor {
           action.getHeartbeatMilliseconds(), action.getName(), action.getPartitionToken());
       Spanner spannerClient;
       if (action.hasDeadlineSeconds()) {
-        spannerClient = getClientWithTimeout(action.getDeadlineSeconds());
+        spannerClient = getClientWithTimeout(action.getDeadlineSeconds(), useMultiplexedSession);
       } else {
-        spannerClient = getClient();
+        spannerClient = getClient(useMultiplexedSession);
       }
       DatabaseClient dbClient = spannerClient.getDatabaseClient(DatabaseId.of(dbPath));
       ResultSet resultSet = dbClient.singleUse().executeQuery(Statement.of(tvfQuery));
@@ -2374,7 +2461,10 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute a read action request, store the results in the OutcomeSender. */
   private Status executeRead(
-      ReadAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+      boolean useMultiplexedSession,
+      ReadAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
     try {
       LOGGER.log(
           Level.INFO,
@@ -2412,7 +2502,8 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(
           Level.INFO,
           String.format("Parsing read result %s\n", executionContext.getTransactionSeed()));
-      return processResults(result, action.getLimit(), sender, executionContext);
+      return processResults(
+          useMultiplexedSession, result, action.getLimit(), sender, executionContext);
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     }
@@ -2420,7 +2511,10 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute a query action request, store the results in the OutcomeSender. */
   private Status executeQuery(
-      QueryAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+      boolean useMultiplexedSession,
+      QueryAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
     try {
       LOGGER.log(
           Level.INFO,
@@ -2446,7 +2540,7 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(
           Level.INFO,
           String.format("Parsing query result %s\n", executionContext.getTransactionSeed()));
-      return processResults(result, 0, sender, executionContext);
+      return processResults(useMultiplexedSession, result, 0, sender, executionContext);
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     }
@@ -2454,7 +2548,10 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Execute a dml update action request, store the results in the OutcomeSender. */
   private Status executeCloudDmlUpdate(
-      DmlAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
+      boolean useMultiplexedSession,
+      DmlAction action,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
     try {
       LOGGER.log(
           Level.INFO,
@@ -2476,7 +2573,7 @@ public class CloudClientExecutor extends CloudExecutor {
       LOGGER.log(
           Level.INFO,
           String.format("Parsing Dml result %s\n", executionContext.getTransactionSeed()));
-      return processResults(result, 0, sender, executionContext, true);
+      return processResults(useMultiplexedSession, result, 0, sender, executionContext, true);
     } catch (SpannerException e) {
       return sender.finishWithError(toStatus(e));
     }
@@ -2522,12 +2619,17 @@ public class CloudClientExecutor extends CloudExecutor {
 
   /** Process a ResultSet from a read/query and store the results in the OutcomeSender. */
   private Status processResults(
-      ResultSet results, int limit, OutcomeSender sender, ExecutionFlowContext executionContext) {
-    return processResults(results, limit, sender, executionContext, false);
+      boolean useMultiplexedSession,
+      ResultSet results,
+      int limit,
+      OutcomeSender sender,
+      ExecutionFlowContext executionContext) {
+    return processResults(useMultiplexedSession, results, limit, sender, executionContext, false);
   }
 
   /** Process a ResultSet from a read/query/dml and store the results in the OutcomeSender. */
   private Status processResults(
+      boolean useMultiplexedSession,
       ResultSet results,
       int limit,
       OutcomeSender sender,
@@ -2579,7 +2681,7 @@ public class CloudClientExecutor extends CloudExecutor {
                 Level.INFO,
                 String.format(
                     "Found Unauthenticated error, client credentials:\n%s",
-                    getClient().getOptions().getCredentials().toString()));
+                    getClient(useMultiplexedSession).getOptions().getCredentials().toString()));
           } catch (Exception exception) {
             LOGGER.log(Level.WARNING, String.format("Failed to getClient %s", exception));
           }

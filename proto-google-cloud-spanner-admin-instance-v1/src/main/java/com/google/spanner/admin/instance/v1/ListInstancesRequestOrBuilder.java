@@ -160,4 +160,54 @@ public interface ListInstancesRequestOrBuilder
    * @return The bytes for filter.
    */
   com.google.protobuf.ByteString getFilterBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * Deadline used while retrieving metadata for instances.
+   * Instances whose metadata cannot be retrieved within this deadline will be
+   * added to
+   * [unreachable][google.spanner.admin.instance.v1.ListInstancesResponse.unreachable]
+   * in
+   * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp instance_deadline = 5;</code>
+   *
+   * @return Whether the instanceDeadline field is set.
+   */
+  boolean hasInstanceDeadline();
+  /**
+   *
+   *
+   * <pre>
+   * Deadline used while retrieving metadata for instances.
+   * Instances whose metadata cannot be retrieved within this deadline will be
+   * added to
+   * [unreachable][google.spanner.admin.instance.v1.ListInstancesResponse.unreachable]
+   * in
+   * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp instance_deadline = 5;</code>
+   *
+   * @return The instanceDeadline.
+   */
+  com.google.protobuf.Timestamp getInstanceDeadline();
+  /**
+   *
+   *
+   * <pre>
+   * Deadline used while retrieving metadata for instances.
+   * Instances whose metadata cannot be retrieved within this deadline will be
+   * added to
+   * [unreachable][google.spanner.admin.instance.v1.ListInstancesResponse.unreachable]
+   * in
+   * [ListInstancesResponse][google.spanner.admin.instance.v1.ListInstancesResponse].
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp instance_deadline = 5;</code>
+   */
+  com.google.protobuf.TimestampOrBuilder getInstanceDeadlineOrBuilder();
 }

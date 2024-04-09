@@ -17,10 +17,12 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.ConnectionOptions.Builder.SPANNER_URI_PATTERN;
+import static com.google.cloud.spanner.connection.ConnectionOptions.DEFAULT_ENDPOINT;
 import static com.google.cloud.spanner.connection.ConnectionOptions.determineHost;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -40,6 +42,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.io.Files;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
@@ -172,6 +175,7 @@ public class ConnectionOptionsTest {
         DEFAULT_HOST,
         determineHost(
             matcherWithoutHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ false,
             /* usePlainText= */ false,
             ImmutableMap.of()));
@@ -179,6 +183,7 @@ public class ConnectionOptionsTest {
         DEFAULT_HOST,
         determineHost(
             matcherWithoutHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ false,
             /* usePlainText= */ false,
             ImmutableMap.of("FOO", "bar")));
@@ -186,6 +191,7 @@ public class ConnectionOptionsTest {
         "http://localhost:9010",
         determineHost(
             matcherWithoutHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ true,
             /* usePlainText= */ false,
             ImmutableMap.of()));
@@ -193,6 +199,7 @@ public class ConnectionOptionsTest {
         "http://localhost:9011",
         determineHost(
             matcherWithoutHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ true,
             /* usePlainText= */ false,
             ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
@@ -200,6 +207,7 @@ public class ConnectionOptionsTest {
         "http://localhost:9010",
         determineHost(
             matcherWithoutHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ true,
             /* usePlainText= */ true,
             ImmutableMap.of()));
@@ -207,6 +215,7 @@ public class ConnectionOptionsTest {
         "http://localhost:9011",
         determineHost(
             matcherWithoutHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ true,
             /* usePlainText= */ true,
             ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
@@ -216,6 +225,7 @@ public class ConnectionOptionsTest {
         "https://custom.host.domain:1234",
         determineHost(
             matcherWithHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ false,
             /* usePlainText= */ false,
             ImmutableMap.of()));
@@ -223,6 +233,7 @@ public class ConnectionOptionsTest {
         "http://custom.host.domain:1234",
         determineHost(
             matcherWithHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ false,
             /* usePlainText= */ true,
             ImmutableMap.of()));
@@ -230,6 +241,7 @@ public class ConnectionOptionsTest {
         "http://custom.host.domain:1234",
         determineHost(
             matcherWithHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ false,
             /* usePlainText= */ true,
             ImmutableMap.of()));
@@ -237,6 +249,7 @@ public class ConnectionOptionsTest {
         "https://custom.host.domain:1234",
         determineHost(
             matcherWithHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ true,
             /* usePlainText= */ false,
             ImmutableMap.of()));
@@ -244,6 +257,7 @@ public class ConnectionOptionsTest {
         "http://custom.host.domain:1234",
         determineHost(
             matcherWithHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ false,
             /* usePlainText= */ true,
             ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
@@ -251,9 +265,40 @@ public class ConnectionOptionsTest {
         "https://custom.host.domain:1234",
         determineHost(
             matcherWithHost,
+            DEFAULT_ENDPOINT,
             /* autoConfigEmulator= */ true,
             /* usePlainText= */ false,
             ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
+
+    // The 'endpoint' connection URL property can also be used to connect to the emulator.
+    // Using this property is sometimes easier than adding the URL to the host part of the
+    // connection string, for example because it can be added to the Properties object that
+    // is used by JDBC.
+    assertEquals(
+        "http://localhost:9010",
+        determineHost(
+            matcherWithoutHost,
+            "localhost:9010",
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ true,
+            ImmutableMap.of()));
+    // A value for the 'endpoint' connection property overrides any value in the host group.
+    assertEquals(
+        "https://my.endpoint:1234",
+        determineHost(
+            matcherWithHost,
+            "my.endpoint:1234",
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ false,
+            ImmutableMap.of("SPANNER_EMULATOR_HOST", "localhost:9011")));
+    assertEquals(
+        "http://my.endpoint.local:1234",
+        determineHost(
+            matcherWithHost,
+            "my.endpoint.local:1234",
+            /* autoConfigEmulator= */ false,
+            /* usePlainText= */ true,
+            ImmutableMap.of()));
   }
 
   @Test
@@ -282,6 +327,20 @@ public class ConnectionOptionsTest {
     ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
     builder.setUri(
         "cloudspanner://central-emulator.local:8080/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true");
+    ConnectionOptions options = builder.build();
+    assertEquals("http://central-emulator.local:8080", options.getHost());
+    assertEquals("test-project-123", options.getProjectId());
+    assertEquals("test-instance-123", options.getInstanceId());
+    assertEquals("test-database-123", options.getDatabaseName());
+    assertEquals(NoCredentials.getInstance(), options.getCredentials());
+    assertTrue(options.isUsePlainText());
+  }
+
+  @Test
+  public void testBuildWithAutoConfigEmulatorAndEndpoint() {
+    ConnectionOptions.Builder builder = ConnectionOptions.newBuilder();
+    builder.setUri(
+        "cloudspanner:/projects/test-project-123/instances/test-instance-123/databases/test-database-123?autoConfigEmulator=true;endpoint=central-emulator.local:8080");
     ConnectionOptions options = builder.build();
     assertEquals("http://central-emulator.local:8080", options.getHost());
     assertEquals("test-project-123", options.getProjectId());
@@ -1086,5 +1145,24 @@ public class ConnectionOptionsTest {
             .setCredentials(NoCredentials.getInstance())
             .build()
             .isUseVirtualThreads());
+  }
+
+  @Test
+  public void testMaxCommitDelay() {
+    assertNull(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getMaxCommitDelay());
+    assertEquals(
+        Duration.ofMillis(10L),
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?maxCommitDelay=10")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getMaxCommitDelay());
   }
 }
