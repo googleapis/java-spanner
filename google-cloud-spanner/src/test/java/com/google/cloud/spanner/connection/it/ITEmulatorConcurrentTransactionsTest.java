@@ -31,7 +31,11 @@ import com.google.cloud.spanner.connection.Connection;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -107,7 +111,26 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
   }
 
   @Test
-  public void testRandomTransactions() {
+  public void testSingleThreadRandomTransactions() {
+    AtomicInteger numRowsInserted = new AtomicInteger();
+    runRandomTransactions(numRowsInserted);
+    verifyRowCount(numRowsInserted.get());
+  }
+
+  @Test
+  public void testMultiThreadedRandomTransactions() throws InterruptedException {
+    int numThreads = ThreadLocalRandom.current().nextInt(10) + 5;
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    AtomicInteger numRowsInserted = new AtomicInteger();
+    for (int thread = 0; thread < numThreads; thread++) {
+      executor.submit(() -> runRandomTransactions(numRowsInserted));
+    }
+    executor.shutdown();
+    assertTrue(executor.awaitTermination(30L, TimeUnit.SECONDS));
+    verifyRowCount(numRowsInserted.get());
+  }
+
+  private void runRandomTransactions(AtomicInteger numRowsInserted) {
     int numTransactions = ThreadLocalRandom.current().nextInt(25) + 5;
     String sql = "insert into test (id, name) values (@id, 'test')";
     List<Connection> connections = new ArrayList<>(numTransactions);
@@ -118,7 +141,7 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
       while (!connections.isEmpty()) {
         int index = ThreadLocalRandom.current().nextInt(connections.size());
         Connection connection = connections.get(index);
-        if (connection.isTransactionStarted()) {
+        if (ThreadLocalRandom.current().nextInt(10) < 3) {
           connection.commit();
           connection.close();
           assertEquals(connection, connections.remove(index));
@@ -130,6 +153,7 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
                       .bind("id")
                       .to(ThreadLocalRandom.current().nextLong())
                       .build()));
+          numRowsInserted.incrementAndGet();
         }
       }
     } finally {
@@ -137,7 +161,6 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
         connection.close();
       }
     }
-    verifyRowCount(numTransactions);
   }
 
   private void verifyRowCount(long expected) {

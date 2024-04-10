@@ -63,8 +63,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,20 +83,21 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final AtomicLong ID_GENERATOR = new AtomicLong();
   private static final String MAX_INTERNAL_RETRIES_EXCEEDED =
       "Internal transaction retry maximum exceeded";
-  private static final int MAX_INTERNAL_RETRIES = 50;
+  private static final int DEFAULT_MAX_INTERNAL_RETRIES = 50;
 
   /**
    * A reference to the currently active transaction on the emulator. This reference is only used
    * when running on the emulator, and enables the Connection API to manually abort the current
    * transaction on the emulator, so other transactions can try to make progress.
    */
-  private static final AtomicReference<ReadWriteTransaction> CURRENT_ACTIVE_TRANSACTION =
-      new AtomicReference<>();
+  private static final ThreadLocal<ReadWriteTransaction> CURRENT_ACTIVE_TRANSACTION =
+      new ThreadLocal<>();
 
   private static final String AUTO_SAVEPOINT_NAME = "_auto_savepoint";
 
   private Savepoint autoSavepoint;
   private final boolean useAutoSavepointsForEmulator;
+  private final int maxInternalRetries;
   private final ReentrantLock abortedLock = new ReentrantLock();
   private final long transactionId;
   private final DatabaseClient dbClient;
@@ -206,6 +207,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     this.transactionId = ID_GENERATOR.incrementAndGet();
     this.useAutoSavepointsForEmulator =
         builder.useAutoSavepointsForEmulator && builder.retryAbortsInternally;
+    this.maxInternalRetries =
+        this.useAutoSavepointsForEmulator
+            ? DEFAULT_MAX_INTERNAL_RETRIES * 10
+            : DEFAULT_MAX_INTERNAL_RETRIES;
     this.dbClient = builder.dbClient;
     this.delayTransactionStartUntilFirstWrite = builder.delayTransactionStartUntilFirstWrite;
     this.retryAbortsInternally = builder.retryAbortsInternally;
@@ -298,6 +303,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     } else if (txContextFuture == null && delayTransactionStartUntilFirstWrite) {
       canUseSingleUseRead = true;
     }
+    maybeUpdateActiveTransaction();
   }
 
   private void checkValidStateAndMarkStarted() {
@@ -828,7 +834,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         try {
           checkRolledBackToSavepoint();
           T result = callable.call();
-          maybeUpdateActiveTransaction();
+          if (this.useAutoSavepointsForEmulator) {
+            this.autoSavepoint = createAutoSavepoint();
+          }
           return result;
         } catch (final AbortedException aborted) {
           handleAborted(aborted);
@@ -845,7 +853,14 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   private void maybeUpdateActiveTransaction() {
     if (this.useAutoSavepointsForEmulator) {
-      this.autoSavepoint = createAutoSavepoint();
+      if (CURRENT_ACTIVE_TRANSACTION.get() != null && CURRENT_ACTIVE_TRANSACTION.get() != this) {
+        ReadWriteTransaction activeTransaction = CURRENT_ACTIVE_TRANSACTION.get();
+        if (activeTransaction.isActive() && activeTransaction.autoSavepoint != null) {
+          activeTransaction.rollbackToSavepoint(activeTransaction.autoSavepoint);
+          activeTransaction.autoSavepoint = null;
+        }
+        CURRENT_ACTIVE_TRANSACTION.remove();
+      }
       CURRENT_ACTIVE_TRANSACTION.set(this);
     }
   }
@@ -922,7 +937,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    * {@link AbortedException}.
    */
   private void handleAborted(AbortedException aborted) {
-    if (transactionRetryAttempts >= MAX_INTERNAL_RETRIES) {
+    if (transactionRetryAttempts >= DEFAULT_MAX_INTERNAL_RETRIES) {
       // If the same statement in transaction keeps aborting, then we need to abort here.
       throwAbortWithRetryAttemptsExceeded();
     } else if (retryAbortsInternally) {
@@ -934,6 +949,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           if (delay > 0L) {
             //noinspection BusyWait
             Thread.sleep(delay);
+          } else if (aborted.isEmulatorOnlySupportsOneTransactionException()) {
+            //noinspection BusyWait
+            Thread.sleep(ThreadLocalRandom.current().nextInt(50));
           }
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
@@ -945,7 +963,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             txManager = dbClient.transactionManager(transactionOptions);
             txContextFuture = ApiFutures.immediateFuture(txManager.begin());
           } else {
-            maybeAbortOtherTransactionOnEmulator(aborted);
             txContextFuture = ApiFutures.immediateFuture(txManager.resetForRetry());
           }
           // Inform listeners about the transaction retry that is about to start.
@@ -979,10 +996,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           throw e;
         } catch (AbortedException abortedExceptionDuringRetry) {
           // Retry aborted, do another retry of the transaction.
-          if (transactionRetryAttempts >= MAX_INTERNAL_RETRIES) {
+          if (transactionRetryAttempts >= DEFAULT_MAX_INTERNAL_RETRIES) {
             throwAbortWithRetryAttemptsExceeded();
           }
-          maybeAbortOtherTransactionOnEmulator(abortedExceptionDuringRetry);
           invokeTransactionRetryListenersOnFinish(RetryResult.RETRY_ABORTED_AND_RESTARTING);
           logger.fine(toString() + ": Internal transaction retry aborted, trying again");
           // Use the new aborted exception to determine both the backoff delay and how to handle
