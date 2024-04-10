@@ -937,7 +937,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    * {@link AbortedException}.
    */
   private void handleAborted(AbortedException aborted) {
-    if (transactionRetryAttempts >= DEFAULT_MAX_INTERNAL_RETRIES) {
+    if (transactionRetryAttempts >= maxInternalRetries) {
       // If the same statement in transaction keeps aborting, then we need to abort here.
       throwAbortWithRetryAttemptsExceeded();
     } else if (retryAbortsInternally) {
@@ -996,7 +996,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
           throw e;
         } catch (AbortedException abortedExceptionDuringRetry) {
           // Retry aborted, do another retry of the transaction.
-          if (transactionRetryAttempts >= DEFAULT_MAX_INTERNAL_RETRIES) {
+          if (transactionRetryAttempts >= maxInternalRetries) {
             throwAbortWithRetryAttemptsExceeded();
           }
           invokeTransactionRetryListenersOnFinish(RetryResult.RETRY_ABORTED_AND_RESTARTING);
