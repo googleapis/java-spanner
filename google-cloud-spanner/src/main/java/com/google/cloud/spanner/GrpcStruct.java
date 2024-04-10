@@ -114,6 +114,9 @@ class GrpcStruct extends Struct implements Serializable {
         case PG_JSONB:
           builder.set(fieldName).to(Value.pgJsonb((String) value));
           break;
+        case PG_OID:
+          builder.set(fieldName).to(Value.pgOid((Long) value));
+          break;
         case BYTES:
           builder
               .set(fieldName)
@@ -157,6 +160,9 @@ class GrpcStruct extends Struct implements Serializable {
               break;
             case PG_JSONB:
               builder.set(fieldName).toPgJsonbArray((Iterable<String>) value);
+              break;
+            case PG_OID:
+              builder.set(fieldName).toPgOidArray((Iterable<Long>) value);
               break;
             case BYTES:
             case PROTO:
@@ -262,6 +268,7 @@ class GrpcStruct extends Struct implements Serializable {
         checkType(fieldType, proto, KindCase.BOOL_VALUE);
         return proto.getBoolValue();
       case INT64:
+      case PG_OID:
       case ENUM:
         checkType(fieldType, proto, KindCase.STRING_VALUE);
         return Long.parseLong(proto.getStringValue());
@@ -319,6 +326,7 @@ class GrpcStruct extends Struct implements Serializable {
   static Object decodeArrayValue(Type elementType, ListValue listValue) {
     switch (elementType.getCode()) {
       case INT64:
+      case PG_OID:
       case ENUM:
         // For int64/float64/float32/enum types, use custom containers.
         // These avoid wrapper object creation for non-null arrays.
@@ -563,6 +571,8 @@ class GrpcStruct extends Struct implements Serializable {
         return Value.json(isNull ? null : getJsonInternal(columnIndex));
       case PG_JSONB:
         return Value.pgJsonb(isNull ? null : getPgJsonbInternal(columnIndex));
+      case PG_OID:
+        return Value.pgOid(isNull ? null : getLongInternal(columnIndex));
       case BYTES:
         return Value.internalBytes(isNull ? null : getLazyBytesInternal(columnIndex));
       case PROTO:
@@ -598,6 +608,8 @@ class GrpcStruct extends Struct implements Serializable {
             return Value.jsonArray(isNull ? null : getJsonListInternal(columnIndex));
           case PG_JSONB:
             return Value.pgJsonbArray(isNull ? null : getPgJsonbListInternal(columnIndex));
+          case PG_OID:
+            return Value.pgOidArray(isNull ? null : getLongListInternal(columnIndex));
           case BYTES:
             return Value.bytesArray(isNull ? null : getBytesListInternal(columnIndex));
           case PROTO:

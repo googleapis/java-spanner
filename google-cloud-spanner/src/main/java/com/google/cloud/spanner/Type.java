@@ -55,6 +55,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_STRING = new Type(Code.STRING, null, null);
   private static final Type TYPE_JSON = new Type(Code.JSON, null, null);
   private static final Type TYPE_PG_JSONB = new Type(Code.PG_JSONB, null, null);
+  private static final Type TYPE_PG_OID = new Type(Code.PG_OID, null, null);
   private static final Type TYPE_BYTES = new Type(Code.BYTES, null, null);
   private static final Type TYPE_TIMESTAMP = new Type(Code.TIMESTAMP, null, null);
   private static final Type TYPE_DATE = new Type(Code.DATE, null, null);
@@ -67,6 +68,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_STRING = new Type(Code.ARRAY, TYPE_STRING, null);
   private static final Type TYPE_ARRAY_JSON = new Type(Code.ARRAY, TYPE_JSON, null);
   private static final Type TYPE_ARRAY_PG_JSONB = new Type(Code.ARRAY, TYPE_PG_JSONB, null);
+  private static final Type TYPE_ARRAY_PG_OID = new Type(Code.ARRAY, TYPE_PG_OID, null);
   private static final Type TYPE_ARRAY_BYTES = new Type(Code.ARRAY, TYPE_BYTES, null);
   private static final Type TYPE_ARRAY_TIMESTAMP = new Type(Code.ARRAY, TYPE_TIMESTAMP, null);
   private static final Type TYPE_ARRAY_DATE = new Type(Code.ARRAY, TYPE_DATE, null);
@@ -137,6 +139,11 @@ public final class Type implements Serializable {
     return TYPE_PG_JSONB;
   }
 
+  /** Returns the descriptor for the {@code PG_OID} type. */
+  public static Type pgOid() {
+    return TYPE_PG_OID;
+  }
+
   /**
    * To get the descriptor for the {@code PROTO} type.
    *
@@ -198,6 +205,8 @@ public final class Type implements Serializable {
         return TYPE_ARRAY_JSON;
       case PG_JSONB:
         return TYPE_ARRAY_PG_JSONB;
+      case PG_OID:
+        return TYPE_ARRAY_PG_OID;
       case BYTES:
         return TYPE_ARRAY_BYTES;
       case TIMESTAMP:
@@ -280,6 +289,7 @@ public final class Type implements Serializable {
     STRING(TypeCode.STRING, "character varying"),
     JSON(TypeCode.JSON, "unknown"),
     PG_JSONB(TypeCode.JSON, "jsonb", TypeAnnotationCode.PG_JSONB),
+    PG_OID(TypeCode.INT64, "oid", TypeAnnotationCode.PG_OID),
     PROTO(TypeCode.PROTO, "proto"),
     ENUM(TypeCode.ENUM, "enum"),
     BYTES(TypeCode.BYTES, "bytea"),
@@ -592,6 +602,8 @@ public final class Type implements Serializable {
         return json();
       case PG_JSONB:
         return pgJsonb();
+      case PG_OID:
+        return pgOid();
       case BYTES:
         return bytes();
       case TIMESTAMP:
