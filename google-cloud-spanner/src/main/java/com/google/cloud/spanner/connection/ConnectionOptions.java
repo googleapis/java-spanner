@@ -1452,6 +1452,8 @@ public class ConnectionOptions {
    * emulator. This allows some more concurrent transactions on the emulator.
    */
   boolean useAutoSavepointsForEmulator() {
+    // For now, this option is directly linked to the option autoConfigEmulator=true, which is the
+    // recommended way to configure the emulator for the Connection API.
     return autoConfigEmulator;
   }
 

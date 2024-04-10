@@ -47,6 +47,10 @@ public class AbortedException extends SpannerException {
     super(token, ErrorCode.ABORTED, IS_RETRYABLE, message, cause, apiException);
   }
 
+  /**
+   * Returns true if this aborted exception was returned by the emulator, and was caused by another
+   * transaction already being active on the emulator.
+   */
   public boolean isEmulatorOnlySupportsOneTransactionException() {
     return getMessage().endsWith("The emulator only supports one transaction at a time.");
   }
