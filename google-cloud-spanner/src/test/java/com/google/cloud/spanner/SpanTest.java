@@ -45,6 +45,8 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -57,11 +59,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.threeten.bp.Duration;
 
 @Category(TracerTest.class)
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class SpanTest {
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
@@ -113,6 +117,14 @@ public class SpanTest {
       io.grpc.Status.FAILED_PRECONDITION
           .withDescription("Non-retryable test exception.")
           .asRuntimeException();
+
+  @Parameter(0)
+  public boolean useMultiplexed;
+
+  @Parameters(name = "use multiplexed = {0}")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {{false}, {true}});
+  }
 
   @BeforeClass
   public static void startStaticServer() throws Exception {
@@ -202,6 +214,7 @@ public class SpanTest {
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(2)
                     .setWaitForMinSessions(Duration.ofSeconds(5))
+                    .setUseMultiplexedSession(useMultiplexed)
                     .build());
 
     spanner = builder.build().getService();
@@ -301,11 +314,26 @@ public class SpanTest {
             "Acquired session",
             "Using Session",
             "Starting/Resuming stream");
-    verifyAnnotations(
-        failOnOverkillTraceComponent.getAnnotations().stream()
-            .distinct()
-            .collect(Collectors.toList()),
-        expectedAnnotations);
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions",
+            "Using Session",
+            "Starting/Resuming stream");
+    if (useMultiplexed) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
   }
 
   @Test
@@ -335,11 +363,28 @@ public class SpanTest {
             "Starting/Resuming stream",
             "Creating Transaction",
             "Transaction Creation Done");
-    verifyAnnotations(
-        failOnOverkillTraceComponent.getAnnotations().stream()
-            .distinct()
-            .collect(Collectors.toList()),
-        expectedAnnotations);
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions",
+            "Using Session",
+            "Starting/Resuming stream",
+            "Creating Transaction",
+            "Transaction Creation Done");
+    if (useMultiplexed) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
   }
 
   @Test
@@ -381,7 +426,13 @@ public class SpanTest {
     assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
-    assertThat(spans.size()).isEqualTo(3);
+
+    if (useMultiplexed) {
+      assertThat(spans.size()).isEqualTo(4);
+      assertThat(spans).containsEntry("CloudSpannerOperation.CreateMultiplexedSession", true);
+    } else {
+      assertThat(spans.size()).isEqualTo(3);
+    }
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
@@ -406,7 +457,7 @@ public class SpanTest {
 
   private void verifyAnnotations(List<String> actualAnnotations, List<String> expectedAnnotations) {
     assertEquals(
-        actualAnnotations.stream().distinct().sorted().collect(Collectors.toList()),
-        expectedAnnotations.stream().sorted().collect(Collectors.toList()));
+        expectedAnnotations.stream().sorted().collect(Collectors.toList()),
+        actualAnnotations.stream().distinct().sorted().collect(Collectors.toList()));
   }
 }

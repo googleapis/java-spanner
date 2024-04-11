@@ -146,7 +146,8 @@ public class SessionClientTests {
         .thenReturn(sessionProto);
 
     try (SessionClient client = new SessionClient(spanner, db, new TestExecutorFactory())) {
-      Session session = client.createSession();
+      SessionInstance sessionInstance = client.createSession();
+      Session session = new SessionImpl(spanner, sessionInstance);
       assertThat(session.getName()).isEqualTo(sessionName);
 
       session.close();

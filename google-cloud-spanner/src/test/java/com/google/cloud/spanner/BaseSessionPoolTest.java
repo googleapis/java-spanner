@@ -92,8 +92,9 @@ abstract class BaseSessionPoolTest {
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
-            options) {
+            new SessionInstance(
+                "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+                options)) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.
@@ -128,10 +129,11 @@ abstract class BaseSessionPoolTest {
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
-            creationTime,
-            true,
-            options) {
+            new SessionInstance(
+                "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+                creationTime,
+                true,
+                options)) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.

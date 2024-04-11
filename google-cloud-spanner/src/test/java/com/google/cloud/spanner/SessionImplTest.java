@@ -75,7 +75,8 @@ import org.mockito.MockitoAnnotations;
 public class SessionImplTest {
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
-  private com.google.cloud.spanner.Session session;
+  private com.google.cloud.spanner.SessionInstance sessionInstance;
+  private com.google.cloud.spanner.SessionImpl session;
   @Captor private ArgumentCaptor<Map<SpannerRpc.Option, Object>> optionsCaptor;
   private Map<SpannerRpc.Option, Object> options;
 
@@ -136,7 +137,7 @@ public class SessionImplTest {
     when(rpc.getExecuteQueryRetryableCodes())
         .thenReturn(
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
-    session = spanner.getSessionClient(db).createSession();
+    sessionInstance = spanner.getSessionClient(db).createSession();
     Span oTspan = mock(Span.class);
     ISpan span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));

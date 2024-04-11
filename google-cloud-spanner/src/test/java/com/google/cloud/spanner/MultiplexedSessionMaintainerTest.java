@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.SessionPool.MultiplexedSession;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionMaintainerConsumer;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -37,8 +36,10 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,7 +58,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
   private DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   private SessionPoolOptions options;
   private FakeClock clock = new FakeClock();
-  private List<MultiplexedSession> multiplexedSessionsRemoved = new ArrayList<>();
+  private List<SessionInstance> multiplexedSessionsRemoved = new ArrayList<>();
 
   @Before
   public void setUp() {
@@ -129,7 +130,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     SessionFutureWrapper session2 = pool.getMultiplexedSessionWithFallback();
     assertNotEquals(session1.get().getName(), session2.get().getName());
     assertEquals(1, multiplexedSessionsRemoved.size());
-    assertTrue(multiplexedSessionsRemoved.contains(session1.get().get()));
+    assertTrue(getNameOfSessionRemoved().contains(session1.get().get().getName()));
 
     // Advance clock by 8 days
     clock.currentTimeMillis.addAndGet(Duration.ofDays(8).toMillis());
@@ -141,7 +142,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     SessionFutureWrapper session3 = pool.getMultiplexedSessionWithFallback();
     assertNotEquals(session2.get().getName(), session3.get().getName());
     assertEquals(2, multiplexedSessionsRemoved.size());
-    assertTrue(multiplexedSessionsRemoved.contains(session2.get().get()));
+    assertTrue(getNameOfSessionRemoved().contains(session2.get().get().getName()));
   }
 
   @Test
@@ -251,7 +252,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     // the last attempt.
     runMaintenanceLoop(clock, pool, 1);
     SessionFutureWrapper session3 = pool.getMultiplexedSessionWithFallback();
-    assertTrue(multiplexedSessionsRemoved.contains(session1.get().get()));
+    assertTrue(getNameOfSessionRemoved().contains(session1.get().get().getName()));
     assertNotEquals(session1.get().getName(), session3.get().getName());
     verify(sessionClient, times(2))
         .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
@@ -282,5 +283,11 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
           return null;
         };
     return pool;
+  }
+
+  Set<String> getNameOfSessionRemoved() {
+    return multiplexedSessionsRemoved.stream()
+        .map(session -> session.getName())
+        .collect(Collectors.toSet());
   }
 }

@@ -198,7 +198,7 @@ class SessionClient implements AutoCloseable {
   }
 
   /** Create a single session. */
-  SessionImpl createSession() {
+  SessionInstance createSession() {
     // The sessionChannelCounter could overflow, but that will just flip it to Integer.MIN_VALUE,
     // which is also a valid channel hint.
     final Map<SpannerRpc.Option, ?> options;
@@ -215,8 +215,7 @@ class SessionClient implements AutoCloseable {
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
                   options);
-      return new SessionImpl(
-          spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
+      return new SessionInstance(session.getName(), options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -248,7 +247,9 @@ class SessionClient implements AutoCloseable {
                   true);
       SessionImpl sessionImpl =
           new SessionImpl(
-              spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), null);
+              spanner,
+              new SessionInstance(
+                  session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
       consumer.onSessionReady(sessionImpl);
     } catch (Throwable t) {
       span.setStatus(t);
@@ -348,10 +349,11 @@ class SessionClient implements AutoCloseable {
         res.add(
             new SessionImpl(
                 spanner,
-                session.getName(),
-                session.getCreateTime(),
-                session.getMultiplexed(),
-                options));
+                new SessionInstance(
+                    session.getName(),
+                    session.getCreateTime(),
+                    session.getMultiplexed(),
+                    options)));
       }
       return res;
     } catch (RuntimeException e) {
@@ -367,6 +369,6 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    return new SessionImpl(spanner, name, options);
+    return new SessionImpl(spanner, new SessionInstance(name, options));
   }
 }
