@@ -138,6 +138,7 @@ public class SessionImplTest {
         .thenReturn(
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
     sessionInstance = spanner.getSessionClient(db).createSession();
+    session = new SessionImpl(spanner, sessionInstance);
     Span oTspan = mock(Span.class);
     ISpan span = new OpenTelemetrySpan(oTspan);
     when(oTspan.makeCurrent()).thenReturn(mock(Scope.class));
