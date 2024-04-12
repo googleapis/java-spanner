@@ -18,9 +18,12 @@ package com.google.cloud.executor.spanner;
 
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.spanner.executor.v1.SessionPoolOptions;
+import com.google.spanner.executor.v1.SpannerAction;
 import com.google.spanner.executor.v1.SpannerAsyncActionRequest;
 import com.google.spanner.executor.v1.SpannerAsyncActionResponse;
 import com.google.spanner.executor.v1.SpannerExecutorProxyGrpc;
+import com.google.spanner.executor.v1.SpannerOptions;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.util.logging.Level;
@@ -34,8 +37,14 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
   // Executors to proxy.
   private final CloudClientExecutor clientExecutor;
 
-  public CloudExecutorImpl(boolean enableGrpcFaultInjector) {
+  // Ratio of operations to use multiplexed sessions. Only applies to supported operations
+  // (currently read-only).
+  private final double multiplexedSessionOperationsRatio;
+
+  public CloudExecutorImpl(
+      boolean enableGrpcFaultInjector, double multiplexedSessionOperationsRatioOption) {
     clientExecutor = new CloudClientExecutor(enableGrpcFaultInjector);
+    multiplexedSessionOperationsRatio = multiplexedSessionOperationsRatioOption;
   }
 
   /** Execute SpannerAsync action requests. */
@@ -48,6 +57,17 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
       @Override
       public void onNext(SpannerAsyncActionRequest request) {
         LOGGER.log(Level.INFO, String.format("Receiving request: \n%s", request));
+
+        // Use Multiplexed sessions for all supported operations if the
+        // multiplexedSessionOperationsRatio from command line is > 0.0.
+        if (multiplexedSessionOperationsRatio > 0.0) {
+          SessionPoolOptions.Builder sessionPoolOptions =
+              SessionPoolOptions.newBuilder().setUseMultiplexed(true);
+          SpannerOptions.Builder options =
+              SpannerOptions.newBuilder().setSessionPoolOptions(sessionPoolOptions);
+          SpannerAction.Builder action = request.getAction().toBuilder().setSpannerOptions(options);
+          request = request.toBuilder().setAction(action).build();
+        }
         Status status = clientExecutor.startHandlingRequest(request, executionContext);
         if (!status.isOk()) {
           LOGGER.log(
