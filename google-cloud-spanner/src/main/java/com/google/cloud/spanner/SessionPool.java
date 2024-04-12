@@ -2370,7 +2370,7 @@ class SessionPool {
         // below MinSessions.
         Instant minLastUseTime = currTime.minus(options.getRemoveInactiveSessionAfter());
         Iterator<PooledSession> iterator = sessions.descendingIterator();
-        while (iterator.hasNext() && sessions.size() >= options.getMinSessions()) {
+        while (iterator.hasNext() && sessions.size() > options.getMinSessions()) {
           PooledSession session = iterator.next();
           if (session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {
