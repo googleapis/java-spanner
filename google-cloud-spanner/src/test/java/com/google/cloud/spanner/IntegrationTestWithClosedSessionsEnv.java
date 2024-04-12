@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.SessionFuture;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 
 /**
@@ -84,6 +85,12 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
       }
       session.get().setAllowReplacing(allowReplacing);
       return session;
+    }
+
+    @Override
+    SessionFuture getMultiplexedSession() {
+      // TODO when multiplexed session is enabled, this logic needs to change.
+      return getSession();
     }
 
     /**
