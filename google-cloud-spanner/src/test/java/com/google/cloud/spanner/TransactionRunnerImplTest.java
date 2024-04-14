@@ -305,7 +305,7 @@ public class TransactionRunnerImplTest {
     SessionImpl session =
         new SessionImpl(
             spanner,
-            new SessionInstance(
+            new SessionReference(
                 "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP)) {};
     session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);

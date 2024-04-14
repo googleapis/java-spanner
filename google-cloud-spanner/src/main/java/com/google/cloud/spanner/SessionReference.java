@@ -29,7 +29,7 @@ import org.threeten.bp.Instant;
  * Spanner database. Sessions are managed internally by the client library, and users need not be
  * aware of the actual session management, pooling and handling.
  */
-class SessionInstance {
+class SessionReference {
 
   private final String name;
   private final DatabaseId databaseId;
@@ -38,7 +38,7 @@ class SessionInstance {
   @Nullable private final Instant createTime;
   private final boolean isMultiplexed;
 
-  SessionInstance(String name, Map<SpannerRpc.Option, ?> options) {
+  SessionReference(String name, Map<SpannerRpc.Option, ?> options) {
     this.options = options;
     this.name = checkNotNull(name);
     this.databaseId = SessionId.of(name).getDatabaseId();
@@ -47,7 +47,7 @@ class SessionInstance {
     this.isMultiplexed = false;
   }
 
-  SessionInstance(
+  SessionReference(
       String name,
       com.google.protobuf.Timestamp createTime,
       boolean isMultiplexed,

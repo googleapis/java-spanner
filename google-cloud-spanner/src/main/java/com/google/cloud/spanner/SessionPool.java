@@ -1178,32 +1178,38 @@ class SessionPool {
   }
 
   class MultiplexedSessionFutureWrapper implements SessionFutureWrapper<MultiplexedSessionFuture> {
-    private SettableApiFuture<SessionInstance> multiplexedSessionSettableApiFuture;
+    private SettableApiFuture<SessionReference> multiplexedSessionSettableApiFuture;
     private ISpan span;
+    private MultiplexedSessionFuture multiplexedSessionFuture;
 
     public MultiplexedSessionFutureWrapper(
-        SettableApiFuture<SessionInstance> multiplexedSessionSettableApiFuture, ISpan span) {
+        SettableApiFuture<SessionReference> multiplexedSessionSettableApiFuture, ISpan span) {
       this.multiplexedSessionSettableApiFuture = multiplexedSessionSettableApiFuture;
       this.span = span;
     }
 
     @Override
     public MultiplexedSessionFuture get() {
-      try {
-        // Creating a new reference where the request's span state can be stored.
-        SessionImpl sessionImpl =
-            new SessionImpl(
-                sessionClient.getSpanner(), this.multiplexedSessionSettableApiFuture.get());
-        MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
-        SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
-        settableFuture.set(multiplexedSession);
-        MultiplexedSessionFuture multiplexedSessionFuture =
-            new MultiplexedSessionFuture(settableFuture, span);
+      if (multiplexedSessionFuture != null) {
         return multiplexedSessionFuture;
-      } catch (InterruptedException interruptedException) {
-        throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-      } catch (ExecutionException executionException) {
-        throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+      } else {
+        try {
+          // Creating a new reference where the request's span state can be stored.
+          SessionImpl sessionImpl =
+              new SessionImpl(
+                  sessionClient.getSpanner(), this.multiplexedSessionSettableApiFuture.get());
+          MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
+          SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
+          settableFuture.set(multiplexedSession);
+          MultiplexedSessionFuture multiplexedSessionFuture =
+              new MultiplexedSessionFuture(settableFuture, span);
+          this.multiplexedSessionFuture = multiplexedSessionFuture;
+          return multiplexedSessionFuture;
+        } catch (InterruptedException interruptedException) {
+          throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+        } catch (ExecutionException executionException) {
+          throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+        }
       }
     }
   }
@@ -2543,9 +2549,9 @@ class SessionPool {
         if (options.getUseMultiplexedSession()) {
           synchronized (lock) {
             if (currentMultiplexedSessionReference.get().isDone()) {
-              SessionInstance sessionInstance = getMultiplexedSessionInstance();
-              if (sessionInstance != null
-                  && isMultiplexedSessionStale(sessionInstance, currentTime)) {
+              SessionReference sessionReference = getMultiplexedSessionInstance();
+              if (sessionReference != null
+                  && isMultiplexedSessionStale(sessionReference, currentTime)) {
                 final Instant minExecutionTime =
                     multiplexedSessionReplacementAttemptTime.plus(
                         multiplexedSessionCreationRetryDelay);
@@ -2571,9 +2577,9 @@ class SessionPool {
       }
     }
 
-    boolean isMultiplexedSessionStale(SessionInstance sessionInstance, Instant currentTime) {
+    boolean isMultiplexedSessionStale(SessionReference sessionReference, Instant currentTime) {
       final Duration durationFromCreationTime =
-          Duration.between(sessionInstance.getCreateTime(), currentTime);
+          Duration.between(sessionReference.getCreateTime(), currentTime);
       return durationFromCreationTime.compareTo(options.getMultiplexedSessionMaintenanceDuration())
           > 0;
     }
@@ -2685,7 +2691,7 @@ class SessionPool {
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
-  private final AtomicReference<SettableApiFuture<SessionInstance>>
+  private final AtomicReference<SettableApiFuture<SessionReference>>
       currentMultiplexedSessionReference = new AtomicReference<>(SettableApiFuture.create());
 
   @GuardedBy("lock")
@@ -2705,7 +2711,7 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
-  @VisibleForTesting Function<SessionInstance, Void> multiplexedSessionRemovedListener;
+  @VisibleForTesting Function<SessionReference, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
@@ -3039,7 +3045,7 @@ class SessionPool {
    * This method is a blocking method. It will block until the underlying {@code
    * SettableApiFuture<SessionInstance>} is resolved.
    */
-  SessionInstance getMultiplexedSessionInstance() {
+  SessionReference getMultiplexedSessionInstance() {
     try {
       return currentMultiplexedSessionReference.get().get();
     } catch (InterruptedException e) {
@@ -3502,17 +3508,17 @@ class SessionPool {
   class MultiplexedSessionMaintainerConsumer implements SessionConsumer {
     @Override
     public void onSessionReady(SessionImpl sessionImpl) {
-      final SessionInstance sessionInstance = sessionImpl.getSessionInstance();
-      final SettableFuture<SessionInstance> settableFuture = SettableFuture.create();
-      settableFuture.set(sessionInstance);
+      final SessionReference sessionReference = sessionImpl.getSessionInstance();
+      final SettableFuture<SessionReference> settableFuture = SettableFuture.create();
+      settableFuture.set(sessionReference);
 
       synchronized (lock) {
-        SessionInstance oldSession = null;
+        SessionReference oldSession = null;
         if (currentMultiplexedSessionReference.get().isDone()) {
           oldSession = getMultiplexedSessionInstance();
         }
-        SettableApiFuture<SessionInstance> settableApiFuture = SettableApiFuture.create();
-        settableApiFuture.set(sessionInstance);
+        SettableApiFuture<SessionReference> settableApiFuture = SettableApiFuture.create();
+        settableApiFuture.set(sessionReference);
         currentMultiplexedSessionReference.set(settableApiFuture);
         if (oldSession != null) {
           logger.log(
@@ -3553,14 +3559,14 @@ class SessionPool {
   class MultiplexedSessionInitializationConsumer implements SessionConsumer {
     @Override
     public void onSessionReady(SessionImpl sessionImpl) {
-      final SessionInstance sessionInstance = sessionImpl.getSessionInstance();
-      final SettableFuture<SessionInstance> settableFuture = SettableFuture.create();
-      settableFuture.set(sessionInstance);
+      final SessionReference sessionReference = sessionImpl.getSessionInstance();
+      final SettableFuture<SessionReference> settableFuture = SettableFuture.create();
+      settableFuture.set(sessionReference);
 
       synchronized (lock) {
-        SettableApiFuture<SessionInstance> settableApiFuture =
+        SettableApiFuture<SessionReference> settableApiFuture =
             currentMultiplexedSessionReference.get();
-        settableApiFuture.set(sessionInstance);
+        settableApiFuture.set(sessionReference);
         multiplexedSessionBeingCreated = false;
       }
     }

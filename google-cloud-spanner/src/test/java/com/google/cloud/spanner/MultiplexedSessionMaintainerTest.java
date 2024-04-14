@@ -58,7 +58,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
   private DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   private SessionPoolOptions options;
   private FakeClock clock = new FakeClock();
-  private List<SessionInstance> multiplexedSessionsRemoved = new ArrayList<>();
+  private List<SessionReference> multiplexedSessionsRemoved = new ArrayList<>();
 
   @Before
   public void setUp() {

@@ -92,7 +92,7 @@ abstract class BaseSessionPoolTest {
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            new SessionInstance(
+            new SessionReference(
                 "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
                 options)) {
           @Override
@@ -129,7 +129,7 @@ abstract class BaseSessionPoolTest {
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            new SessionInstance(
+            new SessionReference(
                 "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
                 creationTime,
                 true,

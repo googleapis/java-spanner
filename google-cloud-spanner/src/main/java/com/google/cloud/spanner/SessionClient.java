@@ -198,7 +198,7 @@ class SessionClient implements AutoCloseable {
   }
 
   /** Create a single session. */
-  SessionInstance createSession() {
+  SessionImpl createSession() {
     // The sessionChannelCounter could overflow, but that will just flip it to Integer.MIN_VALUE,
     // which is also a valid channel hint.
     final Map<SpannerRpc.Option, ?> options;
@@ -215,7 +215,10 @@ class SessionClient implements AutoCloseable {
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
                   options);
-      return new SessionInstance(session.getName(), options);
+      SessionReference sessionReference =
+          new SessionReference(
+              session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
+      return new SessionImpl(spanner, sessionReference);
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -248,7 +251,7 @@ class SessionClient implements AutoCloseable {
       SessionImpl sessionImpl =
           new SessionImpl(
               spanner,
-              new SessionInstance(
+              new SessionReference(
                   session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
       consumer.onSessionReady(sessionImpl);
     } catch (Throwable t) {
@@ -349,7 +352,7 @@ class SessionClient implements AutoCloseable {
         res.add(
             new SessionImpl(
                 spanner,
-                new SessionInstance(
+                new SessionReference(
                     session.getName(),
                     session.getCreateTime(),
                     session.getMultiplexed(),
@@ -369,6 +372,6 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    return new SessionImpl(spanner, new SessionInstance(name, options));
+    return new SessionImpl(spanner, new SessionReference(name, options));
   }
 }

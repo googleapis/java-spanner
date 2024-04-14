@@ -135,7 +135,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            new SessionInstance(
+            new SessionReference(
                 "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
                 options)) {
           @Override

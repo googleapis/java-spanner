@@ -95,23 +95,23 @@ class SessionImpl implements Session {
   }
 
   private final SpannerImpl spanner;
-  private final SessionInstance sessionInstance;
+  private final SessionReference sessionReference;
   private SessionTransaction activeTransaction;
   private ISpan currentSpan;
 
-  SessionImpl(SpannerImpl spanner, SessionInstance sessionInstance) {
+  SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
     this.spanner = spanner;
     this.tracer = spanner.getTracer();
-    this.sessionInstance = sessionInstance;
+    this.sessionReference = sessionReference;
   }
 
   @Override
   public String getName() {
-    return sessionInstance.getName();
+    return sessionReference.getName();
   }
 
   Map<SpannerRpc.Option, ?> getOptions() {
-    return sessionInstance.getOptions();
+    return sessionReference.getOptions();
   }
 
   void setCurrentSpan(ISpan span) {
@@ -123,27 +123,27 @@ class SessionImpl implements Session {
   }
 
   Instant getLastUseTime() {
-    return sessionInstance.getLastUseTime();
+    return sessionReference.getLastUseTime();
   }
 
   Instant getCreateTime() {
-    return sessionInstance.getCreateTime();
+    return sessionReference.getCreateTime();
   }
 
   boolean getIsMultiplexed() {
-    return sessionInstance.getIsMultiplexed();
+    return sessionReference.getIsMultiplexed();
   }
 
-  SessionInstance getSessionInstance() {
-    return sessionInstance;
+  SessionReference getSessionInstance() {
+    return sessionReference;
   }
 
   void markUsed(Instant instant) {
-    sessionInstance.markUsed(instant);
+    sessionReference.markUsed(instant);
   }
 
   public DatabaseId getDatabaseId() {
-    return sessionInstance.getDatabaseId();
+    return sessionReference.getDatabaseId();
   }
 
   @Override
