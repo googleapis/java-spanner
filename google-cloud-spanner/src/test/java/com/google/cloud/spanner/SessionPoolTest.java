@@ -1165,8 +1165,8 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         new LinkedList<>(Arrays.asList(mockSession1, mockSession2, mockSession3));
 
     mockKeepAlive(context);
-    // This is cheating as we are returning the same session each but it makes the verification
-    // easier.
+    // This is cheating as we are returning the same session each time, but it makes the
+    // verification easier.
     doAnswer(
             invocation -> {
               executor.submit(
@@ -1198,11 +1198,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     clock.currentTimeMillis.addAndGet(
         clock.currentTimeMillis.get() + (options.getKeepAliveIntervalMinutes() + 5L) * 60L * 1000L);
     session1 = pool.getSession();
+    session1.get();
     session1.writeAtLeastOnceWithOptions(new ArrayList<>());
     session1.close();
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
-    // The session pool only keeps MinSessions + MaxIdleSessions alive.
-    verify(context, times(options.getMinSessions() + options.getMaxIdleSessions()))
+    // The session pool only keeps MinSessions alive.
+    verify(context, times(options.getMinSessions()))
         .executeQuery(Statement.newBuilder("SELECT 1").build());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }

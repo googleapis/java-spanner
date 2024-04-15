@@ -1892,6 +1892,9 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numSessionsInUse--;
+        if (numSessionsInUse < 0) {
+          throw new IllegalStateException();
+        }
         numSessionsReleased++;
       }
       if ((lastException != null && isSessionNotFound(lastException)) || isRemovedFromPool) {
@@ -2370,7 +2373,7 @@ class SessionPool {
         // below MinSessions.
         Instant minLastUseTime = currTime.minus(options.getRemoveInactiveSessionAfter());
         Iterator<PooledSession> iterator = sessions.descendingIterator();
-        while (iterator.hasNext() && sessions.size() > options.getMinSessions()) {
+        while (iterator.hasNext() && allSessions.size() > options.getMinSessions()) {
           PooledSession session = iterator.next();
           if (session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {

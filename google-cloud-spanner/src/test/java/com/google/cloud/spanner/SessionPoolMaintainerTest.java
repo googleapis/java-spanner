@@ -318,13 +318,14 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
     assertThat(idledSessions).containsExactly(session5, session8);
     assertThat(pool.totalSessions()).isEqualTo(3);
     // Return the sessions to the pool. As they have not been used, they are all into idle time.
-    // Running the maintainer will now remove all the sessions from the pool and then start the
-    // replenish method.
+    // Running the maintainer will now remove the sessions from the pool until MinSessions is
+    // reached.
     session9.close();
     session10.close();
     session11.close();
     runMaintenanceLoop(clock, pool, 1);
-    assertThat(idledSessions).containsExactly(session5, session8, session9, session10, session11);
+    assertThat(idledSessions)
+        .containsExactly(session5, session8, session9, session10 /*, session11*/);
     // Check that the pool is replenished.
     while (pool.totalSessions() < options.getMinSessions()) {
       Thread.sleep(1L);
