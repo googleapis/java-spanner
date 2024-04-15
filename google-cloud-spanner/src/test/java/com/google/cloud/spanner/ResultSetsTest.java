@@ -110,6 +110,7 @@ public class ResultSetsTest {
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
+            Type.StructField.of("pgOidVal", Type.pgOid()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -128,6 +129,7 @@ public class ResultSetsTest {
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
             Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())),
             Type.StructField.of(
                 "protoMessageArray",
                 Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),
@@ -153,6 +155,8 @@ public class ResultSetsTest {
             .to(Value.json(jsonVal))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(jsonVal))
+            .set("pgOidVal")
+            .to(Value.pgOid(2))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -185,6 +189,8 @@ public class ResultSetsTest {
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .set("pgJsonbArray")
             .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(longArray))
             .set("protoMessageArray")
             .to(
                 Value.protoMessageArray(
@@ -214,6 +220,8 @@ public class ResultSetsTest {
             .to(Value.json(jsonVal))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(jsonVal))
+            .set("pgOidVal")
+            .to(Value.pgOid(3))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -246,6 +254,8 @@ public class ResultSetsTest {
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .set("pgJsonbArray")
             .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(longArray))
             .set("protoMessageArray")
             .to(
                 Value.protoMessageArray(
@@ -308,6 +318,10 @@ public class ResultSetsTest {
     assertEquals(Value.pgJsonb(jsonVal), rs.getValue(columnIndex++));
     assertEquals(jsonVal, rs.getPgJsonb("pgJsonbVal"));
     assertEquals(Value.pgJsonb(jsonVal), rs.getValue("pgJsonbVal"));
+
+    assertThat(rs.getLong(columnIndex)).isEqualTo(2L);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.pgOid(2L));
+    assertThat(rs.getColumnType("pgOidVal")).isEqualTo(Type.pgOid());
 
     assertThat(rs.getBytes(columnIndex)).isEqualTo(ByteArray.copyFrom(byteVal));
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.bytes(ByteArray.copyFrom(byteVal)));
@@ -395,6 +409,13 @@ public class ResultSetsTest {
 
     assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList(columnIndex++));
     assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList("pgJsonbArray"));
+
+    assertThat(rs.getLongArray(columnIndex)).isEqualTo(longArray);
+    assertThat(rs.getValue(columnIndex)).isEqualTo(Value.pgOidArray(longArray));
+    assertThat(rs.getLongArray("pgOidArray")).isEqualTo(longArray);
+    assertThat(rs.getValue("pgOidArray")).isEqualTo(Value.pgOidArray(longArray));
+    assertThat(rs.getLongList(columnIndex++)).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getLongList("pgOidArray")).isEqualTo(Longs.asList(longArray));
 
     assertThat(rs.getProtoMessageList(columnIndex, SingerInfo.getDefaultInstance()))
         .isEqualTo(Arrays.asList(protoMessageArray));

@@ -88,12 +88,14 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
@@ -137,6 +139,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
   @Parameter public int minSessions;
 
+  @Parameter(1)
+  public boolean useMultiplexed;
+
   @Mock SpannerImpl client;
   @Mock SessionClient sessionClient;
   @Mock SpannerOptions spannerOptions;
@@ -149,9 +154,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final TraceWrapper tracer =
       new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
 
-  @Parameters(name = "min sessions = {0}")
+  @Parameters(name = "min sessions = {0}, use multiplexed = {1}")
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{0}, {1}});
+    List<Object[]> params = new ArrayList<>();
+    params.add(new Object[] {0, false});
+    params.add(new Object[] {1, false});
+    params.add(new Object[] {1, true});
+
+    return params;
   }
 
   private SessionPool createPool() {
@@ -239,6 +249,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMaxSessions(2)
             .setIncStep(1)
             .setBlockIfPoolExhausted()
+            .setUseMultiplexedSession(useMultiplexed)
             .build();
   }
 
@@ -2001,8 +2012,24 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(metricDataFiltered.size(), size);
     MetricData metricData = metricDataFiltered.stream().findFirst().get();
-    assertEquals(
-        metricData.getLongSumData().getPoints().stream().findFirst().get().getValue(), value);
+    LongPointData regularSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.FALSE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    LongPointData multiplexedSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.TRUE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    assertEquals(value, regularSessionMetric.getValue());
+    assertEquals(0, multiplexedSessionMetric.getValue());
   }
 
   private static void verifyMetricData(

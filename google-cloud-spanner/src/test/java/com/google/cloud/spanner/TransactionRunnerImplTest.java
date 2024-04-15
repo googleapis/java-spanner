@@ -304,14 +304,9 @@ public class TransactionRunnerImplTest {
 
     SessionImpl session =
         new SessionImpl(
-            spanner, "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP) {
-          @Override
-          public void prepareReadWriteTransaction() {
-            // Using a prepared transaction is not allowed when the beginTransaction should be
-            // inlined with the first statement.
-            throw new IllegalStateException();
-          }
-        };
+            spanner,
+            new SessionReference(
+                "projects/p/instances/i/databases/d/sessions/s", Collections.EMPTY_MAP)) {};
     session.setCurrentSpan(new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)));
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);
@@ -342,9 +337,6 @@ public class TransactionRunnerImplTest {
             .setSpan(session.getTracer().getCurrentSpan())
             .build();
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(transaction);
-    when(session.beginTransactionAsync(true))
-        .thenReturn(
-            ApiFutures.immediateFuture(ByteString.copyFromUtf8(UUID.randomUUID().toString())));
     when(session.getName()).thenReturn(SessionId.of("p", "i", "d", "test").getName());
     TransactionRunnerImpl runner = new TransactionRunnerImpl(session);
     runner.setSpan(span);

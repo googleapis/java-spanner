@@ -31,3 +31,5 @@ docs/
 *.pyc
 
 .flattened-pom.xml
+.java-version
+.vscode/
