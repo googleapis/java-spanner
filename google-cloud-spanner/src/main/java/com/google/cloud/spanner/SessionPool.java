@@ -2251,12 +2251,15 @@ class SessionPool {
             interrupted = true;
           } catch (TimeoutException e) {
             if (acquireSessionTimeout != null) {
-              throw SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.RESOURCE_EXHAUSTED,
-                  "Timed out after waiting "
-                      + acquireSessionTimeout.toMillis()
-                      + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
-                      + " or increase the number of sessions in the session pool.");
+              SpannerException exception =
+                  SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.RESOURCE_EXHAUSTED,
+                      "Timed out after waiting "
+                          + acquireSessionTimeout.toMillis()
+                          + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
+                          + " or increase the number of sessions in the session pool.");
+              waiter.setException(exception);
+              throw exception;
             }
             return null;
           } catch (ExecutionException e) {
