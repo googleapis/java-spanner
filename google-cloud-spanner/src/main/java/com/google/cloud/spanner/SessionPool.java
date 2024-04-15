@@ -1180,7 +1180,7 @@ class SessionPool {
   class MultiplexedSessionFutureWrapper implements SessionFutureWrapper<MultiplexedSessionFuture> {
     private SettableApiFuture<SessionReference> multiplexedSessionSettableApiFuture;
     private ISpan span;
-    private MultiplexedSessionFuture multiplexedSessionFuture;
+    private volatile MultiplexedSessionFuture multiplexedSessionFuture;
 
     public MultiplexedSessionFutureWrapper(
         SettableApiFuture<SessionReference> multiplexedSessionSettableApiFuture, ISpan span) {
@@ -1193,22 +1193,24 @@ class SessionPool {
       if (multiplexedSessionFuture != null) {
         return multiplexedSessionFuture;
       } else {
-        try {
-          // Creating a new reference where the request's span state can be stored.
-          SessionImpl sessionImpl =
-              new SessionImpl(
-                  sessionClient.getSpanner(), this.multiplexedSessionSettableApiFuture.get());
-          MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
-          SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
-          settableFuture.set(multiplexedSession);
-          MultiplexedSessionFuture multiplexedSessionFuture =
-              new MultiplexedSessionFuture(settableFuture, span);
-          this.multiplexedSessionFuture = multiplexedSessionFuture;
-          return multiplexedSessionFuture;
-        } catch (InterruptedException interruptedException) {
-          throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-        } catch (ExecutionException executionException) {
-          throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+        synchronized (lock) {
+          try {
+            // Creating a new reference where the request's span state can be stored.
+            SessionImpl sessionImpl =
+                new SessionImpl(
+                    sessionClient.getSpanner(), this.multiplexedSessionSettableApiFuture.get());
+            MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
+            SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
+            settableFuture.set(multiplexedSession);
+            MultiplexedSessionFuture multiplexedSessionFuture =
+                new MultiplexedSessionFuture(settableFuture, span);
+            this.multiplexedSessionFuture = multiplexedSessionFuture;
+            return multiplexedSessionFuture;
+          } catch (InterruptedException interruptedException) {
+            throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+          } catch (ExecutionException executionException) {
+            throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+          }
         }
       }
     }
