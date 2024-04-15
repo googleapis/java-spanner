@@ -40,6 +40,7 @@ public class SpanExceptionTest extends AbstractMockServerTest {
   public void testReadOnlyTransaction() throws InterruptedException, ExecutionException {
     try (Spanner spanner =
         SpannerOptions.newBuilder()
+            .setProjectId("my-project")
             .setHost(String.format("http://localhost:%d", getPort()))
             .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
             .setCredentials(NoCredentials.getInstance())
