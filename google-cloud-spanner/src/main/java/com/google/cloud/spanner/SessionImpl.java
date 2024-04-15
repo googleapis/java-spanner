@@ -134,7 +134,7 @@ class SessionImpl implements Session {
     return sessionReference.getIsMultiplexed();
   }
 
-  SessionReference getSessionInstance() {
+  SessionReference getSessionReference() {
     return sessionReference;
   }
 
