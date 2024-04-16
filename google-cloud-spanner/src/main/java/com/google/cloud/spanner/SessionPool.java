@@ -248,7 +248,8 @@ class SessionPool {
               this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
               break;
             } catch (SessionNotFoundException sessionNotFoundException) {
-              replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
+              replaceSessionIfPossible(
+                  sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
             }
           }
         }
@@ -269,7 +270,8 @@ class SessionPool {
               while (true) {
                 // Keep the replace-if-possible outside the try-block to let the exception bubble up
                 // if it's too late to replace the session.
-                replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
+                replaceSessionIfPossible(
+                    sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
                 try {
                   replaceDelegate(resultSetSupplier.reload());
                   break;
@@ -322,7 +324,8 @@ class SessionPool {
       };
     }
 
-    private void replaceSessionIfPossible(boolean failOnSessionNotFound, SessionNotFoundException notFound) {
+    private void replaceSessionIfPossible(
+        boolean failOnSessionNotFound, SessionNotFoundException notFound) {
       synchronized (lock) {
         if (!failOnSessionNotFound && (isSingleUse || !sessionUsedForQuery)) {
           // This class is only used by read-only transactions, so we know that we only need a
@@ -425,7 +428,8 @@ class SessionPool {
             }
             return getReadContextDelegate().readRow(table, key, columns);
           } catch (SessionNotFoundException sessionNotFoundException) {
-            replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
+            replaceSessionIfPossible(
+                sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
           }
         }
       } finally {
@@ -456,7 +460,8 @@ class SessionPool {
             }
             return getReadContextDelegate().readRowUsingIndex(table, index, key, columns);
           } catch (SessionNotFoundException sessionNotFoundException) {
-            replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
+            replaceSessionIfPossible(
+                sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
           }
         }
       } finally {
@@ -2720,8 +2725,8 @@ class SessionPool {
   @VisibleForTesting Function<SessionReference, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler<PooledSessionFuture> pooledSessionReplacementHandler;
-  private static final SessionReplacementHandler<MultiplexedSessionFuture> multiplexedSessionReplacementHandler =
-      new MultiplexedSessionReplacementHandler();
+  private static final SessionReplacementHandler<MultiplexedSessionFuture>
+      multiplexedSessionReplacementHandler = new MultiplexedSessionReplacementHandler();
 
   /**
    * Create a session pool with the given options and for the given database. It will also start
@@ -2834,9 +2839,10 @@ class SessionPool {
       List<LabelValue> labelValues,
       OpenTelemetry openTelemetry,
       Attributes attributes) {
-    this.pooledSessionReplacementHandler = options.isFailIfSessionNotFound()
-        ? new PooledSessionReplacementHandler() 
-        : new PooledSessionReplacementHandler();
+    this.pooledSessionReplacementHandler =
+        options.isFailIfSessionNotFound()
+            ? new PooledSessionReplacementHandler()
+            : new PooledSessionReplacementHandler();
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
