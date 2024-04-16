@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
+import static com.google.cloud.spanner.MetricRegistryConstants.IS_MULTIPLEXED_KEY;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.METRIC_PREFIX;
@@ -31,6 +32,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_U
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerOptionsTest.runWithSystemProperty;
 import static com.google.common.truth.Truth.assertThat;
@@ -1769,19 +1771,70 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(getSessionsTimeouts.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(getSessionsTimeouts.get(0).values()).isEqualTo(labelValues);
 
+    List<LabelValue> labelValuesWithRegularSessions = new ArrayList<>(labelValues);
+    labelValuesWithRegularSessions.add(LabelValue.create("false"));
+    List<LabelValue> labelValuesWithMultiplexedSessions = new ArrayList<>(labelValues);
+    labelValuesWithMultiplexedSessions.add(LabelValue.create("true"));
     List<PointWithFunction> numAcquiredSessions =
         record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
-    assertThat(numAcquiredSessions.size()).isEqualTo(1);
-    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(2L);
-    assertThat(numAcquiredSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
-    assertThat(numAcquiredSessions.get(0).values()).isEqualTo(labelValues);
+    assertThat(numAcquiredSessions.size()).isEqualTo(2);
+    PointWithFunction regularSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    PointWithFunction multiplexedSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    // verify metrics for regular sessions
+    assertThat(regularSessionMetric.value()).isEqualTo(2L);
+    assertThat(regularSessionMetric.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(regularSessionMetric.values()).isEqualTo(labelValuesWithRegularSessions);
+
+    // verify metrics for multiplexed sessions
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
+    assertThat(multiplexedSessionMetric.keys())
+        .isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(multiplexedSessionMetric.values()).isEqualTo(labelValuesWithMultiplexedSessions);
 
     List<PointWithFunction> numReleasedSessions =
         record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
-    assertThat(numReleasedSessions.size()).isEqualTo(1);
-    assertThat(numReleasedSessions.get(0).value()).isEqualTo(0);
-    assertThat(numReleasedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
-    assertThat(numReleasedSessions.get(0).values()).isEqualTo(labelValues);
+    assertThat(numReleasedSessions.size()).isEqualTo(2);
+
+    regularSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    // verify metrics for regular sessions
+    assertThat(regularSessionMetric.value()).isEqualTo(0L);
+    assertThat(regularSessionMetric.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(regularSessionMetric.values()).isEqualTo(labelValuesWithRegularSessions);
+
+    // verify metrics for multiplexed sessions
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
+    assertThat(multiplexedSessionMetric.keys())
+        .isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(multiplexedSessionMetric.values()).isEqualTo(labelValuesWithMultiplexedSessions);
 
     List<PointWithFunction> maxAllowedSessions =
         record.getMetrics().get(METRIC_PREFIX + MAX_ALLOWED_SESSIONS);
@@ -1847,12 +1900,46 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     session1.close();
     numAcquiredSessions = record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
-    assertThat(numAcquiredSessions.size()).isEqualTo(1);
-    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(3L);
+    assertThat(numAcquiredSessions.size()).isEqualTo(2);
+    regularSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    assertThat(regularSessionMetric.value()).isEqualTo(3L);
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
 
     numReleasedSessions = record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
-    assertThat(numReleasedSessions.size()).isEqualTo(1);
-    assertThat(numReleasedSessions.get(0).value()).isEqualTo(3L);
+    assertThat(numReleasedSessions.size()).isEqualTo(2);
+    regularSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    assertThat(regularSessionMetric.value()).isEqualTo(3L);
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
 
     maxInUseSessions = record.getMetrics().get(METRIC_PREFIX + MAX_IN_USE_SESSIONS);
     assertThat(maxInUseSessions.size()).isEqualTo(1);

@@ -40,6 +40,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TYPE;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
@@ -2251,12 +2252,15 @@ class SessionPool {
             interrupted = true;
           } catch (TimeoutException e) {
             if (acquireSessionTimeout != null) {
-              throw SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.RESOURCE_EXHAUSTED,
-                  "Timed out after waiting "
-                      + acquireSessionTimeout.toMillis()
-                      + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
-                      + " or increase the number of sessions in the session pool.");
+              SpannerException exception =
+                  SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.RESOURCE_EXHAUSTED,
+                      "Timed out after waiting "
+                          + acquireSessionTimeout.toMillis()
+                          + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
+                          + " or increase the number of sessions in the session pool.");
+              waiter.setException(exception);
+              throw exception;
             }
             return null;
           } catch (ExecutionException e) {
@@ -3687,7 +3691,7 @@ class SessionPool {
             MetricOptions.builder()
                 .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
-                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .setLabelKeys(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS)
                 .build());
 
     DerivedLongCumulative numReleasedSessionsMetric =
@@ -3696,7 +3700,7 @@ class SessionPool {
             MetricOptions.builder()
                 .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
-                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .setLabelKeys(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS)
                 .build());
 
     DerivedLongGauge numSessionsInPoolMetric =
@@ -3725,13 +3729,28 @@ class SessionPool {
     sessionsTimeouts.removeTimeSeries(labelValues);
     sessionsTimeouts.createTimeSeries(labelValues, this, SessionPool::getNumWaiterTimeouts);
 
-    numAcquiredSessionsMetric.removeTimeSeries(labelValues);
-    numAcquiredSessionsMetric.createTimeSeries(
-        labelValues, this, sessionPool -> sessionPool.numSessionsAcquired);
+    List<LabelValue> labelValuesWithRegularSessions = new ArrayList<>(labelValues);
+    List<LabelValue> labelValuesWithMultiplexedSessions = new ArrayList<>(labelValues);
+    labelValuesWithMultiplexedSessions.add(LabelValue.create("true"));
+    labelValuesWithRegularSessions.add(LabelValue.create("false"));
 
-    numReleasedSessionsMetric.removeTimeSeries(labelValues);
+    numAcquiredSessionsMetric.removeTimeSeries(labelValuesWithRegularSessions);
+    numAcquiredSessionsMetric.createTimeSeries(
+        labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsAcquired);
+    numAcquiredSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
+    numAcquiredSessionsMetric.createTimeSeries(
+        labelValuesWithMultiplexedSessions,
+        this,
+        sessionPool -> sessionPool.numMultiplexedSessionsAcquired);
+
+    numReleasedSessionsMetric.removeTimeSeries(labelValuesWithRegularSessions);
     numReleasedSessionsMetric.createTimeSeries(
-        labelValues, this, sessionPool -> sessionPool.numSessionsReleased);
+        labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsReleased);
+    numReleasedSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
+    numReleasedSessionsMetric.createTimeSeries(
+        labelValuesWithMultiplexedSessions,
+        this,
+        sessionPool -> sessionPool.numMultiplexedSessionsReleased);
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
