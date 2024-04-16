@@ -247,8 +247,8 @@ class SessionPool {
             try {
               this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
               break;
-            } catch (SessionNotFoundException e) {
-              replaceSessionIfPossible(e);
+            } catch (SessionNotFoundException sessionNotFoundException) {
+              replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
             }
           }
         }
@@ -265,16 +265,16 @@ class SessionPool {
           while (true) {
             try {
               return internalNext();
-            } catch (SessionNotFoundException e) {
+            } catch (SessionNotFoundException sessionNotFoundException) {
               while (true) {
                 // Keep the replace-if-possible outside the try-block to let the exception bubble up
                 // if it's too late to replace the session.
-                replaceSessionIfPossible(e);
+                replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
                 try {
                   replaceDelegate(resultSetSupplier.reload());
                   break;
                 } catch (SessionNotFoundException snfe) {
-                  e = snfe;
+                  sessionNotFoundException = snfe;
                   // retry on yet another session.
                 }
               }
@@ -322,9 +322,9 @@ class SessionPool {
       };
     }
 
-    private void replaceSessionIfPossible(SessionNotFoundException notFound) {
+    private void replaceSessionIfPossible(boolean failOnSessionNotFound, SessionNotFoundException notFound) {
       synchronized (lock) {
-        if (isSingleUse || !sessionUsedForQuery) {
+        if (!failOnSessionNotFound && (isSingleUse || !sessionUsedForQuery)) {
           // This class is only used by read-only transactions, so we know that we only need a
           // read-only session.
           session = sessionReplacementHandler.replaceSession(notFound, session);
@@ -424,8 +424,8 @@ class SessionPool {
               session.get().markUsed();
             }
             return getReadContextDelegate().readRow(table, key, columns);
-          } catch (SessionNotFoundException e) {
-            replaceSessionIfPossible(e);
+          } catch (SessionNotFoundException sessionNotFoundException) {
+            replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
           }
         }
       } finally {
@@ -455,8 +455,8 @@ class SessionPool {
               session.get().markUsed();
             }
             return getReadContextDelegate().readRowUsingIndex(table, index, key, columns);
-          } catch (SessionNotFoundException e) {
-            replaceSessionIfPossible(e);
+          } catch (SessionNotFoundException sessionNotFoundException) {
+            replaceSessionIfPossible(sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
           }
         }
       } finally {
@@ -1266,11 +1266,7 @@ class SessionPool {
     @Override
     public CommitResponse writeWithOptions(
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-      try {
-        return get().writeWithOptions(mutations, options);
-      } finally {
-        close();
-      }
+      return get().writeWithOptions(mutations, options);
     }
 
     @Override
@@ -1281,22 +1277,14 @@ class SessionPool {
     @Override
     public CommitResponse writeAtLeastOnceWithOptions(
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-      try {
-        return get().writeAtLeastOnceWithOptions(mutations, options);
-      } finally {
-        close();
-      }
+      return get().writeAtLeastOnceWithOptions(mutations, options);
     }
 
     @Override
     public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
         Iterable<MutationGroup> mutationGroups, TransactionOption... options)
         throws SpannerException {
-      try {
-        return get().batchWriteAtLeastOnce(mutationGroups, options);
-      } finally {
-        close();
-      }
+      return get().batchWriteAtLeastOnce(mutationGroups, options);
     }
 
     @Override
@@ -1414,11 +1402,7 @@ class SessionPool {
 
     @Override
     public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
-      try {
-        return get(true).executePartitionedUpdate(stmt, options);
-      } finally {
-        close();
-      }
+      return get(true).executePartitionedUpdate(stmt, options);
     }
 
     @Override
@@ -1922,8 +1906,8 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numSessionsInUse--;
-        if (numSessionsInUse < 0) {
-          throw new IllegalStateException();
+        if (options.isFailIfSessionNotFound() && numSessionsInUse < 0) {
+          throw new IllegalStateException("Num sessions in use is negative");
         }
         numSessionsReleased++;
       }
@@ -2735,9 +2719,8 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
   @VisibleForTesting Function<SessionReference, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
-  private final SessionReplacementHandler pooledSessionReplacementHandler =
-      new PooledSessionReplacementHandler();
-  private static final SessionReplacementHandler multiplexedSessionReplacementHandler =
+  private final SessionReplacementHandler<PooledSessionFuture> pooledSessionReplacementHandler;
+  private static final SessionReplacementHandler<MultiplexedSessionFuture> multiplexedSessionReplacementHandler =
       new MultiplexedSessionReplacementHandler();
 
   /**
@@ -2851,6 +2834,9 @@ class SessionPool {
       List<LabelValue> labelValues,
       OpenTelemetry openTelemetry,
       Attributes attributes) {
+    this.pooledSessionReplacementHandler = options.isFailIfSessionNotFound()
+        ? new PooledSessionReplacementHandler() 
+        : new PooledSessionReplacementHandler();
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
@@ -2900,7 +2886,7 @@ class SessionPool {
     }
   }
 
-  SessionReplacementHandler getPooledSessionReplacementHandler() {
+  SessionReplacementHandler<PooledSessionFuture> getPooledSessionReplacementHandler() {
     return pooledSessionReplacementHandler;
   }
 

@@ -253,14 +253,16 @@ class DatabaseClientImpl implements DatabaseClient {
 
   private <T> T runWithSessionRetry(Function<Session, T> callable) {
     PooledSessionFuture session = getSession();
-    while (true) {
-      try {
-        return callable.apply(session);
-      } catch (SessionNotFoundException e) {
-        session =
-            (PooledSessionFuture)
-                pool.getPooledSessionReplacementHandler().replaceSession(e, session);
+    try {
+      while (true) {
+        try {
+          return callable.apply(session);
+        } catch (SessionNotFoundException e) {
+          session = pool.getPooledSessionReplacementHandler().replaceSession(e, session);
+        }
       }
+    } finally {
+      session.close();
     }
   }
 

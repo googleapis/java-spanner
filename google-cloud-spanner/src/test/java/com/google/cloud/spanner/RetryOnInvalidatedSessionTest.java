@@ -18,8 +18,9 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -31,16 +32,24 @@ import com.google.cloud.spanner.AsyncTransactionManager.AsyncTransactionStep;
 import com.google.cloud.spanner.AsyncTransactionManager.CommitTimestampFuture;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.SessionPoolOptions.Builder;
 import com.google.cloud.spanner.v1.SpannerClient;
 import com.google.cloud.spanner.v1.SpannerClient.ListSessionsPagedResponse;
 import com.google.cloud.spanner.v1.SpannerSettings;
 import com.google.common.base.Function;
-import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ListValue;
+import com.google.protobuf.Value;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.ExecuteBatchDmlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ReadRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.Session;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Server;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -52,7 +61,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
@@ -64,6 +72,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.threeten.bp.Duration;
 
 @RunWith(Parameterized.class)
 public class RetryOnInvalidatedSessionTest {
@@ -95,7 +104,7 @@ public class RetryOnInvalidatedSessionTest {
                       Field.newBuilder()
                           .setName("BAR")
                           .setType(
-                              com.google.spanner.v1.Type.newBuilder()
+                              Type.newBuilder()
                                   .setCode(TypeCode.INT64)
                                   .build())
                           .build())
@@ -105,11 +114,11 @@ public class RetryOnInvalidatedSessionTest {
       com.google.spanner.v1.ResultSet.newBuilder()
           .addRows(
               ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
+                  .addValues(Value.newBuilder().setStringValue("1").build())
                   .build())
           .addRows(
               ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("2").build())
+                  .addValues(Value.newBuilder().setStringValue("2").build())
                   .build())
           .setMetadata(READ_METADATA)
           .build();
@@ -117,7 +126,7 @@ public class RetryOnInvalidatedSessionTest {
       com.google.spanner.v1.ResultSet.newBuilder()
           .addRows(
               ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
+                  .addValues(Value.newBuilder().setStringValue("1").build())
                   .build())
           .setMetadata(READ_METADATA)
           .build();
@@ -131,7 +140,7 @@ public class RetryOnInvalidatedSessionTest {
                       Field.newBuilder()
                           .setName("COL1")
                           .setType(
-                              com.google.spanner.v1.Type.newBuilder()
+                              Type.newBuilder()
                                   .setCode(TypeCode.INT64)
                                   .build())
                           .build())
@@ -141,11 +150,11 @@ public class RetryOnInvalidatedSessionTest {
       com.google.spanner.v1.ResultSet.newBuilder()
           .addRows(
               ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("1").build())
+                  .addValues(Value.newBuilder().setStringValue("1").build())
                   .build())
           .addRows(
               ListValue.newBuilder()
-                  .addValues(com.google.protobuf.Value.newBuilder().setStringValue("2").build())
+                  .addValues(Value.newBuilder().setStringValue("2").build())
                   .build())
           .setMetadata(SELECT1AND2_METADATA)
           .build();
@@ -211,7 +220,7 @@ public class RetryOnInvalidatedSessionTest {
       if (spanner != null) {
         spanner.close();
       }
-      SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder().setFailOnSessionLeak();
+      Builder builder = SessionPoolOptions.newBuilder().setFailOnSessionLeak().setFailIfNumSessionsInUseIsNegative().setWaitForMinSessions(Duration.ofSeconds(10L));
       if (failOnInvalidatedSession) {
         builder.setFailIfSessionNotFound();
       }
@@ -226,39 +235,34 @@ public class RetryOnInvalidatedSessionTest {
               .build()
               .getService();
       client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+      invalidateSessionPool();
     }
   }
 
-  private static void invalidateSessionPool(DatabaseClient client, int minSessions)
-      throws InterruptedException {
-    // Wait for all sessions to have been created, and then delete them.
-    Stopwatch watch = Stopwatch.createStarted();
-    while (((DatabaseClientImpl) client).pool.totalSessions() < minSessions) {
-      if (watch.elapsed(TimeUnit.SECONDS) > 5L) {
-        fail(String.format("Failed to create MinSessions=%d", minSessions));
-      }
-      Thread.sleep(1L);
-    }
-
+  private static void invalidateSessionPool() {
+    // Delete all sessions on the mock server.
     ListSessionsPagedResponse response =
         spannerClient.listSessions("projects/[PROJECT]/instances/[INSTANCE]/databases/[DATABASE]");
-    for (com.google.spanner.v1.Session session : response.iterateAll()) {
+    for (Session session : response.iterateAll()) {
       spannerClient.deleteSession(session.getName());
     }
   }
 
   private <T> T assertThrowsSessionNotFoundIfShouldFail(Supplier<T> supplier) {
     if (failOnInvalidatedSession) {
-      assertThrows(SessionNotFoundException.class, () -> supplier.get());
+      assertThrows(SessionNotFoundException.class, supplier::get);
       return null;
     } else {
       return supplier.get();
     }
   }
+  
+  private int numExpectedRequests() {
+    return failOnInvalidatedSession ? 1 : 2;
+  }
 
   @Test
-  public void singleUseSelect() throws InterruptedException {
+  public void singleUseSelect() {
     // This call will receive an invalidated session that will be replaced on the first call to
     // rs.next().
     try (ReadContext context = client.singleUse()) {
@@ -266,257 +270,260 @@ public class RetryOnInvalidatedSessionTest {
         assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void singleUseSelectAsync() throws Exception {
+  public void singleUseSelectAsync() {
     ApiFuture<List<Long>> list;
     try (AsyncResultSet rs = client.singleUse().executeQueryAsync(SELECT1AND2)) {
       list = rs.toListAsync(TO_LONG, executor);
       assertThrowsSessionNotFoundIfShouldFail(() -> get(list));
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void singleUseRead() throws InterruptedException {
+  public void singleUseRead()  {
     try (ReadContext context = client.singleUse()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void singleUseReadUsingIndex() throws InterruptedException {
+  public void singleUseReadUsingIndex()  {
     try (ReadContext context = client.singleUse()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void singleUseReadRow() throws InterruptedException {
+  public void singleUseReadRow()  {
     try (ReadContext context = client.singleUse()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void singleUseReadRowUsingIndex() throws InterruptedException {
+  public void singleUseReadRowUsingIndex() {
     try (ReadContext context = client.singleUse()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->
               context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void singleUseReadOnlyTransactionSelect() throws InterruptedException {
+  public void singleUseReadOnlyTransactionSelect() {
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void singleUseReadOnlyTransactionRead() throws InterruptedException {
+  public void singleUseReadOnlyTransactionRead()  {
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void singlUseReadOnlyTransactionReadUsingIndex() throws InterruptedException {
+  public void singleUseReadOnlyTransactionReadUsingIndex() {
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void singleUseReadOnlyTransactionReadRow() throws InterruptedException {
+  public void singleUseReadOnlyTransactionReadRow() {
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void singleUseReadOnlyTransactionReadRowUsingIndex() throws InterruptedException {
+  public void singleUseReadOnlyTransactionReadRowUsingIndex() {
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->
               context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionSelect() throws InterruptedException {
+  public void readOnlyTransactionSelect() {
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionRead() throws InterruptedException {
+  public void readOnlyTransactionRead()  {
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionReadUsingIndex() throws InterruptedException {
+  public void readOnlyTransactionReadUsingIndex()  {
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
+    assertEquals(2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionReadRow() throws InterruptedException {
+  public void readOnlyTransactionReadRow() {
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionReadRowUsingIndex() throws InterruptedException {
+  public void readOnlyTransactionReadRowUsingIndex()  {
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->
               context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionSelectNonRecoverable() throws InterruptedException {
+  public void readOnlyTransactionSelectNonRecoverable() {
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
       // Invalidate the session pool while in a transaction. This is not recoverable.
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+      invalidateSessionPool();
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
-        assertThrows(SessionNotFoundException.class, () -> rs.next());
+        assertThrows(SessionNotFoundException.class, rs::next);
       }
     }
+    assertEquals(failOnInvalidatedSession ? 4 : 2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionReadNonRecoverable() throws InterruptedException {
+  public void readOnlyTransactionReadNonRecoverable() {
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+      invalidateSessionPool();
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrows(SessionNotFoundException.class, () -> rs.next());
+        assertThrows(SessionNotFoundException.class, rs::next);
       }
     }
+    assertEquals(failOnInvalidatedSession ? 4 : 2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionReadUsingIndexNonRecoverable() throws InterruptedException {
+  public void readOnlyTransactionReadUsingIndexNonRecoverable() {
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+      invalidateSessionPool();
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-        assertThrows(SessionNotFoundException.class, () -> rs.next());
+        assertThrows(SessionNotFoundException.class, rs::next);
       }
     }
+    assertEquals(failOnInvalidatedSession ? 4 : 2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionReadRowNonRecoverable() throws InterruptedException {
+  public void readOnlyTransactionReadRowNonRecoverable()  {
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+      invalidateSessionPool();
       assertThrows(
           SessionNotFoundException.class,
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readOnlyTransactionReadRowUsingIndexNonRecoverable() throws InterruptedException {
+  public void readOnlyTransactionReadRowUsingIndexNonRecoverable() {
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->
               context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR")));
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+      invalidateSessionPool();
       assertThrows(
           SessionNotFoundException.class,
           () ->
               context.readRowUsingIndex("FOO", "IDX", Key.of(), Collections.singletonList("BAR")));
     }
+    assertEquals(2, mockSpanner.countRequestsOfType(
+        BeginTransactionRequest.class));
   }
 
   @Test
-  public void readWriteTransactionReadOnlySessionInPool() throws InterruptedException {
-    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-    if (failOnInvalidatedSession) {
-      builder.setFailIfSessionNotFound();
-    }
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
-            .setSessionPoolOption(builder.build())
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
-      invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
-      TransactionRunner runner = client.readWriteTransaction();
-      assertThrowsSessionNotFoundIfShouldFail(
-          () ->
-              runner.run(
-                  transaction -> {
-                    try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-                      while (rs.next()) {}
-                    }
-                    return null;
-                  }));
-    }
-  }
-
-  @Test
-  public void readWriteTransactionSelect() throws InterruptedException {
+  public void readWriteTransactionSelect() {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
             runner.run(
                 transaction -> {
                   try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   return null;
                 }));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void readWriteTransactionRead() throws InterruptedException {
+  public void readWriteTransactionRead()  {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -524,14 +531,16 @@ public class RetryOnInvalidatedSessionTest {
                 transaction -> {
                   try (ResultSet rs =
                       transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   return null;
                 }));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void readWriteTransactionReadWithOptimisticLock() throws InterruptedException {
+  public void readWriteTransactionReadWithOptimisticLock() {
     TransactionRunner runner = client.readWriteTransaction(Options.optimisticLock());
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -539,14 +548,16 @@ public class RetryOnInvalidatedSessionTest {
                 transaction -> {
                   try (ResultSet rs =
                       transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   return null;
                 }));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void readWriteTransactionReadUsingIndex() throws InterruptedException {
+  public void readWriteTransactionReadUsingIndex()  {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -555,24 +566,27 @@ public class RetryOnInvalidatedSessionTest {
                   try (ResultSet rs =
                       transaction.readUsingIndex(
                           "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   return null;
                 }));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void readWriteTransactionReadRow() throws InterruptedException {
+  public void readWriteTransactionReadRow() {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
             runner.run(
                 transaction ->
                     transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void readWriteTransactionReadRowUsingIndex() throws InterruptedException {
+  public void readWriteTransactionReadRowUsingIndex() {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -580,27 +594,30 @@ public class RetryOnInvalidatedSessionTest {
                 transaction ->
                     transaction.readRowUsingIndex(
                         "FOO", "IDX", Key.of(), Collections.singletonList("BAR"))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void readWriteTransactionUpdate() throws InterruptedException {
+  public void readWriteTransactionUpdate() {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () -> runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void readWriteTransactionBatchUpdate() throws InterruptedException {
+  public void readWriteTransactionBatchUpdate() {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
             runner.run(
                 transaction ->
                     transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
   }
 
   @Test
-  public void readWriteTransactionBuffer() throws InterruptedException {
+  public void readWriteTransactionBuffer() {
     TransactionRunner runner = client.readWriteTransaction();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -609,6 +626,7 @@ public class RetryOnInvalidatedSessionTest {
                   transaction.buffer(Mutation.newInsertBuilder("FOO").set("BAR").to(1L).build());
                   return null;
                 }));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
   }
 
   @Test
@@ -621,18 +639,20 @@ public class RetryOnInvalidatedSessionTest {
                 transaction -> {
                   attempt.incrementAndGet();
                   try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   if (attempt.get() == 1) {
-                    invalidateSessionPool(
-                        client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+                    invalidateSessionPool();
                   }
                   try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   assertThat(attempt.get()).isGreaterThan(1);
                   return null;
                 }));
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
@@ -646,19 +666,21 @@ public class RetryOnInvalidatedSessionTest {
                   attempt.incrementAndGet();
                   try (ResultSet rs =
                       transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   if (attempt.get() == 1) {
-                    invalidateSessionPool(
-                        client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+                    invalidateSessionPool();
                   }
                   try (ResultSet rs =
                       transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   assertThat(attempt.get()).isGreaterThan(1);
                   return null;
                 }));
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
@@ -673,20 +695,22 @@ public class RetryOnInvalidatedSessionTest {
                   try (ResultSet rs =
                       transaction.readUsingIndex(
                           "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   if (attempt.get() == 1) {
-                    invalidateSessionPool(
-                        client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+                    invalidateSessionPool();
                   }
                   try (ResultSet rs =
                       transaction.readUsingIndex(
                           "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
+                    //noinspection StatementWithEmptyBody
                     while (rs.next()) {}
                   }
                   assertThat(attempt.get()).isGreaterThan(1);
                   return null;
                 }));
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
@@ -700,15 +724,16 @@ public class RetryOnInvalidatedSessionTest {
                   attempt.incrementAndGet();
                   Struct row =
                       transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
-                  assertThat(row.getLong(0)).isEqualTo(1L);
+                  assertNotNull(row);
+                  assertEquals(1L, row.getLong(0));
                   if (attempt.get() == 1) {
-                    invalidateSessionPool(
-                        client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+                    invalidateSessionPool();
                   }
                   transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
                   assertThat(attempt.get()).isGreaterThan(1);
                   return null;
                 }));
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
@@ -723,88 +748,69 @@ public class RetryOnInvalidatedSessionTest {
                   Struct row =
                       transaction.readRowUsingIndex(
                           "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
-                  assertThat(row.getLong(0)).isEqualTo(1L);
+                  assertNotNull(row);
+                  assertEquals(1L, row.getLong(0));
                   if (attempt.get() == 1) {
-                    invalidateSessionPool(
-                        client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+                    invalidateSessionPool();
                   }
                   transaction.readRowUsingIndex(
                       "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
                   assertThat(attempt.get()).isGreaterThan(1);
                   return null;
                 }));
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadOnlySessionInPool() throws InterruptedException {
+  public void transactionManagerSelect() {
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
         try {
           try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-            assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+            assertThrowsSessionNotFoundIfShouldFail(rs::next);
           }
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @SuppressWarnings("resource")
   @Test
-  public void transactionManagerSelect() throws InterruptedException {
-    try (TransactionManager manager = client.transactionManager()) {
-      TransactionContext transaction = manager.begin();
-      while (true) {
-        try {
-          try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-            assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
-          }
-          manager.commit();
-          break;
-        } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
-          if (transaction == null) {
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  @SuppressWarnings("resource")
-  @Test
-  public void transactionManagerRead() throws InterruptedException {
+  public void transactionManagerRead() {
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
         try {
           try (ResultSet rs =
               transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-            assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+            assertThrowsSessionNotFoundIfShouldFail(rs::next);
           }
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadUsingIndex() throws InterruptedException {
+  public void transactionManagerReadUsingIndex() {
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -812,22 +818,24 @@ public class RetryOnInvalidatedSessionTest {
           try (ResultSet rs =
               transaction.readUsingIndex(
                   "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-            assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+            assertThrowsSessionNotFoundIfShouldFail(rs::next);
           }
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
+  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadRow() throws InterruptedException {
+  public void transactionManagerReadRow() {
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -838,17 +846,19 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
+  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadRowUsingIndex() throws InterruptedException {
+  public void transactionManagerReadRowUsingIndex(){
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -861,17 +871,19 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
+  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerUpdate() throws InterruptedException {
+  public void transactionManagerUpdate() {
     try (TransactionManager manager = client.transactionManager(Options.commitStats())) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -881,18 +893,19 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
+  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerAborted_thenSessionNotFoundOnBeginTransaction()
-      throws InterruptedException {
+  public void transactionManagerAborted_thenSessionNotFoundOnBeginTransaction() {
     int attempt = 0;
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
@@ -903,8 +916,7 @@ public class RetryOnInvalidatedSessionTest {
             mockSpanner.abortNextStatement();
           }
           if (attempt == 2) {
-            invalidateSessionPool(
-                client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+            invalidateSessionPool();
           }
           TransactionContext context = transaction;
           assertThrowsSessionNotFoundIfShouldFail(() -> context.executeUpdate(UPDATE_STATEMENT));
@@ -914,17 +926,20 @@ public class RetryOnInvalidatedSessionTest {
           assertThat(attempt).isAtLeast(3);
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(failOnInvalidatedSession ? 1 : 4, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
+  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerBatchUpdate() throws InterruptedException {
+  public void transactionManagerBatchUpdate() {
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -935,18 +950,19 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
         }
       }
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
   }
 
   @SuppressWarnings("resource")
   @Test
-  public void transactionManagerBuffer() throws InterruptedException {
+  public void transactionManagerBuffer() {
     try (TransactionManager manager = client.transactionManager()) {
       TransactionContext transaction = manager.begin();
       while (true) {
@@ -955,7 +971,7 @@ public class RetryOnInvalidatedSessionTest {
           manager.commit();
           break;
         } catch (AbortedException e) {
-          transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+          transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           if (transaction == null) {
             break;
           }
@@ -966,40 +982,28 @@ public class RetryOnInvalidatedSessionTest {
     } catch (SessionNotFoundException e) {
       assertThat(failOnInvalidatedSession).isTrue();
     }
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
   }
 
-  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerSelectInvalidatedDuringTransaction() throws InterruptedException {
-    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-    if (failOnInvalidatedSession) {
-      builder.setFailIfSessionNotFound();
-    }
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
-            .setSessionPoolOption(builder.build())
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+  public void transactionManagerSelectInvalidatedDuringTransaction() {
       try (TransactionManager manager = client.transactionManager()) {
         int attempts = 0;
         TransactionContext transaction = manager.begin();
         while (true) {
           attempts++;
           try {
+            assertNotNull(transaction);
             try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-              while (rs.next()) {}
+              if (assertThrowsSessionNotFoundIfShouldFail(rs::next) == null) {
+                break;
+              }
             }
             if (attempts == 1) {
-              invalidateSessionPool(
-                  client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+              invalidateSessionPool();
             }
             try (ResultSet rs = transaction.executeQuery(SELECT1AND2)) {
-              if (assertThrowsSessionNotFoundIfShouldFail(() -> rs.next()) == null) {
+              if (assertThrowsSessionNotFoundIfShouldFail(rs::next) == null) {
                 break;
               }
             }
@@ -1007,30 +1011,15 @@ public class RetryOnInvalidatedSessionTest {
             assertThat(attempts).isGreaterThan(1);
             break;
           } catch (AbortedException e) {
-            transaction = assertThrowsSessionNotFoundIfShouldFail(() -> manager.resetForRetry());
+            transaction = assertThrowsSessionNotFoundIfShouldFail(manager::resetForRetry);
           }
         }
       }
-    }
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
-  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadInvalidatedDuringTransaction() throws InterruptedException {
-    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-    if (failOnInvalidatedSession) {
-      builder.setFailIfSessionNotFound();
-    }
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
-            .setSessionPoolOption(builder.build())
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+  public void transactionManagerReadInvalidatedDuringTransaction() {
       try (TransactionManager manager = client.transactionManager()) {
         int attempts = 0;
         TransactionContext transaction = manager.begin();
@@ -1039,15 +1028,16 @@ public class RetryOnInvalidatedSessionTest {
           try {
             try (ResultSet rs =
                 transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-              while (rs.next()) {}
+              if (assertThrowsSessionNotFoundIfShouldFail(rs::next) == null) {
+                break;
+              }
             }
             if (attempts == 1) {
-              invalidateSessionPool(
-                  client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+              invalidateSessionPool();
             }
             try (ResultSet rs =
                 transaction.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
-              if (assertThrowsSessionNotFoundIfShouldFail(() -> rs.next()) == null) {
+              if (assertThrowsSessionNotFoundIfShouldFail(rs::next) == null) {
                 break;
               }
             }
@@ -1058,27 +1048,11 @@ public class RetryOnInvalidatedSessionTest {
           }
         }
       }
-    }
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
-  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadUsingIndexInvalidatedDuringTransaction()
-      throws InterruptedException {
-    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-    if (failOnInvalidatedSession) {
-      builder.setFailIfSessionNotFound();
-    }
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
-            .setSessionPoolOption(builder.build())
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+  public void transactionManagerReadUsingIndexInvalidatedDuringTransaction() {
       try (TransactionManager manager = client.transactionManager()) {
         int attempts = 0;
         TransactionContext transaction = manager.begin();
@@ -1088,16 +1062,17 @@ public class RetryOnInvalidatedSessionTest {
             try (ResultSet rs =
                 transaction.readUsingIndex(
                     "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-              while (rs.next()) {}
+              if (assertThrowsSessionNotFoundIfShouldFail(rs::next) == null) {
+                break;
+              }
             }
             if (attempts == 1) {
-              invalidateSessionPool(
-                  client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
+              invalidateSessionPool();
             }
             try (ResultSet rs =
                 transaction.readUsingIndex(
                     "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
-              if (assertThrowsSessionNotFoundIfShouldFail(() -> rs.next()) == null) {
+              if (assertThrowsSessionNotFoundIfShouldFail(rs::next) == null) {
                 break;
               }
             }
@@ -1108,39 +1083,26 @@ public class RetryOnInvalidatedSessionTest {
           }
         }
       }
-    }
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
-  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadRowInvalidatedDuringTransaction() throws InterruptedException {
-    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-    if (failOnInvalidatedSession) {
-      builder.setFailIfSessionNotFound();
-    }
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
-            .setSessionPoolOption(builder.build())
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+  public void transactionManagerReadRowInvalidatedDuringTransaction() {
       try (TransactionManager manager = client.transactionManager()) {
         int attempts = 0;
         TransactionContext transaction = manager.begin();
         while (true) {
           attempts++;
           try {
-            Struct row = transaction.readRow("FOO", Key.of(), Collections.singletonList("BAR"));
-            assertThat(row.getLong(0)).isEqualTo(1L);
-            if (attempts == 1) {
-              invalidateSessionPool(
-                  client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
-            }
             TransactionContext context = transaction;
+            if (assertThrowsSessionNotFoundIfShouldFail(
+                () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")))
+                == null) {
+              break;
+            }
+            if (attempts == 1) {
+              invalidateSessionPool();
+            }
             if (assertThrowsSessionNotFoundIfShouldFail(
                     () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")))
                 == null) {
@@ -1153,42 +1115,28 @@ public class RetryOnInvalidatedSessionTest {
           }
         }
       }
-    }
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
-  @SuppressWarnings("resource")
   @Test
-  public void transactionManagerReadRowUsingIndexInvalidatedDuringTransaction()
-      throws InterruptedException {
-    SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-    if (failOnInvalidatedSession) {
-      builder.setFailIfSessionNotFound();
-    }
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("[PROJECT]")
-            .setChannelProvider(channelProvider)
-            .setSessionPoolOption(builder.build())
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseClient client =
-          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+  public void transactionManagerReadRowUsingIndexInvalidatedDuringTransaction() {
       try (TransactionManager manager = client.transactionManager()) {
         int attempts = 0;
         TransactionContext transaction = manager.begin();
         while (true) {
           attempts++;
           try {
-            Struct row =
-                transaction.readRowUsingIndex(
-                    "FOO", "IDX", Key.of(), Collections.singletonList("BAR"));
-            assertThat(row.getLong(0)).isEqualTo(1L);
-            if (attempts == 1) {
-              invalidateSessionPool(
-                  client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
-            }
             TransactionContext context = transaction;
+            if (assertThrowsSessionNotFoundIfShouldFail(
+                () ->
+                    context.readRowUsingIndex(
+                        "FOO", "IDX", Key.of(), Collections.singletonList("BAR")))
+                == null) {
+              break;
+            }
+            if (attempts == 1) {
+              invalidateSessionPool();
+            }
             if (assertThrowsSessionNotFoundIfShouldFail(
                     () ->
                         context.readRowUsingIndex(
@@ -1203,19 +1151,21 @@ public class RetryOnInvalidatedSessionTest {
           }
         }
       }
-    }
+    assertEquals(failOnInvalidatedSession ? 1 : 3, mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void partitionedDml() throws InterruptedException {
+  public void partitionedDml() {
     assertThrowsSessionNotFoundIfShouldFail(
         () -> client.executePartitionedUpdate(UPDATE_STATEMENT));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
   }
 
   @Test
   public void write() throws InterruptedException {
     assertThrowsSessionNotFoundIfShouldFail(
         () -> client.write(Collections.singletonList(Mutation.delete("FOO", KeySet.all()))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
   }
 
   @Test
@@ -1224,29 +1174,33 @@ public class RetryOnInvalidatedSessionTest {
         () ->
             client.writeAtLeastOnce(
                 Collections.singletonList(Mutation.delete("FOO", KeySet.all()))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(CommitRequest.class));
   }
 
   @Test
-  public void asyncRunnerSelect() throws InterruptedException {
+  public void asyncRunnerSelect() {
     asyncRunner_withReadFunction(input -> input.executeQueryAsync(SELECT1AND2));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void asyncRunnerRead() throws InterruptedException {
+  public void asyncRunnerRead() {
     asyncRunner_withReadFunction(
         input -> input.readAsync("FOO", KeySet.all(), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncRunnerReadUsingIndex() throws InterruptedException {
+  public void asyncRunnerReadUsingIndex() {
     asyncRunner_withReadFunction(
         input ->
             input.readUsingIndexAsync(
                 "FOO", "IDX", KeySet.all(), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   private void asyncRunner_withReadFunction(
-      final Function<TransactionContext, AsyncResultSet> readFunction) throws InterruptedException {
+      final java.util.function.Function<TransactionContext, AsyncResultSet> readFunction) {
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try {
       AsyncRunner runner = client.runAsync();
@@ -1283,7 +1237,7 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void asyncRunnerReadRow() throws InterruptedException {
+  public void asyncRunnerReadRow() {
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1291,10 +1245,11 @@ public class RetryOnInvalidatedSessionTest {
                 runner.runAsync(
                     txn -> txn.readRowAsync("FOO", Key.of(), Collections.singletonList("BAR")),
                     executor)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncRunnerReadRowUsingIndex() throws InterruptedException {
+  public void asyncRunnerReadRowUsingIndex() {
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1304,17 +1259,19 @@ public class RetryOnInvalidatedSessionTest {
                         txn.readRowUsingIndexAsync(
                             "FOO", "IDX", Key.of(), Collections.singletonList("BAR")),
                     executor)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncRunnerUpdate() throws InterruptedException {
+  public void asyncRunnerUpdate() {
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () -> get(runner.runAsync(txn -> txn.executeUpdateAsync(UPDATE_STATEMENT), executor)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void asyncRunnerBatchUpdate() throws InterruptedException {
+  public void asyncRunnerBatchUpdate()  {
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1322,10 +1279,11 @@ public class RetryOnInvalidatedSessionTest {
                 runner.runAsync(
                     txn -> txn.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)),
                     executor)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
   }
 
   @Test
-  public void asyncRunnerBuffer() throws InterruptedException {
+  public void asyncRunnerBuffer() {
     AsyncRunner runner = client.runAsync();
     assertThrowsSessionNotFoundIfShouldFail(
         () ->
@@ -1336,29 +1294,33 @@ public class RetryOnInvalidatedSessionTest {
                       return ApiFutures.immediateFuture(null);
                     },
                     executor)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerAsyncSelect() throws InterruptedException {
+  public void asyncTransactionManagerAsyncSelect() {
     asyncTransactionManager_readAsync(input -> input.executeQueryAsync(SELECT1AND2));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerAsyncRead() throws InterruptedException {
+  public void asyncTransactionManagerAsyncRead() {
     asyncTransactionManager_readAsync(
         input -> input.readAsync("FOO", KeySet.all(), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerAsyncReadUsingIndex() throws InterruptedException {
+  public void asyncTransactionManagerAsyncReadUsingIndex()  {
     asyncTransactionManager_readAsync(
         input ->
             input.readUsingIndexAsync(
                 "FOO", "idx", KeySet.all(), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   private void asyncTransactionManager_readAsync(
-      final Function<TransactionContext, AsyncResultSet> fn) throws InterruptedException {
+      final java.util.function.Function<TransactionContext, AsyncResultSet> fn) {
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture context = manager.beginAsync();
@@ -1402,25 +1364,27 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void asyncTransactionManagerSelect() throws InterruptedException {
+  public void asyncTransactionManagerSelect()  {
     asyncTransactionManager_readSync(input -> input.executeQuery(SELECT1AND2));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerRead() throws InterruptedException {
+  public void asyncTransactionManagerRead() {
     asyncTransactionManager_readSync(
         input -> input.read("FOO", KeySet.all(), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerReadUsingIndex() throws InterruptedException {
+  public void asyncTransactionManagerReadUsingIndex() {
     asyncTransactionManager_readSync(
         input ->
             input.readUsingIndex("FOO", "idx", KeySet.all(), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
-  private void asyncTransactionManager_readSync(final Function<TransactionContext, ResultSet> fn)
-      throws InterruptedException {
+  private void asyncTransactionManager_readSync(final java.util.function.Function<TransactionContext, ResultSet> fn) {
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture context = manager.beginAsync();
@@ -1451,38 +1415,42 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void asyncTransactionManagerReadRow() throws InterruptedException {
+  public void asyncTransactionManagerReadRow() {
     asyncTransactionManager_readRowFunction(
         input ->
             ApiFutures.immediateFuture(
                 input.readRow("FOO", Key.of("foo"), Collections.singletonList("BAR"))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerReadRowUsingIndex() throws InterruptedException {
+  public void asyncTransactionManagerReadRowUsingIndex() {
     asyncTransactionManager_readRowFunction(
         input ->
             ApiFutures.immediateFuture(
                 input.readRowUsingIndex(
                     "FOO", "idx", Key.of("foo"), Collections.singletonList("BAR"))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerReadRowAsync() throws InterruptedException {
+  public void asyncTransactionManagerReadRowAsync() {
     asyncTransactionManager_readRowFunction(
         input -> input.readRowAsync("FOO", Key.of("foo"), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerReadRowUsingIndexAsync() throws InterruptedException {
+  public void asyncTransactionManagerReadRowUsingIndexAsync() {
     asyncTransactionManager_readRowFunction(
         input ->
             input.readRowUsingIndexAsync(
                 "FOO", "idx", Key.of("foo"), Collections.singletonList("BAR")));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ReadRequest.class));
   }
 
   private void asyncTransactionManager_readRowFunction(
-      final Function<TransactionContext, ApiFuture<Struct>> fn) throws InterruptedException {
+      final java.util.function.Function<TransactionContext, ApiFuture<Struct>> fn) {
     final ExecutorService queryExecutor = Executors.newSingleThreadExecutor();
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture context = manager.beginAsync();
@@ -1503,35 +1471,37 @@ public class RetryOnInvalidatedSessionTest {
   }
 
   @Test
-  public void asyncTransactionManagerUpdateAsync() throws InterruptedException {
+  public void asyncTransactionManagerUpdateAsync() {
     asyncTransactionManager_updateFunction(
-        input -> input.executeUpdateAsync(UPDATE_STATEMENT), UPDATE_COUNT);
+        input -> input.executeUpdateAsync(UPDATE_STATEMENT));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerUpdate() throws InterruptedException {
+  public void asyncTransactionManagerUpdate() {
     asyncTransactionManager_updateFunction(
-        input -> ApiFutures.immediateFuture(input.executeUpdate(UPDATE_STATEMENT)), UPDATE_COUNT);
+        input -> ApiFutures.immediateFuture(input.executeUpdate(UPDATE_STATEMENT)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerBatchUpdateAsync() throws InterruptedException {
+  public void asyncTransactionManagerBatchUpdateAsync() {
     asyncTransactionManager_updateFunction(
-        input -> input.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)),
-        new long[] {UPDATE_COUNT, UPDATE_COUNT});
+        input -> input.batchUpdateAsync(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT)));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
   }
 
   @Test
-  public void asyncTransactionManagerBatchUpdate() throws InterruptedException {
+  public void asyncTransactionManagerBatchUpdate() {
     asyncTransactionManager_updateFunction(
         input ->
             ApiFutures.immediateFuture(
-                input.batchUpdate(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT))),
-        new long[] {UPDATE_COUNT, UPDATE_COUNT});
+                input.batchUpdate(Arrays.asList(UPDATE_STATEMENT, UPDATE_STATEMENT))));
+    assertEquals(numExpectedRequests(), mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
   }
 
   private <T> void asyncTransactionManager_updateFunction(
-      final Function<TransactionContext, ApiFuture<T>> fn, T expected) throws InterruptedException {
+      final java.util.function.Function<TransactionContext, ApiFuture<T>> fn)  {
     try (AsyncTransactionManager manager = client.transactionManagerAsync()) {
       TransactionContextFuture transaction = manager.beginAsync();
       while (true) {

@@ -1197,15 +1197,19 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     verify(context, never()).executeQuery(any(Statement.class));
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     verify(context, times(2)).executeQuery(Statement.newBuilder("SELECT 1").build());
+    
+    // Add enough time to the clock that both sessions should be kept alive.
     clock.currentTimeMillis.addAndGet(
         clock.currentTimeMillis.get() + (options.getKeepAliveIntervalMinutes() + 5L) * 60L * 1000L);
+    // Use session1 so this does not need to be kept alive.
     session1 = pool.getSession();
     session1.get();
     session1.writeAtLeastOnceWithOptions(new ArrayList<>());
     session1.close();
+    // This pings session 2.
     runMaintenanceLoop(clock, pool, pool.poolMaintainer.numKeepAliveCycles);
     // The session pool only keeps MinSessions alive.
-    verify(context, times(options.getMinSessions()))
+    verify(context, times(3))
         .executeQuery(Statement.newBuilder("SELECT 1").build());
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }

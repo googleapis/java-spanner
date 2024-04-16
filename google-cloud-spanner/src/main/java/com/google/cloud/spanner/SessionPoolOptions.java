@@ -52,6 +52,7 @@ public class SessionPoolOptions {
   private final int keepAliveIntervalMinutes;
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
+  private final boolean failIfNumSessionsInUseIsNegative;
   private final ActionOnSessionLeak actionOnSessionLeak;
   private final boolean trackStackTraceOfSessionCheckout;
   private final InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions;
@@ -85,6 +86,7 @@ public class SessionPoolOptions {
     this.writeSessionsFraction = builder.writeSessionsFraction;
     this.actionOnExhaustion = builder.actionOnExhaustion;
     this.actionOnSessionNotFound = builder.actionOnSessionNotFound;
+    this.failIfNumSessionsInUseIsNegative = builder.failIfNumSessionsInUseIsNegative;
     this.actionOnSessionLeak = builder.actionOnSessionLeak;
     this.trackStackTraceOfSessionCheckout = builder.trackStackTraceOfSessionCheckout;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
@@ -251,6 +253,11 @@ public class SessionPoolOptions {
   @VisibleForTesting
   boolean isFailIfSessionNotFound() {
     return actionOnSessionNotFound == ActionOnSessionNotFound.FAIL;
+  }
+  
+  @VisibleForTesting
+  boolean isFailIfNumSessionsInUseIsNegative() {
+    return failIfNumSessionsInUseIsNegative;
   }
 
   @VisibleForTesting
@@ -459,6 +466,7 @@ public class SessionPoolOptions {
     private ActionOnExhaustion actionOnExhaustion = DEFAULT_ACTION;
     private long initialWaitForSessionTimeoutMillis = 30_000L;
     private ActionOnSessionNotFound actionOnSessionNotFound = ActionOnSessionNotFound.RETRY;
+    private boolean failIfNumSessionsInUseIsNegative = false;
     private ActionOnSessionLeak actionOnSessionLeak = ActionOnSessionLeak.WARN;
     /**
      * Capture the call stack of the thread that checked out a session of the pool. This will
@@ -530,6 +538,7 @@ public class SessionPoolOptions {
       this.actionOnExhaustion = options.actionOnExhaustion;
       this.initialWaitForSessionTimeoutMillis = options.initialWaitForSessionTimeoutMillis;
       this.actionOnSessionNotFound = options.actionOnSessionNotFound;
+      this.failIfNumSessionsInUseIsNegative = options.failIfNumSessionsInUseIsNegative;
       this.actionOnSessionLeak = options.actionOnSessionLeak;
       this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
       this.loopFrequency = options.loopFrequency;
@@ -764,6 +773,12 @@ public class SessionPoolOptions {
     @VisibleForTesting
     Builder setFailIfSessionNotFound() {
       this.actionOnSessionNotFound = ActionOnSessionNotFound.FAIL;
+      return this;
+    }
+    
+    @VisibleForTesting
+    Builder setFailIfNumSessionsInUseIsNegative() {
+      this.failIfNumSessionsInUseIsNegative = true;
       return this;
     }
 
