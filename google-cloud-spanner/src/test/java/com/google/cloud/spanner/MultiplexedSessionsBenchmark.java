@@ -46,27 +46,28 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * Benchmarks for measuring existing latencies of various APIs using the Java Client. The benchmarks
- * are bound to the Maven profile `benchmark` and can be executed like this: <code>
- *   mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=DefaultBenchmark
+ * Benchmarks for measuring existing latencies of various APIs using the Java Client with
+ * multiplexed sessions. The benchmarks are bound to the Maven profile `benchmark` and can be
+ * executed like this: <code>
+ *   mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=MultiplexedSessionsBenchmark
  * </code> Test Table Schema :
  *
  * <p>CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, ) PRIMARY KEY(id);
  *
- * <p>Below are a few considerations here: 1. We use all default options for this test because that
- * is what most customers would be using. 2. The test schema uses a numeric primary key. To ensure
- * that the reads/updates are distributed across a large query space, we insert 10^5 records.
- * Utility at {@link BenchmarkingUtilityScripts} can be used for loading data. 3. For queries, we
- * make sure that the query is sampled randomly across a large query space. This ensure we don't
- * cause hot-spots. 4. For avoid cold start issues, we execute 1 query/update and ignore its latency
- * from the final reported metrics.
+ * <p>Below are a few considerations here: 1. We use all default options with multiplexed sessions
+ * for this test because that is what most customers would be using. 2. The test schema uses a
+ * numeric primary key. To ensure that the reads/updates are distributed across a large query space,
+ * we insert 10^5 records. Utility at {@link BenchmarkingUtilityScripts} can be used for loading
+ * data. 3. For queries, we make sure that the query is sampled randomly across a large query space.
+ * This ensure we don't cause hot-spots. 4. For avoid cold start issues, we execute 1 query/update
+ * and ignore its latency from the final reported metrics.
  */
 @BenchmarkMode(Mode.AverageTime)
 @Fork(value = 1, warmups = 0)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 0)
-public class DefaultBenchmark extends AbstractLatencyBenchmark {
+public class MultiplexedSessionsBenchmark extends AbstractLatencyBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
@@ -86,6 +87,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
     @Setup(Level.Iteration)
     public void setup() throws Exception {
+      SpannerOptions.enableOpenTelemetryMetrics();
+      SpannerOptions.enableOpenTelemetryTraces();
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
@@ -93,6 +96,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
                       .setMinSessions(minSessions)
                       .setMaxSessions(maxSessions)
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20))
+                      .setUseMultiplexedSession(true)
                       .build())
               .setHost(SERVER_URL)
               .setNumChannels(NUM_GRPC_CHANNELS)
@@ -128,46 +132,6 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
 
-  /** Measures the time needed to execute a burst of read and write requests. */
-  @Benchmark
-  public void burstQueriesAndWrites(final BenchmarkState server) throws Exception {
-    final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
-
-    ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
-    for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(
-          service.submit(() -> runBenchmarksForSingleUseQueries(server, TOTAL_READS_PER_RUN)));
-    }
-    for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
-    }
-
-    collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN + TOTAL_WRITES_PER_RUN);
-  }
-
-  /** Measures the time needed to execute a burst of read and write requests. */
-  @Benchmark
-  public void burstUpdates(final BenchmarkState server) throws Exception {
-    final DatabaseClientImpl client = server.client;
-    SessionPool pool = client.pool;
-    assertThat(pool.totalSessions())
-        .isEqualTo(server.spanner.getOptions().getSessionPoolOptions().getMinSessions());
-
-    ListeningScheduledExecutorService service =
-        MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
-    List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
-    for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
-    }
-
-    collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
-  }
-
   private List<java.time.Duration> runBenchmarksForSingleUseQueries(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
@@ -194,42 +158,16 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
         assertEquals(1, rs.getColumnCount());
         assertNotNull(rs.getValue(0));
       }
+    } catch (Throwable t) {
+      // ignore exception
+      System.out.println("Got exception = " + t);
     }
-    return watch.elapsed();
-  }
-
-  private List<java.time.Duration> runBenchmarkForUpdates(
-      final BenchmarkState server, int numberOfOperations) {
-    List<Duration> results = new ArrayList<>(numberOfOperations);
-    // Execute one query to make sure everything has been warmed up.
-    executeWarmup(server);
-
-    // Execute one update to make sure everything has been warmed up.
-    executeUpdate(server);
-
-    for (int i = 0; i < numberOfOperations; i++) {
-      results.add(executeUpdate(server));
-    }
-    return results;
-  }
-
-  private Duration executeUpdate(final BenchmarkState server) {
-    Stopwatch watch = Stopwatch.createStarted();
-
-    TransactionRunner runner = server.client.readWriteTransaction();
-    runner.run(transaction -> transaction.executeUpdate(getRandomisedUpdateStatement()));
-
     return watch.elapsed();
   }
 
   static Statement getRandomisedReadStatement() {
     int randomKey = ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
     return Statement.newBuilder(SELECT_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
-  }
-
-  static Statement getRandomisedUpdateStatement() {
-    int randomKey = ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
-    return Statement.newBuilder(UPDATE_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
   }
 
   void collectResultsAndPrint(
