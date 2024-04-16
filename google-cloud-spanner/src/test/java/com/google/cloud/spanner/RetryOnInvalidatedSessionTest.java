@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -217,17 +218,21 @@ public class RetryOnInvalidatedSessionTest {
       }
       // This prevents repeated retries for a large number of sessions in the pool.
       builder.setMinSessions(1);
+      SessionPoolOptions sessionPoolOptions = builder.build();
       spanner =
           SpannerOptions.newBuilder()
               .setProjectId("[PROJECT]")
               .setChannelProvider(channelProvider)
-              .setSessionPoolOption(builder.build())
+              .setSessionPoolOption(sessionPoolOptions)
               .setCredentials(NoCredentials.getInstance())
               .build()
               .getService();
       client = spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
       invalidateSessionPool(client, spanner.getOptions().getSessionPoolOptions().getMinSessions());
     }
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
   }
 
   private static void invalidateSessionPool(DatabaseClient client, int minSessions)

@@ -206,6 +206,9 @@ public class SpannerGaxRetryTest {
 
   @Test
   public void singleUseTimeout() {
+    if (isMultiplexedSessionsEnabled()) {
+      mockSpanner.setCreateSessionExecutionTime(ONE_SECOND);
+    }
     mockSpanner.setBatchCreateSessionsExecutionTime(ONE_SECOND);
     try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
       SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
@@ -250,6 +253,9 @@ public class SpannerGaxRetryTest {
 
   @Test
   public void singleUseReadOnlyTransactionTimeout() {
+    if (isMultiplexedSessionsEnabled()) {
+      mockSpanner.setCreateSessionExecutionTime(ONE_SECOND);
+    }
     mockSpanner.setBatchCreateSessionsExecutionTime(ONE_SECOND);
     try (ResultSet rs =
         clientWithTimeout.singleUseReadOnlyTransaction().executeQuery(SELECT1AND2)) {
@@ -383,5 +389,12 @@ public class SpannerGaxRetryTest {
         }
       }
     }
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

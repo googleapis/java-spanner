@@ -185,6 +185,10 @@ public class ReadAsyncTest {
 
   @Test
   public void invalidDatabase() throws Exception {
+    if (isMultiplexedSessionsEnabled()) {
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    }
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     DatabaseClient invalidClient =
@@ -438,5 +442,12 @@ public class ReadAsyncTest {
     SpannerException e = assertThrows(SpannerException.class, () -> get(res));
     assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
     assertThat(values).containsExactly("v1");
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

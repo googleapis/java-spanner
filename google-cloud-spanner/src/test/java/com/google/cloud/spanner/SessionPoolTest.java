@@ -64,6 +64,7 @@ import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -272,6 +273,19 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
+    if (options.getUseMultiplexedSession()) {
+      doAnswer(
+              invocation ->
+                  executor.submit(
+                      () -> {
+                        MultiplexedSessionInitializationConsumer consumer =
+                            invocation.getArgument(
+                                0, MultiplexedSessionInitializationConsumer.class);
+                        consumer.onSessionReady(mockMultiplexedSession());
+                      }))
+          .when(sessionClient)
+          .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+    }
   }
 
   @Test
@@ -2167,6 +2181,42 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   @Test
   public void testWaitOnMinSessionsWhenSessionsAreCreatedBeforeTimeout() {
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(minSessions + 1)
+            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .build();
+    doAnswer(
+            invocation ->
+                executor.submit(
+                    () -> {
+                      SessionConsumerImpl consumer =
+                          invocation.getArgument(2, SessionConsumerImpl.class);
+                      consumer.onSessionReady(mockSession());
+                    }))
+        .when(sessionClient)
+        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    if (options.getUseMultiplexedSession()) {
+      doAnswer(
+              invocation ->
+                  executor.submit(
+                      () -> {
+                        MultiplexedSessionInitializationConsumer consumer =
+                            invocation.getArgument(
+                                0, MultiplexedSessionInitializationConsumer.class);
+                        ReadContext mockContext = mock(ReadContext.class);
+                        Timestamp timestamp =
+                            Timestamp.ofTimeSecondsAndNanos(
+                                Instant.ofEpochMilli(new FakeClock().currentTimeMillis.get())
+                                    .getEpochSecond(),
+                                0);
+                        consumer.onSessionReady(
+                            buildMockMultiplexedSession(mockContext, timestamp.toProto()));
+                      }))
+          .when(sessionClient)
+          .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+    }
     doAnswer(
             invocation ->
                 executor.submit(
@@ -2178,12 +2228,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
-    options =
-        SessionPoolOptions.newBuilder()
-            .setMinSessions(minSessions)
-            .setMaxSessions(minSessions + 1)
-            .setWaitForMinSessions(Duration.ofSeconds(5))
-            .build();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();
     assertTrue(pool.getNumberOfSessionsInPool() >= minSessions);

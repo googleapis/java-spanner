@@ -111,6 +111,7 @@ public class ChannelUsageTest {
   private static InetSocketAddress address;
   private static final Set<InetSocketAddress> batchCreateSessionLocalIps =
       ConcurrentHashMap.newKeySet();
+  private static final Set<InetSocketAddress> localIps = ConcurrentHashMap.newKeySet();
   private static final Set<InetSocketAddress> executeSqlLocalIps = ConcurrentHashMap.newKeySet();
 
   private static Level originalLogLevel;
@@ -157,6 +158,7 @@ public class ChannelUsageTest {
                           .equals(SpannerGrpc.getExecuteStreamingSqlMethod())) {
                         executeSqlLocalIps.add(attributes.get(key));
                       }
+                      localIps.add(attributes.get(key));
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
@@ -188,6 +190,7 @@ public class ChannelUsageTest {
   public void reset() {
     mockSpanner.reset();
     batchCreateSessionLocalIps.clear();
+    localIps.clear();
     executeSqlLocalIps.clear();
   }
 
@@ -224,8 +227,12 @@ public class ChannelUsageTest {
       try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
         while (resultSet.next()) {}
       }
+      if (isMultiplexedSessionsEnabled(spanner)) {
+        assertEquals(numChannels, localIps.size());
+      } else {
+        assertEquals(numChannels, batchCreateSessionLocalIps.size());
+      }
     }
-    assertEquals(numChannels, batchCreateSessionLocalIps.size());
   }
 
   @Test
@@ -254,7 +261,18 @@ public class ChannelUsageTest {
                 }));
       }
       assertEquals(numChannels * 2, Futures.allAsList(futures).get().size());
+      if (isMultiplexedSessionsEnabled(spanner)) {
+        assertEquals(numChannels, localIps.size());
+      } else {
+        assertEquals(numChannels, executeSqlLocalIps.size());
+      }
     }
-    assertEquals(numChannels, executeSqlLocalIps.size());
+  }
+
+  private boolean isMultiplexedSessionsEnabled(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

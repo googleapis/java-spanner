@@ -32,6 +32,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -2318,7 +2320,9 @@ public class DatabaseClientImplTest {
     assertThat(checkedOut).isEmpty();
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       assertThat(rs.next()).isTrue();
-      assertThat(checkedOut).hasSize(1);
+      if (!isMultiplexedSessionsEnabled()) {
+        assertThat(checkedOut).hasSize(1);
+      }
       assertThat(rs.getLong(0)).isEqualTo(1L);
       assertThat(rs.next()).isFalse();
     }
@@ -3009,6 +3013,10 @@ public class DatabaseClientImplTest {
               "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
+      if (isMultiplexedSessionsEnabled()) {
+        mockSpanner.setCreateSessionExecutionTime(
+            SimulatedExecutionTime.ofStickyException(exception));
+      }
       mockSpanner.setBatchCreateSessionsExecutionTime(
           SimulatedExecutionTime.ofStickyException(exception));
       // Ensure there are no sessions in the pool by default.
@@ -3175,6 +3183,10 @@ public class DatabaseClientImplTest {
               "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
+      if (isMultiplexedSessionsEnabled()) {
+        mockSpanner.setCreateSessionExecutionTime(
+            SimulatedExecutionTime.ofStickyException(exception));
+      }
       mockSpanner.setBatchCreateSessionsExecutionTime(
           SimulatedExecutionTime.ofStickyException(exception));
       try (Spanner spanner =
@@ -3645,6 +3657,9 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBatchCreateSessionsPermissionDenied() {
+    assumeFalse(
+        "BatchCreateSessions RPC is not invoked for multiplexed sessions",
+        isMultiplexedSessionsEnabled());
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofStickyException(
             Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
@@ -3662,6 +3677,34 @@ public class DatabaseClientImplTest {
       // Actually trying to get any results will cause an exception.
       SpannerException e = assertThrows(SpannerException.class, rs::next);
       assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
+    } finally {
+      mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
+    }
+  }
+
+  @Test
+  public void testCreateSessionsPermissionDenied() {
+    assumeTrue(
+        "CreateSessions RPC is not invoked for regular sessions", isMultiplexedSessionsEnabled());
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofStickyException(
+            Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("my-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .getService()) {
+      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+      DatabaseClient client = spanner.getDatabaseClient(databaseId);
+      // The following call is non-blocking and will not generate an exception.
+      ResultSet rs = client.singleUse().executeQuery(SELECT1);
+      // Actually trying to get any results will cause an exception.
+      SpannerException e = assertThrows(SpannerException.class, rs::next);
+      assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
+    } finally {
+      mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
     }
   }
 
@@ -3747,6 +3790,9 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBatchCreateSessionsFailure_shouldNotPropagateToCloseMethod() {
+    assumeFalse(
+        "BatchCreateSessions RPC is not invoked for multiplexed sessions",
+        isMultiplexedSessionsEnabled());
     try {
       // Simulate session creation failures on the backend.
       mockSpanner.setBatchCreateSessionsExecutionTime(
@@ -3762,6 +3808,28 @@ public class DatabaseClientImplTest {
       }
     } finally {
       mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
+    }
+  }
+
+  @Test
+  public void testCreateSessionsFailure_shouldNotPropagateToCloseMethod() {
+    assumeTrue(
+        "CreateSessions is not invoked for regular sessions", isMultiplexedSessionsEnabled());
+    try {
+      // Simulate session creation failures on the backend.
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
+      DatabaseClient client =
+          spannerWithEmptySessionPool.getDatabaseClient(
+              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      // This will not cause any failure as getting a session from the pool is guaranteed to be
+      // non-blocking, and any exceptions will be delayed until actual query execution.
+      try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+        SpannerException e = assertThrows(SpannerException.class, rs::next);
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      }
+    } finally {
+      mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
     }
   }
 
@@ -5236,5 +5304,12 @@ public class DatabaseClientImplTest {
     }
 
     return valuesBuilder.build();
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

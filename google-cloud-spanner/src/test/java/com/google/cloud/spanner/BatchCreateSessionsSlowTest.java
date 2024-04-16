@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_ST
 import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
@@ -85,15 +86,22 @@ public class BatchCreateSessionsSlowTest {
 
   @Before
   public void setUp() {
+    SessionPoolOptions sessionPoolOptions =
+        SessionPoolOptions.newBuilder().setFailOnSessionLeak().build();
     spanner =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setDatabaseRole(TEST_DATABASE_ROLE)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build())
+            .setSessionPoolOption(sessionPoolOptions)
             .build()
             .getService();
+    // BatchCreateSessions RPC is not invoked when multiplexed sessions is enabled and just RO
+    // transactions is used.
+    // Use a different transaction shape (for ex - RW transactions) which is presently unsupported
+    // with multiplexed sessions.
+    assumeFalse(sessionPoolOptions.getUseMultiplexedSession());
   }
 
   @After

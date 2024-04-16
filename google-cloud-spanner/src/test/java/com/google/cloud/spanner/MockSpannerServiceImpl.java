@@ -1884,7 +1884,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   }
 
   private void simulateAbort(Session session, ByteString transactionId) {
-    ensureMostRecentTransaction(session, transactionId);
+    if (!session.getMultiplexed()) {
+      // multiplexed sessions allow concurrent transactions on a single session.
+      ensureMostRecentTransaction(session, transactionId);
+    }
     if (isReadWriteTransaction(transactionId)) {
       if (abortNextStatement.getAndSet(false) || abortProbability > random.nextDouble()) {
         rollbackTransaction(transactionId);

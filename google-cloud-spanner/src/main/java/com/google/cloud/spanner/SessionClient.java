@@ -263,6 +263,61 @@ class SessionClient implements AutoCloseable {
   }
 
   /**
+   * Create a multiplexed session asynchronously and returns it to the given {@link
+   * SessionConsumer}. A multiplexed session is not affiliated with any GRPC channel. The given
+   * {@link SessionConsumer} is guaranteed to eventually get exactly 1 multiplexed session unless an
+   * error occurs. In case of an error on the gRPC calls, the consumer will receive one {@link
+   * SessionConsumer#onSessionCreateFailure(Throwable, int)} calls with the error.
+   *
+   * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
+   */
+  void asyncCreateMultiplexedSession(SessionConsumer consumer) {
+    try {
+      executor.submit(new CreateMultiplexedSessionsRunnable(consumer));
+    } catch (Throwable t) {
+      consumer.onSessionCreateFailure(t, 1);
+    }
+  }
+
+  private final class CreateMultiplexedSessionsRunnable implements Runnable {
+    private final SessionConsumer consumer;
+
+    private CreateMultiplexedSessionsRunnable(SessionConsumer consumer) {
+      Preconditions.checkNotNull(consumer);
+      this.consumer = consumer;
+    }
+
+    @Override
+    public void run() {
+      ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION);
+      try (IScope s = spanner.getTracer().withSpan(span)) {
+        com.google.spanner.v1.Session session =
+            spanner
+                .getRpc()
+                .createSession(
+                    db.getName(),
+                    spanner.getOptions().getDatabaseRole(),
+                    spanner.getOptions().getSessionLabels(),
+                    null,
+                    true);
+        SessionImpl sessionImpl =
+            new SessionImpl(
+                spanner,
+                new SessionReference(
+                    session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
+        span.addAnnotation(
+            String.format("Request for %d multiplexed session returned %d session", 1, 1));
+        consumer.onSessionReady(sessionImpl);
+      } catch (Throwable t) {
+        span.setStatus(t);
+        consumer.onSessionCreateFailure(t, 1);
+      } finally {
+        span.end();
+      }
+    }
+  }
+
+  /**
    * Asynchronously creates a batch of sessions and returns these to the given {@link
    * SessionConsumer}. This method may split the actual session creation over several gRPC calls in
    * order to distribute the sessions evenly over all available channels and to parallelize the
