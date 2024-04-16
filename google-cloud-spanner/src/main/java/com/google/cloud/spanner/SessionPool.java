@@ -1930,7 +1930,7 @@ class SessionPool {
       if ((lastException != null && isSessionNotFound(lastException)) || isRemovedFromPool) {
         invalidateSession(this);
       } else {
-        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
+        if (isDatabaseOrInstanceNotFound(lastException)) {
           // Mark this session pool as no longer valid and then release the session into the pool as
           // there is nothing we can do with it anyways.
           synchronized (lock) {
@@ -1955,7 +1955,6 @@ class SessionPool {
     }
 
     private void keepAlive() {
-      markUsed();
       final ISpan previousSpan = delegate.getCurrentSpan();
       delegate.setCurrentSpan(tracer.getBlankSpan());
       try (ResultSet resultSet =
@@ -1963,6 +1962,7 @@ class SessionPool {
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
               .executeQuery(Statement.newBuilder("SELECT 1").build())) {
         resultSet.next();
+        markUsed();
       } finally {
         delegate.setCurrentSpan(previousSpan);
       }
@@ -2179,7 +2179,7 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numMultiplexedSessionsReleased++;
-        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
+        if (isDatabaseOrInstanceNotFound(lastException)) {
           SessionPool.this.resourceNotFoundException =
               MoreObjects.firstNonNull(
                   SessionPool.this.resourceNotFoundException,
@@ -2425,23 +2425,12 @@ class SessionPool {
 
     private void keepAliveSessions(Instant currTime) {
       long numSessionsToKeepAlive = 0;
+      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
       synchronized (lock) {
-        if (numSessionsInUse >= (options.getMinSessions() + options.getMaxIdleSessions())) {
-          // At least MinSessions are in use, so we don't have to ping any sessions.
-          return;
-        }
         // In each cycle only keep alive a subset of sessions to prevent burst of traffic.
-        numSessionsToKeepAlive =
-            (long)
-                Math.ceil(
-                    (double)
-                            ((options.getMinSessions() + options.getMaxIdleSessions())
-                                - numSessionsInUse)
-                        / numKeepAliveCycles);
+        numSessionsToKeepAlive = calculateNumSessionsToKeepAlive(keepAliveThreshold);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
-      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
-
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {
         Tuple<PooledSession, Integer> sessionToKeepAlive;
@@ -2460,6 +2449,29 @@ class SessionPool {
           handleException(e, sessionToKeepAlive);
         }
       }
+    }
+
+    private int calculateNumSessionsToKeepAlive(Instant keepAliveThreshold) {
+      if (numSessionsInUse >= options.getMinSessions() + options.getMaxIdleSessions()) {
+        // At least MinSessions are in use, so we don't have to ping any sessions.
+        return 0;
+      }
+      return (int)
+          Math.ceil((double) numSessionsNeedingKeepAlive(keepAliveThreshold) / numKeepAliveCycles);
+    }
+
+    private int numSessionsNeedingKeepAlive(Instant keepAliveThreshold) {
+      int numSessionsNeedingKeepAlive = 0;
+      int maxSessionsToKeepAlive = options.getMinSessions() + options.getMaxIdleSessions();
+      for (PooledSession session : sessions) {
+        if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
+          numSessionsNeedingKeepAlive++;
+          if (numSessionsNeedingKeepAlive == maxSessionsToKeepAlive) {
+            return numSessionsNeedingKeepAlive;
+          }
+        }
+      }
+      return numSessionsNeedingKeepAlive;
     }
 
     private void replenishPool() {
@@ -2989,7 +3001,7 @@ class SessionPool {
     return e.getErrorCode() == ErrorCode.NOT_FOUND && e.getMessage().contains("Session not found");
   }
 
-  private boolean isDatabaseOrInstanceNotFound(SpannerException e) {
+  private boolean isDatabaseOrInstanceNotFound(@Nullable SpannerException e) {
     return e instanceof DatabaseNotFoundException || e instanceof InstanceNotFoundException;
   }
 

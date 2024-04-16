@@ -263,7 +263,7 @@ public class RetryOnInvalidatedSessionTest {
     // rs.next().
     try (ReadContext context = client.singleUse()) {
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
-        assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
+        assertThrowsSessionNotFoundIfShouldFail(rs::next);
       }
     }
   }
