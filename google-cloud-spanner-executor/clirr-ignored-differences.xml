@@ -5,6 +5,6 @@
     <differenceType>7004</differenceType>
     <className>com/google/cloud/executor/spanner/CloudExecutorImpl</className>
     <method>CloudExecutorImpl(boolean)</method>
-    <to>CloudExecutorImpl(boolean, double)</to>
+    <to>CloudExecutorImpl(boolean, boolean)</to>
   </difference>
 </differences>
