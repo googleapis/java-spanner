@@ -215,8 +215,10 @@ class SessionClient implements AutoCloseable {
                   spanner.getOptions().getDatabaseRole(),
                   spanner.getOptions().getSessionLabels(),
                   options);
-      return new SessionImpl(
-          spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
+      SessionReference sessionReference =
+          new SessionReference(
+              session.getName(), session.getCreateTime(), session.getMultiplexed(), options);
+      return new SessionImpl(spanner, sessionReference);
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -248,7 +250,9 @@ class SessionClient implements AutoCloseable {
                   true);
       SessionImpl sessionImpl =
           new SessionImpl(
-              spanner, session.getName(), session.getCreateTime(), session.getMultiplexed(), null);
+              spanner,
+              new SessionReference(
+                  session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
       consumer.onSessionReady(sessionImpl);
     } catch (Throwable t) {
       span.setStatus(t);
@@ -348,10 +352,11 @@ class SessionClient implements AutoCloseable {
         res.add(
             new SessionImpl(
                 spanner,
-                session.getName(),
-                session.getCreateTime(),
-                session.getMultiplexed(),
-                options));
+                new SessionReference(
+                    session.getName(),
+                    session.getCreateTime(),
+                    session.getMultiplexed(),
+                    options)));
       }
       return res;
     } catch (RuntimeException e) {
@@ -367,6 +372,6 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    return new SessionImpl(spanner, name, options);
+    return new SessionImpl(spanner, new SessionReference(name, options));
   }
 }

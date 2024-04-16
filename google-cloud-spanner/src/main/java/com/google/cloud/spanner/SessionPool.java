@@ -40,6 +40,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TIMEOUTS
 import static com.google.cloud.spanner.MetricRegistryConstants.SESSIONS_TYPE;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
@@ -1178,22 +1179,42 @@ class SessionPool {
   }
 
   class MultiplexedSessionFutureWrapper implements SessionFutureWrapper<MultiplexedSessionFuture> {
-    SettableApiFuture<MultiplexedSessionFuture> multiplexedSessionSettableApiFuture;
+    private SettableApiFuture<SessionReference> multiplexedSessionSettableApiFuture;
+    private ISpan span;
+    private volatile MultiplexedSessionFuture multiplexedSessionFuture;
 
     public MultiplexedSessionFutureWrapper(
-        SettableApiFuture<MultiplexedSessionFuture> multiplexedSessionSettableApiFuture) {
+        SettableApiFuture<SessionReference> multiplexedSessionSettableApiFuture, ISpan span) {
       this.multiplexedSessionSettableApiFuture = multiplexedSessionSettableApiFuture;
+      this.span = span;
     }
 
     @Override
     public MultiplexedSessionFuture get() {
-      try {
-        return this.multiplexedSessionSettableApiFuture.get();
-      } catch (InterruptedException interruptedException) {
-        throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-      } catch (ExecutionException executionException) {
-        throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+      if (multiplexedSessionFuture == null) {
+        synchronized (lock) {
+          if (multiplexedSessionFuture == null) {
+            try {
+              // Creating a new reference where the request's span state can be stored.
+              SessionImpl sessionImpl =
+                  new SessionImpl(
+                      sessionClient.getSpanner(), this.multiplexedSessionSettableApiFuture.get());
+              MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
+              SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
+              settableFuture.set(multiplexedSession);
+              MultiplexedSessionFuture multiplexedSessionFuture =
+                  new MultiplexedSessionFuture(settableFuture, span);
+              this.multiplexedSessionFuture = multiplexedSessionFuture;
+              return multiplexedSessionFuture;
+            } catch (InterruptedException interruptedException) {
+              throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+            } catch (ExecutionException executionException) {
+              throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+            }
+          }
+        }
       }
+      return multiplexedSessionFuture;
     }
   }
 
@@ -1477,9 +1498,13 @@ class SessionPool {
 
   class MultiplexedSessionFuture extends SimpleForwardingListenableFuture<MultiplexedSession>
       implements SessionFuture {
+
+    private ISpan span;
+
     @VisibleForTesting
-    MultiplexedSessionFuture(ListenableFuture<MultiplexedSession> delegate) {
+    MultiplexedSessionFuture(ListenableFuture<MultiplexedSession> delegate, ISpan span) {
       super(delegate);
+      this.span = span;
     }
 
     @Override
@@ -1685,7 +1710,13 @@ class SessionPool {
     @Override
     public MultiplexedSession get() {
       try {
-        return super.get();
+        MultiplexedSession multiplexedSession = super.get();
+        if (multiplexedSession != null) {
+          multiplexedSession.markBusy(span);
+          span.addAnnotation("Using Session", "sessionId", multiplexedSession.getName());
+          incrementNumSessionsInUse(true);
+        }
+        return multiplexedSession;
       } catch (ExecutionException e) {
         throw SpannerExceptionFactory.newSpannerException(e.getCause());
       } catch (InterruptedException e) {
@@ -1698,7 +1729,6 @@ class SessionPool {
 
     SessionImpl getDelegate();
 
-    // TODO This method can be removed once we fully migrate to multiplexed sessions.
     void markBusy(ISpan span);
 
     void markUsed();
@@ -2026,8 +2056,7 @@ class SessionPool {
 
     @Override
     public void markBusy(ISpan span) {
-      // no-op for a multiplexed session since a new span is already created and set in context
-      // for every handler invocation.
+      this.delegate.setCurrentSpan(span);
     }
 
     @Override
@@ -2226,12 +2255,15 @@ class SessionPool {
             interrupted = true;
           } catch (TimeoutException e) {
             if (acquireSessionTimeout != null) {
-              throw SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.RESOURCE_EXHAUSTED,
-                  "Timed out after waiting "
-                      + acquireSessionTimeout.toMillis()
-                      + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
-                      + " or increase the number of sessions in the session pool.");
+              SpannerException exception =
+                  SpannerExceptionFactory.newSpannerException(
+                      ErrorCode.RESOURCE_EXHAUSTED,
+                      "Timed out after waiting "
+                          + acquireSessionTimeout.toMillis()
+                          + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
+                          + " or increase the number of sessions in the session pool.");
+              waiter.setException(exception);
+              throw exception;
             }
             return null;
           } catch (ExecutionException e) {
@@ -2526,26 +2558,27 @@ class SessionPool {
       try {
         if (options.getUseMultiplexedSession()) {
           synchronized (lock) {
-            if (getMultiplexedSession().isDone()
-                && getMultiplexedSession().get() != null
-                && isMultiplexedSessionStale(currentTime)) {
-              final Instant minExecutionTime =
-                  multiplexedSessionReplacementAttemptTime.plus(
-                      multiplexedSessionCreationRetryDelay);
-              if (currentTime.isBefore(minExecutionTime)) {
-                return;
+            if (currentMultiplexedSessionReference.get().isDone()) {
+              SessionReference sessionReference = getMultiplexedSessionInstance();
+              if (sessionReference != null
+                  && isMultiplexedSessionStale(sessionReference, currentTime)) {
+                final Instant minExecutionTime =
+                    multiplexedSessionReplacementAttemptTime.plus(
+                        multiplexedSessionCreationRetryDelay);
+                if (currentTime.isBefore(minExecutionTime)) {
+                  return;
+                }
+                /*
+                 This will attempt to create a new multiplexed session. if successfully created then
+                 the existing session will be replaced. Note that there maybe active transactions
+                 running on the stale session. Hence, it is important that we only replace the reference
+                 and not invoke a DeleteSession RPC.
+                */
+                maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
+
+                // update this only after we have attempted to replace the multiplexed session
+                multiplexedSessionReplacementAttemptTime = currentTime;
               }
-
-              /*
-               This will attempt to create a new multiplexed session. if successfully created then
-               the existing session will be replaced. Note that there maybe active transactions
-               running on the stale session. Hence, it is important that we only replace the reference
-               and not invoke a DeleteSession RPC.
-              */
-              maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
-
-              // update this only after we have attempted to replace the multiplexed session
-              multiplexedSessionReplacementAttemptTime = currentTime;
             }
           }
         }
@@ -2554,10 +2587,9 @@ class SessionPool {
       }
     }
 
-    boolean isMultiplexedSessionStale(Instant currentTime) {
-      final CachedSession session = getMultiplexedSession().get();
+    boolean isMultiplexedSessionStale(SessionReference sessionReference, Instant currentTime) {
       final Duration durationFromCreationTime =
-          Duration.between(session.getDelegate().getCreateTime(), currentTime);
+          Duration.between(sessionReference.getCreateTime(), currentTime);
       return durationFromCreationTime.compareTo(options.getMultiplexedSessionMaintenanceDuration())
           > 0;
     }
@@ -2669,9 +2701,8 @@ class SessionPool {
 
   private AtomicLong numWaiterTimeouts = new AtomicLong();
 
-  private final AtomicReference<SettableApiFuture<MultiplexedSessionFuture>>
+  private final AtomicReference<SettableApiFuture<SessionReference>>
       currentMultiplexedSessionReference = new AtomicReference<>(SettableApiFuture.create());
-  MultiplexedSessionFutureWrapper wrappedMultiplexedSessionFuture = null;
 
   @GuardedBy("lock")
   private final Set<PooledSession> allSessions = new HashSet<>();
@@ -2690,7 +2721,7 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> idleSessionRemovedListener;
 
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
-  @VisibleForTesting Function<MultiplexedSession, Void> multiplexedSessionRemovedListener;
+  @VisibleForTesting Function<SessionReference, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
   private final SessionReplacementHandler pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
@@ -3004,12 +3035,10 @@ class SessionPool {
    */
   SessionFutureWrapper getMultiplexedSessionWithFallback() throws SpannerException {
     if (options.getUseMultiplexedSession()) {
+      ISpan span = tracer.getCurrentSpan();
       try {
-        SessionFutureWrapper sessionFuture = getWrappedMultiplexedSessionFuture();
-        incrementNumSessionsInUse(true);
-        return sessionFuture;
+        return getWrappedMultiplexedSessionFuture(span);
       } catch (Throwable t) {
-        ISpan span = tracer.getCurrentSpan();
         span.addAnnotation("No multiplexed session available.");
         throw SpannerExceptionFactory.asSpannerException(t.getCause());
       }
@@ -3018,16 +3047,22 @@ class SessionPool {
     }
   }
 
-  SessionFutureWrapper getWrappedMultiplexedSessionFuture() {
-    return wrappedMultiplexedSessionFuture;
+  SessionFutureWrapper getWrappedMultiplexedSessionFuture(ISpan span) {
+    return new MultiplexedSessionFutureWrapper(currentMultiplexedSessionReference.get(), span);
   }
 
   /**
    * This method is a blocking method. It will block until the underlying {@code
-   * SettableApiFuture<MultiplexedSessionFuture>} is resolved.
+   * SettableApiFuture<SessionInstance>} is resolved.
    */
-  MultiplexedSessionFuture getMultiplexedSession() {
-    return (MultiplexedSessionFuture) getWrappedMultiplexedSessionFuture().get();
+  SessionReference getMultiplexedSessionInstance() {
+    try {
+      return currentMultiplexedSessionReference.get().get();
+    } catch (InterruptedException e) {
+      throw SpannerExceptionFactory.propagateInterrupt(e);
+    } catch (ExecutionException e) {
+      throw SpannerExceptionFactory.asSpannerException(e.getCause());
+    }
   }
 
   /**
@@ -3483,25 +3518,24 @@ class SessionPool {
   class MultiplexedSessionMaintainerConsumer implements SessionConsumer {
     @Override
     public void onSessionReady(SessionImpl sessionImpl) {
-      final SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
-      final MultiplexedSession newSession = new MultiplexedSession(sessionImpl);
-      settableFuture.set(newSession);
+      final SessionReference sessionReference = sessionImpl.getSessionReference();
+      final SettableFuture<SessionReference> settableFuture = SettableFuture.create();
+      settableFuture.set(sessionReference);
 
       synchronized (lock) {
-        MultiplexedSession oldSession = null;
+        SessionReference oldSession = null;
         if (currentMultiplexedSessionReference.get().isDone()) {
-          oldSession = getMultiplexedSession().get();
+          oldSession = getMultiplexedSessionInstance();
         }
-        SettableApiFuture<MultiplexedSessionFuture> settableApiFuture = SettableApiFuture.create();
-        settableApiFuture.set(new MultiplexedSessionFuture(settableFuture));
+        SettableApiFuture<SessionReference> settableApiFuture = SettableApiFuture.create();
+        settableApiFuture.set(sessionReference);
         currentMultiplexedSessionReference.set(settableApiFuture);
-        wrappedMultiplexedSessionFuture = new MultiplexedSessionFutureWrapper(settableApiFuture);
         if (oldSession != null) {
           logger.log(
               Level.INFO,
               String.format(
                   "Removed Multiplexed Session => %s created at => %s and",
-                  oldSession.getName(), oldSession.getDelegate().getCreateTime()));
+                  oldSession.getName(), oldSession.getCreateTime()));
           if (multiplexedSessionRemovedListener != null) {
             multiplexedSessionRemovedListener.apply(oldSession);
           }
@@ -3518,8 +3552,6 @@ class SessionPool {
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
       synchronized (lock) {
         multiplexedSessionBeingCreated = false;
-        wrappedMultiplexedSessionFuture =
-            new MultiplexedSessionFutureWrapper(currentMultiplexedSessionReference.get());
       }
       logger.log(
           Level.WARNING,
@@ -3537,15 +3569,14 @@ class SessionPool {
   class MultiplexedSessionInitializationConsumer implements SessionConsumer {
     @Override
     public void onSessionReady(SessionImpl sessionImpl) {
-      final SettableFuture<MultiplexedSession> settableFuture = SettableFuture.create();
-      final MultiplexedSession newSession = new MultiplexedSession(sessionImpl);
-      settableFuture.set(newSession);
+      final SessionReference sessionReference = sessionImpl.getSessionReference();
+      final SettableFuture<SessionReference> settableFuture = SettableFuture.create();
+      settableFuture.set(sessionReference);
 
       synchronized (lock) {
-        SettableApiFuture<MultiplexedSessionFuture> settableApiFuture =
+        SettableApiFuture<SessionReference> settableApiFuture =
             currentMultiplexedSessionReference.get();
-        settableApiFuture.set(new MultiplexedSessionFuture(settableFuture));
-        wrappedMultiplexedSessionFuture = new MultiplexedSessionFutureWrapper(settableApiFuture);
+        settableApiFuture.set(sessionReference);
         multiplexedSessionBeingCreated = false;
       }
     }
@@ -3559,8 +3590,6 @@ class SessionPool {
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
       synchronized (lock) {
         multiplexedSessionBeingCreated = false;
-        wrappedMultiplexedSessionFuture =
-            new MultiplexedSessionFutureWrapper(currentMultiplexedSessionReference.get());
         currentMultiplexedSessionReference.get().setException(newSpannerException(t));
       }
     }
@@ -3665,7 +3694,7 @@ class SessionPool {
             MetricOptions.builder()
                 .setDescription(NUM_ACQUIRED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
-                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .setLabelKeys(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS)
                 .build());
 
     DerivedLongCumulative numReleasedSessionsMetric =
@@ -3674,7 +3703,7 @@ class SessionPool {
             MetricOptions.builder()
                 .setDescription(NUM_RELEASED_SESSIONS_DESCRIPTION)
                 .setUnit(COUNT)
-                .setLabelKeys(SPANNER_LABEL_KEYS)
+                .setLabelKeys(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS)
                 .build());
 
     DerivedLongGauge numSessionsInPoolMetric =
@@ -3703,13 +3732,28 @@ class SessionPool {
     sessionsTimeouts.removeTimeSeries(labelValues);
     sessionsTimeouts.createTimeSeries(labelValues, this, SessionPool::getNumWaiterTimeouts);
 
-    numAcquiredSessionsMetric.removeTimeSeries(labelValues);
-    numAcquiredSessionsMetric.createTimeSeries(
-        labelValues, this, sessionPool -> sessionPool.numSessionsAcquired);
+    List<LabelValue> labelValuesWithRegularSessions = new ArrayList<>(labelValues);
+    List<LabelValue> labelValuesWithMultiplexedSessions = new ArrayList<>(labelValues);
+    labelValuesWithMultiplexedSessions.add(LabelValue.create("true"));
+    labelValuesWithRegularSessions.add(LabelValue.create("false"));
 
-    numReleasedSessionsMetric.removeTimeSeries(labelValues);
+    numAcquiredSessionsMetric.removeTimeSeries(labelValuesWithRegularSessions);
+    numAcquiredSessionsMetric.createTimeSeries(
+        labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsAcquired);
+    numAcquiredSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
+    numAcquiredSessionsMetric.createTimeSeries(
+        labelValuesWithMultiplexedSessions,
+        this,
+        sessionPool -> sessionPool.numMultiplexedSessionsAcquired);
+
+    numReleasedSessionsMetric.removeTimeSeries(labelValuesWithRegularSessions);
     numReleasedSessionsMetric.createTimeSeries(
-        labelValues, this, sessionPool -> sessionPool.numSessionsReleased);
+        labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsReleased);
+    numReleasedSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
+    numReleasedSessionsMetric.createTimeSeries(
+        labelValuesWithMultiplexedSessions,
+        this,
+        sessionPool -> sessionPool.numMultiplexedSessionsReleased);
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
