@@ -37,14 +37,12 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
   // Executors to proxy.
   private final CloudClientExecutor clientExecutor;
 
-  // Ratio of operations to use multiplexed sessions. Only applies to supported operations
-  // (currently read-only).
-  private final double multiplexedSessionOperationsRatio;
+  // Use multiplexed session instead of regular session in cloud client library.
+  private final boolean useMultiplexedSession;
 
-  public CloudExecutorImpl(
-      boolean enableGrpcFaultInjector, double multiplexedSessionOperationsRatioOption) {
+  public CloudExecutorImpl(boolean enableGrpcFaultInjector, boolean useMultiplexedSession) {
     clientExecutor = new CloudClientExecutor(enableGrpcFaultInjector);
-    multiplexedSessionOperationsRatio = multiplexedSessionOperationsRatioOption;
+    this.useMultiplexedSession = useMultiplexedSession;
   }
 
   /** Execute SpannerAsync action requests. */
@@ -58,9 +56,9 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
       public void onNext(SpannerAsyncActionRequest request) {
         LOGGER.log(Level.INFO, String.format("Receiving request: \n%s", request));
 
-        // Use Multiplexed sessions for all supported operations if the
-        // multiplexedSessionOperationsRatio from command line is > 0.0.
-        if (multiplexedSessionOperationsRatio > 0.0) {
+        // Use Multiplexed sessions for all supported operations if the useMultiplexedSession
+        // variable is set to true.
+        if (useMultiplexedSession) {
           SessionPoolOptions.Builder sessionPoolOptions =
               SessionPoolOptions.newBuilder().setUseMultiplexed(true);
           SpannerOptions.Builder options =
