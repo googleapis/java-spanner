@@ -2408,7 +2408,7 @@ class SessionPool {
     }
 
     private void keepAliveSessions(Instant currTime) {
-      long numSessionsToKeepAlive = 0;
+      long numSessionsToKeepAlive;
       Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
       synchronized (lock) {
         // In each cycle only keep alive a subset of sessions to prevent burst of traffic.
