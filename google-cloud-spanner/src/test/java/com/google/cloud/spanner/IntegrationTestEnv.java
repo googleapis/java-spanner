@@ -95,7 +95,7 @@ public class IntegrationTestEnv extends ExternalResource {
     this.config.setUp();
 
     SpannerOptions options = config.spannerOptions();
-    String instanceProperty = "projects/span-cloud-testing/instances/spanner-testing-east1";
+    String instanceProperty = System.getProperty(TEST_INSTANCE_PROPERTY, "");
     InstanceId instanceId;
     if (!instanceProperty.isEmpty() && !alwaysCreateNewInstance) {
       instanceId = InstanceId.of(instanceProperty);
