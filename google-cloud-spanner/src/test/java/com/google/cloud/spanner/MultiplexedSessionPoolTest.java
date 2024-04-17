@@ -81,6 +81,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
             .setMaxSessions(2)
             .setUseMultiplexedSession(true)
             .build();
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
   }
 
   @Test
