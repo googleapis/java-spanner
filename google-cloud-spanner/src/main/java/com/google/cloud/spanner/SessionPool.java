@@ -2724,7 +2724,8 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
   @VisibleForTesting Function<SessionReference, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
-  private final SessionReplacementHandler<PooledSessionFuture> pooledSessionReplacementHandler;
+  private final SessionReplacementHandler<PooledSessionFuture> pooledSessionReplacementHandler =
+      new PooledSessionReplacementHandler();
   private static final SessionReplacementHandler<MultiplexedSessionFuture>
       multiplexedSessionReplacementHandler = new MultiplexedSessionReplacementHandler();
 
@@ -2839,10 +2840,6 @@ class SessionPool {
       List<LabelValue> labelValues,
       OpenTelemetry openTelemetry,
       Attributes attributes) {
-    this.pooledSessionReplacementHandler =
-        options.isFailIfSessionNotFound()
-            ? new PooledSessionReplacementHandler()
-            : new PooledSessionReplacementHandler();
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
