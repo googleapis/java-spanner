@@ -108,10 +108,9 @@ public class SessionPoolMaintainerMockServerTest extends AbstractMockServerTest 
     assertEquals(2, client.pool.totalSessions());
     mockSpanner.unfreeze();
 
-    // The pool is replenished.
+    // The pool should be replenished.
     client.pool.poolMaintainer.maintainPool();
-    assertEquals(
-        minSessions, client.pool.totalSessions() + client.pool.getNumberOfSessionsBeingCreated());
+    assertEquals(minSessions, client.pool.getTotalSessionsPlusNumSessionsBeingCreated());
     Stopwatch watch = Stopwatch.createStarted();
     //noinspection StatementWithEmptyBody
     while (client.pool.totalSessions() < minSessions
