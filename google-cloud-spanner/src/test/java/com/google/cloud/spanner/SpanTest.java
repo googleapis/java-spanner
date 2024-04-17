@@ -201,7 +201,7 @@ public class SpanTest {
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(2)
-                    .setWaitForMinSessions(Duration.ofSeconds(5))
+                    .setWaitForMinSessions(Duration.ofSeconds(10))
                     .build());
 
     spanner = builder.build().getService();
@@ -304,7 +304,8 @@ public class SpanTest {
     List<String> expectedAnnotationsForMultiplexedSession =
         ImmutableList.of(
             "Requesting 2 sessions",
-            "Request for 1 sessions returned 1 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
             "Creating 2 sessions",
             "Using Session",
             "Starting/Resuming stream");
@@ -353,7 +354,8 @@ public class SpanTest {
     List<String> expectedAnnotationsForMultiplexedSession =
         ImmutableList.of(
             "Requesting 2 sessions",
-            "Request for 1 sessions returned 1 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
             "Creating 2 sessions",
             "Using Session",
             "Starting/Resuming stream",
@@ -396,11 +398,32 @@ public class SpanTest {
             "Requesting 2 sessions",
             "Request for 2 sessions returned 2 sessions",
             "Creating 2 sessions");
-    verifyAnnotations(
-        failOnOverkillTraceComponent.getAnnotations().stream()
-            .distinct()
-            .collect(Collectors.toList()),
-        expectedAnnotations);
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Starting Commit",
+            "Commit Done",
+            "Transaction Attempt Succeeded",
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions");
+    if (isMultiplexedSessionsEnabled()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
   }
 
   @Test
@@ -434,12 +457,30 @@ public class SpanTest {
             "Requesting 2 sessions",
             "Request for 2 sessions returned 2 sessions",
             "Creating 2 sessions");
-
-    verifyAnnotations(
-        failOnOverkillTraceComponent.getAnnotations().stream()
-            .distinct()
-            .collect(Collectors.toList()),
-        expectedAnnotations);
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Transaction Attempt Failed in user operation",
+            "Requesting 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions");
+    if (isMultiplexedSessionsEnabled()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
   }
 
   private void verifyAnnotations(List<String> actualAnnotations, List<String> expectedAnnotations) {

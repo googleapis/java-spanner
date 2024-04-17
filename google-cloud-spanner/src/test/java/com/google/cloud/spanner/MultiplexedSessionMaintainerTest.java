@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.SessionPool.CachedSession;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionMaintainerConsumer;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -83,8 +84,8 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
   }
 
   @Test
-  public void
-      testMaintainMultiplexedSession_whenNewSessionCreated_assertThatStaleSessionIsRemoved() {
+  public void testMaintainMultiplexedSession_whenNewSessionCreated_assertThatStaleSessionIsRemoved()
+      throws Exception {
     doAnswer(
             invocation -> {
               MultiplexedSessionInitializationConsumer consumer =
@@ -119,7 +120,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     SessionPool pool = createPool();
 
     // Run one maintenance loop.
-    SessionFutureWrapper session1 = pool.getMultiplexedSessionWithFallback();
+    CachedSession session1 = pool.getMultiplexedSessionWithFallback().get().get();
     runMaintenanceLoop(clock, pool, 1);
     assertTrue(multiplexedSessionsRemoved.isEmpty());
 
@@ -129,10 +130,11 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     // Run second maintenance loop. the first session would now be stale since it has now existed
     // for more than 7 days.
     runMaintenanceLoop(clock, pool, 1);
-    SessionFutureWrapper session2 = pool.getMultiplexedSessionWithFallback();
-    assertNotEquals(session1.get().getName(), session2.get().getName());
+
+    CachedSession session2 = pool.getMultiplexedSessionWithFallback().get().get();
+    assertNotEquals(session1.getName(), session2.getName());
     assertEquals(1, multiplexedSessionsRemoved.size());
-    assertTrue(getNameOfSessionRemoved().contains(session1.get().get().getName()));
+    assertTrue(getNameOfSessionRemoved().contains(session1.getName()));
 
     // Advance clock by 8 days
     clock.currentTimeMillis.addAndGet(Duration.ofDays(8).toMillis());
@@ -141,10 +143,10 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     // for more than 7 days
     runMaintenanceLoop(clock, pool, 1);
 
-    SessionFutureWrapper session3 = pool.getMultiplexedSessionWithFallback();
-    assertNotEquals(session2.get().getName(), session3.get().getName());
+    CachedSession session3 = pool.getMultiplexedSessionWithFallback().get().get();
+    assertNotEquals(session2.getName(), session3.getName());
     assertEquals(2, multiplexedSessionsRemoved.size());
-    assertTrue(getNameOfSessionRemoved().contains(session2.get().get().getName()));
+    assertTrue(getNameOfSessionRemoved().contains(session2.getName()));
   }
 
   @Test

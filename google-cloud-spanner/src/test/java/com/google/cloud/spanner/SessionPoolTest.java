@@ -142,9 +142,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
   @Parameter public int minSessions;
 
-  @Parameter(1)
-  public boolean useMultiplexed;
-
   @Mock SpannerImpl client;
   @Mock SessionClient sessionClient;
   @Mock SpannerOptions spannerOptions;
@@ -157,14 +154,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final TraceWrapper tracer =
       new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
 
-  @Parameters(name = "min sessions = {0}, use multiplexed = {1}")
+  @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {
-    List<Object[]> params = new ArrayList<>();
-    params.add(new Object[] {0, false});
-    params.add(new Object[] {1, false});
-    params.add(new Object[] {1, true});
-
-    return params;
+    return Arrays.asList(new Object[][] {{0}, {1}});
   }
 
   private SessionPool createPool() {
@@ -252,7 +244,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMaxSessions(2)
             .setIncStep(1)
             .setBlockIfPoolExhausted()
-            .setUseMultiplexedSession(useMultiplexed)
             .build();
   }
 
@@ -278,13 +269,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
               invocation ->
                   executor.submit(
                       () -> {
-                        MultiplexedSessionInitializationConsumer consumer =
-                            invocation.getArgument(
-                                0, MultiplexedSessionInitializationConsumer.class);
+                        SessionConsumer consumer = invocation.getArgument(0, SessionConsumer.class);
                         consumer.onSessionReady(mockMultiplexedSession());
                       }))
           .when(sessionClient)
-          .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+          .asyncCreateMultiplexedSession(any(SessionConsumer.class));
     }
   }
 
@@ -2205,28 +2194,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                         MultiplexedSessionInitializationConsumer consumer =
                             invocation.getArgument(
                                 0, MultiplexedSessionInitializationConsumer.class);
-                        ReadContext mockContext = mock(ReadContext.class);
-                        Timestamp timestamp =
-                            Timestamp.ofTimeSecondsAndNanos(
-                                Instant.ofEpochMilli(new FakeClock().currentTimeMillis.get())
-                                    .getEpochSecond(),
-                                0);
-                        consumer.onSessionReady(
-                            buildMockMultiplexedSession(mockContext, timestamp.toProto()));
+                        consumer.onSessionReady(mockMultiplexedSession());
                       }))
           .when(sessionClient)
           .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
     }
-    doAnswer(
-            invocation ->
-                executor.submit(
-                    () -> {
-                      SessionConsumerImpl consumer =
-                          invocation.getArgument(2, SessionConsumerImpl.class);
-                      consumer.onSessionReady(mockSession());
-                    }))
-        .when(sessionClient)
-        .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
 
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();

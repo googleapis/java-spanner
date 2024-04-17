@@ -130,7 +130,13 @@ public class SpannerGaxRetryTest {
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance());
     // Make sure the session pool is empty by default.
-    builder.setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+    // Add a wait time for sessions to be initialized. In this case, since minSessions = 0, the
+    // wait time is for multiplexed sessions
+    builder.setSessionPoolOption(
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(0)
+            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .build());
     // Create one client with default timeout values and one with short timeout values specifically
     // for the test cases that expect a DEADLINE_EXCEEDED.
     spanner = builder.build().getService();
@@ -207,7 +213,9 @@ public class SpannerGaxRetryTest {
   @Test
   public void singleUseTimeout() {
     if (isMultiplexedSessionsEnabled()) {
-      mockSpanner.setCreateSessionExecutionTime(ONE_SECOND);
+      // for multiplexed sessions CreateSessions RPC is already completed during start-up
+      // hence, we are setting a strict delay with the next RPC
+      mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
     }
     mockSpanner.setBatchCreateSessionsExecutionTime(ONE_SECOND);
     try (ResultSet rs = clientWithTimeout.singleUse().executeQuery(SELECT1AND2)) {
@@ -254,7 +262,9 @@ public class SpannerGaxRetryTest {
   @Test
   public void singleUseReadOnlyTransactionTimeout() {
     if (isMultiplexedSessionsEnabled()) {
-      mockSpanner.setCreateSessionExecutionTime(ONE_SECOND);
+      // for multiplexed sessions CreateSessions RPC is already completed during start-up
+      // hence, we are setting a strict delay with the next RPC
+      mockSpanner.setExecuteStreamingSqlExecutionTime(ONE_SECOND);
     }
     mockSpanner.setBatchCreateSessionsExecutionTime(ONE_SECOND);
     try (ResultSet rs =

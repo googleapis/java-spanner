@@ -88,6 +88,7 @@ abstract class BaseSessionPoolTest {
   SessionImpl mockMultiplexedSession() {
     final SessionImpl session = mock(SessionImpl.class);
     Map options = new HashMap<>();
+    when(session.getIsMultiplexed()).thenReturn(true);
     when(session.getOptions()).thenReturn(options);
     when(session.getName())
         .thenReturn(

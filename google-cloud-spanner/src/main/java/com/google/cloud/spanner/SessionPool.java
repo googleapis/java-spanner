@@ -3038,6 +3038,13 @@ class SessionPool {
   }
 
   @VisibleForTesting
+  boolean isMultiplexedSessionBeingCreated() {
+    synchronized (lock) {
+      return multiplexedSessionBeingCreated;
+    }
+  }
+
+  @VisibleForTesting
   long getNumWaiterTimeouts() {
     return numWaiterTimeouts.get();
   }
@@ -3617,7 +3624,7 @@ class SessionPool {
           logger.log(
               Level.INFO,
               String.format(
-                  "Removed Multiplexed Session => %s created at => %s and",
+                  "Removed Multiplexed Session => %s created at => %s",
                   oldSession.getName(), oldSession.getCreateTime()));
           if (multiplexedSessionRemovedListener != null) {
             multiplexedSessionRemovedListener.apply(oldSession);
