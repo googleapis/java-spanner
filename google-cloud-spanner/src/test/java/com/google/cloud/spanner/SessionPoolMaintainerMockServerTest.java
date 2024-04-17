@@ -100,9 +100,13 @@ public class SessionPoolMaintainerMockServerTest extends AbstractMockServerTest 
     assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     clock.currentTimeMillis.addAndGet(Duration.ofMinutes(21).toMillis());
 
-    // Most sessions are considered idle and are removed.
+    // Most sessions are considered idle and are removed. Freeze the mock Spanner server to prevent
+    // the replenish action to fill the pool again before we check the number of sessions in the
+    // pool.
+    mockSpanner.freeze();
     client.pool.poolMaintainer.maintainPool();
     assertEquals(2, client.pool.totalSessions());
+    mockSpanner.unfreeze();
 
     // The pool is replenished.
     client.pool.poolMaintainer.maintainPool();
