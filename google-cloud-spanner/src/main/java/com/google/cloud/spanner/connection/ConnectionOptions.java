@@ -39,10 +39,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -167,11 +169,14 @@ public class ConnectionOptions {
   static final boolean DEFAULT_AUTOCOMMIT = true;
   static final boolean DEFAULT_READONLY = false;
   static final boolean DEFAULT_RETRY_ABORTS_INTERNALLY = true;
+  static final boolean DEFAULT_USE_VIRTUAL_THREADS = false;
+  static final boolean DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS = false;
   private static final String DEFAULT_CREDENTIALS = null;
   private static final String DEFAULT_OAUTH_TOKEN = null;
   private static final String DEFAULT_MIN_SESSIONS = null;
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
+  static final String DEFAULT_ENDPOINT = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
   private static final String DEFAULT_DATABASE_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
@@ -204,6 +209,11 @@ public class ConnectionOptions {
   public static final String ROUTE_TO_LEADER_PROPERTY_NAME = "routeToLeader";
   /** Name of the 'retry aborts internally' connection property. */
   public static final String RETRY_ABORTS_INTERNALLY_PROPERTY_NAME = "retryAbortsInternally";
+  /** Name of the property to enable/disable virtual threads for the statement executor. */
+  public static final String USE_VIRTUAL_THREADS_PROPERTY_NAME = "useVirtualThreads";
+  /** Name of the property to enable/disable virtual threads for gRPC transport. */
+  public static final String USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME =
+      "useVirtualGrpcTransportThreads";
   /** Name of the 'credentials' connection property. */
   public static final String CREDENTIALS_PROPERTY_NAME = "credentials";
   /** Name of the 'encodedCredentials' connection property. */
@@ -226,6 +236,8 @@ public class ConnectionOptions {
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
+  /** Name of the 'endpoint' connection property. */
+  public static final String ENDPOINT_PROPERTY_NAME = "endpoint";
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
 
@@ -293,6 +305,16 @@ public class ConnectionOptions {
                       RETRY_ABORTS_INTERNALLY_PROPERTY_NAME,
                       "Should the connection automatically retry Aborted errors (true/false)",
                       DEFAULT_RETRY_ABORTS_INTERNALLY),
+                  ConnectionProperty.createBooleanProperty(
+                      USE_VIRTUAL_THREADS_PROPERTY_NAME,
+                      "Use a virtual thread instead of a platform thread for each connection (true/false). "
+                          + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
+                      DEFAULT_USE_VIRTUAL_THREADS),
+                  ConnectionProperty.createBooleanProperty(
+                      USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME,
+                      "Use a virtual thread instead of a platform thread for the gRPC executor (true/false). "
+                          + "This option only has any effect if the application is running on Java 21 or higher. In all other cases, the option is ignored.",
+                      DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS),
                   ConnectionProperty.createStringProperty(
                       CREDENTIALS_PROPERTY_NAME,
                       "The location of the credentials file to use for this connection. If neither this property or encoded credentials are set, the connection will use the default Google Cloud credentials for the runtime environment."),
@@ -315,6 +337,12 @@ public class ConnectionOptions {
                       NUM_CHANNELS_PROPERTY_NAME,
                       "The number of gRPC channels to use to communicate with Cloud Spanner. The default is 4."),
                   ConnectionProperty.createStringProperty(
+                      ENDPOINT_PROPERTY_NAME,
+                      "The endpoint that the JDBC driver should connect to. "
+                          + "The default is the default Spanner production endpoint when autoConfigEmulator=false, "
+                          + "and the default Spanner emulator endpoint (localhost:9010) when autoConfigEmulator=true. "
+                          + "This property takes precedence over any host name at the start of the connection URL."),
+                  ConnectionProperty.createStringProperty(
                       CHANNEL_PROVIDER_PROPERTY_NAME,
                       "The name of the channel provider class. The name must reference an implementation of ExternalChannelProvider. If this property is not set, the connection will use the default grpc channel provider."),
                   ConnectionProperty.createBooleanProperty(
@@ -330,6 +358,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME, ""),
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
+                  ConnectionProperty.createStringProperty(
+                      "maxCommitDelay",
+                      "The maximum commit delay in milliseconds that should be applied to commit requests from this connection."),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
                       "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
@@ -467,6 +498,7 @@ public class ConnectionOptions {
     private List<StatementExecutionInterceptor> statementExecutionInterceptors =
         Collections.emptyList();
     private SpannerOptionsConfigurator configurator;
+    private OpenTelemetry openTelemetry;
 
     private Builder() {}
 
@@ -616,6 +648,11 @@ public class ConnectionOptions {
       return this;
     }
 
+    public Builder setOpenTelemetry(OpenTelemetry openTelemetry) {
+      this.openTelemetry = openTelemetry;
+      return this;
+    }
+
     /** @return the {@link ConnectionOptions} */
     public ConnectionOptions build() {
       Preconditions.checkState(this.uri != null, "Connection URI is required");
@@ -656,6 +693,7 @@ public class ConnectionOptions {
   private final String userAgent;
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
+  private final Long maxCommitDelay;
   private final boolean autoConfigEmulator;
   private final Dialect dialect;
   private final RpcPriority rpcPriority;
@@ -672,6 +710,9 @@ public class ConnectionOptions {
   private final boolean readOnly;
   private final boolean routeToLeader;
   private final boolean retryAbortsInternally;
+  private final boolean useVirtualThreads;
+  private final boolean useVirtualGrpcTransportThreads;
+  private final OpenTelemetry openTelemetry;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -708,10 +749,13 @@ public class ConnectionOptions {
     queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
+    this.maxCommitDelay = parseMaxCommitDelay(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
-    this.host = determineHost(matcher, autoConfigEmulator, usePlainText, System.getenv());
+    this.host =
+        determineHost(
+            matcher, parseEndpoint(this.uri), autoConfigEmulator, usePlainText, System.getenv());
     this.rpcPriority = parseRPCPriority(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
@@ -771,6 +815,9 @@ public class ConnectionOptions {
     this.readOnly = parseReadOnly(this.uri);
     this.routeToLeader = parseRouteToLeader(this.uri);
     this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
+    this.useVirtualThreads = parseUseVirtualThreads(this.uri);
+    this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
+    this.openTelemetry = builder.openTelemetry;
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -799,10 +846,12 @@ public class ConnectionOptions {
   @VisibleForTesting
   static String determineHost(
       Matcher matcher,
+      String endpoint,
       boolean autoConfigEmulator,
       boolean usePlainText,
       Map<String, String> environment) {
-    if (matcher.group(Builder.HOST_GROUP) == null) {
+    String host;
+    if (Objects.equals(endpoint, DEFAULT_ENDPOINT) && matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
         if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
           return DEFAULT_EMULATOR_HOST;
@@ -812,13 +861,18 @@ public class ConnectionOptions {
       } else {
         return DEFAULT_HOST;
       }
+    } else if (!Objects.equals(endpoint, DEFAULT_ENDPOINT)) {
+      // Add '//' at the start of the endpoint to conform to the standard URL specification.
+      host = "//" + endpoint;
     } else {
-      if (usePlainText) {
-        return PLAIN_TEXT_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      } else {
-        return HOST_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      }
+      // The leading '//' is already included in the regex for the connection URL, so we don't need
+      // to add the leading '//' to the host name here.
+      host = matcher.group(Builder.HOST_GROUP);
     }
+    if (usePlainText) {
+      return PLAIN_TEXT_PROTOCOL + host;
+    }
+    return HOST_PROTOCOL + host;
   }
 
   private static Integer parseIntegerProperty(String propertyName, String value) {
@@ -833,6 +887,14 @@ public class ConnectionOptions {
       }
     }
     return null;
+  }
+
+  /**
+   * @return an instance of OpenTelemetry. If OpenTelemetry object is not set then <code>null</code>
+   *     will be returned.
+   */
+  OpenTelemetry getOpenTelemetry() {
+    return this.openTelemetry;
   }
 
   SpannerOptionsConfigurator getConfigurator() {
@@ -871,6 +933,18 @@ public class ConnectionOptions {
   static boolean parseRetryAbortsInternally(String uri) {
     String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
+  }
+
+  @VisibleForTesting
+  static boolean parseUseVirtualThreads(String uri) {
+    String value = parseUriProperty(uri, USE_VIRTUAL_THREADS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_THREADS;
+  }
+
+  @VisibleForTesting
+  static boolean parseUseVirtualGrpcTransportThreads(String uri) {
+    String value = parseUriProperty(uri, USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS;
   }
 
   @VisibleForTesting
@@ -963,6 +1037,11 @@ public class ConnectionOptions {
     return value != null ? value : DEFAULT_NUM_CHANNELS;
   }
 
+  private static String parseEndpoint(String uri) {
+    String value = parseUriProperty(uri, ENDPOINT_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_ENDPOINT;
+  }
+
   @VisibleForTesting
   static String parseChannelProvider(String uri) {
     String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
@@ -999,6 +1078,27 @@ public class ConnectionOptions {
   static boolean parseReturnCommitStats(String uri) {
     String value = parseUriProperty(uri, "returnCommitStats");
     return Boolean.parseBoolean(value);
+  }
+
+  @VisibleForTesting
+  static Long parseMaxCommitDelay(String uri) {
+    String value = parseUriProperty(uri, "maxCommitDelay");
+    try {
+      Long millis = value == null ? null : Long.valueOf(value);
+      if (millis != null && millis < 0L) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxCommitDelay must be >=0");
+      }
+      return millis;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Invalid value for maxCommitDelay: "
+              + value
+              + "\n"
+              + "The value must be a positive integer indicating the number of "
+              + "milliseconds to use as the max delay.");
+    }
   }
 
   static boolean parseAutoConfigEmulator(String uri) {
@@ -1293,6 +1393,16 @@ public class ConnectionOptions {
     return retryAbortsInternally;
   }
 
+  /** Whether connections should use virtual threads for connection executors. */
+  public boolean isUseVirtualThreads() {
+    return useVirtualThreads;
+  }
+
+  /** Whether virtual threads should be used for gRPC transport. */
+  public boolean isUseVirtualGrpcTransportThreads() {
+    return useVirtualGrpcTransportThreads;
+  }
+
   /** Any warnings that were generated while creating the {@link ConnectionOptions} instance. */
   @Nullable
   public String getWarnings() {
@@ -1320,6 +1430,11 @@ public class ConnectionOptions {
   /** Whether connections created by this {@link ConnectionOptions} return commit stats. */
   public boolean isReturnCommitStats() {
     return returnCommitStats;
+  }
+
+  /** The max_commit_delay that should be applied to commit operations on this connection. */
+  public Duration getMaxCommitDelay() {
+    return maxCommitDelay == null ? null : Duration.ofMillis(maxCommitDelay);
   }
 
   /**

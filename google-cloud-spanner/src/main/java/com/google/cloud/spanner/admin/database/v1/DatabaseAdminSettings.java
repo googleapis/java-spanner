@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -307,7 +307,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
     return DatabaseAdminStubSettings.defaultTransportChannelProvider();
   }
 
-  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
   public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
     return DatabaseAdminStubSettings.defaultApiClientHeaderProviderBuilder();
   }
@@ -318,7 +317,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
   }
 
   /** Returns a new REST builder for this class. */
-  @BetaApi
   public static Builder newHttpJsonBuilder() {
     return Builder.createHttpJsonDefault();
   }
@@ -360,7 +358,6 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
       return new Builder(DatabaseAdminStubSettings.newBuilder());
     }
 
-    @BetaApi
     private static Builder createHttpJsonDefault() {
       return new Builder(DatabaseAdminStubSettings.newHttpJsonBuilder());
     }

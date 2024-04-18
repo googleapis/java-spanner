@@ -29,6 +29,8 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
+import com.google.cloud.spanner.SingerProto.Genre;
+import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Struct.Builder;
@@ -55,6 +57,8 @@ public class ChecksumResultSetTest {
           .to(2 * 2)
           .set("doubleVal")
           .to(Value.float64(3.14d * 2d))
+          .set("floatVal")
+          .to(Value.float32(3.14f * 3f))
           .set("bigDecimalVal")
           .to(Value.numeric(BigDecimal.valueOf(123 * 2, 2)))
           .set("pgNumericVal")
@@ -65,6 +69,12 @@ public class ChecksumResultSetTest {
           .to(Value.json("{\"color\":\"red\",\"value\":\"#ff0\"}"))
           .set("pgJsonbVal")
           .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#00f\"}"))
+          .set("pgOidVal")
+          .to(Value.pgOid(2 * 2))
+          .set("protoMessageVal")
+          .to(SingerInfo.newBuilder().setSingerId(23).build())
+          .set("protoEnumVal")
+          .to(Genre.JAZZ)
           .set("byteVal")
           .to(Value.bytes(ByteArray.copyFrom("bytes".getBytes(StandardCharsets.UTF_8))))
           .set("timestamp")
@@ -77,6 +87,8 @@ public class ChecksumResultSetTest {
           .to(Value.int64Array(Arrays.asList(2L, null, 1L, 0L)))
           .set("doubleArray")
           .to(Value.float64Array(Arrays.asList(3.14d, null, 6.6626d, 10.1d)))
+          .set("floatArray")
+          .to(Value.float32Array(Arrays.asList(2.71f, null, 6.6626f, 10.1f)))
           .set("bigDecimalArray")
           .to(Value.numericArray(Arrays.asList(BigDecimal.TEN, null, BigDecimal.ONE)))
           .set("pgNumericArray")
@@ -104,6 +116,17 @@ public class ChecksumResultSetTest {
           .to(
               Value.pgJsonbArray(
                   Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "[]")))
+          .set("pgOidArray")
+          .to(Value.pgOidArray(Arrays.asList(2L, null, 1L, 0L)))
+          .set("protoMessageArray")
+          .to(
+              Value.protoMessageArray(
+                  Arrays.asList(
+                      SingerInfo.newBuilder().setSingerId(23).build(),
+                      SingerInfo.getDefaultInstance()),
+                  SingerInfo.getDescriptor()))
+          .set("protoEnumArray")
+          .to(Value.protoEnumArray(Arrays.asList(Genre.JAZZ, Genre.ROCK), Genre.getDescriptor()))
           .build();
 
   @Test
@@ -113,17 +136,24 @@ public class ChecksumResultSetTest {
             Type.StructField.of("boolVal", Type.bool()),
             Type.StructField.of("longVal", Type.int64()),
             Type.StructField.of("doubleVal", Type.float64()),
+            Type.StructField.of("floatVal", Type.float32()),
             Type.StructField.of("bigDecimalVal", Type.numeric()),
             Type.StructField.of("pgNumericVal", Type.pgNumeric()),
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
+            Type.StructField.of("pgOidVal", Type.pgOid()),
+            Type.StructField.of(
+                "protoMessageVal", Type.proto(SingerInfo.getDescriptor().getFullName())),
+            Type.StructField.of(
+                "protoEnumVal", Type.protoEnum(Genre.getDescriptor().getFullName())),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
             Type.StructField.of("boolArray", Type.array(Type.bool())),
             Type.StructField.of("longArray", Type.array(Type.int64())),
             Type.StructField.of("doubleArray", Type.array(Type.float64())),
+            Type.StructField.of("floatArray", Type.array(Type.float32())),
             Type.StructField.of("bigDecimalArray", Type.array(Type.numeric())),
             Type.StructField.of("pgNumericArray", Type.array(Type.pgNumeric())),
             Type.StructField.of("byteArray", Type.array(Type.bytes())),
@@ -131,7 +161,13 @@ public class ChecksumResultSetTest {
             Type.StructField.of("dateArray", Type.array(Type.date())),
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
-            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())));
+            Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())),
+            Type.StructField.of(
+                "protoMessageArray",
+                Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),
+            Type.StructField.of(
+                "protoEnumArray", Type.array(Type.protoEnum(Genre.getDescriptor().getFullName()))));
     Struct rowNonNullValues =
         Struct.newBuilder()
             .set("boolVal")
@@ -140,6 +176,8 @@ public class ChecksumResultSetTest {
             .to(2)
             .set("doubleVal")
             .to(Value.float64(3.14d))
+            .set("floatVal")
+            .to(Value.float32(2.71f))
             .set("bigDecimalVal")
             .to(Value.numeric(BigDecimal.valueOf(123, 2)))
             .set("pgNumericVal")
@@ -150,6 +188,12 @@ public class ChecksumResultSetTest {
             .to(Value.json("{\"color\":\"red\",\"value\":\"#f00\"}"))
             .set("pgJsonbVal")
             .to(Value.pgJsonb("{\"color\":\"red\",\"value\":\"#f00\"}"))
+            .set("pgOidVal")
+            .to(Value.pgOid(2))
+            .set("protoMessageVal")
+            .to(SingerInfo.newBuilder().setSingerId(98).setNationality("C1").build())
+            .set("protoEnumVal")
+            .to(Genre.POP)
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom("test".getBytes(StandardCharsets.UTF_8))))
             .set("timestamp")
@@ -162,6 +206,8 @@ public class ChecksumResultSetTest {
             .to(Value.int64Array(Arrays.asList(1L, null, 2L)))
             .set("doubleArray")
             .to(Value.float64Array(Arrays.asList(3.14d, null, 6.6626d)))
+            .set("floatArray")
+            .to(Value.float32Array(Arrays.asList(2.71f, null, 6.6626f)))
             .set("bigDecimalArray")
             .to(Value.numericArray(Arrays.asList(BigDecimal.ONE, null, BigDecimal.TEN)))
             .set("pgNumericArray")
@@ -192,6 +238,17 @@ public class ChecksumResultSetTest {
             .to(
                 Value.pgJsonbArray(
                     Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "{}")))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(Arrays.asList(1L, null, 2L)))
+            .set("protoMessageArray")
+            .to(
+                Value.protoMessageArray(
+                    Arrays.asList(
+                        SingerInfo.newBuilder().setSingerId(11).setNationality("C1").build(),
+                        SingerInfo.getDefaultInstance()),
+                    SingerInfo.getDescriptor()))
+            .set("protoEnumArray")
+            .to(Value.protoEnumArray(Arrays.asList(Genre.POP, Genre.ROCK), Genre.getDescriptor()))
             .build();
     Struct rowNullValues =
         Struct.newBuilder()
@@ -201,6 +258,8 @@ public class ChecksumResultSetTest {
             .to((Long) null)
             .set("doubleVal")
             .to((Double) null)
+            .set("floatVal")
+            .to((Float) null)
             .set("bigDecimalVal")
             .to((BigDecimal) null)
             .set("pgNumericVal")
@@ -211,6 +270,12 @@ public class ChecksumResultSetTest {
             .to(Value.json(null))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(null))
+            .set("pgOidVal")
+            .to(Value.pgOid(null))
+            .set("protoMessageVal")
+            .to(Value.protoMessage(null, SingerInfo.getDescriptor().getFullName()))
+            .set("protoEnumVal")
+            .to(Value.protoEnum(null, Genre.getDescriptor().getFullName()))
             .set("byteVal")
             .to((ByteArray) null)
             .set("timestamp")
@@ -223,6 +288,8 @@ public class ChecksumResultSetTest {
             .toInt64Array((Iterable<Long>) null)
             .set("doubleArray")
             .toFloat64Array((Iterable<Double>) null)
+            .set("floatArray")
+            .toFloat32Array((Iterable<Float>) null)
             .set("bigDecimalArray")
             .toNumericArray(null)
             .set("pgNumericArray")
@@ -239,6 +306,12 @@ public class ChecksumResultSetTest {
             .toJsonArray(null)
             .set("pgJsonbArray")
             .toPgJsonbArray(null)
+            .set("pgOidArray")
+            .toPgOidArray((Iterable<Long>) null)
+            .set("protoMessageArray")
+            .to(Value.protoMessageArray(null, SingerInfo.getDescriptor()))
+            .set("protoEnumArray")
+            .to(Value.protoEnumArray(null, Genre.getDescriptor()))
             .build();
 
     ParsedStatement parsedStatement = mock(ParsedStatement.class);

@@ -16,11 +16,20 @@
 
 package com.example.spanner;
 
+import static com.example.spanner.SpannerSampleIT.formatForTest;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.example.spanner.CustomTimeoutAndRetrySettingsExample;
+import com.example.spanner.QueryWithJsonParameterSample;
+import com.example.spanner.QueryWithNumericParameterSample;
+import com.example.spanner.StatementTimeoutExample;
+import com.example.spanner.TransactionTimeoutExample;
+import com.example.spanner.UpdateJsonDataSample;
+import com.example.spanner.UpdateNumericDataSample;
+import com.example.spanner.admin.archived.SpannerSampleIT;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
@@ -56,7 +65,7 @@ public class SpannerStandaloneExamplesIT {
   // The instance needs to exist for tests to pass.
   private static String instanceId = System.getProperty("spanner.test.instance");
   private static String baseDatabaseId = System.getProperty("spanner.sample.database", "mysample");
-  private static String databaseId = SpannerSampleIT.formatForTest(baseDatabaseId);
+  private static String databaseId = formatForTest(baseDatabaseId);
   private static DatabaseId dbId;
   private static DatabaseAdminClient dbClient;
   private static Spanner spanner;
@@ -183,7 +192,7 @@ public class SpannerStandaloneExamplesIT {
             () -> {
               try {
                 AddNumericColumnSample.addNumericColumn(
-                    spanner.getDatabaseAdminClient(), instanceId, databaseId);
+                    spanner.getOptions().getProjectId(), instanceId, databaseId);
               } catch (ExecutionException e) {
                 System.out.printf(
                     "Adding column `Revenue` failed: %s%n", e.getCause().getMessage());
@@ -252,7 +261,7 @@ public class SpannerStandaloneExamplesIT {
             () -> {
               try {
                 AddJsonColumnSample.addJsonColumn(
-                    spanner.getDatabaseAdminClient(), instanceId, databaseId);
+                    spanner.getOptions().getProjectId(), instanceId, databaseId);
               } catch (ExecutionException e) {
                 System.out.printf(
                     "Adding column `VenueDetails` failed: %s%n", e.getCause().getMessage());

@@ -32,8 +32,9 @@ import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -134,8 +135,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
-            options) {
+            new SessionReference(
+                "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+                options)) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.
@@ -159,21 +161,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             }
             return ApiFutures.immediateFuture(Empty.getDefaultInstance());
           }
-
-          @Override
-          public void prepareReadWriteTransaction() {
-            if (random.nextInt(100) < 10) {
-              expireSession(this);
-              throw SpannerExceptionFactoryTest.newSessionNotFoundException(this.getName());
-            }
-            String name = this.getName();
-            synchronized (lock) {
-              if (sessions.put(name, true)) {
-                setFailed();
-              }
-              this.readyTransactionId = ByteString.copyFromUtf8("foo");
-            }
-          }
         };
     sessionIndex++;
     return session;
@@ -190,18 +177,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     when(mockResult.next()).thenReturn(true);
   }
 
-  private void expireSession(Session session) {
-    String name = session.getName();
-    synchronized (lock) {
-      sessions.remove(name);
-      expiredSessions.add(name);
-    }
-  }
-
   private void resetTransaction(SessionImpl session) {
     String name = session.getName();
     synchronized (lock) {
-      session.readyTransactionId = null;
       sessions.put(name, false);
     }
   }
@@ -248,7 +226,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             new TestExecutorFactory(),
             mockSpanner.getSessionClient(db),
             clock,
-            Position.RANDOM);
+            Position.RANDOM,
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            OpenTelemetry.noop());
     pool.idleSessionRemovedListener =
         pooled -> {
           String name = pooled.getName();
@@ -294,6 +274,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             () -> {
               while (!stopMaintenance.get()) {
                 runMaintenanceLoop(clock, pool, 1);
+                // Sleep 1ms between maintenance loops to prevent the long-running session remover
+                // from stealing all sessions before they can be used.
+                Uninterruptibles.sleepUninterruptibly(1L, TimeUnit.MILLISECONDS);
               }
             })
         .start();

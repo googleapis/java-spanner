@@ -28,7 +28,9 @@ import com.google.cloud.spanner.BackupId;
 import com.google.cloud.spanner.Restore;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStub;
+import com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings;
 import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStub;
+import com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.ImmutableList;
 import com.google.iam.v1.GetPolicyOptions;
@@ -43,6 +45,7 @@ import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseRole;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
@@ -233,7 +236,9 @@ public interface SpannerRpc extends ServiceRpc {
       throws SpannerException;
 
   OperationFuture<Empty, UpdateDatabaseDdlMetadata> updateDatabaseDdl(
-      String databaseName, Iterable<String> updateDatabaseStatements, @Nullable String updateId)
+      com.google.cloud.spanner.Database database,
+      Iterable<String> updateDatabaseStatements,
+      @Nullable String updateId)
       throws SpannerException;
 
   void dropDatabase(String databaseName) throws SpannerException;
@@ -253,7 +258,7 @@ public interface SpannerRpc extends ServiceRpc {
   OperationFuture<Database, UpdateDatabaseMetadata> updateDatabase(
       Database database, FieldMask fieldMask) throws SpannerException;
 
-  List<String> getDatabaseDdl(String databaseName) throws SpannerException;
+  GetDatabaseDdlResponse getDatabaseDdl(String databaseName) throws SpannerException;
   /** Lists the backups in the specified instance. */
   Paginated<Backup> listBackups(
       String instanceName, int pageSize, @Nullable String filter, @Nullable String pageToken)
@@ -334,6 +339,16 @@ public interface SpannerRpc extends ServiceRpc {
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException;
+
+  default Session createSession(
+      String databaseName,
+      @Nullable String databaseRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options,
+      boolean isMultiplexed)
+      throws SpannerException {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   void deleteSession(String sessionName, @Nullable Map<Option, ?> options) throws SpannerException;
 
@@ -497,4 +512,24 @@ public interface SpannerRpc extends ServiceRpc {
   void shutdown();
 
   boolean isClosed();
+
+  /**
+   * Getter method to obtain the auto-generated instance admin client stub settings.
+   *
+   * @return InstanceAdminStubSettings
+   */
+  @InternalApi
+  default InstanceAdminStubSettings getInstanceAdminStubSettings() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Getter method to obtain the auto-generated database admin client stub settings.
+   *
+   * @return DatabaseAdminStubSettings
+   */
+  @InternalApi
+  default DatabaseAdminStubSettings getDatabaseAdminStubSettings() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 }

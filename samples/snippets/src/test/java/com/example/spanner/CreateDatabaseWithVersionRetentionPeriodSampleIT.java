@@ -23,10 +23,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration tests for {@link CreateDatabaseWithVersionRetentionPeriodSample}
+ * Integration tests for
+ * {@link com.example.spanner.admin.archived.CreateDatabaseWithVersionRetentionPeriodSample}
  */
 @RunWith(JUnit4.class)
-public class CreateDatabaseWithVersionRetentionPeriodSampleIT extends SampleTestBase {
+public class CreateDatabaseWithVersionRetentionPeriodSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void createsDatabaseWithVersionRetentionPeriod() throws Exception {
@@ -35,7 +36,7 @@ public class CreateDatabaseWithVersionRetentionPeriodSampleIT extends SampleTest
 
     final String out = SampleRunner.runSample(() -> CreateDatabaseWithVersionRetentionPeriodSample
         .createDatabaseWithVersionRetentionPeriod(
-            databaseAdminClient, instanceId, databaseId, versionRetentionPeriod
+            projectId, instanceId, databaseId, versionRetentionPeriod
         ));
 
     assertThat(out).contains(

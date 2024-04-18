@@ -1931,6 +1931,205 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-read_only_staleness;
 NEW_CONNECTION;
+show variable directed_read;
+NEW_CONNECTION;
+SHOW VARIABLE DIRECTED_READ;
+NEW_CONNECTION;
+show variable directed_read;
+NEW_CONNECTION;
+   show variable directed_read;
+NEW_CONNECTION;
+			show variable directed_read;
+NEW_CONNECTION;
+
+
+
+show variable directed_read;
+NEW_CONNECTION;
+show variable directed_read  ;
+NEW_CONNECTION;
+show variable directed_read		;
+NEW_CONNECTION;
+show variable directed_read
+
+;
+NEW_CONNECTION;
+show   variable   directed_read;
+NEW_CONNECTION;
+show	variable	directed_read;
+NEW_CONNECTION;
+show
+variable
+directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable directed_read/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-directed_read;
+NEW_CONNECTION;
 show variable optimizer_version;
 NEW_CONNECTION;
 SHOW VARIABLE OPTIMIZER_VERSION;
@@ -13196,6 +13395,394 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set read_only_staleness='EXACT_STALENESS/-9999ns';
 NEW_CONNECTION;
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+   set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+			set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+
+
+
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'  ;
+NEW_CONNECTION;
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'		;
+NEW_CONNECTION;
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'
+
+;
+NEW_CONNECTION;
+set   directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set	directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set
+directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set directed_read='';
+NEW_CONNECTION;
+   set directed_read='';
+NEW_CONNECTION;
+			set directed_read='';
+NEW_CONNECTION;
+
+
+
+set directed_read='';
+NEW_CONNECTION;
+set directed_read=''  ;
+NEW_CONNECTION;
+set directed_read=''		;
+NEW_CONNECTION;
+set directed_read=''
+
+;
+NEW_CONNECTION;
+set   directed_read='';
+NEW_CONNECTION;
+set	directed_read='';
+NEW_CONNECTION;
+set
+directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read='');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set directed_read=''/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-directed_read='';
+NEW_CONNECTION;
 set optimizer_version='1';
 NEW_CONNECTION;
 SET OPTIMIZER_VERSION='1';
@@ -15378,6 +15965,204 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-statement_tag='';
 NEW_CONNECTION;
+set statement_tag='test_tag';
+NEW_CONNECTION;
+SET STATEMENT_TAG='TEST_TAG';
+NEW_CONNECTION;
+set statement_tag='test_tag';
+NEW_CONNECTION;
+   set statement_tag='test_tag';
+NEW_CONNECTION;
+			set statement_tag='test_tag';
+NEW_CONNECTION;
+
+
+
+set statement_tag='test_tag';
+NEW_CONNECTION;
+set statement_tag='test_tag'  ;
+NEW_CONNECTION;
+set statement_tag='test_tag'		;
+NEW_CONNECTION;
+set statement_tag='test_tag'
+
+;
+NEW_CONNECTION;
+set   statement_tag='test_tag';
+NEW_CONNECTION;
+set	statement_tag='test_tag';
+NEW_CONNECTION;
+set
+statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set statement_tag='test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set statement_tag='test_tag'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-statement_tag='test_tag';
+NEW_CONNECTION;
 set autocommit = false;
 set transaction_tag='tag1';
 NEW_CONNECTION;
@@ -16175,6 +16960,272 @@ NEW_CONNECTION;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set/-transaction_tag='';
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+SET TRANSACTION_TAG='TEST_TAG';
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+   set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+			set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+
+
+
+set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag'  ;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag'		;
+NEW_CONNECTION;
+set autocommit = false;
+set transaction_tag='test_tag'
+
+;
+NEW_CONNECTION;
+set autocommit = false;
+set   transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set	transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set
+transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag' bar;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'%;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'_;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'&;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'$;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'@;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'!;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'*;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'(;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag');
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'+;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'-#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'\;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'?;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'-/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'/#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set transaction_tag='test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set transaction_tag='test_tag'/-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-transaction_tag='test_tag';
 NEW_CONNECTION;
 set rpc_priority='HIGH';
 NEW_CONNECTION;

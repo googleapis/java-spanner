@@ -20,6 +20,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.protobuf.Duration;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
 
 /**
@@ -65,6 +66,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowReadOnlyStaleness();
 
+  StatementResult statementSetDirectedRead(DirectedReadOptions directedReadOptions);
+
+  StatementResult statementShowDirectedRead();
+
   StatementResult statementSetOptimizerVersion(String optimizerVersion);
 
   StatementResult statementShowOptimizerVersion();
@@ -76,6 +81,10 @@ interface ConnectionStatementExecutor {
   StatementResult statementSetReturnCommitStats(Boolean returnCommitStats);
 
   StatementResult statementShowReturnCommitStats();
+
+  StatementResult statementSetMaxCommitDelay(Duration maxCommitDelay);
+
+  StatementResult statementShowMaxCommitDelay();
 
   StatementResult statementSetDelayTransactionStartUntilFirstWrite(
       Boolean delayTransactionStartUntilFirstWrite);

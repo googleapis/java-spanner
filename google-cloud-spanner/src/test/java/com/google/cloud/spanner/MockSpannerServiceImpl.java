@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import com.google.api.gax.grpc.testing.MockGrpcService;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
-import com.google.cloud.spanner.AbstractResultSet.GrpcStruct;
 import com.google.cloud.spanner.AbstractResultSet.LazyByteArray;
 import com.google.cloud.spanner.SessionPool.SessionPoolTransactionContext;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
@@ -859,7 +858,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       CreateSessionRequest request, StreamObserver<Session> responseObserver) {
     requests.add(request);
     Preconditions.checkNotNull(request.getDatabase());
+    Preconditions.checkNotNull(request.getSession());
     String name = generateSessionName(request.getDatabase());
+    Session requestSession = request.getSession();
     try {
       createSessionExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
@@ -869,6 +870,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               .setCreateTime(now)
               .setName(name)
               .setApproximateLastUseTime(now)
+              .setMultiplexed(requestSession.getMultiplexed())
               .build();
       Session prev = sessions.putIfAbsent(name, session);
       if (prev == null) {
@@ -1285,6 +1287,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
               case DATE:
                 builder.bind(fieldName).toDateArray(null);
                 break;
+              case FLOAT32:
+                builder.bind(fieldName).toFloat32Array((Iterable<Float>) null);
+                break;
               case FLOAT64:
                 builder.bind(fieldName).toFloat64Array((Iterable<Double>) null);
                 break;
@@ -1327,6 +1332,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to((Date) null);
+            break;
+          case FLOAT32:
+            builder.bind(fieldName).to((Float) null);
             break;
           case FLOAT64:
             builder.bind(fieldName).to((Double) null);
@@ -1392,6 +1400,14 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
                         (Iterable<Date>)
                             GrpcStruct.decodeArrayValue(
                                 com.google.cloud.spanner.Type.date(), value.getListValue()));
+                break;
+              case FLOAT32:
+                builder
+                    .bind(fieldName)
+                    .toFloat32Array(
+                        (Iterable<Float>)
+                            GrpcStruct.decodeArrayValue(
+                                com.google.cloud.spanner.Type.float32(), value.getListValue()));
                 break;
               case FLOAT64:
                 builder
@@ -1475,6 +1491,9 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
             break;
           case DATE:
             builder.bind(fieldName).to(Date.parseDate(value.getStringValue()));
+            break;
+          case FLOAT32:
+            builder.bind(fieldName).to((float) value.getNumberValue());
             break;
           case FLOAT64:
             builder.bind(fieldName).to(value.getNumberValue());

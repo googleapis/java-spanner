@@ -17,10 +17,12 @@
 package com.example.spanner;
 
 // [START spanner_drop_foreign_key_constraint_delete_cascade]
-import com.google.cloud.spanner.DatabaseAdminClient;
+
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.admin.database.v1.DatabaseName;
 
 class DropForeignKeyConstraintDeleteCascadeSample {
 
@@ -30,28 +32,26 @@ class DropForeignKeyConstraintDeleteCascadeSample {
     String instanceId = "my-instance";
     String databaseId = "my-database";
 
-    try (Spanner spanner =
-        SpannerOptions.newBuilder().setProjectId(projectId).build().getService()) {
-      DatabaseAdminClient adminClient = spanner.getDatabaseAdminClient();
-      deleteForeignKeyDeleteCascadeConstraint(adminClient, instanceId, databaseId);
-    }
+    deleteForeignKeyDeleteCascadeConstraint(projectId, instanceId, databaseId);
   }
 
   static void deleteForeignKeyDeleteCascadeConstraint(
-      DatabaseAdminClient adminClient, String instanceId, String databaseId) {
-    adminClient.updateDatabaseDdl(
-        instanceId,
-        databaseId,
-        ImmutableList.of(
-            "ALTER TABLE ShoppingCarts\n"
-                + "              DROP CONSTRAINT FKShoppingCartsCustomerName\n"),
-        null);
+      String projectId, String instanceId, String databaseId) {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      databaseAdminClient.updateDatabaseDdlAsync(
+          DatabaseName.of(projectId, instanceId, databaseId),
+          ImmutableList.of(
+              "ALTER TABLE ShoppingCarts\n"
+                  + "              DROP CONSTRAINT FKShoppingCartsCustomerName\n"));
 
-    System.out.printf(
-        String.format(
-            "Altered ShoppingCarts table to drop FKShoppingCartsCustomerName\n"
-                + "foreign key constraint on database %s on instance %s\n",
-            databaseId, instanceId));
+      System.out.printf(
+          String.format(
+              "Altered ShoppingCarts table to drop FKShoppingCartsCustomerName\n"
+                  + "foreign key constraint on database %s on instance %s\n",
+              databaseId, instanceId));
+    }
   }
 }
 // [END spanner_drop_foreign_key_constraint_delete_cascade]

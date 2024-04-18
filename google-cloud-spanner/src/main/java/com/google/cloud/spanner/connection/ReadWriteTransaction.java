@@ -39,6 +39,7 @@ import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -56,12 +57,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,6 +83,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final String MAX_INTERNAL_RETRIES_EXCEEDED =
       "Internal transaction retry maximum exceeded";
   private static final int MAX_INTERNAL_RETRIES = 50;
+  private final ReentrantLock abortedLock = new ReentrantLock();
   private final long transactionId;
   private final DatabaseClient dbClient;
   private final TransactionOption[] transactionOptions;
@@ -100,7 +104,6 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
   private Timestamp transactionStarted;
-  final Object abortedLock = new Object();
 
   private static final class RollbackToSavepointException extends Exception {}
 
@@ -109,6 +112,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private Boolean retryAbortsInternally;
     private boolean delayTransactionStartUntilFirstWrite;
     private boolean returnCommitStats;
+    private Duration maxCommitDelay;
     private SavepointSupport savepointSupport;
     private List<TransactionRetryListener> transactionRetryListeners;
 
@@ -132,6 +136,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
     Builder setReturnCommitStats(boolean returnCommitStats) {
       this.returnCommitStats = returnCommitStats;
+      return this;
+    }
+
+    Builder setMaxCommitDelay(Duration maxCommitDelay) {
+      this.maxCommitDelay = maxCommitDelay;
       return this;
     }
 
@@ -178,6 +187,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (builder.returnCommitStats) {
       numOptions++;
     }
+    if (builder.maxCommitDelay != null) {
+      numOptions++;
+    }
     if (this.transactionTag != null) {
       numOptions++;
     }
@@ -188,6 +200,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     int index = 0;
     if (builder.returnCommitStats) {
       options[index++] = Options.commitStats();
+    }
+    if (builder.maxCommitDelay != null) {
+      options[index++] = Options.maxCommitDelay(builder.maxCommitDelay);
     }
     if (this.transactionTag != null) {
       options[index++] = Options.tag(this.transactionTag);
@@ -426,7 +441,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                                 statement,
                                 StatementExecutionStep.EXECUTE_STATEMENT,
                                 ReadWriteTransaction.this);
-                        ResultSet delegate =
+                        DirectExecuteResultSet delegate =
                             DirectExecuteResultSet.ofResultSet(
                                 internalExecuteQuery(statement, analyzeMode, options));
                         return createAndAddRetryResultSet(
@@ -772,7 +787,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   <T> T runWithRetry(Callable<T> callable) throws SpannerException {
     while (true) {
-      synchronized (abortedLock) {
+      abortedLock.lock();
+      try {
         checkAborted();
         try {
           checkRolledBackToSavepoint();
@@ -784,6 +800,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         } catch (Exception e) {
           throw SpannerExceptionFactory.asSpannerException(e);
         }
+      } finally {
+        abortedLock.unlock();
       }
     }
   }
@@ -793,7 +811,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    * returns a retryable {@link ResultSet}.
    */
   private ResultSet createAndAddRetryResultSet(
-      ResultSet resultSet,
+      ProtobufResultSet resultSet,
       ParsedStatement statement,
       AnalyzeMode analyzeMode,
       QueryOption... options) {
@@ -870,6 +888,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         long delay = aborted.getRetryDelayInMillis();
         try {
           if (delay > 0L) {
+            //noinspection BusyWait
             Thread.sleep(delay);
           }
         } catch (InterruptedException ie) {
@@ -1086,7 +1105,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   /** Creates a {@link ChecksumResultSet} for this {@link ReadWriteTransaction}. */
   @VisibleForTesting
   ChecksumResultSet createChecksumResultSet(
-      ResultSet delegate,
+      ProtobufResultSet delegate,
       ParsedStatement statement,
       AnalyzeMode analyzeMode,
       QueryOption... options) {

@@ -298,9 +298,12 @@ public class ReadAsyncTest {
         values2 = rs.toListAsync(input -> input.getString("Value"), executor);
       }
     }
+
+    ApiFuture<List<List<String>>> allValuesAsList =
+        ApiFutures.allAsList(Arrays.asList(values1, values2));
     ApiFuture<Iterable<String>> allValues =
         ApiFutures.transform(
-            ApiFutures.allAsList(Arrays.asList(values1, values2)),
+            allValuesAsList,
             input ->
                 Iterables.mergeSorted(
                     input,

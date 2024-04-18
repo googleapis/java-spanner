@@ -19,7 +19,6 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.spanner.ForceCloseSpannerFunction;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.cloud.spanner.RandomResultSetGenerator;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.admin.database.v1.MockDatabaseAdminImpl;
 import com.google.cloud.spanner.admin.instance.v1.MockInstanceAdminImpl;
@@ -36,6 +35,7 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import com.google.spanner.v1.StructType;
@@ -66,7 +66,10 @@ public abstract class AbstractMockServerTest {
   public static final long COUNT_AFTER_INSERT = 1L;
   public static final Statement SELECT_COUNT_STATEMENT =
       Statement.of("SELECT COUNT(*) AS C FROM TEST WHERE ID=1");
-  private static final ResultSetMetadata SELECT_COUNT_METADATA =
+
+  protected static final Statement SELECT1_STATEMENT = Statement.of("SELECT 1");
+
+  private static final ResultSetMetadata SINGLE_COL_INT64_RESULTSET_METADATA =
       ResultSetMetadata.newBuilder()
           .setRowType(
               StructType.newBuilder()
@@ -86,7 +89,7 @@ public abstract class AbstractMockServerTest {
                           .setStringValue(String.valueOf(COUNT_BEFORE_INSERT))
                           .build())
                   .build())
-          .setMetadata(SELECT_COUNT_METADATA)
+          .setMetadata(SINGLE_COL_INT64_RESULTSET_METADATA)
           .build();
   public static final com.google.spanner.v1.ResultSet SELECT_COUNT_RESULTSET_AFTER_INSERT =
       com.google.spanner.v1.ResultSet.newBuilder()
@@ -95,7 +98,7 @@ public abstract class AbstractMockServerTest {
                   .addValues(
                       Value.newBuilder().setStringValue(String.valueOf(COUNT_AFTER_INSERT)).build())
                   .build())
-          .setMetadata(SELECT_COUNT_METADATA)
+          .setMetadata(SINGLE_COL_INT64_RESULTSET_METADATA)
           .build();
   public static final com.google.spanner.v1.ResultSet UPDATE_RETURNING_RESULTSET =
       com.google.spanner.v1.ResultSet.newBuilder()
@@ -110,6 +113,16 @@ public abstract class AbstractMockServerTest {
                                   .setType(Type.newBuilder().setCodeValue(TypeCode.INT64_VALUE))
                                   .build())))
           .build();
+
+  protected static final ResultSet SELECT1_RESULTSET =
+      ResultSet.newBuilder()
+          .setMetadata(SINGLE_COL_INT64_RESULTSET_METADATA)
+          .addRows(
+              ListValue.newBuilder()
+                  .addValues(Value.newBuilder().setStringValue("1").build())
+                  .build())
+          .build();
+
   public static final Statement INSERT_STATEMENT =
       Statement.of("INSERT INTO TEST (ID, NAME) VALUES (1, 'test aborted')");
   public static final Statement INSERT_RETURNING_STATEMENT =
@@ -173,6 +186,7 @@ public abstract class AbstractMockServerTest {
         StatementResult.updateReturning(PG_INSERT_RETURNING_STATEMENT, UPDATE_RETURNING_RESULTSET));
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_RANDOM_STATEMENT, RANDOM_RESULT_SET));
+    mockSpanner.putStatementResult(StatementResult.query(SELECT1_STATEMENT, SELECT1_RESULTSET));
 
     futureParentHandlers = Logger.getLogger(AbstractFuture.class.getName()).getUseParentHandlers();
     exceptionRunnableParentHandlers =

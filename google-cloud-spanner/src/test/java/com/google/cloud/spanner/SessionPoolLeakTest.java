@@ -148,6 +148,7 @@ public class SessionPoolLeakTest {
       // This will cause a session leak.
       ReadOnlyTransaction transaction = client.readOnlyTransaction();
       try (ResultSet resultSet = transaction.executeQuery(Statement.of("SELECT 1"))) {
+        //noinspection StatementWithEmptyBody
         while (resultSet.next()) {
           // ignore
         }
@@ -218,7 +219,7 @@ public class SessionPoolLeakTest {
     assertEquals(0, pool.getNumberOfSessionsInPool());
     setup.run();
     try (TransactionManager txManager = client.transactionManager()) {
-      SpannerException e = assertThrows(SpannerException.class, () -> txManager.begin());
+      SpannerException e = assertThrows(SpannerException.class, txManager::begin);
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
     assertEquals(expectedNumberOfSessionsAfterExecution, pool.getNumberOfSessionsInPool());

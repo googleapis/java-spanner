@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,8 +19,11 @@ package com.example.spanner;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-public class CustomInstanceConfigSampleIT extends SampleTestBase {
+@RunWith(JUnit4.class)
+public class CustomInstanceConfigSampleIT extends SampleTestBaseV2 {
 
   @Test
   public void testCustomInstanceConfigOperations() throws Exception {
@@ -34,26 +37,37 @@ public class CustomInstanceConfigSampleIT extends SampleTestBase {
                     projectId, instanceConfigName, customInstanceConfigId));
     assertTrue(out1.contains("Created instance configuration"));
 
-    // List the instance config operations.
+    // Fetch the instance config that was created above.
     final String out2 =
         SampleRunner.runSample(
-            () ->
-                ListInstanceConfigOperationsSample.listInstanceConfigOperations(projectId));
-    assertTrue(out2.contains("List instance config operation"));
+            () -> GetInstanceConfigSample.getInstanceConfig(projectId, instanceConfigName));
+    assertTrue(out2.contains("Available leader options for instance config"));
 
-    // Update display name to a randomly generated instance config id.
+    // Fetch the instance config that was created above.
     final String out3 =
         SampleRunner.runSample(
-            () ->
-                UpdateInstanceConfigSample.updateInstanceConfig(
-                    projectId, customInstanceConfigId));
-    assertTrue(out3.contains("Updated instance configuration"));
+            () -> ListInstanceConfigsSample.listInstanceConfigs(projectId));
+    assertTrue(out3.contains("Available leader options for instance config"));
 
-    // Delete the created instance config.
+    // List the instance config operations.
     final String out4 =
         SampleRunner.runSample(
             () ->
+                ListInstanceConfigOperationsSample.listInstanceConfigOperations(projectId));
+    assertTrue(out4.contains("Obtained list of instance config operations"));
+
+    // Update display name to a randomly generated instance config id.
+    final String out5 =
+        SampleRunner.runSample(
+            () ->
+                UpdateInstanceConfigSample.updateInstanceConfig(projectId, customInstanceConfigId));
+    assertTrue(out5.contains("Updated instance configuration"));
+
+    // Delete the created instance config.
+    final String out6 =
+        SampleRunner.runSample(
+            () ->
                 DeleteInstanceConfigSample.deleteInstanceConfig(projectId, customInstanceConfigId));
-    assertTrue(out4.contains("Deleted instance configuration"));
+    assertTrue(out6.contains("Deleted instance configuration"));
   }
 }

@@ -77,6 +77,15 @@
       "exampleStatements": ["show spanner.read_only_staleness","show variable spanner.read_only_staleness"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.DIRECTED_READ",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_DIRECTED_READ",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.directed_read\\s*\\z",
+      "method": "statementShowDirectedRead",
+      "exampleStatements": ["show spanner.directed_read", "show variable spanner.directed_read"]
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.OPTIMIZER_VERSION",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -102,6 +111,15 @@
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.return_commit_stats\\s*\\z",
       "method": "statementShowReturnCommitStats",
       "exampleStatements": ["show spanner.return_commit_stats","show variable spanner.return_commit_stats"]
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.MAX_COMMIT_DELAY",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_MAX_COMMIT_DELAY",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.max_commit_delay\\s*\\z",
+      "method": "statementShowMaxCommitDelay",
+      "exampleStatements": ["show spanner.max_commit_delay", "show variable spanner.max_commit_delay"]
     },
     {
       "name": "SHOW [VARIABLE] SPANNER.COMMIT_RESPONSE",
@@ -526,6 +544,21 @@
       }
     },
     {
+      "name": "SET SPANNER.DIRECTED_READ =|TO '<directed-read-options>'|''",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_DIRECTED_READ",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.directed_read(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetDirectedRead",
+      "exampleStatements": ["set spanner.directed_read='{\"includeReplicas\":{\"replicaSelections\":[{\"location\":\"eu-west1\",\"type\":\"READ_ONLY\"}]}}'", "set spanner.directed_read=''"],
+      "setStatement": {
+        "propertyName": "SPANNER.DIRECTED_READ",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "'((\\S+)|())'",
+        "converterName": "ClientSideStatementValueConverters$DirectedReadOptionsConverter"
+      }
+    },
+    {
       "name": "SET SPANNER.OPTIMIZER_VERSION =|TO '<version>'|'LATEST'|''",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
@@ -585,6 +618,21 @@
       }
     },
     {
+      "name": "SET SPANNER.MAX_COMMIT_DELAY =|TO '<duration>'|NULL",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_MAX_COMMIT_DELAY",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.max_commit_delay(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetMaxCommitDelay",
+      "exampleStatements": ["set spanner.max_commit_delay=null", "set spanner.max_commit_delay='1s'", "set spanner.max_commit_delay='100ms'", "set spanner.max_commit_delay to '10000us'", "set spanner.max_commit_delay TO '9223372036854775807ns'"],
+      "setStatement": {
+        "propertyName": "SPANNER.MAX_COMMIT_DELAY",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+        "converterName": "ClientSideStatementValueConverters$DurationConverter"
+      }
+    },
+    {
       "name": "SET SPANNER.STATEMENT_TAG =|TO '<tag>'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
@@ -597,12 +645,13 @@
         "set spanner.statement_tag=''",
         "set spanner.statement_tag to 'tag1'",
         "set spanner.statement_tag to 'tag2'",
-        "set spanner.statement_tag to ''"
+        "set spanner.statement_tag to ''",
+        "set spanner.statement_tag to 'test_tag'"
       ],
       "setStatement": {
         "propertyName": "SPANNER.STATEMENT_TAG",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+        "allowedValues": "'(.*)'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },
@@ -619,13 +668,14 @@
         "set spanner.transaction_tag=''",
         "set spanner.transaction_tag to 'tag1'",
         "set spanner.transaction_tag to 'tag2'",
-        "set spanner.transaction_tag to ''"
+        "set spanner.transaction_tag to ''",
+        "set spanner.transaction_tag to 'test_tag'"
       ],
       "examplePrerequisiteStatements": ["set autocommit = false"],
       "setStatement": {
         "propertyName": "SPANNER.TRANSACTION_TAG",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+        "allowedValues": "'(.*)'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },

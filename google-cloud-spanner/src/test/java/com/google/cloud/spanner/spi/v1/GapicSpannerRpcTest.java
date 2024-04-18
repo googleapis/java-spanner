@@ -57,12 +57,14 @@ import com.google.rpc.ErrorInfo;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.GetSessionRequest;
 import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.Session;
 import com.google.spanner.v1.SpannerGrpc;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Context;
 import io.grpc.Contexts;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.grpc.MethodDescriptor;
@@ -636,16 +638,80 @@ public class GapicSpannerRpcTest {
         Objects.requireNonNull(lastSeenHeaders.get(key)).contains("gl-java/"));
   }
 
+  @Test
+  public void testGetDatabaseAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getDatabaseAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testGetInstanceAdminStubSettings_whenStubInitialized_assertNonNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    assertNotNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testAdminStubSettings_whenStubNotInitialized_assertNullClientSetting() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+
+    assertNull(rpc.getDatabaseAdminStubSettings());
+    assertNull(rpc.getInstanceAdminStubSettings());
+
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testCreateSession_assertSessionProto() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    Session session = rpc.createSession("DATABASE_NAME", null, null, null);
+    assertNotNull(session);
+    assertNotNull(session.getCreateTime());
+    assertEquals(false, session.getMultiplexed());
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testCreateSession_whenMultiplexedSessionIsTrue_assertSessionProto() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    Session session = rpc.createSession("DATABASE_NAME", null, null, null, true);
+    assertNotNull(session);
+    assertNotNull(session.getCreateTime());
+    assertEquals(true, session.getMultiplexed());
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testCreateSession_whenMultiplexedSessionIsFalse_assertSessionProto() {
+    SpannerOptions options = createSpannerOptions();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, true);
+
+    Session session = rpc.createSession("DATABASE_NAME", null, null, null, false);
+    assertNotNull(session);
+    assertNotNull(session.getCreateTime());
+    assertEquals(false, session.getMultiplexed());
+    rpc.shutdown();
+  }
+
   private SpannerOptions createSpannerOptions() {
     String endpoint = address.getHostString() + ":" + server.getPort();
     return SpannerOptions.newBuilder()
         .setProjectId("[PROJECT]")
         // Set a custom channel configurator to allow http instead of https.
-        .setChannelConfigurator(
-            input -> {
-              input.usePlaintext();
-              return input;
-            })
+        .setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
+        .disableDirectPath()
         .setHost("http://" + endpoint)
         // Set static credentials that will return the static OAuth test token.
         .setCredentials(STATIC_CREDENTIALS)

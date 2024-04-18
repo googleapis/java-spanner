@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -252,6 +253,59 @@ public class ITQueryTest {
     Struct row =
         execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Long) null), Type.int64());
     assertThat(row.isNull(0)).isTrue();
+  }
+
+  // TODO: Remove once FLOAT32 is supported in production.
+  private static boolean isUsingCloudDevel() {
+    String jobType = System.getenv("JOB_TYPE");
+
+    // Assumes that the jobType contains the string "cloud-devel" to signal that
+    // the environment is cloud-devel.
+    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
+  }
+
+  @Test
+  public void bindFloat32() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to(2.0f), Type.float32());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloat(0)).isWithin(0.0f).of(2.0f);
+  }
+
+  @Test
+  public void bindFloat32Null() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((Float) null), Type.float32());
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindPgOid() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      Struct row =
+          execute(
+              Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(1234)),
+              Type.pgOid());
+      assertThat(row.isNull(0)).isFalse();
+      assertThat(row.getLong(0)).isEqualTo(1234);
+    }
+  }
+
+  @Test
+  public void bindPgOidNull() {
+    if (dialect.dialect == Dialect.POSTGRESQL) {
+      Struct row =
+          execute(
+              Statement.newBuilder(selectValueQuery).bind("p1").to(Value.pgOid(null)),
+              Type.pgOid());
+      assertThat(row.isNull(0)).isTrue();
+    }
   }
 
   @Test
@@ -494,6 +548,58 @@ public class ITQueryTest {
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toInt64Array((long[]) null),
             Type.array(Type.int64()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindFloat32Array() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toFloat32Array(
+                    asList(
+                        null,
+                        1.0f,
+                        2.0f,
+                        Float.NEGATIVE_INFINITY,
+                        Float.POSITIVE_INFINITY,
+                        Float.NaN)),
+            Type.array(Type.float32()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloatList(0))
+        .containsExactly(
+            null, 1.0f, 2.0f, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
+        .inOrder();
+  }
+
+  @Test
+  public void bindFloat32ArrayEmpty() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toFloat32Array(Collections.emptyList()),
+            Type.array(Type.float32()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getFloatList(0)).containsExactly();
+  }
+
+  @Test
+  public void bindFloat32ArrayNull() {
+    assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
+    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
+
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toFloat32Array((float[]) null),
+            Type.array(Type.float32()));
     assertThat(row.isNull(0)).isTrue();
   }
 
