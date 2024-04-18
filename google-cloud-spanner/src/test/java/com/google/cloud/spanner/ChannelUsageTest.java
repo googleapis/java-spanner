@@ -221,11 +221,9 @@ public class ChannelUsageTest {
   @Test
   public void testCreatesNumChannels() {
     try (Spanner spanner = createSpannerOptions().getService()) {
-      if (enableGcpPool) {
-        assumeFalse(
-            "GRPC-GCP is currently not supported with multiplexed sessions",
-            isMultiplexedSessionsEnabled(spanner));
-      }
+      assumeFalse(
+          "GRPC-GCP is currently not supported with multiplexed sessions",
+          isMultiplexedSessionsEnabled(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
         while (resultSet.next()) {}
@@ -237,11 +235,9 @@ public class ChannelUsageTest {
   @Test
   public void testUsesAllChannels() throws InterruptedException, ExecutionException {
     try (Spanner spanner = createSpannerOptions().getService()) {
-      if (enableGcpPool) {
-        assumeFalse(
-            "GRPC-GCP is currently not supported with multiplexed sessions",
-            isMultiplexedSessionsEnabled(spanner));
-      }
+      assumeFalse(
+          "GRPC-GCP is currently not supported with multiplexed sessions",
+          isMultiplexedSessionsEnabled(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ListeningExecutorService executor =
           MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * 2));
