@@ -178,11 +178,6 @@ public class BatchCreateSessionsTest {
     DatabaseClientImpl client;
     mockSpanner.setMaxTotalSessions(maxServerSessions);
     try (Spanner spanner = createSpanner(minSessions, maxSessions)) {
-      if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
-        // there will 550 regular sessions and 1 multiplexed session (when multiplexed session is
-        // enabled
-        mockSpanner.setMaxTotalSessions(maxServerSessions + 1);
-      }
       // Create a database client which will create a session pool.
       client =
           (DatabaseClientImpl)

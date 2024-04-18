@@ -284,7 +284,7 @@ public class SessionPoolOptions {
     return randomizePositionQPSThreshold;
   }
 
-  boolean getUseMultiplexedSession() {
+  public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
   }
 

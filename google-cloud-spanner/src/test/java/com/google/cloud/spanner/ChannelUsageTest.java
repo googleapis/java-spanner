@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -111,7 +112,6 @@ public class ChannelUsageTest {
   private static InetSocketAddress address;
   private static final Set<InetSocketAddress> batchCreateSessionLocalIps =
       ConcurrentHashMap.newKeySet();
-  private static final Set<InetSocketAddress> localIps = ConcurrentHashMap.newKeySet();
   private static final Set<InetSocketAddress> executeSqlLocalIps = ConcurrentHashMap.newKeySet();
 
   private static Level originalLogLevel;
@@ -158,7 +158,6 @@ public class ChannelUsageTest {
                           .equals(SpannerGrpc.getExecuteStreamingSqlMethod())) {
                         executeSqlLocalIps.add(attributes.get(key));
                       }
-                      localIps.add(attributes.get(key));
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
@@ -190,7 +189,6 @@ public class ChannelUsageTest {
   public void reset() {
     mockSpanner.reset();
     batchCreateSessionLocalIps.clear();
-    localIps.clear();
     executeSqlLocalIps.clear();
   }
 
@@ -223,21 +221,27 @@ public class ChannelUsageTest {
   @Test
   public void testCreatesNumChannels() {
     try (Spanner spanner = createSpannerOptions().getService()) {
+      if (enableGcpPool) {
+        assumeFalse(
+            "GRPC-GCP is currently not supported with multiplexed sessions",
+            isMultiplexedSessionsEnabled(spanner));
+      }
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
         while (resultSet.next()) {}
       }
-      if (isMultiplexedSessionsEnabled(spanner)) {
-        assertEquals(numChannels, localIps.size());
-      } else {
-        assertEquals(numChannels, batchCreateSessionLocalIps.size());
-      }
     }
+    assertEquals(numChannels, batchCreateSessionLocalIps.size());
   }
 
   @Test
   public void testUsesAllChannels() throws InterruptedException, ExecutionException {
     try (Spanner spanner = createSpannerOptions().getService()) {
+      if (enableGcpPool) {
+        assumeFalse(
+            "GRPC-GCP is currently not supported with multiplexed sessions",
+            isMultiplexedSessionsEnabled(spanner));
+      }
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ListeningExecutorService executor =
           MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * 2));
@@ -261,12 +265,8 @@ public class ChannelUsageTest {
                 }));
       }
       assertEquals(numChannels * 2, Futures.allAsList(futures).get().size());
-      if (isMultiplexedSessionsEnabled(spanner)) {
-        assertEquals(numChannels, localIps.size());
-      } else {
-        assertEquals(numChannels, executeSqlLocalIps.size());
-      }
     }
+    assertEquals(numChannels, executeSqlLocalIps.size());
   }
 
   private boolean isMultiplexedSessionsEnabled(Spanner spanner) {
