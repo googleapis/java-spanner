@@ -22,7 +22,8 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -33,20 +34,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Integration tests for FGAC samples for GoogleStandardSql dialect. */
+/**
+ * Integration tests for FGAC samples for GoogleStandardSql dialect.
+ */
 @RunWith(JUnit4.class)
-public class DatabaseRolesIT extends SampleTestBase {
+public class DatabaseRolesIT extends SampleTestBaseV2 {
 
   private static DatabaseId databaseId;
 
   @BeforeClass
   public static void createTestDatabase() throws Exception {
     final String database = idGenerator.generateDatabaseId();
-    databaseAdminClient
-        .createDatabase(
-            instanceId,
-            database,
-            ImmutableList.of(
+    final CreateDatabaseRequest request =
+        CreateDatabaseRequest.newBuilder()
+            .setParent(
+                com.google.spanner.admin.database.v1.InstanceName.of(projectId, instanceId)
+                    .toString())
+            .setCreateStatement("CREATE DATABASE `" + database + "`")
+            .addAllExtraStatements(Lists.newArrayList(
                 "CREATE TABLE Singers ("
                     + "  SingerId   INT64 NOT NULL,"
                     + "  FirstName  STRING(1024),"
@@ -61,8 +66,8 @@ public class DatabaseRolesIT extends SampleTestBase {
                     + "  AlbumTitle   STRING(MAX),"
                     + "  MarketingBudget INT64"
                     + ") PRIMARY KEY (SingerId, AlbumId),"
-                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE"))
-        .get(10, TimeUnit.MINUTES);
+                    + "  INTERLEAVE IN PARENT Singers ON DELETE CASCADE")).build();
+    databaseAdminClient.createDatabaseAsync(request).get(5, TimeUnit.MINUTES);
     databaseId = DatabaseId.of(projectId, instanceId, database);
   }
 
@@ -103,7 +108,7 @@ public class DatabaseRolesIT extends SampleTestBase {
         SampleRunner.runSample(
             () ->
                 AddAndDropDatabaseRole.addAndDropDatabaseRole(
-                    projectId, instanceId, databaseId.getDatabase(), "new-parent", "new-child"));
+                    projectId, instanceId, databaseId.getDatabase(), "new_parent", "new_child"));
     assertTrue(out.contains("Created roles new_parent and new_child and granted privileges"));
     assertTrue(out.contains("Revoked privileges and dropped role new_child"));
   }
@@ -115,7 +120,7 @@ public class DatabaseRolesIT extends SampleTestBase {
             () ->
                 ListDatabaseRoles.listDatabaseRoles(
                     projectId, instanceId, databaseId.getDatabase()));
-    assertTrue(out.contains("new_parent"));
+    assertTrue(out.contains("Obtained role "));
   }
 
   @Test

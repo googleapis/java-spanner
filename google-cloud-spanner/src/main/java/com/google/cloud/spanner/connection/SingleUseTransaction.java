@@ -46,12 +46,14 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.ReadWriteTransaction.Builder;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.v1.SpannerGrpc;
+import java.time.Duration;
 import java.util.concurrent.Callable;
 
 /**
@@ -78,6 +80,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final TimestampBound readOnlyStaleness;
   private final AutocommitDmlMode autocommitDmlMode;
   private final boolean returnCommitStats;
+  private final Duration maxCommitDelay;
   private final boolean internalMetdataQuery;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
@@ -92,6 +95,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private TimestampBound readOnlyStaleness;
     private AutocommitDmlMode autocommitDmlMode;
     private boolean returnCommitStats;
+    private Duration maxCommitDelay;
     private boolean internalMetadataQuery;
 
     private Builder() {}
@@ -135,6 +139,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setMaxCommitDelay(Duration maxCommitDelay) {
+      this.maxCommitDelay = maxCommitDelay;
+      return this;
+    }
+
     Builder setInternalMetadataQuery(boolean internalMetadataQuery) {
       this.internalMetadataQuery = internalMetadataQuery;
       return this;
@@ -164,6 +173,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.readOnlyStaleness = builder.readOnlyStaleness;
     this.autocommitDmlMode = builder.autocommitDmlMode;
     this.returnCommitStats = builder.returnCommitStats;
+    this.maxCommitDelay = builder.maxCommitDelay;
     this.internalMetdataQuery = builder.internalMetadataQuery;
   }
 
@@ -186,6 +196,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   @Override
   public boolean isReadOnly() {
     return readOnly;
+  }
+
+  @Override
+  public boolean supportsDirectedReads(ParsedStatement parsedStatement) {
+    return parsedStatement.isQuery();
   }
 
   private void checkAndMarkUsed() {
@@ -462,6 +477,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     if (returnCommitStats) {
       numOptions++;
     }
+    if (maxCommitDelay != null) {
+      numOptions++;
+    }
     if (numOptions == 0) {
       return dbClient.readWriteTransaction();
     }
@@ -472,6 +490,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     }
     if (returnCommitStats) {
       options[index++] = Options.commitStats();
+    }
+    if (maxCommitDelay != null) {
+      options[index++] = Options.maxCommitDelay(maxCommitDelay);
     }
     return dbClient.readWriteTransaction(options);
   }

@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.AbortedException;
 import com.google.api.gax.rpc.DeadlineExceededException;
@@ -38,7 +39,6 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import io.grpc.Status;
-import io.opencensus.trace.Span;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import org.threeten.bp.Duration;
 import org.threeten.bp.temporal.ChronoUnit;
 
+@InternalApi
 public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction {
 
   private static final Logger LOGGER = Logger.getLogger(PartitionedDmlTransaction.class.getName());
@@ -137,9 +138,9 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     isValid = false;
   }
 
-  // No-op method needed to implement SessionTransaction interface.
+  /** No-op method needed to implement SessionTransaction interface. */
   @Override
-  public void setSpan(Span span) {}
+  public void setSpan(ISpan span) {}
 
   private Duration tryUpdateTimeout(final Duration timeout, final Stopwatch stopwatch) {
     final Duration remainingTimeout =
@@ -166,7 +167,7 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
 
   @VisibleForTesting
   ExecuteSqlRequest newTransactionRequestFrom(final Statement statement, final Options options) {
-    ByteString transactionId = initTransaction();
+    ByteString transactionId = initTransaction(options);
 
     final TransactionSelector transactionSelector =
         TransactionSelector.newBuilder().setId(transactionId).build();
@@ -194,13 +195,15 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
     return builder.build();
   }
 
-  private ByteString initTransaction() {
+  private ByteString initTransaction(final Options options) {
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
             .setSession(session.getName())
             .setOptions(
                 TransactionOptions.newBuilder()
-                    .setPartitionedDml(TransactionOptions.PartitionedDml.getDefaultInstance()))
+                    .setPartitionedDml(TransactionOptions.PartitionedDml.getDefaultInstance())
+                    .setExcludeTxnFromChangeStreams(
+                        options.withExcludeTxnFromChangeStreams() == Boolean.TRUE))
             .build();
     Transaction tx = rpc.beginTransaction(request, session.getOptions(), true);
     if (tx.getId().isEmpty()) {

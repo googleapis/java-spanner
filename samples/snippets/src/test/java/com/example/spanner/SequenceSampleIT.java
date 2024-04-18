@@ -20,10 +20,9 @@ import static com.example.spanner.SampleRunner.runSample;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Dialect;
 import com.google.common.collect.ImmutableList;
-import java.util.Collections;
+import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
+import com.google.spanner.admin.database.v1.DatabaseDialect;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
@@ -38,23 +37,23 @@ import org.junit.runners.Parameterized.Parameters;
  * dialects.
  */
 @RunWith(Parameterized.class)
-public class SequenceSampleIT extends SampleTestBase {
+public class SequenceSampleIT extends SampleTestBaseV2 {
 
-  private static DatabaseId databaseId;
+  private static String databaseId;
 
   /**
    * Set of dialects for which database has already been created in this test suite. This helps in
    * limiting the number of databases created per dialect to one.
    */
-  private static final HashSet<Dialect> dbInitializedDialects = new HashSet<>();
+  private static final HashSet<DatabaseDialect> dbInitializedDialects = new HashSet<>();
 
   @Parameters(name = "dialect = {0}")
-  public static Iterable<Dialect> data() {
-    return ImmutableList.of(Dialect.GOOGLE_STANDARD_SQL, Dialect.POSTGRESQL);
+  public static Iterable<DatabaseDialect> data() {
+    return ImmutableList.of(DatabaseDialect.GOOGLE_STANDARD_SQL, DatabaseDialect.POSTGRESQL);
   }
 
   @Parameter(0)
-  public static Dialect dialect;
+  public static DatabaseDialect dialect;
 
   @Before
   public void createTestDatabase() throws Exception {
@@ -63,37 +62,36 @@ public class SequenceSampleIT extends SampleTestBase {
       return;
     }
     dbInitializedDialects.add(dialect);
-    final String database = idGenerator.generateDatabaseId();
+    databaseId = idGenerator.generateDatabaseId();
+    CreateDatabaseRequest createDatabaseRequest =
+        CreateDatabaseRequest.newBuilder()
+            .setParent(getInstanceName(projectId, instanceId))
+            .setCreateStatement(getCreateDatabaseStatement(databaseId, dialect))
+            .setDatabaseDialect(dialect).build();
     databaseAdminClient
-        .createDatabase(
-            databaseAdminClient
-                .newDatabaseBuilder(DatabaseId.of(projectId, instanceId, database))
-                .setDialect(dialect)
-                .build(),
-            Collections.emptyList())
+        .createDatabaseAsync(createDatabaseRequest)
         .get(10, TimeUnit.MINUTES);
-    databaseId = DatabaseId.of(projectId, instanceId, database);
   }
 
   @Test
   public void createSequence() throws Exception {
     String out;
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+    if (dialect == DatabaseDialect.GOOGLE_STANDARD_SQL) {
       out =
           runSample(
               () ->
                   CreateSequenceSample.createSequence(
-                      projectId, instanceId, databaseId.getDatabase()));
+                      projectId, instanceId, databaseId));
     } else {
       out =
           runSample(
               () ->
                   PgCreateSequenceSample.pgCreateSequence(
-                      projectId, instanceId, databaseId.getDatabase()));
+                      projectId, instanceId, databaseId));
     }
     assertTrue(
         out.contains(
-            "Created Seq sequence and Customers table, where its key column "
+            "Created Seq sequence and Customers table, where the key column "
                 + "CustomerId uses the sequence as a default value"));
     assertEquals(out.split("Inserted customer record with CustomerId", -1).length - 1, 3);
     assertTrue(out.contains("Number of customer records inserted is: 3"));
@@ -102,18 +100,18 @@ public class SequenceSampleIT extends SampleTestBase {
   @Test
   public void alterSequence() throws Exception {
     String out;
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+    if (dialect == DatabaseDialect.GOOGLE_STANDARD_SQL) {
       out =
           runSample(
               () ->
                   AlterSequenceSample.alterSequence(
-                      projectId, instanceId, databaseId.getDatabase()));
+                      projectId, instanceId, databaseId));
     } else {
       out =
           runSample(
               () ->
                   PgAlterSequenceSample.pgAlterSequence(
-                      projectId, instanceId, databaseId.getDatabase()));
+                      projectId, instanceId, databaseId));
     }
     assertTrue(
         out.contains("Altered Seq sequence to skip an inclusive range between 1000 and 5000000"));
@@ -124,17 +122,17 @@ public class SequenceSampleIT extends SampleTestBase {
   @Test
   public void dropSequence() throws Exception {
     String out;
-    if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
+    if (dialect == DatabaseDialect.GOOGLE_STANDARD_SQL) {
       out =
           runSample(
               () ->
-                  DropSequenceSample.dropSequence(projectId, instanceId, databaseId.getDatabase()));
+                  DropSequenceSample.dropSequence(projectId, instanceId, databaseId));
     } else {
       out =
           runSample(
               () ->
                   PgDropSequenceSample.pgDropSequence(
-                      projectId, instanceId, databaseId.getDatabase()));
+                      projectId, instanceId, databaseId));
     }
     assertTrue(
         out.contains(

@@ -27,6 +27,8 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.common.base.Throwables;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -34,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,6 +56,11 @@ public class AbstractStructReaderTypesTest {
     @Override
     protected long getLongInternal(int columnIndex) {
       return 0;
+    }
+
+    @Override
+    protected float getFloatInternal(int columnIndex) {
+      return 0f;
     }
 
     @Override
@@ -96,6 +104,17 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
+      return null;
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> T getProtoEnumInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return null;
+    }
+
+    @Override
     protected Value getValueInternal(int columnIndex) {
       return null;
     }
@@ -117,6 +136,16 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected List<Long> getLongListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected float[] getFloatArrayInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected List<Float> getFloatListInternal(int columnIndex) {
       return null;
     }
 
@@ -161,6 +190,18 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected <T extends AbstractMessage> List<T> getProtoMessageListInternal(
+        int columnIndex, T message) {
+      return null;
+    }
+
+    @Override
+    protected <T extends ProtocolMessageEnum> List<T> getProtoEnumListInternal(
+        int columnIndex, Function<Integer, ProtocolMessageEnum> method) {
+      return null;
+    }
+
+    @Override
     protected List<Date> getDateListInternal(int columnIndex) {
       return null;
     }
@@ -196,6 +237,13 @@ public class AbstractStructReaderTypesTest {
             Collections.singletonList("getValue")
           },
           {Type.int64(), "getLongInternal", 123L, "getLong", Collections.singletonList("getValue")},
+          {
+            Type.float32(),
+            "getFloatInternal",
+            2.0f,
+            "getFloat",
+            Collections.singletonList("getValue")
+          },
           {
             Type.float64(),
             "getDoubleInternal",
@@ -238,6 +286,7 @@ public class AbstractStructReaderTypesTest {
             "getJson",
             Collections.singletonList("getValue")
           },
+          {Type.pgOid(), "getLongInternal", 123L, "getLong", Collections.singletonList("getValue")},
           {
             Type.timestamp(),
             "getTimestampInternal",
@@ -281,6 +330,20 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList("getLongArray", "getValue")
           },
           {
+            Type.array(Type.float32()),
+            "getFloatArrayInternal",
+            new float[] {1.0f, 2.0f},
+            "getFloatArray",
+            Arrays.asList("getFloatList", "getValue")
+          },
+          {
+            Type.array(Type.float32()),
+            "getFloatListInternal",
+            Arrays.asList(2.0f, 4.0f),
+            "getFloatList",
+            Arrays.asList("getFloatArray", "getValue")
+          },
+          {
             Type.array(Type.float64()),
             "getDoubleArrayInternal",
             new double[] {1.0, 2.0},
@@ -321,6 +384,20 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
             "getJsonList",
             Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getLongArrayInternal",
+            new long[] {1, 2},
+            "getLongArray",
+            Arrays.asList("getLongList", "getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getLongListInternal",
+            Arrays.asList(3L, 4L),
+            "getLongList",
+            Arrays.asList("getLongArray", "getValue")
           },
           {
             Type.array(Type.bytes()),

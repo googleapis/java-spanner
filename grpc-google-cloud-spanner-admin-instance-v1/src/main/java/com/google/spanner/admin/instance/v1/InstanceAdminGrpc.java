@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -394,6 +394,56 @@ public final class InstanceAdminGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest,
+          com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>
+      getListInstancePartitionsMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListInstancePartitions",
+      requestType = com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest.class,
+      responseType = com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest,
+          com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>
+      getListInstancePartitionsMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest,
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>
+        getListInstancePartitionsMethod;
+    if ((getListInstancePartitionsMethod = InstanceAdminGrpc.getListInstancePartitionsMethod)
+        == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getListInstancePartitionsMethod = InstanceAdminGrpc.getListInstancePartitionsMethod)
+            == null) {
+          InstanceAdminGrpc.getListInstancePartitionsMethod =
+              getListInstancePartitionsMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest,
+                          com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "ListInstancePartitions"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+                                  .getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("ListInstancePartitions"))
+                      .build();
+        }
+      }
+    }
+    return getListInstancePartitionsMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
           com.google.spanner.admin.instance.v1.GetInstanceRequest,
           com.google.spanner.admin.instance.v1.Instance>
       getGetInstanceMethod;
@@ -694,6 +744,258 @@ public final class InstanceAdminGrpc {
     return getTestIamPermissionsMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.GetInstancePartitionRequest,
+          com.google.spanner.admin.instance.v1.InstancePartition>
+      getGetInstancePartitionMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetInstancePartition",
+      requestType = com.google.spanner.admin.instance.v1.GetInstancePartitionRequest.class,
+      responseType = com.google.spanner.admin.instance.v1.InstancePartition.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.GetInstancePartitionRequest,
+          com.google.spanner.admin.instance.v1.InstancePartition>
+      getGetInstancePartitionMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.GetInstancePartitionRequest,
+            com.google.spanner.admin.instance.v1.InstancePartition>
+        getGetInstancePartitionMethod;
+    if ((getGetInstancePartitionMethod = InstanceAdminGrpc.getGetInstancePartitionMethod) == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getGetInstancePartitionMethod = InstanceAdminGrpc.getGetInstancePartitionMethod)
+            == null) {
+          InstanceAdminGrpc.getGetInstancePartitionMethod =
+              getGetInstancePartitionMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.GetInstancePartitionRequest,
+                          com.google.spanner.admin.instance.v1.InstancePartition>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "GetInstancePartition"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.GetInstancePartitionRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.InstancePartition
+                                  .getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("GetInstancePartition"))
+                      .build();
+        }
+      }
+    }
+    return getGetInstancePartitionMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest,
+          com.google.longrunning.Operation>
+      getCreateInstancePartitionMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "CreateInstancePartition",
+      requestType = com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest,
+          com.google.longrunning.Operation>
+      getCreateInstancePartitionMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest,
+            com.google.longrunning.Operation>
+        getCreateInstancePartitionMethod;
+    if ((getCreateInstancePartitionMethod = InstanceAdminGrpc.getCreateInstancePartitionMethod)
+        == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getCreateInstancePartitionMethod = InstanceAdminGrpc.getCreateInstancePartitionMethod)
+            == null) {
+          InstanceAdminGrpc.getCreateInstancePartitionMethod =
+              getCreateInstancePartitionMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest,
+                          com.google.longrunning.Operation>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "CreateInstancePartition"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.longrunning.Operation.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("CreateInstancePartition"))
+                      .build();
+        }
+      }
+    }
+    return getCreateInstancePartitionMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest,
+          com.google.protobuf.Empty>
+      getDeleteInstancePartitionMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "DeleteInstancePartition",
+      requestType = com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest.class,
+      responseType = com.google.protobuf.Empty.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest,
+          com.google.protobuf.Empty>
+      getDeleteInstancePartitionMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest,
+            com.google.protobuf.Empty>
+        getDeleteInstancePartitionMethod;
+    if ((getDeleteInstancePartitionMethod = InstanceAdminGrpc.getDeleteInstancePartitionMethod)
+        == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getDeleteInstancePartitionMethod = InstanceAdminGrpc.getDeleteInstancePartitionMethod)
+            == null) {
+          InstanceAdminGrpc.getDeleteInstancePartitionMethod =
+              getDeleteInstancePartitionMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest,
+                          com.google.protobuf.Empty>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "DeleteInstancePartition"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.protobuf.Empty.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("DeleteInstancePartition"))
+                      .build();
+        }
+      }
+    }
+    return getDeleteInstancePartitionMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest,
+          com.google.longrunning.Operation>
+      getUpdateInstancePartitionMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "UpdateInstancePartition",
+      requestType = com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest,
+          com.google.longrunning.Operation>
+      getUpdateInstancePartitionMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest,
+            com.google.longrunning.Operation>
+        getUpdateInstancePartitionMethod;
+    if ((getUpdateInstancePartitionMethod = InstanceAdminGrpc.getUpdateInstancePartitionMethod)
+        == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getUpdateInstancePartitionMethod = InstanceAdminGrpc.getUpdateInstancePartitionMethod)
+            == null) {
+          InstanceAdminGrpc.getUpdateInstancePartitionMethod =
+              getUpdateInstancePartitionMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest,
+                          com.google.longrunning.Operation>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "UpdateInstancePartition"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.longrunning.Operation.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("UpdateInstancePartition"))
+                      .build();
+        }
+      }
+    }
+    return getUpdateInstancePartitionMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest,
+          com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>
+      getListInstancePartitionOperationsMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ListInstancePartitionOperations",
+      requestType =
+          com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.class,
+      responseType =
+          com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest,
+          com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>
+      getListInstancePartitionOperationsMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest,
+            com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>
+        getListInstancePartitionOperationsMethod;
+    if ((getListInstancePartitionOperationsMethod =
+            InstanceAdminGrpc.getListInstancePartitionOperationsMethod)
+        == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getListInstancePartitionOperationsMethod =
+                InstanceAdminGrpc.getListInstancePartitionOperationsMethod)
+            == null) {
+          InstanceAdminGrpc.getListInstancePartitionOperationsMethod =
+              getListInstancePartitionOperationsMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest,
+                          com.google.spanner.admin.instance.v1
+                              .ListInstancePartitionOperationsResponse>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(
+                          generateFullMethodName(SERVICE_NAME, "ListInstancePartitionOperations"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1
+                                  .ListInstancePartitionOperationsRequest.getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1
+                                  .ListInstancePartitionOperationsResponse.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier(
+                              "ListInstancePartitionOperations"))
+                      .build();
+        }
+      }
+    }
+    return getListInstancePartitionOperationsMethod;
+  }
+
   /** Creates a new async stub that supports all call types for the service */
   public static InstanceAdminStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<InstanceAdminStub> factory =
@@ -950,6 +1252,22 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
+     * Lists all instance partitions for the given instance.
+     * </pre>
+     */
+    default void listInstancePartitions(
+        com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>
+            responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListInstancePartitionsMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Gets information about a particular instance.
      * </pre>
      */
@@ -1117,6 +1435,161 @@ public final class InstanceAdminGrpc {
             responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
           getTestIamPermissionsMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance partition.
+     * </pre>
+     */
+    default void getInstancePartition(
+        com.google.spanner.admin.instance.v1.GetInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstancePartition>
+            responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getGetInstancePartitionMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance partition and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new instance partition.
+     * The instance partition name is assigned by the caller. If the named
+     * instance partition already exists, `CreateInstancePartition` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance partition is readable via the API, with all requested
+     *     attributes but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance partition immediately
+     *     unreadable via the API.
+     *   * The instance partition can be deleted.
+     *   * All other attempts to modify the instance partition are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can start using this instance partition.
+     *   * The instance partition's allocated resource levels are readable via the
+     *     API.
+     *   * The instance partition's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track creation of the instance partition.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * </pre>
+     */
+    default void createInstancePartition(
+        com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getCreateInstancePartitionMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an existing instance partition. Requires that the
+     * instance partition is not used by any database or backup and is not the
+     * default instance partition of an instance.
+     * Authorization requires `spanner.instancePartitions.delete` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    default void deleteInstancePartition(
+        com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getDeleteInstancePartitionMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance partition, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance partition. If the named instance
+     * partition does not exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance partition's
+     *   allocation has been requested, billing is based on the newly-requested
+     *   level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance partition are rejected.
+     *   * Reading the instance partition via the API continues to give the
+     *     pre-request resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance
+     *     partition's tables.
+     *   * The instance partition's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track the instance partition modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * Authorization requires `spanner.instancePartitions.update` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    default void updateInstancePartition(
+        com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getUpdateInstancePartitionMethod(), responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists instance partition [long-running
+     * operations][google.longrunning.Operation] in the given instance.
+     * An instance partition operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting from the
+     * most recently started operation.
+     * Authorization requires `spanner.instancePartitionOperations.list`
+     * permission on the resource
+     * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+     * </pre>
+     */
+    default void listInstancePartitionOperations(
+        com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>
+            responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getListInstancePartitionOperationsMethod(), responseObserver);
     }
   }
 
@@ -1391,6 +1864,24 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
+     * Lists all instance partitions for the given instance.
+     * </pre>
+     */
+    public void listInstancePartitions(
+        com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>
+            responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getListInstancePartitionsMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Gets information about a particular instance.
      * </pre>
      */
@@ -1570,6 +2061,171 @@ public final class InstanceAdminGrpc {
             responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance partition.
+     * </pre>
+     */
+    public void getInstancePartition(
+        com.google.spanner.admin.instance.v1.GetInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstancePartition>
+            responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetInstancePartitionMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance partition and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new instance partition.
+     * The instance partition name is assigned by the caller. If the named
+     * instance partition already exists, `CreateInstancePartition` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance partition is readable via the API, with all requested
+     *     attributes but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance partition immediately
+     *     unreadable via the API.
+     *   * The instance partition can be deleted.
+     *   * All other attempts to modify the instance partition are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can start using this instance partition.
+     *   * The instance partition's allocated resource levels are readable via the
+     *     API.
+     *   * The instance partition's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track creation of the instance partition.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * </pre>
+     */
+    public void createInstancePartition(
+        com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getCreateInstancePartitionMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an existing instance partition. Requires that the
+     * instance partition is not used by any database or backup and is not the
+     * default instance partition of an instance.
+     * Authorization requires `spanner.instancePartitions.delete` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    public void deleteInstancePartition(
+        com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getDeleteInstancePartitionMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance partition, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance partition. If the named instance
+     * partition does not exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance partition's
+     *   allocation has been requested, billing is based on the newly-requested
+     *   level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance partition are rejected.
+     *   * Reading the instance partition via the API continues to give the
+     *     pre-request resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance
+     *     partition's tables.
+     *   * The instance partition's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track the instance partition modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * Authorization requires `spanner.instancePartitions.update` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    public void updateInstancePartition(
+        com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getUpdateInstancePartitionMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists instance partition [long-running
+     * operations][google.longrunning.Operation] in the given instance.
+     * An instance partition operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting from the
+     * most recently started operation.
+     * Authorization requires `spanner.instancePartitionOperations.list`
+     * permission on the resource
+     * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+     * </pre>
+     */
+    public void listInstancePartitionOperations(
+        com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest request,
+        io.grpc.stub.StreamObserver<
+                com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>
+            responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getListInstancePartitionOperationsMethod(), getCallOptions()),
           request,
           responseObserver);
     }
@@ -1788,6 +2444,20 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
+     * Lists all instance partitions for the given instance.
+     * </pre>
+     */
+    public com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse
+        listInstancePartitions(
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListInstancePartitionsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Gets information about a particular instance.
      * </pre>
      */
@@ -1944,6 +2614,154 @@ public final class InstanceAdminGrpc {
         com.google.iam.v1.TestIamPermissionsRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getTestIamPermissionsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance partition.
+     * </pre>
+     */
+    public com.google.spanner.admin.instance.v1.InstancePartition getInstancePartition(
+        com.google.spanner.admin.instance.v1.GetInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetInstancePartitionMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance partition and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new instance partition.
+     * The instance partition name is assigned by the caller. If the named
+     * instance partition already exists, `CreateInstancePartition` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance partition is readable via the API, with all requested
+     *     attributes but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance partition immediately
+     *     unreadable via the API.
+     *   * The instance partition can be deleted.
+     *   * All other attempts to modify the instance partition are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can start using this instance partition.
+     *   * The instance partition's allocated resource levels are readable via the
+     *     API.
+     *   * The instance partition's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track creation of the instance partition.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * </pre>
+     */
+    public com.google.longrunning.Operation createInstancePartition(
+        com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getCreateInstancePartitionMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an existing instance partition. Requires that the
+     * instance partition is not used by any database or backup and is not the
+     * default instance partition of an instance.
+     * Authorization requires `spanner.instancePartitions.delete` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    public com.google.protobuf.Empty deleteInstancePartition(
+        com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteInstancePartitionMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance partition, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance partition. If the named instance
+     * partition does not exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance partition's
+     *   allocation has been requested, billing is based on the newly-requested
+     *   level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance partition are rejected.
+     *   * Reading the instance partition via the API continues to give the
+     *     pre-request resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance
+     *     partition's tables.
+     *   * The instance partition's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track the instance partition modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * Authorization requires `spanner.instancePartitions.update` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    public com.google.longrunning.Operation updateInstancePartition(
+        com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getUpdateInstancePartitionMethod(), getCallOptions(), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists instance partition [long-running
+     * operations][google.longrunning.Operation] in the given instance.
+     * An instance partition operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting from the
+     * most recently started operation.
+     * Authorization requires `spanner.instancePartitionOperations.list`
+     * permission on the resource
+     * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+     * </pre>
+     */
+    public com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse
+        listInstancePartitionOperations(
+            com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getListInstancePartitionOperationsMethod(), getCallOptions(), request);
     }
   }
 
@@ -2168,6 +2986,21 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
+     * Lists all instance partitions for the given instance.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>
+        listInstancePartitions(
+            com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getListInstancePartitionsMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
      * Gets information about a particular instance.
      * </pre>
      */
@@ -2329,6 +3162,161 @@ public final class InstanceAdminGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getTestIamPermissionsMethod(), getCallOptions()), request);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * Gets information about a particular instance partition.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<
+            com.google.spanner.admin.instance.v1.InstancePartition>
+        getInstancePartition(
+            com.google.spanner.admin.instance.v1.GetInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetInstancePartitionMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Creates an instance partition and begins preparing it to be used. The
+     * returned [long-running operation][google.longrunning.Operation]
+     * can be used to track the progress of preparing the new instance partition.
+     * The instance partition name is assigned by the caller. If the named
+     * instance partition already exists, `CreateInstancePartition` returns
+     * `ALREADY_EXISTS`.
+     * Immediately upon completion of this request:
+     *   * The instance partition is readable via the API, with all requested
+     *     attributes but no allocated resources. Its state is `CREATING`.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation renders the instance partition immediately
+     *     unreadable via the API.
+     *   * The instance partition can be deleted.
+     *   * All other attempts to modify the instance partition are rejected.
+     * Upon completion of the returned operation:
+     *   * Billing for all successfully-allocated resources begins (some types
+     *     may have lower than the requested levels).
+     *   * Databases can start using this instance partition.
+     *   * The instance partition's allocated resource levels are readable via the
+     *     API.
+     *   * The instance partition's state becomes `READY`.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track creation of the instance partition.  The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
+        createInstancePartition(
+            com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getCreateInstancePartitionMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Deletes an existing instance partition. Requires that the
+     * instance partition is not used by any database or backup and is not the
+     * default instance partition of an instance.
+     * Authorization requires `spanner.instancePartitions.delete` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty>
+        deleteInstancePartition(
+            com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getDeleteInstancePartitionMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Updates an instance partition, and begins allocating or releasing resources
+     * as requested. The returned [long-running
+     * operation][google.longrunning.Operation] can be used to track the
+     * progress of updating the instance partition. If the named instance
+     * partition does not exist, returns `NOT_FOUND`.
+     * Immediately upon completion of this request:
+     *   * For resource types for which a decrease in the instance partition's
+     *   allocation has been requested, billing is based on the newly-requested
+     *   level.
+     * Until completion of the returned operation:
+     *   * Cancelling the operation sets its metadata's
+     *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+     *     and begins restoring resources to their pre-request values. The
+     *     operation is guaranteed to succeed at undoing all resource changes,
+     *     after which point it terminates with a `CANCELLED` status.
+     *   * All other attempts to modify the instance partition are rejected.
+     *   * Reading the instance partition via the API continues to give the
+     *     pre-request resource levels.
+     * Upon completion of the returned operation:
+     *   * Billing begins for all successfully-allocated resources (some types
+     *     may have lower than the requested levels).
+     *   * All newly-reserved resources are available for serving the instance
+     *     partition's tables.
+     *   * The instance partition's new resource levels are readable via the API.
+     * The returned [long-running operation][google.longrunning.Operation] will
+     * have a name of the format
+     * `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+     * track the instance partition modification. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if
+     * successful.
+     * Authorization requires `spanner.instancePartitions.update` permission on
+     * the resource
+     * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
+        updateInstancePartition(
+            com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getUpdateInstancePartitionMethod(), getCallOptions()), request);
+    }
+
+    /**
+     *
+     *
+     * <pre>
+     * Lists instance partition [long-running
+     * operations][google.longrunning.Operation] in the given instance.
+     * An instance partition operation has a name of the form
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+     * The long-running operation
+     * [metadata][google.longrunning.Operation.metadata] field type
+     * `metadata.type_url` describes the type of the metadata. Operations returned
+     * include those that have completed/failed/canceled within the last 7 days,
+     * and pending operations. Operations returned are ordered by
+     * `operation.metadata.value.start_time` in descending order starting from the
+     * most recently started operation.
+     * Authorization requires `spanner.instancePartitionOperations.list`
+     * permission on the resource
+     * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<
+            com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>
+        listInstancePartitionOperations(
+            com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getListInstancePartitionOperationsMethod(), getCallOptions()),
+          request);
+    }
   }
 
   private static final int METHODID_LIST_INSTANCE_CONFIGS = 0;
@@ -2338,13 +3326,19 @@ public final class InstanceAdminGrpc {
   private static final int METHODID_DELETE_INSTANCE_CONFIG = 4;
   private static final int METHODID_LIST_INSTANCE_CONFIG_OPERATIONS = 5;
   private static final int METHODID_LIST_INSTANCES = 6;
-  private static final int METHODID_GET_INSTANCE = 7;
-  private static final int METHODID_CREATE_INSTANCE = 8;
-  private static final int METHODID_UPDATE_INSTANCE = 9;
-  private static final int METHODID_DELETE_INSTANCE = 10;
-  private static final int METHODID_SET_IAM_POLICY = 11;
-  private static final int METHODID_GET_IAM_POLICY = 12;
-  private static final int METHODID_TEST_IAM_PERMISSIONS = 13;
+  private static final int METHODID_LIST_INSTANCE_PARTITIONS = 7;
+  private static final int METHODID_GET_INSTANCE = 8;
+  private static final int METHODID_CREATE_INSTANCE = 9;
+  private static final int METHODID_UPDATE_INSTANCE = 10;
+  private static final int METHODID_DELETE_INSTANCE = 11;
+  private static final int METHODID_SET_IAM_POLICY = 12;
+  private static final int METHODID_GET_IAM_POLICY = 13;
+  private static final int METHODID_TEST_IAM_PERMISSIONS = 14;
+  private static final int METHODID_GET_INSTANCE_PARTITION = 15;
+  private static final int METHODID_CREATE_INSTANCE_PARTITION = 16;
+  private static final int METHODID_DELETE_INSTANCE_PARTITION = 17;
+  private static final int METHODID_UPDATE_INSTANCE_PARTITION = 18;
+  private static final int METHODID_LIST_INSTANCE_PARTITION_OPERATIONS = 19;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -2405,6 +3399,13 @@ public final class InstanceAdminGrpc {
                       com.google.spanner.admin.instance.v1.ListInstancesResponse>)
                   responseObserver);
           break;
+        case METHODID_LIST_INSTANCE_PARTITIONS:
+          serviceImpl.listInstancePartitions(
+              (com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest) request,
+              (io.grpc.stub.StreamObserver<
+                      com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>)
+                  responseObserver);
+          break;
         case METHODID_GET_INSTANCE:
           serviceImpl.getInstance(
               (com.google.spanner.admin.instance.v1.GetInstanceRequest) request,
@@ -2440,6 +3441,34 @@ public final class InstanceAdminGrpc {
           serviceImpl.testIamPermissions(
               (com.google.iam.v1.TestIamPermissionsRequest) request,
               (io.grpc.stub.StreamObserver<com.google.iam.v1.TestIamPermissionsResponse>)
+                  responseObserver);
+          break;
+        case METHODID_GET_INSTANCE_PARTITION:
+          serviceImpl.getInstancePartition(
+              (com.google.spanner.admin.instance.v1.GetInstancePartitionRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.spanner.admin.instance.v1.InstancePartition>)
+                  responseObserver);
+          break;
+        case METHODID_CREATE_INSTANCE_PARTITION:
+          serviceImpl.createInstancePartition(
+              (com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
+          break;
+        case METHODID_DELETE_INSTANCE_PARTITION:
+          serviceImpl.deleteInstancePartition(
+              (com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);
+          break;
+        case METHODID_UPDATE_INSTANCE_PARTITION:
+          serviceImpl.updateInstancePartition(
+              (com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
+          break;
+        case METHODID_LIST_INSTANCE_PARTITION_OPERATIONS:
+          serviceImpl.listInstancePartitionOperations(
+              (com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest) request,
+              (io.grpc.stub.StreamObserver<
+                      com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>)
                   responseObserver);
           break;
         default:
@@ -2507,6 +3536,13 @@ public final class InstanceAdminGrpc {
                     com.google.spanner.admin.instance.v1.ListInstancesResponse>(
                     service, METHODID_LIST_INSTANCES)))
         .addMethod(
+            getListInstancePartitionsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest,
+                    com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse>(
+                    service, METHODID_LIST_INSTANCE_PARTITIONS)))
+        .addMethod(
             getGetInstanceMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
                 new MethodHandlers<
@@ -2547,6 +3583,38 @@ public final class InstanceAdminGrpc {
                     com.google.iam.v1.TestIamPermissionsRequest,
                     com.google.iam.v1.TestIamPermissionsResponse>(
                     service, METHODID_TEST_IAM_PERMISSIONS)))
+        .addMethod(
+            getGetInstancePartitionMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.GetInstancePartitionRequest,
+                    com.google.spanner.admin.instance.v1.InstancePartition>(
+                    service, METHODID_GET_INSTANCE_PARTITION)))
+        .addMethod(
+            getCreateInstancePartitionMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest,
+                    com.google.longrunning.Operation>(service, METHODID_CREATE_INSTANCE_PARTITION)))
+        .addMethod(
+            getDeleteInstancePartitionMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest,
+                    com.google.protobuf.Empty>(service, METHODID_DELETE_INSTANCE_PARTITION)))
+        .addMethod(
+            getUpdateInstancePartitionMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest,
+                    com.google.longrunning.Operation>(service, METHODID_UPDATE_INSTANCE_PARTITION)))
+        .addMethod(
+            getListInstancePartitionOperationsMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest,
+                    com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>(
+                    service, METHODID_LIST_INSTANCE_PARTITION_OPERATIONS)))
         .build();
   }
 
@@ -2605,6 +3673,7 @@ public final class InstanceAdminGrpc {
                       .addMethod(getDeleteInstanceConfigMethod())
                       .addMethod(getListInstanceConfigOperationsMethod())
                       .addMethod(getListInstancesMethod())
+                      .addMethod(getListInstancePartitionsMethod())
                       .addMethod(getGetInstanceMethod())
                       .addMethod(getCreateInstanceMethod())
                       .addMethod(getUpdateInstanceMethod())
@@ -2612,6 +3681,11 @@ public final class InstanceAdminGrpc {
                       .addMethod(getSetIamPolicyMethod())
                       .addMethod(getGetIamPolicyMethod())
                       .addMethod(getTestIamPermissionsMethod())
+                      .addMethod(getGetInstancePartitionMethod())
+                      .addMethod(getCreateInstancePartitionMethod())
+                      .addMethod(getDeleteInstancePartitionMethod())
+                      .addMethod(getUpdateInstancePartitionMethod())
+                      .addMethod(getListInstancePartitionOperationsMethod())
                       .build();
         }
       }

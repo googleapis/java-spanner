@@ -17,11 +17,11 @@
 package com.google.cloud.spanner.connection;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -34,6 +34,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.truth.Truth;
@@ -43,9 +44,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -80,6 +84,17 @@ public class StatementParserTest {
   }
 
   private AbstractStatementParser parser;
+
+  @BeforeClass
+  public static void enableStatementCacheStats() {
+    AbstractStatementParser.resetParsers();
+    System.setProperty("spanner.record_statement_cache_stats", "true");
+  }
+
+  @AfterClass
+  public static void disableStatementCacheStats() {
+    System.clearProperty("spanner.record_statement_cache_stats");
+  }
 
   @Before
   public void setupParser() {
@@ -553,6 +568,19 @@ public class StatementParserTest {
     assertTrue(parser.parse(Statement.of("\t ANALYZE\n ")).isDdl());
     assertTrue(parser.parse(Statement.of("/* This is a comment */ ANALYZE ")).isDdl());
     assertTrue(parser.parse(Statement.of("-- comment\n ANALYZE ")).isDdl());
+    assertTrue(parser.parse(Statement.of("RENAME TABLE foo TO foo2")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ RENAME TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ rename TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("RENAME INDEX idx_foo TO idx_students_last_name")).isDdl());
+    assertTrue(
+        parser.parse(Statement.of("/* Fix typo */ Rename TABLE studens TO students")).isDdl());
+    assertTrue(
+        parser
+            .parse(Statement.of("   \t\nRENAME\n  INDEX idx_foo TO idx_students_last_name"))
+            .isDdl());
   }
 
   @Test
@@ -1037,85 +1065,86 @@ public class StatementParserTest {
   public void testGoogleStandardSQLDialectConvertPositionalParametersToNamedParameters() {
     assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
 
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters(
-                    '?', "select * from foo where name=?")
-                .sqlWithNamedParameters)
-        .isEqualTo("select * from foo where name=@p1");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?'?test?\"?test?\"?'?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1'?test?\"?test?\"?'@p2");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\'?s'?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1'?it\\'?s'@p2");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?'?it\\\"?s'?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1'?it\\\"?s'@p2");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?\"?it\\\"?s\"?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1\"?it\\\"?s\"@p2");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s'''?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1'''?it\\'?s'''@p2");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?\"\"\"?it\\\"?s\"\"\"?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1\"\"\"?it\\\"?s\"\"\"@p2");
+    assertEquals(
+        "select * from foo where name=@p1",
+        parser.convertPositionalParametersToNamedParameters('?', "select * from foo where name=?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1'?test?\"?test?\"?'@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'?test?\"?test?\"?'?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1'?it\\'?s'@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'?it\\'?s'?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1'?it\\\"?s'@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'?it\\\"?s'?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1\"?it\\\"?s\"@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?\"?it\\\"?s\"?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1'''?it\\'?s'''@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s'''?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1\"\"\"?it\\\"?s\"\"\"@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?\"\"\"?it\\\"?s\"\"\"?")
+            .sqlWithNamedParameters);
 
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?`?it\\`?s`?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1`?it\\`?s`@p2");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?```?it\\`?s```?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1```?it\\`?s```@p2");
-    assertThat(
-            parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s \n ?it\\'?s'''?")
-                .sqlWithNamedParameters)
-        .isEqualTo("@p1'''?it\\'?s \n ?it\\'?s'''@p2");
+    assertEquals(
+        "@p1`?it\\`?s`@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?`?it\\`?s`?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1```?it\\`?s```@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?```?it\\`?s```?")
+            .sqlWithNamedParameters);
+    assertEquals(
+        "@p1'''?it\\'?s \n ?it\\'?s'''@p2",
+        parser.convertPositionalParametersToNamedParameters('?', "?'''?it\\'?s \n ?it\\'?s'''?")
+            .sqlWithNamedParameters);
 
-    assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s'?");
-    assertUnclosedLiteral("?'?it\\'?s \n ?it\\'?s?");
-    assertUnclosedLiteral("?'''?it\\'?s \n ?it\\'?s'?");
+    assertUnclosedLiteral(parser, "?'?it\\'?s \n ?it\\'?s'?");
+    assertUnclosedLiteral(parser, "?'?it\\'?s \n ?it\\'?s?");
+    assertUnclosedLiteral(parser, "?'''?it\\'?s \n ?it\\'?s'?");
 
-    assertThat(
+    assertEquals(
+        "select 1, @p1, 'test?test', \"test?test\", foo.* from `foo` where col1=@p2 and col2='test' and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'",
         parser.convertPositionalParametersToNamedParameters(
                 '?',
                 "select 1, ?, 'test?test', \"test?test\", foo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'")
-            .sqlWithNamedParameters,
-        is(
-            equalTo(
-                "select 1, @p1, 'test?test', \"test?test\", foo.* from `foo` where col1=@p2 and col2='test' and col3=@p3 and col4='?' and col5=\"?\" and col6='?''?''?'")));
+            .sqlWithNamedParameters);
 
-    assertThat(
+    assertEquals(
+        "select * " + "from foo " + "where name=@p1 " + "and col2 like @p2 " + "and col3 > @p3",
         parser.convertPositionalParametersToNamedParameters(
                 '?',
                 "select * " + "from foo " + "where name=? " + "and col2 like ? " + "and col3 > ?")
-            .sqlWithNamedParameters,
-        is(
-            equalTo(
-                "select * "
-                    + "from foo "
-                    + "where name=@p1 "
-                    + "and col2 like @p2 "
-                    + "and col3 > @p3")));
-    assertThat(
+            .sqlWithNamedParameters);
+    assertEquals(
+        "select * " + "from foo " + "where id between @p1 and @p2",
         parser.convertPositionalParametersToNamedParameters(
                 '?', "select * " + "from foo " + "where id between ? and ?")
-            .sqlWithNamedParameters,
-        is(equalTo("select * " + "from foo " + "where id between @p1 and @p2")));
-    assertThat(
+            .sqlWithNamedParameters);
+    assertEquals(
+        "select * " + "from foo " + "limit @p1 offset @p2",
         parser.convertPositionalParametersToNamedParameters(
                 '?', "select * " + "from foo " + "limit ? offset ?")
-            .sqlWithNamedParameters,
-        is(equalTo("select * " + "from foo " + "limit @p1 offset @p2")));
-    assertThat(
+            .sqlWithNamedParameters);
+    assertEquals(
+        "select * "
+            + "from foo "
+            + "where col1=@p1 "
+            + "and col2 like @p2 "
+            + "and col3 > @p3 "
+            + "and col4 < @p4 "
+            + "and col5 != @p5 "
+            + "and col6 not in (@p6, @p7, @p8) "
+            + "and col7 in (@p9, @p10, @p11) "
+            + "and col8 between @p12 and @p13",
         parser.convertPositionalParametersToNamedParameters(
                 '?',
                 "select * "
@@ -1128,22 +1157,10 @@ public class StatementParserTest {
                     + "and col6 not in (?, ?, ?) "
                     + "and col7 in (?, ?, ?) "
                     + "and col8 between ? and ?")
-            .sqlWithNamedParameters,
-        is(
-            equalTo(
-                "select * "
-                    + "from foo "
-                    + "where col1=@p1 "
-                    + "and col2 like @p2 "
-                    + "and col3 > @p3 "
-                    + "and col4 < @p4 "
-                    + "and col5 != @p5 "
-                    + "and col6 not in (@p6, @p7, @p8) "
-                    + "and col7 in (@p9, @p10, @p11) "
-                    + "and col8 between @p12 and @p13")));
+            .sqlWithNamedParameters);
   }
 
-  private enum CommentInjector {
+  enum CommentInjector {
     NONE {
       @Override
       String inject(String sql, String comment) {
@@ -1184,57 +1201,57 @@ public class StatementParserTest {
           "/* comment /* with nested */ comment */"
         }) {
       for (CommentInjector injector : CommentInjector.values()) {
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("select * %sfrom foo where name=?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("select * %sfrom foo where name=$1", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?%s'?test?\"?test?\"?'?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1%s'?test?\"?test?\"?'$2", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?'?it\\''?s'%s?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1'?it\\''?s'%s$2", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?'?it\\\"?s'%s?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1'?it\\\"?s'%s$2", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?\"?it\\\"\"?s\"%s?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1\"?it\\\"\"?s\"%s$2", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?%s'''?it\\''?s'''?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1%s'''?it\\''?s'''$2", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?\"\"\"?it\\\"\"?s\"\"\"%s?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1\"\"\"?it\\\"\"?s\"\"\"%s$2", comment));
+        assertEquals(
+            injector.inject("select * %sfrom foo where name=$1", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("select * %sfrom foo where name=?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1%s'?test?\"?test?\"?'$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?%s'?test?\"?test?\"?'?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1'?it\\''?s'%s$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?'?it\\''?s'%s?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1'?it\\\"?s'%s$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?'?it\\\"?s'%s?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1\"?it\\\"\"?s\"%s$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?\"?it\\\"\"?s\"%s?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1%s'''?it\\''?s'''$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?%s'''?it\\''?s'''?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1\"\"\"?it\\\"\"?s\"\"\"%s$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?\"\"\"?it\\\"\"?s\"\"\"%s?", comment))
+                .sqlWithNamedParameters);
 
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?$$?it$?s$$%s?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1$$?it$?s$$%s$2", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?$tag$?it$$?s$tag$%s?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1$tag$?it$$?s$tag$%s$2", comment));
-        assertThat(
-                parser.convertPositionalParametersToNamedParameters(
-                        '?', injector.inject("?%s$$?it\\'?s \n ?it\\'?s$$?", comment))
-                    .sqlWithNamedParameters)
-            .isEqualTo(injector.inject("$1%s$$?it\\'?s \n ?it\\'?s$$$2", comment));
+        assertEquals(
+            injector.inject("$1$$?it$?s$$%s$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?$$?it$?s$$%s?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1$tag$?it$$?s$tag$%s$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?$tag$?it$$?s$tag$%s?", comment))
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("$1%s$$?it\\'?s \n ?it\\'?s$$$2", comment),
+            parser.convertPositionalParametersToNamedParameters(
+                    '?', injector.inject("?%s$$?it\\'?s \n ?it\\'?s$$?", comment))
+                .sqlWithNamedParameters);
 
         // Note: PostgreSQL allows a single-quoted string literal to contain line feeds.
         assertEquals(
@@ -1242,27 +1259,32 @@ public class StatementParserTest {
             parser.convertPositionalParametersToNamedParameters(
                     '?', injector.inject("?'?it\\''?s \n ?it\\''?s'%s?", comment))
                 .sqlWithNamedParameters);
-        assertUnclosedLiteral("?'?it\\''?s \n ?it\\''?s?");
+        assertUnclosedLiteral(parser, "?'?it\\''?s \n ?it\\''?s?");
         assertEquals(
             injector.inject("$1%s'''?it\\''?s \n ?it\\''?s'$2", comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?', injector.inject("?%s'''?it\\''?s \n ?it\\''?s'?", comment))
                 .sqlWithNamedParameters);
 
-        assertThat(
+        assertEquals(
+            injector.inject(
+                "select 1, $1, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=$2 and col2='test' and col3=$3 and col4='?' and col5=\"?\" and col6='?''?''?'",
+                comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?',
                     injector.inject(
                         "select 1, ?, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=? and col2='test' and col3=? and col4='?' and col5=\"?\" and col6='?''?''?'",
                         comment))
-                .sqlWithNamedParameters,
-            is(
-                equalTo(
-                    injector.inject(
-                        "select 1, $1, 'test?test', \"test?test\", %sfoo.* from `foo` where col1=$2 and col2='test' and col3=$3 and col4='?' and col5=\"?\" and col6='?''?''?'",
-                        comment))));
+                .sqlWithNamedParameters);
 
-        assertThat(
+        assertEquals(
+            injector.inject(
+                "select * "
+                    + "%sfrom foo "
+                    + "where name=$1 "
+                    + "and col2 like $2 "
+                    + "and col3 > $3",
+                comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?',
                     injector.inject(
@@ -1272,36 +1294,34 @@ public class StatementParserTest {
                             + "and col2 like ? "
                             + "and col3 > ?",
                         comment))
-                .sqlWithNamedParameters,
-            is(
-                equalTo(
-                    injector.inject(
-                        "select * "
-                            + "%sfrom foo "
-                            + "where name=$1 "
-                            + "and col2 like $2 "
-                            + "and col3 > $3",
-                        comment))));
-        assertThat(
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("select * " + "from foo " + "where id between $1%s and $2", comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?',
                     injector.inject(
                         "select * " + "from foo " + "where id between ?%s and ?", comment))
-                .sqlWithNamedParameters,
-            is(
-                equalTo(
-                    injector.inject(
-                        "select * " + "from foo " + "where id between $1%s and $2", comment))));
-        assertThat(
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject("select * " + "from foo " + "limit $1 %s offset $2", comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?',
                     injector.inject("select * " + "from foo " + "limit ? %s offset ?", comment))
-                .sqlWithNamedParameters,
-            is(
-                equalTo(
-                    injector.inject(
-                        "select * " + "from foo " + "limit $1 %s offset $2", comment))));
-        assertThat(
+                .sqlWithNamedParameters);
+        assertEquals(
+            injector.inject(
+                "select * "
+                    + "from foo "
+                    + "where col1=$1 "
+                    + "and col2 like $2 "
+                    + " %s "
+                    + "and col3 > $3 "
+                    + "and col4 < $4 "
+                    + "and col5 != $5 "
+                    + "and col6 not in ($6, $7, $8) "
+                    + "and col7 in ($9, $10, $11) "
+                    + "and col8 between $12 and $13",
+                comment),
             parser.convertPositionalParametersToNamedParameters(
                     '?',
                     injector.inject(
@@ -1317,22 +1337,7 @@ public class StatementParserTest {
                             + "and col7 in (?, ?, ?) "
                             + "and col8 between ? and ?",
                         comment))
-                .sqlWithNamedParameters,
-            is(
-                equalTo(
-                    injector.inject(
-                        "select * "
-                            + "from foo "
-                            + "where col1=$1 "
-                            + "and col2 like $2 "
-                            + " %s "
-                            + "and col3 > $3 "
-                            + "and col4 < $4 "
-                            + "and col5 != $5 "
-                            + "and col6 not in ($6, $7, $8) "
-                            + "and col7 in ($9, $10, $11) "
-                            + "and col8 between $12 and $13",
-                        comment))));
+                .sqlWithNamedParameters);
       }
     }
   }
@@ -1571,11 +1576,30 @@ public class StatementParserTest {
   }
 
   int skipSingleLineComment(String sql, int startIndex) {
-    return PostgreSQLStatementParser.skipSingleLineComment(sql, startIndex, null);
+    return AbstractStatementParser.skipSingleLineComment(sql, startIndex, null);
   }
 
   int skipMultiLineComment(String sql, int startIndex) {
-    return PostgreSQLStatementParser.skipMultiLineComment(sql, startIndex, null);
+    return parser.skipMultiLineComment(sql, startIndex, null);
+  }
+
+  @Test
+  public void testConcatenatedLiterals() {
+    assumeTrue(dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    assertTrue(parser.isUpdateStatement("UPDATE foo SET name='foo' 'bar' WHERE ID=1"));
+    assertTrue(parser.isQuery("SELECT 'boo'   'bar' FROM my_table WHERE value='lit1''lit2'"));
+    assertTrue(
+        parser.checkReturningClause(
+            "insert into my_table (id, value) values (1, 'value' '1') then return id"));
+    assertTrue(parser.isUpdateStatement("UPDATE foo SET name=b'foo' b'bar' WHERE ID=1"));
+
+    assertEquals(
+        1,
+        parser.convertPositionalParametersToNamedParameters(
+                '?', "select 'foo?''bar?' where id=? and value='?'  '?'")
+            .numberOfParameters,
+        1);
   }
 
   @Test
@@ -1609,18 +1633,77 @@ public class StatementParserTest {
         skipMultiLineComment("/* foo /* inner comment */ not in inner comment */ bar", 0));
   }
 
-  private void assertUnclosedLiteral(String sql) {
-    try {
-      parser.convertPositionalParametersToNamedParameters('?', sql);
-      fail("missing expected exception");
-    } catch (SpannerException e) {
-      assertThat(e.getErrorCode()).isSameInstanceAs(ErrorCode.INVALID_ARGUMENT);
-      assertThat(e.getMessage())
-          .startsWith(
-              ErrorCode.INVALID_ARGUMENT.name()
-                  + ": SQL statement contains an unclosed literal: "
-                  + sql);
-    }
+  @Test
+  public void testStatementCache_NonParameterizedStatement() {
+    CacheStats statsBefore = parser.getStatementCacheStats();
+
+    String sql = "select foo from bar where id=" + UUID.randomUUID();
+    ParsedStatement parsedStatement1 = parser.parse(Statement.of(sql));
+    assertEquals(StatementType.QUERY, parsedStatement1.getType());
+
+    ParsedStatement parsedStatement2 = parser.parse(Statement.of(sql));
+    assertEquals(StatementType.QUERY, parsedStatement2.getType());
+
+    // Even though the parsed statements are cached, the returned instances are not the same.
+    // This makes sure that statements with the same SQL string and different parameter values
+    // can use the cache.
+    assertNotSame(parsedStatement1, parsedStatement2);
+
+    CacheStats statsAfter = parser.getStatementCacheStats();
+    CacheStats stats = statsAfter.minus(statsBefore);
+
+    // The first query had a cache miss. The second a cache hit.
+    assertEquals(1, stats.missCount());
+    assertEquals(1, stats.hitCount());
+  }
+
+  @Test
+  public void testStatementCache_ParameterizedStatement() {
+    CacheStats statsBefore = parser.getStatementCacheStats();
+
+    String sql =
+        "select "
+            + UUID.randomUUID()
+            + " from bar where id="
+            + (dialect == Dialect.POSTGRESQL ? "$1" : "@p1");
+    Statement statement1 = Statement.newBuilder(sql).bind("p1").to(1L).build();
+    Statement statement2 = Statement.newBuilder(sql).bind("p1").to(2L).build();
+
+    ParsedStatement parsedStatement1 = parser.parse(statement1);
+    assertEquals(StatementType.QUERY, parsedStatement1.getType());
+    assertEquals(parsedStatement1.getStatement(), statement1);
+
+    ParsedStatement parsedStatement2 = parser.parse(statement2);
+    assertEquals(StatementType.QUERY, parsedStatement2.getType());
+    assertEquals(parsedStatement2.getStatement(), statement2);
+
+    // Even though the parsed statements are cached, the returned instances are not the same.
+    // This makes sure that statements with the same SQL string and different parameter values
+    // can use the cache.
+    assertNotSame(parsedStatement1, parsedStatement2);
+
+    CacheStats statsAfter = parser.getStatementCacheStats();
+    CacheStats stats = statsAfter.minus(statsBefore);
+
+    // The first query had a cache miss. The second a cache hit.
+    assertEquals(1, stats.missCount());
+    assertEquals(1, stats.hitCount());
+  }
+
+  static void assertUnclosedLiteral(AbstractStatementParser parser, String sql) {
+    SpannerException exception =
+        assertThrows(
+            SpannerException.class,
+            () -> parser.convertPositionalParametersToNamedParameters('?', sql));
+    assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    assertTrue(
+        exception.getMessage(),
+        exception
+            .getMessage()
+            .startsWith(
+                ErrorCode.INVALID_ARGUMENT.name()
+                    + ": SQL statement contains an unclosed literal: "
+                    + sql));
   }
 
   @SuppressWarnings("unchecked")

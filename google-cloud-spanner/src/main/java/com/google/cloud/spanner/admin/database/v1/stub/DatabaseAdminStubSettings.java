@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -654,6 +654,21 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             "Transport not supported: %s", getTransportChannelProvider().getTransportName()));
   }
 
+  /** Returns the endpoint set by the user or the the service's default endpoint. */
+  @Override
+  public String getEndpoint() {
+    if (super.getEndpoint() != null) {
+      return super.getEndpoint();
+    }
+    return getDefaultEndpoint();
+  }
+
+  /** Returns the default service name. */
+  @Override
+  public String getServiceName() {
+    return "spanner";
+  }
+
   /** Returns a builder for the default ExecutorProvider for this service. */
   public static InstantiatingExecutorProvider.Builder defaultExecutorProviderBuilder() {
     return InstantiatingExecutorProvider.newBuilder();
@@ -698,7 +713,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     return defaultGrpcTransportProviderBuilder().build();
   }
 
-  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
   public static ApiClientHeaderProvider.Builder defaultGrpcApiClientHeaderProviderBuilder() {
     return ApiClientHeaderProvider.newBuilder()
         .setGeneratedLibToken(
@@ -707,7 +721,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             GaxGrpcProperties.getGrpcTokenName(), GaxGrpcProperties.getGrpcVersion());
   }
 
-  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
   public static ApiClientHeaderProvider.Builder defaultHttpJsonApiClientHeaderProviderBuilder() {
     return ApiClientHeaderProvider.newBuilder()
         .setGeneratedLibToken(
@@ -1022,7 +1035,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       builder.setTransportChannelProvider(defaultTransportChannelProvider());
       builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
       builder.setInternalHeaderProvider(defaultApiClientHeaderProviderBuilder().build());
-      builder.setEndpoint(getDefaultEndpoint());
       builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
       builder.setSwitchToMtlsEndpointAllowed(true);
 
@@ -1035,7 +1047,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
       builder.setTransportChannelProvider(defaultHttpJsonTransportProviderBuilder().build());
       builder.setCredentialsProvider(defaultCredentialsProviderBuilder().build());
       builder.setInternalHeaderProvider(defaultHttpJsonApiClientHeaderProviderBuilder().build());
-      builder.setEndpoint(getDefaultEndpoint());
       builder.setMtlsEndpoint(getDefaultMtlsEndpoint());
       builder.setSwitchToMtlsEndpointAllowed(true);
 
@@ -1318,8 +1329,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to createDatabase. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<CreateDatabaseRequest, Database, CreateDatabaseMetadata>
         createDatabaseOperationSettings() {
       return createDatabaseOperationSettings;
@@ -1336,8 +1345,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to updateDatabase. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<UpdateDatabaseRequest, Database, UpdateDatabaseMetadata>
         updateDatabaseOperationSettings() {
       return updateDatabaseOperationSettings;
@@ -1350,8 +1357,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to updateDatabaseDdl. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<UpdateDatabaseDdlRequest, Empty, UpdateDatabaseDdlMetadata>
         updateDatabaseDdlOperationSettings() {
       return updateDatabaseDdlOperationSettings;
@@ -1390,8 +1395,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to createBackup. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<CreateBackupRequest, Backup, CreateBackupMetadata>
         createBackupOperationSettings() {
       return createBackupOperationSettings;
@@ -1403,8 +1406,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to copyBackup. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<CopyBackupRequest, Backup, CopyBackupMetadata>
         copyBackupOperationSettings() {
       return copyBackupOperationSettings;
@@ -1438,8 +1439,6 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to restoreDatabase. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<RestoreDatabaseRequest, Database, RestoreDatabaseMetadata>
         restoreDatabaseOperationSettings() {
       return restoreDatabaseOperationSettings;
@@ -1468,6 +1467,15 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
             ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
         listDatabaseRolesSettings() {
       return listDatabaseRolesSettings;
+    }
+
+    /** Returns the endpoint set by the user or the the service's default endpoint. */
+    @Override
+    public String getEndpoint() {
+      if (super.getEndpoint() != null) {
+        return super.getEndpoint();
+      }
+      return getDefaultEndpoint();
     }
 
     @Override

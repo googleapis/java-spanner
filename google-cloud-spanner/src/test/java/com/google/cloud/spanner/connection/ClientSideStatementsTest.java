@@ -167,8 +167,10 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
       AbstractStatementParser parser, ClientSideStatementImpl statement) {
     for (String sql : statement.getExampleStatements()) {
       log(statement.getExamplePrerequisiteStatements(), sql);
-      if (statement.getStatementType() != ClientSideStatementType.RUN_PARTITION) {
+      if (statement.getStatementType() != ClientSideStatementType.RUN_PARTITION
+          && statement.getStatementType() != ClientSideStatementType.SET_DIRECTED_READ) {
         // Partition ids are case-sensitive.
+        // DirectedReadOptions are case-sensitive.
         log(statement.getExamplePrerequisiteStatements(), upper(sql));
         log(statement.getExamplePrerequisiteStatements(), lower(sql));
       }

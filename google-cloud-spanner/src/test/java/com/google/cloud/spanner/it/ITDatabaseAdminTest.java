@@ -40,7 +40,6 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
 import java.util.ArrayList;
@@ -48,9 +47,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -68,7 +68,6 @@ public class ITDatabaseAdminTest {
   private static final Logger logger = Logger.getLogger(ITDatabaseAdminTest.class.getName());
   private DatabaseAdminClient dbAdminClient;
   private RemoteSpannerHelper testHelper;
-  private List<Database> dbs = new ArrayList<>();
 
   @Before
   public void setUp() {
@@ -76,25 +75,13 @@ public class ITDatabaseAdminTest {
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
   }
 
-  @After
-  public void tearDown() {
-    for (Database db : dbs) {
-      db.drop();
-    }
-    dbs.clear();
-  }
-
   @Test
   public void testDatabaseOperations() throws Exception {
-    final String databaseId = testHelper.getUniqueDatabaseId();
     final String instanceId = testHelper.getInstanceId().getInstance();
     final String createTableT = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
 
-    final Database createdDatabase =
-        dbAdminClient
-            .createDatabase(instanceId, databaseId, ImmutableList.of(createTableT))
-            .get(5, TimeUnit.MINUTES);
-    dbs.add(createdDatabase);
+    final Database createdDatabase = testHelper.createTestDatabase(createTableT);
+    final String databaseId = createdDatabase.getId().getDatabase();
 
     assertEquals(databaseId, createdDatabase.getId().getDatabase());
     assertEquals(Dialect.GOOGLE_STANDARD_SQL, createdDatabase.getDialect());
@@ -124,7 +111,6 @@ public class ITDatabaseAdminTest {
     assertEquals(databaseDdl, ImmutableList.of(createTableT, createTableT2));
 
     dbAdminClient.dropDatabase(instanceId, databaseId);
-    dbs.clear();
 
     try {
       dbAdminClient.getDatabase(instanceId, databaseId);
@@ -136,13 +122,11 @@ public class ITDatabaseAdminTest {
 
   @Test
   public void updateDdlRetry() throws Exception {
-    String dbId = testHelper.getUniqueDatabaseId();
     String instanceId = testHelper.getInstanceId().getInstance();
     String statement1 = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
-    OperationFuture<Database, CreateDatabaseMetadata> op =
-        dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.of(statement1));
-    Database db = op.get(TIMEOUT_MINUTES, TimeUnit.MINUTES);
-    dbs.add(db);
+    Database db = testHelper.createTestDatabase(statement1);
+    String dbId = db.getId().getDatabase();
+
     String statement2 = "CREATE TABLE T2 (\n" + "  K2 STRING(MAX),\n" + ") PRIMARY KEY(K2)";
     OperationFuture<Void, UpdateDatabaseDdlMetadata> op1 =
         dbAdminClient.updateDatabaseDdl(instanceId, dbId, ImmutableList.of(statement2), "myop");
@@ -163,13 +147,9 @@ public class ITDatabaseAdminTest {
 
   @Test
   public void databaseOperationsViaEntity() throws Exception {
-    String dbId = testHelper.getUniqueDatabaseId();
-    String instanceId = testHelper.getInstanceId().getInstance();
     String statement1 = "CREATE TABLE T (\n" + "  K STRING(MAX),\n" + ") PRIMARY KEY(K)";
-    OperationFuture<Database, CreateDatabaseMetadata> op =
-        dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.of(statement1));
-    Database db = op.get(TIMEOUT_MINUTES, TimeUnit.MINUTES);
-    dbs.add(db);
+    Database db = testHelper.createTestDatabase(statement1);
+    String dbId = db.getId().getDatabase();
     assertThat(db.getId().getDatabase()).isEqualTo(dbId);
 
     db = db.reload();
@@ -181,7 +161,6 @@ public class ITDatabaseAdminTest {
     Iterable<String> statementsInDb = db.getDdl();
     assertThat(statementsInDb).containsExactly(statement1, statement2);
     db.drop();
-    dbs.clear();
     try {
       db.reload();
       fail("Expected exception");
@@ -191,16 +170,11 @@ public class ITDatabaseAdminTest {
   }
 
   @Test
-  public void listPagination() throws Exception {
-    List<String> dbIds =
-        ImmutableList.of(
-            testHelper.getUniqueDatabaseId(),
-            testHelper.getUniqueDatabaseId(),
-            testHelper.getUniqueDatabaseId());
-
+  public void listPagination() {
     String instanceId = testHelper.getInstanceId().getInstance();
-    for (String dbId : dbIds) {
-      dbs.add(dbAdminClient.createDatabase(instanceId, dbId, ImmutableList.of()).get());
+    List<String> dbIds = new ArrayList<>(3);
+    for (int n = 0; n < 3; n++) {
+      dbIds.add(testHelper.createTestDatabase().getId().getDatabase());
     }
     Page<Database> page = dbAdminClient.listDatabases(instanceId, Options.pageSize(1));
     List<String> dbIdsGot = new ArrayList<>();
@@ -228,10 +202,7 @@ public class ITDatabaseAdminTest {
             testHelper.getUniqueDatabaseRole());
 
     String instanceId = testHelper.getInstanceId().getInstance();
-    Database database =
-        dbAdminClient
-            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
-            .get();
+    Database database = testHelper.createTestDatabase();
 
     // Create the roles in Db.
     List<String> dbRolesCreateStatements = new ArrayList<>();
@@ -280,13 +251,9 @@ public class ITDatabaseAdminTest {
   }
 
   @Test
-  public void updateDatabaseInvalidFieldsToUpdate() throws Exception {
+  public void updateDatabaseInvalidFieldsToUpdate() {
     assumeFalse("Emulator does not drop database protection", isUsingEmulator());
-    String instanceId = testHelper.getInstanceId().getInstance();
-    Database database =
-        dbAdminClient
-            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
-            .get();
+    Database database = testHelper.createTestDatabase();
     logger.log(Level.INFO, "Created database: {0}", database.getId().getName());
 
     Database databaseToUpdate =
@@ -295,19 +262,21 @@ public class ITDatabaseAdminTest {
     OperationFuture<Database, UpdateDatabaseMetadata> op =
         dbAdminClient.updateDatabase(databaseToUpdate);
 
-    ExecutionException e =
-        assertThrows(ExecutionException.class, () -> op.get(5, TimeUnit.MINUTES));
-    assertThat(e.getMessage()).contains("Invalid field mask");
+    try {
+      op.get(5, TimeUnit.MINUTES);
+      Assert.fail("No exception thrown");
+    } catch (ExecutionException | InterruptedException | TimeoutException e) {
+      Assert.assertTrue(e.getCause() instanceof SpannerException);
+      SpannerException exception = ((SpannerException) e.getCause());
+      assertEquals(ErrorCode.INVALID_ARGUMENT, exception.getErrorCode());
+    }
   }
 
   @Test
   public void dropDatabaseWithProtectionEnabled() throws Exception {
     assumeFalse("Emulator does not drop database protection", isUsingEmulator());
     String instanceId = testHelper.getInstanceId().getInstance();
-    Database database =
-        dbAdminClient
-            .createDatabase(instanceId, testHelper.getUniqueDatabaseId(), ImmutableList.of())
-            .get();
+    Database database = testHelper.createTestDatabase();
     logger.log(Level.INFO, "Created database: {0}", database.getId().getName());
 
     // Enable drop protection for the database.

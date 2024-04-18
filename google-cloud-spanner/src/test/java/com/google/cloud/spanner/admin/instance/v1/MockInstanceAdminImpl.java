@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,21 +26,30 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceAdminGrpc.InstanceAdminImplBase;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstancePartition;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -231,6 +240,28 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
   }
 
   @Override
+  public void listInstancePartitions(
+      ListInstancePartitionsRequest request,
+      StreamObserver<ListInstancePartitionsResponse> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof ListInstancePartitionsResponse) {
+      requests.add(request);
+      responseObserver.onNext(((ListInstancePartitionsResponse) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method ListInstancePartitions, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  ListInstancePartitionsResponse.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
   public void getInstance(GetInstanceRequest request, StreamObserver<Instance> responseObserver) {
     Object response = responses.poll();
     if (response instanceof Instance) {
@@ -371,6 +402,112 @@ public class MockInstanceAdminImpl extends InstanceAdminImplBase {
                   "Unrecognized response type %s for method TestIamPermissions, expected %s or %s",
                   response == null ? "null" : response.getClass().getName(),
                   TestIamPermissionsResponse.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void getInstancePartition(
+      GetInstancePartitionRequest request, StreamObserver<InstancePartition> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof InstancePartition) {
+      requests.add(request);
+      responseObserver.onNext(((InstancePartition) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method GetInstancePartition, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  InstancePartition.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void createInstancePartition(
+      CreateInstancePartitionRequest request, StreamObserver<Operation> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof Operation) {
+      requests.add(request);
+      responseObserver.onNext(((Operation) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method CreateInstancePartition, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  Operation.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void deleteInstancePartition(
+      DeleteInstancePartitionRequest request, StreamObserver<Empty> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof Empty) {
+      requests.add(request);
+      responseObserver.onNext(((Empty) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method DeleteInstancePartition, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  Empty.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void updateInstancePartition(
+      UpdateInstancePartitionRequest request, StreamObserver<Operation> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof Operation) {
+      requests.add(request);
+      responseObserver.onNext(((Operation) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method UpdateInstancePartition, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  Operation.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void listInstancePartitionOperations(
+      ListInstancePartitionOperationsRequest request,
+      StreamObserver<ListInstancePartitionOperationsResponse> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof ListInstancePartitionOperationsResponse) {
+      requests.add(request);
+      responseObserver.onNext(((ListInstancePartitionOperationsResponse) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method ListInstancePartitionOperations, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  ListInstancePartitionOperationsResponse.class.getName(),
                   Exception.class.getName())));
     }
   }

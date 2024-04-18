@@ -33,13 +33,16 @@ import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -490,6 +493,22 @@ public interface Connection extends AutoCloseable {
   TimestampBound getReadOnlyStaleness();
 
   /**
+   * Sets the {@link DirectedReadOptions} to use for both single-use and multi-use read-only
+   * transactions on this connection.
+   */
+  default void setDirectedRead(DirectedReadOptions directedReadOptions) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Returns the {@link DirectedReadOptions} that are used for both single-use and multi-use
+   * read-only transactions on this connection.
+   */
+  default DirectedReadOptions getDirectedRead() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Sets the query optimizer version to use for this connection.
    *
    * @param optimizerVersion The query optimizer version to use. Must be a valid optimizer version
@@ -538,6 +557,16 @@ public interface Connection extends AutoCloseable {
 
   /** @return true if this connection requests commit statistics from Cloud Spanner */
   boolean isReturnCommitStats();
+
+  /** Sets the max_commit_delay that will be applied to commit requests from this connection. */
+  default void setMaxCommitDelay(Duration maxCommitDelay) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /** Returns the max_commit_delay that will be applied to commit requests from this connection. */
+  default Duration getMaxCommitDelay() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Sets the priority to use for RPCs executed by this connection..
@@ -1339,6 +1368,12 @@ public interface Connection extends AutoCloseable {
   /** The {@link DatabaseClient} that is used by this {@link Connection}. */
   @InternalApi
   default DatabaseClient getDatabaseClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** The {@link Spanner} instance that is used by this {@link Connection}. */
+  @InternalApi
+  default Spanner getSpanner() {
     throw new UnsupportedOperationException("Not implemented");
   }
 

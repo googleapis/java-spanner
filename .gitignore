@@ -22,6 +22,7 @@ nosetests.xml
 .settings
 .DS_Store
 .classpath
+.tool-versions
 
 # Built documentation
 docs/
@@ -30,3 +31,5 @@ docs/
 *.pyc
 
 .flattened-pom.xml
+.java-version
+.vscode/
