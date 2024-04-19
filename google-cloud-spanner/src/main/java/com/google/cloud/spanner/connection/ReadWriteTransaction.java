@@ -99,7 +99,13 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
    */
   private static final String AUTO_SAVEPOINT_NAME = "_auto_savepoint";
 
-  /** Indicates whether an automatic savepoint should be generated after each statement. */
+  /**
+   * Indicates whether an automatic savepoint should be generated after each statement, so the
+   * transaction can be manually aborted and retried by the Connection API when connected to the
+   * emulator. This feature is only intended for use with the Spanner emulator. When connected to
+   * real Spanner, the decision whether to abort a transaction or not should be delegated to
+   * Spanner.
+   */
   private final boolean useAutoSavepointsForEmulator;
   /**
    * The savepoint that was automatically generated after executing the last statement. This is used
@@ -135,7 +141,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     private final Savepoint savepoint;
 
     RollbackToSavepointException(Savepoint savepoint) {
-      this.savepoint = savepoint;
+      this.savepoint = Preconditions.checkNotNull(savepoint);
     }
 
     Savepoint getSavepoint() {
