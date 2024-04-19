@@ -1575,7 +1575,7 @@ class SessionPool {
 
   class MultiplexedSessionFuture implements SessionFuture {
 
-    private ISpan span;
+    private final ISpan span;
     private volatile MultiplexedSession multiplexedSession;
 
     MultiplexedSessionFuture(ISpan span) {
@@ -1786,17 +1786,22 @@ class SessionPool {
     public MultiplexedSession get() {
       try {
         if (multiplexedSession == null) {
-          // access the settableApiFuture object before acquiring lock to avoid deadlock
-          SessionImpl sessionImpl =
-              new SessionImpl(
-                  sessionClient.getSpanner(), currentMultiplexedSessionReference.get().get());
-          synchronized (lock) {
+          boolean created = false;
+          synchronized (this) {
             if (multiplexedSession == null) {
+              SessionImpl sessionImpl =
+                  new SessionImpl(
+                      sessionClient.getSpanner(), currentMultiplexedSessionReference.get().get());
               MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
               multiplexedSession.markBusy(span);
               span.addAnnotation("Using Session", "sessionId", multiplexedSession.getName());
-              incrementNumSessionsInUse(true);
               this.multiplexedSession = multiplexedSession;
+              created = true;
+            }
+          }
+          if (created) {
+            synchronized (lock) {
+              incrementNumSessionsInUse(true);
             }
           }
         }
