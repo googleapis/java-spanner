@@ -36,6 +36,7 @@ import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -81,6 +82,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
             .setMaxSessions(2)
             .setUseMultiplexedSession(true)
             .build();
+    Assume.assumeTrue(options.getUseMultiplexedSession());
   }
 
   @Test
@@ -97,7 +99,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
       assertNotNull(multiplexedSessionFuture.get());
     }
     verify(sessionClient, times(1))
-        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
   }
 
   @Test
@@ -136,7 +138,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
     options =
         options
             .toBuilder()
@@ -151,7 +153,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
     for (int i = 0; i < 5; i++) {
       SpannerException e =
           assertThrows(
-              SpannerException.class, () -> pool.getMultiplexedSessionWithFallback().get());
+              SpannerException.class, () -> pool.getMultiplexedSessionWithFallback().get().get());
       assertEquals(ErrorCode.DEADLINE_EXCEEDED, e.getErrorCode());
     }
     // assert that all 5 requests failed with exception
@@ -168,6 +170,6 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
   }
 }

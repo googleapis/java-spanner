@@ -1575,8 +1575,9 @@ public class StatementParserTest {
         parser.parse(Statement.of("insert into t1 select 10.returning*")).hasReturningClause());
   }
 
-  int skipSingleLineComment(String sql, int startIndex) {
-    return AbstractStatementParser.skipSingleLineComment(sql, startIndex, null);
+  int skipSingleLineComment(String sql, int prefixLength, int startIndex) {
+    return AbstractStatementParser.skipSingleLineComment(
+        dialect, sql, prefixLength, startIndex, null);
   }
 
   int skipMultiLineComment(String sql, int startIndex) {
@@ -1606,12 +1607,12 @@ public class StatementParserTest {
   public void testSkipSingleLineComment() {
     assumeTrue(dialect == Dialect.POSTGRESQL);
 
-    assertEquals(7, skipSingleLineComment("-- foo\n", 0));
-    assertEquals(7, skipSingleLineComment("-- foo\nbar", 0));
-    assertEquals(6, skipSingleLineComment("-- foo", 0));
-    assertEquals(11, skipSingleLineComment("bar -- foo\n", 4));
-    assertEquals(11, skipSingleLineComment("bar -- foo\nbar", 4));
-    assertEquals(10, skipSingleLineComment("bar -- foo", 4));
+    assertEquals(7, skipSingleLineComment("-- foo\n", 2, 0));
+    assertEquals(7, skipSingleLineComment("-- foo\nbar", 2, 0));
+    assertEquals(6, skipSingleLineComment("-- foo", 2, 0));
+    assertEquals(11, skipSingleLineComment("bar -- foo\n", 2, 4));
+    assertEquals(11, skipSingleLineComment("bar -- foo\nbar", 2, 4));
+    assertEquals(10, skipSingleLineComment("bar -- foo", 2, 4));
   }
 
   @Test

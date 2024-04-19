@@ -16,6 +16,7 @@
   "requires_billing": true,
   "codeowner_team": "@googleapis/api-spanner-java",
   "library_type": "GAPIC_COMBO",
-  "excluded_poms": "google-cloud-spanner-bom"
+  "excluded_poms": "google-cloud-spanner-bom",
+  "recommended_package": "com.google.cloud.spanner"
 }
 

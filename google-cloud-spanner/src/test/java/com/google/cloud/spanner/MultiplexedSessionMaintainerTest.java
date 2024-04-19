@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.SessionPool.CachedSession;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
 import com.google.cloud.spanner.SessionPool.MultiplexedSessionMaintainerConsumer;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -40,6 +41,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,12 +79,13 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
             .setKeepAliveIntervalMinutes(2)
             .setUseMultiplexedSession(true)
             .build();
+    Assume.assumeTrue(options.getUseMultiplexedSession());
     multiplexedSessionsRemoved.clear();
   }
 
   @Test
   public void testMaintainMultiplexedSession_whenNewSessionCreated_assertThatStaleSessionIsRemoved()
-      throws InterruptedException {
+      throws Exception {
     doAnswer(
             invocation -> {
               MultiplexedSessionInitializationConsumer consumer =
@@ -97,7 +100,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
     doAnswer(
             invocation -> {
               MultiplexedSessionMaintainerConsumer consumer =
@@ -112,12 +115,12 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
 
     SessionPool pool = createPool();
 
     // Run one maintenance loop.
-    SessionFutureWrapper session1 = pool.getMultiplexedSessionWithFallback();
+    CachedSession session1 = pool.getMultiplexedSessionWithFallback().get().get();
     runMaintenanceLoop(clock, pool, 1);
     assertTrue(multiplexedSessionsRemoved.isEmpty());
 
@@ -127,10 +130,11 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     // Run second maintenance loop. the first session would now be stale since it has now existed
     // for more than 7 days.
     runMaintenanceLoop(clock, pool, 1);
-    SessionFutureWrapper session2 = pool.getMultiplexedSessionWithFallback();
-    assertNotEquals(session1.get().getName(), session2.get().getName());
+
+    CachedSession session2 = pool.getMultiplexedSessionWithFallback().get().get();
+    assertNotEquals(session1.getName(), session2.getName());
     assertEquals(1, multiplexedSessionsRemoved.size());
-    assertTrue(getNameOfSessionRemoved().contains(session1.get().get().getName()));
+    assertTrue(getNameOfSessionRemoved().contains(session1.getName()));
 
     // Advance clock by 8 days
     clock.currentTimeMillis.addAndGet(Duration.ofDays(8).toMillis());
@@ -139,10 +143,10 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     // for more than 7 days
     runMaintenanceLoop(clock, pool, 1);
 
-    SessionFutureWrapper session3 = pool.getMultiplexedSessionWithFallback();
-    assertNotEquals(session2.get().getName(), session3.get().getName());
+    CachedSession session3 = pool.getMultiplexedSessionWithFallback().get().get();
+    assertNotEquals(session2.getName(), session3.getName());
     assertEquals(2, multiplexedSessionsRemoved.size());
-    assertTrue(getNameOfSessionRemoved().contains(session2.get().get().getName()));
+    assertTrue(getNameOfSessionRemoved().contains(session2.getName()));
   }
 
   @Test
@@ -162,7 +166,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
     SessionPool pool = createPool();
 
     // Run one maintenance loop.
@@ -197,7 +201,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
     doAnswer(
             invocation -> {
               MultiplexedSessionMaintainerConsumer consumer =
@@ -207,7 +211,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
     SessionPool pool = createPool();
 
     // Advance clock by 8 days
@@ -218,7 +222,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     runMaintenanceLoop(clock, pool, 1);
     assertTrue(multiplexedSessionsRemoved.isEmpty());
     verify(sessionClient, times(1))
-        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
 
     // Advance clock by 10s and now mock session creation to be successful.
     clock.currentTimeMillis.addAndGet(Duration.ofSeconds(10).toMillis());
@@ -236,7 +240,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
               return null;
             })
         .when(sessionClient)
-        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
     // Run one maintenance loop. Attempt should be ignored as it has not been 10 minutes since last
     // attempt.
     runMaintenanceLoop(clock, pool, 1);
@@ -244,7 +248,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     assertTrue(multiplexedSessionsRemoved.isEmpty());
     assertEquals(session1.get().getName(), session2.get().getName());
     verify(sessionClient, times(1))
-        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
 
     // Advance clock by 15 minutes
     clock.currentTimeMillis.addAndGet(Duration.ofMinutes(15).toMillis());
@@ -255,7 +259,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
     assertTrue(getNameOfSessionRemoved().contains(session1.get().get().getName()));
     assertNotEquals(session1.get().getName(), session3.get().getName());
     verify(sessionClient, times(2))
-        .createMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionMaintainerConsumer.class));
   }
 
   private SessionImpl setupMockSession(final SessionImpl session, final ReadContext mockContext) {
