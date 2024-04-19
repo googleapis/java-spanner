@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -123,6 +124,10 @@ public class SessionPoolMaintainerMockServerTest extends AbstractMockServerTest 
 
   @Test
   public void testSessionNotFoundIsRetried() {
+    assumeFalse(
+        "Session not found errors are not relevant for multiplexed sessions",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
+
     int minSessions = spanner.getOptions().getSessionPoolOptions().getMinSessions();
     DatabaseClientImpl client =
         (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
