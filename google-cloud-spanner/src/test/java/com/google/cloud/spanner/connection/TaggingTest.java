@@ -18,24 +18,48 @@ package com.google.cloud.spanner.connection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public class TaggingTest extends AbstractMockServerTest {
+
+  @Parameters(name = "dialect = {0}")
+  public static Object[] data() {
+    return Dialect.values();
+  }
+
+  @Parameter public Dialect dialect;
+
+  private Dialect currentDialect;
+
+  @Before
+  public void setupDialect() {
+    if (currentDialect != dialect) {
+      mockSpanner.putStatementResult(
+          MockSpannerServiceImpl.StatementResult.detectDialectResult(dialect));
+      SpannerPool.closeSpannerPool();
+      currentDialect = dialect;
+    }
+  }
 
   @After
   public void clearRequests() {
@@ -46,12 +70,8 @@ public class TaggingTest extends AbstractMockServerTest {
   public void testStatementTagNotAllowedForCommit() {
     try (Connection connection = createConnection()) {
       connection.setStatementTag("tag-1");
-      try {
-        connection.commit();
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      }
+      SpannerException exception = assertThrows(SpannerException.class, connection::commit);
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
     }
   }
 
@@ -59,12 +79,8 @@ public class TaggingTest extends AbstractMockServerTest {
   public void testStatementTagNotAllowedForRollback() {
     try (Connection connection = createConnection()) {
       connection.setStatementTag("tag-1");
-      try {
-        connection.rollback();
-        fail("missing expected exception");
-      } catch (SpannerException e) {
-        assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-      }
+      SpannerException exception = assertThrows(SpannerException.class, connection::rollback);
+      assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
     }
   }
 
@@ -74,12 +90,11 @@ public class TaggingTest extends AbstractMockServerTest {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
         connection.startBatchDml();
-        try {
-          connection.setStatementTag("tag-1");
-          fail("missing expected exception");
-        } catch (SpannerException e) {
-          assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
-        }
+
+        SpannerException exception =
+            assertThrows(SpannerException.class, () -> connection.setStatementTag("tag-1"));
+        assertEquals(ErrorCode.FAILED_PRECONDITION, exception.getErrorCode());
+
         connection.abortBatch();
       }
     }
@@ -90,7 +105,8 @@ public class TaggingTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
-        try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
+        //noinspection EmptyTryBlock
+        try (ResultSet ignore = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
         assertEquals(
             "",
@@ -172,7 +188,7 @@ public class TaggingTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
-        connection.executeBatchUpdate(Arrays.asList(INSERT_STATEMENT));
+        connection.executeBatchUpdate(Collections.singletonList(INSERT_STATEMENT));
 
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
         assertEquals(
@@ -201,7 +217,8 @@ public class TaggingTest extends AbstractMockServerTest {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
         connection.setStatementTag("tag-1");
-        try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
+        //noinspection EmptyTryBlock
+        try (ResultSet ignore = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
         assertEquals(
             "tag-1",
@@ -221,7 +238,8 @@ public class TaggingTest extends AbstractMockServerTest {
         mockSpanner.clearRequests();
 
         // The tag should automatically be cleared after a statement.
-        try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
+        //noinspection EmptyTryBlock
+        try (ResultSet ignore = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
         assertEquals(
             "",
@@ -346,7 +364,7 @@ public class TaggingTest extends AbstractMockServerTest {
       for (boolean autocommit : new boolean[] {true, false}) {
         connection.setAutocommit(autocommit);
         connection.setStatementTag("tag-3");
-        connection.executeBatchUpdate(Arrays.asList(INSERT_STATEMENT));
+        connection.executeBatchUpdate(Collections.singletonList(INSERT_STATEMENT));
 
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
         assertEquals(
@@ -366,7 +384,7 @@ public class TaggingTest extends AbstractMockServerTest {
 
         mockSpanner.clearRequests();
 
-        connection.executeBatchUpdate(Arrays.asList(INSERT_STATEMENT));
+        connection.executeBatchUpdate(Collections.singletonList(INSERT_STATEMENT));
 
         assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
         assertEquals(
@@ -393,7 +411,8 @@ public class TaggingTest extends AbstractMockServerTest {
   public void testQuery_TransactionTag() {
     try (Connection connection = createConnection()) {
       connection.setTransactionTag("tag-1");
-      try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
+      //noinspection EmptyTryBlock
+      try (ResultSet ignore = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
       connection.commit();
 
       assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
@@ -430,7 +449,8 @@ public class TaggingTest extends AbstractMockServerTest {
       mockSpanner.clearRequests();
 
       // The tag should automatically be cleared after a statement.
-      try (ResultSet rs = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
+      //noinspection EmptyTryBlock
+      try (ResultSet ignore = connection.executeQuery(SELECT_COUNT_STATEMENT)) {}
       connection.commit();
 
       assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
@@ -550,7 +570,7 @@ public class TaggingTest extends AbstractMockServerTest {
   public void testBatchUpdate_TransactionTag() {
     try (Connection connection = createConnection()) {
       connection.setTransactionTag("tag-3");
-      connection.executeBatchUpdate(Arrays.asList(INSERT_STATEMENT));
+      connection.executeBatchUpdate(Collections.singletonList(INSERT_STATEMENT));
       connection.commit();
 
       assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
@@ -586,7 +606,7 @@ public class TaggingTest extends AbstractMockServerTest {
 
       mockSpanner.clearRequests();
 
-      connection.executeBatchUpdate(Arrays.asList(INSERT_STATEMENT));
+      connection.executeBatchUpdate(Collections.singletonList(INSERT_STATEMENT));
       connection.commit();
 
       assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
@@ -705,34 +725,170 @@ public class TaggingTest extends AbstractMockServerTest {
   @Test
   public void testShowSetTags() {
     try (Connection connection = createConnection()) {
-      connection.execute(Statement.of("SET STATEMENT_TAG='tag1'"));
+      connection.execute(Statement.of(String.format("SET %sSTATEMENT_TAG='tag1'", prefix())));
       try (ResultSet rs =
-          connection.execute(Statement.of("SHOW VARIABLE STATEMENT_TAG")).getResultSet()) {
+          connection
+              .execute(Statement.of(String.format("SHOW VARIABLE %sSTATEMENT_TAG", prefix())))
+              .getResultSet()) {
         assertTrue(rs.next());
-        assertEquals("tag1", rs.getString("STATEMENT_TAG"));
+        assertEquals("tag1", rs.getString(String.format("%sSTATEMENT_TAG", prefix())));
         assertFalse(rs.next());
       }
-      connection.execute(Statement.of("SET STATEMENT_TAG=''"));
+      connection.execute(Statement.of(String.format("SET %sSTATEMENT_TAG=''", prefix())));
       try (ResultSet rs =
-          connection.execute(Statement.of("SHOW VARIABLE STATEMENT_TAG")).getResultSet()) {
+          connection
+              .execute(Statement.of(String.format("SHOW VARIABLE %sSTATEMENT_TAG", prefix())))
+              .getResultSet()) {
         assertTrue(rs.next());
-        assertEquals("", rs.getString("STATEMENT_TAG"));
+        assertEquals("", rs.getString(String.format("%sSTATEMENT_TAG", prefix())));
         assertFalse(rs.next());
       }
-      connection.execute(Statement.of("SET TRANSACTION_TAG='tag2'"));
+      connection.execute(Statement.of(String.format("SET %sTRANSACTION_TAG='tag2'", prefix())));
       try (ResultSet rs =
-          connection.execute(Statement.of("SHOW VARIABLE TRANSACTION_TAG")).getResultSet()) {
+          connection
+              .execute(Statement.of(String.format("SHOW VARIABLE %sTRANSACTION_TAG", prefix())))
+              .getResultSet()) {
         assertTrue(rs.next());
-        assertEquals("tag2", rs.getString("TRANSACTION_TAG"));
+        assertEquals("tag2", rs.getString(String.format("%sTRANSACTION_TAG", prefix())));
         assertFalse(rs.next());
       }
-      connection.execute(Statement.of("SET TRANSACTION_TAG=''"));
+      connection.execute(Statement.of(String.format("SET %sTRANSACTION_TAG=''", prefix())));
       try (ResultSet rs =
-          connection.execute(Statement.of("SHOW VARIABLE TRANSACTION_TAG")).getResultSet()) {
+          connection
+              .execute(Statement.of(String.format("SHOW VARIABLE %sTRANSACTION_TAG", prefix())))
+              .getResultSet()) {
         assertTrue(rs.next());
-        assertEquals("", rs.getString("TRANSACTION_TAG"));
+        assertEquals("", rs.getString(String.format("%sTRANSACTION_TAG", prefix())));
         assertFalse(rs.next());
       }
     }
+  }
+
+  @Test
+  public void testQuery_StatementTagHint() {
+    String sql = SELECT_COUNT_STATEMENT.getSql();
+
+    try (Connection connection = createConnection()) {
+      for (boolean autocommit : new boolean[] {true, false}) {
+        connection.setAutocommit(autocommit);
+        //noinspection EmptyTryBlock
+        try (ResultSet ignore =
+            connection.executeQuery(Statement.of(statementTagHint("tag-1") + sql))) {}
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+        assertEquals(
+            "tag-1",
+            mockSpanner
+                .getRequestsOfType(ExecuteSqlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getRequestTag());
+
+        mockSpanner.clearRequests();
+      }
+    }
+  }
+
+  @Test
+  public void testUpdate_StatementTagHint() {
+    String sql = INSERT_STATEMENT.getSql();
+
+    try (Connection connection = createConnection()) {
+      for (boolean autocommit : new boolean[] {true, false}) {
+        connection.setAutocommit(autocommit);
+        connection.executeUpdate(Statement.of(statementTagHint("tag-2") + sql));
+
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+        assertEquals(
+            "tag-2",
+            mockSpanner
+                .getRequestsOfType(ExecuteSqlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getRequestTag());
+        assertEquals(
+            "",
+            mockSpanner
+                .getRequestsOfType(ExecuteSqlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getTransactionTag());
+
+        mockSpanner.clearRequests();
+      }
+    }
+  }
+
+  @Test
+  public void testPartitionedUpdate_StatementTagHint() {
+    String sql = INSERT_STATEMENT.getSql();
+
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
+      connection.executeUpdate(Statement.of(statementTagHint("tag-4") + sql));
+
+      assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+      assertEquals(
+          "tag-4",
+          mockSpanner
+              .getRequestsOfType(ExecuteSqlRequest.class)
+              .get(0)
+              .getRequestOptions()
+              .getRequestTag());
+      assertEquals(
+          "",
+          mockSpanner
+              .getRequestsOfType(ExecuteSqlRequest.class)
+              .get(0)
+              .getRequestOptions()
+              .getTransactionTag());
+
+      mockSpanner.clearRequests();
+    }
+  }
+
+  @Test
+  public void testBatchUpdate_StatementTagHint() {
+    String sql = INSERT_STATEMENT.getSql();
+
+    try (Connection connection = createConnection()) {
+      for (boolean autocommit : new boolean[] {true, false}) {
+        connection.setAutocommit(autocommit);
+        connection.executeBatchUpdate(
+            Collections.singletonList(Statement.of(statementTagHint("tag-3") + sql)));
+
+        assertEquals(1, mockSpanner.countRequestsOfType(ExecuteBatchDmlRequest.class));
+        assertEquals(
+            "tag-3",
+            mockSpanner
+                .getRequestsOfType(ExecuteBatchDmlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getRequestTag());
+        assertEquals(
+            "",
+            mockSpanner
+                .getRequestsOfType(ExecuteBatchDmlRequest.class)
+                .get(0)
+                .getRequestOptions()
+                .getTransactionTag());
+
+        mockSpanner.clearRequests();
+      }
+    }
+  }
+
+  private String statementTagHint(String tag) {
+    switch (dialect) {
+      case POSTGRESQL:
+        return "/*@statement_tag='" + tag + "'*/";
+      case GOOGLE_STANDARD_SQL:
+      default:
+        return "@{statement_tag='" + tag + "'}";
+    }
+  }
+
+  private String prefix() {
+    return dialect == Dialect.POSTGRESQL ? "SPANNER." : "";
   }
 }

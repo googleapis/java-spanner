@@ -16,9 +16,13 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.SimpleParser.isValidIdentifierChar;
+import static com.google.cloud.spanner.connection.StatementHintParser.convertHintsToOptions;
+
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.ReadQueryUpdateTransactionOption;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
@@ -169,6 +173,7 @@ public abstract class AbstractStatementParser {
     private final Statement statement;
     private final String sqlWithoutComments;
     private final boolean returningClause;
+    private final ReadQueryUpdateTransactionOption[] optionsFromHints;
 
     private static ParsedStatement clientSideStatement(
         ClientSideStatementImpl clientSideStatement,
@@ -182,15 +187,27 @@ public abstract class AbstractStatementParser {
     }
 
     private static ParsedStatement query(
-        Statement statement, String sqlWithoutComments, QueryOptions defaultQueryOptions) {
+        Statement statement,
+        String sqlWithoutComments,
+        QueryOptions defaultQueryOptions,
+        ReadQueryUpdateTransactionOption[] optionsFromHints) {
       return new ParsedStatement(
-          StatementType.QUERY, null, statement, sqlWithoutComments, defaultQueryOptions, false);
+          StatementType.QUERY,
+          null,
+          statement,
+          sqlWithoutComments,
+          defaultQueryOptions,
+          false,
+          optionsFromHints);
     }
 
     private static ParsedStatement update(
-        Statement statement, String sqlWithoutComments, boolean returningClause) {
+        Statement statement,
+        String sqlWithoutComments,
+        boolean returningClause,
+        ReadQueryUpdateTransactionOption[] optionsFromHints) {
       return new ParsedStatement(
-          StatementType.UPDATE, statement, sqlWithoutComments, returningClause);
+          StatementType.UPDATE, statement, sqlWithoutComments, returningClause, optionsFromHints);
     }
 
     private static ParsedStatement unknown(Statement statement, String sqlWithoutComments) {
@@ -208,18 +225,20 @@ public abstract class AbstractStatementParser {
       this.statement = statement;
       this.sqlWithoutComments = Preconditions.checkNotNull(sqlWithoutComments);
       this.returningClause = false;
+      this.optionsFromHints = EMPTY_OPTIONS;
     }
 
     private ParsedStatement(
         StatementType type,
         Statement statement,
         String sqlWithoutComments,
-        boolean returningClause) {
-      this(type, null, statement, sqlWithoutComments, null, returningClause);
+        boolean returningClause,
+        ReadQueryUpdateTransactionOption[] optionsFromHints) {
+      this(type, null, statement, sqlWithoutComments, null, returningClause, optionsFromHints);
     }
 
     private ParsedStatement(StatementType type, Statement statement, String sqlWithoutComments) {
-      this(type, null, statement, sqlWithoutComments, null, false);
+      this(type, null, statement, sqlWithoutComments, null, false, EMPTY_OPTIONS);
     }
 
     private ParsedStatement(
@@ -228,33 +247,37 @@ public abstract class AbstractStatementParser {
         Statement statement,
         String sqlWithoutComments,
         QueryOptions defaultQueryOptions,
-        boolean returningClause) {
+        boolean returningClause,
+        ReadQueryUpdateTransactionOption[] optionsFromHints) {
       Preconditions.checkNotNull(type);
       this.type = type;
       this.clientSideStatement = clientSideStatement;
       this.statement = statement == null ? null : mergeQueryOptions(statement, defaultQueryOptions);
       this.sqlWithoutComments = Preconditions.checkNotNull(sqlWithoutComments);
       this.returningClause = returningClause;
+      this.optionsFromHints = optionsFromHints;
     }
 
     private ParsedStatement copy(Statement statement, QueryOptions defaultQueryOptions) {
       return new ParsedStatement(
           this.type,
           this.clientSideStatement,
-          statement,
+          statement.withReplacedSql(this.statement.getSql()),
           this.sqlWithoutComments,
           defaultQueryOptions,
-          this.returningClause);
+          this.returningClause,
+          this.optionsFromHints);
     }
 
     private ParsedStatement forCache() {
       return new ParsedStatement(
           this.type,
           this.clientSideStatement,
-          null,
+          Statement.of(this.statement.getSql()),
           this.sqlWithoutComments,
           null,
-          this.returningClause);
+          this.returningClause,
+          this.optionsFromHints);
     }
 
     @Override
@@ -285,6 +308,11 @@ public abstract class AbstractStatementParser {
     @InternalApi
     public boolean hasReturningClause() {
       return this.returningClause;
+    }
+
+    @InternalApi
+    public ReadQueryUpdateTransactionOption[] getOptionsFromHints() {
+      return this.optionsFromHints;
     }
 
     /**
@@ -480,14 +508,23 @@ public abstract class AbstractStatementParser {
   }
 
   private ParsedStatement internalParse(Statement statement, QueryOptions defaultQueryOptions) {
+    StatementHintParser statementHintParser =
+        new StatementHintParser(getDialect(), statement.getSql());
+    ReadQueryUpdateTransactionOption[] optionsFromHints = EMPTY_OPTIONS;
+    if (statementHintParser.hasStatementHints()
+        && !statementHintParser.getClientSideStatementHints().isEmpty()) {
+      statement =
+          statement.toBuilder().replace(statementHintParser.getSqlWithoutClientSideHints()).build();
+      optionsFromHints = convertHintsToOptions(statementHintParser.getClientSideStatementHints());
+    }
     String sql = removeCommentsAndTrim(statement.getSql());
     ClientSideStatementImpl client = parseClientSideStatement(sql);
     if (client != null) {
       return ParsedStatement.clientSideStatement(client, statement, sql);
     } else if (isQuery(sql)) {
-      return ParsedStatement.query(statement, sql, defaultQueryOptions);
+      return ParsedStatement.query(statement, sql, defaultQueryOptions, optionsFromHints);
     } else if (isUpdateStatement(sql)) {
-      return ParsedStatement.update(statement, sql, checkReturningClause(sql));
+      return ParsedStatement.update(statement, sql, checkReturningClause(sql), optionsFromHints);
     } else if (isDdlStatement(sql)) {
       return ParsedStatement.ddl(statement, sql);
     }
@@ -621,6 +658,10 @@ public abstract class AbstractStatementParser {
   /** Removes any statement hints at the beginning of the statement. */
   abstract String removeStatementHint(String sql);
 
+  @VisibleForTesting
+  static final ReadQueryUpdateTransactionOption[] EMPTY_OPTIONS =
+      new ReadQueryUpdateTransactionOption[0];
+
   /** Parameter information with positional parameters translated to named parameters. */
   @InternalApi
   public static class ParametersInfo {
@@ -697,9 +738,10 @@ public abstract class AbstractStatementParser {
     return checkReturningClauseInternal(sql);
   }
 
+  abstract Dialect getDialect();
+
   /**
-   * <<<<<<< HEAD Returns true if this dialect supports nested comments. ======= <<<<<<< HEAD
-   * Returns true if this dialect supports nested comments. >>>>>>> main
+   * Returns true if this dialect supports nested comments.
    *
    * <ul>
    *   <li>This method should return false for dialects that consider this to be a valid comment:
@@ -757,18 +799,6 @@ public abstract class AbstractStatementParser {
   /** Returns the query parameter prefix that should be used for this dialect. */
   abstract String getQueryParameterPrefix();
 
-  /**
-   * Returns true for characters that can be used as the first character in unquoted identifiers.
-   */
-  boolean isValidIdentifierFirstChar(char c) {
-    return Character.isLetter(c) || c == UNDERSCORE;
-  }
-
-  /** Returns true for characters that can be used in unquoted identifiers. */
-  boolean isValidIdentifierChar(char c) {
-    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
-  }
-
   /** Reads a dollar-quoted string literal from position index in the given sql string. */
   String parseDollarQuotedString(String sql, int index) {
     // Look ahead to the next dollar sign (if any). Everything in between is the quote tag.
@@ -812,9 +842,9 @@ public abstract class AbstractStatementParser {
     } else if (currentChar == HYPHEN
         && sql.length() > (currentIndex + 1)
         && sql.charAt(currentIndex + 1) == HYPHEN) {
-      return skipSingleLineComment(sql, currentIndex, result);
+      return skipSingleLineComment(sql, /* prefixLength = */ 2, currentIndex, result);
     } else if (currentChar == DASH && supportsHashSingleLineComments()) {
-      return skipSingleLineComment(sql, currentIndex, result);
+      return skipSingleLineComment(sql, /* prefixLength = */ 1, currentIndex, result);
     } else if (currentChar == SLASH
         && sql.length() > (currentIndex + 1)
         && sql.charAt(currentIndex + 1) == ASTERISK) {
@@ -826,44 +856,31 @@ public abstract class AbstractStatementParser {
   }
 
   /** Skips a single-line comment from startIndex and adds it to result if result is not null. */
-  static int skipSingleLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
-    int endIndex = sql.indexOf('\n', startIndex + 2);
-    if (endIndex == -1) {
-      endIndex = sql.length();
-    } else {
-      // Include the newline character.
-      endIndex++;
+  int skipSingleLineComment(
+      String sql, int prefixLength, int startIndex, @Nullable StringBuilder result) {
+    return skipSingleLineComment(getDialect(), sql, prefixLength, startIndex, result);
+  }
+
+  static int skipSingleLineComment(
+      Dialect dialect,
+      String sql,
+      int prefixLength,
+      int startIndex,
+      @Nullable StringBuilder result) {
+    SimpleParser simpleParser = new SimpleParser(dialect, sql, startIndex, false);
+    if (simpleParser.skipSingleLineComment(prefixLength)) {
+      appendIfNotNull(result, sql.substring(startIndex, simpleParser.getPos()));
     }
-    appendIfNotNull(result, sql.substring(startIndex, endIndex));
-    return endIndex;
+    return simpleParser.getPos();
   }
 
   /** Skips a multi-line comment from startIndex and adds it to result if result is not null. */
   int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
-    // Current position is start + '/*'.length().
-    int pos = startIndex + 2;
-    // PostgreSQL allows comments to be nested. That is, the following is allowed:
-    // '/* test /* inner comment */ still a comment */'
-    int level = 1;
-    while (pos < sql.length()) {
-      if (supportsNestedComments()
-          && sql.charAt(pos) == SLASH
-          && sql.length() > (pos + 1)
-          && sql.charAt(pos + 1) == ASTERISK) {
-        level++;
-      }
-      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
-        level--;
-        if (level == 0) {
-          pos += 2;
-          appendIfNotNull(result, sql.substring(startIndex, pos));
-          return pos;
-        }
-      }
-      pos++;
+    SimpleParser simpleParser = new SimpleParser(getDialect(), sql, startIndex, false);
+    if (simpleParser.skipMultiLineComment()) {
+      appendIfNotNull(result, sql.substring(startIndex, simpleParser.getPos()));
     }
-    appendIfNotNull(result, sql.substring(startIndex));
-    return sql.length();
+    return simpleParser.getPos();
   }
 
   /** Skips a quoted string from startIndex. */

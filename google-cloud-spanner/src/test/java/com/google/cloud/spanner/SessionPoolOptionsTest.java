@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import java.util.ArrayList;
@@ -249,6 +250,8 @@ public class SessionPoolOptionsTest {
 
   @Test
   public void testUseMultiplexedSession() {
+    // skip these tests since this configuration can have dual behaviour in different test-runners
+    assumeFalse(SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
     assertEquals(false, SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
     assertEquals(
         true,
@@ -283,25 +286,5 @@ public class SessionPoolOptionsTest {
             .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(10))
             .build()
             .getMultiplexedSessionMaintenanceDuration());
-  }
-
-  @Test
-  public void testWaitForMultiplexedSession() {
-    assertEquals(
-        Duration.ofSeconds(10),
-        SessionPoolOptions.newBuilder().build().getWaitForMultiplexedSession());
-    assertEquals(
-        Duration.ofSeconds(20),
-        SessionPoolOptions.newBuilder()
-            .setWaitForMultiplexedSession(Duration.ofSeconds(20))
-            .build()
-            .getWaitForMultiplexedSession());
-    assertEquals(
-        Duration.ofSeconds(10),
-        SessionPoolOptions.newBuilder()
-            .setWaitForMultiplexedSession(Duration.ofSeconds(2))
-            .setWaitForMultiplexedSession(Duration.ofSeconds(10))
-            .build()
-            .getWaitForMultiplexedSession());
   }
 }
