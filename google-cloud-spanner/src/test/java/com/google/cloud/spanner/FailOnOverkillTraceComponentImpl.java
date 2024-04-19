@@ -45,6 +45,7 @@ import io.opencensus.trace.propagation.BinaryFormat;
 import io.opencensus.trace.propagation.PropagationComponent;
 import io.opencensus.trace.propagation.TextFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -62,7 +63,8 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
   private final Clock clock = ZeroTimeClock.getInstance();
   private final ExportComponent exportComponent = new TestExportComponent();
   private final TraceConfig traceConfig = new TestTraceConfig();
-  private static final Map<String, Boolean> spans = new LinkedHashMap<>();
+  private static final Map<String, Boolean> spans =
+      Collections.synchronizedMap(new LinkedHashMap<>());
 
   private static final List<String> annotations = new ArrayList<>();
 
