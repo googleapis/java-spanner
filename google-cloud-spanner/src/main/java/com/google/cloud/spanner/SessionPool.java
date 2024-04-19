@@ -42,6 +42,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_L
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
+import static com.google.cloud.spanner.SpannerExceptionFactory.asSpannerException;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -1083,7 +1084,7 @@ class SessionPool {
                 r = runner.runAsync(work, MoreExecutors.directExecutor()).get();
                 break;
               } catch (ExecutionException e) {
-                se = SpannerExceptionFactory.asSpannerException(e.getCause());
+                se = asSpannerException(e.getCause());
               } catch (InterruptedException e) {
                 se = SpannerExceptionFactory.propagateInterrupt(e);
               } catch (Throwable t) {
@@ -1510,7 +1511,7 @@ class SessionPool {
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.asSpannerException(e.getCause());
+        throw asSpannerException(e.getCause());
       }
     }
 
@@ -1759,7 +1760,7 @@ class SessionPool {
       } catch (InterruptedException e) {
         throw SpannerExceptionFactory.propagateInterrupt(e);
       } catch (ExecutionException e) {
-        throw SpannerExceptionFactory.asSpannerException(e.getCause());
+        throw asSpannerException(e.getCause());
       }
     }
 
@@ -1790,14 +1791,13 @@ class SessionPool {
           SessionImpl sessionImpl =
               new SessionImpl(
                   sessionClient.getSpanner(), currentMultiplexedSessionReference.get().get());
-          synchronized (lock) {
-            if (multiplexedSession == null) {
-              MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
-              multiplexedSession.markBusy(span);
-              span.addAnnotation("Using Session", "sessionId", multiplexedSession.getName());
-              incrementNumSessionsInUse(true);
-              this.multiplexedSession = multiplexedSession;
-            }
+
+          if (multiplexedSession == null) {
+            MultiplexedSession multiplexedSession = new MultiplexedSession(sessionImpl);
+            multiplexedSession.markBusy(span);
+            span.addAnnotation("Using Session", "sessionId", multiplexedSession.getName());
+            incrementNumSessionsInUse(true);
+            this.multiplexedSession = multiplexedSession;
           }
         }
         return multiplexedSession;
@@ -2963,7 +2963,7 @@ class SessionPool {
     try {
       return dialect.get(60L, TimeUnit.SECONDS);
     } catch (ExecutionException executionException) {
-      throw SpannerExceptionFactory.asSpannerException(executionException);
+      throw asSpannerException(executionException);
     } catch (InterruptedException interruptedException) {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     } catch (TimeoutException timeoutException) {
@@ -3130,7 +3130,7 @@ class SessionPool {
         return getWrappedMultiplexedSessionFuture(span);
       } catch (Throwable t) {
         span.addAnnotation("No multiplexed session available.");
-        throw SpannerExceptionFactory.asSpannerException(t.getCause());
+        throw asSpannerException(t.getCause());
       }
     } else {
       return new PooledSessionFutureWrapper(getSession());
@@ -3151,7 +3151,7 @@ class SessionPool {
     } catch (InterruptedException e) {
       throw SpannerExceptionFactory.propagateInterrupt(e);
     } catch (ExecutionException e) {
-      throw SpannerExceptionFactory.asSpannerException(e.getCause());
+      throw asSpannerException(e.getCause());
     }
   }
 
@@ -3678,11 +3678,11 @@ class SessionPool {
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
       synchronized (lock) {
         multiplexedSessionBeingCreated = false;
-        if (isDatabaseOrInstanceNotFound(newSpannerException(t))) {
+        if (isDatabaseOrInstanceNotFound(asSpannerException(t))) {
           setResourceNotFoundException((ResourceNotFoundException) t);
           poolMaintainer.close();
         }
-        currentMultiplexedSessionReference.get().setException(newSpannerException(t));
+        currentMultiplexedSessionReference.get().setException(asSpannerException(t));
       }
     }
   }
