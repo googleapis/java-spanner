@@ -87,7 +87,7 @@ class SimpleParser {
 
   /** Constructs a simple parser for the given SQL string and dialect. */
   SimpleParser(Dialect dialect, String sql) {
-    this(dialect, sql, /* treatHintCommentsAsTokens = */ false);
+    this(dialect, sql, 0, /* treatHintCommentsAsTokens = */ false);
   }
 
   /**
@@ -95,11 +95,12 @@ class SimpleParser {
    * treatHintCommentsAsTokens</code> indicates whether comments that start with '/*@' should be
    * treated as tokens or not. This option may only be enabled if the dialect is PostgreSQL.
    */
-  SimpleParser(Dialect dialect, String sql, boolean treatHintCommentsAsTokens) {
+  SimpleParser(Dialect dialect, String sql, int pos, boolean treatHintCommentsAsTokens) {
     Preconditions.checkArgument(
         !(treatHintCommentsAsTokens && dialect != Dialect.POSTGRESQL),
         "treatHintCommentsAsTokens can only be enabled for PostgreSQL");
     this.sql = sql;
+    this.pos = pos;
     this.statementParser = AbstractStatementParser.getInstance(dialect);
     this.treatHintCommentsAsTokens = treatHintCommentsAsTokens;
   }
@@ -222,7 +223,7 @@ class SimpleParser {
    * Returns true if the given character is valid as the first character of an identifier. That
    * means that it can be used as the first character of an unquoted identifier.
    */
-  private boolean isValidIdentifierFirstChar(char c) {
+  static boolean isValidIdentifierFirstChar(char c) {
     return Character.isLetter(c) || c == '_';
   }
 
@@ -230,7 +231,7 @@ class SimpleParser {
    * Returns true if the given character is a valid identifier character. That means that it can be
    * used in an unquoted identifiers.
    */
-  private boolean isValidIdentifierChar(char c) {
+  static boolean isValidIdentifierChar(char c) {
     return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == '$';
   }
 

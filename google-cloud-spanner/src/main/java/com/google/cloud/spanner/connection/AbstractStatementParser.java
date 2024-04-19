@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.SimpleParser.isValidIdentifierChar;
 import static com.google.cloud.spanner.connection.StatementHintParser.convertHintsToOptions;
 
 import com.google.api.core.InternalApi;
@@ -798,18 +799,6 @@ public abstract class AbstractStatementParser {
   /** Returns the query parameter prefix that should be used for this dialect. */
   abstract String getQueryParameterPrefix();
 
-  /**
-   * Returns true for characters that can be used as the first character in unquoted identifiers.
-   */
-  boolean isValidIdentifierFirstChar(char c) {
-    return Character.isLetter(c) || c == UNDERSCORE;
-  }
-
-  /** Returns true for characters that can be used in unquoted identifiers. */
-  boolean isValidIdentifierChar(char c) {
-    return isValidIdentifierFirstChar(c) || Character.isDigit(c) || c == DOLLAR;
-  }
-
   /** Reads a dollar-quoted string literal from position index in the given sql string. */
   String parseDollarQuotedString(String sql, int index) {
     // Look ahead to the next dollar sign (if any). Everything in between is the quote tag.
@@ -853,9 +842,9 @@ public abstract class AbstractStatementParser {
     } else if (currentChar == HYPHEN
         && sql.length() > (currentIndex + 1)
         && sql.charAt(currentIndex + 1) == HYPHEN) {
-      return skipSingleLineComment(sql, currentIndex, result);
+      return skipSingleLineComment(sql, /* prefixLength = */ 2, currentIndex, result);
     } else if (currentChar == DASH && supportsHashSingleLineComments()) {
-      return skipSingleLineComment(sql, currentIndex, result);
+      return skipSingleLineComment(sql, /* prefixLength = */ 1, currentIndex, result);
     } else if (currentChar == SLASH
         && sql.length() > (currentIndex + 1)
         && sql.charAt(currentIndex + 1) == ASTERISK) {
@@ -867,44 +856,31 @@ public abstract class AbstractStatementParser {
   }
 
   /** Skips a single-line comment from startIndex and adds it to result if result is not null. */
-  static int skipSingleLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
-    int endIndex = sql.indexOf('\n', startIndex + 2);
-    if (endIndex == -1) {
-      endIndex = sql.length();
-    } else {
-      // Include the newline character.
-      endIndex++;
+  int skipSingleLineComment(
+      String sql, int prefixLength, int startIndex, @Nullable StringBuilder result) {
+    return skipSingleLineComment(getDialect(), sql, prefixLength, startIndex, result);
+  }
+
+  static int skipSingleLineComment(
+      Dialect dialect,
+      String sql,
+      int prefixLength,
+      int startIndex,
+      @Nullable StringBuilder result) {
+    SimpleParser simpleParser = new SimpleParser(dialect, sql, startIndex, false);
+    if (simpleParser.skipSingleLineComment(prefixLength)) {
+      appendIfNotNull(result, sql.substring(startIndex, simpleParser.getPos()));
     }
-    appendIfNotNull(result, sql.substring(startIndex, endIndex));
-    return endIndex;
+    return simpleParser.getPos();
   }
 
   /** Skips a multi-line comment from startIndex and adds it to result if result is not null. */
   int skipMultiLineComment(String sql, int startIndex, @Nullable StringBuilder result) {
-    // Current position is start + '/*'.length().
-    int pos = startIndex + 2;
-    // PostgreSQL allows comments to be nested. That is, the following is allowed:
-    // '/* test /* inner comment */ still a comment */'
-    int level = 1;
-    while (pos < sql.length()) {
-      if (supportsNestedComments()
-          && sql.charAt(pos) == SLASH
-          && sql.length() > (pos + 1)
-          && sql.charAt(pos + 1) == ASTERISK) {
-        level++;
-      }
-      if (sql.charAt(pos) == ASTERISK && sql.length() > (pos + 1) && sql.charAt(pos + 1) == SLASH) {
-        level--;
-        if (level == 0) {
-          pos += 2;
-          appendIfNotNull(result, sql.substring(startIndex, pos));
-          return pos;
-        }
-      }
-      pos++;
+    SimpleParser simpleParser = new SimpleParser(getDialect(), sql, startIndex, false);
+    if (simpleParser.skipMultiLineComment()) {
+      appendIfNotNull(result, sql.substring(startIndex, simpleParser.getPos()));
     }
-    appendIfNotNull(result, sql.substring(startIndex));
-    return sql.length();
+    return simpleParser.getPos();
   }
 
   /** Skips a quoted string from startIndex. */

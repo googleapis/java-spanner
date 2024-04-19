@@ -59,7 +59,10 @@ class StatementHintParser {
       ImmutableSet<String> clientSideStatementHintNames, Dialect dialect, String sql) {
     SimpleParser parser =
         new SimpleParser(
-            dialect, sql, /* treatHintCommentsAsTokens = */ dialect == Dialect.POSTGRESQL);
+            dialect,
+            sql,
+            /* pos = */ 0,
+            /* treatHintCommentsAsTokens = */ dialect == Dialect.POSTGRESQL);
     this.hasStatementHints = parser.peekTokens(getStartHintTokens(dialect));
     if (this.hasStatementHints) {
       Tuple<String, Map<String, String>> hints = extract(parser, clientSideStatementHintNames);
