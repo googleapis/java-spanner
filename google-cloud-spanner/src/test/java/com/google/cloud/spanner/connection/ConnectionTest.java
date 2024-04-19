@@ -289,8 +289,12 @@ public class ConnectionTest {
 
         assertThat(count1.isDone()).isTrue();
         assertThat(count2.isDone()).isTrue();
+        if (isMultiplexedSessionsEnabled(connection1.getSpanner())) {
+          assertThat(mockSpanner.numSessionsCreated()).isEqualTo(2);
+        } else {
+          assertThat(mockSpanner.numSessionsCreated()).isEqualTo(1);
+        }
       }
-      assertThat(mockSpanner.numSessionsCreated()).isEqualTo(1);
     }
   }
 
