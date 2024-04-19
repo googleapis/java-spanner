@@ -284,6 +284,8 @@ public class SessionPoolOptions {
     return randomizePositionQPSThreshold;
   }
 
+  @VisibleForTesting
+  @InternalApi
   public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
   }

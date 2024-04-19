@@ -3013,10 +3013,8 @@ public class DatabaseClientImplTest {
               "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
-      if (isMultiplexedSessionsEnabled()) {
-        mockSpanner.setCreateSessionExecutionTime(
-            SimulatedExecutionTime.ofStickyException(exception));
-      }
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(exception));
       mockSpanner.setBatchCreateSessionsExecutionTime(
           SimulatedExecutionTime.ofStickyException(exception));
       // Ensure there are no sessions in the pool by default.
@@ -3183,10 +3181,8 @@ public class DatabaseClientImplTest {
               "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
-      if (isMultiplexedSessionsEnabled()) {
-        mockSpanner.setCreateSessionExecutionTime(
-            SimulatedExecutionTime.ofStickyException(exception));
-      }
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(exception));
       mockSpanner.setBatchCreateSessionsExecutionTime(
           SimulatedExecutionTime.ofStickyException(exception));
       try (Spanner spanner =
@@ -3657,35 +3653,9 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBatchCreateSessionsPermissionDenied() {
-    assumeFalse(
-        "BatchCreateSessions RPC is not invoked for multiplexed sessions",
-        isMultiplexedSessionsEnabled());
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofStickyException(
             Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("my-project")
-            .setChannelProvider(channelProvider)
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
-      DatabaseClient client = spanner.getDatabaseClient(databaseId);
-      // The following call is non-blocking and will not generate an exception.
-      ResultSet rs = client.singleUse().executeQuery(SELECT1);
-      // Actually trying to get any results will cause an exception.
-      SpannerException e = assertThrows(SpannerException.class, rs::next);
-      assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
-    } finally {
-      mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
-    }
-  }
-
-  @Test
-  public void testCreateSessionsPermissionDenied() {
-    assumeTrue(
-        "CreateSessions RPC is not invoked for regular sessions", isMultiplexedSessionsEnabled());
     mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.ofStickyException(
             Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
@@ -3704,6 +3674,7 @@ public class DatabaseClientImplTest {
       SpannerException e = assertThrows(SpannerException.class, rs::next);
       assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
     } finally {
+      mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
       mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
     }
   }

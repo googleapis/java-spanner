@@ -185,10 +185,8 @@ public class ReadAsyncTest {
 
   @Test
   public void invalidDatabase() throws Exception {
-    if (isMultiplexedSessionsEnabled()) {
-      mockSpanner.setCreateSessionExecutionTime(
-          SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
-    }
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     DatabaseClient invalidClient =

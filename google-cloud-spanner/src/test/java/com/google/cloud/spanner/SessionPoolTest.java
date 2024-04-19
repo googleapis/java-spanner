@@ -264,17 +264,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
-    if (options.getUseMultiplexedSession()) {
-      doAnswer(
-              invocation ->
-                  executor.submit(
-                      () -> {
-                        SessionConsumer consumer = invocation.getArgument(0, SessionConsumer.class);
-                        consumer.onSessionReady(mockMultiplexedSession());
-                      }))
-          .when(sessionClient)
-          .asyncCreateMultiplexedSession(any(SessionConsumer.class));
-    }
+    doAnswer(
+            invocation ->
+                executor.submit(
+                    () -> {
+                      SessionConsumer consumer = invocation.getArgument(0, SessionConsumer.class);
+                      consumer.onSessionReady(mockMultiplexedSession());
+                    }))
+        .when(sessionClient)
+        .asyncCreateMultiplexedSession(any(SessionConsumer.class));
   }
 
   @Test
@@ -2186,19 +2184,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     }))
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    if (options.getUseMultiplexedSession()) {
-      doAnswer(
-              invocation ->
-                  executor.submit(
-                      () -> {
-                        MultiplexedSessionInitializationConsumer consumer =
-                            invocation.getArgument(
-                                0, MultiplexedSessionInitializationConsumer.class);
-                        consumer.onSessionReady(mockMultiplexedSession());
-                      }))
-          .when(sessionClient)
-          .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
-    }
+    doAnswer(
+            invocation ->
+                executor.submit(
+                    () -> {
+                      MultiplexedSessionInitializationConsumer consumer =
+                          invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
+                      consumer.onSessionReady(mockMultiplexedSession());
+                    }))
+        .when(sessionClient)
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
 
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();
