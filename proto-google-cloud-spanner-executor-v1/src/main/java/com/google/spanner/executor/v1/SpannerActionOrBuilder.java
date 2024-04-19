@@ -57,6 +57,41 @@ public interface SpannerActionOrBuilder
    *
    *
    * <pre>
+   * Configuration options for Spanner backend
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+   *
+   * @return Whether the spannerOptions field is set.
+   */
+  boolean hasSpannerOptions();
+  /**
+   *
+   *
+   * <pre>
+   * Configuration options for Spanner backend
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+   *
+   * @return The spannerOptions.
+   */
+  com.google.spanner.executor.v1.SpannerOptions getSpannerOptions();
+  /**
+   *
+   *
+   * <pre>
+   * Configuration options for Spanner backend
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+   */
+  com.google.spanner.executor.v1.SpannerOptionsOrBuilder getSpannerOptionsOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
    * Action to start a transaction.
    * </pre>
    *

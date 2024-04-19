@@ -375,20 +375,6 @@ public class SessionImplTest {
     assertThat(e.getMessage()).contains("invalidated");
   }
 
-  @Test
-  public void prepareClosesOldSingleUseContext() {
-    ReadContext ctx = session.singleUse(TimestampBound.strong());
-
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
-        .thenReturn(Transaction.newBuilder().setId(ByteString.copyFromUtf8("t1")).build());
-    session.prepareReadWriteTransaction();
-    IllegalStateException e =
-        assertThrows(
-            IllegalStateException.class,
-            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
-    assertThat(e.getMessage()).contains("invalidated");
-  }
-
   private static ResultSetMetadata newMetadata(Type type) {
     return ResultSetMetadata.newBuilder().setRowType(type.toProto().getStructType()).build();
   }

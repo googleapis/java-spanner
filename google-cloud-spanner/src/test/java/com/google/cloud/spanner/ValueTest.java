@@ -615,6 +615,27 @@ public class ValueTest {
   }
 
   @Test
+  public void testPgOid() {
+    Value v = Value.pgOid(Long.valueOf(123));
+    assertThat(v.getType()).isEqualTo(Type.pgOid());
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getInt64()).isEqualTo(123);
+    assertThat(v.toString()).isEqualTo("123");
+    assertEquals("123", v.getAsString());
+  }
+
+  @Test
+  public void testPgOidNull() {
+    Value v = Value.pgOid(null);
+    assertThat(v.getType()).isEqualTo(Type.pgOid());
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
   public void bytes() {
     ByteArray bytes = newByteArray("abc");
     Value v = Value.bytes(bytes);
@@ -1188,6 +1209,67 @@ public class ValueTest {
     Value value = Value.pgJsonbArray(Collections.singletonList("{}"));
     assertThrowsWithMessage(
         value::getFloat64Array, "Expected: ARRAY<FLOAT64> actual: ARRAY<JSON<PG_JSONB>>");
+  }
+
+  @Test
+  public void testPgOidArray() {
+    Value v = Value.pgOidArray(new long[] {1, 2});
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getInt64Array()).containsExactly(1L, 2L).inOrder();
+    assertThat(v.toString()).isEqualTo("[1,2]");
+    assertEquals("[1,2]", v.getAsString());
+  }
+
+  @Test
+  public void testPgOidArrayRange() {
+    Value v = Value.pgOidArray(new long[] {1, 2, 3, 4, 5}, 1, 3);
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getInt64Array()).containsExactly(2L, 3L, 4L).inOrder();
+    assertThat(v.toString()).isEqualTo("[2,3,4]");
+    assertEquals("[2,3,4]", v.getAsString());
+  }
+
+  @Test
+  public void pgOidArrayNull() {
+    Value v = Value.pgOidArray((long[]) null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64Array);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
+  public void testPgOidArrayWrapper() {
+    Value v = Value.pgOidArray(Arrays.asList(1L, null, 3L));
+    assertThat(v.isNull()).isFalse();
+    assertThat(v.getInt64Array()).containsExactly(1L, null, 3L).inOrder();
+    assertThat(v.toString()).isEqualTo("[1,NULL,3]");
+    assertEquals("[1,NULL,3]", v.getAsString());
+  }
+
+  @Test
+  public void testPgOidArrayWrapperNull() {
+    Value v = Value.pgOidArray((Iterable<Long>) null);
+    assertThat(v.isNull()).isTrue();
+    assertThat(v.toString()).isEqualTo(NULL_STRING);
+    IllegalStateException e = assertThrows(IllegalStateException.class, v::getInt64Array);
+    assertThat(e.getMessage()).contains("null value");
+    assertEquals("NULL", v.getAsString());
+  }
+
+  @Test
+  public void testPgOidArrayTryGetBool() {
+    Value value = Value.pgOidArray(Collections.singletonList(1234L));
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBool);
+    assertThat(e.getMessage()).contains("Expected: BOOL actual: ARRAY<INT64<PG_OID>>");
+  }
+
+  @Test
+  public void testPgOidArrayNullTryGetBool() {
+    Value value = Value.pgOidArray((Iterable<Long>) null);
+    IllegalStateException e = assertThrows(IllegalStateException.class, value::getBoolArray);
+    assertThat(e.getMessage()).contains("Expected: ARRAY<BOOL> actual: ARRAY<INT64<PG_OID>>");
   }
 
   @Test
@@ -2020,6 +2102,10 @@ public class ValueTest {
     tester.addEqualityGroup(Value.pgNumeric("8765.4321"));
     tester.addEqualityGroup(Value.pgNumeric(null));
 
+    tester.addEqualityGroup(Value.pgOid(123L), Value.pgOid(Long.valueOf(123)));
+    tester.addEqualityGroup(Value.pgOid(456L));
+    tester.addEqualityGroup(Value.pgOid(null));
+
     tester.addEqualityGroup(Value.string("abc"), Value.string("abc"));
     tester.addEqualityGroup(Value.string("def"));
     tester.addEqualityGroup(Value.string(null));
@@ -2101,6 +2187,15 @@ public class ValueTest {
     tester.addEqualityGroup(Value.pgNumericArray(null), Value.pgNumericArray(null));
 
     tester.addEqualityGroup(
+        Value.pgOidArray(Arrays.asList(1L, 2L)),
+        Value.pgOidArray(new long[] {1L, 2L}),
+        Value.pgOidArray(new long[] {0L, 1L, 2L, 3L}, 1, 2),
+        Value.pgOidArray(plainIterable(1L, 2L)));
+    tester.addEqualityGroup(Value.pgOidArray(Collections.singletonList(3L)));
+    tester.addEqualityGroup(Value.pgOidArray(Collections.singletonList(null)));
+    tester.addEqualityGroup(Value.pgOidArray((Iterable<Long>) null));
+
+    tester.addEqualityGroup(
         Value.stringArray(Arrays.asList("a", "b")), Value.stringArray(Arrays.asList("a", "b")));
     tester.addEqualityGroup(Value.stringArray(Collections.singletonList("c")));
     tester.addEqualityGroup(Value.stringArray(null));
@@ -2169,6 +2264,10 @@ public class ValueTest {
     assertEquals("123456789.123456789", Value.pgNumeric("123456789.123456789").getAsString());
     assertEquals("NaN", Value.pgNumeric("NaN").getAsString());
 
+    assertEquals("1", Value.pgOid(1L).getAsString());
+    assertEquals(String.valueOf(Long.MAX_VALUE), Value.pgOid(Long.MAX_VALUE).getAsString());
+    assertEquals(String.valueOf(Long.MIN_VALUE), Value.pgOid(Long.MIN_VALUE).getAsString());
+
     assertEquals(Strings.repeat("foo", 36), Value.string(Strings.repeat("foo", 36)).getAsString());
     assertEquals(Strings.repeat("foo", 36), Value.json(Strings.repeat("foo", 36)).getAsString());
     assertEquals(Strings.repeat("foo", 36), Value.pgJsonb(Strings.repeat("foo", 36)).getAsString());
@@ -2211,6 +2310,9 @@ public class ValueTest {
     reserializeAndAssert(Value.pgNumeric("1.23"));
     reserializeAndAssert(Value.pgNumeric(Value.NAN));
     reserializeAndAssert(Value.pgNumeric(null));
+
+    reserializeAndAssert(Value.pgOid(123L));
+    reserializeAndAssert(Value.pgOid(null));
 
     reserializeAndAssert(Value.string("abc"));
     reserializeAndAssert(Value.string(null));
@@ -2260,6 +2362,12 @@ public class ValueTest {
     reserializeAndAssert(
         Value.pgNumericArray(BrokenSerializationList.of("1.23", "1.24", Value.NAN)));
     reserializeAndAssert(Value.pgNumericArray(null));
+
+    reserializeAndAssert(
+        Value.pgOidArray(BrokenSerializationList.of(Long.valueOf(1L), Long.valueOf(2L))));
+    reserializeAndAssert(
+        Value.pgOidArray(BrokenSerializationList.of(Long.valueOf(1L), Long.valueOf(2L), null)));
+    reserializeAndAssert(Value.pgOidArray((Iterable<Long>) null));
 
     reserializeAndAssert(Value.timestamp(null));
     reserializeAndAssert(Value.timestamp(Value.COMMIT_TIMESTAMP));

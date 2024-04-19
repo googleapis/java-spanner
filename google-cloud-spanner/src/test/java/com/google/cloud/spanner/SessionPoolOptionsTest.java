@@ -284,24 +284,4 @@ public class SessionPoolOptionsTest {
             .build()
             .getMultiplexedSessionMaintenanceDuration());
   }
-
-  @Test
-  public void testWaitForMultiplexedSession() {
-    assertEquals(
-        Duration.ofSeconds(10),
-        SessionPoolOptions.newBuilder().build().getWaitForMultiplexedSession());
-    assertEquals(
-        Duration.ofSeconds(20),
-        SessionPoolOptions.newBuilder()
-            .setWaitForMultiplexedSession(Duration.ofSeconds(20))
-            .build()
-            .getWaitForMultiplexedSession());
-    assertEquals(
-        Duration.ofSeconds(10),
-        SessionPoolOptions.newBuilder()
-            .setWaitForMultiplexedSession(Duration.ofSeconds(2))
-            .setWaitForMultiplexedSession(Duration.ofSeconds(10))
-            .build()
-            .getWaitForMultiplexedSession());
-  }
 }

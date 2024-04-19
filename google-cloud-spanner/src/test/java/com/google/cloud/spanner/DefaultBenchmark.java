@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import org.openjdk.jmh.annotations.AuxCounters;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -69,8 +68,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 0)
 public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
-  @State(Scope.Thread)
-  @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
+  @State(Scope.Benchmark)
   public static class BenchmarkState {
 
     // TODO(developer): Add your values here for PROJECT_ID, INSTANCE_ID, DATABASE_ID
@@ -97,6 +95,7 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20))
                       .build())
               .setHost(SERVER_URL)
+              .setNumChannels(NUM_GRPC_CHANNELS)
               .build();
       spanner = options.getService();
       client =
@@ -123,7 +122,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
+      results.add(
+          service.submit(() -> runBenchmarksForSingleUseQueries(server, TOTAL_READS_PER_RUN)));
     }
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
@@ -140,7 +140,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
+      results.add(
+          service.submit(() -> runBenchmarksForSingleUseQueries(server, TOTAL_READS_PER_RUN)));
     }
     for (int i = 0; i < PARALLEL_THREADS; i++) {
       results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
@@ -167,25 +168,25 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
   }
 
-  private List<java.time.Duration> runBenchmarksForQueries(
+  private List<java.time.Duration> runBenchmarksForSingleUseQueries(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
     // Execute one query to make sure everything has been warmed up.
     executeWarmup(server);
 
     for (int i = 0; i < numberOfOperations; i++) {
-      results.add(executeQuery(server));
+      results.add(executeSingleUseQuery(server));
     }
     return results;
   }
 
   private void executeWarmup(final BenchmarkState server) {
     for (int i = 0; i < WARMUP_REQUEST_COUNT; i++) {
-      executeQuery(server);
+      executeSingleUseQuery(server);
     }
   }
 
-  private java.time.Duration executeQuery(final BenchmarkState server) {
+  private java.time.Duration executeSingleUseQuery(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs = server.client.singleUse().executeQuery(getRandomisedReadStatement())) {

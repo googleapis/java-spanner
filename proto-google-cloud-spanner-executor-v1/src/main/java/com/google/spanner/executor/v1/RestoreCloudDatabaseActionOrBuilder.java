@@ -152,4 +152,42 @@ public interface RestoreCloudDatabaseActionOrBuilder
    * @return The bytes for databaseId.
    */
   com.google.protobuf.ByteString getDatabaseIdBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * The KMS key(s) used to encrypt the restored database to be created if the
+   * restored database should be CMEK protected.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.EncryptionConfig encryption_config = 7;</code>
+   *
+   * @return Whether the encryptionConfig field is set.
+   */
+  boolean hasEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * The KMS key(s) used to encrypt the restored database to be created if the
+   * restored database should be CMEK protected.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.EncryptionConfig encryption_config = 7;</code>
+   *
+   * @return The encryptionConfig.
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfig getEncryptionConfig();
+  /**
+   *
+   *
+   * <pre>
+   * The KMS key(s) used to encrypt the restored database to be created if the
+   * restored database should be CMEK protected.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.EncryptionConfig encryption_config = 7;</code>
+   */
+  com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder getEncryptionConfigOrBuilder();
 }

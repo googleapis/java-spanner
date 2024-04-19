@@ -306,8 +306,8 @@ class ConnectionImpl implements Connection {
     setDefaultTransactionOptions();
   }
 
-  @VisibleForTesting
-  Spanner getSpanner() {
+  @Override
+  public Spanner getSpanner() {
     return this.spanner;
   }
 

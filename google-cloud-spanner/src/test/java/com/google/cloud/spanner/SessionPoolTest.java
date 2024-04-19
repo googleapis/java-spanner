@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
+import static com.google.cloud.spanner.MetricRegistryConstants.IS_MULTIPLEXED_KEY;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.METRIC_PREFIX;
@@ -31,6 +32,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_U
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerOptionsTest.runWithSystemProperty;
 import static com.google.common.truth.Truth.assertThat;
@@ -88,12 +90,14 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
@@ -137,6 +141,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final ExecutorService executor = Executors.newSingleThreadExecutor();
   @Parameter public int minSessions;
 
+  @Parameter(1)
+  public boolean useMultiplexed;
+
   @Mock SpannerImpl client;
   @Mock SessionClient sessionClient;
   @Mock SpannerOptions spannerOptions;
@@ -149,9 +156,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private final TraceWrapper tracer =
       new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
 
-  @Parameters(name = "min sessions = {0}")
+  @Parameters(name = "min sessions = {0}, use multiplexed = {1}")
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{0}, {1}});
+    List<Object[]> params = new ArrayList<>();
+    params.add(new Object[] {0, false});
+    params.add(new Object[] {1, false});
+    params.add(new Object[] {1, true});
+
+    return params;
   }
 
   private SessionPool createPool() {
@@ -239,6 +251,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMaxSessions(2)
             .setIncStep(1)
             .setBlockIfPoolExhausted()
+            .setUseMultiplexedSession(useMultiplexed)
             .build();
   }
 
@@ -1758,19 +1771,70 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(getSessionsTimeouts.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(getSessionsTimeouts.get(0).values()).isEqualTo(labelValues);
 
+    List<LabelValue> labelValuesWithRegularSessions = new ArrayList<>(labelValues);
+    labelValuesWithRegularSessions.add(LabelValue.create("false"));
+    List<LabelValue> labelValuesWithMultiplexedSessions = new ArrayList<>(labelValues);
+    labelValuesWithMultiplexedSessions.add(LabelValue.create("true"));
     List<PointWithFunction> numAcquiredSessions =
         record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
-    assertThat(numAcquiredSessions.size()).isEqualTo(1);
-    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(2L);
-    assertThat(numAcquiredSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
-    assertThat(numAcquiredSessions.get(0).values()).isEqualTo(labelValues);
+    assertThat(numAcquiredSessions.size()).isEqualTo(2);
+    PointWithFunction regularSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    PointWithFunction multiplexedSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    // verify metrics for regular sessions
+    assertThat(regularSessionMetric.value()).isEqualTo(2L);
+    assertThat(regularSessionMetric.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(regularSessionMetric.values()).isEqualTo(labelValuesWithRegularSessions);
+
+    // verify metrics for multiplexed sessions
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
+    assertThat(multiplexedSessionMetric.keys())
+        .isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(multiplexedSessionMetric.values()).isEqualTo(labelValuesWithMultiplexedSessions);
 
     List<PointWithFunction> numReleasedSessions =
         record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
-    assertThat(numReleasedSessions.size()).isEqualTo(1);
-    assertThat(numReleasedSessions.get(0).value()).isEqualTo(0);
-    assertThat(numReleasedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
-    assertThat(numReleasedSessions.get(0).values()).isEqualTo(labelValues);
+    assertThat(numReleasedSessions.size()).isEqualTo(2);
+
+    regularSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    // verify metrics for regular sessions
+    assertThat(regularSessionMetric.value()).isEqualTo(0L);
+    assertThat(regularSessionMetric.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(regularSessionMetric.values()).isEqualTo(labelValuesWithRegularSessions);
+
+    // verify metrics for multiplexed sessions
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
+    assertThat(multiplexedSessionMetric.keys())
+        .isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(multiplexedSessionMetric.values()).isEqualTo(labelValuesWithMultiplexedSessions);
 
     List<PointWithFunction> maxAllowedSessions =
         record.getMetrics().get(METRIC_PREFIX + MAX_ALLOWED_SESSIONS);
@@ -1836,12 +1900,46 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     session1.close();
     numAcquiredSessions = record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
-    assertThat(numAcquiredSessions.size()).isEqualTo(1);
-    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(3L);
+    assertThat(numAcquiredSessions.size()).isEqualTo(2);
+    regularSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    assertThat(regularSessionMetric.value()).isEqualTo(3L);
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
 
     numReleasedSessions = record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
-    assertThat(numReleasedSessions.size()).isEqualTo(1);
-    assertThat(numReleasedSessions.get(0).value()).isEqualTo(3L);
+    assertThat(numReleasedSessions.size()).isEqualTo(2);
+    regularSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    assertThat(regularSessionMetric.value()).isEqualTo(3L);
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
 
     maxInUseSessions = record.getMetrics().get(METRIC_PREFIX + MAX_IN_USE_SESSIONS);
     assertThat(maxInUseSessions.size()).isEqualTo(1);
@@ -2001,8 +2099,24 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(metricDataFiltered.size(), size);
     MetricData metricData = metricDataFiltered.stream().findFirst().get();
-    assertEquals(
-        metricData.getLongSumData().getPoints().stream().findFirst().get().getValue(), value);
+    LongPointData regularSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.FALSE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    LongPointData multiplexedSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.TRUE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    assertEquals(value, regularSessionMetric.getValue());
+    assertEquals(0, multiplexedSessionMetric.getValue());
   }
 
   private static void verifyMetricData(

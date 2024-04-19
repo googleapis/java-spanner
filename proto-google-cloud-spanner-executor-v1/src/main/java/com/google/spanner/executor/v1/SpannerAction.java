@@ -65,6 +65,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
             com.google.spanner.executor.v1.SpannerAction.Builder.class);
   }
 
+  private int bitField0_;
   private int actionCase_ = 0;
 
   @SuppressWarnings("serial")
@@ -209,6 +210,56 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     } else {
       return (com.google.protobuf.ByteString) ref;
     }
+  }
+
+  public static final int SPANNER_OPTIONS_FIELD_NUMBER = 2;
+  private com.google.spanner.executor.v1.SpannerOptions spannerOptions_;
+  /**
+   *
+   *
+   * <pre>
+   * Configuration options for Spanner backend
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+   *
+   * @return Whether the spannerOptions field is set.
+   */
+  @java.lang.Override
+  public boolean hasSpannerOptions() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Configuration options for Spanner backend
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+   *
+   * @return The spannerOptions.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.SpannerOptions getSpannerOptions() {
+    return spannerOptions_ == null
+        ? com.google.spanner.executor.v1.SpannerOptions.getDefaultInstance()
+        : spannerOptions_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Configuration options for Spanner backend
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.SpannerOptionsOrBuilder getSpannerOptionsOrBuilder() {
+    return spannerOptions_ == null
+        ? com.google.spanner.executor.v1.SpannerOptions.getDefaultInstance()
+        : spannerOptions_;
   }
 
   public static final int START_FIELD_NUMBER = 10;
@@ -1071,6 +1122,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(databasePath_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, databasePath_);
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(2, getSpannerOptions());
+    }
     if (actionCase_ == 10) {
       output.writeMessage(10, (com.google.spanner.executor.v1.StartTransactionAction) action_);
     }
@@ -1132,6 +1186,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     size = 0;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(databasePath_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, databasePath_);
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getSpannerOptions());
     }
     if (actionCase_ == 10) {
       size +=
@@ -1230,6 +1287,10 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         (com.google.spanner.executor.v1.SpannerAction) obj;
 
     if (!getDatabasePath().equals(other.getDatabasePath())) return false;
+    if (hasSpannerOptions() != other.hasSpannerOptions()) return false;
+    if (hasSpannerOptions()) {
+      if (!getSpannerOptions().equals(other.getSpannerOptions())) return false;
+    }
     if (!getActionCase().equals(other.getActionCase())) return false;
     switch (actionCase_) {
       case 10:
@@ -1299,6 +1360,10 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + DATABASE_PATH_FIELD_NUMBER;
     hash = (53 * hash) + getDatabasePath().hashCode();
+    if (hasSpannerOptions()) {
+      hash = (37 * hash) + SPANNER_OPTIONS_FIELD_NUMBER;
+      hash = (53 * hash) + getSpannerOptions().hashCode();
+    }
     switch (actionCase_) {
       case 10:
         hash = (37 * hash) + START_FIELD_NUMBER;
@@ -1498,10 +1563,19 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
 
     // Construct using com.google.spanner.executor.v1.SpannerAction.newBuilder()
-    private Builder() {}
+    private Builder() {
+      maybeForceBuilderInitialization();
+    }
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
+      maybeForceBuilderInitialization();
+    }
+
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
+        getSpannerOptionsFieldBuilder();
+      }
     }
 
     @java.lang.Override
@@ -1509,6 +1583,11 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       super.clear();
       bitField0_ = 0;
       databasePath_ = "";
+      spannerOptions_ = null;
+      if (spannerOptionsBuilder_ != null) {
+        spannerOptionsBuilder_.dispose();
+        spannerOptionsBuilder_ = null;
+      }
       if (startBuilder_ != null) {
         startBuilder_.clear();
       }
@@ -1599,6 +1678,13 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.databasePath_ = databasePath_;
       }
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000002) != 0)) {
+        result.spannerOptions_ =
+            spannerOptionsBuilder_ == null ? spannerOptions_ : spannerOptionsBuilder_.build();
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     private void buildPartialOneofs(com.google.spanner.executor.v1.SpannerAction result) {
@@ -1703,6 +1789,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         databasePath_ = other.databasePath_;
         bitField0_ |= 0x00000001;
         onChanged();
+      }
+      if (other.hasSpannerOptions()) {
+        mergeSpannerOptions(other.getSpannerOptions());
       }
       switch (other.getActionCase()) {
         case START:
@@ -1822,6 +1911,12 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00000001;
                 break;
               } // case 10
+            case 18:
+              {
+                input.readMessage(getSpannerOptionsFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
             case 82:
               {
                 input.readMessage(getStartFieldBuilder().getBuilder(), extensionRegistry);
@@ -2070,6 +2165,193 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
+    }
+
+    private com.google.spanner.executor.v1.SpannerOptions spannerOptions_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.SpannerOptions,
+            com.google.spanner.executor.v1.SpannerOptions.Builder,
+            com.google.spanner.executor.v1.SpannerOptionsOrBuilder>
+        spannerOptionsBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     *
+     * @return Whether the spannerOptions field is set.
+     */
+    public boolean hasSpannerOptions() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     *
+     * @return The spannerOptions.
+     */
+    public com.google.spanner.executor.v1.SpannerOptions getSpannerOptions() {
+      if (spannerOptionsBuilder_ == null) {
+        return spannerOptions_ == null
+            ? com.google.spanner.executor.v1.SpannerOptions.getDefaultInstance()
+            : spannerOptions_;
+      } else {
+        return spannerOptionsBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     */
+    public Builder setSpannerOptions(com.google.spanner.executor.v1.SpannerOptions value) {
+      if (spannerOptionsBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        spannerOptions_ = value;
+      } else {
+        spannerOptionsBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     */
+    public Builder setSpannerOptions(
+        com.google.spanner.executor.v1.SpannerOptions.Builder builderForValue) {
+      if (spannerOptionsBuilder_ == null) {
+        spannerOptions_ = builderForValue.build();
+      } else {
+        spannerOptionsBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     */
+    public Builder mergeSpannerOptions(com.google.spanner.executor.v1.SpannerOptions value) {
+      if (spannerOptionsBuilder_ == null) {
+        if (((bitField0_ & 0x00000002) != 0)
+            && spannerOptions_ != null
+            && spannerOptions_
+                != com.google.spanner.executor.v1.SpannerOptions.getDefaultInstance()) {
+          getSpannerOptionsBuilder().mergeFrom(value);
+        } else {
+          spannerOptions_ = value;
+        }
+      } else {
+        spannerOptionsBuilder_.mergeFrom(value);
+      }
+      if (spannerOptions_ != null) {
+        bitField0_ |= 0x00000002;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     */
+    public Builder clearSpannerOptions() {
+      bitField0_ = (bitField0_ & ~0x00000002);
+      spannerOptions_ = null;
+      if (spannerOptionsBuilder_ != null) {
+        spannerOptionsBuilder_.dispose();
+        spannerOptionsBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     */
+    public com.google.spanner.executor.v1.SpannerOptions.Builder getSpannerOptionsBuilder() {
+      bitField0_ |= 0x00000002;
+      onChanged();
+      return getSpannerOptionsFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     */
+    public com.google.spanner.executor.v1.SpannerOptionsOrBuilder getSpannerOptionsOrBuilder() {
+      if (spannerOptionsBuilder_ != null) {
+        return spannerOptionsBuilder_.getMessageOrBuilder();
+      } else {
+        return spannerOptions_ == null
+            ? com.google.spanner.executor.v1.SpannerOptions.getDefaultInstance()
+            : spannerOptions_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Configuration options for Spanner backend
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.SpannerOptions spanner_options = 2;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.SpannerOptions,
+            com.google.spanner.executor.v1.SpannerOptions.Builder,
+            com.google.spanner.executor.v1.SpannerOptionsOrBuilder>
+        getSpannerOptionsFieldBuilder() {
+      if (spannerOptionsBuilder_ == null) {
+        spannerOptionsBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.executor.v1.SpannerOptions,
+                com.google.spanner.executor.v1.SpannerOptions.Builder,
+                com.google.spanner.executor.v1.SpannerOptionsOrBuilder>(
+                getSpannerOptions(), getParentForChildren(), isClean());
+        spannerOptions_ = null;
+      }
+      return spannerOptionsBuilder_;
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
