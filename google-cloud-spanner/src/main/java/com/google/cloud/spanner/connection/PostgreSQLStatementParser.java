@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.SimpleParser.isValidIdentifierFirstChar;
+
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -37,6 +39,11 @@ public class PostgreSQLStatementParser extends AbstractStatementParser {
     super(
         Collections.unmodifiableSet(
             ClientSideStatements.getInstance(Dialect.POSTGRESQL).getCompiledStatements()));
+  }
+
+  @Override
+  Dialect getDialect() {
+    return Dialect.POSTGRESQL;
   }
 
   /**

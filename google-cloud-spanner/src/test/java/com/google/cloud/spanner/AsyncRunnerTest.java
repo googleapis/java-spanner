@@ -33,6 +33,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import io.grpc.Status;
@@ -44,12 +45,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
+  @After
+  public void clearRequests() {
+    mockSpanner.clearRequests();
+  }
 
   @Test
   public void testAsyncRunner_doesNotReturnCommitTimestampBeforeCommit() {
@@ -195,15 +201,28 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             executor);
     assertThat(result.get()).isNull();
     assertThat(attempt.get()).isEqualTo(2);
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            ExecuteSqlRequest.class,
-            // The retry will use an explicit BeginTransaction RPC because the first statement of
-            // the transaction did not return a transaction id during the initial attempt.
-            BeginTransactionRequest.class,
-            ExecuteSqlRequest.class,
-            CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteSqlRequest.class,
+              // The retry will use an explicit BeginTransaction RPC because the first statement of
+              // the transaction did not return a transaction id during the initial attempt.
+              BeginTransactionRequest.class,
+              ExecuteSqlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteSqlRequest.class,
+              // The retry will use an explicit BeginTransaction RPC because the first statement of
+              // the transaction did not return a transaction id during the initial attempt.
+              BeginTransactionRequest.class,
+              ExecuteSqlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test
@@ -241,9 +260,18 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             },
             executor);
     res.get();
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteSqlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+    }
   }
 
   @Test
@@ -377,15 +405,28 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             executor);
     assertThat(result.get()).isNull();
     assertThat(attempt.get()).isEqualTo(2);
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            ExecuteSqlRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class,
-            ExecuteSqlRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteSqlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class,
+              ExecuteSqlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteSqlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class,
+              ExecuteSqlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test
@@ -423,9 +464,18 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             },
             executor);
     res.get();
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    }
   }
 
   @Test
@@ -519,5 +569,12 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
                     .toListAsync(input -> input.getString("Value"), MoreExecutors.directExecutor()),
             executor);
     assertThat(val.get()).containsExactly("v1", "v2", "v3");
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }
