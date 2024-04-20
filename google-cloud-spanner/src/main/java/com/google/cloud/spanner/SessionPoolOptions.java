@@ -254,7 +254,7 @@ public class SessionPoolOptions {
   boolean isFailIfSessionNotFound() {
     return actionOnSessionNotFound == ActionOnSessionNotFound.FAIL;
   }
-  
+
   @VisibleForTesting
   boolean isFailIfNumSessionsInUseIsNegative() {
     return failIfNumSessionsInUseIsNegative;
@@ -775,7 +775,7 @@ public class SessionPoolOptions {
       this.actionOnSessionNotFound = ActionOnSessionNotFound.FAIL;
       return this;
     }
-    
+
     @VisibleForTesting
     Builder setFailIfNumSessionsInUseIsNegative() {
       this.failIfNumSessionsInUseIsNegative = true;
