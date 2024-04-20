@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.65.0](https://github.com/googleapis/java-spanner/compare/v6.64.0...v6.65.0) (2024-04-20)
+
+
+### Features
+
+* Remove grpclb ([#2760](https://github.com/googleapis/java-spanner/issues/2760)) ([1df09d9](https://github.com/googleapis/java-spanner/commit/1df09d9b9189c5527de91189a063ecc15779ac77))
+* Support client-side hints for tags and priority ([#3005](https://github.com/googleapis/java-spanner/issues/3005)) ([48828df](https://github.com/googleapis/java-spanner/commit/48828df3489465bb53a18be50808fbd435f3e896)), closes [#2978](https://github.com/googleapis/java-spanner/issues/2978)
+
+
+### Bug Fixes
+
+* **deps:** Update the Java code generator (gapic-generator-java) to 2.39.0 ([#3001](https://github.com/googleapis/java-spanner/issues/3001)) ([6cec1bf](https://github.com/googleapis/java-spanner/commit/6cec1bf1bb44a52c62c2310447c6a068a88209ea))
+* NullPointerException on AbstractReadContext.span ([#3036](https://github.com/googleapis/java-spanner/issues/3036)) ([55732fd](https://github.com/googleapis/java-spanner/commit/55732fd107ac1d3b8c16eee198c904d54d98b2b4))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.29.0 ([#3045](https://github.com/googleapis/java-spanner/issues/3045)) ([67a6534](https://github.com/googleapis/java-spanner/commit/67a65346d5a01d118d5220230e3bed6db7e79a33))
+* Update dependency commons-cli:commons-cli to v1.7.0 ([#3043](https://github.com/googleapis/java-spanner/issues/3043)) ([9fea7a3](https://github.com/googleapis/java-spanner/commit/9fea7a30e90227e735ad3595f4ca58dfb1ca1b93))
+
 ## [6.64.0](https://github.com/googleapis/java-spanner/compare/v6.63.0...v6.64.0) (2024-04-12)
 
 
