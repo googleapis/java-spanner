@@ -32,6 +32,7 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.ReadQueryUpdateTransactionOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.PartitionOptions;
@@ -56,6 +57,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -245,6 +247,8 @@ class ConnectionImpl implements Connection {
   private String transactionTag;
   private String statementTag;
 
+  private Duration maxCommitDelay;
+
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
     Preconditions.checkNotNull(options);
@@ -273,6 +277,7 @@ class ConnectionImpl implements Connection {
     this.autoPartitionMode = options.isAutoPartitionMode();
     this.maxPartitions = options.getMaxPartitions();
     this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
+    this.maxCommitDelay = options.getMaxCommitDelay();
     this.ddlClient = createDdlClient();
     setDefaultTransactionOptions();
   }
@@ -301,8 +306,8 @@ class ConnectionImpl implements Connection {
     setDefaultTransactionOptions();
   }
 
-  @VisibleForTesting
-  Spanner getSpanner() {
+  @Override
+  public Spanner getSpanner() {
     return this.spanner;
   }
 
@@ -792,6 +797,18 @@ class ConnectionImpl implements Connection {
   }
 
   @Override
+  public void setMaxCommitDelay(Duration maxCommitDelay) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    this.maxCommitDelay = maxCommitDelay;
+  }
+
+  @Override
+  public Duration getMaxCommitDelay() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.maxCommitDelay;
+  }
+
+  @Override
   public void setDelayTransactionStartUntilFirstWrite(
       boolean delayTransactionStartUntilFirstWrite) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
@@ -1138,6 +1155,7 @@ class ConnectionImpl implements Connection {
           "Only queries can be partitioned. Invalid statement: " + query.getSql());
     }
 
+    QueryOption[] combinedOptions = concat(parsedStatement.getOptionsFromHints(), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return get(
         transaction.partitionQueryAsync(
@@ -1145,7 +1163,8 @@ class ConnectionImpl implements Connection {
             parsedStatement,
             getEffectivePartitionOptions(partitionOptions),
             mergeDataBoost(
-                mergeQueryRequestOptions(parsedStatement, mergeQueryStatementTag(options)))));
+                mergeQueryRequestOptions(
+                    parsedStatement, mergeQueryStatementTag(combinedOptions)))));
   }
 
   private PartitionOptions getEffectivePartitionOptions(
@@ -1439,6 +1458,34 @@ class ConnectionImpl implements Connection {
     return parsedStatements;
   }
 
+  private UpdateOption[] concat(
+      ReadQueryUpdateTransactionOption[] statementOptions, UpdateOption[] argumentOptions) {
+    if (statementOptions == null || statementOptions.length == 0) {
+      return argumentOptions;
+    }
+    if (argumentOptions == null || argumentOptions.length == 0) {
+      return statementOptions;
+    }
+    UpdateOption[] result =
+        Arrays.copyOf(statementOptions, statementOptions.length + argumentOptions.length);
+    System.arraycopy(argumentOptions, 0, result, statementOptions.length, argumentOptions.length);
+    return result;
+  }
+
+  private QueryOption[] concat(
+      ReadQueryUpdateTransactionOption[] statementOptions, QueryOption[] argumentOptions) {
+    if (statementOptions == null || statementOptions.length == 0) {
+      return argumentOptions;
+    }
+    if (argumentOptions == null || argumentOptions.length == 0) {
+      return statementOptions;
+    }
+    QueryOption[] result =
+        Arrays.copyOf(statementOptions, statementOptions.length + argumentOptions.length);
+    System.arraycopy(argumentOptions, 0, result, statementOptions.length, argumentOptions.length);
+    return result;
+  }
+
   private QueryOption[] mergeDataBoost(QueryOption... options) {
     if (this.dataBoostEnabled) {
       options = appendQueryOption(options, Options.dataBoostEnabled(true));
@@ -1515,19 +1562,20 @@ class ConnectionImpl implements Connection {
                 && (analyzeMode != AnalyzeMode.NONE || statement.hasReturningClause())),
         "Statement must either be a query or a DML mode with analyzeMode!=NONE or returning clause");
     boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
+    QueryOption[] combinedOptions = concat(statement.getOptionsFromHints(), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
     if (autoPartitionMode
         && statement.getType() == StatementType.QUERY
         && !isInternalMetadataQuery) {
       return runPartitionedQuery(
-          statement.getStatement(), PartitionOptions.getDefaultInstance(), options);
+          statement.getStatement(), PartitionOptions.getDefaultInstance(), combinedOptions);
     }
     return get(
         transaction.executeQueryAsync(
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))));
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(combinedOptions))));
   }
 
   private AsyncResultSet internalExecuteQueryAsync(
@@ -1542,25 +1590,27 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !(autoPartitionMode && statement.getType() == StatementType.QUERY),
         "Partitioned queries cannot be executed asynchronously");
-    UnitOfWork transaction =
-        getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery(options));
+    boolean isInternalMetadataQuery = isInternalMetadataQuery(options);
+    QueryOption[] combinedOptions = concat(statement.getOptionsFromHints(), options);
+    UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork(isInternalMetadataQuery);
     return ResultSets.toAsyncResultSet(
         transaction.executeQueryAsync(
             callType,
             statement,
             analyzeMode,
-            mergeQueryRequestOptions(statement, mergeQueryStatementTag(options))),
+            mergeQueryRequestOptions(statement, mergeQueryStatementTag(combinedOptions))),
         spanner.getAsyncExecutorProvider(),
-        options);
+        combinedOptions);
   }
 
   private ApiFuture<Long> internalExecuteUpdateAsync(
       final CallType callType, final ParsedStatement update, UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
+    UpdateOption[] combinedOptions = concat(update.getOptionsFromHints(), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.executeUpdateAsync(
-        callType, update, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType, update, mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
 
   private ApiFuture<ResultSet> internalAnalyzeUpdateAsync(
@@ -1570,16 +1620,22 @@ class ConnectionImpl implements Connection {
       UpdateOption... options) {
     Preconditions.checkArgument(
         update.getType() == StatementType.UPDATE, "Statement must be an update");
+    UpdateOption[] combinedOptions = concat(update.getOptionsFromHints(), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.analyzeUpdateAsync(
-        callType, update, analyzeMode, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType,
+        update,
+        analyzeMode,
+        mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
 
   private ApiFuture<long[]> internalExecuteBatchUpdateAsync(
       CallType callType, List<ParsedStatement> updates, UpdateOption... options) {
+    UpdateOption[] combinedOptions =
+        updates.isEmpty() ? options : concat(updates.get(0).getOptionsFromHints(), options);
     UnitOfWork transaction = getCurrentUnitOfWorkOrStartNewUnitOfWork();
     return transaction.executeBatchUpdateAsync(
-        callType, updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(options)));
+        callType, updates, mergeUpdateRequestOptions(mergeUpdateStatementTag(combinedOptions)));
   }
 
   private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
@@ -1614,6 +1670,7 @@ class ConnectionImpl implements Connection {
           .setReadOnlyStaleness(readOnlyStaleness)
           .setAutocommitDmlMode(autocommitDmlMode)
           .setReturnCommitStats(returnCommitStats)
+          .setMaxCommitDelay(maxCommitDelay)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
           .build();
@@ -1631,11 +1688,13 @@ class ConnectionImpl implements Connection {
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
+              .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
               .setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite)
               .setRetryAbortsInternally(retryAbortsInternally)
               .setSavepointSupport(savepointSupport)
               .setReturnCommitStats(returnCommitStats)
+              .setMaxCommitDelay(maxCommitDelay)
               .setTransactionRetryListeners(transactionRetryListeners)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)

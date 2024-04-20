@@ -30,6 +30,9 @@ class MetricRegistryConstants {
       LabelKey.create("instance_id", "Name of the instance");
   private static final LabelKey LIBRARY_VERSION =
       LabelKey.create("library_version", "Library version");
+  static final LabelKey IS_MULTIPLEXED_KEY =
+      LabelKey.create("is_multiplexed", "Multiplexed Session");
+
   private static final LabelKey SESSION_TYPE = LabelKey.create("Type", "Type of the Sessions");
 
   /** The label value is used to represent missing value. */
@@ -62,6 +65,9 @@ class MetricRegistryConstants {
   static final ImmutableList<LabelValue> SPANNER_DEFAULT_LABEL_VALUES =
       ImmutableList.of(UNSET_LABEL, UNSET_LABEL, UNSET_LABEL, UNSET_LABEL);
 
+  static final ImmutableList<LabelKey> SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS =
+      ImmutableList.of(CLIENT_ID, DATABASE, INSTANCE_ID, LIBRARY_VERSION, IS_MULTIPLEXED_KEY);
+
   /** Unit to represent counts. */
   static final String COUNT = "1";
 
@@ -79,7 +85,7 @@ class MetricRegistryConstants {
   static final String NUM_SESSIONS_IN_USE = "spanner/num_in_use_sessions";
   static final String NUM_SESSIONS_AVAILABLE = "spanner/num_available_sessions";
   static final String SESSIONS_TYPE = "session_type";
-
+  static final String IS_MULTIPLEXED = "is_multiplexed";
   static final String MAX_IN_USE_SESSIONS_DESCRIPTION =
       "The maximum number of sessions in use during the last 10 minute interval.";
   static final String MAX_ALLOWED_SESSIONS_DESCRIPTION =

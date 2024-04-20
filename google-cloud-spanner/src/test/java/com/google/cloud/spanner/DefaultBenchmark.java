@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.BenchmarkingUtilityScripts.collectResults;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -29,7 +31,6 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import org.openjdk.jmh.annotations.AuxCounters;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -37,6 +38,7 @@ import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -45,8 +47,8 @@ import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Benchmarks for measuring existing latencies of various APIs using the Java Client. The benchmarks
- * are bound to the Maven profile `benchmark` and can be executed like this: <code> mvn clean test
- * -DskipTests -Pbenchmark -Dbenchmark.name=DefaultBenchmark
+ * are bound to the Maven profile `benchmark` and can be executed like this: <code>
+ *   mvn clean test -DskipTests -Pbenchmark -Dbenchmark.name=DefaultBenchmark
  * </code> Test Table Schema :
  *
  * <p>CREATE TABLE FOO ( id INT64 NOT NULL, BAZ INT64, BAR INT64, ) PRIMARY KEY(id);
@@ -63,49 +65,10 @@ import org.openjdk.jmh.annotations.Warmup;
 @Fork(value = 1, warmups = 0)
 @Measurement(batchSize = 1, iterations = 1, timeUnit = TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 1)
+@Warmup(iterations = 0)
 public class DefaultBenchmark extends AbstractLatencyBenchmark {
 
-  private static final String SELECT_QUERY = "SELECT ID FROM FOO WHERE ID = @id";
-  private static final String UPDATE_QUERY = "UPDATE FOO SET BAR=1 WHERE ID = @id";
-  private static final String ID_COLUMN_NAME = "id";
-
-  /**
-   * Used to determine how many concurrent requests are allowed. For ex - To simulate a low QPS
-   * scenario, using 1 thread means there will be 1 request. Use a value > 1 to have concurrent
-   * requests.
-   */
-  private static final int PARALLEL_THREADS = 1;
-
-  /**
-   * Total number of reads per test run for 1 thread. Increasing the value here will increase the
-   * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_READS_PER_RUN = 200, there
-   * will be 400 read requests (200 on each thread).
-   */
-  private static final int TOTAL_READS_PER_RUN = 12000;
-
-  /**
-   * Total number of writes per test run for 1 thread. Increasing the value here will increase the
-   * duration of the benchmark. For ex - With PARALLEL_THREADS = 2, TOTAL_WRITES_PER_RUN = 200,
-   * there will be 400 write requests (200 on each thread).
-   */
-  private static final int TOTAL_WRITES_PER_RUN = 4000;
-
-  /**
-   * Number of requests which are used to initialise/warmup the benchmark. The latency number of
-   * these runs are ignored from the final reported results.
-   */
-  private static final int WARMUP_REQUEST_COUNT = 1;
-
-  /**
-   * Numbers of records in the sample table used in the benchmark. This is used in this benchmark to
-   * randomly choose a primary key and ensure that the reads are randomly distributed. This is done
-   * to ensure we don't end up reading/writing the same table record (leading to hot-spotting).
-   */
-  private static final int TOTAL_RECORDS = 1000000;
-
-  @State(Scope.Thread)
-  @AuxCounters(org.openjdk.jmh.annotations.AuxCounters.Type.EVENTS)
+  @State(Scope.Benchmark)
   public static class BenchmarkState {
 
     // TODO(developer): Add your values here for PROJECT_ID, INSTANCE_ID, DATABASE_ID
@@ -115,15 +78,24 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     private Spanner spanner;
     private DatabaseClientImpl client;
 
+    @Param({"100"})
+    int minSessions;
+
+    @Param({"400"})
+    int maxSessions;
+
     @Setup(Level.Iteration)
     public void setup() throws Exception {
       SpannerOptions options =
           SpannerOptions.newBuilder()
               .setSessionPoolOption(
                   SessionPoolOptions.newBuilder()
+                      .setMinSessions(minSessions)
+                      .setMaxSessions(maxSessions)
                       .setWaitForMinSessions(org.threeten.bp.Duration.ofSeconds(20))
                       .build())
               .setHost(SERVER_URL)
+              .setNumChannels(NUM_GRPC_CHANNELS)
               .build();
       spanner = options.getService();
       client =
@@ -150,7 +122,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
+      results.add(
+          service.submit(() -> runBenchmarksForSingleUseQueries(server, TOTAL_READS_PER_RUN)));
     }
     collectResultsAndPrint(service, results, TOTAL_READS_PER_RUN);
   }
@@ -167,7 +140,8 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
         MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(PARALLEL_THREADS));
     List<ListenableFuture<List<Duration>>> results = new ArrayList<>(PARALLEL_THREADS);
     for (int i = 0; i < PARALLEL_THREADS; i++) {
-      results.add(service.submit(() -> runBenchmarksForQueries(server, TOTAL_READS_PER_RUN)));
+      results.add(
+          service.submit(() -> runBenchmarksForSingleUseQueries(server, TOTAL_READS_PER_RUN)));
     }
     for (int i = 0; i < PARALLEL_THREADS; i++) {
       results.add(service.submit(() -> runBenchmarkForUpdates(server, TOTAL_WRITES_PER_RUN)));
@@ -194,30 +168,31 @@ public class DefaultBenchmark extends AbstractLatencyBenchmark {
     collectResultsAndPrint(service, results, TOTAL_WRITES_PER_RUN);
   }
 
-  private List<java.time.Duration> runBenchmarksForQueries(
+  private List<java.time.Duration> runBenchmarksForSingleUseQueries(
       final BenchmarkState server, int numberOfOperations) {
     List<Duration> results = new ArrayList<>(numberOfOperations);
     // Execute one query to make sure everything has been warmed up.
     executeWarmup(server);
 
     for (int i = 0; i < numberOfOperations; i++) {
-      results.add(executeQuery(server));
+      results.add(executeSingleUseQuery(server));
     }
     return results;
   }
 
   private void executeWarmup(final BenchmarkState server) {
     for (int i = 0; i < WARMUP_REQUEST_COUNT; i++) {
-      executeQuery(server);
+      executeSingleUseQuery(server);
     }
   }
 
-  private java.time.Duration executeQuery(final BenchmarkState server) {
+  private java.time.Duration executeSingleUseQuery(final BenchmarkState server) {
     Stopwatch watch = Stopwatch.createStarted();
 
     try (ResultSet rs = server.client.singleUse().executeQuery(getRandomisedReadStatement())) {
       while (rs.next()) {
-        int count = rs.getColumnCount();
+        assertEquals(1, rs.getColumnCount());
+        assertNotNull(rs.getValue(0));
       }
     }
     return watch.elapsed();

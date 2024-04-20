@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.MetricRegistryConstants.GET_SESSION_TIMEOUTS;
+import static com.google.cloud.spanner.MetricRegistryConstants.IS_MULTIPLEXED_KEY;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_ALLOWED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.MAX_IN_USE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.METRIC_PREFIX;
@@ -31,6 +32,7 @@ import static com.google.cloud.spanner.MetricRegistryConstants.NUM_SESSIONS_IN_U
 import static com.google.cloud.spanner.MetricRegistryConstants.NUM_WRITE_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_DEFAULT_LABEL_VALUES;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS;
+import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS;
 import static com.google.cloud.spanner.MetricRegistryConstants.SPANNER_LABEL_KEYS_WITH_TYPE;
 import static com.google.cloud.spanner.SpannerOptionsTest.runWithSystemProperty;
 import static com.google.common.truth.Truth.assertThat;
@@ -62,6 +64,7 @@ import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -88,12 +91,14 @@ import io.opencensus.metrics.MetricRegistry;
 import io.opencensus.metrics.Metrics;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import java.io.PrintWriter;
@@ -259,6 +264,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         .when(sessionClient)
         .asyncBatchCreateSessions(
             Mockito.anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
+    doAnswer(
+            invocation ->
+                executor.submit(
+                    () -> {
+                      SessionConsumer consumer = invocation.getArgument(0, SessionConsumer.class);
+                      consumer.onSessionReady(mockMultiplexedSession());
+                    }))
+        .when(sessionClient)
+        .asyncCreateMultiplexedSession(any(SessionConsumer.class));
   }
 
   @Test
@@ -719,16 +733,24 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void idleSessionCleanup() throws Exception {
     ReadContext context = mock(ReadContext.class);
+
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
             .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
             .build();
-    SessionImpl session1 = buildMockSession(context);
-    SessionImpl session2 = buildMockSession(context);
-    SessionImpl session3 = buildMockSession(context);
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions spannerOptions = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
+    SessionImpl session1 = buildMockSession(spanner, context);
+    SessionImpl session2 = buildMockSession(spanner, context);
+    SessionImpl session3 = buildMockSession(spanner, context);
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
     doAnswer(
@@ -743,9 +765,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-
-    FakeClock clock = new FakeClock();
-    clock.currentTimeMillis.set(System.currentTimeMillis());
 
     mockKeepAlive(context);
 
@@ -787,18 +806,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void longRunningTransactionsCleanup_whenActionSetToClose_verifyInactiveSessionsClosed()
       throws Exception {
-    setupForLongRunningTransactionsCleanup();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
             .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
             .setCloseIfInactiveTransactions() // set option to close inactive transactions
             .build();
-
-    Clock clock = mock(Clock.class);
-    when(clock.instant()).thenReturn(Instant.now());
+    setupForLongRunningTransactionsCleanup(options);
 
     pool = createPool(clock);
     // Make sure pool has been initialized
@@ -833,16 +852,17 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void longRunningTransactionsCleanup_whenActionSetToWarn_verifyInactiveSessionsOpen()
       throws Exception {
-    setupForLongRunningTransactionsCleanup();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
+            .setPoolMaintainerClock(clock)
             .setWarnIfInactiveTransactions() // set option to warn (via logs) inactive transactions
             .build();
-    Clock clock = mock(Clock.class);
-    when(clock.instant()).thenReturn(Instant.now());
+    setupForLongRunningTransactionsCleanup(options);
 
     pool = createPool(clock);
     // Make sure pool has been initialized
@@ -881,17 +901,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void
       longRunningTransactionsCleanup_whenUtilisationBelowThreshold_verifyInactiveSessionsOpen()
           throws Exception {
-    setupForLongRunningTransactionsCleanup();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
             .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
             .setCloseIfInactiveTransactions() // set option to close inactive transactions
             .build();
-    Clock clock = mock(Clock.class);
-    when(clock.instant()).thenReturn(Instant.now());
+    setupForLongRunningTransactionsCleanup(options);
 
     pool = createPool(clock);
     pool.getSession().close();
@@ -988,17 +1009,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void longRunningTransactionsCleanup_whenBelowDurationThreshold_verifyInactiveSessionsOpen()
       throws Exception {
-    setupForLongRunningTransactionsCleanup();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
             .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
             .setCloseIfInactiveTransactions() // set option to close inactive transactions
             .build();
-    Clock clock = mock(Clock.class);
-    when(clock.instant()).thenReturn(Instant.now());
+    setupForLongRunningTransactionsCleanup(options);
 
     pool = createPool(clock);
     // Make sure pool has been initialized
@@ -1031,17 +1053,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   @Test
   public void longRunningTransactionsCleanup_whenException_doNothing() throws Exception {
-    setupForLongRunningTransactionsCleanup();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
             .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
             .setCloseIfInactiveTransactions() // set option to close inactive transactions
             .build();
-    Clock clock = mock(Clock.class);
-    when(clock.instant()).thenReturn(Instant.now());
+    setupForLongRunningTransactionsCleanup(options);
 
     pool = createPool(clock);
     // Make sure pool has been initialized
@@ -1075,17 +1098,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void
       longRunningTransactionsCleanup_whenTaskRecurrenceBelowThreshold_verifyInactiveSessionsOpen()
           throws Exception {
-    setupForLongRunningTransactionsCleanup();
+    Clock clock = mock(Clock.class);
+    when(clock.instant()).thenReturn(Instant.now());
     options =
         SessionPoolOptions.newBuilder()
             .setMinSessions(1)
             .setMaxSessions(3)
             .setIncStep(1)
             .setMaxIdleSessions(0)
+            .setPoolMaintainerClock(clock)
             .setCloseIfInactiveTransactions() // set option to close inactive transactions
             .build();
-    Clock clock = mock(Clock.class);
-    when(clock.instant()).thenReturn(Instant.now());
+    setupForLongRunningTransactionsCleanup(options);
 
     pool = createPool(clock);
     // Make sure pool has been initialized
@@ -1119,11 +1143,15 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     pool.closeAsync(new SpannerImpl.ClosedException()).get(5L, TimeUnit.SECONDS);
   }
 
-  private void setupForLongRunningTransactionsCleanup() {
+  private void setupForLongRunningTransactionsCleanup(SessionPoolOptions sessionPoolOptions) {
     ReadContext context = mock(ReadContext.class);
-    SessionImpl session1 = buildMockSession(context);
-    SessionImpl session2 = buildMockSession(context);
-    SessionImpl session3 = buildMockSession(context);
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions options = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(options);
+    when(options.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
+    SessionImpl session1 = buildMockSession(spanner, context);
+    SessionImpl session2 = buildMockSession(spanner, context);
+    SessionImpl session3 = buildMockSession(spanner, context);
 
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(session1, session2, session3));
@@ -1146,10 +1174,21 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   @Test
   public void keepAlive() throws Exception {
     ReadContext context = mock(ReadContext.class);
-    options = SessionPoolOptions.newBuilder().setMinSessions(2).setMaxSessions(3).build();
-    final SessionImpl mockSession1 = buildMockSession(context);
-    final SessionImpl mockSession2 = buildMockSession(context);
-    final SessionImpl mockSession3 = buildMockSession(context);
+    FakeClock clock = new FakeClock();
+    clock.currentTimeMillis.set(System.currentTimeMillis());
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(2)
+            .setMaxSessions(3)
+            .setPoolMaintainerClock(clock)
+            .build();
+    SpannerImpl spanner = mock(SpannerImpl.class);
+    SpannerOptions spannerOptions = mock(SpannerOptions.class);
+    when(spanner.getOptions()).thenReturn(spannerOptions);
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
+    final SessionImpl mockSession1 = buildMockSession(spanner, context);
+    final SessionImpl mockSession2 = buildMockSession(spanner, context);
+    final SessionImpl mockSession3 = buildMockSession(spanner, context);
     final LinkedList<SessionImpl> sessions =
         new LinkedList<>(Arrays.asList(mockSession1, mockSession2, mockSession3));
 
@@ -1171,8 +1210,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             })
         .when(sessionClient)
         .asyncBatchCreateSessions(anyInt(), Mockito.anyBoolean(), any(SessionConsumer.class));
-    FakeClock clock = new FakeClock();
-    clock.currentTimeMillis.set(System.currentTimeMillis());
     pool = createPool(clock);
     PooledSessionFuture session1 = pool.getSession();
     PooledSessionFuture session2 = pool.getSession();
@@ -1758,19 +1795,70 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     assertThat(getSessionsTimeouts.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
     assertThat(getSessionsTimeouts.get(0).values()).isEqualTo(labelValues);
 
+    List<LabelValue> labelValuesWithRegularSessions = new ArrayList<>(labelValues);
+    labelValuesWithRegularSessions.add(LabelValue.create("false"));
+    List<LabelValue> labelValuesWithMultiplexedSessions = new ArrayList<>(labelValues);
+    labelValuesWithMultiplexedSessions.add(LabelValue.create("true"));
     List<PointWithFunction> numAcquiredSessions =
         record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
-    assertThat(numAcquiredSessions.size()).isEqualTo(1);
-    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(2L);
-    assertThat(numAcquiredSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
-    assertThat(numAcquiredSessions.get(0).values()).isEqualTo(labelValues);
+    assertThat(numAcquiredSessions.size()).isEqualTo(2);
+    PointWithFunction regularSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    PointWithFunction multiplexedSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    // verify metrics for regular sessions
+    assertThat(regularSessionMetric.value()).isEqualTo(2L);
+    assertThat(regularSessionMetric.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(regularSessionMetric.values()).isEqualTo(labelValuesWithRegularSessions);
+
+    // verify metrics for multiplexed sessions
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
+    assertThat(multiplexedSessionMetric.keys())
+        .isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(multiplexedSessionMetric.values()).isEqualTo(labelValuesWithMultiplexedSessions);
 
     List<PointWithFunction> numReleasedSessions =
         record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
-    assertThat(numReleasedSessions.size()).isEqualTo(1);
-    assertThat(numReleasedSessions.get(0).value()).isEqualTo(0);
-    assertThat(numReleasedSessions.get(0).keys()).isEqualTo(SPANNER_LABEL_KEYS);
-    assertThat(numReleasedSessions.get(0).values()).isEqualTo(labelValues);
+    assertThat(numReleasedSessions.size()).isEqualTo(2);
+
+    regularSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    // verify metrics for regular sessions
+    assertThat(regularSessionMetric.value()).isEqualTo(0L);
+    assertThat(regularSessionMetric.keys()).isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(regularSessionMetric.values()).isEqualTo(labelValuesWithRegularSessions);
+
+    // verify metrics for multiplexed sessions
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
+    assertThat(multiplexedSessionMetric.keys())
+        .isEqualTo(SPANNER_LABEL_KEYS_WITH_MULTIPLEXED_SESSIONS);
+    assertThat(multiplexedSessionMetric.values()).isEqualTo(labelValuesWithMultiplexedSessions);
 
     List<PointWithFunction> maxAllowedSessions =
         record.getMetrics().get(METRIC_PREFIX + MAX_ALLOWED_SESSIONS);
@@ -1836,12 +1924,46 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     session1.close();
     numAcquiredSessions = record.getMetrics().get(METRIC_PREFIX + NUM_ACQUIRED_SESSIONS);
-    assertThat(numAcquiredSessions.size()).isEqualTo(1);
-    assertThat(numAcquiredSessions.get(0).value()).isEqualTo(3L);
+    assertThat(numAcquiredSessions.size()).isEqualTo(2);
+    regularSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numAcquiredSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    assertThat(regularSessionMetric.value()).isEqualTo(3L);
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
 
     numReleasedSessions = record.getMetrics().get(METRIC_PREFIX + NUM_RELEASED_SESSIONS);
-    assertThat(numReleasedSessions.size()).isEqualTo(1);
-    assertThat(numReleasedSessions.get(0).value()).isEqualTo(3L);
+    assertThat(numReleasedSessions.size()).isEqualTo(2);
+    regularSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("false")))
+            .findFirst()
+            .get();
+    multiplexedSessionMetric =
+        numReleasedSessions.stream()
+            .filter(
+                x ->
+                    x.keys().contains(IS_MULTIPLEXED_KEY)
+                        && x.values().contains(LabelValue.create("true")))
+            .findFirst()
+            .get();
+    assertThat(regularSessionMetric.value()).isEqualTo(3L);
+    assertThat(multiplexedSessionMetric.value()).isEqualTo(0L);
 
     maxInUseSessions = record.getMetrics().get(METRIC_PREFIX + MAX_IN_USE_SESSIONS);
     assertThat(maxInUseSessions.size()).isEqualTo(1);
@@ -2001,8 +2123,24 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
     assertEquals(metricDataFiltered.size(), size);
     MetricData metricData = metricDataFiltered.stream().findFirst().get();
-    assertEquals(
-        metricData.getLongSumData().getPoints().stream().findFirst().get().getValue(), value);
+    LongPointData regularSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.FALSE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    LongPointData multiplexedSessionMetric =
+        metricData.getLongSumData().getPoints().stream()
+            .filter(
+                x ->
+                    Boolean.TRUE.equals(
+                        x.getAttributes().get(AttributeKey.booleanKey("is_multiplexed"))))
+            .findFirst()
+            .get();
+    assertEquals(value, regularSessionMetric.getValue());
+    assertEquals(0, multiplexedSessionMetric.getValue());
   }
 
   private static void verifyMetricData(
@@ -2053,6 +2191,12 @@ public class SessionPoolTest extends BaseSessionPoolTest {
 
   @Test
   public void testWaitOnMinSessionsWhenSessionsAreCreatedBeforeTimeout() {
+    options =
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(minSessions)
+            .setMaxSessions(minSessions + 1)
+            .setWaitForMinSessions(Duration.ofSeconds(5))
+            .build();
     doAnswer(
             invocation ->
                 executor.submit(
@@ -2063,13 +2207,17 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     }))
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
+    doAnswer(
+            invocation ->
+                executor.submit(
+                    () -> {
+                      MultiplexedSessionInitializationConsumer consumer =
+                          invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
+                      consumer.onSessionReady(mockMultiplexedSession());
+                    }))
+        .when(sessionClient)
+        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
 
-    options =
-        SessionPoolOptions.newBuilder()
-            .setMinSessions(minSessions)
-            .setMaxSessions(minSessions + 1)
-            .setWaitForMinSessions(Duration.ofSeconds(5))
-            .build();
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();
     assertTrue(pool.getNumberOfSessionsInPool() >= minSessions);

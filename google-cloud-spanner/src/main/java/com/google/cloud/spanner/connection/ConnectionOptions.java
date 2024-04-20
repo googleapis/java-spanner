@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -175,6 +176,7 @@ public class ConnectionOptions {
   private static final String DEFAULT_MIN_SESSIONS = null;
   private static final String DEFAULT_MAX_SESSIONS = null;
   private static final String DEFAULT_NUM_CHANNELS = null;
+  static final String DEFAULT_ENDPOINT = null;
   private static final String DEFAULT_CHANNEL_PROVIDER = null;
   private static final String DEFAULT_DATABASE_ROLE = null;
   private static final String DEFAULT_USER_AGENT = null;
@@ -234,6 +236,8 @@ public class ConnectionOptions {
   public static final String MAX_SESSIONS_PROPERTY_NAME = "maxSessions";
   /** Name of the 'numChannels' connection property. */
   public static final String NUM_CHANNELS_PROPERTY_NAME = "numChannels";
+  /** Name of the 'endpoint' connection property. */
+  public static final String ENDPOINT_PROPERTY_NAME = "endpoint";
   /** Name of the 'channelProvider' connection property. */
   public static final String CHANNEL_PROVIDER_PROPERTY_NAME = "channelProvider";
 
@@ -333,6 +337,12 @@ public class ConnectionOptions {
                       NUM_CHANNELS_PROPERTY_NAME,
                       "The number of gRPC channels to use to communicate with Cloud Spanner. The default is 4."),
                   ConnectionProperty.createStringProperty(
+                      ENDPOINT_PROPERTY_NAME,
+                      "The endpoint that the JDBC driver should connect to. "
+                          + "The default is the default Spanner production endpoint when autoConfigEmulator=false, "
+                          + "and the default Spanner emulator endpoint (localhost:9010) when autoConfigEmulator=true. "
+                          + "This property takes precedence over any host name at the start of the connection URL."),
+                  ConnectionProperty.createStringProperty(
                       CHANNEL_PROVIDER_PROPERTY_NAME,
                       "The name of the channel provider class. The name must reference an implementation of ExternalChannelProvider. If this property is not set, the connection will use the default grpc channel provider."),
                   ConnectionProperty.createBooleanProperty(
@@ -348,6 +358,9 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       OPTIMIZER_STATISTICS_PACKAGE_PROPERTY_NAME, ""),
                   ConnectionProperty.createBooleanProperty("returnCommitStats", "", false),
+                  ConnectionProperty.createStringProperty(
+                      "maxCommitDelay",
+                      "The maximum commit delay in milliseconds that should be applied to commit requests from this connection."),
                   ConnectionProperty.createBooleanProperty(
                       "autoConfigEmulator",
                       "Automatically configure the connection to try to connect to the Cloud Spanner emulator (true/false). "
@@ -680,6 +693,7 @@ public class ConnectionOptions {
   private final String userAgent;
   private final QueryOptions queryOptions;
   private final boolean returnCommitStats;
+  private final Long maxCommitDelay;
   private final boolean autoConfigEmulator;
   private final Dialect dialect;
   private final RpcPriority rpcPriority;
@@ -735,10 +749,13 @@ public class ConnectionOptions {
     queryOptionsBuilder.setOptimizerStatisticsPackage(parseOptimizerStatisticsPackage(this.uri));
     this.queryOptions = queryOptionsBuilder.build();
     this.returnCommitStats = parseReturnCommitStats(this.uri);
+    this.maxCommitDelay = parseMaxCommitDelay(this.uri);
     this.autoConfigEmulator = parseAutoConfigEmulator(this.uri);
     this.dialect = parseDialect(this.uri);
     this.usePlainText = this.autoConfigEmulator || parseUsePlainText(this.uri);
-    this.host = determineHost(matcher, autoConfigEmulator, usePlainText, System.getenv());
+    this.host =
+        determineHost(
+            matcher, parseEndpoint(this.uri), autoConfigEmulator, usePlainText, System.getenv());
     this.rpcPriority = parseRPCPriority(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
@@ -829,10 +846,12 @@ public class ConnectionOptions {
   @VisibleForTesting
   static String determineHost(
       Matcher matcher,
+      String endpoint,
       boolean autoConfigEmulator,
       boolean usePlainText,
       Map<String, String> environment) {
-    if (matcher.group(Builder.HOST_GROUP) == null) {
+    String host;
+    if (Objects.equals(endpoint, DEFAULT_ENDPOINT) && matcher.group(Builder.HOST_GROUP) == null) {
       if (autoConfigEmulator) {
         if (Strings.isNullOrEmpty(environment.get(SPANNER_EMULATOR_HOST_ENV_VAR))) {
           return DEFAULT_EMULATOR_HOST;
@@ -842,13 +861,18 @@ public class ConnectionOptions {
       } else {
         return DEFAULT_HOST;
       }
+    } else if (!Objects.equals(endpoint, DEFAULT_ENDPOINT)) {
+      // Add '//' at the start of the endpoint to conform to the standard URL specification.
+      host = "//" + endpoint;
     } else {
-      if (usePlainText) {
-        return PLAIN_TEXT_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      } else {
-        return HOST_PROTOCOL + matcher.group(Builder.HOST_GROUP);
-      }
+      // The leading '//' is already included in the regex for the connection URL, so we don't need
+      // to add the leading '//' to the host name here.
+      host = matcher.group(Builder.HOST_GROUP);
     }
+    if (usePlainText) {
+      return PLAIN_TEXT_PROTOCOL + host;
+    }
+    return HOST_PROTOCOL + host;
   }
 
   private static Integer parseIntegerProperty(String propertyName, String value) {
@@ -1013,6 +1037,11 @@ public class ConnectionOptions {
     return value != null ? value : DEFAULT_NUM_CHANNELS;
   }
 
+  private static String parseEndpoint(String uri) {
+    String value = parseUriProperty(uri, ENDPOINT_PROPERTY_NAME);
+    return value != null ? value : DEFAULT_ENDPOINT;
+  }
+
   @VisibleForTesting
   static String parseChannelProvider(String uri) {
     String value = parseUriProperty(uri, CHANNEL_PROVIDER_PROPERTY_NAME);
@@ -1049,6 +1078,27 @@ public class ConnectionOptions {
   static boolean parseReturnCommitStats(String uri) {
     String value = parseUriProperty(uri, "returnCommitStats");
     return Boolean.parseBoolean(value);
+  }
+
+  @VisibleForTesting
+  static Long parseMaxCommitDelay(String uri) {
+    String value = parseUriProperty(uri, "maxCommitDelay");
+    try {
+      Long millis = value == null ? null : Long.valueOf(value);
+      if (millis != null && millis < 0L) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.INVALID_ARGUMENT, "maxCommitDelay must be >=0");
+      }
+      return millis;
+    } catch (NumberFormatException numberFormatException) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Invalid value for maxCommitDelay: "
+              + value
+              + "\n"
+              + "The value must be a positive integer indicating the number of "
+              + "milliseconds to use as the max delay.");
+    }
   }
 
   static boolean parseAutoConfigEmulator(String uri) {
@@ -1382,6 +1432,11 @@ public class ConnectionOptions {
     return returnCommitStats;
   }
 
+  /** The max_commit_delay that should be applied to commit operations on this connection. */
+  public Duration getMaxCommitDelay() {
+    return maxCommitDelay == null ? null : Duration.ofMillis(maxCommitDelay);
+  }
+
   /**
    * Whether connections created by this {@link ConnectionOptions} will automatically try to connect
    * to the emulator using the default host/port of the emulator, and automatically create the
@@ -1389,6 +1444,16 @@ public class ConnectionOptions {
    * emulator instance.
    */
   public boolean isAutoConfigEmulator() {
+    return autoConfigEmulator;
+  }
+
+  /**
+   * Returns true if a connection should generate auto-savepoints for retrying transactions on the
+   * emulator. This allows some more concurrent transactions on the emulator.
+   */
+  boolean useAutoSavepointsForEmulator() {
+    // For now, this option is directly linked to the option autoConfigEmulator=true, which is the
+    // recommended way to configure the emulator for the Connection API.
     return autoConfigEmulator;
   }
 

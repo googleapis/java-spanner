@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.BetaApi;
+import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -64,9 +66,13 @@ public class SessionPoolOptions {
   private final Duration waitForMinSessions;
   private final Duration acquireSessionTimeout;
   private final Position releaseToPosition;
+  private final long randomizePositionQPSThreshold;
 
   /** Property for allowing mocking of session maintenance clock. */
   private final Clock poolMaintainerClock;
+
+  private final boolean useMultiplexedSession;
+  private final Duration multiplexedSessionMaintenanceDuration;
 
   private SessionPoolOptions(Builder builder) {
     // minSessions > maxSessions is only possible if the user has only set a value for maxSessions.
@@ -89,8 +95,11 @@ public class SessionPoolOptions {
     this.waitForMinSessions = builder.waitForMinSessions;
     this.acquireSessionTimeout = builder.acquireSessionTimeout;
     this.releaseToPosition = builder.releaseToPosition;
+    this.randomizePositionQPSThreshold = builder.randomizePositionQPSThreshold;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
+    this.useMultiplexedSession = builder.useMultiplexedSession;
+    this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
   @Override
@@ -118,9 +127,14 @@ public class SessionPoolOptions {
         && Objects.equals(this.waitForMinSessions, other.waitForMinSessions)
         && Objects.equals(this.acquireSessionTimeout, other.acquireSessionTimeout)
         && Objects.equals(this.releaseToPosition, other.releaseToPosition)
+        && Objects.equals(this.randomizePositionQPSThreshold, other.randomizePositionQPSThreshold)
         && Objects.equals(
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
-        && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock);
+        && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock)
+        && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
+        && Objects.equals(
+            this.multiplexedSessionMaintenanceDuration,
+            other.multiplexedSessionMaintenanceDuration);
   }
 
   @Override
@@ -143,8 +157,11 @@ public class SessionPoolOptions {
         this.waitForMinSessions,
         this.acquireSessionTimeout,
         this.releaseToPosition,
+        this.randomizePositionQPSThreshold,
         this.inactiveTransactionRemovalOptions,
-        this.poolMaintainerClock);
+        this.poolMaintainerClock,
+        this.useMultiplexedSession,
+        this.multiplexedSessionMaintenanceDuration);
   }
 
   public Builder toBuilder() {
@@ -261,6 +278,20 @@ public class SessionPoolOptions {
 
   Position getReleaseToPosition() {
     return releaseToPosition;
+  }
+
+  long getRandomizePositionQPSThreshold() {
+    return randomizePositionQPSThreshold;
+  }
+
+  @VisibleForTesting
+  @InternalApi
+  public boolean getUseMultiplexedSession() {
+    return useMultiplexedSession;
+  }
+
+  Duration getMultiplexedSessionMaintenanceDuration() {
+    return multiplexedSessionMaintenanceDuration;
   }
 
   public static Builder newBuilder() {
@@ -451,8 +482,18 @@ public class SessionPoolOptions {
     private Duration waitForMinSessions = Duration.ZERO;
     private Duration acquireSessionTimeout = Duration.ofSeconds(60);
     private Position releaseToPosition = getReleaseToPositionFromSystemProperty();
+    /**
+     * The session pool will randomize the position of a session that is being returned when this
+     * threshold is exceeded. That is: If the transactions per second exceeds this threshold, then
+     * the session pool will use a random order for the sessions instead of LIFO. The default is 0,
+     * which means that the option is disabled.
+     */
+    private long randomizePositionQPSThreshold = 0L;
 
-    private Clock poolMaintainerClock;
+    private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
+
+    private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
+    private Clock poolMaintainerClock = Clock.INSTANCE;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -465,6 +506,18 @@ public class SessionPoolOptions {
         }
       }
       return Position.FIRST;
+    }
+
+    /**
+     * This environment is only added to support internal spanner testing. Support for it can be
+     * removed in the future. Use {@link SessionPoolOptions#useMultiplexedSession} instead to use
+     * multiplexed sessions.
+     */
+    @InternalApi
+    @BetaApi
+    private static boolean getUseMultiplexedSessionFromEnvVariable() {
+      return Boolean.parseBoolean(
+          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
     }
 
     public Builder() {}
@@ -487,6 +540,7 @@ public class SessionPoolOptions {
       this.autoDetectDialect = options.autoDetectDialect;
       this.waitForMinSessions = options.waitForMinSessions;
       this.acquireSessionTimeout = options.acquireSessionTimeout;
+      this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -649,7 +703,30 @@ public class SessionPoolOptions {
 
     @VisibleForTesting
     Builder setPoolMaintainerClock(Clock poolMaintainerClock) {
-      this.poolMaintainerClock = poolMaintainerClock;
+      this.poolMaintainerClock = Preconditions.checkNotNull(poolMaintainerClock);
+      return this;
+    }
+
+    /**
+     * Sets whether the client should use multiplexed session or not. If set to true, the client
+     * optimises and runs multiple applicable requests concurrently on a single session. A single
+     * multiplexed session is sufficient to handle all concurrent traffic.
+     *
+     * <p>When set to false, the client uses the regular session cached in the session pool for
+     * running 1 concurrent transaction per session. We require to provision sufficient sessions by
+     * making use of {@link SessionPoolOptions#minSessions} and {@link
+     * SessionPoolOptions#maxSessions} based on the traffic load. Failing to do so will result in
+     * higher latencies.
+     */
+    Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
+      this.useMultiplexedSession = useMultiplexedSession;
+      return this;
+    }
+
+    @VisibleForTesting
+    Builder setMultiplexedSessionMaintenanceDuration(
+        Duration multiplexedSessionMaintenanceDuration) {
+      this.multiplexedSessionMaintenanceDuration = multiplexedSessionMaintenanceDuration;
       return this;
     }
 
@@ -761,6 +838,13 @@ public class SessionPoolOptions {
 
     Builder setReleaseToPosition(Position releaseToPosition) {
       this.releaseToPosition = Preconditions.checkNotNull(releaseToPosition);
+      return this;
+    }
+
+    Builder setRandomizePositionQPSThreshold(long randomizePositionQPSThreshold) {
+      Preconditions.checkArgument(
+          randomizePositionQPSThreshold >= 0L, "randomizePositionQPSThreshold must be >= 0");
+      this.randomizePositionQPSThreshold = randomizePositionQPSThreshold;
       return this;
     }
 

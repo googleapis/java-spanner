@@ -32,7 +32,6 @@ import com.google.cloud.spanner.SessionPoolOptions.ActionOnInactiveTransaction;
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.opencensus.trace.Tracing;
 import io.opentelemetry.api.OpenTelemetry;
@@ -69,7 +68,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
 
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   SessionPool pool;
-  SessionPoolOptions options;
   ExecutorService createExecutor = Executors.newSingleThreadExecutor();
   final Object lock = new Object();
   Random random = new Random();
@@ -110,7 +108,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                     for (int s = 0; s < sessionCount; s++) {
                       SessionImpl session;
                       synchronized (lock) {
-                        session = getMockedSession(context);
+                        session = getMockedSession(mockSpanner, context);
                         setupSession(session, context);
                         sessions.put(session.getName(), false);
                         if (sessions.size() > maxAliveSessions) {
@@ -129,15 +127,15 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class));
   }
 
-  SessionImpl getMockedSession(ReadContext context) {
-    SpannerImpl spanner = mock(SpannerImpl.class);
+  SessionImpl getMockedSession(SpannerImpl spanner, ReadContext context) {
     Map options = new HashMap<>();
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
-            options) {
+            new SessionReference(
+                "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+                options)) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.
@@ -161,21 +159,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             }
             return ApiFutures.immediateFuture(Empty.getDefaultInstance());
           }
-
-          @Override
-          public void prepareReadWriteTransaction() {
-            if (random.nextInt(100) < 10) {
-              expireSession(this);
-              throw SpannerExceptionFactoryTest.newSessionNotFoundException(this.getName());
-            }
-            String name = this.getName();
-            synchronized (lock) {
-              if (sessions.put(name, true)) {
-                setFailed();
-              }
-              this.readyTransactionId = ByteString.copyFromUtf8("foo");
-            }
-          }
         };
     sessionIndex++;
     return session;
@@ -192,18 +175,9 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     when(mockResult.next()).thenReturn(true);
   }
 
-  private void expireSession(Session session) {
-    String name = session.getName();
-    synchronized (lock) {
-      sessions.remove(name);
-      expiredSessions.add(name);
-    }
-  }
-
   private void resetTransaction(SessionImpl session) {
     String name = session.getName();
     synchronized (lock) {
-      session.readyTransactionId = null;
       sessions.put(name, false);
     }
   }
@@ -233,6 +207,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     int maxSessions = concurrentThreads / 2;
     SessionPoolOptions.Builder builder =
         SessionPoolOptions.newBuilder()
+            .setPoolMaintainerClock(clock)
             .setMinSessions(minSessions)
             .setMaxSessions(maxSessions)
             .setInactiveTransactionRemovalOptions(
@@ -244,9 +219,11 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     } else {
       builder.setFailIfPoolExhausted();
     }
+    SessionPoolOptions sessionPoolOptions = builder.build();
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     pool =
         SessionPool.createPool(
-            builder.build(),
+            sessionPoolOptions,
             new TestExecutorFactory(),
             mockSpanner.getSessionClient(db),
             clock,

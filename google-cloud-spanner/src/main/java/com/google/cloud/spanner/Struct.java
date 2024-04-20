@@ -396,6 +396,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case BOOL:
         return getBooleanInternal(columnIndex);
       case INT64:
+      case PG_OID:
       case ENUM:
         return getLongInternal(columnIndex);
       case FLOAT32:
@@ -426,6 +427,7 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case BOOL:
             return getBooleanListInternal(columnIndex);
           case INT64:
+          case PG_OID:
           case ENUM:
             return getLongListInternal(columnIndex);
           case FLOAT32:

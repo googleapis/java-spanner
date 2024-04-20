@@ -25,6 +25,7 @@ java.common_templates(
     excludes=[
         ".kokoro/continuous/common.cfg",
         ".kokoro/nightly/common.cfg",
+        ".kokoro/nightly/integration.cfg",
         ".kokoro/nightly/java8-samples.cfg",
         ".kokoro/nightly/java11-samples.cfg",
         ".kokoro/nightly/samples.cfg",

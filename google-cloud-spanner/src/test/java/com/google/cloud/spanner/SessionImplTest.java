@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -99,7 +98,9 @@ public class SessionImplTest {
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
-    when(spannerOptions.getSessionPoolOptions()).thenReturn(mock(SessionPoolOptions.class));
+    SessionPoolOptions sessionPoolOptions = mock(SessionPoolOptions.class);
+    when(sessionPoolOptions.getPoolMaintainerClock()).thenReturn(Clock.INSTANCE);
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(spannerOptions.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);
@@ -373,20 +374,6 @@ public class SessionImplTest {
                       fail("Unexpected call to transaction body");
                       return null;
                     }));
-    assertThat(e.getMessage()).contains("invalidated");
-  }
-
-  @Test
-  public void prepareClosesOldSingleUseContext() {
-    ReadContext ctx = session.singleUse(TimestampBound.strong());
-
-    Mockito.when(rpc.beginTransaction(Mockito.any(), Mockito.eq(options), eq(false)))
-        .thenReturn(Transaction.newBuilder().setId(ByteString.copyFromUtf8("t1")).build());
-    session.prepareReadWriteTransaction();
-    IllegalStateException e =
-        assertThrows(
-            IllegalStateException.class,
-            () -> ctx.read("Dummy", KeySet.all(), Collections.singletonList("C")));
     assertThat(e.getMessage()).contains("invalidated");
   }
 

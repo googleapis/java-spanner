@@ -68,6 +68,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                   MetricRegistryConstants.INSTRUMENTATION_SCOPE,
                   GaxProperties.getLibraryVersion(this.getOptions().getClass())));
 
+  static final String CREATE_MULTIPLEXED_SESSION = "CloudSpannerOperation.CreateMultiplexedSession";
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";
   static final String BATCH_CREATE_SESSIONS = "CloudSpannerOperation.BatchCreateSessions";
   static final String BATCH_CREATE_SESSIONS_REQUEST =

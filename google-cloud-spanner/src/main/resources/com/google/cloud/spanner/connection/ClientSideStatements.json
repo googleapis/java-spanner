@@ -113,6 +113,15 @@
 	  "exampleStatements": ["show variable return_commit_stats"]
 	},
 	{
+		"name": "SHOW VARIABLE MAX_COMMIT_DELAY",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_MAX_COMMIT_DELAY",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+max_commit_delay\\s*\\z",
+		"method": "statementShowMaxCommitDelay",
+		"exampleStatements": ["show variable max_commit_delay"]
+	},
+	{
 	  "name": "SHOW VARIABLE COMMIT_RESPONSE",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "RESULT_SET",
@@ -443,17 +452,32 @@
 	  }
 	},
 	{
+		"name": "SET MAX_COMMIT_DELAY = '<duration>'|NULL",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_MAX_COMMIT_DELAY",
+		"regex": "(?is)\\A\\s*set\\s+max_commit_delay\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetMaxCommitDelay",
+		"exampleStatements": ["set max_commit_delay=null", "set max_commit_delay='1s'", "set max_commit_delay='100ms'", "set max_commit_delay='10000us'", "set max_commit_delay='9223372036854775807ns'"],
+		"setStatement": {
+			"propertyName": "MAX_COMMIT_DELAY",
+			"separator": "=",
+			"allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+			"converterName": "ClientSideStatementValueConverters$DurationConverter"
+		}
+	},
+	{
 	  "name": "SET STATEMENT_TAG = '<tag>'",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "SET_STATEMENT_TAG",
 	  "regex": "(?is)\\A\\s*set\\s+statement_tag\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetStatementTag",
-	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''"],
+	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''", "set statement_tag='test_tag'"],
 	  "setStatement": {
 	    "propertyName": "STATEMENT_TAG",
 	    "separator": "=",
-	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "allowedValues": "'(.*)'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},
@@ -464,12 +488,12 @@
 	  "statementType": "SET_TRANSACTION_TAG",
 	  "regex": "(?is)\\A\\s*set\\s+transaction_tag\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetTransactionTag",
-	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''"],
+	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''", "set transaction_tag='test_tag'"],
 	  "examplePrerequisiteStatements": ["set autocommit = false"],
 	  "setStatement": {
 	    "propertyName": "TRANSACTION_TAG",
 	    "separator": "=",
-	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "allowedValues": "'(.*)'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},

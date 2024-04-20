@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.api.grpc</groupId>
   <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-  <version>6.61.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-executor-v1:current} -->
+  <version>6.64.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-executor-v1:current} -->
   <name>proto-google-cloud-spanner-executor-v1</name>
   <description>Proto library for google-cloud-spanner</description>
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.61.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.64.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <dependencies>
     <dependency>
@@ -65,6 +65,14 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
         </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <configuration>
+          <!-- Exclude (public) classes in this internal package -->
+          <excludes>com/google/spanner/executor/v1/**</excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

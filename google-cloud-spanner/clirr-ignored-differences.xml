@@ -20,6 +20,12 @@
     <differenceType>8001</differenceType>
     <className>com/google/cloud/spanner/connection/StatementParser</className>
   </difference>
+  <!-- (Remove since prepareReadWriteTransaction() has no usage. Session interface is annotated as internal API) -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/Session</className>
+    <method>void prepareReadWriteTransaction()</method>
+  </difference>
   <difference>
     <differenceType>7002</differenceType>
     <className>com/google/cloud/spanner/SpannerOptions</className>
@@ -605,6 +611,14 @@
     <method>com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings getInstanceAdminStubSettings()</method>
   </difference>
 
+  <!-- (Modify return type of maxCommitDelay. Feature not announced) -->
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/Options</className>
+    <method>com.google.cloud.spanner.Options$ReadQueryUpdateTransactionOption maxCommitDelay(java.time.Duration)</method>
+    <to>com.google.cloud.spanner.Options$TransactionOption</to>
+  </difference>
+
   <difference>
     <differenceType>7005</differenceType>
     <className>com/google/cloud/spanner/PartitionedDmlTransaction</className>
@@ -623,4 +637,24 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setDirectedRead(com.google.spanner.v1.DirectedReadOptions)</method>
   </difference>
+
+  <!-- Added MaxCommitDelay -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.time.Duration getMaxCommitDelay()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxCommitDelay(java.time.Duration)</method>
+  </difference>
+
+  <!-- Make getSpanner() public -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.Spanner getSpanner()</method>
+  </difference>
+
 </differences>

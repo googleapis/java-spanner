@@ -19,8 +19,10 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOptions;
 import java.util.ArrayList;
@@ -217,5 +219,72 @@ public class SessionPoolOptionsTest {
     SessionPoolOptions sessionPoolOptions = SessionPoolOptions.newBuilder().build();
 
     assertEquals(Duration.ofSeconds(60), sessionPoolOptions.getAcquireSessionTimeout());
+  }
+
+  @Test
+  public void testRandomizePositionQPSThreshold() {
+    assertEquals(0L, SessionPoolOptions.newBuilder().build().getRandomizePositionQPSThreshold());
+    assertEquals(
+        4L,
+        SessionPoolOptions.newBuilder()
+            .setRandomizePositionQPSThreshold(4L)
+            .build()
+            .getRandomizePositionQPSThreshold());
+    assertEquals(
+        10L,
+        SessionPoolOptions.newBuilder()
+            .setRandomizePositionQPSThreshold(4L)
+            .setRandomizePositionQPSThreshold(10L)
+            .build()
+            .getRandomizePositionQPSThreshold());
+    assertEquals(
+        0L,
+        SessionPoolOptions.newBuilder()
+            .setRandomizePositionQPSThreshold(0L)
+            .build()
+            .getRandomizePositionQPSThreshold());
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> SessionPoolOptions.newBuilder().setRandomizePositionQPSThreshold(-1L));
+  }
+
+  @Test
+  public void testUseMultiplexedSession() {
+    // skip these tests since this configuration can have dual behaviour in different test-runners
+    assumeFalse(SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
+    assertEquals(false, SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
+    assertEquals(
+        true,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(true)
+            .build()
+            .getUseMultiplexedSession());
+    assertEquals(
+        false,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(true)
+            .setUseMultiplexedSession(false)
+            .build()
+            .getUseMultiplexedSession());
+  }
+
+  @Test
+  public void testMultiplexedSessionMaintenanceDuration() {
+    assertEquals(
+        Duration.ofDays(7),
+        SessionPoolOptions.newBuilder().build().getMultiplexedSessionMaintenanceDuration());
+    assertEquals(
+        Duration.ofDays(2),
+        SessionPoolOptions.newBuilder()
+            .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(2))
+            .build()
+            .getMultiplexedSessionMaintenanceDuration());
+    assertEquals(
+        Duration.ofDays(10),
+        SessionPoolOptions.newBuilder()
+            .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(2))
+            .setMultiplexedSessionMaintenanceDuration(Duration.ofDays(10))
+            .build()
+            .getMultiplexedSessionMaintenanceDuration());
   }
 }

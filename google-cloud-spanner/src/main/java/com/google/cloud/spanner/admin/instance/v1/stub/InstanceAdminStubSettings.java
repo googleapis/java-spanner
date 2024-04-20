@@ -18,6 +18,8 @@ package com.google.cloud.spanner.admin.instance.v1.stub;
 
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
 import com.google.api.core.ApiFunction;
@@ -63,22 +65,33 @@ import com.google.protobuf.Empty;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstancePartition;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
 import java.util.List;
@@ -155,6 +168,11 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   private final PagedCallSettings<
           ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
       listInstancesSettings;
+  private final PagedCallSettings<
+          ListInstancePartitionsRequest,
+          ListInstancePartitionsResponse,
+          ListInstancePartitionsPagedResponse>
+      listInstancePartitionsSettings;
   private final UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings;
   private final UnaryCallSettings<CreateInstanceRequest, Operation> createInstanceSettings;
   private final OperationCallSettings<CreateInstanceRequest, Instance, CreateInstanceMetadata>
@@ -167,6 +185,25 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   private final UnaryCallSettings<GetIamPolicyRequest, Policy> getIamPolicySettings;
   private final UnaryCallSettings<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsSettings;
+  private final UnaryCallSettings<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionSettings;
+  private final UnaryCallSettings<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionSettings;
+  private final OperationCallSettings<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationSettings;
+  private final UnaryCallSettings<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionSettings;
+  private final UnaryCallSettings<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionSettings;
+  private final OperationCallSettings<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationSettings;
+  private final PagedCallSettings<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsSettings;
 
   private static final PagedListDescriptor<
           ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>
@@ -291,6 +328,98 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
             }
           };
 
+  private static final PagedListDescriptor<
+          ListInstancePartitionsRequest, ListInstancePartitionsResponse, InstancePartition>
+      LIST_INSTANCE_PARTITIONS_PAGE_STR_DESC =
+          new PagedListDescriptor<
+              ListInstancePartitionsRequest, ListInstancePartitionsResponse, InstancePartition>() {
+            @Override
+            public String emptyToken() {
+              return "";
+            }
+
+            @Override
+            public ListInstancePartitionsRequest injectToken(
+                ListInstancePartitionsRequest payload, String token) {
+              return ListInstancePartitionsRequest.newBuilder(payload).setPageToken(token).build();
+            }
+
+            @Override
+            public ListInstancePartitionsRequest injectPageSize(
+                ListInstancePartitionsRequest payload, int pageSize) {
+              return ListInstancePartitionsRequest.newBuilder(payload)
+                  .setPageSize(pageSize)
+                  .build();
+            }
+
+            @Override
+            public Integer extractPageSize(ListInstancePartitionsRequest payload) {
+              return payload.getPageSize();
+            }
+
+            @Override
+            public String extractNextToken(ListInstancePartitionsResponse payload) {
+              return payload.getNextPageToken();
+            }
+
+            @Override
+            public Iterable<InstancePartition> extractResources(
+                ListInstancePartitionsResponse payload) {
+              return payload.getInstancePartitionsList() == null
+                  ? ImmutableList.<InstancePartition>of()
+                  : payload.getInstancePartitionsList();
+            }
+          };
+
+  private static final PagedListDescriptor<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          Operation>
+      LIST_INSTANCE_PARTITION_OPERATIONS_PAGE_STR_DESC =
+          new PagedListDescriptor<
+              ListInstancePartitionOperationsRequest,
+              ListInstancePartitionOperationsResponse,
+              Operation>() {
+            @Override
+            public String emptyToken() {
+              return "";
+            }
+
+            @Override
+            public ListInstancePartitionOperationsRequest injectToken(
+                ListInstancePartitionOperationsRequest payload, String token) {
+              return ListInstancePartitionOperationsRequest.newBuilder(payload)
+                  .setPageToken(token)
+                  .build();
+            }
+
+            @Override
+            public ListInstancePartitionOperationsRequest injectPageSize(
+                ListInstancePartitionOperationsRequest payload, int pageSize) {
+              return ListInstancePartitionOperationsRequest.newBuilder(payload)
+                  .setPageSize(pageSize)
+                  .build();
+            }
+
+            @Override
+            public Integer extractPageSize(ListInstancePartitionOperationsRequest payload) {
+              return payload.getPageSize();
+            }
+
+            @Override
+            public String extractNextToken(ListInstancePartitionOperationsResponse payload) {
+              return payload.getNextPageToken();
+            }
+
+            @Override
+            public Iterable<Operation> extractResources(
+                ListInstancePartitionOperationsResponse payload) {
+              return payload.getOperationsList() == null
+                  ? ImmutableList.<Operation>of()
+                  : payload.getOperationsList();
+            }
+          };
+
   private static final PagedListResponseFactory<
           ListInstanceConfigsRequest, ListInstanceConfigsResponse, ListInstanceConfigsPagedResponse>
       LIST_INSTANCE_CONFIGS_PAGE_STR_FACT =
@@ -361,6 +490,66 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
             }
           };
 
+  private static final PagedListResponseFactory<
+          ListInstancePartitionsRequest,
+          ListInstancePartitionsResponse,
+          ListInstancePartitionsPagedResponse>
+      LIST_INSTANCE_PARTITIONS_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListInstancePartitionsRequest,
+              ListInstancePartitionsResponse,
+              ListInstancePartitionsPagedResponse>() {
+            @Override
+            public ApiFuture<ListInstancePartitionsPagedResponse> getFuturePagedResponse(
+                UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+                    callable,
+                ListInstancePartitionsRequest request,
+                ApiCallContext context,
+                ApiFuture<ListInstancePartitionsResponse> futureResponse) {
+              PageContext<
+                      ListInstancePartitionsRequest,
+                      ListInstancePartitionsResponse,
+                      InstancePartition>
+                  pageContext =
+                      PageContext.create(
+                          callable, LIST_INSTANCE_PARTITIONS_PAGE_STR_DESC, request, context);
+              return ListInstancePartitionsPagedResponse.createAsync(pageContext, futureResponse);
+            }
+          };
+
+  private static final PagedListResponseFactory<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          ListInstancePartitionOperationsPagedResponse>
+      LIST_INSTANCE_PARTITION_OPERATIONS_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListInstancePartitionOperationsRequest,
+              ListInstancePartitionOperationsResponse,
+              ListInstancePartitionOperationsPagedResponse>() {
+            @Override
+            public ApiFuture<ListInstancePartitionOperationsPagedResponse> getFuturePagedResponse(
+                UnaryCallable<
+                        ListInstancePartitionOperationsRequest,
+                        ListInstancePartitionOperationsResponse>
+                    callable,
+                ListInstancePartitionOperationsRequest request,
+                ApiCallContext context,
+                ApiFuture<ListInstancePartitionOperationsResponse> futureResponse) {
+              PageContext<
+                      ListInstancePartitionOperationsRequest,
+                      ListInstancePartitionOperationsResponse,
+                      Operation>
+                  pageContext =
+                      PageContext.create(
+                          callable,
+                          LIST_INSTANCE_PARTITION_OPERATIONS_PAGE_STR_DESC,
+                          request,
+                          context);
+              return ListInstancePartitionOperationsPagedResponse.createAsync(
+                  pageContext, futureResponse);
+            }
+          };
+
   /** Returns the object with the settings used for calls to listInstanceConfigs. */
   public PagedCallSettings<
           ListInstanceConfigsRequest, ListInstanceConfigsResponse, ListInstanceConfigsPagedResponse>
@@ -417,6 +606,15 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     return listInstancesSettings;
   }
 
+  /** Returns the object with the settings used for calls to listInstancePartitions. */
+  public PagedCallSettings<
+          ListInstancePartitionsRequest,
+          ListInstancePartitionsResponse,
+          ListInstancePartitionsPagedResponse>
+      listInstancePartitionsSettings() {
+    return listInstancePartitionsSettings;
+  }
+
   /** Returns the object with the settings used for calls to getInstance. */
   public UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings() {
     return getInstanceSettings;
@@ -465,6 +663,53 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     return testIamPermissionsSettings;
   }
 
+  /** Returns the object with the settings used for calls to getInstancePartition. */
+  public UnaryCallSettings<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionSettings() {
+    return getInstancePartitionSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createInstancePartition. */
+  public UnaryCallSettings<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionSettings() {
+    return createInstancePartitionSettings;
+  }
+
+  /** Returns the object with the settings used for calls to createInstancePartition. */
+  public OperationCallSettings<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationSettings() {
+    return createInstancePartitionOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to deleteInstancePartition. */
+  public UnaryCallSettings<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionSettings() {
+    return deleteInstancePartitionSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateInstancePartition. */
+  public UnaryCallSettings<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionSettings() {
+    return updateInstancePartitionSettings;
+  }
+
+  /** Returns the object with the settings used for calls to updateInstancePartition. */
+  public OperationCallSettings<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationSettings() {
+    return updateInstancePartitionOperationSettings;
+  }
+
+  /** Returns the object with the settings used for calls to listInstancePartitionOperations. */
+  public PagedCallSettings<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsSettings() {
+    return listInstancePartitionOperationsSettings;
+  }
+
   public InstanceAdminStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
@@ -479,15 +724,6 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     throw new UnsupportedOperationException(
         String.format(
             "Transport not supported: %s", getTransportChannelProvider().getTransportName()));
-  }
-
-  /** Returns the endpoint set by the user or the the service's default endpoint. */
-  @Override
-  public String getEndpoint() {
-    if (super.getEndpoint() != null) {
-      return super.getEndpoint();
-    }
-    return getDefaultEndpoint();
   }
 
   /** Returns the default service name. */
@@ -596,6 +832,7 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     listInstanceConfigOperationsSettings =
         settingsBuilder.listInstanceConfigOperationsSettings().build();
     listInstancesSettings = settingsBuilder.listInstancesSettings().build();
+    listInstancePartitionsSettings = settingsBuilder.listInstancePartitionsSettings().build();
     getInstanceSettings = settingsBuilder.getInstanceSettings().build();
     createInstanceSettings = settingsBuilder.createInstanceSettings().build();
     createInstanceOperationSettings = settingsBuilder.createInstanceOperationSettings().build();
@@ -605,6 +842,16 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     setIamPolicySettings = settingsBuilder.setIamPolicySettings().build();
     getIamPolicySettings = settingsBuilder.getIamPolicySettings().build();
     testIamPermissionsSettings = settingsBuilder.testIamPermissionsSettings().build();
+    getInstancePartitionSettings = settingsBuilder.getInstancePartitionSettings().build();
+    createInstancePartitionSettings = settingsBuilder.createInstancePartitionSettings().build();
+    createInstancePartitionOperationSettings =
+        settingsBuilder.createInstancePartitionOperationSettings().build();
+    deleteInstancePartitionSettings = settingsBuilder.deleteInstancePartitionSettings().build();
+    updateInstancePartitionSettings = settingsBuilder.updateInstancePartitionSettings().build();
+    updateInstancePartitionOperationSettings =
+        settingsBuilder.updateInstancePartitionOperationSettings().build();
+    listInstancePartitionOperationsSettings =
+        settingsBuilder.listInstancePartitionOperationsSettings().build();
   }
 
   /** Builder for InstanceAdminStubSettings. */
@@ -637,6 +884,11 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     private final PagedCallSettings.Builder<
             ListInstancesRequest, ListInstancesResponse, ListInstancesPagedResponse>
         listInstancesSettings;
+    private final PagedCallSettings.Builder<
+            ListInstancePartitionsRequest,
+            ListInstancePartitionsResponse,
+            ListInstancePartitionsPagedResponse>
+        listInstancePartitionsSettings;
     private final UnaryCallSettings.Builder<GetInstanceRequest, Instance> getInstanceSettings;
     private final UnaryCallSettings.Builder<CreateInstanceRequest, Operation>
         createInstanceSettings;
@@ -653,6 +905,25 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     private final UnaryCallSettings.Builder<GetIamPolicyRequest, Policy> getIamPolicySettings;
     private final UnaryCallSettings.Builder<TestIamPermissionsRequest, TestIamPermissionsResponse>
         testIamPermissionsSettings;
+    private final UnaryCallSettings.Builder<GetInstancePartitionRequest, InstancePartition>
+        getInstancePartitionSettings;
+    private final UnaryCallSettings.Builder<CreateInstancePartitionRequest, Operation>
+        createInstancePartitionSettings;
+    private final OperationCallSettings.Builder<
+            CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+        createInstancePartitionOperationSettings;
+    private final UnaryCallSettings.Builder<DeleteInstancePartitionRequest, Empty>
+        deleteInstancePartitionSettings;
+    private final UnaryCallSettings.Builder<UpdateInstancePartitionRequest, Operation>
+        updateInstancePartitionSettings;
+    private final OperationCallSettings.Builder<
+            UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+        updateInstancePartitionOperationSettings;
+    private final PagedCallSettings.Builder<
+            ListInstancePartitionOperationsRequest,
+            ListInstancePartitionOperationsResponse,
+            ListInstancePartitionOperationsPagedResponse>
+        listInstancePartitionOperationsSettings;
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -743,6 +1014,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       listInstanceConfigOperationsSettings =
           PagedCallSettings.newBuilder(LIST_INSTANCE_CONFIG_OPERATIONS_PAGE_STR_FACT);
       listInstancesSettings = PagedCallSettings.newBuilder(LIST_INSTANCES_PAGE_STR_FACT);
+      listInstancePartitionsSettings =
+          PagedCallSettings.newBuilder(LIST_INSTANCE_PARTITIONS_PAGE_STR_FACT);
       getInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       createInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       createInstanceOperationSettings = OperationCallSettings.newBuilder();
@@ -752,6 +1025,14 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       setIamPolicySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       getIamPolicySettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       testIamPermissionsSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      getInstancePartitionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      createInstancePartitionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      createInstancePartitionOperationSettings = OperationCallSettings.newBuilder();
+      deleteInstancePartitionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      updateInstancePartitionSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      updateInstancePartitionOperationSettings = OperationCallSettings.newBuilder();
+      listInstancePartitionOperationsSettings =
+          PagedCallSettings.newBuilder(LIST_INSTANCE_PARTITION_OPERATIONS_PAGE_STR_FACT);
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -762,13 +1043,19 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               deleteInstanceConfigSettings,
               listInstanceConfigOperationsSettings,
               listInstancesSettings,
+              listInstancePartitionsSettings,
               getInstanceSettings,
               createInstanceSettings,
               updateInstanceSettings,
               deleteInstanceSettings,
               setIamPolicySettings,
               getIamPolicySettings,
-              testIamPermissionsSettings);
+              testIamPermissionsSettings,
+              getInstancePartitionSettings,
+              createInstancePartitionSettings,
+              deleteInstancePartitionSettings,
+              updateInstancePartitionSettings,
+              listInstancePartitionOperationsSettings);
       initDefaults(this);
     }
 
@@ -787,6 +1074,7 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       listInstanceConfigOperationsSettings =
           settings.listInstanceConfigOperationsSettings.toBuilder();
       listInstancesSettings = settings.listInstancesSettings.toBuilder();
+      listInstancePartitionsSettings = settings.listInstancePartitionsSettings.toBuilder();
       getInstanceSettings = settings.getInstanceSettings.toBuilder();
       createInstanceSettings = settings.createInstanceSettings.toBuilder();
       createInstanceOperationSettings = settings.createInstanceOperationSettings.toBuilder();
@@ -796,6 +1084,16 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       setIamPolicySettings = settings.setIamPolicySettings.toBuilder();
       getIamPolicySettings = settings.getIamPolicySettings.toBuilder();
       testIamPermissionsSettings = settings.testIamPermissionsSettings.toBuilder();
+      getInstancePartitionSettings = settings.getInstancePartitionSettings.toBuilder();
+      createInstancePartitionSettings = settings.createInstancePartitionSettings.toBuilder();
+      createInstancePartitionOperationSettings =
+          settings.createInstancePartitionOperationSettings.toBuilder();
+      deleteInstancePartitionSettings = settings.deleteInstancePartitionSettings.toBuilder();
+      updateInstancePartitionSettings = settings.updateInstancePartitionSettings.toBuilder();
+      updateInstancePartitionOperationSettings =
+          settings.updateInstancePartitionOperationSettings.toBuilder();
+      listInstancePartitionOperationsSettings =
+          settings.listInstancePartitionOperationsSettings.toBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -806,13 +1104,19 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               deleteInstanceConfigSettings,
               listInstanceConfigOperationsSettings,
               listInstancesSettings,
+              listInstancePartitionsSettings,
               getInstanceSettings,
               createInstanceSettings,
               updateInstanceSettings,
               deleteInstanceSettings,
               setIamPolicySettings,
               getIamPolicySettings,
-              testIamPermissionsSettings);
+              testIamPermissionsSettings,
+              getInstancePartitionSettings,
+              createInstancePartitionSettings,
+              deleteInstancePartitionSettings,
+              updateInstancePartitionSettings,
+              listInstancePartitionOperationsSettings);
     }
 
     private static Builder createDefault() {
@@ -876,6 +1180,11 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
 
       builder
+          .listInstancePartitionsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
           .getInstanceSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_0_params"));
@@ -909,6 +1218,31 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           .testIamPermissionsSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_3_params"));
+
+      builder
+          .getInstancePartitionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .createInstancePartitionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .deleteInstancePartitionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .updateInstancePartitionSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .listInstancePartitionOperationsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
 
       builder
           .createInstanceConfigOperationSettings()
@@ -1008,6 +1342,56 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
                       .setTotalTimeout(Duration.ofMillis(86400000L))
                       .build()));
 
+      builder
+          .createInstancePartitionOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<CreateInstancePartitionRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"))
+                  .build())
+          .setResponseTransformer(
+              ProtoOperationTransformers.ResponseTransformer.create(InstancePartition.class))
+          .setMetadataTransformer(
+              ProtoOperationTransformers.MetadataTransformer.create(
+                  CreateInstancePartitionMetadata.class))
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(5000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelay(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
+                      .setTotalTimeout(Duration.ofMillis(300000L))
+                      .build()));
+
+      builder
+          .updateInstancePartitionOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<UpdateInstancePartitionRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"))
+                  .build())
+          .setResponseTransformer(
+              ProtoOperationTransformers.ResponseTransformer.create(InstancePartition.class))
+          .setMetadataTransformer(
+              ProtoOperationTransformers.MetadataTransformer.create(
+                  UpdateInstancePartitionMetadata.class))
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(5000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelay(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
+                      .setTotalTimeout(Duration.ofMillis(300000L))
+                      .build()));
+
       return builder;
     }
 
@@ -1048,8 +1432,6 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to createInstanceConfig. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<
             CreateInstanceConfigRequest, InstanceConfig, CreateInstanceConfigMetadata>
         createInstanceConfigOperationSettings() {
@@ -1063,8 +1445,6 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to updateInstanceConfig. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<
             UpdateInstanceConfigRequest, InstanceConfig, UpdateInstanceConfigMetadata>
         updateInstanceConfigOperationSettings() {
@@ -1093,6 +1473,15 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       return listInstancesSettings;
     }
 
+    /** Returns the builder for the settings used for calls to listInstancePartitions. */
+    public PagedCallSettings.Builder<
+            ListInstancePartitionsRequest,
+            ListInstancePartitionsResponse,
+            ListInstancePartitionsPagedResponse>
+        listInstancePartitionsSettings() {
+      return listInstancePartitionsSettings;
+    }
+
     /** Returns the builder for the settings used for calls to getInstance. */
     public UnaryCallSettings.Builder<GetInstanceRequest, Instance> getInstanceSettings() {
       return getInstanceSettings;
@@ -1104,8 +1493,6 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to createInstance. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<CreateInstanceRequest, Instance, CreateInstanceMetadata>
         createInstanceOperationSettings() {
       return createInstanceOperationSettings;
@@ -1117,8 +1504,6 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     }
 
     /** Returns the builder for the settings used for calls to updateInstance. */
-    @BetaApi(
-        "The surface for use by generated code is not stable yet and may change in the future.")
     public OperationCallSettings.Builder<UpdateInstanceRequest, Instance, UpdateInstanceMetadata>
         updateInstanceOperationSettings() {
       return updateInstanceOperationSettings;
@@ -1145,13 +1530,51 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       return testIamPermissionsSettings;
     }
 
-    /** Returns the endpoint set by the user or the the service's default endpoint. */
-    @Override
-    public String getEndpoint() {
-      if (super.getEndpoint() != null) {
-        return super.getEndpoint();
-      }
-      return getDefaultEndpoint();
+    /** Returns the builder for the settings used for calls to getInstancePartition. */
+    public UnaryCallSettings.Builder<GetInstancePartitionRequest, InstancePartition>
+        getInstancePartitionSettings() {
+      return getInstancePartitionSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to createInstancePartition. */
+    public UnaryCallSettings.Builder<CreateInstancePartitionRequest, Operation>
+        createInstancePartitionSettings() {
+      return createInstancePartitionSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to createInstancePartition. */
+    public OperationCallSettings.Builder<
+            CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+        createInstancePartitionOperationSettings() {
+      return createInstancePartitionOperationSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to deleteInstancePartition. */
+    public UnaryCallSettings.Builder<DeleteInstancePartitionRequest, Empty>
+        deleteInstancePartitionSettings() {
+      return deleteInstancePartitionSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstancePartition. */
+    public UnaryCallSettings.Builder<UpdateInstancePartitionRequest, Operation>
+        updateInstancePartitionSettings() {
+      return updateInstancePartitionSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstancePartition. */
+    public OperationCallSettings.Builder<
+            UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+        updateInstancePartitionOperationSettings() {
+      return updateInstancePartitionOperationSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to listInstancePartitionOperations. */
+    public PagedCallSettings.Builder<
+            ListInstancePartitionOperationsRequest,
+            ListInstancePartitionOperationsResponse,
+            ListInstancePartitionOperationsPagedResponse>
+        listInstancePartitionOperationsSettings() {
+      return listInstancePartitionOperationsSettings;
     }
 
     @Override

@@ -32,6 +32,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,6 +77,7 @@ import com.google.protobuf.NullValue;
 import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.BatchWriteRequest;
 import com.google.spanner.v1.BatchWriteResponse;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.DirectedReadOptions;
@@ -1334,6 +1337,14 @@ public class DatabaseClientImplTest {
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commitRequests).hasSize(1);
     CommitRequest commit = commitRequests.get(0);
@@ -1388,6 +1399,14 @@ public class DatabaseClientImplTest {
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
         Options.priority(RpcPriority.HIGH));
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> commits = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(commits).hasSize(1);
     CommitRequest commit = commits.get(0);
@@ -1410,6 +1429,24 @@ public class DatabaseClientImplTest {
   }
 
   @Test
+  public void testWriteWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeWithOptions(
+        Collections.singletonList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.excludeTxnFromChangeStreams());
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
   public void testWriteAtLeastOnce() {
     DatabaseClient client =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -1418,6 +1455,15 @@ public class DatabaseClientImplTest {
             Collections.singletonList(
                 Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()));
     assertNotNull(timestamp);
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
+    assertNotNull(commit.getRequestOptions());
+    assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
   }
 
   @Test
@@ -1438,6 +1484,7 @@ public class DatabaseClientImplTest {
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
   }
@@ -1456,6 +1503,7 @@ public class DatabaseClientImplTest {
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_LOW, commit.getRequestOptions().getPriority());
   }
@@ -1474,9 +1522,27 @@ public class DatabaseClientImplTest {
     CommitRequest commit = commitRequests.get(0);
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
     assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+  }
+
+  @Test
+  public void testWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.writeAtLeastOnceWithOptions(
+        Collections.singletonList(
+            Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
+        Options.excludeTxnFromChangeStreams());
+
+    List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
+    assertThat(commitRequests).hasSize(1);
+    CommitRequest commit = commitRequests.get(0);
+    assertNotNull(commit.getSingleUseTransaction());
+    assertTrue(commit.getSingleUseTransaction().hasReadWrite());
+    assertTrue(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1500,6 +1566,7 @@ public class DatabaseClientImplTest {
     BatchWriteRequest request = requests.get(0);
     assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_UNSPECIFIED);
+    assertFalse(request.getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1514,6 +1581,7 @@ public class DatabaseClientImplTest {
     BatchWriteRequest request = requests.get(0);
     assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getPriority(), Priority.PRIORITY_LOW);
+    assertFalse(request.getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1529,6 +1597,21 @@ public class DatabaseClientImplTest {
     assertEquals(request.getMutationGroupsCount(), 4);
     assertEquals(request.getRequestOptions().getTransactionTag(), "app=spanner,env=test");
     assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
+    assertFalse(request.getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testBatchWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    consumeBatchWriteStream(
+        client.batchWriteAtLeastOnce(MUTATION_GROUPS, Options.excludeTxnFromChangeStreams()));
+
+    List<BatchWriteRequest> requests = mockSpanner.getRequestsOfType(BatchWriteRequest.class);
+    assertEquals(requests.size(), 1);
+    BatchWriteRequest request = requests.get(0);
+    assertEquals(request.getMutationGroupsCount(), 4);
+    assertTrue(request.getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1782,6 +1865,9 @@ public class DatabaseClientImplTest {
     assertThat(request.getRequestOptions().getRequestTag())
         .isEqualTo("app=spanner,env=test,action=update");
     assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1805,6 +1891,9 @@ public class DatabaseClientImplTest {
         .isEqualTo("app=spanner,env=test,action=batch");
     assertThat(request.getRequestOptions().getTransactionTag())
         .isEqualTo("app=spanner,env=test,action=txn");
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertFalse(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
   }
 
   @Test
@@ -1813,6 +1902,14 @@ public class DatabaseClientImplTest {
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
     client.executePartitionedUpdate(
         UPDATE_STATEMENT, Options.tag("app=spanner,env=test,action=dml"));
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasPartitionedDml());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
 
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertThat(requests).hasSize(1);
@@ -1835,6 +1932,14 @@ public class DatabaseClientImplTest {
           return null;
         });
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
@@ -1854,6 +1959,14 @@ public class DatabaseClientImplTest {
       transaction.buffer(Mutation.delete("TEST", KeySet.all()));
       manager.commit();
     }
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -1876,6 +1989,14 @@ public class DatabaseClientImplTest {
               return ApiFutures.immediateFuture(null);
             },
             executor));
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
 
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
@@ -1904,6 +2025,14 @@ public class DatabaseClientImplTest {
               .commitAsync());
     }
 
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertFalse(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+
     List<CommitRequest> requests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertThat(requests).hasSize(1);
     CommitRequest request = requests.get(0);
@@ -1911,6 +2040,275 @@ public class DatabaseClientImplTest {
     assertThat(request.getRequestOptions().getRequestTag()).isEmpty();
     assertThat(request.getRequestOptions().getTransactionTag())
         .isEqualTo("app=spanner,env=test,action=manager");
+  }
+
+  @Test
+  public void testReadWriteTxnWithExcludeTxnFromChangeStreams_executeUpdate() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
+    runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
+
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteSqlRequest request = requests.get(0);
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertTrue(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testReadWriteTxnWithExcludeTxnFromChangeStreams_batchUpdate() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
+    runner.run(transaction -> transaction.batchUpdate(Collections.singletonList(UPDATE_STATEMENT)));
+
+    List<ExecuteBatchDmlRequest> requests =
+        mockSpanner.getRequestsOfType(ExecuteBatchDmlRequest.class);
+    assertThat(requests).hasSize(1);
+    ExecuteBatchDmlRequest request = requests.get(0);
+    assertNotNull(request.getTransaction().getBegin());
+    assertTrue(request.getTransaction().getBegin().hasReadWrite());
+    assertTrue(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testPartitionedDMLWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    client.executePartitionedUpdate(UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams());
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasPartitionedDml());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction(Options.excludeTxnFromChangeStreams());
+    runner.run(
+        transaction -> {
+          transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+          return null;
+        });
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (TransactionManager manager =
+        client.transactionManager(Options.excludeTxnFromChangeStreams())) {
+      TransactionContext transaction = manager.begin();
+      transaction.buffer(Mutation.delete("TEST", KeySet.all()));
+      manager.commit();
+    }
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testAsyncRunnerCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync(Options.excludeTxnFromChangeStreams());
+    get(
+        runner.runAsync(
+            txn -> {
+              txn.buffer(Mutation.delete("TEST", KeySet.all()));
+              return ApiFutures.immediateFuture(null);
+            },
+            executor));
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testAsyncTransactionManagerCommitWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (AsyncTransactionManager manager =
+        client.transactionManagerAsync(Options.excludeTxnFromChangeStreams())) {
+      TransactionContextFuture transaction = manager.beginAsync();
+      get(
+          transaction
+              .then(
+                  (txn, input) -> {
+                    txn.buffer(Mutation.delete("TEST", KeySet.all()));
+                    return ApiFutures.immediateFuture(null);
+                  },
+                  executor)
+              .commitAsync());
+    }
+
+    List<BeginTransactionRequest> beginTransactions =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class);
+    assertThat(beginTransactions).hasSize(1);
+    BeginTransactionRequest beginTransaction = beginTransactions.get(0);
+    assertNotNull(beginTransaction.getOptions());
+    assertTrue(beginTransaction.getOptions().hasReadWrite());
+    assertTrue(beginTransaction.getOptions().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testExecuteUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.executeUpdate(
+                            UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testExecuteUpdateAsyncWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                get(
+                    runner.runAsync(
+                        txn -> {
+                          txn.executeUpdateAsync(
+                              UPDATE_STATEMENT, Options.excludeTxnFromChangeStreams());
+                          return ApiFutures.immediateFuture(null);
+                        },
+                        executor)));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testAnalyzeUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.analyzeUpdate(
+                            UPDATE_STATEMENT,
+                            QueryAnalyzeMode.PROFILE,
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.analyzeUpdateStatement(
+                            UPDATE_STATEMENT,
+                            QueryAnalyzeMode.PROFILE,
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testBatchUpdateWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    TransactionRunner runner = client.readWriteTransaction();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                runner.run(
+                    transaction ->
+                        transaction.batchUpdate(
+                            Collections.singletonList(UPDATE_STATEMENT),
+                            Options.excludeTxnFromChangeStreams())));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
+  }
+
+  @Test
+  public void testBatchUpdateAsyncWithExcludeTxnFromChangeStreams() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    AsyncRunner runner = client.runAsync();
+    SpannerException e =
+        assertThrows(
+            SpannerException.class,
+            () ->
+                get(
+                    runner.runAsync(
+                        txn -> {
+                          txn.batchUpdateAsync(
+                              Collections.singletonList(UPDATE_STATEMENT),
+                              Options.excludeTxnFromChangeStreams());
+                          return ApiFutures.immediateFuture(null);
+                        },
+                        executor)));
+    assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
+    assertThat(e.getMessage())
+        .contains(
+            "Options.excludeTxnFromChangeStreams() cannot be specified for individual DML requests."
+                + " This option should be set at the transaction level.");
   }
 
   @Test
@@ -1922,7 +2320,9 @@ public class DatabaseClientImplTest {
     assertThat(checkedOut).isEmpty();
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       assertThat(rs.next()).isTrue();
-      assertThat(checkedOut).hasSize(1);
+      if (!isMultiplexedSessionsEnabled()) {
+        assertThat(checkedOut).hasSize(1);
+      }
       assertThat(rs.getLong(0)).isEqualTo(1L);
       assertThat(rs.next()).isFalse();
     }
@@ -2613,6 +3013,8 @@ public class DatabaseClientImplTest {
               "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(exception));
       mockSpanner.setBatchCreateSessionsExecutionTime(
           SimulatedExecutionTime.ofStickyException(exception));
       // Ensure there are no sessions in the pool by default.
@@ -2779,6 +3181,8 @@ public class DatabaseClientImplTest {
               "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
         };
     for (StatusRuntimeException exception : exceptions) {
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(exception));
       mockSpanner.setBatchCreateSessionsExecutionTime(
           SimulatedExecutionTime.ofStickyException(exception));
       try (Spanner spanner =
@@ -3252,6 +3656,9 @@ public class DatabaseClientImplTest {
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.ofStickyException(
             Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofStickyException(
+            Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId("my-project")
@@ -3266,6 +3673,9 @@ public class DatabaseClientImplTest {
       // Actually trying to get any results will cause an exception.
       SpannerException e = assertThrows(SpannerException.class, rs::next);
       assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
+    } finally {
+      mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
+      mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
     }
   }
 
@@ -3351,6 +3761,9 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBatchCreateSessionsFailure_shouldNotPropagateToCloseMethod() {
+    assumeFalse(
+        "BatchCreateSessions RPC is not invoked for multiplexed sessions",
+        isMultiplexedSessionsEnabled());
     try {
       // Simulate session creation failures on the backend.
       mockSpanner.setBatchCreateSessionsExecutionTime(
@@ -3366,6 +3779,28 @@ public class DatabaseClientImplTest {
       }
     } finally {
       mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
+    }
+  }
+
+  @Test
+  public void testCreateSessionsFailure_shouldNotPropagateToCloseMethod() {
+    assumeTrue(
+        "CreateSessions is not invoked for regular sessions", isMultiplexedSessionsEnabled());
+    try {
+      // Simulate session creation failures on the backend.
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
+      DatabaseClient client =
+          spannerWithEmptySessionPool.getDatabaseClient(
+              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      // This will not cause any failure as getting a session from the pool is guaranteed to be
+      // non-blocking, and any exceptions will be delayed until actual query execution.
+      try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+        SpannerException e = assertThrows(SpannerException.class, rs::next);
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      }
+    } finally {
+      mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
     }
   }
 
@@ -4094,7 +4529,10 @@ public class DatabaseClientImplTest {
             col++);
         assertAsString("2023-01-11", resultSet, col++);
         assertAsString("2023-01-11T11:55:18.123456789Z", resultSet, col++);
-
+        if (dialect == Dialect.POSTGRESQL) {
+          // Check PG_OID value
+          assertAsString("100", resultSet, col++);
+        }
         assertAsString(ImmutableList.of("true", "NULL", "false"), resultSet, col++);
         assertAsString(
             ImmutableList.of(
@@ -4146,6 +4584,14 @@ public class DatabaseClientImplTest {
               col++);
           assertAsString(
               ImmutableList.of(String.format("%d", Genre.JAZZ_VALUE), "NULL"), resultSet, col++);
+        }
+        if (dialect == Dialect.POSTGRESQL) {
+          // Check ARRAY<PG_OID> value
+          assertAsString(
+              ImmutableList.of(
+                  String.format("%d", Long.MAX_VALUE), String.format("%d", Long.MIN_VALUE), "NULL"),
+              resultSet,
+              col++);
         }
         assertFalse(resultSet.next());
       }
@@ -4589,187 +5035,185 @@ public class DatabaseClientImplTest {
             .addValues(
                 com.google.protobuf.Value.newBuilder()
                     .setStringValue("2023-01-11T11:55:18.123456789Z")
-                    .build())
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder().setBoolValue(false).build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue(String.valueOf(Long.MAX_VALUE))
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue(String.valueOf(Long.MIN_VALUE))
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNumberValue(Float.MAX_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNumberValue(Float.MIN_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("NaN")
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNumberValue(3.14f)
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNumberValue(-12345.6789d)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNumberValue(3.14d)
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("6.626")
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("-8.9123")
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("test-string1")
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("test-string2")
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("{\"key\": \"value1\"}")
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("{\"key\": \"value2\"}")
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue(
-                                        Base64.getEncoder()
-                                            .encodeToString(
-                                                "test-bytes1".getBytes(StandardCharsets.UTF_8)))
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue(
-                                        Base64.getEncoder()
-                                            .encodeToString(
-                                                "test-bytes2".getBytes(StandardCharsets.UTF_8)))
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("2000-02-29")
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("2000-01-01")
-                                    .build())
-                            .build()))
-            .addValues(
-                com.google.protobuf.Value.newBuilder()
-                    .setListValue(
-                        ListValue.newBuilder()
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("2023-01-11T11:55:18.123456789Z")
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setNullValue(NullValue.NULL_VALUE)
-                                    .build())
-                            .addValues(
-                                com.google.protobuf.Value.newBuilder()
-                                    .setStringValue("2023-01-12T11:55:18Z")
-                                    .build())
-                            .build()));
+                    .build());
+    if (dialect == Dialect.POSTGRESQL) {
+      // Add PG_OID value
+      valuesBuilder.addValues(com.google.protobuf.Value.newBuilder().setStringValue("100").build());
+    }
+    valuesBuilder
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setBoolValue(true).build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setBoolValue(false).build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue(String.valueOf(Long.MAX_VALUE))
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue(String.valueOf(Long.MIN_VALUE))
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNumberValue(Float.MAX_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNumberValue(Float.MIN_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setStringValue("NaN").build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setNumberValue(3.14f).build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNumberValue(-12345.6789d)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setNumberValue(3.14d).build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder().setStringValue("6.626").build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("-8.9123")
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("test-string1")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("test-string2")
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("{\"key\": \"value1\"}")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("{\"key\": \"value2\"}")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue(
+                                    Base64.getEncoder()
+                                        .encodeToString(
+                                            "test-bytes1".getBytes(StandardCharsets.UTF_8)))
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue(
+                                    Base64.getEncoder()
+                                        .encodeToString(
+                                            "test-bytes2".getBytes(StandardCharsets.UTF_8)))
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2000-02-29")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2000-01-01")
+                                .build())
+                        .build()))
+        .addValues(
+            com.google.protobuf.Value.newBuilder()
+                .setListValue(
+                    ListValue.newBuilder()
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2023-01-11T11:55:18.123456789Z")
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setNullValue(NullValue.NULL_VALUE)
+                                .build())
+                        .addValues(
+                            com.google.protobuf.Value.newBuilder()
+                                .setStringValue("2023-01-12T11:55:18Z")
+                                .build())
+                        .build()));
+
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
       // Proto columns is supported only for GOOGLE_STANDARD_SQL
       valuesBuilder
@@ -4809,6 +5253,34 @@ public class DatabaseClientImplTest {
                                   .build())
                           .build()));
     }
+    if (dialect == Dialect.POSTGRESQL) {
+      // Add ARRAY<PG_OID> value
+      valuesBuilder.addValues(
+          com.google.protobuf.Value.newBuilder()
+              .setListValue(
+                  ListValue.newBuilder()
+                      .addValues(
+                          com.google.protobuf.Value.newBuilder()
+                              .setStringValue(String.valueOf(Long.MAX_VALUE))
+                              .build())
+                      .addValues(
+                          com.google.protobuf.Value.newBuilder()
+                              .setStringValue(String.valueOf(Long.MIN_VALUE))
+                              .build())
+                      .addValues(
+                          com.google.protobuf.Value.newBuilder()
+                              .setNullValue(NullValue.NULL_VALUE)
+                              .build())
+                      .build()));
+    }
+
     return valuesBuilder.build();
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }
