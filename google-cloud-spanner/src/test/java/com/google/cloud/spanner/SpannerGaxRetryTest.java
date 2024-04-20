@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
@@ -28,15 +29,20 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.protobuf.ListValue;
+import com.google.rpc.RetryInfo;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.TypeCode;
+import io.grpc.Metadata;
 import io.grpc.Server;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.protobuf.ProtoUtils;
 import java.io.IOException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -84,6 +90,14 @@ public class SpannerGaxRetryTest {
       SimulatedExecutionTime.ofMinimumAndRandomTime(1000, 0);
   private static final StatusRuntimeException UNAVAILABLE =
       io.grpc.Status.UNAVAILABLE.withDescription("Retryable test exception.").asRuntimeException();
+  private static final StatusRuntimeException RESOURCE_EXHAUSTED_NON_RETRYABLE =
+      Status.RESOURCE_EXHAUSTED
+          .withDescription("Non-retryable test exception.")
+          .asRuntimeException();
+  private static final StatusRuntimeException RESOURCE_EXHAUSTED_RETRYABLE =
+      Status.RESOURCE_EXHAUSTED
+          .withDescription("Retryable test exception.")
+          .asRuntimeException(createRetryInfo());
   private static final StatusRuntimeException FAILED_PRECONDITION =
       io.grpc.Status.FAILED_PRECONDITION
           .withDescription("Non-retryable test exception.")
@@ -192,6 +206,19 @@ public class SpannerGaxRetryTest {
     spanner.close();
   }
 
+  static Metadata createRetryInfo() {
+    Metadata trailers = new Metadata();
+    RetryInfo retryInfo =
+        RetryInfo.newBuilder()
+            .setRetryDelay(
+                com.google.protobuf.Duration.newBuilder()
+                    .setNanos((int) TimeUnit.MILLISECONDS.toNanos(1L))
+                    .setSeconds(0L))
+            .build();
+    trailers.put(ProtoUtils.keyForProto(RetryInfo.getDefaultInstance()), retryInfo);
+    return trailers;
+  }
+
   private void warmUpSessionPool(DatabaseClient client) {
     for (int i = 0; i < 10; i++) {
       int retryCount = 0;
@@ -229,9 +256,29 @@ public class SpannerGaxRetryTest {
 
   @Test
   public void singleUseUnavailable() {
-    mockSpanner.addException(UNAVAILABLE);
-    try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
-      while (rs.next()) {}
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(UNAVAILABLE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1AND2)) {
+      assertTrue(resultSet.next());
+    }
+  }
+
+  @Test
+  public void singleUseResourceExhausted_nonRetryable() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(RESOURCE_EXHAUSTED_NON_RETRYABLE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1AND2)) {
+      SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+      assertEquals(ErrorCode.RESOURCE_EXHAUSTED, exception.getErrorCode());
+    }
+  }
+
+  @Test
+  public void singleUseResourceExhausted_retryable() {
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(RESOURCE_EXHAUSTED_RETRYABLE));
+    try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1AND2)) {
+      assertTrue(resultSet.next());
     }
   }
 
