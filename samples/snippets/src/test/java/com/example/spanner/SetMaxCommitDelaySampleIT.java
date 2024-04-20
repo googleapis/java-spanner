@@ -24,7 +24,6 @@ import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.common.collect.ImmutableList;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.After;
