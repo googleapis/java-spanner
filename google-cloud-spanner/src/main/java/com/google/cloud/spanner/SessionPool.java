@@ -2828,7 +2828,8 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
   @VisibleForTesting Function<SessionReference, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
-  private final SessionReplacementHandler<PooledSessionFuture> pooledSessionReplacementHandler =new PooledSessionReplacementHandler();
+  private final SessionReplacementHandler<PooledSessionFuture> pooledSessionReplacementHandler =
+      new PooledSessionReplacementHandler();
   private final CountDownLatch waitOnMultiplexedSessionsLatch;
   private static final SessionReplacementHandler<MultiplexedSessionFuture>
       multiplexedSessionReplacementHandler = new MultiplexedSessionReplacementHandler();
@@ -3142,12 +3143,12 @@ class SessionPool {
     return null;
   }
 
-  private Tuple<PooledSession, Integer> findSessionAlmostGarbageCollected(Queue<PooledSession> queue) {
+  private Tuple<PooledSession, Integer> findSessionAlmostGarbageCollected(
+      Queue<PooledSession> queue) {
     int numChecked = 0;
     Instant threshold = clock.instant().minus(Duration.ofMinutes(55L));
     Iterator<PooledSession> iterator = queue.iterator();
-    while (iterator.hasNext()
-        && numChecked < (options.getMinSessions() - numSessionsInUse)) {
+    while (iterator.hasNext() && numChecked < (options.getMinSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
       if (session.delegate.getLastUseTime().isBefore(threshold)) {
         iterator.remove();
