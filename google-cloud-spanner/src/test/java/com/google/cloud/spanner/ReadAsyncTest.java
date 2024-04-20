@@ -185,6 +185,8 @@ public class ReadAsyncTest {
 
   @Test
   public void invalidDatabase() throws Exception {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     DatabaseClient invalidClient =
@@ -258,14 +260,23 @@ public class ReadAsyncTest {
       // Wait until at least one row has been fetched. At that moment there should be one session
       // checked out.
       dataReceived.await();
-      assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+
+      if (isMultiplexedSessionsEnabled()) {
+        assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
+      } else {
+        assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+      }
     }
     // The read-only transaction is now closed, but the ready callback will continue to receive
     // data. As it tries to put the data into a synchronous queue and the underlying buffer can also
     // only hold 1 row, the async result set has not yet finished. The read-only transaction will
     // release the session back into the pool when all async statements have finished. The number of
     // sessions in use is therefore still 1.
-    assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(0);
+    } else {
+      assertThat(clientImpl.pool.getNumberOfSessionsInUse()).isEqualTo(1);
+    }
     List<String> resultList = new ArrayList<>();
     do {
       results.drainTo(resultList);
@@ -438,5 +449,12 @@ public class ReadAsyncTest {
     SpannerException e = assertThrows(SpannerException.class, () -> get(res));
     assertThat(e.getErrorCode()).isEqualTo(ErrorCode.CANCELLED);
     assertThat(values).containsExactly("v1");
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

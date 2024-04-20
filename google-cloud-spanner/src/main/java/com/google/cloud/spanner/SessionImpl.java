@@ -98,11 +98,13 @@ class SessionImpl implements Session {
   private final SessionReference sessionReference;
   private SessionTransaction activeTransaction;
   private ISpan currentSpan;
+  private final Clock clock;
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
     this.spanner = spanner;
     this.tracer = spanner.getTracer();
     this.sessionReference = sessionReference;
+    this.clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
   }
 
   @Override
@@ -292,6 +294,7 @@ class SessionImpl implements Session {
             .setSpan(currentSpan)
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
+            .setClock(clock)
             .build());
   }
 
@@ -314,6 +317,7 @@ class SessionImpl implements Session {
             .setSpan(currentSpan)
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
+            .setClock(clock)
             .buildSingleUseReadOnlyTransaction());
   }
 
@@ -336,6 +340,7 @@ class SessionImpl implements Session {
             .setSpan(currentSpan)
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
+            .setClock(clock)
             .build());
   }
 
@@ -418,9 +423,6 @@ class SessionImpl implements Session {
   }
 
   TransactionContextImpl newTransaction(Options options) {
-    // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
-    final Clock poolMaintainerClock =
-        spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
@@ -434,7 +436,7 @@ class SessionImpl implements Session {
         .setSpan(currentSpan)
         .setTracer(tracer)
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
-        .setClock(poolMaintainerClock == null ? new Clock() : poolMaintainerClock)
+        .setClock(clock)
         .build();
   }
 

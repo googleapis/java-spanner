@@ -54,7 +54,6 @@ import com.google.api.gax.rpc.UnaryCallable;
 import com.google.api.gax.rpc.UnavailableException;
 import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
-import com.google.cloud.NoCredentials;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
@@ -344,19 +343,11 @@ public class GapicSpannerRpc implements SpannerRpc {
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
-              .setAllowNonDefaultServiceAccount(true)
-              // Attempts direct access to spanner service over gRPC to improve throughput,
-              // whether the attempt is allowed is totally controlled by service owner.
-              // We'll only attempt DirectPath if we are using real credentials.
-              // NoCredentials is used for plain text connections, for example when connecting to
-              // the emulator.
-              .setAttemptDirectPath(
-                  options.isAttemptDirectPath()
-                      && !Objects.equals(
-                          options.getScopedCredentials(), NoCredentials.getInstance()));
+              .setAllowNonDefaultServiceAccount(true);
       String directPathXdsEnv = System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS");
       boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
       if (isAttemptDirectPathXds) {
+        defaultChannelProviderBuilder.setAttemptDirectPath(true);
         defaultChannelProviderBuilder.setAttemptDirectPathXds();
       }
       if (options.isUseVirtualThreads()) {

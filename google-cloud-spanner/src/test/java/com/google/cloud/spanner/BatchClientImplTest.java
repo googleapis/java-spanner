@@ -86,6 +86,9 @@ public final class BatchClientImplTest {
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
+    SessionPoolOptions sessionPoolOptions = mock(SessionPoolOptions.class);
+    when(sessionPoolOptions.getPoolMaintainerClock()).thenReturn(Clock.INSTANCE);
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(gapicRpc, spannerOptions);
     client = new BatchClientImpl(spanner.getSessionClient(db));

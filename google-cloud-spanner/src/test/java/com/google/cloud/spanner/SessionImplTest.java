@@ -98,7 +98,9 @@ public class SessionImplTest {
     GrpcTransportOptions transportOptions = mock(GrpcTransportOptions.class);
     when(transportOptions.getExecutorFactory()).thenReturn(mock(ExecutorFactory.class));
     when(spannerOptions.getTransportOptions()).thenReturn(transportOptions);
-    when(spannerOptions.getSessionPoolOptions()).thenReturn(mock(SessionPoolOptions.class));
+    SessionPoolOptions sessionPoolOptions = mock(SessionPoolOptions.class);
+    when(sessionPoolOptions.getPoolMaintainerClock()).thenReturn(Clock.INSTANCE);
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     when(spannerOptions.getOpenTelemetry()).thenReturn(OpenTelemetry.noop());
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(rpc, spannerOptions);

@@ -19,6 +19,7 @@ package com.google.cloud.spanner.it;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.Database;
@@ -59,6 +60,11 @@ public class ITClosedSessionTest {
 
   @BeforeClass
   public static void setUpDatabase() {
+    // For multiplexed sessions, it will never be invalidated by the server and hence the client
+    // will never receive an exception with code NOT_FOUND and the text 'Session not found'.
+    assumeFalse(
+        env.getTestHelper().getOptions().getSessionPoolOptions().getUseMultiplexedSession());
+
     // Empty database.
     db = env.getTestHelper().createTestDatabase();
     client = (DatabaseClientWithClosedSessionImpl) env.getTestHelper().getDatabaseClient(db);

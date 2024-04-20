@@ -125,6 +125,9 @@ public class SessionClientTests {
     doNothing().when(span).end();
     doNothing().when(span).addAnnotation("Starting Commit");
     when(spanner.getRpc()).thenReturn(rpc);
+    SessionPoolOptions sessionPoolOptions = mock(SessionPoolOptions.class);
+    when(sessionPoolOptions.getPoolMaintainerClock()).thenReturn(Clock.INSTANCE);
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
   }
 
   @Test

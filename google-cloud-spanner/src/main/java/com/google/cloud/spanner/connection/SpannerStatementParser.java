@@ -41,6 +41,11 @@ public class SpannerStatementParser extends AbstractStatementParser {
             ClientSideStatements.getInstance(Dialect.GOOGLE_STANDARD_SQL).getCompiledStatements()));
   }
 
+  @Override
+  Dialect getDialect() {
+    return Dialect.GOOGLE_STANDARD_SQL;
+  }
+
   /**
    * Indicates whether the parser supports the {@code EXPLAIN} clause. The Spanner parser does
    * support it.

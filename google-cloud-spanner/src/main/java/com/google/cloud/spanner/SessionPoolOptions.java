@@ -291,7 +291,9 @@ public class SessionPoolOptions {
     return randomizePositionQPSThreshold;
   }
 
-  boolean getUseMultiplexedSession() {
+  @VisibleForTesting
+  @InternalApi
+  public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
   }
 
@@ -499,7 +501,7 @@ public class SessionPoolOptions {
     private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
-    private Clock poolMaintainerClock;
+    private Clock poolMaintainerClock = Clock.INSTANCE;
 
     private static Position getReleaseToPositionFromSystemProperty() {
       // NOTE: This System property is a beta feature. Support for it can be removed in the future.
@@ -710,7 +712,7 @@ public class SessionPoolOptions {
 
     @VisibleForTesting
     Builder setPoolMaintainerClock(Clock poolMaintainerClock) {
-      this.poolMaintainerClock = poolMaintainerClock;
+      this.poolMaintainerClock = Preconditions.checkNotNull(poolMaintainerClock);
       return this;
     }
 
