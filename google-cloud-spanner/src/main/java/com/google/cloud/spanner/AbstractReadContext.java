@@ -73,7 +73,7 @@ abstract class AbstractReadContext
     private DecodeMode defaultDecodeMode = SpannerOptions.Builder.DEFAULT_DECODE_MODE;
     private DirectedReadOptions defaultDirectedReadOption;
     private ExecutorProvider executorProvider;
-    private Clock clock = new Clock();
+    private Clock clock = Clock.INSTANCE;
 
     Builder() {}
 

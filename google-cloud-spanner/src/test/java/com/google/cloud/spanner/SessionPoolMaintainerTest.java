@@ -76,7 +76,9 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
             .setMaxSessions(5)
             .setIncStep(1)
             .setKeepAliveIntervalMinutes(2)
+            .setPoolMaintainerClock(clock)
             .build();
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
     idledSessions.clear();
     pingedSessions.clear();
   }
@@ -92,7 +94,7 @@ public class SessionPoolMaintainerTest extends BaseSessionPoolTest {
                     for (int i = 0; i < sessionCount; i++) {
                       ReadContext mockContext = mock(ReadContext.class);
                       consumer.onSessionReady(
-                          setupMockSession(buildMockSession(mockContext), mockContext));
+                          setupMockSession(buildMockSession(client, mockContext), mockContext));
                     }
                   });
               return null;

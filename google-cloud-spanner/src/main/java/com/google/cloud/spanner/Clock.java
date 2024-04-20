@@ -23,6 +23,10 @@ import org.threeten.bp.Instant;
  * Clock.
  */
 class Clock {
+  static final Clock INSTANCE = new Clock();
+
+  Clock() {}
+
   Instant instant() {
     return Instant.now();
   }
