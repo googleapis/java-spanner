@@ -3663,10 +3663,9 @@ class SessionPool {
       }
       logger.log(
           Level.WARNING,
-          String.format(
-              "Failed to create multiplexed session. "
-                  + "Pending replacing stale multiplexed session",
-              t));
+          "Failed to create multiplexed session. "
+              + "Pending replacing stale multiplexed session",
+          t);
     }
   }
 
