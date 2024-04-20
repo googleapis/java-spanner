@@ -102,8 +102,7 @@ abstract class BaseSessionPoolTest {
     return session;
   }
 
-  SessionImpl buildMockSession(ReadContext context) {
-    SpannerImpl spanner = mock(SpannerImpl.class);
+  SessionImpl buildMockSession(SpannerImpl spanner, ReadContext context) {
     Map options = new HashMap<>();
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
     final SessionImpl session =
@@ -140,8 +139,8 @@ abstract class BaseSessionPoolTest {
     return session;
   }
 
-  SessionImpl buildMockMultiplexedSession(ReadContext context, Timestamp creationTime) {
-    SpannerImpl spanner = mock(SpannerImpl.class);
+  SessionImpl buildMockMultiplexedSession(
+      SpannerImpl spanner, ReadContext context, Timestamp creationTime) {
     Map options = new HashMap<>();
     final SessionImpl session =
         new SessionImpl(

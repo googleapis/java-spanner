@@ -31,7 +31,7 @@ abstract class AbstractMockServerTest {
   protected static Server server;
   protected static LocalChannelProvider channelProvider;
 
-  private Spanner spanner;
+  protected Spanner spanner;
 
   @BeforeClass
   public static void startMockServer() throws IOException {

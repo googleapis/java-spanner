@@ -2349,8 +2349,13 @@ class SessionPool {
                           + acquireSessionTimeout.toMillis()
                           + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
                           + " or increase the number of sessions in the session pool.");
-              waiter.setException(exception);
-              throw exception;
+              if (waiter.setException(exception)) {
+                // Only throw the exception if setting it on the waiter was successful. The
+                // waiter.setException(..) method returns false if some other thread in the meantime
+                // called waiter.set(..), which means that a session became available between the
+                // time that the TimeoutException was thrown and now.
+                throw exception;
+              }
             }
             return null;
           } catch (ExecutionException e) {
@@ -3040,6 +3045,13 @@ class SessionPool {
   int getNumberOfSessionsBeingCreated() {
     synchronized (lock) {
       return numSessionsBeingCreated;
+    }
+  }
+
+  @VisibleForTesting
+  int getTotalSessionsPlusNumSessionsBeingCreated() {
+    synchronized (lock) {
+      return numSessionsBeingCreated + allSessions.size();
     }
   }
 

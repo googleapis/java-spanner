@@ -78,7 +78,9 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
             .setIncStep(1)
             .setKeepAliveIntervalMinutes(2)
             .setUseMultiplexedSession(true)
+            .setPoolMaintainerClock(clock)
             .build();
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
     Assume.assumeTrue(options.getUseMultiplexedSession());
     multiplexedSessionsRemoved.clear();
   }
@@ -96,7 +98,8 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
                       Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
               consumer.onSessionReady(
                   setupMockSession(
-                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+                      buildMockMultiplexedSession(client, mockContext, timestamp.toProto()),
+                      mockContext));
               return null;
             })
         .when(sessionClient)
@@ -111,7 +114,8 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
                       Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
               consumer.onSessionReady(
                   setupMockSession(
-                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+                      buildMockMultiplexedSession(client, mockContext, timestamp.toProto()),
+                      mockContext));
               return null;
             })
         .when(sessionClient)
@@ -162,7 +166,8 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
                       Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
               consumer.onSessionReady(
                   setupMockSession(
-                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+                      buildMockMultiplexedSession(client, mockContext, timestamp.toProto()),
+                      mockContext));
               return null;
             })
         .when(sessionClient)
@@ -197,7 +202,8 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
                       Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
               consumer.onSessionReady(
                   setupMockSession(
-                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+                      buildMockMultiplexedSession(client, mockContext, timestamp.toProto()),
+                      mockContext));
               return null;
             })
         .when(sessionClient)
@@ -236,7 +242,8 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
                       Instant.ofEpochMilli(clock.currentTimeMillis.get()).getEpochSecond(), 0);
               consumer.onSessionReady(
                   setupMockSession(
-                      buildMockMultiplexedSession(mockContext, timestamp.toProto()), mockContext));
+                      buildMockMultiplexedSession(client, mockContext, timestamp.toProto()),
+                      mockContext));
               return null;
             })
         .when(sessionClient)
