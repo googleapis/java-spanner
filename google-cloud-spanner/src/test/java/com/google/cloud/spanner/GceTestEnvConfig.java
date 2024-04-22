@@ -97,6 +97,7 @@ public class GceTestEnvConfig implements TestEnvConfig {
       customChannelProviderBuilder
           .setEndpoint(DIRECT_PATH_ENDPOINT)
           .setAttemptDirectPath(true)
+          .setAttemptDirectPathXds()
           .setInterceptorProvider(interceptorProvider);
       builder.setChannelProvider(customChannelProviderBuilder.build());
     }

@@ -68,7 +68,6 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
 
   DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   SessionPool pool;
-  SessionPoolOptions options;
   ExecutorService createExecutor = Executors.newSingleThreadExecutor();
   final Object lock = new Object();
   Random random = new Random();
@@ -109,7 +108,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
                     for (int s = 0; s < sessionCount; s++) {
                       SessionImpl session;
                       synchronized (lock) {
-                        session = getMockedSession(context);
+                        session = getMockedSession(mockSpanner, context);
                         setupSession(session, context);
                         sessions.put(session.getName(), false);
                         if (sessions.size() > maxAliveSessions) {
@@ -128,15 +127,15 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             Mockito.anyInt(), Mockito.anyBoolean(), Mockito.any(SessionConsumer.class));
   }
 
-  SessionImpl getMockedSession(ReadContext context) {
-    SpannerImpl spanner = mock(SpannerImpl.class);
+  SessionImpl getMockedSession(SpannerImpl spanner, ReadContext context) {
     Map options = new HashMap<>();
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
-            options) {
+            new SessionReference(
+                "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+                options)) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.
@@ -208,6 +207,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     int maxSessions = concurrentThreads / 2;
     SessionPoolOptions.Builder builder =
         SessionPoolOptions.newBuilder()
+            .setPoolMaintainerClock(clock)
             .setMinSessions(minSessions)
             .setMaxSessions(maxSessions)
             .setInactiveTransactionRemovalOptions(
@@ -219,9 +219,11 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
     } else {
       builder.setFailIfPoolExhausted();
     }
+    SessionPoolOptions sessionPoolOptions = builder.build();
+    when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     pool =
         SessionPool.createPool(
-            builder.build(),
+            sessionPoolOptions,
             new TestExecutorFactory(),
             mockSpanner.getSessionClient(db),
             clock,

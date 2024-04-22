@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
@@ -220,6 +221,9 @@ public class ChannelUsageTest {
   @Test
   public void testCreatesNumChannels() {
     try (Spanner spanner = createSpannerOptions().getService()) {
+      assumeFalse(
+          "GRPC-GCP is currently not supported with multiplexed sessions",
+          isMultiplexedSessionsEnabled(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
         while (resultSet.next()) {}
@@ -231,6 +235,9 @@ public class ChannelUsageTest {
   @Test
   public void testUsesAllChannels() throws InterruptedException, ExecutionException {
     try (Spanner spanner = createSpannerOptions().getService()) {
+      assumeFalse(
+          "GRPC-GCP is currently not supported with multiplexed sessions",
+          isMultiplexedSessionsEnabled(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ListeningExecutorService executor =
           MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * 2));
@@ -256,5 +263,12 @@ public class ChannelUsageTest {
       assertEquals(numChannels * 2, Futures.allAsList(futures).get().size());
     }
     assertEquals(numChannels, executeSqlLocalIps.size());
+  }
+
+  private boolean isMultiplexedSessionsEnabled(Spanner spanner) {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

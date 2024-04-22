@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -217,11 +218,12 @@ public class RetryOnInvalidatedSessionTest {
       }
       // This prevents repeated retries for a large number of sessions in the pool.
       builder.setMinSessions(1);
+      SessionPoolOptions sessionPoolOptions = builder.build();
       spanner =
           SpannerOptions.newBuilder()
               .setProjectId("[PROJECT]")
               .setChannelProvider(channelProvider)
-              .setSessionPoolOption(builder.build())
+              .setSessionPoolOption(sessionPoolOptions)
               .setCredentials(NoCredentials.getInstance())
               .build()
               .getService();
@@ -259,6 +261,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     // This call will receive an invalidated session that will be replaced on the first call to
     // rs.next().
     try (ReadContext context = client.singleUse()) {
@@ -270,6 +275,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseSelectAsync() throws Exception {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     ApiFuture<List<Long>> list;
     try (AsyncResultSet rs = client.singleUse().executeQueryAsync(SELECT1AND2)) {
       list = rs.toListAsync(TO_LONG, executor);
@@ -279,6 +287,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUse()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
@@ -288,6 +299,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUse()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
@@ -298,6 +312,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseReadRow() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUse()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
@@ -306,6 +323,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseReadRowUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUse()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->
@@ -315,6 +335,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseReadOnlyTransactionSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
         assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
@@ -324,6 +347,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseReadOnlyTransactionRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
@@ -333,6 +359,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singlUseReadOnlyTransactionReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
@@ -343,6 +372,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseReadOnlyTransactionReadRow() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
@@ -351,6 +383,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void singleUseReadOnlyTransactionReadRowUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.singleUseReadOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->
@@ -360,6 +395,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionSelect() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
         assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
@@ -369,6 +407,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionRead() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
@@ -378,6 +419,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionReadUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
@@ -388,6 +432,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionReadRow() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
@@ -396,6 +443,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionReadRowUsingIndex() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->
@@ -405,6 +455,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionSelectNonRecoverable() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.executeQuery(SELECT1AND2)) {
         assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
@@ -419,6 +472,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionReadNonRecoverable() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs = context.read("FOO", KeySet.all(), Collections.singletonList("BAR"))) {
         assertThrowsSessionNotFoundIfShouldFail(() -> rs.next());
@@ -432,6 +488,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionReadUsingIndexNonRecoverable() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       try (ResultSet rs =
           context.readUsingIndex("FOO", "IDX", KeySet.all(), Collections.singletonList("BAR"))) {
@@ -447,6 +506,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionReadRowNonRecoverable() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () -> context.readRow("FOO", Key.of(), Collections.singletonList("BAR")));
@@ -459,6 +521,9 @@ public class RetryOnInvalidatedSessionTest {
 
   @Test
   public void readOnlyTransactionReadRowUsingIndexNonRecoverable() throws InterruptedException {
+    assumeFalse(
+        "Multiplexed session do not throw a SessionNotFound errors. ",
+        spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession());
     try (ReadContext context = client.readOnlyTransaction()) {
       assertThrowsSessionNotFoundIfShouldFail(
           () ->

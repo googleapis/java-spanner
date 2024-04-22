@@ -103,6 +103,10 @@ public class OpenTelemetrySpanTest {
   private static final Statement INVALID_UPDATE_STATEMENT =
       Statement.of("UPDATE NON_EXISTENT_TABLE SET BAR=1 WHERE BAZ=2");
 
+  private List<String> expectedCreateMultiplexedSessionsRequestEvents =
+      ImmutableList.of("Request for 1 multiplexed session returned 1 session");
+
+  private int expectedCreateMultiplexedSessionsRequestEventsCount = 1;
   private List<String> expectedBatchCreateSessionsRequestEvents =
       ImmutableList.of("Requesting 2 sessions", "Request for 2 sessions returned 2 sessions");
 
@@ -116,21 +120,6 @@ public class OpenTelemetrySpanTest {
       ImmutableList.of("Starting/Resuming stream");
 
   private int expectedExecuteStreamingQueryEventsCount = 1;
-
-  private List<String> expectedReadOnlyTransactionSingleUseEvents =
-      ImmutableList.of("Acquiring session", "Acquired session", "Using Session");
-
-  private int expectedReadOnlyTransactionSingleUseEventsCount = 3;
-
-  private List<String> expectedReadOnlyTransactionMultiUseEvents =
-      ImmutableList.of(
-          "Acquiring session",
-          "Acquired session",
-          "Using Session",
-          "Creating Transaction",
-          "Transaction Creation Done");
-
-  private int expectedReadOnlyTransactionMultiUseEventsCount = 5;
 
   private List<String> expectedReadWriteTransactionErrorEvents =
       ImmutableList.of(
@@ -167,33 +156,6 @@ public class OpenTelemetrySpanTest {
           "Transaction Attempt Succeeded");
 
   private int expectedReadWriteTransactionErrorWithBeginTransactionEventsCount = 11;
-  private List<String> expectedReadOnlyTransactionSpans =
-      ImmutableList.of(
-          "CloudSpannerOperation.BatchCreateSessionsRequest",
-          "CloudSpannerOperation.ExecuteStreamingQuery",
-          "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadOnlyTransaction");
-
-  private List<String> expectedReadWriteTransactionWithCommitSpans =
-      ImmutableList.of(
-          "CloudSpannerOperation.BatchCreateSessionsRequest",
-          "CloudSpannerOperation.Commit",
-          "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadWriteTransaction");
-
-  private List<String> expectedReadWriteTransactionSpans =
-      ImmutableList.of(
-          "CloudSpannerOperation.BatchCreateSessionsRequest",
-          "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadWriteTransaction");
-
-  private List<String> expectedReadWriteTransactionWithCommitAndBeginTransactionSpans =
-      ImmutableList.of(
-          "CloudSpannerOperation.BeginTransaction",
-          "CloudSpannerOperation.BatchCreateSessionsRequest",
-          "CloudSpannerOperation.Commit",
-          "CloudSpannerOperation.BatchCreateSessions",
-          "CloudSpanner.ReadWriteTransaction");
 
   @BeforeClass
   public static void setupOpenTelemetry() {
@@ -287,6 +249,25 @@ public class OpenTelemetrySpanTest {
 
   @Test
   public void singleUse() {
+    List<String> expectedReadOnlyTransactionSingleUseEvents =
+        isMultiplexedSessionsEnabled()
+            ? ImmutableList.of("Using Session")
+            : ImmutableList.of("Acquiring session", "Acquired session", "Using Session");
+    List<String> expectedReadOnlyTransactionSpans =
+        isMultiplexedSessionsEnabled()
+            ? ImmutableList.of(
+                "CloudSpannerOperation.CreateMultiplexedSession",
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteStreamingQuery",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadOnlyTransaction")
+            : ImmutableList.of(
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteStreamingQuery",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadOnlyTransaction");
+    int expectedReadOnlyTransactionSingleUseEventsCount = isMultiplexedSessionsEnabled() ? 1 : 3;
+
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       while (rs.next()) {
         // Just consume the result set.
@@ -303,6 +284,12 @@ public class OpenTelemetrySpanTest {
             spanItem -> {
               actualSpanItems.add(spanItem.getName());
               switch (spanItem.getName()) {
+                case "CloudSpannerOperation.CreateMultiplexedSession":
+                  verifyRequestEvents(
+                      spanItem,
+                      expectedCreateMultiplexedSessionsRequestEvents,
+                      expectedCreateMultiplexedSessionsRequestEventsCount);
+                  break;
                 case "CloudSpannerOperation.BatchCreateSessionsRequest":
                   verifyRequestEvents(
                       spanItem,
@@ -337,6 +324,31 @@ public class OpenTelemetrySpanTest {
 
   @Test
   public void multiUse() {
+    List<String> expectedReadOnlyTransactionSpans =
+        isMultiplexedSessionsEnabled()
+            ? ImmutableList.of(
+                "CloudSpannerOperation.CreateMultiplexedSession",
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteStreamingQuery",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadOnlyTransaction")
+            : ImmutableList.of(
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteStreamingQuery",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadOnlyTransaction");
+    List<String> expectedReadOnlyTransactionMultiUseEvents =
+        isMultiplexedSessionsEnabled()
+            ? ImmutableList.of("Using Session", "Creating Transaction", "Transaction Creation Done")
+            : ImmutableList.of(
+                "Acquiring session",
+                "Acquired session",
+                "Using Session",
+                "Creating Transaction",
+                "Transaction Creation Done");
+
+    int expectedReadOnlyTransactionMultiUseEventsCount = isMultiplexedSessionsEnabled() ? 3 : 5;
+
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (ResultSet rs = tx.executeQuery(SELECT1)) {
         while (rs.next()) {
@@ -352,6 +364,12 @@ public class OpenTelemetrySpanTest {
             spanItem -> {
               actualSpanItems.add(spanItem.getName());
               switch (spanItem.getName()) {
+                case "CloudSpannerOperation.CreateMultiplexedSession":
+                  verifyRequestEvents(
+                      spanItem,
+                      expectedCreateMultiplexedSessionsRequestEvents,
+                      expectedCreateMultiplexedSessionsRequestEventsCount);
+                  break;
                 case "CloudSpannerOperation.BatchCreateSessionsRequest":
                   verifyRequestEvents(
                       spanItem,
@@ -386,6 +404,19 @@ public class OpenTelemetrySpanTest {
 
   @Test
   public void transactionRunner() {
+    List<String> expectedReadWriteTransactionWithCommitSpans =
+        isMultiplexedSessionsEnabled()
+            ? ImmutableList.of(
+                "CloudSpannerOperation.CreateMultiplexedSession",
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.Commit",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadWriteTransaction")
+            : ImmutableList.of(
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.Commit",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadWriteTransaction");
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
     List<String> actualSpanItems = new ArrayList<>();
@@ -395,6 +426,12 @@ public class OpenTelemetrySpanTest {
             spanItem -> {
               actualSpanItems.add(spanItem.getName());
               switch (spanItem.getName()) {
+                case "CloudSpannerOperation.CreateMultiplexedSession":
+                  verifyRequestEvents(
+                      spanItem,
+                      expectedCreateMultiplexedSessionsRequestEvents,
+                      expectedCreateMultiplexedSessionsRequestEventsCount);
+                  break;
                 case "CloudSpannerOperation.BatchCreateSessionsRequest":
                   verifyRequestEvents(
                       spanItem,
@@ -426,6 +463,17 @@ public class OpenTelemetrySpanTest {
 
   @Test
   public void transactionRunnerWithError() {
+    List<String> expectedReadWriteTransactionSpans =
+        isMultiplexedSessionsEnabled()
+            ? ImmutableList.of(
+                "CloudSpannerOperation.CreateMultiplexedSession",
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadWriteTransaction")
+            : ImmutableList.of(
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadWriteTransaction");
     TransactionRunner runner = client.readWriteTransaction();
     SpannerException e =
         assertThrows(
@@ -440,6 +488,12 @@ public class OpenTelemetrySpanTest {
             spanItem -> {
               actualSpanItems.add(spanItem.getName());
               switch (spanItem.getName()) {
+                case "CloudSpannerOperation.CreateMultiplexedSession":
+                  verifyRequestEvents(
+                      spanItem,
+                      expectedCreateMultiplexedSessionsRequestEvents,
+                      expectedCreateMultiplexedSessionsRequestEventsCount);
+                  break;
                 case "CloudSpannerOperation.BatchCreateSessionsRequest":
                   verifyRequestEvents(
                       spanItem,
@@ -468,6 +522,21 @@ public class OpenTelemetrySpanTest {
 
   @Test
   public void transactionRunnerWithFailedAndBeginTransaction() {
+    List<String> expectedReadWriteTransactionWithCommitAndBeginTransactionSpans =
+        isMultiplexedSessionsEnabled()
+            ? ImmutableList.of(
+                "CloudSpannerOperation.CreateMultiplexedSession",
+                "CloudSpannerOperation.BeginTransaction",
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.Commit",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadWriteTransaction")
+            : ImmutableList.of(
+                "CloudSpannerOperation.BeginTransaction",
+                "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.Commit",
+                "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpanner.ReadWriteTransaction");
     Long updateCount =
         client
             .readWriteTransaction()
@@ -492,6 +561,12 @@ public class OpenTelemetrySpanTest {
             spanItem -> {
               actualSpanItems.add(spanItem.getName());
               switch (spanItem.getName()) {
+                case "CloudSpannerOperation.CreateMultiplexedSession":
+                  verifyRequestEvents(
+                      spanItem,
+                      expectedCreateMultiplexedSessionsRequestEvents,
+                      expectedCreateMultiplexedSessionsRequestEventsCount);
+                  break;
                 case "CloudSpannerOperation.BatchCreateSessionsRequest":
                   verifyRequestEvents(
                       spanItem,
@@ -535,5 +610,12 @@ public class OpenTelemetrySpanTest {
     assertEquals(
         expectedSpansItems.stream().sorted().collect(Collectors.toList()),
         actualSpanItems.stream().distinct().sorted().collect(Collectors.toList()));
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

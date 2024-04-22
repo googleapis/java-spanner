@@ -17,7 +17,6 @@
 package com.google.cloud.spanner;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.SettableApiFuture;
@@ -28,7 +27,6 @@ import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
-import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
@@ -97,49 +95,25 @@ class SessionImpl implements Session {
   }
 
   private final SpannerImpl spanner;
-  private final String name;
-  private final DatabaseId databaseId;
+  private final SessionReference sessionReference;
   private SessionTransaction activeTransaction;
-  private final Map<SpannerRpc.Option, ?> options;
-  private volatile Instant lastUseTime;
-  @Nullable private final Instant createTime;
-  private final boolean isMultiplexed;
   private ISpan currentSpan;
+  private final Clock clock;
 
-  SessionImpl(SpannerImpl spanner, String name, Map<SpannerRpc.Option, ?> options) {
+  SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
     this.spanner = spanner;
     this.tracer = spanner.getTracer();
-    this.options = options;
-    this.name = checkNotNull(name);
-    this.databaseId = SessionId.of(name).getDatabaseId();
-    this.lastUseTime = Instant.now();
-    this.createTime = null;
-    this.isMultiplexed = false;
-  }
-
-  SessionImpl(
-      SpannerImpl spanner,
-      String name,
-      com.google.protobuf.Timestamp createTime,
-      boolean isMultiplexed,
-      Map<SpannerRpc.Option, ?> options) {
-    this.spanner = spanner;
-    this.tracer = spanner.getTracer();
-    this.options = options;
-    this.name = checkNotNull(name);
-    this.databaseId = SessionId.of(name).getDatabaseId();
-    this.lastUseTime = Instant.now();
-    this.createTime = convert(createTime);
-    this.isMultiplexed = isMultiplexed;
+    this.sessionReference = sessionReference;
+    this.clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
   }
 
   @Override
   public String getName() {
-    return name;
+    return sessionReference.getName();
   }
 
   Map<SpannerRpc.Option, ?> getOptions() {
-    return options;
+    return sessionReference.getOptions();
   }
 
   void setCurrentSpan(ISpan span) {
@@ -151,19 +125,27 @@ class SessionImpl implements Session {
   }
 
   Instant getLastUseTime() {
-    return lastUseTime;
+    return sessionReference.getLastUseTime();
   }
 
   Instant getCreateTime() {
-    return createTime;
+    return sessionReference.getCreateTime();
   }
 
   boolean getIsMultiplexed() {
-    return isMultiplexed;
+    return sessionReference.getIsMultiplexed();
+  }
+
+  SessionReference getSessionReference() {
+    return sessionReference;
   }
 
   void markUsed(Instant instant) {
-    lastUseTime = instant;
+    sessionReference.markUsed(instant);
+  }
+
+  public DatabaseId getDatabaseId() {
+    return sessionReference.getDatabaseId();
   }
 
   @Override
@@ -211,7 +193,7 @@ class SessionImpl implements Session {
     Options options = Options.fromTransactionOptions(transactionOptions);
     final CommitRequest.Builder requestBuilder =
         CommitRequest.newBuilder()
-            .setSession(name)
+            .setSession(getName())
             .setReturnCommitStats(options.withCommitStats())
             .addAllMutations(mutationsProto);
 
@@ -239,7 +221,7 @@ class SessionImpl implements Session {
     ISpan span = tracer.spanBuilder(SpannerImpl.COMMIT);
     try (IScope s = tracer.withSpan(span)) {
       return SpannerRetryHelper.runTxWithRetriesOnAborted(
-          () -> new CommitResponse(spanner.getRpc().commit(request, this.options)));
+          () -> new CommitResponse(spanner.getRpc().commit(request, getOptions())));
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -271,7 +253,9 @@ class SessionImpl implements Session {
     List<BatchWriteRequest.MutationGroup> mutationGroupsProto =
         MutationGroup.toListProto(mutationGroups);
     final BatchWriteRequest.Builder requestBuilder =
-        BatchWriteRequest.newBuilder().setSession(name).addAllMutationGroups(mutationGroupsProto);
+        BatchWriteRequest.newBuilder()
+            .setSession(getName())
+            .addAllMutationGroups(mutationGroupsProto);
     RequestOptions batchWriteRequestOptions = getRequestOptions(transactionOptions);
     if (batchWriteRequestOptions != null) {
       requestBuilder.setRequestOptions(batchWriteRequestOptions);
@@ -282,7 +266,7 @@ class SessionImpl implements Session {
     }
     ISpan span = tracer.spanBuilder(SpannerImpl.BATCH_WRITE);
     try (IScope s = tracer.withSpan(span)) {
-      return spanner.getRpc().batchWriteAtLeastOnce(requestBuilder.build(), this.options);
+      return spanner.getRpc().batchWriteAtLeastOnce(requestBuilder.build(), getOptions());
     } catch (Throwable e) {
       span.setStatus(e);
       throw SpannerExceptionFactory.newSpannerException(e);
@@ -303,13 +287,14 @@ class SessionImpl implements Session {
             .setSession(this)
             .setTimestampBound(bound)
             .setRpc(spanner.getRpc())
-            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
+            .setClock(clock)
             .build());
   }
 
@@ -325,13 +310,14 @@ class SessionImpl implements Session {
             .setSession(this)
             .setTimestampBound(bound)
             .setRpc(spanner.getRpc())
-            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
+            .setClock(clock)
             .buildSingleUseReadOnlyTransaction());
   }
 
@@ -347,13 +333,14 @@ class SessionImpl implements Session {
             .setSession(this)
             .setTimestampBound(bound)
             .setRpc(spanner.getRpc())
-            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+            .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
             .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
             .setDefaultDirectedReadOptions(spanner.getOptions().getDirectedReadOptions())
             .setSpan(currentSpan)
             .setTracer(tracer)
             .setExecutorProvider(spanner.getAsyncExecutorProvider())
+            .setClock(clock)
             .build());
   }
 
@@ -379,14 +366,14 @@ class SessionImpl implements Session {
 
   @Override
   public ApiFuture<Empty> asyncClose() {
-    return spanner.getRpc().asyncDeleteSession(name, options);
+    return spanner.getRpc().asyncDeleteSession(getName(), getOptions());
   }
 
   @Override
   public void close() {
     ISpan span = tracer.spanBuilder(SpannerImpl.DELETE_SESSION);
     try (IScope s = tracer.withSpan(span)) {
-      spanner.getRpc().deleteSession(name, options);
+      spanner.getRpc().deleteSession(getName(), getOptions());
     } catch (RuntimeException e) {
       span.setStatus(e);
       throw e;
@@ -400,11 +387,11 @@ class SessionImpl implements Session {
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
         BeginTransactionRequest.newBuilder()
-            .setSession(name)
+            .setSession(getName())
             .setOptions(createReadWriteTransactionOptions(transactionOptions))
             .build();
     final ApiFuture<Transaction> requestFuture =
-        spanner.getRpc().beginTransactionAsync(request, options, routeToLeader);
+        spanner.getRpc().beginTransactionAsync(request, getOptions(), routeToLeader);
     requestFuture.addListener(
         () -> {
           try (IScope s = tracer.withSpan(span)) {
@@ -436,9 +423,6 @@ class SessionImpl implements Session {
   }
 
   TransactionContextImpl newTransaction(Options options) {
-    // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
-    final Clock poolMaintainerClock =
-        spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     return TransactionContextImpl.newBuilder()
         .setSession(this)
         .setOptions(options)
@@ -446,21 +430,23 @@ class SessionImpl implements Session {
         .setOptions(options)
         .setTrackTransactionStarter(spanner.getOptions().isTrackTransactionStarter())
         .setRpc(spanner.getRpc())
-        .setDefaultQueryOptions(spanner.getDefaultQueryOptions(databaseId))
+        .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))
         .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
         .setDefaultDecodeMode(spanner.getDefaultDecodeMode())
         .setSpan(currentSpan)
         .setTracer(tracer)
         .setExecutorProvider(spanner.getAsyncExecutorProvider())
-        .setClock(poolMaintainerClock == null ? new Clock() : poolMaintainerClock)
+        .setClock(clock)
         .build();
   }
 
   <T extends SessionTransaction> T setActive(@Nullable T ctx) {
     throwIfTransactionsPending();
-
-    if (activeTransaction != null) {
-      activeTransaction.invalidate();
+    // multiplexed sessions support running concurrent transactions
+    if (!getIsMultiplexed()) {
+      if (activeTransaction != null) {
+        activeTransaction.invalidate();
+      }
     }
     activeTransaction = ctx;
     if (activeTransaction != null) {
@@ -471,12 +457,5 @@ class SessionImpl implements Session {
 
   TraceWrapper getTracer() {
     return tracer;
-  }
-
-  private Instant convert(com.google.protobuf.Timestamp timestamp) {
-    if (timestamp == null) {
-      return null;
-    }
-    return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
   }
 }

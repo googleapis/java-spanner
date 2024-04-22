@@ -33,6 +33,7 @@ import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -1367,6 +1368,12 @@ public interface Connection extends AutoCloseable {
   /** The {@link DatabaseClient} that is used by this {@link Connection}. */
   @InternalApi
   default DatabaseClient getDatabaseClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** The {@link Spanner} instance that is used by this {@link Connection}. */
+  @InternalApi
+  default Spanner getSpanner() {
     throw new UnsupportedOperationException("Not implemented");
   }
 

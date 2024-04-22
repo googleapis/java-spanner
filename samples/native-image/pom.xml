@@ -29,7 +29,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.36.0</version>
+        <version>26.37.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -62,7 +62,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.1</version>
         <configuration>
           <archive>
             <manifest>
@@ -121,7 +121,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin
             </artifactId> <!-- Must use older version of surefire plugin for native-image testing. -->
-            <version>3.2.3</version>
+            <version>3.2.5</version>
             <configuration>
               <includes>
                 <include>**/*IT</include>

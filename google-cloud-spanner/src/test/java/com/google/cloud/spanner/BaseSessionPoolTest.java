@@ -85,15 +85,32 @@ abstract class BaseSessionPoolTest {
     return session;
   }
 
-  SessionImpl buildMockSession(ReadContext context) {
-    SpannerImpl spanner = mock(SpannerImpl.class);
+  SessionImpl mockMultiplexedSession() {
+    final SessionImpl session = mock(SessionImpl.class);
+    Map options = new HashMap<>();
+    when(session.getIsMultiplexed()).thenReturn(true);
+    when(session.getOptions()).thenReturn(options);
+    when(session.getName())
+        .thenReturn(
+            "projects/dummy/instances/dummy/database/dummy/sessions/session" + sessionIndex);
+    when(session.asyncClose()).thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
+    when(session.writeWithOptions(any(Iterable.class)))
+        .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
+    when(session.writeAtLeastOnceWithOptions(any(Iterable.class)))
+        .thenReturn(new CommitResponse(com.google.spanner.v1.CommitResponse.getDefaultInstance()));
+    sessionIndex++;
+    return session;
+  }
+
+  SessionImpl buildMockSession(SpannerImpl spanner, ReadContext context) {
     Map options = new HashMap<>();
     options.put(Option.CHANNEL_HINT, channelHint.getAndIncrement());
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
-            options) {
+            new SessionReference(
+                "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+                options)) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.
@@ -122,16 +139,17 @@ abstract class BaseSessionPoolTest {
     return session;
   }
 
-  SessionImpl buildMockMultiplexedSession(ReadContext context, Timestamp creationTime) {
-    SpannerImpl spanner = mock(SpannerImpl.class);
+  SessionImpl buildMockMultiplexedSession(
+      SpannerImpl spanner, ReadContext context, Timestamp creationTime) {
     Map options = new HashMap<>();
     final SessionImpl session =
         new SessionImpl(
             spanner,
-            "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
-            creationTime,
-            true,
-            options) {
+            new SessionReference(
+                "projects/dummy/instances/dummy/databases/dummy/sessions/session" + sessionIndex,
+                creationTime,
+                true,
+                options)) {
           @Override
           public ReadContext singleUse(TimestampBound bound) {
             // The below stubs are added so that we can mock keep-alive.
