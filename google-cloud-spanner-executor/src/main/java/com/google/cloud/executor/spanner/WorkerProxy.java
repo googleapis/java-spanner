@@ -45,13 +45,14 @@ public class WorkerProxy {
   private static final String OPTION_SERVICE_KEY_FILE = "service_key_file";
   private static final String OPTION_USE_PLAIN_TEXT_CHANNEL = "use_plain_text_channel";
   private static final String OPTION_ENABLE_GRPC_FAULT_INJECTOR = "enable_grpc_fault_injector";
-  private static final String OPTION_USE_MULTIPLEXED_SESSION = "use_multiplexed_session";
+  private static final String OPTION_MULTIPLEXED_SESSION_OPERATIONS_RATIO =
+      "multiplexed_session_operations_ratio";
 
   public static int spannerPort = 0;
   public static int proxyPort = 0;
   public static String cert = "";
   public static String serviceKeyFile = "";
-  public static boolean useMultiplexedSession = false;
+  public static double multiplexedSessionOperationsRatio = 0.0;
   public static boolean usePlainTextChannel = false;
   public static boolean enableGrpcFaultInjector = false;
 
@@ -97,17 +98,22 @@ public class WorkerProxy {
     usePlainTextChannel = commandLine.hasOption(OPTION_USE_PLAIN_TEXT_CHANNEL);
     enableGrpcFaultInjector = commandLine.hasOption(OPTION_ENABLE_GRPC_FAULT_INJECTOR);
 
-    if (commandLine.hasOption(OPTION_USE_MULTIPLEXED_SESSION)) {
-      useMultiplexedSession =
-          Boolean.parseBoolean(commandLine.getOptionValue(OPTION_USE_MULTIPLEXED_SESSION));
-      LOGGER.log(Level.INFO, String.format("Use multiplexed session: \n%s", useMultiplexedSession));
+    if (commandLine.hasOption(OPTION_MULTIPLEXED_SESSION_OPERATIONS_RATIO)) {
+      multiplexedSessionOperationsRatio =
+          Double.parseDouble(
+              commandLine.getOptionValue(OPTION_MULTIPLEXED_SESSION_OPERATIONS_RATIO));
+      LOGGER.log(
+          Level.INFO,
+          String.format(
+              "Multiplexed session ratio from commandline arg: \n%s",
+              multiplexedSessionOperationsRatio));
     }
 
     Server server;
     while (true) {
       try {
         CloudExecutorImpl cloudExecutorImpl =
-            new CloudExecutorImpl(enableGrpcFaultInjector, useMultiplexedSession);
+            new CloudExecutorImpl(enableGrpcFaultInjector, multiplexedSessionOperationsRatio);
         HealthStatusManager healthStatusManager = new HealthStatusManager();
         // Set up Cloud server.
         server =
@@ -150,9 +156,9 @@ public class WorkerProxy {
         "Enable grpc fault injector in cloud client executor.");
     options.addOption(
         null,
-        OPTION_USE_MULTIPLEXED_SESSION,
+        OPTION_MULTIPLEXED_SESSION_OPERATIONS_RATIO,
         true,
-        "Use multiplexed session instead of regular session.");
+        "Ratio of operations to use multiplexed sessions.");
 
     CommandLineParser parser = new DefaultParser();
     try {

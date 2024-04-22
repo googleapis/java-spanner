@@ -37,12 +37,13 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
   // Executors to proxy.
   private final CloudClientExecutor clientExecutor;
 
-  // Use multiplexed session instead of regular session in cloud client library.
-  private final boolean useMultiplexedSession;
+  // Ratio of operations to use multiplexed sessions.
+  private final double multiplexedSessionOperationsRatio;
 
-  public CloudExecutorImpl(boolean enableGrpcFaultInjector, boolean useMultiplexedSession) {
+  public CloudExecutorImpl(
+      boolean enableGrpcFaultInjector, double multiplexedSessionOperationsRatio) {
     clientExecutor = new CloudClientExecutor(enableGrpcFaultInjector);
-    this.useMultiplexedSession = useMultiplexedSession;
+    this.multiplexedSessionOperationsRatio = multiplexedSessionOperationsRatio;
   }
 
   /** Execute SpannerAsync action requests. */
@@ -56,15 +57,31 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
       public void onNext(SpannerAsyncActionRequest request) {
         LOGGER.log(Level.INFO, String.format("Receiving request: \n%s", request));
 
-        // Use Multiplexed sessions for all supported operations if the useMultiplexedSession
-        // variable is set to true.
-        if (useMultiplexedSession) {
-          SessionPoolOptions.Builder sessionPoolOptions =
-              SessionPoolOptions.newBuilder().setUseMultiplexed(true);
-          SpannerOptions.Builder options =
-              SpannerOptions.newBuilder().setSessionPoolOptions(sessionPoolOptions);
-          SpannerAction.Builder action = request.getAction().toBuilder().setSpannerOptions(options);
-          request = request.toBuilder().setAction(action).build();
+        // Use Multiplexed sessions for all supported operations if the
+        // multiplexedSessionOperationsRatio from command line is > 0.0
+        if (multiplexedSessionOperationsRatio > 0.0) {
+          SessionPoolOptions.Builder sessionPoolOptionsBuilder;
+          if (request.getAction().getSpannerOptions().hasSessionPoolOptions()) {
+            sessionPoolOptionsBuilder =
+                request
+                    .getAction()
+                    .getSpannerOptions()
+                    .getSessionPoolOptions()
+                    .toBuilder()
+                    .setUseMultiplexed(true);
+          } else {
+            sessionPoolOptionsBuilder = SessionPoolOptions.newBuilder().setUseMultiplexed(true);
+          }
+
+          SpannerOptions.Builder optionsBuilder =
+              request
+                  .getAction()
+                  .getSpannerOptions()
+                  .toBuilder()
+                  .setSessionPoolOptions(sessionPoolOptionsBuilder);
+          SpannerAction.Builder actionBuilder =
+              request.getAction().toBuilder().setSpannerOptions(optionsBuilder);
+          request = request.toBuilder().setAction(actionBuilder).build();
         }
         Status status = clientExecutor.startHandlingRequest(request, executionContext);
         if (!status.isOk()) {
