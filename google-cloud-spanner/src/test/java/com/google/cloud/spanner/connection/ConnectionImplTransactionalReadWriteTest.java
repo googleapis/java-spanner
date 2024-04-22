@@ -151,7 +151,8 @@ public class ConnectionImplTransactionalReadWriteTest {
     boolean isExecuteAllowed(StatementType type) {
       return type == StatementType.CLIENT_SIDE
           || type == StatementType.QUERY
-          || type == StatementType.UPDATE;
+          || type == StatementType.UPDATE
+          || type == StatementType.DDL;
     }
 
     @Override
@@ -765,7 +766,8 @@ public class ConnectionImplTransactionalReadWriteTest {
     boolean isExecuteAllowed(StatementType type) {
       return type == StatementType.CLIENT_SIDE
           || type == StatementType.QUERY
-          || type == StatementType.UPDATE;
+          || type == StatementType.UPDATE
+          || type == StatementType.DDL;
     }
 
     @Override
@@ -920,7 +922,8 @@ public class ConnectionImplTransactionalReadWriteTest {
     boolean isExecuteAllowed(StatementType type) {
       return type == StatementType.CLIENT_SIDE
           || type == StatementType.QUERY
-          || type == StatementType.UPDATE;
+          || type == StatementType.UPDATE
+          || type == StatementType.DDL;
     }
 
     @Override
@@ -1074,7 +1077,8 @@ public class ConnectionImplTransactionalReadWriteTest {
     boolean isExecuteAllowed(StatementType type) {
       return type == StatementType.CLIENT_SIDE
           || type == StatementType.QUERY
-          || type == StatementType.UPDATE;
+          || type == StatementType.UPDATE
+          || type == StatementType.DDL;
     }
 
     @Override
@@ -1378,7 +1382,8 @@ public class ConnectionImplTransactionalReadWriteTest {
     boolean isExecuteAllowed(StatementType type) {
       return type == StatementType.CLIENT_SIDE
           || type == StatementType.QUERY
-          || type == StatementType.UPDATE;
+          || type == StatementType.UPDATE
+          || type == StatementType.DDL;
     }
 
     @Override
@@ -1829,7 +1834,8 @@ public class ConnectionImplTransactionalReadWriteTest {
     boolean isExecuteAllowed(StatementType type) {
       return type == StatementType.CLIENT_SIDE
           || type == StatementType.QUERY
-          || type == StatementType.UPDATE;
+          || type == StatementType.UPDATE
+          || type == StatementType.DDL;
     }
 
     @Override
@@ -1979,7 +1985,8 @@ public class ConnectionImplTransactionalReadWriteTest {
     boolean isExecuteAllowed(StatementType type) {
       return type == StatementType.CLIENT_SIDE
           || type == StatementType.QUERY
-          || type == StatementType.UPDATE;
+          || type == StatementType.UPDATE
+          || type == StatementType.DDL;
     }
 
     @Override

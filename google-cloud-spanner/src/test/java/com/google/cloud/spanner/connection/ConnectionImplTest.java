@@ -1751,7 +1751,7 @@ public class ConnectionImplTest {
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
+          UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery, boolean forceSingleUse) {
             return unitOfWork;
           }
         }) {
