@@ -2719,6 +2719,9 @@ public class CloudClientExecutor extends CloudExecutor {
           case BOOL:
             value.setBoolValue(result.getBoolean(i));
             break;
+          case FLOAT32:
+            value.setDoubleValue((double) result.getFloat(i));
+            break;
           case FLOAT64:
             value.setDoubleValue(result.getDouble(i));
             break;
@@ -2763,6 +2766,25 @@ public class CloudClientExecutor extends CloudExecutor {
                   value.setArrayValue(builder.build());
                   value.setArrayType(
                       com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.BOOL).build());
+                }
+                break;
+              case FLOAT32:
+                {
+                  com.google.spanner.executor.v1.ValueList.Builder builder =
+                      com.google.spanner.executor.v1.ValueList.newBuilder();
+                  List<Float> values = result.getFloatList(i);
+                  for (Float floatValue : values) {
+                    com.google.spanner.executor.v1.Value.Builder valueProto =
+                        com.google.spanner.executor.v1.Value.newBuilder();
+                    if (floatValue == null) {
+                      builder.addValue(valueProto.setIsNull(true).build());
+                    } else {
+                      builder.addValue(valueProto.setDoubleValue((double) floatValue).build());
+                    }
+                  }
+                  value.setArrayValue(builder.build());
+                  value.setArrayType(
+                      com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.FLOAT32).build());
                 }
                 break;
               case FLOAT64:
@@ -3086,6 +3108,9 @@ public class CloudClientExecutor extends CloudExecutor {
     switch (type.getCode()) {
       case INT64:
         return com.google.cloud.spanner.Value.int64(value.hasIsNull() ? null : value.getIntValue());
+      case FLOAT32:
+        return com.google.cloud.spanner.Value.float32(
+            value.hasIsNull() ? null : (float) value.getDoubleValue());
       case FLOAT64:
         return com.google.cloud.spanner.Value.float64(
             value.hasIsNull() ? null : value.getDoubleValue());
@@ -3140,6 +3165,19 @@ public class CloudClientExecutor extends CloudExecutor {
                           .collect(Collectors.toList()),
                       value.getArrayValue().getValueList().stream()
                           .map(com.google.spanner.executor.v1.Value::getIntValue)
+                          .collect(Collectors.toList())));
+            }
+          case FLOAT32:
+            if (value.hasIsNull()) {
+              return com.google.cloud.spanner.Value.float32Array((Iterable<Float>) null);
+            } else {
+              return com.google.cloud.spanner.Value.float32Array(
+                  unmarshallValueList(
+                      value.getArrayValue().getValueList().stream()
+                          .map(com.google.spanner.executor.v1.Value::getIsNull)
+                          .collect(Collectors.toList()),
+                      value.getArrayValue().getValueList().stream()
+                          .map(v -> (float) v.getDoubleValue())
                           .collect(Collectors.toList())));
             }
           case FLOAT64:
@@ -3382,6 +3420,8 @@ public class CloudClientExecutor extends CloudExecutor {
         return com.google.cloud.spanner.Type.string();
       case BYTES:
         return com.google.cloud.spanner.Type.bytes();
+      case FLOAT32:
+        return com.google.cloud.spanner.Type.float32();
       case FLOAT64:
         return com.google.cloud.spanner.Type.float64();
       case DATE:
@@ -3430,6 +3470,8 @@ public class CloudClientExecutor extends CloudExecutor {
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.BOOL).build();
       case INT64:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.INT64).build();
+      case FLOAT32:
+        return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.FLOAT32).build();
       case FLOAT64:
         return com.google.spanner.v1.Type.newBuilder().setCode(TypeCode.FLOAT64).build();
       case STRING:
