@@ -232,11 +232,8 @@ abstract class AbstractReadContext
     @GuardedBy("lock")
     private Timestamp timestamp;
 
-    private Long channelHint;
-
     private SingleUseReadOnlyTransaction(SingleReadContext.Builder builder) {
       super(builder);
-      this.channelHint = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
     }
 
     @Override
@@ -269,11 +266,6 @@ abstract class AbstractReadContext
               ErrorCode.INTERNAL, "Bad value in transaction.read_timestamp metadata field", e);
         }
       }
-    }
-
-    @Override
-    public Long getTransactionChannelHint() {
-      return channelHint;
     }
   }
 
