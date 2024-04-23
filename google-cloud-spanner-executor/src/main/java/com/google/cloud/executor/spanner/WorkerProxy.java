@@ -59,6 +59,7 @@ public class WorkerProxy {
   public static CommandLine commandLine;
 
   private static final int MIN_PORT = 0, MAX_PORT = 65535;
+  private static final double MIN_RATIO = 0.0, MAX_RATIO = 1.0;
 
   public static void main(String[] args) throws Exception {
     commandLine = buildOptions(args);
@@ -107,6 +108,14 @@ public class WorkerProxy {
           String.format(
               "Multiplexed session ratio from commandline arg: \n%s",
               multiplexedSessionOperationsRatio));
+      if (multiplexedSessionOperationsRatio < MIN_RATIO
+          || multiplexedSessionOperationsRatio > MAX_RATIO) {
+        throw new IllegalArgumentException(
+            "Spanner multiplexedSessionOperationsRatio must be between "
+                + MIN_RATIO
+                + " and "
+                + MAX_RATIO);
+      }
     }
 
     Server server;
