@@ -82,6 +82,9 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
           SpannerAction.Builder actionBuilder =
               request.getAction().toBuilder().setSpannerOptions(optionsBuilder);
           request = request.toBuilder().setAction(actionBuilder).build();
+          LOGGER.log(
+              Level.INFO,
+              String.format("Updated request to set multiplexed session flag: \n%s", request));
         }
         Status status = clientExecutor.startHandlingRequest(request, executionContext);
         if (!status.isOk()) {
