@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- see http://www.mojohaus.org/clirr-maven-plugin/examples/ignored-differences.html -->
+<differences>
+  <difference>
+    <differenceType>7004</differenceType>
+    <className>com/google/cloud/executor/spanner/CloudExecutorImpl</className>
+    <method>CloudExecutorImpl(boolean)</method>
+    <to>CloudExecutorImpl(boolean, double)</to>
+  </difference>
+</differences>
