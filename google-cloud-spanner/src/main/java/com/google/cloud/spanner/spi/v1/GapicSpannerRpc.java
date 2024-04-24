@@ -319,7 +319,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
-    this.useRandomChannel = options.isUseVirtualThreads();
+    this.useRandomChannel = options.isUseRandomChannel();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
