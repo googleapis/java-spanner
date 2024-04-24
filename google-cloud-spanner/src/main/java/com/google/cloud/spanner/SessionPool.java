@@ -1264,7 +1264,7 @@ class SessionPool {
   }
 
   class MultiplexedSessionFutureWrapper implements SessionFutureWrapper<MultiplexedSessionFuture> {
-    private ISpan span;
+    private final ISpan span;
     private volatile MultiplexedSessionFuture multiplexedSessionFuture;
 
     public MultiplexedSessionFutureWrapper(ISpan span) {
@@ -1283,7 +1283,7 @@ class SessionPool {
             resourceNotFoundException);
       }
       if (multiplexedSessionFuture == null) {
-        synchronized (lock) {
+        synchronized (this) {
           if (multiplexedSessionFuture == null) {
             // Creating a new reference where the request's span state can be stored.
             MultiplexedSessionFuture multiplexedSessionFuture = new MultiplexedSessionFuture(span);
