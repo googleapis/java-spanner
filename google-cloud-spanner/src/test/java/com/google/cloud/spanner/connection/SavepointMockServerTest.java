@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
@@ -681,6 +682,8 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testMultiplexedSession() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofMinimumAndRandomTime(200, 200));
     Statement statement = Statement.of("select * from foo where bar=true");
     int numRows = 10;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
@@ -688,9 +691,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       try (ResultSet resultSet = connection.executeQuery(statement)) {
-        while (resultSet.next()) {
-
-        }
+        while (resultSet.next()) {}
       }
     }
   }

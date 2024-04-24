@@ -151,12 +151,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       @Override
       public void addListener(Runnable listener) {
-        ((ListenableAsyncResultSet) this.delegate).addListener(listener);
+        ((ListenableAsyncResultSet) getDelegate()).addListener(listener);
       }
 
       @Override
       public void removeListener(Runnable listener) {
-        ((ListenableAsyncResultSet) this.delegate).removeListener(listener);
+        ((ListenableAsyncResultSet) getDelegate()).removeListener(listener);
       }
     }
 

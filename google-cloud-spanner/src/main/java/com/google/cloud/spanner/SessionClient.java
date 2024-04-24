@@ -240,7 +240,8 @@ class SessionClient implements AutoCloseable {
                   spanner.getOptions().getSessionLabels(),
                   null,
                   true);
-      return new SessionReference(session.getName(), session.getCreateTime(), session.getMultiplexed(), null);
+      return new SessionReference(
+          session.getName(), session.getCreateTime(), session.getMultiplexed(), null);
     } catch (Throwable t) {
       span.setStatus(t);
       throw t;

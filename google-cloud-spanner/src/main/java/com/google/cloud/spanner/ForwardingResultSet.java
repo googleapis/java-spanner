@@ -25,14 +25,14 @@ import com.google.spanner.v1.ResultSetStats;
 /** Forwarding implementation of ResultSet that forwards all calls to a delegate. */
 public class ForwardingResultSet extends ForwardingStructReader implements ProtobufResultSet {
 
-  private Supplier<ResultSet> delegate;
+  private Supplier<? extends ResultSet> delegate;
 
   public ForwardingResultSet(ResultSet delegate) {
     super(delegate);
     this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(delegate));
   }
 
-  public ForwardingResultSet(Supplier<ResultSet> supplier) {
+  public ForwardingResultSet(Supplier<? extends ResultSet> supplier) {
     super(supplier);
     this.delegate = supplier;
   }
@@ -48,6 +48,10 @@ public class ForwardingResultSet extends ForwardingStructReader implements Proto
     Preconditions.checkNotNull(newDelegate);
     super.replaceDelegate(newDelegate);
     this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(newDelegate));
+  }
+
+  ResultSet getDelegate() {
+    return delegate.get();
   }
 
   @Override

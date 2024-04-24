@@ -60,7 +60,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     private boolean allowReplacing = true;
 
     DatabaseClientWithClosedSessionImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-      super(clientId, pool, tracer);
+      super(clientId, pool, null, tracer);
     }
 
     /** Invalidate the next session that is checked out from the pool. */
@@ -89,7 +89,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
 
     @Override
     SessionFutureWrapper getMultiplexedSession() {
-      SessionFutureWrapper session = super.getMultiplexedSession();
+      SessionFutureWrapper session = (SessionFutureWrapper) super.getMultiplexedSession();
       if (invalidateNextSession) {
         session.get().get().getDelegate().close();
         session.get().get().setAllowReplacing(false);
