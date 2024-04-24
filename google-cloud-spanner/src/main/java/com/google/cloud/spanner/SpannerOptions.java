@@ -149,6 +149,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
+  private final boolean useRandomChannel;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -652,6 +653,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     attemptDirectPath = builder.attemptDirectPath;
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
+    useRandomChannel = builder.useRandomChannel;
     openTelemetry = builder.openTelemetry;
   }
 
@@ -761,6 +763,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private boolean attemptDirectPath = true;
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
+    private boolean useRandomChannel = false;
     private OpenTelemetry openTelemetry;
 
     private static String createCustomClientLibToken(String token) {
@@ -825,6 +828,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.attemptDirectPath = options.attemptDirectPath;
       this.directedReadOptions = options.directedReadOptions;
       this.useVirtualThreads = options.useVirtualThreads;
+      this.useRandomChannel = options.useRandomChannel;
     }
 
     @Override
@@ -1321,6 +1325,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    public Builder setUseRandomChannel(boolean useRandomChannel) {
+      this.useRandomChannel = useRandomChannel;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1561,6 +1570,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @BetaApi
   public boolean isUseVirtualThreads() {
     return useVirtualThreads;
+  }
+
+  public boolean isUseRandomChannel() {
+    return useRandomChannel;
   }
 
   /** Returns the default query options to use for the specific database. */
