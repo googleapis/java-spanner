@@ -18,6 +18,8 @@ package com.google.cloud.spanner;
 
 import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
@@ -208,6 +210,7 @@ public class ChannelUsageTest {
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(numChannels * 2)
                     .setMaxSessions(numChannels * 2)
+                    .setUseMultiplexedSession(true)
                     .build())
             .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance());
@@ -261,6 +264,20 @@ public class ChannelUsageTest {
                 }));
       }
       assertEquals(numChannels * 2, Futures.allAsList(futures).get().size());
+    }
+    assertEquals(numChannels, executeSqlLocalIps.size());
+  }
+
+  @Test
+  public void testSingleUse() throws InterruptedException, ExecutionException {
+    try (Spanner spanner = createSpannerOptions().getService()) {
+      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+      for (int i = 0; i < numChannels; i++) {
+        try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
+          assertTrue(resultSet.next());
+          assertFalse(resultSet.next());
+        }
+      }
     }
     assertEquals(numChannels, executeSqlLocalIps.size());
   }
