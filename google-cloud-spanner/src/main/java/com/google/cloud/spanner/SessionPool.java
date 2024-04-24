@@ -1313,8 +1313,8 @@ class SessionPool {
       implements SessionFuture {
 
     private volatile LeakedSessionException leakedException;
-    private volatile AtomicBoolean inUse = new AtomicBoolean();
-    private volatile CountDownLatch initialized = new CountDownLatch(1);
+    private final AtomicBoolean inUse = new AtomicBoolean();
+    private final CountDownLatch initialized = new CountDownLatch(1);
     private final ISpan span;
 
     @VisibleForTesting
