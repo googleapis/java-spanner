@@ -1286,9 +1286,7 @@ class SessionPool {
         synchronized (this) {
           if (multiplexedSessionFuture == null) {
             // Creating a new reference where the request's span state can be stored.
-            MultiplexedSessionFuture multiplexedSessionFuture = new MultiplexedSessionFuture(span);
-            this.multiplexedSessionFuture = multiplexedSessionFuture;
-            return multiplexedSessionFuture;
+            this.multiplexedSessionFuture = new MultiplexedSessionFuture(span);
           }
         }
       }
