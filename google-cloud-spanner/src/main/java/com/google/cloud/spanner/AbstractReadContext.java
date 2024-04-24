@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SessionClient.optionMap;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -32,6 +33,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.SessionClient.SessionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
@@ -52,6 +54,7 @@ import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -180,9 +183,15 @@ abstract class AbstractReadContext
     @GuardedBy("lock")
     private boolean used;
 
+    private final Map<SpannerRpc.Option, ?> channelHint;
+
     private SingleReadContext(Builder builder) {
       super(builder);
       this.bound = builder.bound;
+      // single use transaction have a single RPC and hence there is no need
+      // of a channel hint. GAX will automatically choose a hint when used
+      // with a multiplexed session.
+      this.channelHint = getChannelHintOptions(session.getOptions(), null);
     }
 
     @Override
@@ -209,6 +218,11 @@ abstract class AbstractReadContext
           .setSingleUse(TransactionOptions.newBuilder().setReadOnly(bound.toProto()))
           .build();
     }
+
+    @Override
+    Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
+      return channelHint;
+    }
   }
 
   private static void assertTimestampAvailable(boolean available) {
@@ -217,6 +231,7 @@ abstract class AbstractReadContext
 
   static class SingleUseReadOnlyTransaction extends SingleReadContext
       implements ReadOnlyTransaction {
+
     @GuardedBy("lock")
     private Timestamp timestamp;
 
@@ -300,6 +315,8 @@ abstract class AbstractReadContext
     @GuardedBy("txnLock")
     private ByteString transactionId;
 
+    private final Map<SpannerRpc.Option, ?> channelHint;
+
     MultiUseReadOnlyTransaction(Builder builder) {
       super(builder);
       checkArgument(
@@ -318,6 +335,14 @@ abstract class AbstractReadContext
         this.timestamp = builder.timestamp;
         this.transactionId = builder.transactionId;
       }
+      this.channelHint =
+          getChannelHintOptions(
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
+    }
+
+    @Override
+    public Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
+      return channelHint;
     }
 
     @Override
@@ -380,7 +405,7 @@ abstract class AbstractReadContext
                   .setOptions(options)
                   .build();
           Transaction transaction =
-              rpc.beginTransaction(request, session.getOptions(), isRouteToLeader());
+              rpc.beginTransaction(request, getTransactionChannelHint(), isRouteToLeader());
           if (!transaction.hasReadTimestamp()) {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
@@ -727,7 +752,10 @@ abstract class AbstractReadContext
             }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
-                    request.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
+                    request.build(),
+                    stream.consumer(),
+                    getTransactionChannelHint(),
+                    isRouteToLeader());
             session.markUsed(clock.instant());
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
@@ -736,6 +764,16 @@ abstract class AbstractReadContext
         };
     return new GrpcResultSet(
         stream, this, options.hasDecodeMode() ? options.decodeMode() : defaultDecodeMode);
+  }
+
+  Map<SpannerRpc.Option, ?> getChannelHintOptions(
+      Map<SpannerRpc.Option, ?> channelHintForSession, Long channelHintForTransaction) {
+    if (channelHintForSession != null) {
+      return channelHintForSession;
+    } else if (channelHintForTransaction != null) {
+      return optionMap(SessionOption.channelHint(channelHintForTransaction));
+    }
+    return null;
   }
 
   /**
@@ -781,6 +819,12 @@ abstract class AbstractReadContext
    */
   @Nullable
   abstract TransactionSelector getTransactionSelector();
+
+  /**
+   * Channel hint to be used for a transaction. This enables soft-stickiness per transaction by
+   * ensuring all RPCs within a transaction land up on the same channel.
+   */
+  abstract Map<SpannerRpc.Option, ?> getTransactionChannelHint();
 
   /**
    * Returns the transaction tag for this {@link AbstractReadContext} or <code>null</code> if this
@@ -872,7 +916,10 @@ abstract class AbstractReadContext
             builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
                 rpc.read(
-                    builder.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
+                    builder.build(),
+                    stream.consumer(),
+                    getTransactionChannelHint(),
+                    isRouteToLeader());
             session.markUsed(clock.instant());
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
