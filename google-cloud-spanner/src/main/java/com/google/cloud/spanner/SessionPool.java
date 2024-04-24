@@ -2649,28 +2649,26 @@ class SessionPool {
     void maintainMultiplexedSession(Instant currentTime) {
       try {
         if (options.getUseMultiplexedSession()) {
-          synchronized (lock) {
-            if (currentMultiplexedSessionReference.get().isDone()) {
-              SessionReference sessionReference = getMultiplexedSessionInstance();
-              if (sessionReference != null
-                  && isMultiplexedSessionStale(sessionReference, currentTime)) {
-                final Instant minExecutionTime =
-                    multiplexedSessionReplacementAttemptTime.plus(
-                        multiplexedSessionCreationRetryDelay);
-                if (currentTime.isBefore(minExecutionTime)) {
-                  return;
-                }
-                /*
-                 This will attempt to create a new multiplexed session. if successfully created then
-                 the existing session will be replaced. Note that there maybe active transactions
-                 running on the stale session. Hence, it is important that we only replace the reference
-                 and not invoke a DeleteSession RPC.
-                */
-                maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
-
-                // update this only after we have attempted to replace the multiplexed session
-                multiplexedSessionReplacementAttemptTime = currentTime;
+          if (currentMultiplexedSessionReference.get().isDone()) {
+            SessionReference sessionReference = getMultiplexedSessionInstance();
+            if (sessionReference != null
+                && isMultiplexedSessionStale(sessionReference, currentTime)) {
+              final Instant minExecutionTime =
+                  multiplexedSessionReplacementAttemptTime.plus(
+                      multiplexedSessionCreationRetryDelay);
+              if (currentTime.isBefore(minExecutionTime)) {
+                return;
               }
+              /*
+               This will attempt to create a new multiplexed session. if successfully created then
+               the existing session will be replaced. Note that there maybe active transactions
+               running on the stale session. Hence, it is important that we only replace the reference
+               and not invoke a DeleteSession RPC.
+              */
+              maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
+
+              // update this only after we have attempted to replace the multiplexed session
+              multiplexedSessionReplacementAttemptTime = currentTime;
             }
           }
         }
