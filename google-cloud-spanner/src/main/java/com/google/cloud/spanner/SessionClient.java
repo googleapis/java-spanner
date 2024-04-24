@@ -227,16 +227,8 @@ class SessionClient implements AutoCloseable {
     }
   }
 
-  /**
-   * Create a multiplexed session and returns it to the given {@link SessionConsumer}. A multiplexed
-   * session is not affiliated with any GRPC channel. The given {@link SessionConsumer} is
-   * guaranteed to eventually get exactly 1 multiplexed session unless an error occurs. In case of
-   * an error on the gRPC calls, the consumer will receive one {@link
-   * SessionConsumer#onSessionCreateFailure(Throwable, int)} calls with the error.
-   *
-   * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
-   */
-  void createMultiplexedSession(SessionConsumer consumer) {
+  /** Creates a new multiplexed session. */
+  SessionReference createMultiplexedSession() {
     ISpan span = spanner.getTracer().spanBuilder(SpannerImpl.CREATE_MULTIPLEXED_SESSION);
     try (IScope s = spanner.getTracer().withSpan(span)) {
       com.google.spanner.v1.Session session =
@@ -248,17 +240,30 @@ class SessionClient implements AutoCloseable {
                   spanner.getOptions().getSessionLabels(),
                   null,
                   true);
-      SessionImpl sessionImpl =
-          new SessionImpl(
-              spanner,
-              new SessionReference(
-                  session.getName(), session.getCreateTime(), session.getMultiplexed(), null));
-      consumer.onSessionReady(sessionImpl);
+      return new SessionReference(session.getName(), session.getCreateTime(), session.getMultiplexed(), null);
     } catch (Throwable t) {
       span.setStatus(t);
-      consumer.onSessionCreateFailure(t, 1);
+      throw t;
     } finally {
       span.end();
+    }
+  }
+
+  /**
+   * Create a multiplexed session and returns it to the given {@link SessionConsumer}. A multiplexed
+   * session is not affiliated with any GRPC channel. The given {@link SessionConsumer} is
+   * guaranteed to eventually get exactly 1 multiplexed session unless an error occurs. In case of
+   * an error on the gRPC calls, the consumer will receive one {@link
+   * SessionConsumer#onSessionCreateFailure(Throwable, int)} calls with the error.
+   *
+   * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
+   */
+  void createMultiplexedSession(SessionConsumer consumer) {
+    try {
+      SessionImpl sessionImpl = new SessionImpl(spanner, createMultiplexedSession());
+      consumer.onSessionReady(sessionImpl);
+    } catch (Throwable t) {
+      consumer.onSessionCreateFailure(t, 1);
     }
   }
 

@@ -678,4 +678,20 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       }
     }
   }
+
+  @Test
+  public void testMultiplexedSession() {
+    Statement statement = Statement.of("select * from foo where bar=true");
+    int numRows = 10;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(numRows);
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      try (ResultSet resultSet = connection.executeQuery(statement)) {
+        while (resultSet.next()) {
+
+        }
+      }
+    }
+  }
 }

@@ -2264,12 +2264,12 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numMultiplexedSessionsReleased++;
-        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
-          SessionPool.this.resourceNotFoundException =
-              MoreObjects.firstNonNull(
-                  SessionPool.this.resourceNotFoundException,
-                  (ResourceNotFoundException) lastException);
-        }
+      }
+      if (isDatabaseOrInstanceNotFound(lastException)) {
+        SessionPool.this.resourceNotFoundException =
+            MoreObjects.firstNonNull(
+                SessionPool.this.resourceNotFoundException,
+                (ResourceNotFoundException) lastException);
       }
     }
 
