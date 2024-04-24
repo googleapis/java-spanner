@@ -183,9 +183,15 @@ abstract class AbstractReadContext
     @GuardedBy("lock")
     private boolean used;
 
+    private final Map<SpannerRpc.Option, ?> channelHint;
+
     private SingleReadContext(Builder builder) {
       super(builder);
       this.bound = builder.bound;
+      // single use transaction have a single RPC and hence there is no need
+      // of a channel hint. GAX will automatically choose a hint when used
+      // with a multiplexed session.
+      this.channelHint = getChannelHintOptions(session.getOptions(), null);
     }
 
     @Override
@@ -215,10 +221,7 @@ abstract class AbstractReadContext
 
     @Override
     Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
-      // single use transaction have a single RPC and hence there is no need
-      // of a channel hint. GAX will automatically choose a hint when used
-      // with a multiplexed session.
-      return null;
+      return channelHint;
     }
   }
 
