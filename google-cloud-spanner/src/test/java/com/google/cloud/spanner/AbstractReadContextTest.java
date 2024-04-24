@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,7 +102,7 @@ public class AbstractReadContextTest {
     }
 
     @Override
-    Long getTransactionChannelHint() {
+    Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
       return null;
     }
   }
@@ -116,7 +118,7 @@ public class AbstractReadContextTest {
     }
 
     @Override
-    Long getTransactionChannelHint() {
+    Map<Option, ?> getTransactionChannelHint() {
       return null;
     }
 

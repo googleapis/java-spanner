@@ -214,7 +214,7 @@ abstract class AbstractReadContext
     }
 
     @Override
-    Long getTransactionChannelHint() {
+    Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
       // single use transaction have a single RPC and hence there is no need
       // of a channel hint. GAX will automatically choose a hint when used
       // with a multiplexed session.
@@ -312,7 +312,7 @@ abstract class AbstractReadContext
     @GuardedBy("txnLock")
     private ByteString transactionId;
 
-    private Long channelHint;
+    private final Map<SpannerRpc.Option, ?> channelHint;
 
     MultiUseReadOnlyTransaction(Builder builder) {
       super(builder);
@@ -332,11 +332,13 @@ abstract class AbstractReadContext
         this.timestamp = builder.timestamp;
         this.transactionId = builder.transactionId;
       }
-      this.channelHint = ThreadLocalRandom.current().nextLong(Long.MAX_VALUE);
+      this.channelHint =
+          getChannelHintOptions(
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
     }
 
     @Override
-    public Long getTransactionChannelHint() {
+    public Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
       return channelHint;
     }
 
@@ -400,10 +402,7 @@ abstract class AbstractReadContext
                   .setOptions(options)
                   .build();
           Transaction transaction =
-              rpc.beginTransaction(
-                  request,
-                  getChannelHintOptions(session.getOptions(), getTransactionChannelHint()),
-                  isRouteToLeader());
+              rpc.beginTransaction(request, getTransactionChannelHint(), isRouteToLeader());
           if (!transaction.hasReadTimestamp()) {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
@@ -752,7 +751,7 @@ abstract class AbstractReadContext
                 rpc.executeQuery(
                     request.build(),
                     stream.consumer(),
-                    getChannelHintOptions(session.getOptions(), getTransactionChannelHint()),
+                    getTransactionChannelHint(),
                     isRouteToLeader());
             session.markUsed(clock.instant());
             call.request(prefetchChunks);
@@ -769,11 +768,7 @@ abstract class AbstractReadContext
     if (channelHintForSession != null) {
       return channelHintForSession;
     } else if (channelHintForTransaction != null) {
-      final Map<SpannerRpc.Option, ?> options;
-      synchronized (this) {
-        options = optionMap(SessionOption.channelHint(channelHintForTransaction));
-      }
-      return options;
+      return optionMap(SessionOption.channelHint(channelHintForTransaction));
     }
     return null;
   }
@@ -826,7 +821,7 @@ abstract class AbstractReadContext
    * Channel hint to be used for a transaction. This enables soft-stickiness per transaction by
    * ensuring all RPCs within a transaction land up on the same channel.
    */
-  abstract Long getTransactionChannelHint();
+  abstract Map<SpannerRpc.Option, ?> getTransactionChannelHint();
 
   /**
    * Returns the transaction tag for this {@link AbstractReadContext} or <code>null</code> if this
@@ -920,7 +915,7 @@ abstract class AbstractReadContext
                 rpc.read(
                     builder.build(),
                     stream.consumer(),
-                    getChannelHintOptions(session.getOptions(), getTransactionChannelHint()),
+                    getTransactionChannelHint(),
                     isRouteToLeader());
             session.markUsed(clock.instant());
             call.request(prefetchChunks);

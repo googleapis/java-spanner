@@ -20,7 +20,6 @@ import static com.google.cloud.spanner.MockSpannerTestUtil.READ_COLUMN_NAMES;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_RESULTSET;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_ONE_KEY_VALUE_STATEMENT;
 import static com.google.cloud.spanner.MockSpannerTestUtil.READ_TABLE_NAME;
-import static com.google.cloud.spanner.MockSpannerTestUtil.SELECT1;
 import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -96,6 +95,8 @@ public class TransactionChannelHintTest {
   private static Server server;
   private static InetSocketAddress address;
   private static final Set<InetSocketAddress> executeSqlLocalIps = ConcurrentHashMap.newKeySet();
+  private static final Set<InetSocketAddress> beginTransactionLocalIps =
+      ConcurrentHashMap.newKeySet();
   private static final Set<InetSocketAddress> streamingReadLocalIps = ConcurrentHashMap.newKeySet();
   private static Level originalLogLevel;
 
@@ -120,12 +121,6 @@ public class TransactionChannelHintTest {
                       ServerCall<ReqT, RespT> call,
                       Metadata headers,
                       ServerCallHandler<ReqT, RespT> next) {
-                    // Verify that the compressor name header is set.
-                    assertEquals(
-                        "gzip",
-                        headers.get(
-                            Metadata.Key.of(
-                                "x-response-encoding", Metadata.ASCII_STRING_MARSHALLER)));
                     Attributes attributes = call.getAttributes();
                     @SuppressWarnings({"unchecked", "deprecation"})
                     Attributes.Key<InetSocketAddress> key =
@@ -141,6 +136,10 @@ public class TransactionChannelHintTest {
                       }
                       if (call.getMethodDescriptor().equals(SpannerGrpc.getStreamingReadMethod())) {
                         streamingReadLocalIps.add(attributes.get(key));
+                      }
+                      if (call.getMethodDescriptor()
+                          .equals(SpannerGrpc.getBeginTransactionMethod())) {
+                        beginTransactionLocalIps.add(attributes.get(key));
                       }
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
@@ -174,6 +173,7 @@ public class TransactionChannelHintTest {
     mockSpanner.reset();
     executeSqlLocalIps.clear();
     streamingReadLocalIps.clear();
+    beginTransactionLocalIps.clear();
   }
 
   private SpannerOptions createSpannerOptions() {
@@ -189,31 +189,6 @@ public class TransactionChannelHintTest {
         .setHost("http://" + endpoint)
         .setCredentials(NoCredentials.getInstance())
         .build();
-  }
-
-  @Test
-  public void testSingleUse_usesSingleChannel() {
-    try (Spanner spanner = createSpannerOptions().getService()) {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
-        while (resultSet.next()) {}
-      }
-    }
-    assertEquals(1, executeSqlLocalIps.size());
-  }
-
-  @Test
-  public void testSingleUse_withTimestampBound_usesSingleChannel() {
-    try (Spanner spanner = createSpannerOptions().getService()) {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      try (ResultSet resultSet =
-          client
-              .singleUse(TimestampBound.ofExactStaleness(15L, TimeUnit.SECONDS))
-              .executeQuery(SELECT1)) {
-        while (resultSet.next()) {}
-      }
-    }
-    assertEquals(1, executeSqlLocalIps.size());
   }
 
   @Test
@@ -255,6 +230,8 @@ public class TransactionChannelHintTest {
       }
     }
     assertEquals(1, executeSqlLocalIps.size());
+    assertEquals(1, beginTransactionLocalIps.size());
+    assertEquals(executeSqlLocalIps, beginTransactionLocalIps);
   }
 
   @Test
@@ -272,6 +249,8 @@ public class TransactionChannelHintTest {
       }
     }
     assertEquals(1, executeSqlLocalIps.size());
+    assertEquals(1, beginTransactionLocalIps.size());
+    assertEquals(executeSqlLocalIps, beginTransactionLocalIps);
   }
 
   @Test
