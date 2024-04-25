@@ -46,7 +46,8 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     }
 
     @Override
-    DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
+    DatabaseClientImpl createDatabaseClient(
+        String clientId, SessionPool pool, MultiplexedSessionDatabaseClient ignore) {
       return new DatabaseClientWithClosedSessionImpl(clientId, pool, tracer);
     }
   }
@@ -60,7 +61,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     private boolean allowReplacing = true;
 
     DatabaseClientWithClosedSessionImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-      super(clientId, pool, null, tracer);
+      super(clientId, pool, tracer);
     }
 
     /** Invalidate the next session that is checked out from the pool. */

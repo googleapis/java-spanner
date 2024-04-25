@@ -278,22 +278,18 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 this.tracer,
                 labelValues,
                 attributesBuilder.build());
-        MultiplexedSessionDatabaseClient multiplexedSessionPool =
+        MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
             getOptions().getSessionPoolOptions().getUseMultiplexedSession()
                     && !SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool()
                 ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
                 : null;
         pool.maybeWaitOnMinSessions();
-        DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool, multiplexedSessionPool);
+        DatabaseClientImpl dbClient =
+            createDatabaseClient(clientId, pool, multiplexedSessionDatabaseClient);
         dbClients.put(db, dbClient);
         return dbClient;
       }
     }
-  }
-
-  @VisibleForTesting
-  DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return createDatabaseClient(clientId, pool, null);
   }
 
   @VisibleForTesting

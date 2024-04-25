@@ -520,6 +520,11 @@ public class SessionPoolOptions {
           System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
     }
 
+    // TODO: Remove before merging.
+    /**
+     * Temporary environment variable to enable the use of the multiplexed session implementation
+     * that is in the {@link SessionPool}.
+     */
     public static boolean isUseMultiplexedSessionsInSessionPool() {
       return Boolean.parseBoolean(
           System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS_IN_SESSION_POOL"));

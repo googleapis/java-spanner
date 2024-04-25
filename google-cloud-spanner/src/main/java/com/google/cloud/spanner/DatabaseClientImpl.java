@@ -42,6 +42,11 @@ class DatabaseClientImpl implements DatabaseClient {
     this("", pool, null, tracer);
   }
 
+  @VisibleForTesting
+  DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
+    this(clientId, pool, null, tracer);
+  }
+
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
@@ -279,6 +284,10 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
+    if (this.multiplexedSessionDatabaseClient != null) {
+      // This method is non-blocking.
+      this.multiplexedSessionDatabaseClient.close();
+    }
     return pool.closeAsync(closedException);
   }
 }
