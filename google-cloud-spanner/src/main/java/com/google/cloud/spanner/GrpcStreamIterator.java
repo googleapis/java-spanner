@@ -72,7 +72,8 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     setCall(call, withBeginTransaction, Stopwatch.createStarted());
   }
 
-    public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction, Stopwatch started) {
+  public void setCall(
+      SpannerRpc.StreamingCall call, boolean withBeginTransaction, Stopwatch started) {
     this.call = call;
     this.withBeginTransaction = withBeginTransaction;
     this.stopwatch = started;
