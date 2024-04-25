@@ -1264,7 +1264,7 @@ class SessionPool {
   }
 
   class MultiplexedSessionFutureWrapper implements SessionFutureWrapper<MultiplexedSessionFuture> {
-    private final ISpan span;
+    private ISpan span;
     private volatile MultiplexedSessionFuture multiplexedSessionFuture;
 
     public MultiplexedSessionFutureWrapper(ISpan span) {
@@ -1283,10 +1283,12 @@ class SessionPool {
             resourceNotFoundException);
       }
       if (multiplexedSessionFuture == null) {
-        synchronized (this) {
+        synchronized (lock) {
           if (multiplexedSessionFuture == null) {
             // Creating a new reference where the request's span state can be stored.
-            this.multiplexedSessionFuture = new MultiplexedSessionFuture(span);
+            MultiplexedSessionFuture multiplexedSessionFuture = new MultiplexedSessionFuture(span);
+            this.multiplexedSessionFuture = multiplexedSessionFuture;
+            return multiplexedSessionFuture;
           }
         }
       }
@@ -1313,8 +1315,8 @@ class SessionPool {
       implements SessionFuture {
 
     private volatile LeakedSessionException leakedException;
-    private final AtomicBoolean inUse = new AtomicBoolean();
-    private final CountDownLatch initialized = new CountDownLatch(1);
+    private volatile AtomicBoolean inUse = new AtomicBoolean();
+    private volatile CountDownLatch initialized = new CountDownLatch(1);
     private final ISpan span;
 
     @VisibleForTesting
@@ -2264,12 +2266,12 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numMultiplexedSessionsReleased++;
-      }
-      if (isDatabaseOrInstanceNotFound(lastException)) {
-        SessionPool.this.resourceNotFoundException =
-            MoreObjects.firstNonNull(
-                SessionPool.this.resourceNotFoundException,
-                (ResourceNotFoundException) lastException);
+        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
+          SessionPool.this.resourceNotFoundException =
+              MoreObjects.firstNonNull(
+                  SessionPool.this.resourceNotFoundException,
+                  (ResourceNotFoundException) lastException);
+        }
       }
     }
 
@@ -2947,7 +2949,8 @@ class SessionPool {
 
   // TODO: Remove once all code for multiplexed sessions have been removed from the pool.
   private boolean useMultiplexedSessions() {
-    return false;
+    return options.getUseMultiplexedSession()
+        && SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool();
   }
 
   /**
@@ -3140,7 +3143,7 @@ class SessionPool {
 
   /**
    * Returns a multiplexed session. The method fallbacks to a regular session if {@link
-   * SessionPoolOptions#getUseMultiplexedSession} is not set.
+   * SessionPoolOptions#useMultiplexedSession} is not set.
    */
   SessionFutureWrapper getMultiplexedSessionWithFallback() throws SpannerException {
     if (useMultiplexedSessions()) {

@@ -68,8 +68,10 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
   }
 
   @BeforeClass
-  public static void skip() {
-    assumeTrue("Ignore for now", false);
+  public static void checkUsesMultiplexedSessionPool() {
+    assumeTrue(
+        "Only run if the maintainer in the session pool is used",
+        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool());
   }
 
   @Before

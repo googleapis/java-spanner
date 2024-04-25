@@ -16,13 +16,10 @@
 
 package com.google.cloud.spanner;
 
-import static com.google.cloud.spanner.Spanner.CALL_DURATIONS;
-
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.spanner.v1.PartialResultSet;
@@ -47,7 +44,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
   private SpannerRpc.StreamingCall call;
   private volatile boolean withBeginTransaction;
-  private Stopwatch stopwatch;
   private TimeUnit streamWaitTimeoutUnit;
   private long streamWaitTimeoutValue;
   private SpannerException error;
@@ -69,14 +65,8 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   }
 
   public void setCall(SpannerRpc.StreamingCall call, boolean withBeginTransaction) {
-    setCall(call, withBeginTransaction, Stopwatch.createStarted());
-  }
-
-  public void setCall(
-      SpannerRpc.StreamingCall call, boolean withBeginTransaction, Stopwatch started) {
     this.call = call;
     this.withBeginTransaction = withBeginTransaction;
-    this.stopwatch = started;
     ApiCallContext callContext = call.getCallContext();
     Duration streamWaitTimeout = callContext == null ? null : callContext.getStreamWaitTimeout();
     if (streamWaitTimeout != null) {
@@ -137,7 +127,6 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     }
 
     endOfData();
-    CALL_DURATIONS.add(stopwatch.elapsed());
     return null;
   }
 

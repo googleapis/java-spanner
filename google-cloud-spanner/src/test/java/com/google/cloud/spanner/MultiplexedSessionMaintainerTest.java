@@ -64,10 +64,10 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
   private List<SessionReference> multiplexedSessionsRemoved = new ArrayList<>();
 
   @BeforeClass
-  public static void skip() {
+  public static void checkUsesMultiplexedSessionPool() {
     assumeTrue(
-        "Ignore for now until the maintainer has been moved to the MultiplexedSessionDatabaseClient",
-        false);
+        "Only run if the maintainer in the session pool is used",
+        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool());
   }
 
   @Before

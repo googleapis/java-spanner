@@ -516,10 +516,13 @@ public class SessionPoolOptions {
     @InternalApi
     @BetaApi
     private static boolean getUseMultiplexedSessionFromEnvVariable() {
-      // TODO: Remove and re-enable env var
-      return true;
-      //      return Boolean.parseBoolean(
-      //          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
+      return Boolean.parseBoolean(
+          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
+    }
+
+    public static boolean isUseMultiplexedSessionsInSessionPool() {
+      return Boolean.parseBoolean(
+          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS_IN_SESSION_POOL"));
     }
 
     public Builder() {}

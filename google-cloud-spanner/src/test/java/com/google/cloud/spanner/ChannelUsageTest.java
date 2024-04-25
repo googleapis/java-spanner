@@ -208,7 +208,6 @@ public class ChannelUsageTest {
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(numChannels * 2)
                     .setMaxSessions(numChannels * 2)
-                    .setUseMultiplexedSession(true)
                     .build())
             .setHost("http://" + endpoint)
             .setCredentials(NoCredentials.getInstance());

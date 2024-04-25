@@ -18,9 +18,6 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Service;
-import java.time.Duration;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * An interface for Cloud Spanner. Typically, there would only be one instance of this for the
@@ -29,8 +26,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * quota.
  */
 public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
-
-  Queue<Duration> CALL_DURATIONS = new ConcurrentLinkedQueue<>();
 
   /**
    * Returns a {@code DatabaseAdminClient} to execute admin operations on Cloud Spanner databases.
