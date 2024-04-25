@@ -252,7 +252,8 @@ class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionDatabas
 
     @Override
     <T extends SessionTransaction> T setActive(@Nullable T ctx) {
-      throwIfTransactionsPending();
+      // TODO: Enable check again
+      // throwIfTransactionsPending();
       return ctx;
     }
 
