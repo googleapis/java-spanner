@@ -733,7 +733,6 @@ abstract class AbstractReadContext
                     request.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
             session.markUsed(clock.instant());
             call.request(prefetchChunks);
-            CALL_DURATIONS.add(watch.elapsed());
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
           }
