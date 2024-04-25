@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.Spanner.CALL_DURATIONS;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -36,6 +37,7 @@ import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
@@ -725,11 +727,13 @@ abstract class AbstractReadContext
             if (selector != null) {
               request.setTransaction(selector);
             }
+            Stopwatch watch = Stopwatch.createStarted();
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
                     request.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
             session.markUsed(clock.instant());
             call.request(prefetchChunks);
+            CALL_DURATIONS.add(watch.elapsed());
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
           }
