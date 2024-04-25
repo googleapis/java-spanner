@@ -49,7 +49,7 @@ class DatabaseClientImpl implements DatabaseClient {
       TraceWrapper tracer) {
     this.clientId = clientId;
     this.pool = pool;
-    this.multiplexedSessionDatabaseClient = null;
+    this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.tracer = tracer;
   }
 
