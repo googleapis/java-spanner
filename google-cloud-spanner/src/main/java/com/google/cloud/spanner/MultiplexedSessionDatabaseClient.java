@@ -284,6 +284,12 @@ class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionDatabas
             multiplexedSessionReference.get().setException(t);
           }
         });
+    // TODO: Remove, this is just for testing.
+    try {
+      this.multiplexedSessionReference.get().get();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private boolean isReady() {
