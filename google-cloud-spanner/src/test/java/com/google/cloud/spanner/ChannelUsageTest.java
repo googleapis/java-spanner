@@ -18,8 +18,6 @@ package com.google.cloud.spanner;
 
 import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
@@ -226,7 +224,7 @@ public class ChannelUsageTest {
     try (Spanner spanner = createSpannerOptions().getService()) {
       assumeFalse(
           "GRPC-GCP is currently not supported with multiplexed sessions",
-          isMultiplexedSessionsEnabled(spanner));
+          isMultiplexedSessionsEnabled(spanner) && enableGcpPool);
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
         while (resultSet.next()) {}
@@ -240,7 +238,7 @@ public class ChannelUsageTest {
     try (Spanner spanner = createSpannerOptions().getService()) {
       assumeFalse(
           "GRPC-GCP is currently not supported with multiplexed sessions",
-          isMultiplexedSessionsEnabled(spanner));
+          isMultiplexedSessionsEnabled(spanner) && enableGcpPool);
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ListeningExecutorService executor =
           MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * 2));
@@ -264,20 +262,6 @@ public class ChannelUsageTest {
                 }));
       }
       assertEquals(numChannels * 2, Futures.allAsList(futures).get().size());
-    }
-    assertEquals(numChannels, executeSqlLocalIps.size());
-  }
-
-  @Test
-  public void testSingleUse() throws InterruptedException, ExecutionException {
-    try (Spanner spanner = createSpannerOptions().getService()) {
-      DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
-      for (int i = 0; i < numChannels; i++) {
-        try (ResultSet resultSet = client.singleUse().executeQuery(SELECT1)) {
-          assertTrue(resultSet.next());
-          assertFalse(resultSet.next());
-        }
-      }
     }
     assertEquals(numChannels, executeSqlLocalIps.size());
   }

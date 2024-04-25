@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -41,8 +42,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -61,6 +62,13 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
   private SessionPoolOptions options;
   private FakeClock clock = new FakeClock();
   private List<SessionReference> multiplexedSessionsRemoved = new ArrayList<>();
+
+  @BeforeClass
+  public static void skip() {
+    assumeTrue(
+        "Ignore for now until the maintainer has been moved to the MultiplexedSessionDatabaseClient",
+        false);
+  }
 
   @Before
   public void setUp() {
@@ -81,7 +89,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
             .setPoolMaintainerClock(clock)
             .build();
     when(spannerOptions.getSessionPoolOptions()).thenReturn(options);
-    Assume.assumeTrue(options.getUseMultiplexedSession());
+    assumeTrue(options.getUseMultiplexedSession());
     multiplexedSessionsRemoved.clear();
   }
 

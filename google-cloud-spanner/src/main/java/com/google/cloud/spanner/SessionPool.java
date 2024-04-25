@@ -144,7 +144,7 @@ class SessionPool {
             "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
       }
 
-      if (options.getUseMultiplexedSession()
+      if (useMultiplexedSessions()
           && !waitOnMultiplexedSessionsLatch.await(timeoutNanos, TimeUnit.NANOSECONDS)) {
         final long timeoutMillis = options.getWaitForMinSessions().toMillis();
         throw SpannerExceptionFactory.newSpannerException(
@@ -2646,7 +2646,7 @@ class SessionPool {
 
     void maintainMultiplexedSession(Instant currentTime) {
       try {
-        if (options.getUseMultiplexedSession()) {
+        if (useMultiplexedSessions()) {
           if (currentMultiplexedSessionReference.get().isDone()) {
             SessionReference sessionReference = getMultiplexedSessionInstance();
             if (sessionReference != null
@@ -2945,6 +2945,11 @@ class SessionPool {
     this.waitOnMultiplexedSessionsLatch = new CountDownLatch(1);
   }
 
+  // TODO: Remove once all code for multiplexed sessions have been removed from the pool.
+  private boolean useMultiplexedSessions() {
+    return false;
+  }
+
   /**
    * @return the {@link Dialect} of the underlying database. This method will block until the
    *     dialect is available. It will potentially execute one or two RPCs to get the dialect if
@@ -3069,7 +3074,7 @@ class SessionPool {
       if (options.getMinSessions() > 0) {
         createSessions(options.getMinSessions(), true);
       }
-      if (options.getUseMultiplexedSession()) {
+      if (useMultiplexedSessions()) {
         maybeCreateMultiplexedSession(multiplexedSessionInitializationConsumer);
       }
     }
@@ -3135,10 +3140,10 @@ class SessionPool {
 
   /**
    * Returns a multiplexed session. The method fallbacks to a regular session if {@link
-   * SessionPoolOptions#useMultiplexedSession} is not set.
+   * SessionPoolOptions#getUseMultiplexedSession} is not set.
    */
   SessionFutureWrapper getMultiplexedSessionWithFallback() throws SpannerException {
-    if (options.getUseMultiplexedSession()) {
+    if (useMultiplexedSessions()) {
       ISpan span = tracer.getCurrentSpan();
       try {
         return getWrappedMultiplexedSessionFuture(span);

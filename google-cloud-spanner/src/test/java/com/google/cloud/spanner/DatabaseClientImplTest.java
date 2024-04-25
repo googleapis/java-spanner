@@ -79,6 +79,7 @@ import com.google.spanner.v1.BatchWriteRequest;
 import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
@@ -3030,15 +3031,26 @@ public class DatabaseClientImplTest {
             (DatabaseClientImpl)
                 spanner.getDatabaseClient(
                     DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-        // The create session failure should propagate to the client and not retry.
+        // The CreateSession / BatchCreateSessions failure should propagate to the client and not
+        // retry.
         try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
           assertThrows(ResourceNotFoundException.class, rs::next);
           // The server should only receive one BatchCreateSessions request.
           assertThat(mockSpanner.getRequests()).hasSize(1);
         }
-        assertThrows(ResourceNotFoundException.class, dbClient::readWriteTransaction);
+        assertThrows(
+            ResourceNotFoundException.class,
+            () ->
+                dbClient
+                    .readWriteTransaction()
+                    .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
         // No additional requests should have been sent by the client.
-        assertThat(mockSpanner.getRequests()).hasSize(1);
+        // Note that in case of the use of multiplexed sessions, then we have 2 requests:
+        // 1. BatchCreateSessions for the session pool.
+        // 2. CreateSession for the multiplexed session.
+        assertThat(mockSpanner.getRequests())
+            .hasSize(
+                spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession() ? 2 : 1);
       }
       mockSpanner.reset();
       mockSpanner.removeAllExecutionTimes();
@@ -3146,8 +3158,16 @@ public class DatabaseClientImplTest {
         // receive any new requests.
         mockSpanner.reset();
         // All subsequent calls should fail with a DatabaseNotFoundException.
-        assertThrows(
-            ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
+
+        if (!spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+          // We only verify this for read-only transactions if we are not using multiplexed
+          // sessions. For multiplexed sessions, we don't need any special handling, as deleting the
+          // database will also invalidate the multiplexed session, and trying to continue to use it
+          // will continue to return an error.
+          assertThrows(
+              ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
+        }
+
         assertThrows(
             ResourceNotFoundException.class,
             () -> dbClient.readWriteTransaction().run(transaction -> null));
@@ -3204,10 +3224,17 @@ public class DatabaseClientImplTest {
             assertThrows(
                 ResourceNotFoundException.class,
                 () -> dbClient.singleUse().executeQuery(SELECT1).next());
-            // The server should only receive one BatchCreateSessions request for each run as we
-            // have set MinSessions=0.
-            assertThat(mockSpanner.getRequests()).hasSize(run + 1);
-            assertThat(dbClient.pool.isValid()).isFalse();
+            if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+              // We should only receive 1 CreateSession request. The query should never be executed,
+              // as the session creation fails before it gets to executing a query.
+              assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+              assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+            } else {
+              // The server should only receive one BatchCreateSessions request for each run as we
+              // have set MinSessions=0.
+              assertThat(mockSpanner.getRequests()).hasSize(run + 1);
+              assertThat(dbClient.pool.isValid()).isFalse();
+            }
           }
         }
       }

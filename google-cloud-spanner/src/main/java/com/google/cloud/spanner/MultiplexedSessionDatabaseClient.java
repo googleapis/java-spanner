@@ -16,15 +16,8 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Options.QueryOption;
-import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
-import com.google.common.base.Suppliers;
-import com.google.common.util.concurrent.MoreExecutors;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
@@ -34,214 +27,15 @@ import javax.annotation.Nullable;
  * transactions.
  */
 class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionDatabaseClient {
-  /**
-   * Represents a {@link ReadContext} using a multiplexed session that is not yet ready. The
-   * execution will be delayed until the multiplexed session has been created and is ready.
-   */
-  static class DelayedReadOnlyTransaction extends DelayedReadContext<ReadOnlyTransaction>
-      implements ReadOnlyTransaction {
-    DelayedReadOnlyTransaction(ApiFuture<ReadOnlyTransaction> readContextFuture) {
-      super(readContextFuture);
-    }
-
-    @Override
-    public Timestamp getReadTimestamp() {
-      return getReadContext().getReadTimestamp();
-    }
-  }
-
-  /**
-   * Represents a {@link ReadContext} using a multiplexed session that is not yet ready. The
-   * execution will be delayed until the multiplexed session has been created and is ready.
-   */
-  static class DelayedReadContext<T extends ReadContext> implements ReadContext {
-    private final ApiFuture<T> readContextFuture;
-
-    DelayedReadContext(ApiFuture<T> readContextFuture) {
-      this.readContextFuture = readContextFuture;
-    }
-
-    T getReadContext() {
-      try {
-        return this.readContextFuture.get();
-      } catch (ExecutionException executionException) {
-        throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
-      } catch (InterruptedException interruptedException) {
-        throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
-      }
-    }
-
-    @Override
-    public ResultSet read(
-        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new ForwardingResultSet(
-          Suppliers.memoize(() -> getReadContext().read(table, keys, columns, options)));
-    }
-
-    @Override
-    public AsyncResultSet readAsync(
-        String table, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new ForwardingAsyncResultSet(
-          Suppliers.memoize(() -> getReadContext().readAsync(table, keys, columns, options)));
-    }
-
-    @Override
-    public ResultSet readUsingIndex(
-        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new ForwardingResultSet(
-          Suppliers.memoize(
-              () -> getReadContext().readUsingIndex(table, index, keys, columns, options)));
-    }
-
-    @Override
-    public AsyncResultSet readUsingIndexAsync(
-        String table, String index, KeySet keys, Iterable<String> columns, ReadOption... options) {
-      return new ForwardingAsyncResultSet(
-          Suppliers.memoize(
-              () -> getReadContext().readUsingIndexAsync(table, index, keys, columns, options)));
-    }
-
-    @Nullable
-    @Override
-    public Struct readRow(String table, Key key, Iterable<String> columns) {
-      // This is allowed to be blocking.
-      return getReadContext().readRow(table, key, columns);
-    }
-
-    @Override
-    public ApiFuture<Struct> readRowAsync(String table, Key key, Iterable<String> columns) {
-      return ApiFutures.transformAsync(
-          this.readContextFuture,
-          readContext -> readContext.readRowAsync(table, key, columns),
-          MoreExecutors.directExecutor());
-    }
-
-    @Nullable
-    @Override
-    public Struct readRowUsingIndex(String table, String index, Key key, Iterable<String> columns) {
-      // This is allowed to be blocking.
-      return getReadContext().readRowUsingIndex(table, index, key, columns);
-    }
-
-    @Override
-    public ApiFuture<Struct> readRowUsingIndexAsync(
-        String table, String index, Key key, Iterable<String> columns) {
-      return ApiFutures.transformAsync(
-          this.readContextFuture,
-          readContext -> readContext.readRowUsingIndexAsync(table, index, key, columns),
-          MoreExecutors.directExecutor());
-    }
-
-    @Override
-    public ResultSet executeQuery(Statement statement, QueryOption... options) {
-      return new ForwardingResultSet(
-          Suppliers.memoize(() -> getReadContext().executeQuery(statement, options)));
-    }
-
-    @Override
-    public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... options) {
-      return new ForwardingAsyncResultSet(
-          Suppliers.memoize(() -> getReadContext().executeQueryAsync(statement, options)));
-    }
-
-    @Override
-    public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryMode) {
-      return new ForwardingResultSet(
-          Suppliers.memoize(() -> getReadContext().analyzeQuery(statement, queryMode)));
-    }
-
-    @Override
-    public void close() {}
-  }
-
-  /**
-   * Represents a delayed execution of a transaction on a multiplexed session. The execution is
-   * delayed because the multiplexed session is not yet ready.
-   */
-  static class DelayedMultiplexedSessionTransaction
-      extends AbstractMultiplexedSessionDatabaseClient {
-    private final SpannerImpl spanner;
-
-    private final ISpan span;
-
-    private final ApiFuture<SessionReference> sessionFuture;
-
-    DelayedMultiplexedSessionTransaction(
-        SpannerImpl spanner, ISpan span, ApiFuture<SessionReference> sessionFuture) {
-      this.spanner = spanner;
-      this.span = span;
-      this.sessionFuture = sessionFuture;
-    }
-
-    @Override
-    public ReadContext singleUse() {
-      return new DelayedReadContext<>(
-          ApiFutures.transform(
-              this.sessionFuture,
-              sessionReference ->
-                  new MultiplexedSessionTransaction(spanner, span, sessionReference).singleUse(),
-              MoreExecutors.directExecutor()));
-    }
-
-    @Override
-    public ReadContext singleUse(TimestampBound bound) {
-      return new DelayedReadContext<>(
-          ApiFutures.transform(
-              this.sessionFuture,
-              sessionReference ->
-                  new MultiplexedSessionTransaction(spanner, span, sessionReference)
-                      .singleUse(bound),
-              MoreExecutors.directExecutor()));
-    }
-
-    @Override
-    public ReadOnlyTransaction singleUseReadOnlyTransaction() {
-      return new DelayedReadOnlyTransaction(
-          ApiFutures.transform(
-              this.sessionFuture,
-              sessionReference ->
-                  new MultiplexedSessionTransaction(spanner, span, sessionReference)
-                      .singleUseReadOnlyTransaction(),
-              MoreExecutors.directExecutor()));
-    }
-
-    @Override
-    public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
-      return new DelayedReadOnlyTransaction(
-          ApiFutures.transform(
-              this.sessionFuture,
-              sessionReference ->
-                  new MultiplexedSessionTransaction(spanner, span, sessionReference)
-                      .singleUseReadOnlyTransaction(bound),
-              MoreExecutors.directExecutor()));
-    }
-
-    @Override
-    public ReadOnlyTransaction readOnlyTransaction() {
-      return new DelayedReadOnlyTransaction(
-          ApiFutures.transform(
-              this.sessionFuture,
-              sessionReference ->
-                  new MultiplexedSessionTransaction(spanner, span, sessionReference)
-                      .readOnlyTransaction(),
-              MoreExecutors.directExecutor()));
-    }
-
-    @Override
-    public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
-      return new DelayedReadOnlyTransaction(
-          ApiFutures.transform(
-              this.sessionFuture,
-              sessionReference ->
-                  new MultiplexedSessionTransaction(spanner, span, sessionReference)
-                      .readOnlyTransaction(bound),
-              MoreExecutors.directExecutor()));
-    }
-  }
 
   /**
    * Represents a single transaction on a multiplexed session. This can be both a single-use or
-   * multi-use transaction, and both read/write or read-only transaction.
+   * multi-use transaction, and both read/write or read-only transaction. This can be compared to a
+   * 'checked out session' of a pool, except as multiplexed sessions support multiple parallel
+   * transactions, we do not need to actually check out and exclusively reserve a single session for
+   * a transaction. This class therefore only contains context information about the current
+   * transaction, such as the current span, and a reference to the multiplexed session that is used
+   * for the transaction.
    */
   static class MultiplexedSessionTransaction extends SessionImpl {
     MultiplexedSessionTransaction(
@@ -252,8 +46,7 @@ class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionDatabas
 
     @Override
     <T extends SessionTransaction> T setActive(@Nullable T ctx) {
-      // TODO: Enable check again
-      // throwIfTransactionsPending();
+      throwIfTransactionsPending();
       return ctx;
     }
 
@@ -285,12 +78,6 @@ class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionDatabas
             multiplexedSessionReference.get().setException(t);
           }
         });
-    // TODO: Remove, this is just for testing.
-    try {
-      this.multiplexedSessionReference.get().get();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private boolean isReady() {

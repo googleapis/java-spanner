@@ -72,7 +72,6 @@ public class SessionPoolOptions {
   private final Clock poolMaintainerClock;
 
   private final boolean useMultiplexedSession;
-  private final boolean useMultiplexedDatabaseClient;
   private final Duration multiplexedSessionMaintenanceDuration;
 
   private SessionPoolOptions(Builder builder) {
@@ -100,7 +99,6 @@ public class SessionPoolOptions {
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
     this.useMultiplexedSession = builder.useMultiplexedSession;
-    this.useMultiplexedDatabaseClient = builder.useMultiplexedDatabaseClient;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -290,10 +288,6 @@ public class SessionPoolOptions {
   @InternalApi
   public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
-  }
-
-  public boolean isUseMultiplexedDatabaseClient() {
-    return useMultiplexedDatabaseClient;
   }
 
   Duration getMultiplexedSessionMaintenanceDuration() {
@@ -497,7 +491,6 @@ public class SessionPoolOptions {
     private long randomizePositionQPSThreshold = 0L;
 
     private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
-    private boolean useMultiplexedDatabaseClient;
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
@@ -523,8 +516,10 @@ public class SessionPoolOptions {
     @InternalApi
     @BetaApi
     private static boolean getUseMultiplexedSessionFromEnvVariable() {
-      return Boolean.parseBoolean(
-          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
+      // TODO: Remove and re-enable env var
+      return true;
+      //      return Boolean.parseBoolean(
+      //          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
     }
 
     public Builder() {}
@@ -727,11 +722,6 @@ public class SessionPoolOptions {
      */
     Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
       this.useMultiplexedSession = useMultiplexedSession;
-      return this;
-    }
-
-    Builder setUseMultiplexedDatabaseClient(boolean useMultiplexedDatabaseClient) {
-      this.useMultiplexedDatabaseClient = useMultiplexedDatabaseClient;
       return this;
     }
 
