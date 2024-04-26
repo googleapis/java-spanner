@@ -72,6 +72,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         // This could in theory set this field more than once, but we don't want to bother with
         // synchronizing, as it does not really matter exactly which error is set.
         this.client.resourceNotFoundException.set((ResourceNotFoundException) spannerException);
+        System.out.println("Registered resource not found exception: " + spannerException);
       }
     }
 

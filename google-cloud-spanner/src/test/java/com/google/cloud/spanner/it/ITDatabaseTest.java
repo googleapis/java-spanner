@@ -36,7 +36,6 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SessionNotFoundException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
@@ -91,7 +90,7 @@ public class ITDatabaseTest {
             .setMaxIntervalMillis(5000)
             .build();
     DatabaseNotFoundException notFoundException = null;
-    long millis = 0L;
+    long millis;
     while ((millis = backoff.nextBackOffMillis()) != ExponentialBackOff.STOP) {
       Thread.sleep(millis);
       // Queries to this database should eventually return DatabaseNotFoundExceptions.
@@ -116,13 +115,28 @@ public class ITDatabaseTest {
                 Collections.emptyList());
     Database newDb = op.get();
 
-    // Queries using the same DatabaseClient should still return DatabaseNotFoundExceptions.
-    try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
-      rs.next();
-      fail("Missing expected DatabaseNotFoundException");
-    } catch (DatabaseNotFoundException | SessionNotFoundException e) {
-      // This is what we expect.
+    // Now try to query using the old session and verify that we also now (eventually) get a
+    // 'Database not found' error.
+    backoff =
+        new ExponentialBackOff.Builder()
+            .setInitialIntervalMillis(1000)
+            .setMaxElapsedTimeMillis(65000)
+            .setMaxIntervalMillis(5000)
+            .build();
+
+    notFoundException = null;
+    while ((millis = backoff.nextBackOffMillis()) != ExponentialBackOff.STOP) {
+      Thread.sleep(millis);
+      // Queries to this database should eventually return DatabaseNotFoundExceptions.
+      try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
+        rs.next();
+      } catch (DatabaseNotFoundException e) {
+        // This is what we expect.
+        notFoundException = e;
+        break;
+      }
     }
+    assertThat(notFoundException).isNotNull();
 
     // Now get a new DatabaseClient for the database. This should now result in a valid
     // DatabaseClient.
