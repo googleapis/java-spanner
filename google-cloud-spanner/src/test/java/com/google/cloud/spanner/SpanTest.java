@@ -281,6 +281,21 @@ public class SpanTest {
         // Just consume the result set.
       }
     }
+    verifySingleUseSpans();
+  }
+
+  @Test
+  public void singleUseWithoutTryWithResources() {
+    // NOTE: This is bad practice. Always use try-with-resources. This test is only here to verify
+    // that our safeguards work.
+    ResultSet rs = client.singleUse().executeQuery(SELECT1);
+    while (rs.next()) {
+      // Just consume the result set.
+    }
+    verifySingleUseSpans();
+  }
+
+  private void verifySingleUseSpans() {
 
     // OpenTelemetry spans should be 0 as OpenCensus is default enabled.
     assertEquals(openTelemetrySpanExporter.getFinishedSpanItems().size(), 0);
@@ -302,13 +317,84 @@ public class SpanTest {
             "Using Session",
             "Starting/Resuming stream");
     List<String> expectedAnnotationsForMultiplexedSession =
+        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool()
+            ? ImmutableList.of(
+                "Requesting 2 sessions",
+                "Request for 2 sessions returned 2 sessions",
+                "Request for 1 multiplexed session returned 1 session",
+                "Creating 2 sessions",
+                "Using Session",
+                "Starting/Resuming stream")
+            : ImmutableList.of(
+                "Requesting 2 sessions",
+                "Request for 2 sessions returned 2 sessions",
+                "Request for 1 multiplexed session returned 1 session",
+                "Creating 2 sessions",
+                "Starting/Resuming stream");
+    if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
+  }
+
+  @Test
+  public void singleUseWithError() {
+    Statement invalidStatement = Statement.of("select * from foo");
+    mockSpanner.putStatementResults(
+        StatementResult.exception(invalidStatement, Status.INVALID_ARGUMENT.asRuntimeException()));
+
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            () -> client.singleUse().executeQuery(INVALID_UPDATE_STATEMENT).next());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, spannerException.getErrorCode());
+
+    // OpenTelemetry spans should be 0 as OpenCensus is default enabled.
+    assertEquals(openTelemetrySpanExporter.getFinishedSpanItems().size(), 0);
+
+    // OpenCensus spans and events verification
+    Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
+    assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
+
+    List<String> expectedAnnotations =
         ImmutableList.of(
             "Requesting 2 sessions",
             "Request for 2 sessions returned 2 sessions",
-            "Request for 1 multiplexed session returned 1 session",
             "Creating 2 sessions",
+            "Acquiring session",
+            "Acquired session",
             "Using Session",
-            "Starting/Resuming stream");
+            "Starting/Resuming stream",
+            "Stream broken. Not safe to retry");
+    List<String> expectedAnnotationsForMultiplexedSession =
+        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool()
+            ? ImmutableList.of(
+                "Requesting 2 sessions",
+                "Request for 2 sessions returned 2 sessions",
+                "Request for 1 multiplexed session returned 1 session",
+                "Creating 2 sessions",
+                "Using Session",
+                "Starting/Resuming stream",
+                "Stream broken. Not safe to retry")
+            : ImmutableList.of(
+                "Requesting 2 sessions",
+                "Request for 2 sessions returned 2 sessions",
+                "Request for 1 multiplexed session returned 1 session",
+                "Creating 2 sessions",
+                "Starting/Resuming stream",
+                "Stream broken. Not safe to retry");
     if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
       verifyAnnotations(
           failOnOverkillTraceComponent.getAnnotations().stream()
@@ -352,15 +438,24 @@ public class SpanTest {
             "Creating Transaction",
             "Transaction Creation Done");
     List<String> expectedAnnotationsForMultiplexedSession =
-        ImmutableList.of(
-            "Requesting 2 sessions",
-            "Request for 2 sessions returned 2 sessions",
-            "Request for 1 multiplexed session returned 1 session",
-            "Creating 2 sessions",
-            "Using Session",
-            "Starting/Resuming stream",
-            "Creating Transaction",
-            "Transaction Creation Done");
+        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool()
+            ? ImmutableList.of(
+                "Requesting 2 sessions",
+                "Request for 2 sessions returned 2 sessions",
+                "Request for 1 multiplexed session returned 1 session",
+                "Creating 2 sessions",
+                "Using Session",
+                "Starting/Resuming stream",
+                "Creating Transaction",
+                "Transaction Creation Done")
+            : ImmutableList.of(
+                "Requesting 2 sessions",
+                "Request for 2 sessions returned 2 sessions",
+                "Request for 1 multiplexed session returned 1 session",
+                "Creating 2 sessions",
+                "Starting/Resuming stream",
+                "Creating Transaction",
+                "Transaction Creation Done");
     if (isMultiplexedSessionsEnabled()) {
       verifyAnnotations(
           failOnOverkillTraceComponent.getAnnotations().stream()

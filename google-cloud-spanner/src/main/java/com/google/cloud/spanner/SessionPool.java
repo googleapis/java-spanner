@@ -1835,7 +1835,7 @@ class SessionPool {
 
   class PooledSession implements CachedSession {
 
-    @VisibleForTesting SessionImpl delegate;
+    @VisibleForTesting final SessionImpl delegate;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
 
@@ -1872,7 +1872,7 @@ class SessionPool {
     private SessionState state;
 
     private PooledSession(SessionImpl delegate) {
-      this.delegate = delegate;
+      this.delegate = Preconditions.checkNotNull(delegate);
       this.state = SessionState.AVAILABLE;
 
       // initialise the lastUseTime field for each session.

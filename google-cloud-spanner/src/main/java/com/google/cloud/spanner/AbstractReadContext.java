@@ -801,7 +801,9 @@ abstract class AbstractReadContext
   }
 
   @Override
-  public void onDone(boolean withBeginTransaction) {}
+  public void onDone(boolean withBeginTransaction) {
+    this.session.onReadDone();
+  }
 
   private ResultSet readInternal(
       String table,

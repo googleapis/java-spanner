@@ -50,7 +50,8 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference).singleUse(),
+                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
+                    .singleUse(),
             MoreExecutors.directExecutor()));
   }
 
@@ -60,7 +61,8 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference).singleUse(bound),
+                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
+                    .singleUse(bound),
             MoreExecutors.directExecutor()));
   }
 
@@ -70,7 +72,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference)
+                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
                     .singleUseReadOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -81,7 +83,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference)
+                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
                     .singleUseReadOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }
@@ -92,7 +94,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference)
+                new MultiplexedSessionTransaction(spanner, span, sessionReference, false)
                     .readOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -103,7 +105,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference)
+                new MultiplexedSessionTransaction(spanner, span, sessionReference, false)
                     .readOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }

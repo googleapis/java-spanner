@@ -247,7 +247,7 @@ public class ChannelUsageTest {
         futures.add(
             executor.submit(
                 () -> {
-                  try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
+                  try (ReadOnlyTransaction transaction = client.singleUseReadOnlyTransaction()) {
                     try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
                       while (resultSet.next()) {}
                       latch.countDown();

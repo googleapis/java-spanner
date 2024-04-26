@@ -1104,4 +1104,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   public void invalidate() {
     isValid = false;
   }
+
+  @Override
+  public void close() {}
 }

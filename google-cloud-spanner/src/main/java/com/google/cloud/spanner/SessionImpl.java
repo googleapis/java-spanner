@@ -92,6 +92,9 @@ class SessionImpl implements Session {
 
     /** Registers the current span on the transaction. */
     void setSpan(ISpan span);
+
+    /** Closes the transaction. */
+    void close();
   }
 
   private final SpannerImpl spanner;
@@ -440,6 +443,10 @@ class SessionImpl implements Session {
         .build();
   }
 
+  SessionTransaction getActiveTransaction() {
+    return this.activeTransaction;
+  }
+
   <T extends SessionTransaction> T setActive(@Nullable T ctx) {
     throwIfTransactionsPending();
     // multiplexed sessions support running concurrent transactions
@@ -454,6 +461,8 @@ class SessionImpl implements Session {
     }
     return ctx;
   }
+
+  void onReadDone() {}
 
   TraceWrapper getTracer() {
     return tracer;

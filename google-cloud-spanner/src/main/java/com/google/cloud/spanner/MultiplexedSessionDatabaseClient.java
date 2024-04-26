@@ -29,7 +29,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 
 /**
  * {@link DatabaseClient} implementation that uses a single multiplexed session to execute
@@ -46,22 +45,30 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    * transaction, such as the current span, and a reference to the multiplexed session that is used
    * for the transaction.
    */
-  static final class MultiplexedSessionTransaction extends SessionImpl {
+  static class MultiplexedSessionTransaction extends SessionImpl {
+    private final boolean singleUse;
+
     MultiplexedSessionTransaction(
-        SpannerImpl spanner, ISpan span, SessionReference sessionReference) {
+        SpannerImpl spanner, ISpan span, SessionReference sessionReference, boolean singleUse) {
       super(spanner, sessionReference);
+      this.singleUse = singleUse;
       setCurrentSpan(span);
     }
 
     @Override
-    <T extends SessionTransaction> T setActive(@Nullable T ctx) {
-      throwIfTransactionsPending();
-      return ctx;
+    void onReadDone() {
+      // This method is called whenever a ResultSet that was returned by this transaction is closed.
+      // Close the active transaction if this is a single-use transaction. This ensures that the
+      // active span is ended.
+      if (this.singleUse && getActiveTransaction() != null) {
+        getActiveTransaction().close();
+        setActive(null);
+      }
     }
 
     @Override
     public void close() {
-      // no-op
+      // no-op, we don't want to delete the multiplexed session.
     }
   }
 
@@ -125,14 +132,15 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     return multiplexedSessionReference.get().isDone();
   }
 
-  private DatabaseClient createMultiplexedSessionTransaction() {
+  private DatabaseClient createMultiplexedSessionTransaction(boolean singleUse) {
     Preconditions.checkState(!isClosed, "This client has been closed");
     return isMultiplexedSessionCreated()
-        ? createDirectMultiplexedSessionTransaction()
+        ? createDirectMultiplexedSessionTransaction(singleUse)
         : createDelayedMultiplexSessionTransaction();
   }
 
-  private MultiplexedSessionTransaction createDirectMultiplexedSessionTransaction() {
+  private MultiplexedSessionTransaction createDirectMultiplexedSessionTransaction(
+      boolean singleUse) {
     try {
       return new MultiplexedSessionTransaction(
           sessionClient.getSpanner(),
@@ -141,7 +149,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
           // also automatically propagate any error that happened during the creation of the
           // session, such as for example a DatabaseNotFound exception. We therefore do not need
           // any special handling of such errors.
-          multiplexedSessionReference.get().get());
+          multiplexedSessionReference.get().get(),
+          singleUse);
     } catch (ExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     } catch (InterruptedException interruptedException) {
@@ -156,32 +165,32 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   @Override
   public ReadContext singleUse() {
-    return createMultiplexedSessionTransaction().singleUse();
+    return createMultiplexedSessionTransaction(true).singleUse();
   }
 
   @Override
   public ReadContext singleUse(TimestampBound bound) {
-    return createMultiplexedSessionTransaction().singleUse(bound);
+    return createMultiplexedSessionTransaction(true).singleUse(bound);
   }
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction() {
-    return createMultiplexedSessionTransaction().singleUseReadOnlyTransaction();
+    return createMultiplexedSessionTransaction(true).singleUseReadOnlyTransaction();
   }
 
   @Override
   public ReadOnlyTransaction singleUseReadOnlyTransaction(TimestampBound bound) {
-    return createMultiplexedSessionTransaction().singleUseReadOnlyTransaction(bound);
+    return createMultiplexedSessionTransaction(true).singleUseReadOnlyTransaction(bound);
   }
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction() {
-    return createMultiplexedSessionTransaction().readOnlyTransaction();
+    return createMultiplexedSessionTransaction(false).readOnlyTransaction();
   }
 
   @Override
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
-    return createDelayedMultiplexSessionTransaction().readOnlyTransaction(bound);
+    return createMultiplexedSessionTransaction(false).readOnlyTransaction(bound);
   }
 
   /**
