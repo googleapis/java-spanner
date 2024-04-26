@@ -48,7 +48,6 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -230,12 +229,12 @@ public class ChannelUsageTest {
   }
 
   @Test
-  public void testUsesAllChannels() throws InterruptedException, ExecutionException {
+  public void testUsesAllChannels() throws InterruptedException {
     final int multiplier = 2;
     try (Spanner spanner = createSpannerOptions().getService()) {
       assumeFalse(
           "GRPC-GCP is currently not supported with multiplexed sessions",
-          isMultiplexedSessionsEnabled(spanner) && enableGcpPool);
+          isMultiplexedSessionsEnabled(spanner));
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ListeningExecutorService executor =
           MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * multiplier));
