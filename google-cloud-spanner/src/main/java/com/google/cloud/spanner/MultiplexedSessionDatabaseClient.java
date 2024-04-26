@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -111,6 +112,28 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
             initialSessionReferenceFuture.setException(t);
           }
         });
+    maybeWaitForSessionCreation(
+        sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
+        initialSessionReferenceFuture);
+  }
+
+  private static void maybeWaitForSessionCreation(
+      SessionPoolOptions sessionPoolOptions, ApiFuture<SessionReference> future) {
+    org.threeten.bp.Duration waitDuration = sessionPoolOptions.getWaitForMinSessions();
+    if (waitDuration != null && !waitDuration.isZero()) {
+      long timeoutMillis = waitDuration.toMillis();
+      try {
+        future.get(timeoutMillis, TimeUnit.MILLISECONDS);
+      } catch (ExecutionException executionException) {
+        throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+      } catch (InterruptedException interruptedException) {
+        throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+      } catch (TimeoutException timeoutException) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.DEADLINE_EXCEEDED,
+            "Timed out after waiting " + timeoutMillis + "ms for multiplexed session creation");
+      }
+    }
   }
 
   void close() {

@@ -18,12 +18,11 @@ package com.google.cloud.spanner;
 
 import static io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ListValue;
@@ -43,16 +42,14 @@ import io.grpc.ServerInterceptor;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
@@ -234,33 +231,30 @@ public class ChannelUsageTest {
 
   @Test
   public void testUsesAllChannels() throws InterruptedException, ExecutionException {
+    final int multiplier = 2;
     try (Spanner spanner = createSpannerOptions().getService()) {
       assumeFalse(
           "GRPC-GCP is currently not supported with multiplexed sessions",
           isMultiplexedSessionsEnabled(spanner) && enableGcpPool);
       DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
       ListeningExecutorService executor =
-          MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * 2));
-      CountDownLatch latch = new CountDownLatch(numChannels * 2);
-      List<ListenableFuture<Boolean>> futures = new ArrayList<>(numChannels * 2);
-      for (int run = 0; run < numChannels * 2; run++) {
-        futures.add(
-            executor.submit(
-                () -> {
-                  try (ReadOnlyTransaction transaction = client.singleUseReadOnlyTransaction()) {
-                    try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
-                      while (resultSet.next()) {}
-                      latch.countDown();
-                      try {
-                        return latch.await(10L, TimeUnit.SECONDS);
-                      } catch (InterruptedException e) {
-                        throw SpannerExceptionFactory.asSpannerException(e);
-                      }
-                    }
-                  }
-                }));
+          MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numChannels * multiplier));
+      CountDownLatch latch = new CountDownLatch(numChannels * multiplier);
+      for (int run = 0; run < numChannels * multiplier; run++) {
+        executor.submit(
+            () -> {
+              try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
+                try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+                  while (resultSet.next()) {}
+                }
+                latch.countDown();
+                latch.await();
+              }
+              return true;
+            });
       }
-      assertEquals(numChannels * 2, Futures.allAsList(futures).get().size());
+      executor.shutdown();
+      assertTrue(executor.awaitTermination(Duration.ofSeconds(10L)));
     }
     assertEquals(numChannels, executeSqlLocalIps.size());
   }

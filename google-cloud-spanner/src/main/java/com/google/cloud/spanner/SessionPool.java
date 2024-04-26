@@ -3758,6 +3758,10 @@ class SessionPool {
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
       synchronized (lock) {
         numSessionsBeingCreated -= createFailureForSessionCount;
+        if (numSessionsBeingCreated == 0) {
+          // Don't continue to block if no more sessions are being created.
+          waitOnMinSessionsLatch.countDown();
+        }
         if (isClosed()) {
           decrementPendingClosures(createFailureForSessionCount);
         }
