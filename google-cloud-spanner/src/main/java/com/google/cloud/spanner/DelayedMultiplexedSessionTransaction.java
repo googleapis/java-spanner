@@ -31,15 +31,17 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDatabaseClient {
 
-  private final SpannerImpl spanner;
+  private final MultiplexedSessionDatabaseClient client;
 
   private final ISpan span;
 
   private final ApiFuture<SessionReference> sessionFuture;
 
   DelayedMultiplexedSessionTransaction(
-      SpannerImpl spanner, ISpan span, ApiFuture<SessionReference> sessionFuture) {
-    this.spanner = spanner;
+      MultiplexedSessionDatabaseClient client,
+      ISpan span,
+      ApiFuture<SessionReference> sessionFuture) {
+    this.client = client;
     this.span = span;
     this.sessionFuture = sessionFuture;
   }
@@ -50,8 +52,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
-                    .singleUse(),
+                new MultiplexedSessionTransaction(client, span, sessionReference, true).singleUse(),
             MoreExecutors.directExecutor()));
   }
 
@@ -61,7 +62,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
+                new MultiplexedSessionTransaction(client, span, sessionReference, true)
                     .singleUse(bound),
             MoreExecutors.directExecutor()));
   }
@@ -72,7 +73,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
+                new MultiplexedSessionTransaction(client, span, sessionReference, true)
                     .singleUseReadOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -83,7 +84,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference, true)
+                new MultiplexedSessionTransaction(client, span, sessionReference, true)
                     .singleUseReadOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }
@@ -94,7 +95,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference, false)
+                new MultiplexedSessionTransaction(client, span, sessionReference, false)
                     .readOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -105,7 +106,7 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(spanner, span, sessionReference, false)
+                new MultiplexedSessionTransaction(client, span, sessionReference, false)
                     .readOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }

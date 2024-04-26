@@ -462,6 +462,8 @@ class SessionImpl implements Session {
     return ctx;
   }
 
+  void onError(SpannerException spannerException) {}
+
   void onReadDone() {}
 
   TraceWrapper getTracer() {

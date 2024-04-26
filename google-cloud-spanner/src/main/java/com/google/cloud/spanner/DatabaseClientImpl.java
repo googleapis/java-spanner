@@ -283,6 +283,11 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
+  boolean isValid() {
+    return pool.isValid()
+        && (multiplexedSessionDatabaseClient == null || multiplexedSessionDatabaseClient.isValid());
+  }
+
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
     if (this.multiplexedSessionDatabaseClient != null) {
       // This method is non-blocking.

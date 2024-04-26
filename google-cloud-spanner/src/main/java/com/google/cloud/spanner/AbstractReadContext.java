@@ -797,6 +797,7 @@ abstract class AbstractReadContext
 
   @Override
   public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+    this.session.onError(e);
     return e;
   }
 

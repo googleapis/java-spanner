@@ -36,6 +36,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SessionNotFoundException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
@@ -119,7 +120,7 @@ public class ITDatabaseTest {
     try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
       rs.next();
       fail("Missing expected DatabaseNotFoundException");
-    } catch (DatabaseNotFoundException e) {
+    } catch (DatabaseNotFoundException | SessionNotFoundException e) {
       // This is what we expect.
     }
 

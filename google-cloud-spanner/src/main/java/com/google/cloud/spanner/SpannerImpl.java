@@ -247,7 +247,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     synchronized (this) {
       checkClosed();
       String clientId = null;
-      if (dbClients.containsKey(db) && !dbClients.get(db).pool.isValid()) {
+      if (dbClients.containsKey(db) && !dbClients.get(db).isValid()) {
         // Close the invalidated client and remove it.
         dbClients.get(db).closeAsync(new ClosedException());
         clientId = dbClients.get(db).clientId;

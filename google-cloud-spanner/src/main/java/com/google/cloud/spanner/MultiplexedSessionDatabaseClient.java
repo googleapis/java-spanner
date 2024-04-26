@@ -20,6 +20,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.time.Instant;
@@ -47,13 +48,31 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    * for the transaction.
    */
   static class MultiplexedSessionTransaction extends SessionImpl {
+    private final MultiplexedSessionDatabaseClient client;
+
     private final boolean singleUse;
 
     MultiplexedSessionTransaction(
-        SpannerImpl spanner, ISpan span, SessionReference sessionReference, boolean singleUse) {
-      super(spanner, sessionReference);
+        MultiplexedSessionDatabaseClient client,
+        ISpan span,
+        SessionReference sessionReference,
+        boolean singleUse) {
+      super(client.sessionClient.getSpanner(), sessionReference);
+      this.client = client;
       this.singleUse = singleUse;
       setCurrentSpan(span);
+    }
+
+    @Override
+    void onError(SpannerException spannerException) {
+      if (this.client.resourceNotFoundException.get() == null
+          && (spannerException instanceof DatabaseNotFoundException
+              || spannerException instanceof InstanceNotFoundException
+              || spannerException instanceof SessionNotFoundException)) {
+        // This could in theory set this field more than once, but we don't want to bother with
+        // synchronizing, as it does not really matter exactly which error is set.
+        this.client.resourceNotFoundException.set((ResourceNotFoundException) spannerException);
+      }
     }
 
     @Override
@@ -90,6 +109,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       new AtomicReference<>(Instant.now().plus(SESSION_EXPIRATION_TIME));
 
   private final MultiplexedSessionMaintainer maintainer = new MultiplexedSessionMaintainer();
+
+  private final AtomicReference<ResourceNotFoundException> resourceNotFoundException =
+      new AtomicReference<>();
 
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
     this.sessionClient = sessionClient;
@@ -136,6 +158,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
+  boolean isValid() {
+    return resourceNotFoundException.get() == null;
+  }
+
   void close() {
     synchronized (this) {
       if (!this.isClosed) {
@@ -166,7 +192,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       boolean singleUse) {
     try {
       return new MultiplexedSessionTransaction(
-          sessionClient.getSpanner(),
+          this,
           tracer.getCurrentSpan(),
           // Getting the result of the SettableApiFuture that contains the multiplexed session will
           // also automatically propagate any error that happened during the creation of the
@@ -183,7 +209,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private DelayedMultiplexedSessionTransaction createDelayedMultiplexSessionTransaction() {
     return new DelayedMultiplexedSessionTransaction(
-        sessionClient.getSpanner(), tracer.getCurrentSpan(), multiplexedSessionReference.get());
+        this, tracer.getCurrentSpan(), multiplexedSessionReference.get());
   }
 
   @Override
