@@ -3865,7 +3865,9 @@ public class DatabaseClientImplTest {
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
+      mockSpanner.freeze();
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+        mockSpanner.unfreeze();
         SpannerException e = assertThrows(SpannerException.class, rs::next);
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
       }
