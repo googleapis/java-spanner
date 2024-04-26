@@ -243,12 +243,19 @@ public class ChannelUsageTest {
       for (int run = 0; run < numChannels * multiplier; run++) {
         executor.submit(
             () -> {
+              // Use a multi-use read-only transaction to make sure we keep a session in use for
+              // a longer period of time.
               try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
                 try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
                   while (resultSet.next()) {}
                 }
                 latch.countDown();
+                // Wait here until we now that all threads have reached this point and have a
+                // session in use.
                 latch.await();
+                try (ResultSet resultSet = transaction.executeQuery(SELECT1)) {
+                  while (resultSet.next()) {}
+                }
               }
               return true;
             });
