@@ -21,7 +21,9 @@ import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ExecutionException;
@@ -92,10 +94,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
-  // Replace the session after 7 days, even though they can live for 28 days.
-  private static final Duration SESSION_EXPIRATION_TIME = Duration.ofDays(7);
-
   private boolean isClosed;
+
+  private final Duration sessionExpirationDuration;
 
   private final SessionClient sessionClient;
 
@@ -103,18 +104,32 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   private final AtomicReference<ApiFuture<SessionReference>> multiplexedSessionReference;
 
-  // Initialize the expiration date to the current time + 7 days to avoid unnecessary null checks.
-  // The time difference with the actual creation is small enough that it does not matter.
-  private final AtomicReference<Instant> expirationDate =
-      new AtomicReference<>(Instant.now().plus(SESSION_EXPIRATION_TIME));
+  private final AtomicReference<Instant> expirationDate;
 
-  private final MultiplexedSessionMaintainer maintainer = new MultiplexedSessionMaintainer();
+  private final MultiplexedSessionMaintainer maintainer;
 
   private final AtomicReference<ResourceNotFoundException> resourceNotFoundException =
       new AtomicReference<>();
 
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
+    this(sessionClient, Clock.systemUTC());
+  }
+
+  @VisibleForTesting
+  MultiplexedSessionDatabaseClient(SessionClient sessionClient, Clock clock) {
+    this.sessionExpirationDuration =
+        Duration.ofMillis(
+            sessionClient
+                .getSpanner()
+                .getOptions()
+                .getSessionPoolOptions()
+                .getMultiplexedSessionMaintenanceDuration()
+                .toMillis());
+    // Initialize the expiration date to the current time + 7 days to avoid unnecessary null checks.
+    // The time difference with the actual creation is small enough that it does not matter.
+    this.expirationDate = new AtomicReference<>(Instant.now().plus(this.sessionExpirationDuration));
     this.sessionClient = sessionClient;
+    this.maintainer = new MultiplexedSessionMaintainer(clock);
     this.tracer = sessionClient.getSpanner().getTracer();
     final SettableApiFuture<SessionReference> initialSessionReferenceFuture =
         SettableApiFuture.create();
@@ -168,6 +183,22 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         this.isClosed = true;
         this.maintainer.stop();
       }
+    }
+  }
+
+  @VisibleForTesting
+  MultiplexedSessionMaintainer getMaintainer() {
+    return this.maintainer;
+  }
+
+  @VisibleForTesting
+  SessionReference getCurrentSessionReference() {
+    try {
+      return this.multiplexedSessionReference.get().get();
+    } catch (ExecutionException executionException) {
+      throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+    } catch (InterruptedException interruptedException) {
+      throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
     }
   }
 
@@ -248,17 +279,32 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    */
   private static final ScheduledExecutorService MAINTAINER_SERVICE =
       Executors.newScheduledThreadPool(
-          0,
+          /* corePoolSize = */ 0,
           ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory(
               "multiplexed-session-maintainer", /* tryVirtual = */ false));
 
   final class MultiplexedSessionMaintainer {
-    // Schedule the maintainer to run once every ten minutes.
+    private final Clock clock;
+
     private ScheduledFuture<?> scheduledFuture;
 
+    MultiplexedSessionMaintainer(Clock clock) {
+      this.clock = clock;
+    }
+
     void start() {
+      // Schedule the maintainer to run once every ten minutes (by default).
+      long loopFrequencyMillis =
+          MultiplexedSessionDatabaseClient.this
+              .sessionClient
+              .getSpanner()
+              .getOptions()
+              .getSessionPoolOptions()
+              .getMultiplexedSessionMaintenanceLoopFrequency()
+              .toMillis();
       this.scheduledFuture =
-          MAINTAINER_SERVICE.scheduleAtFixedRate(this::maintain, 10, 10, TimeUnit.MINUTES);
+          MAINTAINER_SERVICE.scheduleAtFixedRate(
+              this::maintain, loopFrequencyMillis, loopFrequencyMillis, TimeUnit.MILLISECONDS);
     }
 
     void stop() {
@@ -268,14 +314,17 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
 
     void maintain() {
-      if (Instant.now().isAfter(expirationDate.get())) {
+      if (clock.instant().isAfter(expirationDate.get())) {
         sessionClient.asyncCreateMultiplexedSession(
             new SessionConsumer() {
               @Override
               public void onSessionReady(SessionImpl session) {
                 multiplexedSessionReference.set(
                     ApiFutures.immediateFuture(session.getSessionReference()));
-                expirationDate.set(Instant.now().plus(Duration.ofDays(7)));
+                expirationDate.set(
+                    clock
+                        .instant()
+                        .plus(MultiplexedSessionDatabaseClient.this.sessionExpirationDuration));
               }
 
               @Override

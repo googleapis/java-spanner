@@ -49,6 +49,7 @@ public class SessionPoolOptions {
 
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
+  private final java.time.Duration multiplexedSessionMaintenanceLoopFrequency;
   private final int keepAliveIntervalMinutes;
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
@@ -72,6 +73,7 @@ public class SessionPoolOptions {
   private final Clock poolMaintainerClock;
 
   private final boolean useMultiplexedSession;
+  // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
   private SessionPoolOptions(Builder builder) {
@@ -89,6 +91,8 @@ public class SessionPoolOptions {
     this.trackStackTraceOfSessionCheckout = builder.trackStackTraceOfSessionCheckout;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
     this.loopFrequency = builder.loopFrequency;
+    this.multiplexedSessionMaintenanceLoopFrequency =
+        builder.multiplexedSessionMaintenanceLoopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
@@ -121,6 +125,9 @@ public class SessionPoolOptions {
         && Objects.equals(
             this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
         && Objects.equals(this.loopFrequency, other.loopFrequency)
+        && Objects.equals(
+            this.multiplexedSessionMaintenanceLoopFrequency,
+            other.multiplexedSessionMaintenanceLoopFrequency)
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
@@ -151,6 +158,7 @@ public class SessionPoolOptions {
         this.trackStackTraceOfSessionCheckout,
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
+        this.multiplexedSessionMaintenanceLoopFrequency,
         this.keepAliveIntervalMinutes,
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
@@ -202,6 +210,10 @@ public class SessionPoolOptions {
 
   long getLoopFrequency() {
     return loopFrequency;
+  }
+
+  java.time.Duration getMultiplexedSessionMaintenanceLoopFrequency() {
+    return this.multiplexedSessionMaintenanceLoopFrequency;
   }
 
   public int getKeepAliveIntervalMinutes() {
@@ -476,6 +488,8 @@ public class SessionPoolOptions {
     private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
+    private java.time.Duration multiplexedSessionMaintenanceLoopFrequency =
+        java.time.Duration.ofMinutes(10);
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
@@ -545,6 +559,8 @@ public class SessionPoolOptions {
       this.actionOnSessionLeak = options.actionOnSessionLeak;
       this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
       this.loopFrequency = options.loopFrequency;
+      this.multiplexedSessionMaintenanceLoopFrequency =
+          options.multiplexedSessionMaintenanceLoopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
@@ -606,6 +622,11 @@ public class SessionPoolOptions {
 
     Builder setLoopFrequency(long loopFrequency) {
       this.loopFrequency = loopFrequency;
+      return this;
+    }
+
+    Builder setMultiplexedSessionMaintenanceLoopFrequency(java.time.Duration frequency) {
+      this.multiplexedSessionMaintenanceLoopFrequency = frequency;
       return this;
     }
 
