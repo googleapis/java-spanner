@@ -272,7 +272,6 @@ class SessionClient implements AutoCloseable {
    * @param consumer The {@link SessionConsumer} to use for callbacks when sessions are available.
    */
   void asyncCreateMultiplexedSession(SessionConsumer consumer) {
-    System.out.println("Creating multiplexed session");
     try {
       executor.submit(new CreateMultiplexedSessionsRunnable(consumer));
     } catch (Throwable t) {

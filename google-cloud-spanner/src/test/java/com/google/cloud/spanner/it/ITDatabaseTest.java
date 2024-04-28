@@ -36,7 +36,9 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SessionNotFoundException;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
@@ -89,9 +91,10 @@ public class ITDatabaseTest {
             .setMaxElapsedTimeMillis(65000)
             .setMaxIntervalMillis(5000)
             .build();
-    DatabaseNotFoundException notFoundException = null;
+    ResourceNotFoundException notFoundException = null;
     long millis;
     while ((millis = backoff.nextBackOffMillis()) != ExponentialBackOff.STOP) {
+      //noinspection BusyWait
       Thread.sleep(millis);
       // Queries to this database should eventually return DatabaseNotFoundExceptions.
       try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
@@ -126,14 +129,26 @@ public class ITDatabaseTest {
 
     notFoundException = null;
     while ((millis = backoff.nextBackOffMillis()) != ExponentialBackOff.STOP) {
+      //noinspection BusyWait
       Thread.sleep(millis);
       // Queries to this database should eventually return DatabaseNotFoundExceptions.
       try (ResultSet rs = client.singleUse().executeQuery(Statement.of("SELECT 1"))) {
         rs.next();
-      } catch (DatabaseNotFoundException e) {
+      } catch (DatabaseNotFoundException databaseNotFoundException) {
         // This is what we expect.
-        notFoundException = e;
+        notFoundException = databaseNotFoundException;
         break;
+      } catch (SessionNotFoundException sessionNotFoundException) {
+        if (isUsingEmulator()) {
+          // This is expected on the emulator, as the emulator does not see a difference between two
+          // different databases with the same name. The original session from the first database is
+          // however not present on the newly created database, which is why we get a
+          // SessionNotFoundException.
+          notFoundException = sessionNotFoundException;
+          break;
+        } else {
+          throw sessionNotFoundException;
+        }
       }
     }
     assertThat(notFoundException).isNotNull();
