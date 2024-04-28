@@ -26,6 +26,7 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -34,6 +35,7 @@ import org.mockito.stubbing.Answer;
 @RunWith(JUnit4.class)
 public class MultiplexedSessionDatabaseClientTest {
 
+  @Ignore("Fails on native builds due to ues of reflection")
   @Test
   public void testMaintainer() {
     Instant now = Instant.now();
