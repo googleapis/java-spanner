@@ -30,6 +30,8 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -51,11 +53,13 @@ import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -198,6 +202,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private CommitResponse commitResponse;
     private final Clock clock;
 
+    private final Map<SpannerRpc.Option, ?> channelHint;
+
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
@@ -205,6 +211,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.options = builder.options;
       this.finishedAsyncOperations.set(null);
       this.clock = builder.clock;
+      this.channelHint =
+          getChannelHintOptions(
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
     }
 
     @Override
@@ -557,6 +566,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       }
       // There is already a transactionId available. Include that id as the transaction to use.
       return TransactionSelector.newBuilder().setId(transactionId).build();
+    }
+
+    @Override
+    Map<Option, ?> getTransactionChannelHint() {
+      return channelHint;
     }
 
     @Override
