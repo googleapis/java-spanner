@@ -17,14 +17,12 @@
 package com.google.cloud.spanner.it;
 
 import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
@@ -92,18 +90,9 @@ public class ITFloat32Test {
 
   private static DatabaseClient client;
 
-  private static boolean isUsingCloudDevel() {
-    String jobType = System.getenv("JOB_TYPE");
-
-    // Assumes that the jobType contains the string "cloud-devel" to signal that
-    // the environment is cloud-devel.
-    return !isNullOrEmpty(jobType) && jobType.contains("cloud-devel");
-  }
-
   @BeforeClass
   public static void setUpDatabase()
       throws ExecutionException, InterruptedException, TimeoutException {
-    assumeTrue("FLOAT32 is currently only supported in cloud-devel", isUsingCloudDevel());
     assumeFalse("Emulator does not support FLOAT32 yet", isUsingEmulator());
 
     Database googleStandardSQLDatabase =
