@@ -40,8 +40,7 @@ be 1000 read operations. The test also uses multiplexed sessions.
 mvn clean compile exec:java -Dexec.args="--clients=1 --operations=1000 --multiplexed=true"
 ```
 
-* The below command uses only 1 thread and 1000 operations. So the total load would be 
-1000 read operations. The test uses 10 threads, so at any point in time there would be roughly
+* The below command uses 10 threads, so at any point in time there would be roughly
 10 concurrent requests. The total load of the benchmark would be 50000 read operations. 
 ```shell
 mvn clean compile exec:java -Dexec.args="--clients=10 --operations=5000 --multiplexed=true"
@@ -50,5 +49,5 @@ mvn clean compile exec:java -Dexec.args="--clients=10 --operations=5000 --multip
 * To run the same test without multiplexed sessions avoid passing `multiplexed` flag. This will 
 make sure that tests uses regular sessions.
 ```shell
-mvn clean compile exec:java -Dexec.args="--clients=10 --operations=5000 --multiplexed=true"
+mvn clean compile exec:java -Dexec.args="--clients=10 --operations=5000"
 ```
