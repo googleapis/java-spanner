@@ -20,8 +20,6 @@ import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -31,7 +29,6 @@ import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -196,29 +193,25 @@ class JavaClientRunner extends AbstractRunner {
   private void executeMultiUseReadOnlyTransaction(DatabaseClient client) {
     try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
       ResultSet resultSet = transaction.executeQuery(getRandomisedReadStatement());
-      while (resultSet.next()) {
-        for (int i = 0; i < resultSet.getColumnCount(); i++) {
-          if (resultSet.isNull(i)) {
-            numNullValues++;
-          } else {
-            numNonNullValues++;
-          }
+      iterateResultSet(resultSet);
+
+      ResultSet resultSet1 = transaction.executeQuery(getRandomisedReadStatement());
+      iterateResultSet(resultSet1);
+
+      ResultSet resultSet2 = transaction.executeQuery(getRandomisedReadStatement());
+      iterateResultSet(resultSet2);
+    }
+  }
+
+  private void iterateResultSet(ResultSet resultSet) {
+    while (resultSet.next()) {
+      for (int i = 0; i < resultSet.getColumnCount(); i++) {
+        if (resultSet.isNull(i)) {
+          numNullValues++;
+        } else {
+          numNonNullValues++;
         }
       }
-
-      /*try (ResultSet resultSetRead =
-          transaction.read(
-              "FOO", KeySet.singleKey(Key.of(getRandomisedKey())), ImmutableList.of("ID"))) {
-        while (resultSetRead.next()) {
-          for (int i = 0; i < resultSetRead.getColumnCount(); i++) {
-            if (resultSetRead.isNull(i)) {
-              numNullValues++;
-            } else {
-              numNonNullValues++;
-            }
-          }
-        }
-      }*/
     }
   }
 
@@ -236,9 +229,5 @@ class JavaClientRunner extends AbstractRunner {
   static Statement getRandomisedUpdateStatement() {
     int randomKey = ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
     return Statement.newBuilder(UPDATE_QUERY).bind(ID_COLUMN_NAME).to(randomKey).build();
-  }
-
-  static int getRandomisedKey() {
-    return ThreadLocalRandom.current().nextInt(TOTAL_RECORDS);
   }
 }
