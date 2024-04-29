@@ -200,6 +200,9 @@ class JavaClientRunner extends AbstractRunner {
 
       ResultSet resultSet2 = transaction.executeQuery(getRandomisedReadStatement());
       iterateResultSet(resultSet2);
+
+      ResultSet resultSet3 = transaction.executeQuery(getRandomisedReadStatement());
+      iterateResultSet(resultSet3);
     }
   }
 
