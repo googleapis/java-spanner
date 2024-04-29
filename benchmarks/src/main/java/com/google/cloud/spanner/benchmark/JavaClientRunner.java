@@ -206,7 +206,9 @@ class JavaClientRunner extends AbstractRunner {
         }
       }
 
-      try (ResultSet resultSetRead = transaction.read("FOO", KeySet.singleKey(Key.of(getRandomisedKey())), ImmutableList.of("ID"))) {
+      /*try (ResultSet resultSetRead =
+          transaction.read(
+              "FOO", KeySet.singleKey(Key.of(getRandomisedKey())), ImmutableList.of("ID"))) {
         while (resultSetRead.next()) {
           for (int i = 0; i < resultSetRead.getColumnCount(); i++) {
             if (resultSetRead.isNull(i)) {
@@ -216,10 +218,9 @@ class JavaClientRunner extends AbstractRunner {
             }
           }
         }
-      }
+      }*/
     }
   }
-
 
   private void executeReadWriteTransaction(DatabaseClient client) {
     client
