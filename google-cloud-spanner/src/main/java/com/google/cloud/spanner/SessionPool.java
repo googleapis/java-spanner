@@ -256,8 +256,9 @@ class SessionPool {
             try {
               this.readContextDelegate = readContextDelegateSupplier.apply(this.session);
               break;
-            } catch (SessionNotFoundException e) {
-              replaceSessionIfPossible(e);
+            } catch (SessionNotFoundException sessionNotFoundException) {
+              replaceSessionIfPossible(
+                  sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
             }
           }
         }
@@ -274,16 +275,17 @@ class SessionPool {
           while (true) {
             try {
               return internalNext();
-            } catch (SessionNotFoundException e) {
+            } catch (SessionNotFoundException sessionNotFoundException) {
               while (true) {
                 // Keep the replace-if-possible outside the try-block to let the exception bubble up
                 // if it's too late to replace the session.
-                replaceSessionIfPossible(e);
+                replaceSessionIfPossible(
+                    sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
                 try {
                   replaceDelegate(resultSetSupplier.reload());
                   break;
                 } catch (SessionNotFoundException snfe) {
-                  e = snfe;
+                  sessionNotFoundException = snfe;
                   // retry on yet another session.
                 }
               }
@@ -331,9 +333,10 @@ class SessionPool {
       };
     }
 
-    private void replaceSessionIfPossible(SessionNotFoundException notFound) {
+    private void replaceSessionIfPossible(
+        boolean failOnSessionNotFound, SessionNotFoundException notFound) {
       synchronized (lock) {
-        if (isSingleUse || !sessionUsedForQuery) {
+        if (!failOnSessionNotFound && (isSingleUse || !sessionUsedForQuery)) {
           // This class is only used by read-only transactions, so we know that we only need a
           // read-only session.
           session = sessionReplacementHandler.replaceSession(notFound, session);
@@ -433,8 +436,9 @@ class SessionPool {
               session.get().markUsed();
             }
             return getReadContextDelegate().readRow(table, key, columns);
-          } catch (SessionNotFoundException e) {
-            replaceSessionIfPossible(e);
+          } catch (SessionNotFoundException sessionNotFoundException) {
+            replaceSessionIfPossible(
+                sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
           }
         }
       } finally {
@@ -464,8 +468,9 @@ class SessionPool {
               session.get().markUsed();
             }
             return getReadContextDelegate().readRowUsingIndex(table, index, key, columns);
-          } catch (SessionNotFoundException e) {
-            replaceSessionIfPossible(e);
+          } catch (SessionNotFoundException sessionNotFoundException) {
+            replaceSessionIfPossible(
+                sessionPool.options.isFailIfSessionNotFound(), sessionNotFoundException);
           }
         }
       } finally {
@@ -1344,11 +1349,7 @@ class SessionPool {
     @Override
     public CommitResponse writeWithOptions(
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-      try {
-        return get().writeWithOptions(mutations, options);
-      } finally {
-        close();
-      }
+      return get().writeWithOptions(mutations, options);
     }
 
     @Override
@@ -1359,22 +1360,14 @@ class SessionPool {
     @Override
     public CommitResponse writeAtLeastOnceWithOptions(
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-      try {
-        return get().writeAtLeastOnceWithOptions(mutations, options);
-      } finally {
-        close();
-      }
+      return get().writeAtLeastOnceWithOptions(mutations, options);
     }
 
     @Override
     public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
         Iterable<MutationGroup> mutationGroups, TransactionOption... options)
         throws SpannerException {
-      try {
-        return get().batchWriteAtLeastOnce(mutationGroups, options);
-      } finally {
-        close();
-      }
+      return get().batchWriteAtLeastOnce(mutationGroups, options);
     }
 
     @Override
@@ -1492,11 +1485,7 @@ class SessionPool {
 
     @Override
     public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
-      try {
-        return get(true).executePartitionedUpdate(stmt, options);
-      } finally {
-        close();
-      }
+      return get(true).executePartitionedUpdate(stmt, options);
     }
 
     @Override
@@ -2012,12 +2001,15 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numSessionsInUse--;
+        if (options.isFailIfSessionNotFound() && numSessionsInUse < 0) {
+          throw new IllegalStateException("Num sessions in use is negative");
+        }
         numSessionsReleased++;
       }
       if ((lastException != null && isSessionNotFound(lastException)) || isRemovedFromPool) {
         invalidateSession(this);
       } else {
-        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
+        if (isDatabaseOrInstanceNotFound(lastException)) {
           // Mark this session pool as no longer valid and then release the session into the pool as
           // there is nothing we can do with it anyways.
           synchronized (lock) {
@@ -2042,7 +2034,6 @@ class SessionPool {
     }
 
     private void keepAlive() {
-      markUsed();
       final ISpan previousSpan = delegate.getCurrentSpan();
       delegate.setCurrentSpan(tracer.getBlankSpan());
       try (ResultSet resultSet =
@@ -2050,6 +2041,7 @@ class SessionPool {
               .singleUse(TimestampBound.ofMaxStaleness(60, TimeUnit.SECONDS))
               .executeQuery(Statement.newBuilder("SELECT 1").build())) {
         resultSet.next();
+        markUsed();
       } finally {
         delegate.setCurrentSpan(previousSpan);
       }
@@ -2266,7 +2258,7 @@ class SessionPool {
     public void close() {
       synchronized (lock) {
         numMultiplexedSessionsReleased++;
-        if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
+        if (isDatabaseOrInstanceNotFound(lastException)) {
           SessionPool.this.resourceNotFoundException =
               MoreObjects.firstNonNull(
                   SessionPool.this.resourceNotFoundException,
@@ -2497,7 +2489,7 @@ class SessionPool {
         // below MinSessions.
         Instant minLastUseTime = currTime.minus(options.getRemoveInactiveSessionAfter());
         Iterator<PooledSession> iterator = sessions.descendingIterator();
-        while (iterator.hasNext()) {
+        while (iterator.hasNext() && allSessions.size() > options.getMinSessions()) {
           PooledSession session = iterator.next();
           if (session.delegate.getLastUseTime().isBefore(minLastUseTime)) {
             if (session.state != SessionState.CLOSING) {
@@ -2516,42 +2508,63 @@ class SessionPool {
     }
 
     private void keepAliveSessions(Instant currTime) {
-      long numSessionsToKeepAlive = 0;
+      long numSessionsToKeepAlive;
+      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
       synchronized (lock) {
-        if (numSessionsInUse >= (options.getMinSessions() + options.getMaxIdleSessions())) {
-          // At least MinSessions are in use, so we don't have to ping any sessions.
-          return;
-        }
         // In each cycle only keep alive a subset of sessions to prevent burst of traffic.
-        numSessionsToKeepAlive =
-            (long)
-                Math.ceil(
-                    (double)
-                            ((options.getMinSessions() + options.getMaxIdleSessions())
-                                - numSessionsInUse)
-                        / numKeepAliveCycles);
+        numSessionsToKeepAlive = calculateNumSessionsToKeepAlive(keepAliveThreshold);
       }
       // Now go over all the remaining sessions and see if they need to be kept alive explicitly.
-      Instant keepAliveThreshold = currTime.minus(keepAliveMillis);
-
       // Keep chugging till there is no session that needs to be kept alive.
       while (numSessionsToKeepAlive > 0) {
+        boolean almostGarbageCollected;
         Tuple<PooledSession, Integer> sessionToKeepAlive;
         synchronized (lock) {
-          sessionToKeepAlive = findSessionToKeepAlive(sessions, keepAliveThreshold, 0);
+          sessionToKeepAlive = findSessionAlmostGarbageCollected(sessions);
+          if (sessionToKeepAlive == null) {
+            sessionToKeepAlive = findSessionToKeepAlive(sessions, keepAliveThreshold, 0);
+            almostGarbageCollected = false;
+          } else {
+            almostGarbageCollected = true;
+          }
         }
         if (sessionToKeepAlive == null) {
           break;
         }
         try {
           logger.log(Level.FINE, "Keeping alive session " + sessionToKeepAlive.x().getName());
-          numSessionsToKeepAlive--;
+          if (!almostGarbageCollected) {
+            numSessionsToKeepAlive--;
+          }
           sessionToKeepAlive.x().keepAlive();
           releaseSession(sessionToKeepAlive);
         } catch (SpannerException e) {
           handleException(e, sessionToKeepAlive);
         }
       }
+    }
+
+    private int calculateNumSessionsToKeepAlive(Instant keepAliveThreshold) {
+      if (numSessionsInUse >= options.getMinSessions() + options.getMaxIdleSessions()) {
+        // At least MinSessions are in use, so we don't have to ping any sessions.
+        return 0;
+      }
+      return (int)
+          Math.ceil((double) numSessionsReadyForKeepAlive(keepAliveThreshold) / numKeepAliveCycles);
+    }
+
+    private int numSessionsReadyForKeepAlive(Instant keepAliveThreshold) {
+      int numSessionsNeedingKeepAlive = 0;
+      int maxSessionsToKeepAlive = options.getMinSessions() + options.getMaxIdleSessions();
+      for (PooledSession session : sessions) {
+        if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
+          numSessionsNeedingKeepAlive++;
+          if (numSessionsNeedingKeepAlive == maxSessionsToKeepAlive) {
+            return numSessionsNeedingKeepAlive;
+          }
+        }
+      }
+      return numSessionsNeedingKeepAlive;
     }
 
     private void replenishPool() {
@@ -2813,11 +2826,11 @@ class SessionPool {
   @VisibleForTesting Function<PooledSession, Void> longRunningSessionRemovedListener;
   @VisibleForTesting Function<SessionReference, Void> multiplexedSessionRemovedListener;
   private final CountDownLatch waitOnMinSessionsLatch;
-  private final CountDownLatch waitOnMultiplexedSessionsLatch;
-  private final SessionReplacementHandler pooledSessionReplacementHandler =
+  private final SessionReplacementHandler<PooledSessionFuture> pooledSessionReplacementHandler =
       new PooledSessionReplacementHandler();
-  private static final SessionReplacementHandler multiplexedSessionReplacementHandler =
-      new MultiplexedSessionReplacementHandler();
+  private final CountDownLatch waitOnMultiplexedSessionsLatch;
+  private static final SessionReplacementHandler<MultiplexedSessionFuture>
+      multiplexedSessionReplacementHandler = new MultiplexedSessionReplacementHandler();
 
   /**
    * Create a session pool with the given options and for the given database. It will also start
@@ -2980,7 +2993,7 @@ class SessionPool {
     }
   }
 
-  SessionReplacementHandler getPooledSessionReplacementHandler() {
+  SessionReplacementHandler<PooledSessionFuture> getPooledSessionReplacementHandler() {
     return pooledSessionReplacementHandler;
   }
 
@@ -3095,7 +3108,7 @@ class SessionPool {
     return e.getErrorCode() == ErrorCode.NOT_FOUND && e.getMessage().contains("Session not found");
   }
 
-  private boolean isDatabaseOrInstanceNotFound(SpannerException e) {
+  private boolean isDatabaseOrInstanceNotFound(@Nullable SpannerException e) {
     return e instanceof DatabaseNotFoundException || e instanceof InstanceNotFoundException;
   }
 
@@ -3120,6 +3133,22 @@ class SessionPool {
             < (options.getMinSessions() + options.getMaxIdleSessions() - numSessionsInUse)) {
       PooledSession session = iterator.next();
       if (session.delegate.getLastUseTime().isBefore(keepAliveThreshold)) {
+        iterator.remove();
+        return Tuple.of(session, numChecked);
+      }
+      numChecked++;
+    }
+    return null;
+  }
+
+  private Tuple<PooledSession, Integer> findSessionAlmostGarbageCollected(
+      Queue<PooledSession> queue) {
+    int numChecked = 0;
+    Instant threshold = clock.instant().minus(Duration.ofMinutes(55L));
+    Iterator<PooledSession> iterator = queue.iterator();
+    while (iterator.hasNext() && numChecked < (options.getMinSessions() - numSessionsInUse)) {
+      PooledSession session = iterator.next();
+      if (session.delegate.getLastUseTime().isBefore(threshold)) {
         iterator.remove();
         return Tuple.of(session, numChecked);
       }
