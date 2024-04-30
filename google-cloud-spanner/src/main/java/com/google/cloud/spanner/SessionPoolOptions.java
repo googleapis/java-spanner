@@ -73,6 +73,9 @@ public class SessionPoolOptions {
   private final Clock poolMaintainerClock;
 
   private final boolean useMultiplexedSession;
+
+  private final boolean useRandomChannelHint;
+
   // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
@@ -103,6 +106,7 @@ public class SessionPoolOptions {
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
     this.useMultiplexedSession = builder.useMultiplexedSession;
+    this.useRandomChannelHint = builder.useRandomChannelHint;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -139,6 +143,7 @@ public class SessionPoolOptions {
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock)
         && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
+        && Objects.equals(this.useRandomChannelHint, other.useRandomChannelHint)
         && Objects.equals(
             this.multiplexedSessionMaintenanceDuration,
             other.multiplexedSessionMaintenanceDuration);
@@ -169,6 +174,7 @@ public class SessionPoolOptions {
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock,
         this.useMultiplexedSession,
+        this.useRandomChannelHint,
         this.multiplexedSessionMaintenanceDuration);
   }
 
@@ -300,6 +306,10 @@ public class SessionPoolOptions {
   @InternalApi
   public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
+  }
+
+  boolean isUseRandomChannelHint() {
+    return useRandomChannelHint;
   }
 
   Duration getMultiplexedSessionMaintenanceDuration() {
@@ -505,6 +515,8 @@ public class SessionPoolOptions {
     private long randomizePositionQPSThreshold = 0L;
 
     private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
+
+    private boolean useRandomChannelHint;
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
@@ -751,6 +763,11 @@ public class SessionPoolOptions {
      */
     Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
       this.useMultiplexedSession = useMultiplexedSession;
+      return this;
+    }
+
+    Builder setUseRandomChannelHint(boolean useRandomChannelHint) {
+      this.useRandomChannelHint = useRandomChannelHint;
       return this;
     }
 
