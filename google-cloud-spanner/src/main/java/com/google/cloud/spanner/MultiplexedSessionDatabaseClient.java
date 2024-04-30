@@ -63,7 +63,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       super(
           client.sessionClient.getSpanner(),
           sessionReference,
-          singleUse ? client.singleUseChannelHint.getAndIncrement() : NO_CHANNEL_HINT);
+          singleUse ? client.getAndIncrementHint() : NO_CHANNEL_HINT);
       this.client = client;
       this.singleUse = singleUse;
       setCurrentSpan(span);
@@ -89,7 +89,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       if (this.singleUse && getActiveTransaction() != null) {
         getActiveTransaction().close();
         setActive(null);
-        this.client.singleUseChannelHint.decrementAndGet();
+        this.client.decrementHint();
       }
     }
 
@@ -99,7 +99,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
-  private final AtomicInteger singleUseChannelHint = new AtomicInteger();
+  private volatile int singleUseChannelHint;
 
   private boolean isClosed;
 
@@ -159,6 +159,18 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     maybeWaitForSessionCreation(
         sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
         initialSessionReferenceFuture);
+  }
+  
+  private int getAndIncrementHint() {
+    synchronized (this) {
+      return singleUseChannelHint++;
+    }
+  }
+  
+  private void decrementHint() {
+    synchronized (this) {
+      singleUseChannelHint--;
+    }
   }
 
   private static void maybeWaitForSessionCreation(
