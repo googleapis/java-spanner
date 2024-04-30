@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
@@ -26,13 +28,15 @@ import com.google.common.base.Preconditions;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -55,17 +59,18 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
     private final boolean singleUse;
 
+    private final int singleUseChannelHint;
+
     MultiplexedSessionTransaction(
         MultiplexedSessionDatabaseClient client,
         ISpan span,
         SessionReference sessionReference,
+        int singleUseChannelHint,
         boolean singleUse) {
-      super(
-          client.sessionClient.getSpanner(),
-          sessionReference,
-          singleUse ? client.getAndIncrementHint() : NO_CHANNEL_HINT);
+      super(client.sessionClient.getSpanner(), sessionReference, singleUseChannelHint);
       this.client = client;
       this.singleUse = singleUse;
+      this.singleUseChannelHint = singleUseChannelHint;
       setCurrentSpan(span);
     }
 
@@ -89,7 +94,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       if (this.singleUse && getActiveTransaction() != null) {
         getActiveTransaction().close();
         setActive(null);
-        this.client.decrementHint();
+        if (this.singleUseChannelHint != NO_CHANNEL_HINT) {
+          this.client.channelUsage.clear(this.singleUseChannelHint);
+        }
       }
     }
 
@@ -99,7 +106,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
-  private volatile int singleUseChannelHint;
+  private static final Map<SpannerImpl, BitSet> CHANNEL_USAGE = new HashMap<>();
+
+  private final BitSet channelUsage;
 
   private boolean isClosed;
 
@@ -124,6 +133,12 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   @VisibleForTesting
   MultiplexedSessionDatabaseClient(SessionClient sessionClient, Clock clock) {
+    synchronized (CHANNEL_USAGE) {
+      CHANNEL_USAGE.putIfAbsent(
+          sessionClient.getSpanner(),
+          new BitSet(sessionClient.getSpanner().getOptions().getNumChannels()));
+      this.channelUsage = CHANNEL_USAGE.get(sessionClient.getSpanner());
+    }
     this.sessionExpirationDuration =
         Duration.ofMillis(
             sessionClient
@@ -159,18 +174,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     maybeWaitForSessionCreation(
         sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
         initialSessionReferenceFuture);
-  }
-  
-  private int getAndIncrementHint() {
-    synchronized (this) {
-      return singleUseChannelHint++;
-    }
-  }
-  
-  private void decrementHint() {
-    synchronized (this) {
-      singleUseChannelHint--;
-    }
   }
 
   private static void maybeWaitForSessionCreation(
@@ -249,6 +252,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
           // session, such as for example a DatabaseNotFound exception. We therefore do not need
           // any special handling of such errors.
           multiplexedSessionReference.get().get(),
+          singleUse ? getSingleUseChannelHint() : NO_CHANNEL_HINT,
           singleUse);
     } catch (ExecutionException executionException) {
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
@@ -260,6 +264,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   private DelayedMultiplexedSessionTransaction createDelayedMultiplexSessionTransaction() {
     return new DelayedMultiplexedSessionTransaction(
         this, tracer.getCurrentSpan(), multiplexedSessionReference.get());
+  }
+
+  private int getSingleUseChannelHint() {
+    synchronized (this.channelUsage) {
+      int channel = this.channelUsage.nextClearBit(0);
+      this.channelUsage.set(channel);
+      return channel;
+    }
   }
 
   @Override

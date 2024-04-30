@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.DelayedReadContext.DelayedReadOnlyTransaction;
@@ -52,7 +54,9 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(client, span, sessionReference, true).singleUse(),
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, true)
+                    .singleUse(),
             MoreExecutors.directExecutor()));
   }
 
@@ -62,7 +66,8 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(client, span, sessionReference, true)
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, true)
                     .singleUse(bound),
             MoreExecutors.directExecutor()));
   }
@@ -73,7 +78,8 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(client, span, sessionReference, true)
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, true)
                     .singleUseReadOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -84,7 +90,8 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(client, span, sessionReference, true)
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, true)
                     .singleUseReadOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }
@@ -95,7 +102,8 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(client, span, sessionReference, false)
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, false)
                     .readOnlyTransaction(),
             MoreExecutors.directExecutor()));
   }
@@ -106,7 +114,8 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
         ApiFutures.transform(
             this.sessionFuture,
             sessionReference ->
-                new MultiplexedSessionTransaction(client, span, sessionReference, false)
+                new MultiplexedSessionTransaction(
+                        client, span, sessionReference, NO_CHANNEL_HINT, false)
                     .readOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
   }

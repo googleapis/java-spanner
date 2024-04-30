@@ -27,6 +27,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SingerProto.Genre;
 import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.cloud.spanner.Statement;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
@@ -40,6 +41,9 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.After;
@@ -549,6 +553,28 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
   @After
   public void clearRequests() {
     mockSpanner.clearRequests();
+  }
+
+  @Test
+  public void testCounter() throws InterruptedException {
+    ExecutorService executor = Executors.newFixedThreadPool(256);
+    Stopwatch watch = Stopwatch.createStarted();
+    for (int n = 0; n < 256; n++) {
+      executor.submit(
+          () -> {
+            try (Connection connection = createConnection()) {
+              connection.setAutocommit(true);
+              for (int i = 0; i < 100; i++) {
+                try (ResultSet resultSet = connection.executeQuery(SELECT_STATEMENT)) {
+                  while (resultSet.next()) {}
+                }
+              }
+            }
+          });
+    }
+    executor.shutdown();
+    assertTrue(executor.awaitTermination(60L, TimeUnit.SECONDS));
+    System.out.println("Elapsed: " + watch.elapsed());
   }
 
   @Test
