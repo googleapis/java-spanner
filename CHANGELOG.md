@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.65.1](https://github.com/googleapis/java-spanner/compare/v6.65.0...v6.65.1) (2024-04-30)
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.43.0 ([#3066](https://github.com/googleapis/java-spanner/issues/3066)) ([97b0a93](https://github.com/googleapis/java-spanner/commit/97b0a93469ea1b0f0c9a3413e2364951c2d667d1))
+
+
+### Documentation
+
+* Add a sample for max commit delays  ([#2941](https://github.com/googleapis/java-spanner/issues/2941)) ([d3b5097](https://github.com/googleapis/java-spanner/commit/d3b50976f8a6687a6dac2f483ae133c026b81cac))
+
 ## [6.65.0](https://github.com/googleapis/java-spanner/compare/v6.64.0...v6.65.0) (2024-04-20)
 
 
