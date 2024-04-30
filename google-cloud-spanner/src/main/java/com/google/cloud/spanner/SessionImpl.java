@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SessionClient.optionMap;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 
 import com.google.api.core.ApiFuture;
@@ -27,6 +28,7 @@ import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.SessionClient.SessionOption;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.base.Ticker;
@@ -97,17 +99,33 @@ class SessionImpl implements Session {
     void close();
   }
 
+  static final int NO_CHANNEL_HINT = -1;
+
   private final SpannerImpl spanner;
   private final SessionReference sessionReference;
   private SessionTransaction activeTransaction;
   private ISpan currentSpan;
   private final Clock clock;
+  private final Map<SpannerRpc.Option, ?> options;
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
+    this(spanner, sessionReference, NO_CHANNEL_HINT);
+  }
+
+  SessionImpl(SpannerImpl spanner, SessionReference sessionReference, int channelHint) {
     this.spanner = spanner;
     this.tracer = spanner.getTracer();
     this.sessionReference = sessionReference;
     this.clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
+    this.options = createOptions(sessionReference, channelHint);
+  }
+
+  static Map<SpannerRpc.Option, ?> createOptions(
+      SessionReference sessionReference, int channelHint) {
+    if (channelHint == NO_CHANNEL_HINT) {
+      return sessionReference.getOptions();
+    }
+    return optionMap(SessionOption.channelHint(channelHint));
   }
 
   @Override
@@ -116,7 +134,7 @@ class SessionImpl implements Session {
   }
 
   Map<SpannerRpc.Option, ?> getOptions() {
-    return sessionReference.getOptions();
+    return options;
   }
 
   void setCurrentSpan(ISpan span) {

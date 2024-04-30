@@ -32,6 +32,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -59,7 +60,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         ISpan span,
         SessionReference sessionReference,
         boolean singleUse) {
-      super(client.sessionClient.getSpanner(), sessionReference);
+      super(
+          client.sessionClient.getSpanner(),
+          sessionReference,
+          singleUse ? client.singleUseChannelHint.getAndIncrement() : NO_CHANNEL_HINT);
       this.client = client;
       this.singleUse = singleUse;
       setCurrentSpan(span);
@@ -85,6 +89,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       if (this.singleUse && getActiveTransaction() != null) {
         getActiveTransaction().close();
         setActive(null);
+        this.client.singleUseChannelHint.decrementAndGet();
       }
     }
 
@@ -93,6 +98,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       // no-op, we don't want to delete the multiplexed session.
     }
   }
+
+  private final AtomicInteger singleUseChannelHint = new AtomicInteger();
 
   private boolean isClosed;
 
