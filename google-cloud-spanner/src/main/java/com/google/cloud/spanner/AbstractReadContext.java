@@ -190,9 +190,8 @@ abstract class AbstractReadContext
       this.bound = builder.bound;
       // single use transaction have a single RPC and hence there is no need
       // of a channel hint. GAX will automatically choose a hint when used
-      // with a multiplexed session. But GAX currently uses an AtomicLong to perform round-robin
-      // channel selection and that will cause contention issues at high-concurrency. So we are
-      // passing a random hint instead of doing GAX round-robin.
+      // with a multiplexed session to perform a round-robin channel selection. We are
+      // passing a hint here to prefer random channel selection instead of doing GAX round-robin.
       this.channelHint =
           getChannelHintOptions(
               session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
