@@ -32,7 +32,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -160,13 +159,13 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         sessionClient.getSpanner().getOptions().getSessionPoolOptions(),
         initialSessionReferenceFuture);
   }
-  
+
   private int getAndIncrementHint() {
     synchronized (this) {
       return singleUseChannelHint++;
     }
   }
-  
+
   private void decrementHint() {
     synchronized (this) {
       singleUseChannelHint--;
