@@ -157,17 +157,10 @@ abstract class AbstractReadContext
     static class Builder extends AbstractReadContext.Builder<Builder, SingleReadContext> {
       private TimestampBound bound;
 
-      private boolean useRandomChannelHint;
-
       private Builder() {}
 
       Builder setTimestampBound(TimestampBound bound) {
         this.bound = bound;
-        return self();
-      }
-
-      Builder setUseRandomChannelHint(boolean useRandomChannelHint) {
-        this.useRandomChannelHint = useRandomChannelHint;
         return self();
       }
 
@@ -195,14 +188,13 @@ abstract class AbstractReadContext
     private SingleReadContext(Builder builder) {
       super(builder);
       this.bound = builder.bound;
-      // Use the channel hint that is stored with the regular session if that is being used.
-      // Otherwise, either use a random channel hint or no hint at all.
+      // single use transaction have a single RPC and hence there is no need
+      // of a channel hint. GAX will automatically choose a hint when used
+      // with a multiplexed session to perform a round-robin channel selection. We are
+      // passing a hint here to prefer random channel selection instead of doing GAX round-robin.
       this.channelHint =
           getChannelHintOptions(
-              session.getOptions(),
-              builder.useRandomChannelHint
-                  ? ThreadLocalRandom.current().nextLong(Long.MAX_VALUE)
-                  : null);
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
     }
 
     @Override

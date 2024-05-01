@@ -22,6 +22,12 @@ import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.spanner.v1.BatchWriteResponse;
 
+/**
+ * Base class for the Multiplexed Session {@link DatabaseClient} implementation. Throws {@link
+ * UnsupportedOperationException} for all methods that are currently not supported for multiplexed
+ * sessions. The concrete implementation implements the methods that are supported with multiplexed
+ * sessions.
+ */
 abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClient {
 
   @Override

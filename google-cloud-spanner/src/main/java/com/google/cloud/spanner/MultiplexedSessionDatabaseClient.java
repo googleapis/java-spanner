@@ -109,31 +109,53 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
+  /**
+   * Keeps track of which channels have been 'given' to single-use transactions for a given Spanner
+   * instance.
+   */
   private static final Map<SpannerImpl, BitSet> CHANNEL_USAGE = new HashMap<>();
 
   private final BitSet channelUsage;
 
   private final int numChannels;
 
+  /**
+   * The number of single-use read-only transactions currently running on this multiplexed session.
+   */
   private final AtomicInteger numCurrentSingleUseTransactions = new AtomicInteger();
 
   private boolean isClosed;
 
+  /** The duration before we try to replace the multiplexed session. The default is 7 days. */
   private final Duration sessionExpirationDuration;
 
   private final SessionClient sessionClient;
 
   private final TraceWrapper tracer;
 
+  /** The current multiplexed session that is used by this client. */
   private final AtomicReference<ApiFuture<SessionReference>> multiplexedSessionReference;
 
+  /** The expiration date/time of the current multiplexed session. */
   private final AtomicReference<Instant> expirationDate;
 
+  /**
+   * The maintainer runs every 10 minutes to check whether the multiplexed session should be
+   * refreshed.
+   */
   private final MultiplexedSessionMaintainer maintainer;
 
+  /**
+   * If a {@link DatabaseNotFoundException} or {@link InstanceNotFoundException} is returned by the
+   * server, then we set this field to mark the client as invalid.
+   */
   private final AtomicReference<ResourceNotFoundException> resourceNotFoundException =
       new AtomicReference<>();
 
+  /**
+   * This flag is set to true if the server return UNIMPLEMENTED when we try to create a multiplexed
+   * session.
+   */
   private final AtomicBoolean unimplemented = new AtomicBoolean(false);
 
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
@@ -293,7 +315,11 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       return NO_CHANNEL_HINT;
     }
     synchronized (this.channelUsage) {
-      int channel = this.channelUsage.nextClearBit(0);
+      // Get the first unused channel.
+      int channel = this.channelUsage.nextClearBit(/* fromIndex = */ 0);
+      // BitSet returns an index larger than its original size if all the bits are set.
+      // This then means that all channels have already been assigned to single-use transactions,
+      // and that we should not use a specific channel, but rather pick a random one.
       if (channel == this.numChannels) {
         return NO_CHANNEL_HINT;
       }

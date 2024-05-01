@@ -307,8 +307,6 @@ class SessionImpl implements Session {
         SingleReadContext.newBuilder()
             .setSession(this)
             .setTimestampBound(bound)
-            .setUseRandomChannelHint(
-                spanner.getOptions().getSessionPoolOptions().isUseRandomChannelHint())
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())
@@ -332,8 +330,6 @@ class SessionImpl implements Session {
         SingleUseReadOnlyTransaction.newBuilder()
             .setSession(this)
             .setTimestampBound(bound)
-            .setUseRandomChannelHint(
-                spanner.getOptions().getSessionPoolOptions().isUseRandomChannelHint())
             .setRpc(spanner.getRpc())
             .setDefaultQueryOptions(spanner.getDefaultQueryOptions(getDatabaseId()))
             .setDefaultPrefetchChunks(spanner.getDefaultPrefetchChunks())

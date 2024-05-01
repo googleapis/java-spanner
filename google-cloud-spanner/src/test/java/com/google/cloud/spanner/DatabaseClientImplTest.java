@@ -3045,8 +3045,7 @@ public class DatabaseClientImplTest {
             DatabaseClientImpl dbClient =
                 (DatabaseClientImpl) spanner.getDatabaseClient(databaseId);
             // The CreateSession / BatchCreateSessions failure should propagate to the client and
-            // not
-            // retry.
+            // not retry.
             try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
               mockSpanner.unfreeze();
               assertThrows(ResourceNotFoundException.class, rs::next);

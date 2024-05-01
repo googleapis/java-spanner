@@ -39,12 +39,12 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, null, tracer);
+    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(clientId, pool, null, tracer);
+    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
   }
 
   DatabaseClientImpl(
@@ -286,7 +286,9 @@ class DatabaseClientImpl implements DatabaseClient {
 
   boolean isValid() {
     return pool.isValid()
-        && (multiplexedSessionDatabaseClient == null || multiplexedSessionDatabaseClient.isValid());
+        && (multiplexedSessionDatabaseClient == null
+            || multiplexedSessionDatabaseClient.isValid()
+            || !multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported());
   }
 
   ListenableFuture<Void> closeAsync(ClosedException closedException) {

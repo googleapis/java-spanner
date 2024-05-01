@@ -90,6 +90,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
       boolean hasNext = currRow.consumeRow(iterator);
       if (!hasNext) {
         statistics = iterator.getStats();
+        // Close the ResultSet when there is no more data.
         close();
       }
       return hasNext;
@@ -114,11 +115,14 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
 
   @Override
   public void close() {
-    if (!closed) {
-      listener.onDone(iterator.isWithBeginTransaction());
-      iterator.close("ResultSet closed");
+    synchronized (this) {
+      if (closed) {
+        return;
+      }
       closed = true;
     }
+    listener.onDone(iterator.isWithBeginTransaction());
+    iterator.close("ResultSet closed");
   }
 
   @Override
