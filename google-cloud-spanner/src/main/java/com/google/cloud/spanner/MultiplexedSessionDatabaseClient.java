@@ -155,6 +155,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   /**
    * This flag is set to true if the server return UNIMPLEMENTED when we try to create a multiplexed
    * session.
+   * TODO: Remove once this is guaranteed to be available.
    */
   private final AtomicBoolean unimplemented = new AtomicBoolean(false);
 
