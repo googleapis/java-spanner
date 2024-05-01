@@ -37,6 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -71,6 +72,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       this.client = client;
       this.singleUse = singleUse;
       this.singleUseChannelHint = singleUseChannelHint;
+      System.out.println("Using channel hint " + singleUseChannelHint);
       setCurrentSpan(span);
     }
 
@@ -97,6 +99,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
         if (this.singleUseChannelHint != NO_CHANNEL_HINT) {
           this.client.channelUsage.clear(this.singleUseChannelHint);
         }
+        this.client.numCurrentSingleUseTransactions.decrementAndGet();
       }
     }
 
@@ -109,6 +112,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   private static final Map<SpannerImpl, BitSet> CHANNEL_USAGE = new HashMap<>();
 
   private final BitSet channelUsage;
+
+  private final int numChannels;
+
+  private final AtomicInteger numCurrentSingleUseTransactions = new AtomicInteger();
 
   private boolean isClosed;
 
@@ -133,10 +140,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   @VisibleForTesting
   MultiplexedSessionDatabaseClient(SessionClient sessionClient, Clock clock) {
+    this.numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
     synchronized (CHANNEL_USAGE) {
-      CHANNEL_USAGE.putIfAbsent(
-          sessionClient.getSpanner(),
-          new BitSet(sessionClient.getSpanner().getOptions().getNumChannels()));
+      CHANNEL_USAGE.putIfAbsent(sessionClient.getSpanner(), new BitSet(numChannels));
       this.channelUsage = CHANNEL_USAGE.get(sessionClient.getSpanner());
     }
     this.sessionExpirationDuration =
@@ -267,8 +273,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   }
 
   private int getSingleUseChannelHint() {
+    if (this.numCurrentSingleUseTransactions.incrementAndGet() > this.numChannels) {
+      return NO_CHANNEL_HINT;
+    }
     synchronized (this.channelUsage) {
       int channel = this.channelUsage.nextClearBit(0);
+      if (channel == this.numChannels) {
+        return NO_CHANNEL_HINT;
+      }
       this.channelUsage.set(channel);
       return channel;
     }

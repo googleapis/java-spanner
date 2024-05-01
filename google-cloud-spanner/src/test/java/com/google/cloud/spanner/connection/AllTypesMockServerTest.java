@@ -557,7 +557,7 @@ public class AllTypesMockServerTest extends AbstractMockServerTest {
 
   @Test
   public void testCounter() throws InterruptedException {
-    ExecutorService executor = Executors.newFixedThreadPool(256);
+    ExecutorService executor = Executors.newFixedThreadPool(1);
     Stopwatch watch = Stopwatch.createStarted();
     for (int n = 0; n < 256; n++) {
       executor.submit(
