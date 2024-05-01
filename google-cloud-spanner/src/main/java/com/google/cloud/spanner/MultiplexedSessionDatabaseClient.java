@@ -72,7 +72,6 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       this.client = client;
       this.singleUse = singleUse;
       this.singleUseChannelHint = singleUseChannelHint;
-      System.out.println("Using channel hint " + singleUseChannelHint);
       setCurrentSpan(span);
     }
 
