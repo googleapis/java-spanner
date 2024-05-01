@@ -37,6 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -133,6 +134,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   private final AtomicReference<ResourceNotFoundException> resourceNotFoundException =
       new AtomicReference<>();
 
+  private final AtomicBoolean unimplemented = new AtomicBoolean(false);
+
   MultiplexedSessionDatabaseClient(SessionClient sessionClient) {
     this(sessionClient, Clock.systemUTC());
   }
@@ -173,6 +176,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
           @Override
           public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
+            // Mark multiplexes sessions as unimplemented and fall back to regular sessions if
+            // UNIMPLEMENTED is returned.
+            maybeMarkUnimplemented(t);
             initialSessionReferenceFuture.setException(t);
           }
         });
@@ -200,8 +206,19 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
   }
 
+  private void maybeMarkUnimplemented(Throwable t) {
+    SpannerException spannerException = SpannerExceptionFactory.asSpannerException(t);
+    if (spannerException.getErrorCode() == ErrorCode.UNIMPLEMENTED) {
+      unimplemented.set(true);
+    }
+  }
+
   boolean isValid() {
     return resourceNotFoundException.get() == null;
+  }
+
+  boolean isMultiplexedSessionsSupported() {
+    return !this.unimplemented.get();
   }
 
   void close() {
@@ -374,6 +391,9 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
                 // ignore any errors during re-creation of the multiplexed session. This means that
                 // we continue to use the session that has passed its expiration date for now, and
                 // that a new attempt at creating a new session will be done in 10 minutes from now.
+                // The only exception to this rule is if the server returns UNIMPLEMENTED. In that
+                // case we invalidate the client and fall back to regular sessions.
+                maybeMarkUnimplemented(t);
               }
             });
       }

@@ -17,14 +17,21 @@
 package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.Session;
+import io.grpc.Status;
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
@@ -158,6 +165,122 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     Set<String> sessionIds =
         requests.stream().map(ExecuteSqlRequest::getSession).collect(Collectors.toSet());
     assertEquals(4, sessionIds.size());
+  }
+
+  @Test
+  public void testUnimplementedErrorOnCreation_fallsBackToRegularSessions() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription("Multiplexed sessions are not implemented")
+                .asRuntimeException()));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // Get the current session reference. This will block until the CreateSession RPC has failed.
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            client.multiplexedSessionDatabaseClient::getCurrentSessionReference);
+    assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+    // Verify that we received one ExecuteSqlRequest, and that it used a regular session.
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session = mockSpanner.getSession(requests.get(0).getSession());
+    assertNotNull(session);
+    assertFalse(session.getMultiplexed());
+  }
+
+  @Test
+  public void
+      testUnimplementedErrorOnCreation_firstReceivesError_secondFallsBackToRegularSessions() {
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription("Multiplexed sessions are not implemented")
+                .asRuntimeException()));
+    // Freeze the mock server to ensure that the CreateSession RPC does not return an error or any
+    // other result just yet.
+    mockSpanner.freeze();
+    // Get a database client using multiplexed sessions. The CreateSession RPC will be blocked as
+    // long as the mock server is frozen.
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // Try to execute a query. This is all non-blocking until the call to ResultSet#next().
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      // Unfreeze the mock server to get the error from the backend. This query will then fail.
+      mockSpanner.unfreeze();
+      SpannerException spannerException = assertThrows(SpannerException.class, resultSet::next);
+      assertEquals(ErrorCode.UNIMPLEMENTED, spannerException.getErrorCode());
+    }
+    // The next query will fall back to regular sessions and succeed.
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+    // Verify that we received one ExecuteSqlRequest, and that it used a regular session.
+    assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session = mockSpanner.getSession(requests.get(0).getSession());
+    assertNotNull(session);
+    assertFalse(session.getMultiplexed());
+  }
+
+  @Test
+  public void testMaintainerInvalidatesMultiplexedSessionClientIfUnimplemented() {
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    // The first query should succeed.
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+    // Now ensure that CreateSession returns UNIMPLEMENTED. This error should be recognized by the
+    // maintainer and invalidate the MultiplexedSessionDatabaseClient. New queries will fall back to
+    // regular sessions.
+    mockSpanner.setCreateSessionExecutionTime(
+        SimulatedExecutionTime.ofException(
+            Status.UNIMPLEMENTED
+                .withDescription("Multiplexed sessions are not implemented")
+                .asRuntimeException()));
+    // Wait until the client sees that MultiplexedSessions are not supported.
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    while (client.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()
+        && stopwatch.elapsed().compareTo(Duration.ofSeconds(5)) < 0) {
+      Thread.yield();
+    }
+    // Queries should fall back to regular sessions.
+    try (ResultSet resultSet = client.singleUse().executeQuery(STATEMENT)) {
+      //noinspection StatementWithEmptyBody
+      while (resultSet.next()) {
+        // ignore
+      }
+    }
+    // Verify that we received two ExecuteSqlRequests, and that the first one used a multiplexed
+    // session, and that the second used a regular session.
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
+
+    Session session1 = mockSpanner.getSession(requests.get(0).getSession());
+    assertNotNull(session1);
+    assertTrue(session1.getMultiplexed());
+
+    Session session2 = mockSpanner.getSession(requests.get(1).getSession());
+    assertNotNull(session2);
+    assertFalse(session2.getMultiplexed());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {
