@@ -2949,8 +2949,8 @@ class SessionPool {
 
   // TODO: Remove once all code for multiplexed sessions have been removed from the pool.
   private boolean useMultiplexedSessions() {
-    return options.getUseMultiplexedSession()
-        && SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool();
+    // Multiplexed sessions have moved to MultiplexedSessionDatabaseClient
+    return false;
   }
 
   /**

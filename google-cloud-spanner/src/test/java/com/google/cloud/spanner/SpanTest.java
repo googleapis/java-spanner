@@ -317,20 +317,12 @@ public class SpanTest {
             "Using Session",
             "Starting/Resuming stream");
     List<String> expectedAnnotationsForMultiplexedSession =
-        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool()
-            ? ImmutableList.of(
-                "Requesting 2 sessions",
-                "Request for 2 sessions returned 2 sessions",
-                "Request for 1 multiplexed session returned 1 session",
-                "Creating 2 sessions",
-                "Using Session",
-                "Starting/Resuming stream")
-            : ImmutableList.of(
-                "Requesting 2 sessions",
-                "Request for 2 sessions returned 2 sessions",
-                "Request for 1 multiplexed session returned 1 session",
-                "Creating 2 sessions",
-                "Starting/Resuming stream");
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions",
+            "Starting/Resuming stream");
     if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
       verifyAnnotations(
           failOnOverkillTraceComponent.getAnnotations().stream()
@@ -379,22 +371,13 @@ public class SpanTest {
             "Starting/Resuming stream",
             "Stream broken. Not safe to retry");
     List<String> expectedAnnotationsForMultiplexedSession =
-        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool()
-            ? ImmutableList.of(
-                "Requesting 2 sessions",
-                "Request for 2 sessions returned 2 sessions",
-                "Request for 1 multiplexed session returned 1 session",
-                "Creating 2 sessions",
-                "Using Session",
-                "Starting/Resuming stream",
-                "Stream broken. Not safe to retry")
-            : ImmutableList.of(
-                "Requesting 2 sessions",
-                "Request for 2 sessions returned 2 sessions",
-                "Request for 1 multiplexed session returned 1 session",
-                "Creating 2 sessions",
-                "Starting/Resuming stream",
-                "Stream broken. Not safe to retry");
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions",
+            "Starting/Resuming stream",
+            "Stream broken. Not safe to retry");
     if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
       verifyAnnotations(
           failOnOverkillTraceComponent.getAnnotations().stream()
@@ -438,24 +421,14 @@ public class SpanTest {
             "Creating Transaction",
             "Transaction Creation Done");
     List<String> expectedAnnotationsForMultiplexedSession =
-        SessionPoolOptions.Builder.isUseMultiplexedSessionsInSessionPool()
-            ? ImmutableList.of(
-                "Requesting 2 sessions",
-                "Request for 2 sessions returned 2 sessions",
-                "Request for 1 multiplexed session returned 1 session",
-                "Creating 2 sessions",
-                "Using Session",
-                "Starting/Resuming stream",
-                "Creating Transaction",
-                "Transaction Creation Done")
-            : ImmutableList.of(
-                "Requesting 2 sessions",
-                "Request for 2 sessions returned 2 sessions",
-                "Request for 1 multiplexed session returned 1 session",
-                "Creating 2 sessions",
-                "Starting/Resuming stream",
-                "Creating Transaction",
-                "Transaction Creation Done");
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions",
+            "Starting/Resuming stream",
+            "Creating Transaction",
+            "Transaction Creation Done");
     if (isMultiplexedSessionsEnabled()) {
       verifyAnnotations(
           failOnOverkillTraceComponent.getAnnotations().stream()
