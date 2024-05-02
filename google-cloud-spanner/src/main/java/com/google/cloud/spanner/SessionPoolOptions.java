@@ -49,6 +49,7 @@ public class SessionPoolOptions {
 
   private final ActionOnExhaustion actionOnExhaustion;
   private final long loopFrequency;
+  private final java.time.Duration multiplexedSessionMaintenanceLoopFrequency;
   private final int keepAliveIntervalMinutes;
   private final Duration removeInactiveSessionAfter;
   private final ActionOnSessionNotFound actionOnSessionNotFound;
@@ -72,6 +73,10 @@ public class SessionPoolOptions {
   private final Clock poolMaintainerClock;
 
   private final boolean useMultiplexedSession;
+
+  private final boolean useRandomChannelHint;
+
+  // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
   private SessionPoolOptions(Builder builder) {
@@ -89,6 +94,8 @@ public class SessionPoolOptions {
     this.trackStackTraceOfSessionCheckout = builder.trackStackTraceOfSessionCheckout;
     this.initialWaitForSessionTimeoutMillis = builder.initialWaitForSessionTimeoutMillis;
     this.loopFrequency = builder.loopFrequency;
+    this.multiplexedSessionMaintenanceLoopFrequency =
+        builder.multiplexedSessionMaintenanceLoopFrequency;
     this.keepAliveIntervalMinutes = builder.keepAliveIntervalMinutes;
     this.removeInactiveSessionAfter = builder.removeInactiveSessionAfter;
     this.autoDetectDialect = builder.autoDetectDialect;
@@ -99,6 +106,7 @@ public class SessionPoolOptions {
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
     this.useMultiplexedSession = builder.useMultiplexedSession;
+    this.useRandomChannelHint = builder.useRandomChannelHint;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -121,6 +129,9 @@ public class SessionPoolOptions {
         && Objects.equals(
             this.initialWaitForSessionTimeoutMillis, other.initialWaitForSessionTimeoutMillis)
         && Objects.equals(this.loopFrequency, other.loopFrequency)
+        && Objects.equals(
+            this.multiplexedSessionMaintenanceLoopFrequency,
+            other.multiplexedSessionMaintenanceLoopFrequency)
         && Objects.equals(this.keepAliveIntervalMinutes, other.keepAliveIntervalMinutes)
         && Objects.equals(this.removeInactiveSessionAfter, other.removeInactiveSessionAfter)
         && Objects.equals(this.autoDetectDialect, other.autoDetectDialect)
@@ -132,6 +143,7 @@ public class SessionPoolOptions {
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock)
         && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
+        && Objects.equals(this.useRandomChannelHint, other.useRandomChannelHint)
         && Objects.equals(
             this.multiplexedSessionMaintenanceDuration,
             other.multiplexedSessionMaintenanceDuration);
@@ -151,6 +163,7 @@ public class SessionPoolOptions {
         this.trackStackTraceOfSessionCheckout,
         this.initialWaitForSessionTimeoutMillis,
         this.loopFrequency,
+        this.multiplexedSessionMaintenanceLoopFrequency,
         this.keepAliveIntervalMinutes,
         this.removeInactiveSessionAfter,
         this.autoDetectDialect,
@@ -161,6 +174,7 @@ public class SessionPoolOptions {
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock,
         this.useMultiplexedSession,
+        this.useRandomChannelHint,
         this.multiplexedSessionMaintenanceDuration);
   }
 
@@ -202,6 +216,10 @@ public class SessionPoolOptions {
 
   long getLoopFrequency() {
     return loopFrequency;
+  }
+
+  java.time.Duration getMultiplexedSessionMaintenanceLoopFrequency() {
+    return this.multiplexedSessionMaintenanceLoopFrequency;
   }
 
   public int getKeepAliveIntervalMinutes() {
@@ -288,6 +306,10 @@ public class SessionPoolOptions {
   @InternalApi
   public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
+  }
+
+  boolean isUseRandomChannelHint() {
+    return useRandomChannelHint;
   }
 
   Duration getMultiplexedSessionMaintenanceDuration() {
@@ -476,6 +498,8 @@ public class SessionPoolOptions {
     private InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
         InactiveTransactionRemovalOptions.newBuilder().build();
     private long loopFrequency = 10 * 1000L;
+    private java.time.Duration multiplexedSessionMaintenanceLoopFrequency =
+        java.time.Duration.ofMinutes(10);
     private int keepAliveIntervalMinutes = 30;
     private Duration removeInactiveSessionAfter = Duration.ofMinutes(55L);
     private boolean autoDetectDialect = false;
@@ -491,6 +515,8 @@ public class SessionPoolOptions {
     private long randomizePositionQPSThreshold = 0L;
 
     private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
+
+    private boolean useRandomChannelHint;
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
@@ -535,6 +561,8 @@ public class SessionPoolOptions {
       this.actionOnSessionLeak = options.actionOnSessionLeak;
       this.trackStackTraceOfSessionCheckout = options.trackStackTraceOfSessionCheckout;
       this.loopFrequency = options.loopFrequency;
+      this.multiplexedSessionMaintenanceLoopFrequency =
+          options.multiplexedSessionMaintenanceLoopFrequency;
       this.keepAliveIntervalMinutes = options.keepAliveIntervalMinutes;
       this.removeInactiveSessionAfter = options.removeInactiveSessionAfter;
       this.autoDetectDialect = options.autoDetectDialect;
@@ -596,6 +624,11 @@ public class SessionPoolOptions {
 
     Builder setLoopFrequency(long loopFrequency) {
       this.loopFrequency = loopFrequency;
+      return this;
+    }
+
+    Builder setMultiplexedSessionMaintenanceLoopFrequency(java.time.Duration frequency) {
+      this.multiplexedSessionMaintenanceLoopFrequency = frequency;
       return this;
     }
 
@@ -720,6 +753,11 @@ public class SessionPoolOptions {
      */
     Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
       this.useMultiplexedSession = useMultiplexedSession;
+      return this;
+    }
+
+    Builder setUseRandomChannelHint(boolean useRandomChannelHint) {
+      this.useRandomChannelHint = useRandomChannelHint;
       return this;
     }
 

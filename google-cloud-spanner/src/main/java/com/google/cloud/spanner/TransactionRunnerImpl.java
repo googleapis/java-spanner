@@ -155,12 +155,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       @Override
       public void addListener(Runnable listener) {
-        ((ListenableAsyncResultSet) this.delegate).addListener(listener);
+        ((ListenableAsyncResultSet) getDelegate()).addListener(listener);
       }
 
       @Override
       public void removeListener(Runnable listener) {
-        ((ListenableAsyncResultSet) this.delegate).removeListener(listener);
+        ((ListenableAsyncResultSet) getDelegate()).removeListener(listener);
       }
     }
 
@@ -601,6 +601,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+      e = super.onError(e, withBeginTransaction);
+
       // If the statement that caused an error was the statement that included a BeginTransaction
       // option, we simulate an aborted transaction to force a retry of the entire transaction. This
       // will cause the retry to execute an explicit BeginTransaction RPC and then the actual
@@ -1118,4 +1120,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   public void invalidate() {
     isValid = false;
   }
+
+  @Override
+  public void close() {}
 }

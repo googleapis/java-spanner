@@ -79,6 +79,7 @@ import com.google.spanner.v1.BatchWriteRequest;
 import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.DeleteSessionRequest;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
@@ -3005,43 +3006,72 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testDatabaseOrInstanceDoesNotExistOnCreate() {
-    StatusRuntimeException[] exceptions =
-        new StatusRuntimeException[] {
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
-          SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
-              "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
-        };
-    for (StatusRuntimeException exception : exceptions) {
-      mockSpanner.setCreateSessionExecutionTime(
-          SimulatedExecutionTime.ofStickyException(exception));
-      mockSpanner.setBatchCreateSessionsExecutionTime(
-          SimulatedExecutionTime.ofStickyException(exception));
-      // Ensure there are no sessions in the pool by default.
-      try (Spanner spanner =
-          SpannerOptions.newBuilder()
-              .setProjectId(TEST_PROJECT)
-              .setChannelProvider(channelProvider)
-              .setCredentials(NoCredentials.getInstance())
-              .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build())
-              .build()
-              .getService()) {
-        DatabaseClientImpl dbClient =
-            (DatabaseClientImpl)
-                spanner.getDatabaseClient(
-                    DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-        // The create session failure should propagate to the client and not retry.
-        try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
-          assertThrows(ResourceNotFoundException.class, rs::next);
-          // The server should only receive one BatchCreateSessions request.
-          assertThat(mockSpanner.getRequests()).hasSize(1);
+    for (Duration waitForMinSessions : ImmutableList.of(Duration.ZERO, Duration.ofSeconds(5L))) {
+      StatusRuntimeException[] exceptions =
+          new StatusRuntimeException[] {
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Database", SpannerExceptionFactory.DATABASE_RESOURCE_TYPE, DATABASE_NAME),
+            SpannerExceptionFactoryTest.newStatusResourceNotFoundException(
+                "Instance", SpannerExceptionFactory.INSTANCE_RESOURCE_TYPE, INSTANCE_NAME)
+          };
+      for (StatusRuntimeException exception : exceptions) {
+        mockSpanner.setCreateSessionExecutionTime(
+            SimulatedExecutionTime.ofStickyException(exception));
+        mockSpanner.setBatchCreateSessionsExecutionTime(
+            SimulatedExecutionTime.ofStickyException(exception));
+        // Ensure there are no sessions in the pool by default.
+        try (Spanner spanner =
+            SpannerOptions.newBuilder()
+                .setProjectId(TEST_PROJECT)
+                .setChannelProvider(channelProvider)
+                .setCredentials(NoCredentials.getInstance())
+                .setSessionPoolOption(
+                    SessionPoolOptions.newBuilder()
+                        .setMinSessions(0)
+                        .setWaitForMinSessions(waitForMinSessions)
+                        .build())
+                .build()
+                .getService()) {
+          boolean useMultiplexedSession =
+              spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+          DatabaseId databaseId = DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE);
+          if (useMultiplexedSession && !waitForMinSessions.isZero()) {
+            assertThrows(
+                ResourceNotFoundException.class, () -> spanner.getDatabaseClient(databaseId));
+          } else {
+            // Freeze the server until we try to execute ResultSet#next() to prevent the creation of
+            // a multiplexed session to finish before we try to use it.
+            mockSpanner.freeze();
+            DatabaseClientImpl dbClient =
+                (DatabaseClientImpl) spanner.getDatabaseClient(databaseId);
+            // The CreateSession / BatchCreateSessions failure should propagate to the client and
+            // not retry.
+            try (ResultSet rs = dbClient.singleUse().executeQuery(SELECT1)) {
+              mockSpanner.unfreeze();
+              assertThrows(ResourceNotFoundException.class, rs::next);
+              // The server should only receive one BatchCreateSessions request.
+              assertThat(mockSpanner.getRequests()).hasSize(1);
+            }
+            assertThrows(
+                ResourceNotFoundException.class,
+                () ->
+                    dbClient
+                        .readWriteTransaction()
+                        .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT)));
+            // No additional requests should have been sent by the client.
+            // Note that in case of the use of multiplexed sessions, then we have 2 requests:
+            // 1. BatchCreateSessions for the session pool.
+            // 2. CreateSession for the multiplexed session.
+            assertThat(mockSpanner.getRequests())
+                .hasSize(
+                    spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()
+                        ? 2
+                        : 1);
+          }
         }
-        assertThrows(ResourceNotFoundException.class, dbClient::readWriteTransaction);
-        // No additional requests should have been sent by the client.
-        assertThat(mockSpanner.getRequests()).hasSize(1);
+        mockSpanner.reset();
+        mockSpanner.removeAllExecutionTimes();
       }
-      mockSpanner.reset();
-      mockSpanner.removeAllExecutionTimes();
     }
   }
 
@@ -3146,8 +3176,16 @@ public class DatabaseClientImplTest {
         // receive any new requests.
         mockSpanner.reset();
         // All subsequent calls should fail with a DatabaseNotFoundException.
-        assertThrows(
-            ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
+
+        if (!spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+          // We only verify this for read-only transactions if we are not using multiplexed
+          // sessions. For multiplexed sessions, we don't need any special handling, as deleting the
+          // database will also invalidate the multiplexed session, and trying to continue to use it
+          // will continue to return an error.
+          assertThrows(
+              ResourceNotFoundException.class, () -> dbClient.singleUse().executeQuery(SELECT1));
+        }
+
         assertThrows(
             ResourceNotFoundException.class,
             () -> dbClient.readWriteTransaction().run(transaction -> null));
@@ -3204,10 +3242,17 @@ public class DatabaseClientImplTest {
             assertThrows(
                 ResourceNotFoundException.class,
                 () -> dbClient.singleUse().executeQuery(SELECT1).next());
-            // The server should only receive one BatchCreateSessions request for each run as we
-            // have set MinSessions=0.
-            assertThat(mockSpanner.getRequests()).hasSize(run + 1);
-            assertThat(dbClient.pool.isValid()).isFalse();
+            if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+              // We should only receive 1 CreateSession request. The query should never be executed,
+              // as the session creation fails before it gets to executing a query.
+              assertEquals(1, mockSpanner.countRequestsOfType(CreateSessionRequest.class));
+              assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+            } else {
+              // The server should only receive one BatchCreateSessions request for each run as we
+              // have set MinSessions=0.
+              assertThat(mockSpanner.getRequests()).hasSize(run + 1);
+              assertThat(dbClient.pool.isValid()).isFalse();
+            }
           }
         }
       }
@@ -3653,29 +3698,53 @@ public class DatabaseClientImplTest {
 
   @Test
   public void testBatchCreateSessionsPermissionDenied() {
-    mockSpanner.setBatchCreateSessionsExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
-    mockSpanner.setCreateSessionExecutionTime(
-        SimulatedExecutionTime.ofStickyException(
-            Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
-    try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId("my-project")
-            .setChannelProvider(channelProvider)
-            .setCredentials(NoCredentials.getInstance())
-            .build()
-            .getService()) {
-      DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
-      DatabaseClient client = spanner.getDatabaseClient(databaseId);
-      // The following call is non-blocking and will not generate an exception.
-      ResultSet rs = client.singleUse().executeQuery(SELECT1);
-      // Actually trying to get any results will cause an exception.
-      SpannerException e = assertThrows(SpannerException.class, rs::next);
-      assertEquals(ErrorCode.PERMISSION_DENIED, e.getErrorCode());
-    } finally {
-      mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
-      mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
+    for (Duration waitForMinSessions : ImmutableList.of(Duration.ZERO, Duration.ofSeconds(5L))) {
+      mockSpanner.setBatchCreateSessionsExecutionTime(
+          SimulatedExecutionTime.ofStickyException(
+              Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
+      mockSpanner.setCreateSessionExecutionTime(
+          SimulatedExecutionTime.ofStickyException(
+              Status.PERMISSION_DENIED.withDescription("Not permitted").asRuntimeException()));
+      if (waitForMinSessions.isZero()) {
+        mockSpanner.freeze();
+      }
+      try (Spanner spanner =
+          SpannerOptions.newBuilder()
+              .setProjectId("my-project")
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance())
+              .setSessionPoolOption(
+                  SessionPoolOptions.newBuilder().setWaitForMinSessions(waitForMinSessions).build())
+              .build()
+              .getService()) {
+        DatabaseId databaseId = DatabaseId.of("my-project", "my-instance", "my-database");
+        SpannerException spannerException;
+        if (waitForMinSessions.isZero()) {
+          // The following call is non-blocking and will not generate an exception.
+          DatabaseClient client = spanner.getDatabaseClient(databaseId);
+          ResultSet resultSet = client.singleUse().executeQuery(SELECT1);
+          mockSpanner.unfreeze();
+          // Actually trying to get any results will cause an exception.
+          spannerException = assertThrows(SpannerException.class, resultSet::next);
+        } else {
+          // This is blocking when we should wait for min sessions, and will therefore fail.
+          if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+            spannerException =
+                assertThrows(SpannerException.class, () -> spanner.getDatabaseClient(databaseId));
+          } else {
+            // TODO: Fix the session pool implementation for waiting for min sessions, so this also
+            //       propagates the error directly when session creation fails.
+            DatabaseClient client = spanner.getDatabaseClient(databaseId);
+            spannerException =
+                assertThrows(
+                    SpannerException.class, () -> client.singleUse().executeQuery(SELECT1).next());
+          }
+        }
+        assertEquals(ErrorCode.PERMISSION_DENIED, spannerException.getErrorCode());
+      } finally {
+        mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
+        mockSpanner.setCreateSessionExecutionTime(SimulatedExecutionTime.none());
+      }
     }
   }
 
@@ -3795,7 +3864,9 @@ public class DatabaseClientImplTest {
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
+      mockSpanner.freeze();
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
+        mockSpanner.unfreeze();
         SpannerException e = assertThrows(SpannerException.class, rs::next);
         assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
       }

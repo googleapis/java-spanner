@@ -844,11 +844,14 @@ abstract class AbstractReadContext
 
   @Override
   public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+    this.session.onError(e);
     return e;
   }
 
   @Override
-  public void onDone(boolean withBeginTransaction) {}
+  public void onDone(boolean withBeginTransaction) {
+    this.session.onReadDone();
+  }
 
   private ResultSet readInternal(
       String table,

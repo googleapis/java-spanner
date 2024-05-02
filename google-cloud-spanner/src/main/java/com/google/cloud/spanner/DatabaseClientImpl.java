@@ -21,7 +21,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
-import com.google.cloud.spanner.SessionPool.SessionFutureWrapper;
 import com.google.cloud.spanner.SpannerImpl.ClosedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -36,15 +35,26 @@ class DatabaseClientImpl implements DatabaseClient {
   private final TraceWrapper tracer;
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
+  @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
 
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, tracer);
+    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
   }
 
+  @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
+    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+  }
+
+  DatabaseClientImpl(
+      String clientId,
+      SessionPool pool,
+      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
+      TraceWrapper tracer) {
     this.clientId = clientId;
     this.pool = pool;
+    this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.tracer = tracer;
   }
 
@@ -54,7 +64,11 @@ class DatabaseClientImpl implements DatabaseClient {
   }
 
   @VisibleForTesting
-  SessionFutureWrapper getMultiplexedSession() {
+  DatabaseClient getMultiplexedSession() {
+    if (this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()) {
+      return this.multiplexedSessionDatabaseClient;
+    }
     return pool.getMultiplexedSessionWithFallback();
   }
 
@@ -270,7 +284,18 @@ class DatabaseClientImpl implements DatabaseClient {
     }
   }
 
+  boolean isValid() {
+    return pool.isValid()
+        && (multiplexedSessionDatabaseClient == null
+            || multiplexedSessionDatabaseClient.isValid()
+            || !multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported());
+  }
+
   ListenableFuture<Void> closeAsync(ClosedException closedException) {
+    if (this.multiplexedSessionDatabaseClient != null) {
+      // This method is non-blocking.
+      this.multiplexedSessionDatabaseClient.close();
+    }
     return pool.closeAsync(closedException);
   }
 }

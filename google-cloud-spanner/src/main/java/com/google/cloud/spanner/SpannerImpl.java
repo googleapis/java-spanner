@@ -247,7 +247,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     synchronized (this) {
       checkClosed();
       String clientId = null;
-      if (dbClients.containsKey(db) && !dbClients.get(db).pool.isValid()) {
+      if (dbClients.containsKey(db) && !dbClients.get(db).isValid()) {
         // Close the invalidated client and remove it.
         dbClients.get(db).closeAsync(new ClosedException());
         clientId = dbClients.get(db).clientId;
@@ -278,8 +278,13 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 this.tracer,
                 labelValues,
                 attributesBuilder.build());
+        MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
+            getOptions().getSessionPoolOptions().getUseMultiplexedSession()
+                ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
+                : null;
         pool.maybeWaitOnMinSessions();
-        DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
+        DatabaseClientImpl dbClient =
+            createDatabaseClient(clientId, pool, multiplexedSessionDatabaseClient);
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -287,8 +292,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @VisibleForTesting
-  DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return new DatabaseClientImpl(clientId, pool, tracer);
+  DatabaseClientImpl createDatabaseClient(
+      String clientId,
+      SessionPool pool,
+      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient) {
+    return new DatabaseClientImpl(clientId, pool, multiplexedSessionClient, tracer);
   }
 
   @Override
