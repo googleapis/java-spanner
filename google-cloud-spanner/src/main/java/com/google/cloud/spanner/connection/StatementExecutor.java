@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Duration;
+import io.opentelemetry.context.Context;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -147,13 +148,16 @@ class StatementExecutor {
   /** Creates an {@link ExecutorService} for a {@link StatementExecutor}. */
   private static ListeningExecutorService createExecutorService(boolean useVirtualThreads) {
     return MoreExecutors.listeningDecorator(
-        new ThreadPoolExecutor(
-            1,
-            1,
-            0L,
-            TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(),
-            useVirtualThreads ? DEFAULT_VIRTUAL_THREAD_FACTORY : DEFAULT_DAEMON_THREAD_FACTORY));
+        Context.taskWrapping(
+            new ThreadPoolExecutor(
+                1,
+                1,
+                0L,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(),
+                useVirtualThreads
+                    ? DEFAULT_VIRTUAL_THREAD_FACTORY
+                    : DEFAULT_DAEMON_THREAD_FACTORY)));
   }
 
   private final ListeningExecutorService executor;
