@@ -231,7 +231,7 @@ public class OpenTelemetrySpanTest {
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(2)
-                    .setWaitForMinSessions(Duration.ofSeconds(5))
+                    .setWaitForMinSessions(Duration.ofSeconds(10))
                     .build());
 
     spanner = builder.build().getService();

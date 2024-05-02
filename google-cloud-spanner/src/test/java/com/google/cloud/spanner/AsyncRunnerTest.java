@@ -261,12 +261,11 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
             executor);
     res.get();
     if (isMultiplexedSessionsEnabled()) {
+      // The mock server could have received a CreateSession request for a multiplexed session, but
+      // it could also be that that request has not yet reached the server.
       assertThat(mockSpanner.getRequestTypes())
-          .containsExactly(
-              CreateSessionRequest.class,
-              BatchCreateSessionsRequest.class,
-              ExecuteSqlRequest.class,
-              CommitRequest.class);
+          .containsAtLeast(
+              BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
     } else {
       assertThat(mockSpanner.getRequestTypes())
           .containsExactly(
