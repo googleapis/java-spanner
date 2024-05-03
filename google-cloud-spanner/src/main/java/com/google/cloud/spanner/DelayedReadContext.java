@@ -130,7 +130,14 @@ class DelayedReadContext<T extends ReadContext> implements ReadContext {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    try {
+      this.readContextFuture.get().close();
+    } catch (Throwable ignore) {
+      // Ignore any errors during close, as this error has already propagated to the user through
+      // other means.
+    }
+  }
 
   /**
    * Represents a {@link ReadContext} using a multiplexed session that is not yet ready. The

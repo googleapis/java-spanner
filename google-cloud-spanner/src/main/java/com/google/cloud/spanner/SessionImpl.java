@@ -484,6 +484,8 @@ class SessionImpl implements Session {
 
   void onReadDone() {}
 
+  void onTransactionDone() {}
+
   TraceWrapper getTracer() {
     return tracer;
   }
