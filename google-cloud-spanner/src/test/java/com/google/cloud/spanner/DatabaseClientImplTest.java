@@ -5060,6 +5060,62 @@ public class DatabaseClientImplTest {
     }
   }
 
+  @Test
+  public void testSessionPoolExhaustedError_containsStackTraces() {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setFailIfPoolExhausted()
+                    .setMinSessions(2)
+                    .setMaxSessions(4)
+                    .setWaitForMinSessions(Duration.ofSeconds(10L))
+                    .build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      List<TransactionManager> transactions = new ArrayList<>();
+      // Deliberately leak 4 sessions.
+      for (int i = 0; i < 4; i++) {
+        // Get a transaction manager without doing anything with it. This will reserve a session
+        // from
+        // the pool, but not increase the number of sessions marked as in use.
+        transactions.add(client.transactionManager());
+      }
+      // Trying to get yet another transaction will fail.
+      // NOTE: This fails directly, because we have set the setFailIfPoolExhausted() option.
+      SpannerException spannerException =
+          assertThrows(SpannerException.class, client::transactionManager);
+      assertEquals(ErrorCode.RESOURCE_EXHAUSTED, spannerException.getErrorCode());
+      assertTrue(
+          spannerException.getMessage(),
+          spannerException.getMessage().contains("There are currently 4 sessions checked out:"));
+      assertTrue(
+          spannerException.getMessage(),
+          spannerException.getMessage().contains("Session was checked out from the pool at"));
+
+      SessionPool pool = ((DatabaseClientImpl) client).pool;
+      // Verify that there are no sessions in the pool.
+      assertEquals(0, pool.getNumberOfSessionsInPool());
+      // Verify that the sessions have not (yet) been marked as in use.
+      assertEquals(0, pool.getNumberOfSessionsInUse());
+      assertEquals(0, pool.getMaxSessionsInUse());
+      // Verify that we have 4 sessions in the pool.
+      assertEquals(4, pool.getTotalSessionsPlusNumSessionsBeingCreated());
+
+      // Release the sessions back into the pool.
+      for (TransactionManager transaction : transactions) {
+        transaction.close();
+      }
+      // Closing the transactions should return the sessions to the pool.
+      assertEquals(4, pool.getNumberOfSessionsInPool());
+    }
+  }
+
   static void assertAsString(String expected, ResultSet resultSet, int col) {
     assertEquals(expected, resultSet.getValue(col).getAsString());
     assertEquals(ImmutableList.of(expected), resultSet.getValue(col).getAsStringList());
