@@ -19,46 +19,54 @@ package com.google.cloud.spanner;
 import com.google.api.core.ApiFuture;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 /** Forwarding implementation of {@link AsyncResultSet} that forwards all calls to a delegate. */
 public class ForwardingAsyncResultSet extends ForwardingResultSet implements AsyncResultSet {
-  final AsyncResultSet delegate;
 
   public ForwardingAsyncResultSet(AsyncResultSet delegate) {
     super(Preconditions.checkNotNull(delegate));
-    this.delegate = delegate;
+  }
+
+  ForwardingAsyncResultSet(Supplier<AsyncResultSet> delegateSupplier) {
+    super(Preconditions.checkNotNull(delegateSupplier));
+  }
+
+  @Override
+  AsyncResultSet getDelegate() {
+    return (AsyncResultSet) super.getDelegate();
   }
 
   @Override
   public CursorState tryNext() throws SpannerException {
-    return delegate.tryNext();
+    return getDelegate().tryNext();
   }
 
   @Override
   public ApiFuture<Void> setCallback(Executor exec, ReadyCallback cb) {
-    return delegate.setCallback(exec, cb);
+    return getDelegate().setCallback(exec, cb);
   }
 
   @Override
   public void cancel() {
-    delegate.cancel();
+    getDelegate().cancel();
   }
 
   @Override
   public void resume() {
-    delegate.resume();
+    getDelegate().resume();
   }
 
   @Override
   public <T> ApiFuture<List<T>> toListAsync(
       Function<StructReader, T> transformer, Executor executor) {
-    return delegate.toListAsync(transformer, executor);
+    return getDelegate().toListAsync(transformer, executor);
   }
 
   @Override
   public <T> List<T> toList(Function<StructReader, T> transformer) throws SpannerException {
-    return delegate.toList(transformer);
+    return getDelegate().toList(transformer);
   }
 }

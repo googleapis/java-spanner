@@ -46,7 +46,8 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     }
 
     @Override
-    DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
+    DatabaseClientImpl createDatabaseClient(
+        String clientId, SessionPool pool, MultiplexedSessionDatabaseClient ignore) {
       return new DatabaseClientWithClosedSessionImpl(clientId, pool, tracer);
     }
   }
@@ -89,7 +90,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
 
     @Override
     SessionFutureWrapper getMultiplexedSession() {
-      SessionFutureWrapper session = super.getMultiplexedSession();
+      SessionFutureWrapper session = (SessionFutureWrapper) super.getMultiplexedSession();
       if (invalidateNextSession) {
         session.get().get().getDelegate().close();
         session.get().get().setAllowReplacing(false);

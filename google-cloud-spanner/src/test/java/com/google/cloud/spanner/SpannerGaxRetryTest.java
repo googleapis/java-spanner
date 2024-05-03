@@ -284,7 +284,8 @@ public class SpannerGaxRetryTest {
 
   @Test
   public void singleUseNonRetryableError() {
-    mockSpanner.addException(FAILED_PRECONDITION);
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
       SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
@@ -294,7 +295,8 @@ public class SpannerGaxRetryTest {
   @Test
   public void singleUseNonRetryableErrorOnNext() {
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
-      mockSpanner.addException(FAILED_PRECONDITION);
+      mockSpanner.setExecuteStreamingSqlExecutionTime(
+          SimulatedExecutionTime.ofException(FAILED_PRECONDITION));
       SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
@@ -302,7 +304,8 @@ public class SpannerGaxRetryTest {
 
   @Test
   public void singleUseInternal() {
-    mockSpanner.addException(new IllegalArgumentException());
+    mockSpanner.setExecuteStreamingSqlExecutionTime(
+        SimulatedExecutionTime.ofException(new IllegalArgumentException()));
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1AND2)) {
       SpannerException e = assertThrows(SpannerException.class, () -> rs.next());
       assertEquals(ErrorCode.INTERNAL, e.getErrorCode());

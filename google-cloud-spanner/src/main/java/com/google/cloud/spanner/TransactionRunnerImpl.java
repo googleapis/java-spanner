@@ -30,6 +30,8 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
+import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -51,11 +53,13 @@ import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -151,12 +155,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
       @Override
       public void addListener(Runnable listener) {
-        ((ListenableAsyncResultSet) this.delegate).addListener(listener);
+        ((ListenableAsyncResultSet) getDelegate()).addListener(listener);
       }
 
       @Override
       public void removeListener(Runnable listener) {
-        ((ListenableAsyncResultSet) this.delegate).removeListener(listener);
+        ((ListenableAsyncResultSet) getDelegate()).removeListener(listener);
       }
     }
 
@@ -198,6 +202,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     private CommitResponse commitResponse;
     private final Clock clock;
 
+    private final Map<SpannerRpc.Option, ?> channelHint;
+
     private TransactionContextImpl(Builder builder) {
       super(builder);
       this.transactionId = builder.transactionId;
@@ -205,6 +211,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
       this.options = builder.options;
       this.finishedAsyncOperations.set(null);
       this.clock = builder.clock;
+      this.channelHint =
+          getChannelHintOptions(
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
     }
 
     @Override
@@ -560,6 +569,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
+    Map<Option, ?> getTransactionChannelHint() {
+      return channelHint;
+    }
+
+    @Override
     public void onTransactionMetadata(Transaction transaction, boolean shouldIncludeId) {
       Preconditions.checkNotNull(transaction);
       if (transaction.getId() != ByteString.EMPTY) {
@@ -587,6 +601,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+      e = super.onError(e, withBeginTransaction);
+
       // If the statement that caused an error was the statement that included a BeginTransaction
       // option, we simulate an aborted transaction to force a retry of the entire transaction. This
       // will cause the retry to execute an explicit BeginTransaction RPC and then the actual
@@ -1104,4 +1120,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
   public void invalidate() {
     isValid = false;
   }
+
+  @Override
+  public void close() {}
 }

@@ -144,7 +144,7 @@ class SessionPool {
             "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
       }
 
-      if (options.getUseMultiplexedSession()
+      if (useMultiplexedSessions()
           && !waitOnMultiplexedSessionsLatch.await(timeoutNanos, TimeUnit.NANOSECONDS)) {
         final long timeoutMillis = options.getWaitForMinSessions().toMillis();
         throw SpannerExceptionFactory.newSpannerException(
@@ -1835,7 +1835,7 @@ class SessionPool {
 
   class PooledSession implements CachedSession {
 
-    @VisibleForTesting SessionImpl delegate;
+    @VisibleForTesting final SessionImpl delegate;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
 
@@ -1872,7 +1872,7 @@ class SessionPool {
     private SessionState state;
 
     private PooledSession(SessionImpl delegate) {
-      this.delegate = delegate;
+      this.delegate = Preconditions.checkNotNull(delegate);
       this.state = SessionState.AVAILABLE;
 
       // initialise the lastUseTime field for each session.
@@ -2648,29 +2648,27 @@ class SessionPool {
 
     void maintainMultiplexedSession(Instant currentTime) {
       try {
-        if (options.getUseMultiplexedSession()) {
-          synchronized (lock) {
-            if (currentMultiplexedSessionReference.get().isDone()) {
-              SessionReference sessionReference = getMultiplexedSessionInstance();
-              if (sessionReference != null
-                  && isMultiplexedSessionStale(sessionReference, currentTime)) {
-                final Instant minExecutionTime =
-                    multiplexedSessionReplacementAttemptTime.plus(
-                        multiplexedSessionCreationRetryDelay);
-                if (currentTime.isBefore(minExecutionTime)) {
-                  return;
-                }
-                /*
-                 This will attempt to create a new multiplexed session. if successfully created then
-                 the existing session will be replaced. Note that there maybe active transactions
-                 running on the stale session. Hence, it is important that we only replace the reference
-                 and not invoke a DeleteSession RPC.
-                */
-                maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
-
-                // update this only after we have attempted to replace the multiplexed session
-                multiplexedSessionReplacementAttemptTime = currentTime;
+        if (useMultiplexedSessions()) {
+          if (currentMultiplexedSessionReference.get().isDone()) {
+            SessionReference sessionReference = getMultiplexedSessionInstance();
+            if (sessionReference != null
+                && isMultiplexedSessionStale(sessionReference, currentTime)) {
+              final Instant minExecutionTime =
+                  multiplexedSessionReplacementAttemptTime.plus(
+                      multiplexedSessionCreationRetryDelay);
+              if (currentTime.isBefore(minExecutionTime)) {
+                return;
               }
+              /*
+               This will attempt to create a new multiplexed session. if successfully created then
+               the existing session will be replaced. Note that there maybe active transactions
+               running on the stale session. Hence, it is important that we only replace the reference
+               and not invoke a DeleteSession RPC.
+              */
+              maybeCreateMultiplexedSession(multiplexedMaintainerConsumer);
+
+              // update this only after we have attempted to replace the multiplexed session
+              multiplexedSessionReplacementAttemptTime = currentTime;
             }
           }
         }
@@ -2949,6 +2947,12 @@ class SessionPool {
     this.waitOnMultiplexedSessionsLatch = new CountDownLatch(1);
   }
 
+  // TODO: Remove once all code for multiplexed sessions has been removed from the pool.
+  private boolean useMultiplexedSessions() {
+    // Multiplexed sessions have moved to MultiplexedSessionDatabaseClient
+    return false;
+  }
+
   /**
    * @return the {@link Dialect} of the underlying database. This method will block until the
    *     dialect is available. It will potentially execute one or two RPCs to get the dialect if
@@ -3073,7 +3077,7 @@ class SessionPool {
       if (options.getMinSessions() > 0) {
         createSessions(options.getMinSessions(), true);
       }
-      if (options.getUseMultiplexedSession()) {
+      if (useMultiplexedSessions()) {
         maybeCreateMultiplexedSession(multiplexedSessionInitializationConsumer);
       }
     }
@@ -3142,7 +3146,7 @@ class SessionPool {
    * SessionPoolOptions#useMultiplexedSession} is not set.
    */
   SessionFutureWrapper getMultiplexedSessionWithFallback() throws SpannerException {
-    if (options.getUseMultiplexedSession()) {
+    if (useMultiplexedSessions()) {
       ISpan span = tracer.getCurrentSpan();
       try {
         return getWrappedMultiplexedSessionFuture(span);
@@ -3754,6 +3758,10 @@ class SessionPool {
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
       synchronized (lock) {
         numSessionsBeingCreated -= createFailureForSessionCount;
+        if (numSessionsBeingCreated == 0) {
+          // Don't continue to block if no more sessions are being created.
+          waitOnMinSessionsLatch.countDown();
+        }
         if (isClosed()) {
           decrementPendingClosures(createFailureForSessionCount);
         }
