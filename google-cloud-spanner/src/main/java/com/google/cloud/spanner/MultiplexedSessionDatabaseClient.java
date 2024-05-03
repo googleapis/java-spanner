@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -63,6 +64,8 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
     private final int singleUseChannelHint;
 
+    private boolean done;
+
     MultiplexedSessionTransaction(
         MultiplexedSessionDatabaseClient client,
         ISpan span,
@@ -73,6 +76,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
       this.client = client;
       this.singleUse = singleUse;
       this.singleUseChannelHint = singleUseChannelHint;
+      this.client.numSessionsAcquired.incrementAndGet();
       setCurrentSpan(span);
     }
 
@@ -100,6 +104,20 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
           this.client.channelUsage.clear(this.singleUseChannelHint);
         }
         this.client.numCurrentSingleUseTransactions.decrementAndGet();
+      }
+    }
+
+    @Override
+    void onTransactionDone() {
+      boolean markedDone = false;
+      synchronized (this) {
+        if (!this.done) {
+          this.done = true;
+          markedDone = true;
+        }
+      }
+      if (markedDone) {
+        client.numSessionsReleased.incrementAndGet();
       }
     }
 
@@ -151,6 +169,10 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
    */
   private final AtomicReference<ResourceNotFoundException> resourceNotFoundException =
       new AtomicReference<>();
+
+  private final AtomicLong numSessionsAcquired = new AtomicLong();
+
+  private final AtomicLong numSessionsReleased = new AtomicLong();
 
   /**
    * This flag is set to true if the server return UNIMPLEMENTED when we try to create a multiplexed
@@ -237,6 +259,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   boolean isValid() {
     return resourceNotFoundException.get() == null;
+  }
+
+  AtomicLong getNumSessionsAcquired() {
+    return this.numSessionsAcquired;
+  }
+
+  AtomicLong getNumSessionsReleased() {
+    return this.numSessionsReleased;
   }
 
   boolean isMultiplexedSessionsSupported() {

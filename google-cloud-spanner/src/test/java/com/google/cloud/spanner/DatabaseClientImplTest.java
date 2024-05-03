@@ -3859,12 +3859,12 @@ public class DatabaseClientImplTest {
       // Simulate session creation failures on the backend.
       mockSpanner.setCreateSessionExecutionTime(
           SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
-      DatabaseClient client =
-          spannerWithEmptySessionPool.getDatabaseClient(
-              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
       mockSpanner.freeze();
+      DatabaseClient client =
+          spannerWithEmptySessionPool.getDatabaseClient(
+              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         mockSpanner.unfreeze();
         SpannerException e = assertThrows(SpannerException.class, rs::next);

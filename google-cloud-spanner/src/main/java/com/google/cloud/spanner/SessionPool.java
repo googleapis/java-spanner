@@ -68,7 +68,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
@@ -156,7 +155,8 @@ class SessionPool {
     }
   }
 
-  private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
+  private abstract static class CachedResultSetSupplier
+      implements com.google.common.base.Supplier<ResultSet> {
 
     private ResultSet cached;
 
@@ -2265,7 +2265,6 @@ class SessionPool {
     @Override
     public void close() {
       synchronized (lock) {
-        numMultiplexedSessionsReleased++;
         if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
           SessionPool.this.resourceNotFoundException =
               MoreObjects.firstNonNull(
@@ -2772,13 +2771,7 @@ class SessionPool {
   private long numSessionsAcquired = 0;
 
   @GuardedBy("lock")
-  private long numMultiplexedSessionsAcquired = 0;
-
-  @GuardedBy("lock")
   private long numSessionsReleased = 0;
-
-  @GuardedBy("lock")
-  private long numMultiplexedSessionsReleased = 0;
 
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
@@ -2830,7 +2823,9 @@ class SessionPool {
       SessionClient sessionClient,
       TraceWrapper tracer,
       List<LabelValue> labelValues,
-      Attributes attributes) {
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
 
     // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
@@ -2846,7 +2841,9 @@ class SessionPool {
         tracer,
         labelValues,
         spannerOptions.getOpenTelemetry(),
-        attributes);
+        attributes,
+        numMultiplexedSessionsAcquired,
+        numMultiplexedSessionsReleased);
   }
 
   static SessionPool createPool(
@@ -2884,7 +2881,9 @@ class SessionPool {
         tracer,
         SPANNER_DEFAULT_LABEL_VALUES,
         openTelemetry,
-        null);
+        null,
+        new AtomicLong(),
+        new AtomicLong());
   }
 
   static SessionPool createPool(
@@ -2898,7 +2897,9 @@ class SessionPool {
       TraceWrapper tracer,
       List<LabelValue> labelValues,
       OpenTelemetry openTelemetry,
-      Attributes attributes) {
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     SessionPool pool =
         new SessionPool(
             poolOptions,
@@ -2912,7 +2913,9 @@ class SessionPool {
             tracer,
             labelValues,
             openTelemetry,
-            attributes);
+            attributes,
+            numMultiplexedSessionsAcquired,
+            numMultiplexedSessionsReleased);
     pool.initPool();
     return pool;
   }
@@ -2929,7 +2932,9 @@ class SessionPool {
       TraceWrapper tracer,
       List<LabelValue> labelValues,
       OpenTelemetry openTelemetry,
-      Attributes attributes) {
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
@@ -2940,8 +2945,13 @@ class SessionPool {
     this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
     this.tracer = tracer;
-    this.initOpenCensusMetricsCollection(metricRegistry, labelValues);
-    this.initOpenTelemetryMetricsCollection(openTelemetry, attributes);
+    this.initOpenCensusMetricsCollection(
+        metricRegistry,
+        labelValues,
+        numMultiplexedSessionsAcquired,
+        numMultiplexedSessionsReleased);
+    this.initOpenTelemetryMetricsCollection(
+        openTelemetry, attributes, numMultiplexedSessionsAcquired, numMultiplexedSessionsReleased);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
     this.waitOnMultiplexedSessionsLatch = new CountDownLatch(1);
@@ -3143,7 +3153,7 @@ class SessionPool {
 
   /**
    * Returns a multiplexed session. The method fallbacks to a regular session if {@link
-   * SessionPoolOptions#useMultiplexedSession} is not set.
+   * SessionPoolOptions#getUseMultiplexedSession} is not set.
    */
   SessionFutureWrapper getMultiplexedSessionWithFallback() throws SpannerException {
     if (useMultiplexedSessions()) {
@@ -3250,8 +3260,6 @@ class SessionPool {
           maxSessionsInUse = numSessionsInUse;
         }
         numSessionsAcquired++;
-      } else {
-        numMultiplexedSessionsAcquired++;
       }
     }
   }
@@ -3775,7 +3783,10 @@ class SessionPool {
    * exporter, it allows users to monitor client behavior.
    */
   private void initOpenCensusMetricsCollection(
-      MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+      MetricRegistry metricRegistry,
+      List<LabelValue> labelValues,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     if (!SpannerOptions.isEnabledOpenCensusMetrics()) {
       return;
     }
@@ -3860,18 +3871,14 @@ class SessionPool {
         labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsAcquired);
     numAcquiredSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
     numAcquiredSessionsMetric.createTimeSeries(
-        labelValuesWithMultiplexedSessions,
-        this,
-        sessionPool -> sessionPool.numMultiplexedSessionsAcquired);
+        labelValuesWithMultiplexedSessions, this, unused -> numMultiplexedSessionsAcquired.get());
 
     numReleasedSessionsMetric.removeTimeSeries(labelValuesWithRegularSessions);
     numReleasedSessionsMetric.createTimeSeries(
         labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsReleased);
     numReleasedSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
     numReleasedSessionsMetric.createTimeSeries(
-        labelValuesWithMultiplexedSessions,
-        this,
-        sessionPool -> sessionPool.numMultiplexedSessionsReleased);
+        labelValuesWithMultiplexedSessions, this, unused -> numMultiplexedSessionsReleased.get());
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
@@ -3909,7 +3916,10 @@ class SessionPool {
    * an exporter, it allows users to monitor client behavior.
    */
   private void initOpenTelemetryMetricsCollection(
-      OpenTelemetry openTelemetry, Attributes attributes) {
+      OpenTelemetry openTelemetry,
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     if (openTelemetry == null || !SpannerOptions.isEnabledOpenTelemetryMetrics()) {
       return;
     }
@@ -3981,7 +3991,8 @@ class SessionPool {
         .buildWithCallback(
             measurement -> {
               measurement.record(this.numSessionsAcquired, attributesRegularSession);
-              measurement.record(this.numMultiplexedSessionsAcquired, attributesMultiplexedSession);
+              measurement.record(
+                  numMultiplexedSessionsAcquired.get(), attributesMultiplexedSession);
             });
 
     meter
@@ -3991,7 +4002,8 @@ class SessionPool {
         .buildWithCallback(
             measurement -> {
               measurement.record(this.numSessionsReleased, attributesRegularSession);
-              measurement.record(this.numMultiplexedSessionsReleased, attributesMultiplexedSession);
+              measurement.record(
+                  numMultiplexedSessionsReleased.get(), attributesMultiplexedSession);
             });
   }
 }

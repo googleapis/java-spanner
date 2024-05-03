@@ -117,6 +117,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -192,7 +193,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         tracer,
         labelValues,
         OpenTelemetry.noop(),
-        null);
+        null,
+        new AtomicLong(),
+        new AtomicLong());
   }
 
   private SessionPool createPool(
@@ -212,7 +215,9 @@ public class SessionPoolTest extends BaseSessionPoolTest {
         tracer,
         labelValues,
         openTelemetry,
-        attributes);
+        attributes,
+        new AtomicLong(),
+        new AtomicLong());
   }
 
   @BeforeClass
