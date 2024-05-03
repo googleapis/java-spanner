@@ -111,7 +111,7 @@ public class MultiplexedSessionDatabaseClientTest {
 
   @Test
   public void testForceDisableEnvVar() throws Exception {
-    assumeTrue(isJava8());
+    assumeTrue(isJava8() && !isWindows());
     assumeFalse(
         System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS"));
 
@@ -145,5 +145,9 @@ public class MultiplexedSessionDatabaseClientTest {
 
   private boolean isJava8() {
     return JavaVersionUtil.getJavaMajorVersion() == 8;
+  }
+
+  private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().contains("windows");
   }
 }
