@@ -183,6 +183,8 @@ public class ConnectionOptions {
   private static final String DEFAULT_OPTIMIZER_VERSION = "";
   private static final String DEFAULT_OPTIMIZER_STATISTICS_PACKAGE = "";
   private static final RpcPriority DEFAULT_RPC_PRIORITY = null;
+  private static final DdlInTransactionMode DEFAULT_DDL_IN_TRANSACTION_MODE =
+      DdlInTransactionMode.ALLOW_IN_EMPTY_TRANSACTION;
   private static final boolean DEFAULT_RETURN_COMMIT_STATS = false;
   private static final boolean DEFAULT_LENIENT = false;
   private static final boolean DEFAULT_ROUTE_TO_LEADER = true;
@@ -253,6 +255,8 @@ public class ConnectionOptions {
   public static final String LENIENT_PROPERTY_NAME = "lenient";
   /** Name of the 'rpcPriority' connection property. */
   public static final String RPC_PRIORITY_NAME = "rpcPriority";
+
+  public static final String DDL_IN_TRANSACTION_MODE_PROPERTY_NAME = "ddlInTransactionMode";
   /** Dialect to use for a connection. */
   private static final String DIALECT_PROPERTY_NAME = "dialect";
   /** Name of the 'databaseRole' connection property. */
@@ -374,6 +378,11 @@ public class ConnectionOptions {
                   ConnectionProperty.createStringProperty(
                       RPC_PRIORITY_NAME,
                       "Sets the priority for all RPC invocations from this connection (HIGH/MEDIUM/LOW). The default is HIGH."),
+                  ConnectionProperty.createStringProperty(
+                      DDL_IN_TRANSACTION_MODE_PROPERTY_NAME,
+                      "Sets the behavior of a connection when a DDL statement is executed in a read/write transaction. The default is "
+                          + DEFAULT_DDL_IN_TRANSACTION_MODE
+                          + "."),
                   ConnectionProperty.createStringProperty(
                       DIALECT_PROPERTY_NAME,
                       "Sets the dialect to use for new databases that are created by this connection."),
@@ -697,6 +706,7 @@ public class ConnectionOptions {
   private final boolean autoConfigEmulator;
   private final Dialect dialect;
   private final RpcPriority rpcPriority;
+  private final DdlInTransactionMode ddlInTransactionMode;
   private final boolean delayTransactionStartUntilFirstWrite;
   private final boolean trackSessionLeaks;
   private final boolean trackConnectionLeaks;
@@ -757,6 +767,7 @@ public class ConnectionOptions {
         determineHost(
             matcher, parseEndpoint(this.uri), autoConfigEmulator, usePlainText, System.getenv());
     this.rpcPriority = parseRPCPriority(this.uri);
+    this.ddlInTransactionMode = parseDdlInTransactionMode(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
     this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
@@ -1196,6 +1207,14 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static DdlInTransactionMode parseDdlInTransactionMode(String uri) {
+    String value = parseUriProperty(uri, DDL_IN_TRANSACTION_MODE_PROPERTY_NAME);
+    return value != null
+        ? DdlInTransactionMode.valueOf(value.toUpperCase())
+        : DEFAULT_DDL_IN_TRANSACTION_MODE;
+  }
+
+  @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
     Matcher matcher = pattern.matcher(uri);
@@ -1464,6 +1483,10 @@ public class ConnectionOptions {
   /** The {@link RpcPriority} to use for the connection. */
   RpcPriority getRPCPriority() {
     return rpcPriority;
+  }
+
+  DdlInTransactionMode getDdlInTransactionMode() {
+    return this.ddlInTransactionMode;
   }
 
   /**
