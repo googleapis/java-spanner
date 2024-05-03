@@ -105,7 +105,11 @@ public class SessionPoolOptions {
     this.randomizePositionQPSThreshold = builder.randomizePositionQPSThreshold;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
-    this.useMultiplexedSession = builder.useMultiplexedSession;
+    // TODO: Remove when multiplexed sessions are guaranteed to be supported.
+    this.useMultiplexedSession =
+        builder.useMultiplexedSession
+            && !Boolean.parseBoolean(
+                System.getenv("GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS"));
     this.useRandomChannelHint = builder.useRandomChannelHint;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
