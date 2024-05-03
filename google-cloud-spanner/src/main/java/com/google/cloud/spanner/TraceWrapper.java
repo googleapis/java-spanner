@@ -20,6 +20,8 @@ import com.google.cloud.spanner.SpannerOptions.TracingFramework;
 import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 
 class TraceWrapper {
@@ -33,31 +35,30 @@ class TraceWrapper {
   }
 
   ISpan spanBuilder(String spanName) {
+    return spanBuilder(spanName, Attributes.empty());
+  }
+
+  ISpan spanBuilder(String spanName, Attributes attributes) {
     if (SpannerOptions.getActiveTracingFramework().equals(TracingFramework.OPEN_TELEMETRY)) {
-      return new OpenTelemetrySpan(openTelemetryTracer.spanBuilder(spanName).startSpan());
+      return new OpenTelemetrySpan(openTelemetryTracer.spanBuilder(spanName).setAllAttributes(attributes).startSpan());
     } else {
       return new OpenCensusSpan(openCensusTracer.spanBuilder(spanName).startSpan());
     }
   }
 
   ISpan spanBuilderWithExplicitParent(String spanName, ISpan parentSpan) {
+    return spanBuilderWithExplicitParent(spanName, parentSpan, Attributes.empty());
+  }
+
+  ISpan spanBuilderWithExplicitParent(String spanName, ISpan parentSpan, Attributes attributes) {
     if (SpannerOptions.getActiveTracingFramework().equals(TracingFramework.OPEN_TELEMETRY)) {
       OpenTelemetrySpan otParentSpan = (OpenTelemetrySpan) parentSpan;
 
-      io.opentelemetry.api.trace.Span otSpan;
-
+      io.opentelemetry.api.trace.SpanBuilder otSpan = openTelemetryTracer.spanBuilder(spanName).setAllAttributes(attributes);
       if (otParentSpan != null && otParentSpan.getOpenTelemetrySpan() != null) {
-        otSpan =
-            openTelemetryTracer
-                .spanBuilder(spanName)
-                .setParent(Context.current().with(otParentSpan.getOpenTelemetrySpan()))
-                .startSpan();
-      } else {
-        otSpan = openTelemetryTracer.spanBuilder(spanName).startSpan();
+        otSpan = otSpan.setParent(Context.current().with(otParentSpan.getOpenTelemetrySpan()));
       }
-
-      return new OpenTelemetrySpan(otSpan);
-
+      return new OpenTelemetrySpan(otSpan.startSpan());
     } else {
       OpenCensusSpan parentOcSpan = (OpenCensusSpan) parentSpan;
       Span ocSpan =

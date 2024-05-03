@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.SpannerApiFutures.get;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;
@@ -45,6 +47,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Context;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -63,10 +68,15 @@ import javax.annotation.concurrent.GuardedBy;
 
 /** Base for all {@link Connection}-based transactions and batches. */
 abstract class AbstractBaseUnitOfWork implements UnitOfWork {
+  static final String DB_STATEMENT = "db.statement";
+  static final AttributeKey<String> DB_STATEMENT_KEY = AttributeKey.stringKey(DB_STATEMENT);
+  static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY = AttributeKey.stringArrayKey(DB_STATEMENT);
+
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
   protected final String transactionTag;
   protected final RpcPriority rpcPriority;
+  protected final Span span;
 
   /** Class for keeping track of the stacktrace of the caller of an async statement. */
   static final class SpannerAsyncExecutionException extends RuntimeException {
@@ -100,6 +110,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     private StatementTimeout statementTimeout = new StatementTimeout();
     private String transactionTag;
     private RpcPriority rpcPriority;
+    private Span span;
 
     Builder() {}
 
@@ -130,6 +141,11 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       return self();
     }
 
+    B setSpan(@Nullable Span span) {
+      this.span = span;
+      return self();
+    }
+
     abstract T build();
   }
 
@@ -139,7 +155,21 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.statementTimeout = builder.statementTimeout;
     this.transactionTag = builder.transactionTag;
     this.rpcPriority = builder.rpcPriority;
+    this.span = Preconditions.checkNotNull(builder.span);
   }
+
+  ApiFuture<Void> asyncEndUnitOfWorkSpan() {
+    return this.statementExecutor.submit(this::endUnitOfWorkSpan);
+  }
+
+  private Void endUnitOfWorkSpan() {
+    if (this.span != null) {
+      this.span.end();
+    }
+    return null;
+  }
+
+  abstract boolean isSingleUse();
 
   /**
    * Returns a descriptive name for the type of transaction / unit of work. This is used in error
@@ -345,6 +375,9 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
               if (currentlyRunningStatementFuture == future) {
                 currentlyRunningStatementFuture = null;
               }
+            }
+            if (isSingleUse()) {
+              endUnitOfWorkSpan();
             }
           }
         },

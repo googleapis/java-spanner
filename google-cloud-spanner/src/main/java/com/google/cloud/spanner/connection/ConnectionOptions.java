@@ -499,6 +499,7 @@ public class ConnectionOptions {
         Collections.emptyList();
     private SpannerOptionsConfigurator configurator;
     private OpenTelemetry openTelemetry;
+    private String tracingPrefix;
 
     private Builder() {}
 
@@ -653,6 +654,11 @@ public class ConnectionOptions {
       return this;
     }
 
+    public Builder setTracingPrefix(String tracingPrefix) {
+      this.tracingPrefix = tracingPrefix;
+      return this;
+    }
+
     /** @return the {@link ConnectionOptions} */
     public ConnectionOptions build() {
       Preconditions.checkState(this.uri != null, "Connection URI is required");
@@ -713,6 +719,7 @@ public class ConnectionOptions {
   private final boolean useVirtualThreads;
   private final boolean useVirtualGrpcTransportThreads;
   private final OpenTelemetry openTelemetry;
+  private final String tracingPrefix;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -818,6 +825,7 @@ public class ConnectionOptions {
     this.useVirtualThreads = parseUseVirtualThreads(this.uri);
     this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
     this.openTelemetry = builder.openTelemetry;
+    this.tracingPrefix = builder.tracingPrefix;
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -895,6 +903,15 @@ public class ConnectionOptions {
    */
   OpenTelemetry getOpenTelemetry() {
     return this.openTelemetry;
+  }
+
+  /**
+   * @return The prefix that will be added to all traces that are started by the Connection API.
+   *     This property is used by for example the JDBC driver to make sure all traces start with
+   *     CloudSpannerJdbc.
+   */
+  String getTracingPrefix() {
+    return this.tracingPrefix;
   }
 
   SpannerOptionsConfigurator getConfigurator() {

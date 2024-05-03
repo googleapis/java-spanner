@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
+import io.opentelemetry.context.Scope;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -484,76 +485,83 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         (statement.getType() == StatementType.QUERY)
             || (statement.getType() == StatementType.UPDATE && statement.hasReturningClause()),
         "Statement must be a query or DML with returning clause");
-    checkOrCreateValidTransaction(statement, callType);
+    try (Scope ignore = span.makeCurrent()) {
+      checkOrCreateValidTransaction(statement, callType);
 
-    ApiFuture<ResultSet> res;
-    if (retryAbortsInternally && txContextFuture != null) {
-      res =
-          executeStatementAsync(
-              callType,
-              statement,
-              () -> {
-                checkTimedOut();
-                return runWithRetry(
-                    () -> {
-                      try {
-                        getStatementExecutor()
-                            .invokeInterceptors(
-                                statement,
-                                StatementExecutionStep.EXECUTE_STATEMENT,
-                                ReadWriteTransaction.this);
-                        DirectExecuteResultSet delegate =
-                            DirectExecuteResultSet.ofResultSet(
-                                internalExecuteQuery(statement, analyzeMode, options));
-                        return createAndAddRetryResultSet(
-                            delegate, statement, analyzeMode, options);
-                      } catch (AbortedException e) {
-                        throw e;
-                      } catch (SpannerException e) {
-                        createAndAddFailedQuery(e, statement, analyzeMode, options);
-                        throw e;
-                      }
-                    });
-              },
-              // ignore interceptors here as they are invoked in the Callable.
-              InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
-    } else {
-      res = super.executeQueryAsync(callType, statement, analyzeMode, options);
-    }
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<ResultSet>() {
-          @Override
-          public void onFailure(Throwable t) {
-            if (t instanceof SpannerException) {
-              handlePossibleInvalidatingException((SpannerException) t);
+      ApiFuture<ResultSet> res;
+      if (retryAbortsInternally && txContextFuture != null) {
+        res =
+            executeStatementAsync(
+                callType,
+                statement,
+                () -> {
+                  checkTimedOut();
+                  return runWithRetry(
+                      () -> {
+                        try {
+                          getStatementExecutor()
+                              .invokeInterceptors(
+                                  statement,
+                                  StatementExecutionStep.EXECUTE_STATEMENT,
+                                  ReadWriteTransaction.this);
+                          DirectExecuteResultSet delegate =
+                              DirectExecuteResultSet.ofResultSet(
+                                  internalExecuteQuery(statement, analyzeMode, options));
+                          return createAndAddRetryResultSet(
+                              delegate, statement, analyzeMode, options);
+                        } catch (AbortedException e) {
+                          throw e;
+                        } catch (SpannerException e) {
+                          createAndAddFailedQuery(e, statement, analyzeMode, options);
+                          throw e;
+                        }
+                      });
+                },
+                // ignore interceptors here as they are invoked in the Callable.
+                InterceptorsUsage.IGNORE_INTERCEPTORS,
+                ImmutableList.of(SpannerGrpc.getExecuteStreamingSqlMethod()));
+      } else {
+        res = super.executeQueryAsync(callType, statement, analyzeMode, options);
+      }
+      ApiFutures.addCallback(
+          res,
+          new ApiFutureCallback<ResultSet>() {
+            @Override
+            public void onFailure(Throwable t) {
+              if (t instanceof SpannerException) {
+                handlePossibleInvalidatingException((SpannerException) t);
+              }
             }
-          }
 
-          @Override
-          public void onSuccess(ResultSet result) {}
-        },
-        MoreExecutors.directExecutor());
-    return res;
+            @Override
+            public void onSuccess(ResultSet result) {
+            }
+          },
+          MoreExecutors.directExecutor());
+      return res;
+    }
   }
 
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
       CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
-    return ApiFutures.transform(
-        internalExecuteUpdateAsync(callType, update, analyzeMode, options),
-        Tuple::y,
-        MoreExecutors.directExecutor());
+    try (Scope ignore = span.makeCurrent()) {
+      return ApiFutures.transform(
+          internalExecuteUpdateAsync(callType, update, analyzeMode, options),
+          Tuple::y,
+          MoreExecutors.directExecutor());
+    }
   }
 
   @Override
   public ApiFuture<Long> executeUpdateAsync(
       CallType callType, final ParsedStatement update, final UpdateOption... options) {
-    return ApiFutures.transform(
-        internalExecuteUpdateAsync(callType, update, AnalyzeMode.NONE, options),
-        Tuple::x,
-        MoreExecutors.directExecutor());
+    try (Scope ignore = span.makeCurrent()) {
+      return ApiFutures.transform(
+          internalExecuteUpdateAsync(callType, update, AnalyzeMode.NONE, options),
+          Tuple::x,
+          MoreExecutors.directExecutor());
+    }
   }
 
   /**
@@ -661,86 +669,91 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   public ApiFuture<long[]> executeBatchUpdateAsync(
       CallType callType, Iterable<ParsedStatement> updates, final UpdateOption... options) {
     Preconditions.checkNotNull(updates);
-    final List<Statement> updateStatements = new LinkedList<>();
-    for (ParsedStatement update : updates) {
-      Preconditions.checkArgument(
-          update.isUpdate(),
-          "Statement is not an update statement: " + update.getSqlWithoutComments());
-      updateStatements.add(update.getStatement());
-    }
-    checkOrCreateValidTransaction(Iterables.getFirst(updates, null), callType);
+    try (Scope ignore = span.makeCurrent()) {
+      final List<Statement> updateStatements = new LinkedList<>();
+      for (ParsedStatement update : updates) {
+        Preconditions.checkArgument(
+            update.isUpdate(),
+            "Statement is not an update statement: " + update.getSqlWithoutComments());
+        updateStatements.add(update.getStatement());
+      }
+      checkOrCreateValidTransaction(Iterables.getFirst(updates, null), callType);
 
-    ApiFuture<long[]> res;
-    if (retryAbortsInternally) {
-      res =
-          executeStatementAsync(
-              callType,
-              RUN_BATCH_STATEMENT,
-              () -> {
-                checkTimedOut();
-                return runWithRetry(
-                    () -> {
-                      try {
-                        getStatementExecutor()
-                            .invokeInterceptors(
-                                RUN_BATCH_STATEMENT,
-                                StatementExecutionStep.EXECUTE_STATEMENT,
-                                ReadWriteTransaction.this);
-                        long[] updateCounts =
-                            get(txContextFuture).batchUpdate(updateStatements, options);
-                        createAndAddRetriableBatchUpdate(updateStatements, updateCounts, options);
-                        return updateCounts;
-                      } catch (AbortedException e) {
-                        throw e;
-                      } catch (SpannerException e) {
-                        createAndAddFailedBatchUpdate(e, updateStatements);
-                        throw e;
-                      }
-                    });
-              },
-              // ignore interceptors here as they are invoked in the Callable.
-              InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getExecuteBatchDmlMethod()));
-    } else {
-      res =
-          executeStatementAsync(
-              callType,
-              RUN_BATCH_STATEMENT,
-              () -> {
-                checkTimedOut();
-                checkAborted();
-                return get(txContextFuture).batchUpdate(updateStatements);
-              },
-              SpannerGrpc.getExecuteBatchDmlMethod());
-    }
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<long[]>() {
-          @Override
-          public void onFailure(Throwable t) {
-            if (t instanceof SpannerException) {
-              handlePossibleInvalidatingException((SpannerException) t);
+      ApiFuture<long[]> res;
+      if (retryAbortsInternally) {
+        res =
+            executeStatementAsync(
+                callType,
+                RUN_BATCH_STATEMENT,
+                () -> {
+                  checkTimedOut();
+                  return runWithRetry(
+                      () -> {
+                        try {
+                          getStatementExecutor()
+                              .invokeInterceptors(
+                                  RUN_BATCH_STATEMENT,
+                                  StatementExecutionStep.EXECUTE_STATEMENT,
+                                  ReadWriteTransaction.this);
+                          long[] updateCounts =
+                              get(txContextFuture).batchUpdate(updateStatements, options);
+                          createAndAddRetriableBatchUpdate(updateStatements, updateCounts, options);
+                          return updateCounts;
+                        } catch (AbortedException e) {
+                          throw e;
+                        } catch (SpannerException e) {
+                          createAndAddFailedBatchUpdate(e, updateStatements);
+                          throw e;
+                        }
+                      });
+                },
+                // ignore interceptors here as they are invoked in the Callable.
+                InterceptorsUsage.IGNORE_INTERCEPTORS,
+                ImmutableList.of(SpannerGrpc.getExecuteBatchDmlMethod()));
+      } else {
+        res =
+            executeStatementAsync(
+                callType,
+                RUN_BATCH_STATEMENT,
+                () -> {
+                  checkTimedOut();
+                  checkAborted();
+                  return get(txContextFuture).batchUpdate(updateStatements);
+                },
+                SpannerGrpc.getExecuteBatchDmlMethod());
+      }
+      ApiFutures.addCallback(
+          res,
+          new ApiFutureCallback<long[]>() {
+            @Override
+            public void onFailure(Throwable t) {
+              if (t instanceof SpannerException) {
+                handlePossibleInvalidatingException((SpannerException) t);
+              }
             }
-          }
 
-          @Override
-          public void onSuccess(long[] result) {}
-        },
-        MoreExecutors.directExecutor());
-    return res;
+            @Override
+            public void onSuccess(long[] result) {
+            }
+          },
+          MoreExecutors.directExecutor());
+      return res;
+    }
   }
 
   @Override
   public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
-    Preconditions.checkNotNull(mutations);
-    // We actually don't need an underlying transaction yet, as mutations are buffered until commit.
-    // But we do need to verify that this transaction is valid, and to mark the start of the
-    // transaction.
-    checkValidStateAndMarkStarted();
-    for (Mutation mutation : mutations) {
-      this.mutations.add(checkNotNull(mutation));
+    try (Scope ignore = span.makeCurrent()) {
+      Preconditions.checkNotNull(mutations);
+      // We actually don't need an underlying transaction yet, as mutations are buffered until commit.
+      // But we do need to verify that this transaction is valid, and to mark the start of the
+      // transaction.
+      checkValidStateAndMarkStarted();
+      for (Mutation mutation : mutations) {
+        this.mutations.add(checkNotNull(mutation));
+      }
+      return ApiFutures.immediateFuture(null);
     }
-    return ApiFutures.immediateFuture(null);
   }
 
   private final Callable<Void> commitCallable =
@@ -758,73 +771,76 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<Void> commitAsync(CallType callType) {
-    checkOrCreateValidTransaction(COMMIT_STATEMENT, callType);
-    state = UnitOfWorkState.COMMITTING;
-    commitResponseFuture = SettableApiFuture.create();
-    ApiFuture<Void> res;
-    // Check if this transaction actually needs to commit anything.
-    if (txContextFuture == null) {
-      // No actual transaction was started by this read/write transaction, which also means that we
-      // don't have to commit anything.
-      commitResponseFuture.set(
-          new CommitResponse(
-              Timestamp.fromProto(com.google.protobuf.Timestamp.getDefaultInstance())));
-      state = UnitOfWorkState.COMMITTED;
-      res = SettableApiFuture.create();
-      ((SettableApiFuture<Void>) res).set(null);
-    } else if (retryAbortsInternally) {
-      res =
-          executeStatementAsync(
-              callType,
-              COMMIT_STATEMENT,
-              () -> {
-                checkTimedOut();
-                try {
-                  return runWithRetry(
-                      () -> {
-                        getStatementExecutor()
-                            .invokeInterceptors(
-                                COMMIT_STATEMENT,
-                                StatementExecutionStep.EXECUTE_STATEMENT,
-                                ReadWriteTransaction.this);
-                        return commitCallable.call();
-                      });
-                } catch (Throwable t) {
-                  commitResponseFuture.setException(t);
-                  state = UnitOfWorkState.COMMIT_FAILED;
+    try (Scope ignore = span.makeCurrent()) {
+      checkOrCreateValidTransaction(COMMIT_STATEMENT, callType);
+      state = UnitOfWorkState.COMMITTING;
+      commitResponseFuture = SettableApiFuture.create();
+      ApiFuture<Void> res;
+      // Check if this transaction actually needs to commit anything.
+      if (txContextFuture == null) {
+        // No actual transaction was started by this read/write transaction, which also means that we
+        // don't have to commit anything.
+        commitResponseFuture.set(
+            new CommitResponse(
+                Timestamp.fromProto(com.google.protobuf.Timestamp.getDefaultInstance())));
+        state = UnitOfWorkState.COMMITTED;
+        res = SettableApiFuture.create();
+        ((SettableApiFuture<Void>) res).set(null);
+      } else if (retryAbortsInternally) {
+        res =
+            executeStatementAsync(
+                callType,
+                COMMIT_STATEMENT,
+                () -> {
+                  checkTimedOut();
                   try {
-                    txManager.close();
-                  } catch (Throwable t2) {
-                    // Ignore.
+                    return runWithRetry(
+                        () -> {
+                          getStatementExecutor()
+                              .invokeInterceptors(
+                                  COMMIT_STATEMENT,
+                                  StatementExecutionStep.EXECUTE_STATEMENT,
+                                  ReadWriteTransaction.this);
+                          return commitCallable.call();
+                        });
+                  } catch (Throwable t) {
+                    commitResponseFuture.setException(t);
+                    state = UnitOfWorkState.COMMIT_FAILED;
+                    try {
+                      txManager.close();
+                    } catch (Throwable t2) {
+                      // Ignore.
+                    }
+                    throw t;
                   }
-                  throw t;
-                }
-              },
-              InterceptorsUsage.IGNORE_INTERCEPTORS,
-              ImmutableList.of(SpannerGrpc.getCommitMethod()));
-    } else {
-      res =
-          executeStatementAsync(
-              callType,
-              COMMIT_STATEMENT,
-              () -> {
-                checkTimedOut();
-                try {
-                  return commitCallable.call();
-                } catch (Throwable t) {
-                  commitResponseFuture.setException(t);
-                  state = UnitOfWorkState.COMMIT_FAILED;
+                },
+                InterceptorsUsage.IGNORE_INTERCEPTORS,
+                ImmutableList.of(SpannerGrpc.getCommitMethod()));
+      } else {
+        res =
+            executeStatementAsync(
+                callType,
+                COMMIT_STATEMENT,
+                () -> {
+                  checkTimedOut();
                   try {
-                    txManager.close();
-                  } catch (Throwable t2) {
-                    // Ignore.
+                    return commitCallable.call();
+                  } catch (Throwable t) {
+                    commitResponseFuture.setException(t);
+                    state = UnitOfWorkState.COMMIT_FAILED;
+                    try {
+                      txManager.close();
+                    } catch (Throwable t2) {
+                      // Ignore.
+                    }
+                    throw t;
                   }
-                  throw t;
-                }
-              },
-              SpannerGrpc.getCommitMethod());
+                },
+                SpannerGrpc.getCommitMethod());
+      }
+      asyncEndUnitOfWorkSpan();
+      return res;
     }
-    return res;
   }
 
   /**
@@ -1108,7 +1124,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   public ApiFuture<Void> rollbackAsync(CallType callType) {
-    return rollbackAsync(callType, true);
+    try (Scope ignore = span.makeCurrent()) {
+      return rollbackAsync(callType, true);
+    }
   }
 
   private ApiFuture<Void> rollbackAsync(CallType callType, boolean updateStatus) {
@@ -1117,12 +1135,15 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         "This transaction has status " + state.name());
     if (updateStatus) {
       state = UnitOfWorkState.ROLLED_BACK;
+      asyncEndUnitOfWorkSpan();
     }
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
-      return executeStatementAsync(
+      ApiFuture<Void> result = executeStatementAsync(
           callType, ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
+      asyncEndUnitOfWorkSpan();
+      return result;
     } else {
-      return ApiFutures.immediateFuture(null);
+      return asyncEndUnitOfWorkSpan();
     }
   }
 
@@ -1168,18 +1189,20 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
   @Override
   void rollbackToSavepoint(Savepoint savepoint) {
-    get(rollbackAsync(CallType.SYNC, false));
-    // Mark the state of the transaction as rolled back to a savepoint. This will ensure that the
-    // transaction will retry the next time a statement is actually executed.
-    this.rolledBackToSavepointException =
-        (AbortedException)
-            SpannerExceptionFactory.newSpannerException(
-                ErrorCode.ABORTED,
-                "Transaction has been rolled back to a savepoint",
-                new RollbackToSavepointException(savepoint));
-    // Clear all statements and mutations after the savepoint.
-    this.statements.subList(savepoint.getStatementPosition(), this.statements.size()).clear();
-    this.mutations.subList(savepoint.getMutationPosition(), this.mutations.size()).clear();
+    try (Scope ignore = span.makeCurrent()) {
+      get(rollbackAsync(CallType.SYNC, false));
+      // Mark the state of the transaction as rolled back to a savepoint. This will ensure that the
+      // transaction will retry the next time a statement is actually executed.
+      this.rolledBackToSavepointException =
+          (AbortedException)
+              SpannerExceptionFactory.newSpannerException(
+                  ErrorCode.ABORTED,
+                  "Transaction has been rolled back to a savepoint",
+                  new RollbackToSavepointException(savepoint));
+      // Clear all statements and mutations after the savepoint.
+      this.statements.subList(savepoint.getStatementPosition(), this.statements.size()).clear();
+      this.mutations.subList(savepoint.getMutationPosition(), this.mutations.size()).clear();
+    }
   }
 
   /**

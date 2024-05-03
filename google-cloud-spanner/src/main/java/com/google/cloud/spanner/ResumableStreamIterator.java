@@ -34,6 +34,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.PartialResultSet;
 import io.grpc.Context;
+import io.opentelemetry.api.common.Attributes;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -81,10 +82,21 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       TraceWrapper tracer,
       RetrySettings streamingRetrySettings,
       Set<Code> retryableCodes) {
+    this(maxBufferSize, streamName, parent, tracer, Attributes.empty(), streamingRetrySettings, retryableCodes);
+  }
+
+  protected ResumableStreamIterator(
+      int maxBufferSize,
+      String streamName,
+      ISpan parent,
+      TraceWrapper tracer,
+      Attributes attributes,
+      RetrySettings streamingRetrySettings,
+      Set<Code> retryableCodes) {
     checkArgument(maxBufferSize >= 0);
     this.maxBufferSize = maxBufferSize;
     this.tracer = tracer;
-    this.span = tracer.spanBuilderWithExplicitParent(streamName, parent);
+    this.span = tracer.spanBuilderWithExplicitParent(streamName, parent, attributes);
     this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
     this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
     this.backOff = newBackOff();
