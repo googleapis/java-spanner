@@ -87,6 +87,8 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.Meter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -577,6 +579,7 @@ class SessionPool {
           numSessionsInUse--;
           numSessionsReleased++;
           checkedOutSessions.remove(session);
+          markedCheckedOutSessions.remove(session);
         }
         session.leakedException = null;
         invalidateSession(session.get());
@@ -1333,6 +1336,9 @@ class SessionPool {
     private void markCheckedOut() {
       if (options.isTrackStackTraceOfSessionCheckout()) {
         this.leakedException = new LeakedSessionException();
+        synchronized (SessionPool.this.lock) {
+          SessionPool.this.markedCheckedOutSessions.add(this);
+        }
       }
     }
 
@@ -1526,6 +1532,7 @@ class SessionPool {
         synchronized (lock) {
           leakedException = null;
           checkedOutSessions.remove(this);
+          markedCheckedOutSessions.remove(this);
         }
       }
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
@@ -2347,7 +2354,8 @@ class SessionPool {
                       "Timed out after waiting "
                           + acquireSessionTimeout.toMillis()
                           + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
-                          + " or increase the number of sessions in the session pool.");
+                          + " or increase the number of sessions in the session pool.\n"
+                          + createCheckedOutSessionsStackTraces());
               if (waiter.setException(exception)) {
                 // Only throw the exception if setting it on the waiter was successful. The
                 // waiter.setException(..) method returns false if some other thread in the meantime
@@ -2794,6 +2802,9 @@ class SessionPool {
   @VisibleForTesting
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
 
+  @GuardedBy("lock")
+  private final Set<PooledSessionFuture> markedCheckedOutSessions = new HashSet<>();
+
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
   private final MultiplexedSessionInitializationConsumer multiplexedSessionInitializationConsumer =
@@ -3009,6 +3020,13 @@ class SessionPool {
   int getNumberOfSessionsInUse() {
     synchronized (lock) {
       return numSessionsInUse;
+    }
+  }
+
+  @VisibleForTesting
+  int getMaxSessionsInUse() {
+    synchronized (lock) {
+      return maxSessionsInUse;
     }
   }
 
@@ -3266,22 +3284,54 @@ class SessionPool {
 
   private void maybeCreateSession() {
     ISpan span = tracer.getCurrentSpan();
+    boolean throwResourceExhaustedException = false;
     synchronized (lock) {
       if (numWaiters() >= numSessionsBeingCreated) {
         if (canCreateSession()) {
           span.addAnnotation("Creating sessions");
           createSessions(getAllowedCreateSessions(options.getIncStep()), false);
         } else if (options.isFailIfPoolExhausted()) {
-          span.addAnnotation("Pool exhausted. Failing");
-          // throw specific exception
-          throw newSpannerException(
-              ErrorCode.RESOURCE_EXHAUSTED,
-              "No session available in the pool. Maximum number of sessions in the pool can be"
-                  + " overridden by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
-                  + " rather than fail by setting SessionPoolOptions#Builder#setBlockIfPoolExhausted.");
+          throwResourceExhaustedException = true;
         }
       }
     }
+    if (!throwResourceExhaustedException) {
+      return;
+    }
+    span.addAnnotation("Pool exhausted. Failing");
+
+    String message =
+        "No session available in the pool. Maximum number of sessions in the pool can be"
+            + " overridden by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
+            + " rather than fail by setting SessionPoolOptions#Builder#setBlockIfPoolExhausted.\n"
+            + createCheckedOutSessionsStackTraces();
+    throw newSpannerException(ErrorCode.RESOURCE_EXHAUSTED, message);
+  }
+
+  private StringBuilder createCheckedOutSessionsStackTraces() {
+    List<PooledSessionFuture> currentlyCheckedOutSessions;
+    synchronized (lock) {
+      currentlyCheckedOutSessions = new ArrayList<>(this.markedCheckedOutSessions);
+    }
+
+    // Create the error message without holding the lock, as we are potentially looping through a
+    // large set, and analyzing a large number of stack traces.
+    StringBuilder stackTraces =
+        new StringBuilder(
+            "There are currently "
+                + currentlyCheckedOutSessions.size()
+                + " sessions checked out:\n\n");
+    if (options.isTrackStackTraceOfSessionCheckout()) {
+      for (PooledSessionFuture session : currentlyCheckedOutSessions) {
+        if (session.leakedException != null) {
+          StringWriter writer = new StringWriter();
+          PrintWriter printWriter = new PrintWriter(writer);
+          session.leakedException.printStackTrace(printWriter);
+          stackTraces.append(writer).append("\n\n");
+        }
+      }
+    }
+    return stackTraces;
   }
 
   private void releaseSession(Tuple<PooledSession, Integer> sessionWithPosition) {
