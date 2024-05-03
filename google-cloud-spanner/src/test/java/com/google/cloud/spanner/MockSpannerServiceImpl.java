@@ -2162,7 +2162,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     return result;
   }
 
-  public Iterable<Class<? extends AbstractMessage>> getRequestTypes() {
+  public List<Class<? extends AbstractMessage>> getRequestTypes() {
     List<Class<? extends AbstractMessage>> res = new LinkedList<>();
     for (AbstractMessage m : this.requests) {
       res.add(m.getClass());

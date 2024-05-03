@@ -898,49 +898,29 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       }
     }
     assertThat(attempt.get()).isEqualTo(2);
-    Iterable<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
+    List<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
+    // Remove the CreateSession requests for multiplexed sessions, as those are not relevant for
+    // this test.
+    requests.removeIf(request -> request == CreateSessionRequest.class);
     int size = Iterables.size(requests);
     assertThat(size).isIn(Range.closed(5, 6));
-    if (isMultiplexedSessionsEnabled()) {
-      if (size == 6) {
-        assertThat(requests)
-            .containsExactly(
-                CreateSessionRequest.class,
-                BatchCreateSessionsRequest.class,
-                ExecuteBatchDmlRequest.class,
-                BeginTransactionRequest.class,
-                ExecuteBatchDmlRequest.class,
-                CommitRequest.class);
-      } else {
-        assertThat(requests)
-            .containsExactly(
-                CreateSessionRequest.class,
-                BatchCreateSessionsRequest.class,
-                ExecuteBatchDmlRequest.class,
-                CommitRequest.class,
-                BeginTransactionRequest.class,
-                ExecuteBatchDmlRequest.class,
-                CommitRequest.class);
-      }
+    if (size == 5) {
+      assertThat(requests)
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
     } else {
-      if (size == 5) {
-        assertThat(requests)
-            .containsExactly(
-                BatchCreateSessionsRequest.class,
-                ExecuteBatchDmlRequest.class,
-                BeginTransactionRequest.class,
-                ExecuteBatchDmlRequest.class,
-                CommitRequest.class);
-      } else {
-        assertThat(requests)
-            .containsExactly(
-                BatchCreateSessionsRequest.class,
-                ExecuteBatchDmlRequest.class,
-                CommitRequest.class,
-                BeginTransactionRequest.class,
-                ExecuteBatchDmlRequest.class,
-                CommitRequest.class);
-      }
+      assertThat(requests)
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
     }
   }
 
