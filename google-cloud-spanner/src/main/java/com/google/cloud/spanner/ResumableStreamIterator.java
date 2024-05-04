@@ -234,6 +234,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
           finished = true;
           if (buffer.isEmpty()) {
             endOfData();
+            span.addAnnotation("End of data");
             return null;
           }
         }
