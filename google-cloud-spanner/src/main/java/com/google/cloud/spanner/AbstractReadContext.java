@@ -739,7 +739,7 @@ abstract class AbstractReadContext
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
-            GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
+            GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks, span);
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
             }

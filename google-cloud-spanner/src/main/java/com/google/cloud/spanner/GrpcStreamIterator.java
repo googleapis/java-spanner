@@ -41,6 +41,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private final ConsumerImpl consumer = new ConsumerImpl();
   private final BlockingQueue<PartialResultSet> stream;
   private final Statement statement;
+  private final ISpan span;
 
   private SpannerRpc.StreamingCall call;
   private volatile boolean withBeginTransaction;
@@ -50,14 +51,15 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
 
   @VisibleForTesting
   GrpcStreamIterator(int prefetchChunks) {
-    this(null, prefetchChunks);
+    this(null, prefetchChunks, null);
   }
 
   @VisibleForTesting
-  GrpcStreamIterator(Statement statement, int prefetchChunks) {
+  GrpcStreamIterator(Statement statement, int prefetchChunks, ISpan span) {
     this.statement = statement;
     // One extra to allow for END_OF_STREAM message.
     this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
+    this.span = span;
   }
 
   protected final SpannerRpc.ResultStreamConsumer consumer() {
@@ -127,6 +129,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
     }
 
     endOfData();
+    span.addAnnotation("End of gRPC stream");
     return null;
   }
 
