@@ -162,7 +162,7 @@ public class ResumableStreamIteratorTest {
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override
           AbstractResultSet.CloseableIterator<PartialResultSet> startStream(
-              @Nullable ByteString resumeToken) {
+              @Nullable ByteString resumeToken, ISpan span) {
             return starter.startStream(resumeToken);
           }
         };

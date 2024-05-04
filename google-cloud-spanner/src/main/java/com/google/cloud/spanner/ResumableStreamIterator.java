@@ -173,7 +173,8 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
     }
   }
 
-  abstract CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken);
+  abstract CloseableIterator<PartialResultSet> startStream(
+      @Nullable ByteString resumeToken, ISpan span);
 
   @Override
   public void close(@Nullable String message) {
@@ -202,7 +203,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
         try (IScope scope = tracer.withSpan(span)) {
           // When start a new stream set the Span as current to make the gRPC Span a child of
           // this Span.
-          stream = checkNotNull(startStream(resumeToken));
+          stream = checkNotNull(startStream(resumeToken, span));
         }
       }
       // Buffer contains items up to a resume token or has reached capacity: flush.

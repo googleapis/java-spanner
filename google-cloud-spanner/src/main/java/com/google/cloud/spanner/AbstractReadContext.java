@@ -738,7 +738,8 @@ abstract class AbstractReadContext
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
-          CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
+          CloseableIterator<PartialResultSet> startStream(
+              @Nullable ByteString resumeToken, ISpan span) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks, span);
             if (partitionToken != null) {
               request.setPartitionToken(partitionToken);
@@ -908,7 +909,8 @@ abstract class AbstractReadContext
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
           @Override
-          CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
+          CloseableIterator<PartialResultSet> startStream(
+              @Nullable ByteString resumeToken, ISpan span) {
             GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
             TransactionSelector selector = null;
             if (resumeToken != null) {
