@@ -21,12 +21,16 @@ import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
 import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.grpc.GrpcInterceptorProvider;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.tracing.ApiTracerFactory;
+import com.google.api.gax.tracing.BaseApiTracerFactory;
+import com.google.api.gax.tracing.OpencensusTracerFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -64,6 +68,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -149,6 +154,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
+  private final boolean enableApiTracing;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -653,6 +659,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
     openTelemetry = builder.openTelemetry;
+    enableApiTracing = builder.enableApiTracing;
   }
 
   /**
@@ -762,6 +769,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
+    private boolean enableApiTracing = false;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -825,6 +833,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.attemptDirectPath = options.attemptDirectPath;
       this.directedReadOptions = options.directedReadOptions;
       this.useVirtualThreads = options.useVirtualThreads;
+      this.enableApiTracing = options.enableApiTracing;
     }
 
     @Override
@@ -1321,6 +1330,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Creates and sets an {@link com.google.api.gax.tracing.ApiTracer} for the RPCs that are
+     * executed by this client. Enabling this creates traces for each individual RPC execution,
+     * including events/annotations when an RPC is retried or fails. The traces are only exported if
+     * an OpenTelemetry or OpenCensus trace exporter has been configured for the client.
+     */
+    public Builder setEnableApiTracing(boolean enableApiTracing) {
+      this.enableApiTracing = enableApiTracing;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1556,6 +1576,37 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     } else {
       return GlobalOpenTelemetry.get();
     }
+  }
+
+  @Override
+  public ApiTracerFactory getApiTracerFactory() {
+    // Prefer any direct ApiTracerFactory that might have been set on the builder.
+    return MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory());
+  }
+
+  private ApiTracerFactory getDefaultApiTracerFactory() {
+    if (isEnableApiTracing()) {
+      if (activeTracingFramework == TracingFramework.OPEN_TELEMETRY) {
+        return new OpenTelemetryApiTracerFactory(
+            getOpenTelemetry()
+                .getTracer(
+                    MetricRegistryConstants.INSTRUMENTATION_SCOPE,
+                    GaxProperties.getLibraryVersion(getClass())),
+            Attributes.empty());
+      } else if (activeTracingFramework == TracingFramework.OPEN_CENSUS) {
+        return new OpencensusTracerFactory();
+      }
+    }
+    return BaseApiTracerFactory.getInstance();
+  }
+
+  /**
+   * Returns true if an {@link com.google.api.gax.tracing.ApiTracer} should be created and set on
+   * the Spanner client. Enabling this only has effect if an OpenTelemetry or OpenCensus trace
+   * exporter has been configured.
+   */
+  public boolean isEnableApiTracing() {
+    return enableApiTracing;
   }
 
   @BetaApi

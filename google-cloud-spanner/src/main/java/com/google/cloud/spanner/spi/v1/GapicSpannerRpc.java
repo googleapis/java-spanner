@@ -388,6 +388,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setTransportChannelProvider(channelProvider)
                     .setCredentialsProvider(credentialsProvider)
                     .setStreamWatchdogProvider(watchdogProvider)
+                    .setTracerFactory(options.getApiTracerFactory())
                     .build());
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
@@ -413,6 +414,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setTransportChannelProvider(channelProvider)
             .setCredentialsProvider(credentialsProvider)
             .setStreamWatchdogProvider(watchdogProvider)
+            .setTracerFactory(options.getApiTracerFactory())
             .executeSqlSettings()
             .setRetrySettings(partitionedDmlRetrySettings);
         pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
@@ -439,6 +441,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
+                .setTracerFactory(options.getApiTracerFactory())
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
@@ -449,6 +452,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
+                .setTracerFactory(options.getApiTracerFactory())
                 .build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of
