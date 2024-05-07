@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -277,17 +278,29 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         attributesBuilder.put("database", db.getDatabase());
         attributesBuilder.put("instance_id", db.getInstanceId().getName());
 
+        boolean useMultiplexedSession =
+            getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+        MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
+            useMultiplexedSession
+                ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
+                : null;
+        AtomicLong numMultiplexedSessionsAcquired =
+            useMultiplexedSession
+                ? multiplexedSessionDatabaseClient.getNumSessionsAcquired()
+                : new AtomicLong();
+        AtomicLong numMultiplexedSessionsReleased =
+            useMultiplexedSession
+                ? multiplexedSessionDatabaseClient.getNumSessionsReleased()
+                : new AtomicLong();
         SessionPool pool =
             SessionPool.createPool(
                 getOptions(),
                 SpannerImpl.this.getSessionClient(db),
                 this.tracer,
                 labelValues,
-                attributesBuilder.build());
-        MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
-            getOptions().getSessionPoolOptions().getUseMultiplexedSession()
-                ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
-                : null;
+                attributesBuilder.build(),
+                numMultiplexedSessionsAcquired,
+                numMultiplexedSessionsReleased);
         pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient =
             createDatabaseClient(clientId, pool, multiplexedSessionDatabaseClient);

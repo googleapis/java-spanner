@@ -100,6 +100,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(2, requests.size());
     assertEquals(requests.get(0).getSession(), requests.get(1).getSession());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
@@ -129,6 +133,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     List<ExecuteSqlRequest> requests = mockSpanner.getRequestsOfType(ExecuteSqlRequest.class);
     assertEquals(2, requests.size());
     assertNotEquals(requests.get(0).getSession(), requests.get(1).getSession());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
@@ -165,6 +173,12 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     Set<String> sessionIds =
         requests.stream().map(ExecuteSqlRequest::getSession).collect(Collectors.toSet());
     assertEquals(4, sessionIds.size());
+
+    for (DatabaseClientImpl client : ImmutableList.of(client1, client2)) {
+      assertNotNull(client.multiplexedSessionDatabaseClient);
+      assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+      assertEquals(2L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
+    }
   }
 
   @Test
@@ -196,6 +210,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     Session session = mockSpanner.getSession(requests.get(0).getSession());
     assertNotNull(session);
     assertFalse(session.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(0L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(0L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
@@ -234,6 +252,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     Session session = mockSpanner.getSession(requests.get(0).getSession());
     assertNotNull(session);
     assertFalse(session.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(0L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(0L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
@@ -281,6 +303,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     Session session2 = mockSpanner.getSession(requests.get(1).getSession());
     assertNotNull(session2);
     assertFalse(session2.getMultiplexed());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {

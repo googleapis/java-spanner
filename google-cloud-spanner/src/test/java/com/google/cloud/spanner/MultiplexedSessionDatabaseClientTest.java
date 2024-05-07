@@ -17,16 +17,21 @@
 package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import org.junit.Ignore;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -35,9 +40,11 @@ import org.mockito.stubbing.Answer;
 @RunWith(JUnit4.class)
 public class MultiplexedSessionDatabaseClientTest {
 
-  @Ignore("Fails on native builds due to ues of reflection")
   @Test
   public void testMaintainer() {
+    // This fails for the native builds due to the extensive use of reflection.
+    assumeTrue(isJava8());
+
     Instant now = Instant.now();
     Clock clock = mock(Clock.class);
     when(clock.instant()).thenReturn(now);
@@ -100,5 +107,47 @@ public class MultiplexedSessionDatabaseClientTest {
     when(clock.instant()).thenReturn(now.plus(Duration.ofDays(8)));
     client.getMaintainer().maintain();
     assertEquals(client.getCurrentSessionReference(), session2.getSessionReference());
+  }
+
+  @Test
+  public void testForceDisableEnvVar() throws Exception {
+    assumeTrue(isJava8() && !isWindows());
+    assumeFalse(
+        System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS"));
+
+    // Assert that the mux sessions setting is respected by default.
+    assertTrue(
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(true)
+            .build()
+            .getUseMultiplexedSession());
+
+    Class<?> classOfMap = System.getenv().getClass();
+    Field field = classOfMap.getDeclaredField("m");
+    field.setAccessible(true);
+    Map<String, String> writeableEnvironmentVariables =
+        (Map<String, String>) field.get(System.getenv());
+
+    try {
+      writeableEnvironmentVariables.put(
+          "GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS", "true");
+      // Assert that the env var overrides the mux sessions setting.
+      assertFalse(
+          SessionPoolOptions.newBuilder()
+              .setUseMultiplexedSession(true)
+              .build()
+              .getUseMultiplexedSession());
+    } finally {
+      writeableEnvironmentVariables.remove(
+          "GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS");
+    }
+  }
+
+  private boolean isJava8() {
+    return JavaVersionUtil.getJavaMajorVersion() == 8;
+  }
+
+  private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().contains("windows");
   }
 }

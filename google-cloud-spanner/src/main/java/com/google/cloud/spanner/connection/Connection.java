@@ -773,6 +773,12 @@ public interface Connection extends AutoCloseable {
   /** Sets how savepoints should be supported on this connection. */
   void setSavepointSupport(SavepointSupport savepointSupport);
 
+  /** Returns the current {@link DdlInTransactionMode} for this connection. */
+  DdlInTransactionMode getDdlInTransactionMode();
+
+  /** Sets how the connection should behave if a DDL statement is executed during a transaction. */
+  void setDdlInTransactionMode(DdlInTransactionMode ddlInTransactionMode);
+
   /**
    * Creates a savepoint with the given name.
    *

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThrows;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -551,7 +552,8 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction");
-    Long updateCount =
+    assertEquals(
+        Long.valueOf(1L),
         client
             .readWriteTransaction()
             .run(
@@ -566,7 +568,16 @@ public class OpenTelemetrySpanTest {
                           () -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
                   assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
                   return transaction.executeUpdate(UPDATE_STATEMENT);
-                });
+                }));
+    // Wait for all spans to finish. Failing to do so can cause the test to miss the
+    // BatchCreateSessions span, as that span is executed asynchronously in the SessionClient, and
+    // the SessionClient returns the session to the pool before the span has finished fully.
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    while (spanExporter.getFinishedSpanItems().size()
+            < expectedReadWriteTransactionWithCommitAndBeginTransactionSpans.size()
+        && stopwatch.elapsed().compareTo(java.time.Duration.ofMillis(1000)) < 0) {
+      Thread.yield();
+    }
 
     List<String> actualSpanItems = new ArrayList<>();
     spanExporter

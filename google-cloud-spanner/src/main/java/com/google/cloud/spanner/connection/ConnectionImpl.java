@@ -264,6 +264,7 @@ class ConnectionImpl implements Connection {
   private QueryOptions queryOptions = QueryOptions.getDefaultInstance();
   private RpcPriority rpcPriority = null;
   private SavepointSupport savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
+  private DdlInTransactionMode ddlInTransactionMode;
 
   private String transactionTag;
   private String statementTag;
@@ -302,6 +303,7 @@ class ConnectionImpl implements Connection {
     this.autocommit = options.isAutocommit();
     this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
     this.rpcPriority = options.getRPCPriority();
+    this.ddlInTransactionMode = options.getDdlInTransactionMode();
     this.returnCommitStats = options.isReturnCommitStats();
     this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
     this.dataBoostEnabled = options.isDataBoostEnabled();
@@ -327,6 +329,7 @@ class ConnectionImpl implements Connection {
         new StatementExecutor(options.isUseVirtualThreads(), Collections.emptyList());
     this.spannerPool = Preconditions.checkNotNull(spannerPool);
     this.options = Preconditions.checkNotNull(options);
+    this.ddlInTransactionMode = options.getDdlInTransactionMode();
     this.spanner = spannerPool.getSpanner(options, this);
     this.tracer = OpenTelemetry.noop().getTracer(INSTRUMENTATION_SCOPE);
     this.tracingPrefix = DEFAULT_TRACING_PREFIX;
@@ -617,6 +620,21 @@ class ConnectionImpl implements Connection {
   public RpcPriority getRPCPriority() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.rpcPriority;
+  }
+
+  @Override
+  public DdlInTransactionMode getDdlInTransactionMode() {
+    return this.ddlInTransactionMode;
+  }
+
+  @Override
+  public void setDdlInTransactionMode(DdlInTransactionMode ddlInTransactionMode) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot set DdlInTransactionMode while in a batch");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(), "Cannot set DdlInTransactionMode while a transaction is active");
+    this.ddlInTransactionMode = Preconditions.checkNotNull(ddlInTransactionMode);
   }
 
   @Override
@@ -1687,7 +1705,16 @@ class ConnectionImpl implements Connection {
   }
 
   private UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork() {
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork(false);
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType.UNKNOWN, false);
+  }
+
+  @VisibleForTesting
+  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType.UNKNOWN, isInternalMetadataQuery);
+  }
+
+  private UnitOfWork getOrStartDdlUnitOfWork() {
+    return getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType.DDL, false);
   }
 
   /**
@@ -1695,13 +1722,20 @@ class ConnectionImpl implements Connection {
    * current transaction settings of the connection and returns that.
    */
   @VisibleForTesting
-  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(boolean isInternalMetadataQuery) {
+  UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
+      StatementType statementType, boolean isInternalMetadataQuery) {
     if (isInternalMetadataQuery) {
       // Just return a temporary single-use transaction.
-      return createNewUnitOfWork(true);
+      return createNewUnitOfWork(/* isInternalMetadataQuery = */ true, /* forceSingleUse = */ true);
     }
+    maybeAutoCommitCurrentTransaction(statementType);
     if (this.currentUnitOfWork == null || !this.currentUnitOfWork.isActive()) {
-      this.currentUnitOfWork = createNewUnitOfWork(false);
+      this.currentUnitOfWork =
+          createNewUnitOfWork(
+              /* isInternalMetadataQuery = */ false,
+              /* forceSingleUse = */ statementType == StatementType.DDL
+                  && this.ddlInTransactionMode != DdlInTransactionMode.FAIL
+                  && !this.transactionBeginMarked);
     }
     return this.currentUnitOfWork;
   }
@@ -1713,9 +1747,20 @@ class ConnectionImpl implements Connection {
         .startSpan();
   }
 
+  void maybeAutoCommitCurrentTransaction(StatementType statementType) {
+    if (this.currentUnitOfWork instanceof ReadWriteTransaction
+        && this.currentUnitOfWork.isActive()
+        && statementType == StatementType.DDL
+        && this.ddlInTransactionMode == DdlInTransactionMode.AUTO_COMMIT_TRANSACTION) {
+      commit();
+    }
+  }
+
   @VisibleForTesting
-  UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery) {
-    if (isInternalMetadataQuery || (isAutocommit() && !isInTransaction() && !isInBatch())) {
+  UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery, boolean forceSingleUse) {
+    if (isInternalMetadataQuery
+        || (isAutocommit() && !isInTransaction() && !isInBatch())
+        || forceSingleUse) {
       return SingleUseTransaction.newBuilder()
           .setInternalMetadataQuery(isInternalMetadataQuery)
           .setDdlClient(ddlClient)
@@ -1801,7 +1846,7 @@ class ConnectionImpl implements Connection {
   }
 
   private ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
-    return getCurrentUnitOfWorkOrStartNewUnitOfWork().executeDdlAsync(callType, ddl);
+    return getOrStartDdlUnitOfWork().executeDdlAsync(callType, ddl);
   }
 
   @Override
@@ -1848,15 +1893,23 @@ class ConnectionImpl implements Connection {
     ConnectionPreconditions.checkState(
         !isReadOnly(), "Cannot start a DDL batch when the connection is in read-only mode");
     ConnectionPreconditions.checkState(
-        !isTransactionStarted(), "Cannot start a DDL batch while a transaction is active");
+        !isTransactionStarted()
+            || getDdlInTransactionMode() == DdlInTransactionMode.AUTO_COMMIT_TRANSACTION,
+        "Cannot start a DDL batch while a transaction is active");
     ConnectionPreconditions.checkState(
         !(isAutocommit() && isInTransaction()),
         "Cannot start a DDL batch while in a temporary transaction");
     ConnectionPreconditions.checkState(
         !transactionBeginMarked, "Cannot start a DDL batch when a transaction has begun");
+    ConnectionPreconditions.checkState(
+        isAutocommit() || getDdlInTransactionMode() != DdlInTransactionMode.FAIL,
+        "Cannot start a DDL batch when autocommit=false and ddlInTransactionMode=FAIL");
+
+    maybeAutoCommitCurrentTransaction(StatementType.DDL);
     this.batchMode = BatchMode.DDL;
     this.unitOfWorkType = UnitOfWorkType.DDL_BATCH;
-    this.currentUnitOfWork = createNewUnitOfWork(false);
+    this.currentUnitOfWork =
+        createNewUnitOfWork(/* isInternalMetadataQuery = */ false, /* forceSingleUse = */ false);
   }
 
   @Override
@@ -1874,7 +1927,8 @@ class ConnectionImpl implements Connection {
     // Then create the DML batch.
     this.batchMode = BatchMode.DML;
     this.unitOfWorkType = UnitOfWorkType.DML_BATCH;
-    this.currentUnitOfWork = createNewUnitOfWork(false);
+    this.currentUnitOfWork =
+        createNewUnitOfWork(/* isInternalMetadataQuery = */ false, /* forceSingleUse = */ false);
   }
 
   @Override

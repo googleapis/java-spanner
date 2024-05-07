@@ -812,6 +812,7 @@ abstract class AbstractReadContext
 
   @Override
   public void close() {
+    session.onTransactionDone();
     span.end();
     synchronized (lock) {
       isClosed = true;

@@ -656,5 +656,17 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.cloud.spanner.Spanner getSpanner()</method>
   </difference>
+  
+  <!-- Add DdlInTransactionMode -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDdlInTransactionMode(com.google.cloud.spanner.connection.DdlInTransactionMode)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.DdlInTransactionMode getDdlInTransactionMode()</method>
+  </difference>
 
 </differences>

@@ -3859,12 +3859,12 @@ public class DatabaseClientImplTest {
       // Simulate session creation failures on the backend.
       mockSpanner.setCreateSessionExecutionTime(
           SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
-      DatabaseClient client =
-          spannerWithEmptySessionPool.getDatabaseClient(
-              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       // This will not cause any failure as getting a session from the pool is guaranteed to be
       // non-blocking, and any exceptions will be delayed until actual query execution.
       mockSpanner.freeze();
+      DatabaseClient client =
+          spannerWithEmptySessionPool.getDatabaseClient(
+              DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         mockSpanner.unfreeze();
         SpannerException e = assertThrows(SpannerException.class, rs::next);
@@ -5057,6 +5057,62 @@ public class DatabaseClientImplTest {
           mockSpanner.clearRequests();
         }
       }
+    }
+  }
+
+  @Test
+  public void testSessionPoolExhaustedError_containsStackTraces() {
+    try (Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId(TEST_PROJECT)
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setFailIfPoolExhausted()
+                    .setMinSessions(2)
+                    .setMaxSessions(4)
+                    .setWaitForMinSessions(Duration.ofSeconds(10L))
+                    .build())
+            .build()
+            .getService()) {
+      DatabaseClient client =
+          spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+      List<TransactionManager> transactions = new ArrayList<>();
+      // Deliberately leak 4 sessions.
+      for (int i = 0; i < 4; i++) {
+        // Get a transaction manager without doing anything with it. This will reserve a session
+        // from
+        // the pool, but not increase the number of sessions marked as in use.
+        transactions.add(client.transactionManager());
+      }
+      // Trying to get yet another transaction will fail.
+      // NOTE: This fails directly, because we have set the setFailIfPoolExhausted() option.
+      SpannerException spannerException =
+          assertThrows(SpannerException.class, client::transactionManager);
+      assertEquals(ErrorCode.RESOURCE_EXHAUSTED, spannerException.getErrorCode());
+      assertTrue(
+          spannerException.getMessage(),
+          spannerException.getMessage().contains("There are currently 4 sessions checked out:"));
+      assertTrue(
+          spannerException.getMessage(),
+          spannerException.getMessage().contains("Session was checked out from the pool at"));
+
+      SessionPool pool = ((DatabaseClientImpl) client).pool;
+      // Verify that there are no sessions in the pool.
+      assertEquals(0, pool.getNumberOfSessionsInPool());
+      // Verify that the sessions have not (yet) been marked as in use.
+      assertEquals(0, pool.getNumberOfSessionsInUse());
+      assertEquals(0, pool.getMaxSessionsInUse());
+      // Verify that we have 4 sessions in the pool.
+      assertEquals(4, pool.getTotalSessionsPlusNumSessionsBeingCreated());
+
+      // Release the sessions back into the pool.
+      for (TransactionManager transaction : transactions) {
+        transaction.close();
+      }
+      // Closing the transactions should return the sessions to the pool.
+      assertEquals(4, pool.getNumberOfSessionsInPool());
     }
   }
 

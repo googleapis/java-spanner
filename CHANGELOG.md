@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.66.0](https://github.com/googleapis/java-spanner/compare/v6.65.1...v6.66.0) (2024-05-03)
+
+
+### Features
+
+* Allow DDL with autocommit=false ([#3057](https://github.com/googleapis/java-spanner/issues/3057)) ([22833ac](https://github.com/googleapis/java-spanner/commit/22833acf9f073271ce0ee10f2b496f3a1d39566a))
+* Include stack trace of checked out sessions in exception ([#3092](https://github.com/googleapis/java-spanner/issues/3092)) ([ba6a0f6](https://github.com/googleapis/java-spanner/commit/ba6a0f644b6caa4d2f3aa130c6061341b70957dd))
+
+
+### Bug Fixes
+
+* Multiplexed session metrics were not included in refactor move ([#3088](https://github.com/googleapis/java-spanner/issues/3088)) ([f3589c4](https://github.com/googleapis/java-spanner/commit/f3589c430b0e84933a91008bb306c26089788357))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.30.0 ([#3082](https://github.com/googleapis/java-spanner/issues/3082)) ([ddfc98e](https://github.com/googleapis/java-spanner/commit/ddfc98e240fb47ef51075ba4461bf9a98aa25ce0))
+
 ## [6.65.1](https://github.com/googleapis/java-spanner/compare/v6.65.0...v6.65.1) (2024-04-30)
 
 
