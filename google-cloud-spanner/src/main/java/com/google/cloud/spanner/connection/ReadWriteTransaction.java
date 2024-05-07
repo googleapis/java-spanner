@@ -534,8 +534,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             }
 
             @Override
-            public void onSuccess(ResultSet result) {
-            }
+            public void onSuccess(ResultSet result) {}
           },
           MoreExecutors.directExecutor());
       return res;
@@ -733,8 +732,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             }
 
             @Override
-            public void onSuccess(long[] result) {
-            }
+            public void onSuccess(long[] result) {}
           },
           MoreExecutors.directExecutor());
       return res;
@@ -745,7 +743,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   public ApiFuture<Void> writeAsync(CallType callType, Iterable<Mutation> mutations) {
     try (Scope ignore = span.makeCurrent()) {
       Preconditions.checkNotNull(mutations);
-      // We actually don't need an underlying transaction yet, as mutations are buffered until commit.
+      // We actually don't need an underlying transaction yet, as mutations are buffered until
+      // commit.
       // But we do need to verify that this transaction is valid, and to mark the start of the
       // transaction.
       checkValidStateAndMarkStarted();
@@ -778,7 +777,8 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       ApiFuture<Void> res;
       // Check if this transaction actually needs to commit anything.
       if (txContextFuture == null) {
-        // No actual transaction was started by this read/write transaction, which also means that we
+        // No actual transaction was started by this read/write transaction, which also means that
+        // we
         // don't have to commit anything.
         commitResponseFuture.set(
             new CommitResponse(
@@ -1138,8 +1138,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       asyncEndUnitOfWorkSpan();
     }
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
-      ApiFuture<Void> result = executeStatementAsync(
-          callType, ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
+      ApiFuture<Void> result =
+          executeStatementAsync(
+              callType, ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
       asyncEndUnitOfWorkSpan();
       return result;
     } else {

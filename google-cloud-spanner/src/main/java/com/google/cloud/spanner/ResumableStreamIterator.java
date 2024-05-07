@@ -82,7 +82,14 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       TraceWrapper tracer,
       RetrySettings streamingRetrySettings,
       Set<Code> retryableCodes) {
-    this(maxBufferSize, streamName, parent, tracer, Attributes.empty(), streamingRetrySettings, retryableCodes);
+    this(
+        maxBufferSize,
+        streamName,
+        parent,
+        tracer,
+        Attributes.empty(),
+        streamingRetrySettings,
+        retryableCodes);
   }
 
   protected ResumableStreamIterator(

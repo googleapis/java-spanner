@@ -39,7 +39,6 @@ import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Streams;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -56,7 +55,6 @@ import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -792,70 +790,78 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... updateOptions) {
-      beforeReadOrQuery();
-      final Options options = Options.fromUpdateOptions(updateOptions);
-      if (options.withExcludeTxnFromChangeStreams() != null) {
-        throw newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
-      }
-      final ExecuteSqlRequest.Builder builder =
-          getExecuteSqlRequestBuilder(
-              statement, QueryMode.NORMAL, options, /* withTransactionSelector = */ true);
-      final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
-      try {
-        // Register the update as an async operation that must finish before the transaction may
-        // commit.
-        increaseAsyncOperations();
-        resultSet = rpc.executeQueryAsync(builder.build(), session.getOptions(), isRouteToLeader());
-        session.markUsed(clock.instant());
-      } catch (Throwable t) {
-        decreaseAsyncOperations();
-        throw t;
-      }
-      ApiFuture<Long> updateCount =
-          ApiFutures.transform(
-              resultSet,
-              input -> {
-                if (!input.hasStats()) {
-                  throw SpannerExceptionFactory.newSpannerException(
-                      ErrorCode.INVALID_ARGUMENT,
-                      "DML response missing stats possibly due to non-DML statement as input");
+      ISpan span = tracer.spanBuilder(UPDATE, Attributes.of(DB_STATEMENT_KEY, statement.getSql()));
+      try (IScope ignore = tracer.withSpan(span)) {
+        beforeReadOrQuery();
+        final Options options = Options.fromUpdateOptions(updateOptions);
+        if (options.withExcludeTxnFromChangeStreams() != null) {
+          throw newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
+        }
+        final ExecuteSqlRequest.Builder builder =
+            getExecuteSqlRequestBuilder(
+                statement, QueryMode.NORMAL, options, /* withTransactionSelector = */ true);
+        final ApiFuture<com.google.spanner.v1.ResultSet> resultSet;
+        try {
+          // Register the update as an async operation that must finish before the transaction may
+          // commit.
+          increaseAsyncOperations();
+          resultSet =
+              rpc.executeQueryAsync(builder.build(), session.getOptions(), isRouteToLeader());
+          session.markUsed(clock.instant());
+        } catch (Throwable t) {
+          decreaseAsyncOperations();
+          throw t;
+        }
+        ApiFuture<Long> updateCount =
+            ApiFutures.transform(
+                resultSet,
+                input -> {
+                  if (!input.hasStats()) {
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.INVALID_ARGUMENT,
+                        "DML response missing stats possibly due to non-DML statement as input");
+                  }
+                  if (builder.getTransaction().hasBegin()
+                      && !(input.getMetadata().hasTransaction()
+                          && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
+                    throw SpannerExceptionFactory.newSpannerException(
+                        ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
+                  }
+                  // For standard DML, using the exact row count.
+                  return input.getStats().getRowCountExact();
+                },
+                MoreExecutors.directExecutor());
+        updateCount =
+            ApiFutures.catching(
+                updateCount,
+                Throwable.class,
+                input -> {
+                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                  SpannerException exceptionToThrow =
+                      onError(e, builder.getTransaction().hasBegin());
+                  span.setStatus(exceptionToThrow);
+                  throw exceptionToThrow;
+                },
+                MoreExecutors.directExecutor());
+        updateCount.addListener(
+            () -> {
+              try {
+                if (resultSet.get().getMetadata().hasTransaction()) {
+                  onTransactionMetadata(
+                      resultSet.get().getMetadata().getTransaction(),
+                      builder.getTransaction().hasBegin());
                 }
-                if (builder.getTransaction().hasBegin()
-                    && !(input.getMetadata().hasTransaction()
-                        && input.getMetadata().getTransaction().getId() != ByteString.EMPTY)) {
-                  throw SpannerExceptionFactory.newSpannerException(
-                      ErrorCode.FAILED_PRECONDITION, NO_TRANSACTION_RETURNED_MSG);
-                }
-                // For standard DML, using the exact row count.
-                return input.getStats().getRowCountExact();
-              },
-              MoreExecutors.directExecutor());
-      updateCount =
-          ApiFutures.catching(
-              updateCount,
-              Throwable.class,
-              input -> {
-                SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                throw onError(e, builder.getTransaction().hasBegin());
-              },
-              MoreExecutors.directExecutor());
-      updateCount.addListener(
-          () -> {
-            try {
-              if (resultSet.get().getMetadata().hasTransaction()) {
-                onTransactionMetadata(
-                    resultSet.get().getMetadata().getTransaction(),
-                    builder.getTransaction().hasBegin());
+              } catch (Throwable e) {
+                // Ignore this error here as it is handled by the future that is returned by the
+                // executeUpdateAsync method.
               }
-            } catch (Throwable e) {
-              // Ignore this error here as it is handled by the future that is returned by the
-              // executeUpdateAsync method.
-            }
-            decreaseAsyncOperations();
-          },
-          MoreExecutors.directExecutor());
-      return updateCount;
+              span.end();
+              decreaseAsyncOperations();
+            },
+            MoreExecutors.directExecutor());
+        return updateCount;
+      }
     }
 
     private SpannerException createAbortedExceptionForBatchDml(ExecuteBatchDmlResponse response) {
@@ -873,9 +879,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... updateOptions) {
-      ISpan span = tracer.spanBuilder(BATCH_UPDATE, Attributes.of(DB_STATEMENT_ARRAY_KEY,
-          StreamSupport.stream(statements.spliterator(), false).map(Statement::getSql).collect(
-              Collectors.toList())));
+      ISpan span =
+          tracer.spanBuilder(
+              BATCH_UPDATE,
+              Attributes.of(
+                  DB_STATEMENT_ARRAY_KEY,
+                  StreamSupport.stream(statements.spliterator(), false)
+                      .map(Statement::getSql)
+                      .collect(Collectors.toList())));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
         final Options options = Options.fromUpdateOptions(updateOptions);
@@ -914,68 +925,91 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw onError(
               SpannerExceptionFactory.asSpannerException(e), builder.getTransaction().hasBegin());
         }
+      } catch (Throwable throwable) {
+        span.setStatus(throwable);
+        throw throwable;
+      } finally {
+        span.end();
       }
     }
 
     @Override
     public ApiFuture<long[]> batchUpdateAsync(
         Iterable<Statement> statements, UpdateOption... updateOptions) {
-      beforeReadOrQuery();
-      final Options options = Options.fromUpdateOptions(updateOptions);
-      if (options.withExcludeTxnFromChangeStreams() != null) {
-        throw newSpannerException(
-            ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
-      }
-      final ExecuteBatchDmlRequest.Builder builder =
-          getExecuteBatchDmlRequestBuilder(statements, options);
-      ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
-      try {
-        // Register the update as an async operation that must finish before the transaction may
-        // commit.
-        increaseAsyncOperations();
-        response = rpc.executeBatchDmlAsync(builder.build(), session.getOptions());
-        session.markUsed(clock.instant());
-      } catch (Throwable t) {
-        decreaseAsyncOperations();
-        throw t;
-      }
-      ApiFuture<long[]> updateCounts =
-          ApiFutures.transform(
-              response,
-              batchDmlResponse -> {
-                long[] results = new long[batchDmlResponse.getResultSetsCount()];
-                for (int i = 0; i < batchDmlResponse.getResultSetsCount(); ++i) {
-                  results[i] = batchDmlResponse.getResultSets(i).getStats().getRowCountExact();
-                  if (batchDmlResponse.getResultSets(i).getMetadata().hasTransaction()) {
-                    onTransactionMetadata(
-                        batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
-                        builder.getTransaction().hasBegin());
+      ISpan span =
+          tracer.spanBuilder(
+              BATCH_UPDATE,
+              Attributes.of(
+                  DB_STATEMENT_ARRAY_KEY,
+                  StreamSupport.stream(statements.spliterator(), false)
+                      .map(Statement::getSql)
+                      .collect(Collectors.toList())));
+      try (IScope ignore = tracer.withSpan(span)) {
+        beforeReadOrQuery();
+        final Options options = Options.fromUpdateOptions(updateOptions);
+        if (options.withExcludeTxnFromChangeStreams() != null) {
+          throw newSpannerException(
+              ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
+        }
+        final ExecuteBatchDmlRequest.Builder builder =
+            getExecuteBatchDmlRequestBuilder(statements, options);
+        ApiFuture<com.google.spanner.v1.ExecuteBatchDmlResponse> response;
+        try {
+          // Register the update as an async operation that must finish before the transaction may
+          // commit.
+          increaseAsyncOperations();
+          response = rpc.executeBatchDmlAsync(builder.build(), session.getOptions());
+          session.markUsed(clock.instant());
+        } catch (Throwable t) {
+          decreaseAsyncOperations();
+          throw t;
+        }
+        ApiFuture<long[]> updateCounts =
+            ApiFutures.transform(
+                response,
+                batchDmlResponse -> {
+                  long[] results = new long[batchDmlResponse.getResultSetsCount()];
+                  for (int i = 0; i < batchDmlResponse.getResultSetsCount(); ++i) {
+                    results[i] = batchDmlResponse.getResultSets(i).getStats().getRowCountExact();
+                    if (batchDmlResponse.getResultSets(i).getMetadata().hasTransaction()) {
+                      onTransactionMetadata(
+                          batchDmlResponse.getResultSets(i).getMetadata().getTransaction(),
+                          builder.getTransaction().hasBegin());
+                    }
                   }
-                }
-                // If one of the DML statements was aborted, we should throw an aborted exception.
-                // In all other cases, we should throw a BatchUpdateException.
-                if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
-                  throw createAbortedExceptionForBatchDml(batchDmlResponse);
-                } else if (batchDmlResponse.getStatus().getCode() != 0) {
-                  throw newSpannerBatchUpdateException(
-                      ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
-                      batchDmlResponse.getStatus().getMessage(),
-                      results);
-                }
-                return results;
-              },
-              MoreExecutors.directExecutor());
-      updateCounts =
-          ApiFutures.catching(
-              updateCounts,
-              Throwable.class,
-              input -> {
-                SpannerException e = SpannerExceptionFactory.asSpannerException(input);
-                throw onError(e, builder.getTransaction().hasBegin());
-              },
-              MoreExecutors.directExecutor());
-      updateCounts.addListener(this::decreaseAsyncOperations, MoreExecutors.directExecutor());
-      return updateCounts;
+                  // If one of the DML statements was aborted, we should throw an aborted exception.
+                  // In all other cases, we should throw a BatchUpdateException.
+                  if (batchDmlResponse.getStatus().getCode() == Code.ABORTED_VALUE) {
+                    throw createAbortedExceptionForBatchDml(batchDmlResponse);
+                  } else if (batchDmlResponse.getStatus().getCode() != 0) {
+                    throw newSpannerBatchUpdateException(
+                        ErrorCode.fromRpcStatus(batchDmlResponse.getStatus()),
+                        batchDmlResponse.getStatus().getMessage(),
+                        results);
+                  }
+                  return results;
+                },
+                MoreExecutors.directExecutor());
+        updateCounts =
+            ApiFutures.catching(
+                updateCounts,
+                Throwable.class,
+                input -> {
+                  SpannerException e = SpannerExceptionFactory.asSpannerException(input);
+                  SpannerException exceptionToThrow =
+                      onError(e, builder.getTransaction().hasBegin());
+                  span.setStatus(exceptionToThrow);
+                  throw exceptionToThrow;
+                },
+                MoreExecutors.directExecutor());
+        updateCounts.addListener(
+            () -> {
+              span.end();
+              decreaseAsyncOperations();
+            },
+            MoreExecutors.directExecutor());
+        return updateCounts;
+      }
     }
 
     private ListenableAsyncResultSet wrap(ListenableAsyncResultSet delegate) {

@@ -85,7 +85,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String BATCH_UPDATE = "CloudSpannerOperation.BatchUpdate";
 
   static final AttributeKey<String> DB_STATEMENT_KEY = AttributeKey.stringKey("db.statement");
-  static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY = AttributeKey.stringArrayKey("db.statement");
+  static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
+      AttributeKey.stringArrayKey("db.statement");
 
   private static final Object CLIENT_ID_LOCK = new Object();
 

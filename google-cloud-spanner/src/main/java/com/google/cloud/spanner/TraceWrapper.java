@@ -20,7 +20,6 @@ import com.google.cloud.spanner.SpannerOptions.TracingFramework;
 import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 
@@ -40,7 +39,8 @@ class TraceWrapper {
 
   ISpan spanBuilder(String spanName, Attributes attributes) {
     if (SpannerOptions.getActiveTracingFramework().equals(TracingFramework.OPEN_TELEMETRY)) {
-      return new OpenTelemetrySpan(openTelemetryTracer.spanBuilder(spanName).setAllAttributes(attributes).startSpan());
+      return new OpenTelemetrySpan(
+          openTelemetryTracer.spanBuilder(spanName).setAllAttributes(attributes).startSpan());
     } else {
       return new OpenCensusSpan(openCensusTracer.spanBuilder(spanName).startSpan());
     }
@@ -54,7 +54,8 @@ class TraceWrapper {
     if (SpannerOptions.getActiveTracingFramework().equals(TracingFramework.OPEN_TELEMETRY)) {
       OpenTelemetrySpan otParentSpan = (OpenTelemetrySpan) parentSpan;
 
-      io.opentelemetry.api.trace.SpanBuilder otSpan = openTelemetryTracer.spanBuilder(spanName).setAllAttributes(attributes);
+      io.opentelemetry.api.trace.SpanBuilder otSpan =
+          openTelemetryTracer.spanBuilder(spanName).setAllAttributes(attributes);
       if (otParentSpan != null && otParentSpan.getOpenTelemetrySpan() != null) {
         otSpan = otSpan.setParent(Context.current().with(otParentSpan.getOpenTelemetrySpan()));
       }

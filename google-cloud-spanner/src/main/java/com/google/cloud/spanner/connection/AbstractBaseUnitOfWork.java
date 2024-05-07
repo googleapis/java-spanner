@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-import static com.google.cloud.spanner.SpannerApiFutures.get;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -49,7 +48,6 @@ import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,7 +68,8 @@ import javax.annotation.concurrent.GuardedBy;
 abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   static final String DB_STATEMENT = "db.statement";
   static final AttributeKey<String> DB_STATEMENT_KEY = AttributeKey.stringKey(DB_STATEMENT);
-  static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY = AttributeKey.stringArrayKey(DB_STATEMENT);
+  static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
+      AttributeKey.stringArrayKey(DB_STATEMENT);
 
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;

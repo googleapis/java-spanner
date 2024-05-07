@@ -18,7 +18,6 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
 
-import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -39,7 +38,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
@@ -217,8 +215,8 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     try (Scope ignore = span.makeCurrent()) {
       if (statements.isEmpty()) {
         this.state = UnitOfWorkState.RAN;
-        return ApiFutures.transform(asyncEndUnitOfWorkSpan(), unused -> new long[0],
-            MoreExecutors.directExecutor());
+        return ApiFutures.transform(
+            asyncEndUnitOfWorkSpan(), unused -> new long[0], MoreExecutors.directExecutor());
       }
       // Set the DDL statements on the span.
       span.setAllAttributes(Attributes.of(DB_STATEMENT_ARRAY_KEY, statements));
@@ -246,8 +244,12 @@ class DdlBatch extends AbstractBaseUnitOfWork {
             }
           };
       this.state = UnitOfWorkState.RUNNING;
-      ApiFuture<long[]> result = executeStatementAsync(
-          callType, RUN_BATCH_STATEMENT, callable, DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
+      ApiFuture<long[]> result =
+          executeStatementAsync(
+              callType,
+              RUN_BATCH_STATEMENT,
+              callable,
+              DatabaseAdminGrpc.getUpdateDatabaseDdlMethod());
       asyncEndUnitOfWorkSpan();
 
       return result;
