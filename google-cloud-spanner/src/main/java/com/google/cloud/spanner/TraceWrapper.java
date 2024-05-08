@@ -20,17 +20,30 @@ import com.google.cloud.spanner.SpannerOptions.TracingFramework;
 import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 class TraceWrapper {
+  private static final AttributeKey<String> DB_STATEMENT_KEY =
+      AttributeKey.stringKey("db.statement");
+  private static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
+      AttributeKey.stringArrayKey("db.statement");
 
   private final Tracer openCensusTracer;
   private final io.opentelemetry.api.trace.Tracer openTelemetryTracer;
+  private final boolean includeSqlStatementInTrace;
 
-  TraceWrapper(Tracer openCensusTracer, io.opentelemetry.api.trace.Tracer openTelemetryTracer) {
+  TraceWrapper(
+      Tracer openCensusTracer,
+      io.opentelemetry.api.trace.Tracer openTelemetryTracer,
+      boolean includeSqlStatementInTrace) {
     this.openTelemetryTracer = openTelemetryTracer;
     this.openCensusTracer = openCensusTracer;
+    this.includeSqlStatementInTrace = includeSqlStatementInTrace;
   }
 
   ISpan spanBuilder(String spanName) {
@@ -107,5 +120,23 @@ class TraceWrapper {
       }
       return new OpenCensusScope(openCensusTracer.withSpan(openCensusSpan.getOpenCensusSpan()));
     }
+  }
+
+  Attributes createStatementAttributes(Statement statement) {
+    if (this.includeSqlStatementInTrace) {
+      return Attributes.of(DB_STATEMENT_KEY, statement.getSql());
+    }
+    return Attributes.empty();
+  }
+
+  Attributes createStatementBatchAttributes(Iterable<Statement> statements) {
+    if (this.includeSqlStatementInTrace) {
+      return Attributes.of(
+          DB_STATEMENT_ARRAY_KEY,
+          StreamSupport.stream(statements.spliterator(), false)
+              .map(Statement::getSql)
+              .collect(Collectors.toList()));
+    }
+    return Attributes.empty();
   }
 }

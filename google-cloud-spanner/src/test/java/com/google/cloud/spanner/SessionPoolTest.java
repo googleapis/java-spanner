@@ -153,7 +153,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   private String TEST_DATABASE_ROLE = "my-role";
 
   private final TraceWrapper tracer =
-      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
 
   @Parameters(name = "min sessions = {0}")
   public static Collection<Object[]> data() {

@@ -92,7 +92,7 @@ public class SessionClientTests {
   @Mock private SpannerRpc rpc;
   @Mock private SpannerOptions spannerOptions;
   private final TraceWrapper tracer =
-      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
   @Mock private ISpan span;
   @Captor ArgumentCaptor<Map<SpannerRpc.Option, Object>> options;
 

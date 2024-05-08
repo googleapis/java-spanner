@@ -228,7 +228,7 @@ public class SessionPoolStressTest extends BaseSessionPoolTest {
             mockSpanner.getSessionClient(db),
             clock,
             Position.RANDOM,
-            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
             OpenTelemetry.noop());
     pool.idleSessionRemovedListener =
         pooled -> {

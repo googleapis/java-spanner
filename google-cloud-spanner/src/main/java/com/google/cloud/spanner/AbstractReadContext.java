@@ -53,8 +53,6 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
@@ -737,7 +735,7 @@ abstract class AbstractReadContext
             SpannerImpl.QUERY,
             span,
             tracer,
-            Attributes.of(AttributeKey.stringKey("db.statement"), statement.getSql()),
+            tracer.createStatementAttributes(statement),
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override

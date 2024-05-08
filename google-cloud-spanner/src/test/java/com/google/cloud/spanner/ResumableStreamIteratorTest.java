@@ -157,7 +157,7 @@ public class ResumableStreamIteratorTest {
             maxBufferSize,
             "",
             new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),
-            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override

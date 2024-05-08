@@ -19,8 +19,6 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerBatchUpdateException;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.cloud.spanner.SpannerImpl.BATCH_UPDATE;
-import static com.google.cloud.spanner.SpannerImpl.DB_STATEMENT_ARRAY_KEY;
-import static com.google.cloud.spanner.SpannerImpl.DB_STATEMENT_KEY;
 import static com.google.cloud.spanner.SpannerImpl.UPDATE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -55,7 +53,6 @@ import com.google.spanner.v1.RollbackRequest;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +67,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -750,7 +745,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     public long executeUpdate(Statement statement, UpdateOption... options) {
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              UPDATE, this.span, Attributes.of(DB_STATEMENT_KEY, statement.getSql()));
+              UPDATE, this.span, this.tracer.createStatementAttributes(statement));
       try (IScope ignore = tracer.withSpan(span)) {
         ResultSet resultSet = internalExecuteUpdate(statement, QueryMode.NORMAL, options);
         // For standard DML, using the exact row count.
@@ -794,7 +789,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... updateOptions) {
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              UPDATE, this.span, Attributes.of(DB_STATEMENT_KEY, statement.getSql()));
+              UPDATE, this.span, this.tracer.createStatementAttributes(statement));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
         final Options options = Options.fromUpdateOptions(updateOptions);
@@ -885,13 +880,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... updateOptions) {
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              BATCH_UPDATE,
-              this.span,
-              Attributes.of(
-                  DB_STATEMENT_ARRAY_KEY,
-                  StreamSupport.stream(statements.spliterator(), false)
-                      .map(Statement::getSql)
-                      .collect(Collectors.toList())));
+              BATCH_UPDATE, this.span, this.tracer.createStatementBatchAttributes(statements));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
         final Options options = Options.fromUpdateOptions(updateOptions);
@@ -943,13 +932,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
         Iterable<Statement> statements, UpdateOption... updateOptions) {
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              BATCH_UPDATE,
-              this.span,
-              Attributes.of(
-                  DB_STATEMENT_ARRAY_KEY,
-                  StreamSupport.stream(statements.spliterator(), false)
-                      .map(Statement::getSql)
-                      .collect(Collectors.toList())));
+              BATCH_UPDATE, this.span, this.tracer.createStatementBatchAttributes(statements));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
         final Options options = Options.fromUpdateOptions(updateOptions);

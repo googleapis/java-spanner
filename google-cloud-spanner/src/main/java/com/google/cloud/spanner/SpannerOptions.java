@@ -149,6 +149,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final DirectedReadOptions directedReadOptions;
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
+  private final boolean includeSqlStatementInOpenTelemetryTraces;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -653,6 +654,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     directedReadOptions = builder.directedReadOptions;
     useVirtualThreads = builder.useVirtualThreads;
     openTelemetry = builder.openTelemetry;
+    includeSqlStatementInOpenTelemetryTraces = builder.includeSqlStatementInOpenTelemetryTraces;
   }
 
   /**
@@ -762,6 +764,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
+    private boolean includeSqlStatementInOpenTelemetryTraces;
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -825,6 +828,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.attemptDirectPath = options.attemptDirectPath;
       this.directedReadOptions = options.directedReadOptions;
       this.useVirtualThreads = options.useVirtualThreads;
+      this.includeSqlStatementInOpenTelemetryTraces =
+          options.includeSqlStatementInOpenTelemetryTraces;
     }
 
     @Override
@@ -1321,6 +1326,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Sets whether OpenTelemetry traces should add a 'db.statement' attribute with the SQL
+     * statement that is being executed.
+     */
+    public Builder setIncludeSqlStatementInOpenTelemetryTraces(
+        boolean includeSqlStatementInOpenTelemetryTraces) {
+      this.includeSqlStatementInOpenTelemetryTraces = includeSqlStatementInOpenTelemetryTraces;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1561,6 +1576,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @BetaApi
   public boolean isUseVirtualThreads() {
     return useVirtualThreads;
+  }
+
+  public boolean isIncludeSqlStatementInOpenTelemetryTraces() {
+    return includeSqlStatementInOpenTelemetryTraces;
   }
 
   /** Returns the default query options to use for the specific database. */

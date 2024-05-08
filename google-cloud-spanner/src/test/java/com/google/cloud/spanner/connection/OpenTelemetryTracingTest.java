@@ -92,12 +92,45 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
     spanExporter.reset();
   }
 
-  public Connection createTestConnection() {
+  Connection createTestConnection() {
+    return createTestConnection(getBaseUrl());
+  }
+
+  Connection createTestConnection(String url) {
     return ConnectionOptions.newBuilder()
         .setTracingPrefix("CloudSpannerJdbc")
-        .setUri(getBaseUrl())
+        .setUri(url)
         .build()
         .getConnection();
+  }
+
+  @Test
+  public void testSingleUseQuery_withoutSqlStatement() {
+    try (Connection connection = createTestConnection(getBaseUrl() + ";includeSqlInTraces=false")) {
+      connection.setAutocommit(true);
+      try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
+        assertTrue(resultSet.next());
+        assertFalse(resultSet.next());
+      }
+    }
+    assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    // There are two query spans: One for getting the database dialect, and one for the actual
+    // test query.
+    assertEquals(
+        2,
+        spans.stream()
+            .filter(span -> span.getName().equals("CloudSpannerOperation.ExecuteStreamingQuery"))
+            .count());
+    // Verify that both do not have any db.statement attribute.
+    assertEquals(
+        2,
+        spans.stream()
+            .filter(
+                span ->
+                    span.getName().equals("CloudSpannerOperation.ExecuteStreamingQuery")
+                        && span.getAttributes().get(AttributeKey.stringKey("db.statement")) == null)
+            .count());
   }
 
   @Test

@@ -40,7 +40,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opencensus.metrics.LabelValue;
 import io.opencensus.trace.Tracing;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import java.io.IOException;
@@ -64,11 +63,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   final TraceWrapper tracer =
       new TraceWrapper(
           Tracing.getTracer(),
-          this.getOptions()
+          getOptions()
               .getOpenTelemetry()
               .getTracer(
                   MetricRegistryConstants.INSTRUMENTATION_SCOPE,
-                  GaxProperties.getLibraryVersion(this.getOptions().getClass())));
+                  GaxProperties.getLibraryVersion(this.getOptions().getClass())),
+          getOptions().isIncludeSqlStatementInOpenTelemetryTraces());
 
   static final String CREATE_MULTIPLEXED_SESSION = "CloudSpannerOperation.CreateMultiplexedSession";
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";
@@ -83,10 +83,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String BATCH_WRITE = "CloudSpannerOperation.BatchWrite";
   static final String UPDATE = "CloudSpannerOperation.ExecuteUpdate";
   static final String BATCH_UPDATE = "CloudSpannerOperation.BatchUpdate";
-
-  static final AttributeKey<String> DB_STATEMENT_KEY = AttributeKey.stringKey("db.statement");
-  static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
-      AttributeKey.stringArrayKey("db.statement");
 
   private static final Object CLIENT_ID_LOCK = new Object();
 

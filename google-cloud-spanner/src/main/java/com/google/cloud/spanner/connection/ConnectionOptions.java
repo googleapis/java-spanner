@@ -195,6 +195,7 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
   private static final int DEFAULT_MAX_PARTITIONS = 0;
   private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
+  private static final boolean DEFAULT_INCLUDE_SQL_IN_TRACES = true;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -274,6 +275,8 @@ public class ConnectionOptions {
   public static final String MAX_PARTITIONS_PROPERTY_NAME = "maxPartitions";
   public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
       "maxPartitionedParallelism";
+
+  public static final String INCLUDE_SQL_IN_TRACES_PROPERTY_NAME = "includeSqlInTraces";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "
@@ -436,7 +439,13 @@ public class ConnectionOptions {
                       "The maximum number of partitions that will be executed in parallel "
                           + "for partitioned queries on this connection. Set this value to 0 to "
                           + "dynamically use the number of processors available in the runtime.",
-                      DEFAULT_MAX_PARTITIONED_PARALLELISM))));
+                      DEFAULT_MAX_PARTITIONED_PARALLELISM),
+                  ConnectionProperty.createBooleanProperty(
+                      INCLUDE_SQL_IN_TRACES_PROPERTY_NAME,
+                      "Include the SQL string in the OpenTelemetry traces that are generated "
+                          + "by this connection. The SQL string is added as the standard OpenTelemetry "
+                          + "attribute 'db.statement'.",
+                      DEFAULT_INCLUDE_SQL_IN_TRACES))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -730,6 +739,7 @@ public class ConnectionOptions {
   private final boolean useVirtualGrpcTransportThreads;
   private final OpenTelemetry openTelemetry;
   private final String tracingPrefix;
+  private final boolean includeSqlInTraces;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -837,6 +847,7 @@ public class ConnectionOptions {
     this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
     this.openTelemetry = builder.openTelemetry;
     this.tracingPrefix = builder.tracingPrefix;
+    this.includeSqlInTraces = parseIncludeSqlInTraces(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -1232,6 +1243,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static boolean parseIncludeSqlInTraces(String uri) {
+    String value = parseUriProperty(uri, INCLUDE_SQL_IN_TRACES_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_INCLUDE_SQL_IN_TRACES;
+  }
+
+  @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
     Matcher matcher = pattern.matcher(uri);
@@ -1532,6 +1549,10 @@ public class ConnectionOptions {
 
   int getMaxPartitionedParallelism() {
     return this.maxPartitionedParallelism;
+  }
+
+  boolean isIncludeSqlInTraces() {
+    return this.includeSqlInTraces;
   }
 
   /** Interceptors that should be executed after each statement */
