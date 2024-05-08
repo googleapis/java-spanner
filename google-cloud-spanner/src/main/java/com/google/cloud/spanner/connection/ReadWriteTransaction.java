@@ -975,12 +975,15 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private void handleAborted(AbortedException aborted) {
     if (transactionRetryAttempts >= maxInternalRetries) {
       // If the same statement in transaction keeps aborting, then we need to abort here.
+      span.addEvent("Internal retry attempts exceeded");
       throwAbortWithRetryAttemptsExceeded();
     } else if (retryAbortsInternally) {
       logger.fine(toString() + ": Starting internal transaction retry");
       while (true) {
         // First back off and then restart the transaction.
         long delay = aborted.getRetryDelayInMillis();
+        span.addEvent(
+            "Transaction aborted. Backing off for " + delay + " milliseconds and retrying.");
         try {
           if (delay > 0L) {
             //noinspection BusyWait

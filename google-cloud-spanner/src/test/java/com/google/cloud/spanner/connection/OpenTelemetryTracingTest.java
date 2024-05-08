@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.List;
@@ -390,6 +391,82 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
     assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.Commit", spans);
   }
 
+  @Test
+  public void testMultiUseReadWriteAborted() {
+    try (Connection connection = createTestConnection()) {
+      connection.setAutocommit(false);
+      connection.setReadOnly(false);
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+      mockSpanner.abortNextStatement();
+      connection.commit();
+    }
+    assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    assertContains("CloudSpannerJdbc.ReadWriteTransaction", spans);
+    assertContains("CloudSpanner.ReadWriteTransaction", 1, Attributes.empty(), spans);
+    SpanData transactionSpan =
+        spans.stream()
+            .filter(span -> span.getName().equals("CloudSpannerJdbc.ReadWriteTransaction"))
+            .findFirst()
+            .orElseThrow(IllegalStateException::new);
+    assertEquals(1, transactionSpan.getTotalRecordedEvents());
+    EventData event = transactionSpan.getEvents().get(0);
+    assertEquals(
+        "Transaction aborted. Backing off for 0 milliseconds and retrying.", event.getName());
+    // The transaction is retried, so we get the ExecuteUpdate and Commit spans twice.
+    assertContains(
+        "CloudSpannerOperation.ExecuteUpdate",
+        2,
+        Attributes.of(AttributeKey.stringKey("db.statement"), INSERT_STATEMENT.getSql()),
+        spans);
+    assertContains("CloudSpannerOperation.Commit", 2, Attributes.empty(), spans);
+
+    assertParent(
+        "CloudSpannerJdbc.ReadWriteTransaction", "CloudSpanner.ReadWriteTransaction", spans);
+    assertParent(
+        "CloudSpanner.ReadWriteTransaction",
+        "CloudSpannerOperation.ExecuteUpdate",
+        Attributes.of(AttributeKey.stringKey("db.statement"), INSERT_STATEMENT.getSql()),
+        spans);
+    assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.Commit", spans);
+  }
+
+  @Test
+  public void testTransactionTag() {
+    try (Connection connection = createTestConnection()) {
+      connection.setAutocommit(false);
+      connection.setReadOnly(false);
+      connection.setTransactionTag("my_tag");
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+      connection.commit();
+    }
+    assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    assertContains(
+        "CloudSpanner.ReadWriteTransaction",
+        1,
+        Attributes.of(AttributeKey.stringKey("transaction.tag"), "my_tag"),
+        spans);
+  }
+
+  @Test
+  public void testStatementTag() {
+    try (Connection connection = createTestConnection()) {
+      connection.setAutocommit(false);
+      connection.setReadOnly(false);
+      connection.setStatementTag("my_tag");
+      assertEquals(1L, connection.executeUpdate(INSERT_STATEMENT));
+      connection.commit();
+    }
+    assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    assertContains(
+        "CloudSpannerOperation.ExecuteUpdate",
+        1,
+        Attributes.of(AttributeKey.stringKey("statement.tag"), "my_tag"),
+        spans);
+  }
+
   void assertContains(String expected, List<SpanData> spans) {
     assertTrue(
         "Expected " + spansToString(spans) + " to contain " + expected,
@@ -431,8 +508,10 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   void assertParent(
       String expectedParent, String child, Attributes attributes, List<SpanData> spans) {
     SpanData parentSpan = getSpan(expectedParent, spans);
-    SpanData childSpan = getSpan(child, attributes, spans);
-    assertEquals(parentSpan.getSpanId(), childSpan.getParentSpanId());
+    List<SpanData> childSpans = getSpans(child, attributes, spans);
+    for (SpanData childSpan : childSpans) {
+      assertEquals(parentSpan.getSpanId(), childSpan.getParentSpanId());
+    }
   }
 
   SpanData getSpan(String name, List<SpanData> spans) {
@@ -447,6 +526,12 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
         .filter(span -> equalsSpan(span, name, attributes))
         .findAny()
         .orElseThrow(() -> new IllegalArgumentException("Span " + name + " not found"));
+  }
+
+  List<SpanData> getSpans(String name, Attributes attributes, List<SpanData> spans) {
+    return spans.stream()
+        .filter(span -> equalsSpan(span, name, attributes))
+        .collect(Collectors.toList());
   }
 
   private String spansToString(List<SpanData> spans) {

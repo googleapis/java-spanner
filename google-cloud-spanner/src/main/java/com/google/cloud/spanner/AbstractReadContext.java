@@ -735,7 +735,7 @@ abstract class AbstractReadContext
             SpannerImpl.QUERY,
             span,
             tracer,
-            tracer.createStatementAttributes(statement),
+            tracer.createStatementAttributes(statement, options),
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override

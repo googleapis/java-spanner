@@ -69,8 +69,10 @@ public class TransactionContextImplTest {
     doNothing().when(span).setStatus(any(Throwable.class));
     doNothing().when(span).end();
     doNothing().when(span).addAnnotation("Starting Commit");
-    when(tracer.createStatementAttributes(any(Statement.class))).thenReturn(Attributes.empty());
-    when(tracer.createStatementBatchAttributes(any(Iterable.class))).thenReturn(Attributes.empty());
+    when(tracer.createStatementAttributes(any(Statement.class), any()))
+        .thenReturn(Attributes.empty());
+    when(tracer.createStatementBatchAttributes(any(Iterable.class), any()))
+        .thenReturn(Attributes.empty());
     when(tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span)).thenReturn(span);
     when(tracer.spanBuilderWithExplicitParent(
             eq(SpannerImpl.COMMIT), eq(span), any(Attributes.class)))

@@ -16,18 +16,27 @@
 
 package com.google.cloud.spanner;
 
+import com.google.cloud.spanner.Options.TagOption;
+import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SpannerOptions.TracingFramework;
 import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 class TraceWrapper {
+  private static final AttributeKey<String> TRANSACTION_TAG_KEY =
+      AttributeKey.stringKey("transaction.tag");
+  private static final AttributeKey<String> STATEMENT_TAG_KEY =
+      AttributeKey.stringKey("statement.tag");
   private static final AttributeKey<String> DB_STATEMENT_KEY =
       AttributeKey.stringKey("db.statement");
   private static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
@@ -48,6 +57,10 @@ class TraceWrapper {
 
   ISpan spanBuilder(String spanName) {
     return spanBuilder(spanName, Attributes.empty());
+  }
+
+  ISpan spanBuilder(String spanName, TransactionOption... options) {
+    return spanBuilder(spanName, createTransactionAttributes(options));
   }
 
   ISpan spanBuilder(String spanName, Attributes attributes) {
@@ -122,20 +135,48 @@ class TraceWrapper {
     }
   }
 
-  Attributes createStatementAttributes(Statement statement) {
-    if (this.includeSqlStatementInTrace) {
-      return Attributes.of(DB_STATEMENT_KEY, statement.getSql());
+  Attributes createTransactionAttributes(TransactionOption... options) {
+    if (options != null && options.length > 0) {
+      Optional<TagOption> tagOption =
+          Arrays.stream(options)
+              .filter(option -> option instanceof TagOption)
+              .map(option -> (TagOption) option)
+              .findAny();
+      if (tagOption.isPresent()) {
+        return Attributes.of(TRANSACTION_TAG_KEY, tagOption.get().getTag());
+      }
     }
     return Attributes.empty();
   }
 
-  Attributes createStatementBatchAttributes(Iterable<Statement> statements) {
-    if (this.includeSqlStatementInTrace) {
-      return Attributes.of(
-          DB_STATEMENT_ARRAY_KEY,
-          StreamSupport.stream(statements.spliterator(), false)
-              .map(Statement::getSql)
-              .collect(Collectors.toList()));
+  Attributes createStatementAttributes(Statement statement, Options options) {
+    if (this.includeSqlStatementInTrace || (options != null && options.hasTag())) {
+      AttributesBuilder builder = Attributes.builder();
+      if (this.includeSqlStatementInTrace) {
+        builder.put(DB_STATEMENT_KEY, statement.getSql());
+      }
+      if (options != null && options.hasTag()) {
+        builder.put(STATEMENT_TAG_KEY, options.tag());
+      }
+      return builder.build();
+    }
+    return Attributes.empty();
+  }
+
+  Attributes createStatementBatchAttributes(Iterable<Statement> statements, Options options) {
+    if (this.includeSqlStatementInTrace || (options != null && options.hasTag())) {
+      AttributesBuilder builder = Attributes.builder();
+      if (this.includeSqlStatementInTrace) {
+        builder.put(
+            DB_STATEMENT_ARRAY_KEY,
+            StreamSupport.stream(statements.spliterator(), false)
+                .map(Statement::getSql)
+                .collect(Collectors.toList()));
+      }
+      if (options != null && options.hasTag()) {
+        builder.put(STATEMENT_TAG_KEY, options.tag());
+      }
+      return builder.build();
     }
     return Attributes.empty();
   }

@@ -724,7 +724,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     private ResultSet internalAnalyzeStatement(
-        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... options) {
+        Statement statement, QueryAnalyzeMode analyzeMode, UpdateOption... updateOptions) {
       Preconditions.checkNotNull(analyzeMode);
       QueryMode queryMode;
       switch (analyzeMode) {
@@ -738,14 +738,16 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Unknown analyze mode: " + analyzeMode);
       }
+      final Options options = Options.fromUpdateOptions(updateOptions);
       return internalExecuteUpdate(statement, queryMode, options);
     }
 
     @Override
-    public long executeUpdate(Statement statement, UpdateOption... options) {
+    public long executeUpdate(Statement statement, UpdateOption... updateOptions) {
+      final Options options = Options.fromUpdateOptions(updateOptions);
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              UPDATE, this.span, this.tracer.createStatementAttributes(statement));
+              UPDATE, this.span, this.tracer.createStatementAttributes(statement, options));
       try (IScope ignore = tracer.withSpan(span)) {
         ResultSet resultSet = internalExecuteUpdate(statement, QueryMode.NORMAL, options);
         // For standard DML, using the exact row count.
@@ -756,9 +758,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     private ResultSet internalExecuteUpdate(
-        Statement statement, QueryMode queryMode, UpdateOption... updateOptions) {
+        Statement statement, QueryMode queryMode, Options options) {
       beforeReadOrQuery();
-      final Options options = Options.fromUpdateOptions(updateOptions);
       if (options.withExcludeTxnFromChangeStreams() != null) {
         throw newSpannerException(
             ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
@@ -787,12 +788,12 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... updateOptions) {
+      final Options options = Options.fromUpdateOptions(updateOptions);
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              UPDATE, this.span, this.tracer.createStatementAttributes(statement));
+              UPDATE, this.span, this.tracer.createStatementAttributes(statement, options));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
-        final Options options = Options.fromUpdateOptions(updateOptions);
         if (options.withExcludeTxnFromChangeStreams() != null) {
           throw newSpannerException(
               ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
@@ -878,12 +879,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... updateOptions) {
+      final Options options = Options.fromUpdateOptions(updateOptions);
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              BATCH_UPDATE, this.span, this.tracer.createStatementBatchAttributes(statements));
+              BATCH_UPDATE,
+              this.span,
+              this.tracer.createStatementBatchAttributes(statements, options));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
-        final Options options = Options.fromUpdateOptions(updateOptions);
         if (options.withExcludeTxnFromChangeStreams() != null) {
           throw newSpannerException(
               ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
@@ -930,12 +933,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @Override
     public ApiFuture<long[]> batchUpdateAsync(
         Iterable<Statement> statements, UpdateOption... updateOptions) {
+      final Options options = Options.fromUpdateOptions(updateOptions);
       ISpan span =
           tracer.spanBuilderWithExplicitParent(
-              BATCH_UPDATE, this.span, this.tracer.createStatementBatchAttributes(statements));
+              BATCH_UPDATE,
+              this.span,
+              this.tracer.createStatementBatchAttributes(statements, options));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
-        final Options options = Options.fromUpdateOptions(updateOptions);
         if (options.withExcludeTxnFromChangeStreams() != null) {
           throw newSpannerException(
               ErrorCode.INVALID_ARGUMENT, DML_INVALID_EXCLUDE_CHANGE_STREAMS_OPTION_MESSAGE);
