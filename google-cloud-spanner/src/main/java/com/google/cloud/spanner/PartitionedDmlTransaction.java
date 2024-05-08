@@ -142,6 +142,10 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
   @Override
   public void setSpan(ISpan span) {}
 
+  /** No-op method needed to implement SessionTransaction interface. */
+  @Override
+  public void close() {}
+
   private Duration tryUpdateTimeout(final Duration timeout, final Stopwatch stopwatch) {
     final Duration remainingTimeout =
         timeout.minus(stopwatch.elapsed(TimeUnit.MILLISECONDS), ChronoUnit.MILLIS);

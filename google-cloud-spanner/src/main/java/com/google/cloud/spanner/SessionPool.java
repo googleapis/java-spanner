@@ -68,7 +68,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ForwardingListenableFuture.SimpleForwardingListenableFuture;
@@ -88,6 +87,8 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.Meter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -144,7 +145,7 @@ class SessionPool {
             "Timed out after waiting " + timeoutMillis + "ms for session pool creation");
       }
 
-      if (options.getUseMultiplexedSession()
+      if (useMultiplexedSessions()
           && !waitOnMultiplexedSessionsLatch.await(timeoutNanos, TimeUnit.NANOSECONDS)) {
         final long timeoutMillis = options.getWaitForMinSessions().toMillis();
         throw SpannerExceptionFactory.newSpannerException(
@@ -156,7 +157,8 @@ class SessionPool {
     }
   }
 
-  private abstract static class CachedResultSetSupplier implements Supplier<ResultSet> {
+  private abstract static class CachedResultSetSupplier
+      implements com.google.common.base.Supplier<ResultSet> {
 
     private ResultSet cached;
 
@@ -577,6 +579,7 @@ class SessionPool {
           numSessionsInUse--;
           numSessionsReleased++;
           checkedOutSessions.remove(session);
+          markedCheckedOutSessions.remove(session);
         }
         session.leakedException = null;
         invalidateSession(session.get());
@@ -1333,6 +1336,9 @@ class SessionPool {
     private void markCheckedOut() {
       if (options.isTrackStackTraceOfSessionCheckout()) {
         this.leakedException = new LeakedSessionException();
+        synchronized (SessionPool.this.lock) {
+          SessionPool.this.markedCheckedOutSessions.add(this);
+        }
       }
     }
 
@@ -1526,6 +1532,7 @@ class SessionPool {
         synchronized (lock) {
           leakedException = null;
           checkedOutSessions.remove(this);
+          markedCheckedOutSessions.remove(this);
         }
       }
       return ApiFutures.immediateFuture(Empty.getDefaultInstance());
@@ -1835,7 +1842,7 @@ class SessionPool {
 
   class PooledSession implements CachedSession {
 
-    @VisibleForTesting SessionImpl delegate;
+    @VisibleForTesting final SessionImpl delegate;
     private volatile SpannerException lastException;
     private volatile boolean allowReplacing = true;
 
@@ -1872,7 +1879,7 @@ class SessionPool {
     private SessionState state;
 
     private PooledSession(SessionImpl delegate) {
-      this.delegate = delegate;
+      this.delegate = Preconditions.checkNotNull(delegate);
       this.state = SessionState.AVAILABLE;
 
       // initialise the lastUseTime field for each session.
@@ -2265,7 +2272,6 @@ class SessionPool {
     @Override
     public void close() {
       synchronized (lock) {
-        numMultiplexedSessionsReleased++;
         if (lastException != null && isDatabaseOrInstanceNotFound(lastException)) {
           SessionPool.this.resourceNotFoundException =
               MoreObjects.firstNonNull(
@@ -2348,7 +2354,8 @@ class SessionPool {
                       "Timed out after waiting "
                           + acquireSessionTimeout.toMillis()
                           + "ms for acquiring session. To mitigate error SessionPoolOptions#setAcquireSessionTimeout(Duration) to set a higher timeout"
-                          + " or increase the number of sessions in the session pool.");
+                          + " or increase the number of sessions in the session pool.\n"
+                          + createCheckedOutSessionsStackTraces());
               if (waiter.setException(exception)) {
                 // Only throw the exception if setting it on the waiter was successful. The
                 // waiter.setException(..) method returns false if some other thread in the meantime
@@ -2648,7 +2655,7 @@ class SessionPool {
 
     void maintainMultiplexedSession(Instant currentTime) {
       try {
-        if (options.getUseMultiplexedSession()) {
+        if (useMultiplexedSessions()) {
           if (currentMultiplexedSessionReference.get().isDone()) {
             SessionReference sessionReference = getMultiplexedSessionInstance();
             if (sessionReference != null
@@ -2772,13 +2779,7 @@ class SessionPool {
   private long numSessionsAcquired = 0;
 
   @GuardedBy("lock")
-  private long numMultiplexedSessionsAcquired = 0;
-
-  @GuardedBy("lock")
   private long numSessionsReleased = 0;
-
-  @GuardedBy("lock")
-  private long numMultiplexedSessionsReleased = 0;
 
   @GuardedBy("lock")
   private long numIdleSessionsRemoved = 0;
@@ -2800,6 +2801,9 @@ class SessionPool {
   @GuardedBy("lock")
   @VisibleForTesting
   final Set<PooledSessionFuture> checkedOutSessions = new HashSet<>();
+
+  @GuardedBy("lock")
+  private final Set<PooledSessionFuture> markedCheckedOutSessions = new HashSet<>();
 
   private final SessionConsumer sessionConsumer = new SessionConsumerImpl();
 
@@ -2830,7 +2834,9 @@ class SessionPool {
       SessionClient sessionClient,
       TraceWrapper tracer,
       List<LabelValue> labelValues,
-      Attributes attributes) {
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     final SessionPoolOptions sessionPoolOptions = spannerOptions.getSessionPoolOptions();
 
     // A clock instance is passed in {@code SessionPoolOptions} in order to allow mocking via tests.
@@ -2846,7 +2852,9 @@ class SessionPool {
         tracer,
         labelValues,
         spannerOptions.getOpenTelemetry(),
-        attributes);
+        attributes,
+        numMultiplexedSessionsAcquired,
+        numMultiplexedSessionsReleased);
   }
 
   static SessionPool createPool(
@@ -2884,7 +2892,9 @@ class SessionPool {
         tracer,
         SPANNER_DEFAULT_LABEL_VALUES,
         openTelemetry,
-        null);
+        null,
+        new AtomicLong(),
+        new AtomicLong());
   }
 
   static SessionPool createPool(
@@ -2898,7 +2908,9 @@ class SessionPool {
       TraceWrapper tracer,
       List<LabelValue> labelValues,
       OpenTelemetry openTelemetry,
-      Attributes attributes) {
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     SessionPool pool =
         new SessionPool(
             poolOptions,
@@ -2912,7 +2924,9 @@ class SessionPool {
             tracer,
             labelValues,
             openTelemetry,
-            attributes);
+            attributes,
+            numMultiplexedSessionsAcquired,
+            numMultiplexedSessionsReleased);
     pool.initPool();
     return pool;
   }
@@ -2929,7 +2943,9 @@ class SessionPool {
       TraceWrapper tracer,
       List<LabelValue> labelValues,
       OpenTelemetry openTelemetry,
-      Attributes attributes) {
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     this.options = options;
     this.databaseRole = databaseRole;
     this.executorFactory = executorFactory;
@@ -2940,11 +2956,22 @@ class SessionPool {
     this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
     this.tracer = tracer;
-    this.initOpenCensusMetricsCollection(metricRegistry, labelValues);
-    this.initOpenTelemetryMetricsCollection(openTelemetry, attributes);
+    this.initOpenCensusMetricsCollection(
+        metricRegistry,
+        labelValues,
+        numMultiplexedSessionsAcquired,
+        numMultiplexedSessionsReleased);
+    this.initOpenTelemetryMetricsCollection(
+        openTelemetry, attributes, numMultiplexedSessionsAcquired, numMultiplexedSessionsReleased);
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
     this.waitOnMultiplexedSessionsLatch = new CountDownLatch(1);
+  }
+
+  // TODO: Remove once all code for multiplexed sessions has been removed from the pool.
+  private boolean useMultiplexedSessions() {
+    // Multiplexed sessions have moved to MultiplexedSessionDatabaseClient
+    return false;
   }
 
   /**
@@ -2993,6 +3020,13 @@ class SessionPool {
   int getNumberOfSessionsInUse() {
     synchronized (lock) {
       return numSessionsInUse;
+    }
+  }
+
+  @VisibleForTesting
+  int getMaxSessionsInUse() {
+    synchronized (lock) {
+      return maxSessionsInUse;
     }
   }
 
@@ -3071,7 +3105,7 @@ class SessionPool {
       if (options.getMinSessions() > 0) {
         createSessions(options.getMinSessions(), true);
       }
-      if (options.getUseMultiplexedSession()) {
+      if (useMultiplexedSessions()) {
         maybeCreateMultiplexedSession(multiplexedSessionInitializationConsumer);
       }
     }
@@ -3137,10 +3171,10 @@ class SessionPool {
 
   /**
    * Returns a multiplexed session. The method fallbacks to a regular session if {@link
-   * SessionPoolOptions#useMultiplexedSession} is not set.
+   * SessionPoolOptions#getUseMultiplexedSession} is not set.
    */
   SessionFutureWrapper getMultiplexedSessionWithFallback() throws SpannerException {
-    if (options.getUseMultiplexedSession()) {
+    if (useMultiplexedSessions()) {
       ISpan span = tracer.getCurrentSpan();
       try {
         return getWrappedMultiplexedSessionFuture(span);
@@ -3244,30 +3278,60 @@ class SessionPool {
           maxSessionsInUse = numSessionsInUse;
         }
         numSessionsAcquired++;
-      } else {
-        numMultiplexedSessionsAcquired++;
       }
     }
   }
 
   private void maybeCreateSession() {
     ISpan span = tracer.getCurrentSpan();
+    boolean throwResourceExhaustedException = false;
     synchronized (lock) {
       if (numWaiters() >= numSessionsBeingCreated) {
         if (canCreateSession()) {
           span.addAnnotation("Creating sessions");
           createSessions(getAllowedCreateSessions(options.getIncStep()), false);
         } else if (options.isFailIfPoolExhausted()) {
-          span.addAnnotation("Pool exhausted. Failing");
-          // throw specific exception
-          throw newSpannerException(
-              ErrorCode.RESOURCE_EXHAUSTED,
-              "No session available in the pool. Maximum number of sessions in the pool can be"
-                  + " overridden by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
-                  + " rather than fail by setting SessionPoolOptions#Builder#setBlockIfPoolExhausted.");
+          throwResourceExhaustedException = true;
         }
       }
     }
+    if (!throwResourceExhaustedException) {
+      return;
+    }
+    span.addAnnotation("Pool exhausted. Failing");
+
+    String message =
+        "No session available in the pool. Maximum number of sessions in the pool can be"
+            + " overridden by invoking SessionPoolOptions#Builder#setMaxSessions. Client can be made to block"
+            + " rather than fail by setting SessionPoolOptions#Builder#setBlockIfPoolExhausted.\n"
+            + createCheckedOutSessionsStackTraces();
+    throw newSpannerException(ErrorCode.RESOURCE_EXHAUSTED, message);
+  }
+
+  private StringBuilder createCheckedOutSessionsStackTraces() {
+    List<PooledSessionFuture> currentlyCheckedOutSessions;
+    synchronized (lock) {
+      currentlyCheckedOutSessions = new ArrayList<>(this.markedCheckedOutSessions);
+    }
+
+    // Create the error message without holding the lock, as we are potentially looping through a
+    // large set, and analyzing a large number of stack traces.
+    StringBuilder stackTraces =
+        new StringBuilder(
+            "There are currently "
+                + currentlyCheckedOutSessions.size()
+                + " sessions checked out:\n\n");
+    if (options.isTrackStackTraceOfSessionCheckout()) {
+      for (PooledSessionFuture session : currentlyCheckedOutSessions) {
+        if (session.leakedException != null) {
+          StringWriter writer = new StringWriter();
+          PrintWriter printWriter = new PrintWriter(writer);
+          session.leakedException.printStackTrace(printWriter);
+          stackTraces.append(writer).append("\n\n");
+        }
+      }
+    }
+    return stackTraces;
   }
 
   private void releaseSession(Tuple<PooledSession, Integer> sessionWithPosition) {
@@ -3752,6 +3816,10 @@ class SessionPool {
     public void onSessionCreateFailure(Throwable t, int createFailureForSessionCount) {
       synchronized (lock) {
         numSessionsBeingCreated -= createFailureForSessionCount;
+        if (numSessionsBeingCreated == 0) {
+          // Don't continue to block if no more sessions are being created.
+          waitOnMinSessionsLatch.countDown();
+        }
         if (isClosed()) {
           decrementPendingClosures(createFailureForSessionCount);
         }
@@ -3765,7 +3833,10 @@ class SessionPool {
    * exporter, it allows users to monitor client behavior.
    */
   private void initOpenCensusMetricsCollection(
-      MetricRegistry metricRegistry, List<LabelValue> labelValues) {
+      MetricRegistry metricRegistry,
+      List<LabelValue> labelValues,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     if (!SpannerOptions.isEnabledOpenCensusMetrics()) {
       return;
     }
@@ -3850,18 +3921,14 @@ class SessionPool {
         labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsAcquired);
     numAcquiredSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
     numAcquiredSessionsMetric.createTimeSeries(
-        labelValuesWithMultiplexedSessions,
-        this,
-        sessionPool -> sessionPool.numMultiplexedSessionsAcquired);
+        labelValuesWithMultiplexedSessions, this, unused -> numMultiplexedSessionsAcquired.get());
 
     numReleasedSessionsMetric.removeTimeSeries(labelValuesWithRegularSessions);
     numReleasedSessionsMetric.createTimeSeries(
         labelValuesWithRegularSessions, this, sessionPool -> sessionPool.numSessionsReleased);
     numReleasedSessionsMetric.removeTimeSeries(labelValuesWithMultiplexedSessions);
     numReleasedSessionsMetric.createTimeSeries(
-        labelValuesWithMultiplexedSessions,
-        this,
-        sessionPool -> sessionPool.numMultiplexedSessionsReleased);
+        labelValuesWithMultiplexedSessions, this, unused -> numMultiplexedSessionsReleased.get());
 
     List<LabelValue> labelValuesWithBeingPreparedType = new ArrayList<>(labelValues);
     labelValuesWithBeingPreparedType.add(NUM_SESSIONS_BEING_PREPARED);
@@ -3899,7 +3966,10 @@ class SessionPool {
    * an exporter, it allows users to monitor client behavior.
    */
   private void initOpenTelemetryMetricsCollection(
-      OpenTelemetry openTelemetry, Attributes attributes) {
+      OpenTelemetry openTelemetry,
+      Attributes attributes,
+      AtomicLong numMultiplexedSessionsAcquired,
+      AtomicLong numMultiplexedSessionsReleased) {
     if (openTelemetry == null || !SpannerOptions.isEnabledOpenTelemetryMetrics()) {
       return;
     }
@@ -3971,7 +4041,8 @@ class SessionPool {
         .buildWithCallback(
             measurement -> {
               measurement.record(this.numSessionsAcquired, attributesRegularSession);
-              measurement.record(this.numMultiplexedSessionsAcquired, attributesMultiplexedSession);
+              measurement.record(
+                  numMultiplexedSessionsAcquired.get(), attributesMultiplexedSession);
             });
 
     meter
@@ -3981,7 +4052,8 @@ class SessionPool {
         .buildWithCallback(
             measurement -> {
               measurement.record(this.numSessionsReleased, attributesRegularSession);
-              measurement.record(this.numMultiplexedSessionsReleased, attributesMultiplexedSession);
+              measurement.record(
+                  numMultiplexedSessionsReleased.get(), attributesMultiplexedSession);
             });
   }
 }

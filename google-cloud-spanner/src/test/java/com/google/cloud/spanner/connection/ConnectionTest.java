@@ -290,7 +290,10 @@ public class ConnectionTest {
         assertThat(count1.isDone()).isTrue();
         assertThat(count2.isDone()).isTrue();
         if (isMultiplexedSessionsEnabled(connection1.getSpanner())) {
-          assertThat(mockSpanner.numSessionsCreated()).isEqualTo(2);
+          // We don't use the multiplexed session, so we don't know whether the server had time to
+          // create it or not. That means that we have between 1 and 2 sessions on the server.
+          assertThat(mockSpanner.numSessionsCreated()).isAtLeast(1);
+          assertThat(mockSpanner.numSessionsCreated()).isAtMost(2);
         } else {
           assertThat(mockSpanner.numSessionsCreated()).isEqualTo(1);
         }

@@ -184,17 +184,19 @@ public class ReadAsyncTest {
   }
 
   @Test
-  public void invalidDatabase() throws Exception {
+  public void invalidDatabase() {
     mockSpanner.setCreateSessionExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
     mockSpanner.setBatchCreateSessionsExecutionTime(
         SimulatedExecutionTime.stickyDatabaseNotFoundException("invalid-database"));
+    mockSpanner.freeze();
     DatabaseClient invalidClient =
         spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, "invalid-database"));
     ApiFuture<Struct> row =
         invalidClient
             .singleUse(TimestampBound.strong())
             .readRowAsync(READ_TABLE_NAME, Key.of("k99"), READ_COLUMN_NAMES);
+    mockSpanner.unfreeze();
     assertThrows(DatabaseNotFoundException.class, () -> get(row));
   }
 

@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -247,7 +248,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
     synchronized (this) {
       checkClosed();
       String clientId = null;
-      if (dbClients.containsKey(db) && !dbClients.get(db).pool.isValid()) {
+      if (dbClients.containsKey(db) && !dbClients.get(db).isValid()) {
         // Close the invalidated client and remove it.
         dbClients.get(db).closeAsync(new ClosedException());
         clientId = dbClients.get(db).clientId;
@@ -271,15 +272,32 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
         attributesBuilder.put("database", db.getDatabase());
         attributesBuilder.put("instance_id", db.getInstanceId().getName());
 
+        boolean useMultiplexedSession =
+            getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+        MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
+            useMultiplexedSession
+                ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
+                : null;
+        AtomicLong numMultiplexedSessionsAcquired =
+            useMultiplexedSession
+                ? multiplexedSessionDatabaseClient.getNumSessionsAcquired()
+                : new AtomicLong();
+        AtomicLong numMultiplexedSessionsReleased =
+            useMultiplexedSession
+                ? multiplexedSessionDatabaseClient.getNumSessionsReleased()
+                : new AtomicLong();
         SessionPool pool =
             SessionPool.createPool(
                 getOptions(),
                 SpannerImpl.this.getSessionClient(db),
                 this.tracer,
                 labelValues,
-                attributesBuilder.build());
+                attributesBuilder.build(),
+                numMultiplexedSessionsAcquired,
+                numMultiplexedSessionsReleased);
         pool.maybeWaitOnMinSessions();
-        DatabaseClientImpl dbClient = createDatabaseClient(clientId, pool);
+        DatabaseClientImpl dbClient =
+            createDatabaseClient(clientId, pool, multiplexedSessionDatabaseClient);
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -287,8 +305,11 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   }
 
   @VisibleForTesting
-  DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-    return new DatabaseClientImpl(clientId, pool, tracer);
+  DatabaseClientImpl createDatabaseClient(
+      String clientId,
+      SessionPool pool,
+      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient) {
+    return new DatabaseClientImpl(clientId, pool, multiplexedSessionClient, tracer);
   }
 
   @Override

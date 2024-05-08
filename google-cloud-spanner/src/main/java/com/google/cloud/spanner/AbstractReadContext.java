@@ -190,8 +190,11 @@ abstract class AbstractReadContext
       this.bound = builder.bound;
       // single use transaction have a single RPC and hence there is no need
       // of a channel hint. GAX will automatically choose a hint when used
-      // with a multiplexed session.
-      this.channelHint = getChannelHintOptions(session.getOptions(), null);
+      // with a multiplexed session to perform a round-robin channel selection. We are
+      // passing a hint here to prefer random channel selection instead of doing GAX round-robin.
+      this.channelHint =
+          getChannelHintOptions(
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
     }
 
     @Override
@@ -806,6 +809,7 @@ abstract class AbstractReadContext
 
   @Override
   public void close() {
+    session.onTransactionDone();
     span.end();
     synchronized (lock) {
       isClosed = true;
@@ -841,11 +845,14 @@ abstract class AbstractReadContext
 
   @Override
   public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+    this.session.onError(e);
     return e;
   }
 
   @Override
-  public void onDone(boolean withBeginTransaction) {}
+  public void onDone(boolean withBeginTransaction) {
+    this.session.onReadDone();
+  }
 
   private ResultSet readInternal(
       String table,

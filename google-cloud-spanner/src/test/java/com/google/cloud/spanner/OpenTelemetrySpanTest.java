@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThrows;
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
@@ -231,7 +232,7 @@ public class OpenTelemetrySpanTest {
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setMinSessions(2)
-                    .setWaitForMinSessions(Duration.ofSeconds(5))
+                    .setWaitForMinSessions(Duration.ofSeconds(10))
                     .build());
 
     spanner = builder.build().getService();
@@ -250,9 +251,7 @@ public class OpenTelemetrySpanTest {
   @Test
   public void singleUse() {
     List<String> expectedReadOnlyTransactionSingleUseEvents =
-        isMultiplexedSessionsEnabled()
-            ? ImmutableList.of("Using Session")
-            : ImmutableList.of("Acquiring session", "Acquired session", "Using Session");
+        getExpectedReadOnlyTransactionSingleUseEvents();
     List<String> expectedReadOnlyTransactionSpans =
         isMultiplexedSessionsEnabled()
             ? ImmutableList.of(
@@ -266,7 +265,8 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.ExecuteStreamingQuery",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadOnlyTransaction");
-    int expectedReadOnlyTransactionSingleUseEventsCount = isMultiplexedSessionsEnabled() ? 1 : 3;
+    int expectedReadOnlyTransactionSingleUseEventsCount =
+        expectedReadOnlyTransactionSingleUseEvents.size();
 
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       while (rs.next()) {
@@ -322,6 +322,17 @@ public class OpenTelemetrySpanTest {
     verifySpans(actualSpanItems, expectedReadOnlyTransactionSpans);
   }
 
+  private List<String> getExpectedReadOnlyTransactionSingleUseEvents() {
+    List<String> expectedReadOnlyTransactionSingleUseEvents;
+    if (isMultiplexedSessionsEnabled()) {
+      expectedReadOnlyTransactionSingleUseEvents = ImmutableList.of();
+    } else {
+      expectedReadOnlyTransactionSingleUseEvents =
+          ImmutableList.of("Acquiring session", "Acquired session", "Using Session");
+    }
+    return expectedReadOnlyTransactionSingleUseEvents;
+  }
+
   @Test
   public void multiUse() {
     List<String> expectedReadOnlyTransactionSpans =
@@ -337,17 +348,21 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.ExecuteStreamingQuery",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadOnlyTransaction");
-    List<String> expectedReadOnlyTransactionMultiUseEvents =
-        isMultiplexedSessionsEnabled()
-            ? ImmutableList.of("Using Session", "Creating Transaction", "Transaction Creation Done")
-            : ImmutableList.of(
-                "Acquiring session",
-                "Acquired session",
-                "Using Session",
-                "Creating Transaction",
-                "Transaction Creation Done");
-
-    int expectedReadOnlyTransactionMultiUseEventsCount = isMultiplexedSessionsEnabled() ? 3 : 5;
+    List<String> expectedReadOnlyTransactionMultiUseEvents;
+    if (isMultiplexedSessionsEnabled()) {
+      expectedReadOnlyTransactionMultiUseEvents =
+          ImmutableList.of("Creating Transaction", "Transaction Creation Done");
+    } else {
+      expectedReadOnlyTransactionMultiUseEvents =
+          ImmutableList.of(
+              "Acquiring session",
+              "Acquired session",
+              "Using Session",
+              "Creating Transaction",
+              "Transaction Creation Done");
+    }
+    int expectedReadOnlyTransactionMultiUseEventsCount =
+        expectedReadOnlyTransactionMultiUseEvents.size();
 
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (ResultSet rs = tx.executeQuery(SELECT1)) {
@@ -537,7 +552,8 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction");
-    Long updateCount =
+    assertEquals(
+        Long.valueOf(1L),
         client
             .readWriteTransaction()
             .run(
@@ -552,7 +568,16 @@ public class OpenTelemetrySpanTest {
                           () -> transaction.executeUpdate(INVALID_UPDATE_STATEMENT));
                   assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
                   return transaction.executeUpdate(UPDATE_STATEMENT);
-                });
+                }));
+    // Wait for all spans to finish. Failing to do so can cause the test to miss the
+    // BatchCreateSessions span, as that span is executed asynchronously in the SessionClient, and
+    // the SessionClient returns the session to the pool before the span has finished fully.
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    while (spanExporter.getFinishedSpanItems().size()
+            < expectedReadWriteTransactionWithCommitAndBeginTransactionSpans.size()
+        && stopwatch.elapsed().compareTo(java.time.Duration.ofMillis(1000)) < 0) {
+      Thread.yield();
+    }
 
     List<String> actualSpanItems = new ArrayList<>();
     spanExporter
