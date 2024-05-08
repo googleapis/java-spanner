@@ -40,6 +40,7 @@ import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -120,6 +121,11 @@ class HeaderInterceptor implements ClientInterceptor {
 
           spannerRpcMetrics.recordGfeLatency(latency, attributes);
           spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
+
+          Span span = Span.current();
+          if (span != null) {
+            span.setAttribute("gfe-latency", String.valueOf(latency));
+          }
         } catch (NumberFormatException e) {
           LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
         }
