@@ -93,6 +93,7 @@ class ConnectionImpl implements Connection {
   private static final String READ_WRITE_TRANSACTION = "ReadWriteTransaction";
   private static final String DML_BATCH = "DmlBatch";
   private static final String DDL_BATCH = "DdlBatch";
+  private static final String DDL_STATEMENT = "DdlStatement";
 
   private static final String CLOSED_ERROR_MSG = "This connection is closed";
   private static final String ONLY_ALLOWED_IN_AUTOCOMMIT =
@@ -1734,7 +1735,8 @@ class ConnectionImpl implements Connection {
               /* isInternalMetadataQuery = */ false,
               /* forceSingleUse = */ statementType == StatementType.DDL
                   && this.ddlInTransactionMode != DdlInTransactionMode.FAIL
-                  && !this.transactionBeginMarked);
+                  && !this.transactionBeginMarked,
+              statementType);
     }
     return this.currentUnitOfWork;
   }
@@ -1757,6 +1759,12 @@ class ConnectionImpl implements Connection {
 
   @VisibleForTesting
   UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery, boolean forceSingleUse) {
+    return createNewUnitOfWork(isInternalMetadataQuery, forceSingleUse, null);
+  }
+
+  @VisibleForTesting
+  UnitOfWork createNewUnitOfWork(
+      boolean isInternalMetadataQuery, boolean forceSingleUse, StatementType statementType) {
     if (isInternalMetadataQuery
         || (isAutocommit() && !isInTransaction() && !isInBatch())
         || forceSingleUse) {
@@ -1772,7 +1780,9 @@ class ConnectionImpl implements Connection {
           .setMaxCommitDelay(maxCommitDelay)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
-          .setSpan(createSpanForUnitOfWork(SINGLE_USE_TRANSACTION))
+          .setSpan(
+              createSpanForUnitOfWork(
+                  statementType == StatementType.DDL ? DDL_STATEMENT : SINGLE_USE_TRANSACTION))
           .build();
     } else {
       switch (getUnitOfWorkType()) {

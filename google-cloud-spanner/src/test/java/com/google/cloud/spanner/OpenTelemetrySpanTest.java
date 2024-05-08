@@ -424,11 +424,13 @@ public class OpenTelemetrySpanTest {
             ? ImmutableList.of(
                 "CloudSpannerOperation.CreateMultiplexedSession",
                 "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction")
             : ImmutableList.of(
                 "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction");
@@ -460,6 +462,7 @@ public class OpenTelemetrySpanTest {
                       expectedBatchCreateSessionsEventsCount);
                   break;
                 case "CloudSpannerOperation.Commit":
+                case "CloudSpannerOperation.ExecuteUpdate":
                   assertEquals(0, spanItem.getEvents().size());
                   break;
                 case "CloudSpanner.ReadWriteTransaction":
@@ -484,10 +487,12 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.CreateMultiplexedSession",
                 "CloudSpannerOperation.BatchCreateSessionsRequest",
                 "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpanner.ReadWriteTransaction")
             : ImmutableList.of(
                 "CloudSpannerOperation.BatchCreateSessionsRequest",
                 "CloudSpannerOperation.BatchCreateSessions",
+                "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpanner.ReadWriteTransaction");
     TransactionRunner runner = client.readWriteTransaction();
     SpannerException e =
@@ -527,6 +532,9 @@ public class OpenTelemetrySpanTest {
                       expectedReadWriteTransactionErrorEvents,
                       expectedReadWriteTransactionErrorEventsCount);
                   break;
+                case "CloudSpannerOperation.ExecuteUpdate":
+                  assertEquals(0, spanItem.getEvents().size());
+                  break;
                 default:
                   assert false;
               }
@@ -543,12 +551,14 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.CreateMultiplexedSession",
                 "CloudSpannerOperation.BeginTransaction",
                 "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction")
             : ImmutableList.of(
                 "CloudSpannerOperation.BeginTransaction",
                 "CloudSpannerOperation.BatchCreateSessionsRequest",
+                "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction");
@@ -606,6 +616,7 @@ public class OpenTelemetrySpanTest {
                   break;
                 case "CloudSpannerOperation.Commit":
                 case "CloudSpannerOperation.BeginTransaction":
+                case "CloudSpannerOperation.ExecuteUpdate":
                   assertEquals(0, spanItem.getEvents().size());
                   break;
                 case "CloudSpanner.ReadWriteTransaction":

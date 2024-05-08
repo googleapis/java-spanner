@@ -385,6 +385,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
         !isReadOnly(), "DDL statements are not allowed in read-only mode");
     try (Scope ignore = span.makeCurrent()) {
       checkAndMarkUsed();
+      span.setAttribute(DB_STATEMENT_KEY, ddl.getStatement().getSql());
 
       Callable<Void> callable =
           () -> {

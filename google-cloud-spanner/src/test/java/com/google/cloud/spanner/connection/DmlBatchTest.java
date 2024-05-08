@@ -38,6 +38,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
+import io.opentelemetry.api.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Test;
@@ -65,6 +66,7 @@ public class DmlBatchTest {
     return DmlBatch.newBuilder()
         .setTransaction(transaction)
         .withStatementExecutor(new StatementExecutor())
+        .setSpan(Span.getInvalid())
         .build();
   }
 

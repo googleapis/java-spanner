@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;

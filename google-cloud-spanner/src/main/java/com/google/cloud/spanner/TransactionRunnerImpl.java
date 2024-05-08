@@ -748,7 +748,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public long executeUpdate(Statement statement, UpdateOption... options) {
-      ISpan span = tracer.spanBuilder(UPDATE, Attributes.of(DB_STATEMENT_KEY, statement.getSql()));
+      ISpan span =
+          tracer.spanBuilderWithExplicitParent(
+              UPDATE, this.span, Attributes.of(DB_STATEMENT_KEY, statement.getSql()));
       try (IScope ignore = tracer.withSpan(span)) {
         ResultSet resultSet = internalExecuteUpdate(statement, QueryMode.NORMAL, options);
         // For standard DML, using the exact row count.
@@ -790,7 +792,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     @Override
     public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... updateOptions) {
-      ISpan span = tracer.spanBuilder(UPDATE, Attributes.of(DB_STATEMENT_KEY, statement.getSql()));
+      ISpan span =
+          tracer.spanBuilderWithExplicitParent(
+              UPDATE, this.span, Attributes.of(DB_STATEMENT_KEY, statement.getSql()));
       try (IScope ignore = tracer.withSpan(span)) {
         beforeReadOrQuery();
         final Options options = Options.fromUpdateOptions(updateOptions);
@@ -880,8 +884,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     @Override
     public long[] batchUpdate(Iterable<Statement> statements, UpdateOption... updateOptions) {
       ISpan span =
-          tracer.spanBuilder(
+          tracer.spanBuilderWithExplicitParent(
               BATCH_UPDATE,
+              this.span,
               Attributes.of(
                   DB_STATEMENT_ARRAY_KEY,
                   StreamSupport.stream(statements.spliterator(), false)
@@ -937,8 +942,9 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     public ApiFuture<long[]> batchUpdateAsync(
         Iterable<Statement> statements, UpdateOption... updateOptions) {
       ISpan span =
-          tracer.spanBuilder(
+          tracer.spanBuilderWithExplicitParent(
               BATCH_UPDATE,
+              this.span,
               Attributes.of(
                   DB_STATEMENT_ARRAY_KEY,
                   StreamSupport.stream(statements.spliterator(), false)
