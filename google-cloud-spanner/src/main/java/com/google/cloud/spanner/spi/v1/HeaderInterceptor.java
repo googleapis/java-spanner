@@ -91,6 +91,7 @@ class HeaderInterceptor implements ClientInterceptor {
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
+        Span span = Span.current();
         SpannerProperties spannerProperties = createProjectPropertes(headers);
         TagContext tagContext = getTagContext(method.getFullMethodName(), spannerProperties);
         Attributes attributes = getMetricAttributes(method.getFullMethodName(), spannerProperties);
@@ -98,7 +99,7 @@ class HeaderInterceptor implements ClientInterceptor {
             new SimpleForwardingClientCallListener<RespT>(responseListener) {
               @Override
               public void onHeaders(Metadata metadata) {
-                processHeader(metadata, tagContext, attributes);
+                processHeader(metadata, tagContext, attributes, span);
                 super.onHeaders(metadata);
               }
             },
@@ -107,7 +108,8 @@ class HeaderInterceptor implements ClientInterceptor {
     };
   }
 
-  private void processHeader(Metadata metadata, TagContext tagContext, Attributes attributes) {
+  private void processHeader(
+      Metadata metadata, TagContext tagContext, Attributes attributes, Span span) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     if (metadata.get(SERVER_TIMING_HEADER_KEY) != null) {
       String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
@@ -122,9 +124,8 @@ class HeaderInterceptor implements ClientInterceptor {
           spannerRpcMetrics.recordGfeLatency(latency, attributes);
           spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
 
-          Span span = Span.current();
           if (span != null) {
-            span.setAttribute("gfe-latency", String.valueOf(latency));
+            span.setAttribute("gfe_latency", String.valueOf(latency));
           }
         } catch (NumberFormatException e) {
           LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
