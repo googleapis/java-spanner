@@ -118,14 +118,17 @@ public class ChangeStreamsTxnExclusionSample {
                     .build())),
             Options.excludeTxnFromChangeStreams());
     for (BatchWriteResponse response : responses) {
-      if (response.getStatus().getCode() != Code.OK_VALUE) {
+      if (response.getStatus().getCode() == Code.OK_VALUE) {
+        System.out.printf(
+            "Mutation group have been applied with commit timestamp %s",
+            response.getIndexesList(), response.getCommitTimestamp());
+      } else {
         System.out.printf(
             "Mutation group could not be applied with error code %s and "
-                + "error message %s",
+                + "error message %s", response.getIndexesList(),
             Code.forNumber(response.getStatus().getCode()), response.getStatus().getMessage());
       }
     }
-    System.out.println("New singer inserted.");
   }
 
   static void pdmlExcludedFromChangeStreams(DatabaseClient client) {

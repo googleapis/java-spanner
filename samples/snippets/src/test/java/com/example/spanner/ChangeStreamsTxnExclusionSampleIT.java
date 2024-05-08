@@ -102,7 +102,7 @@ public class ChangeStreamsTxnExclusionSampleIT extends SampleTestBase {
     assertThat(out).contains("New singer inserted.");
 
     out = runSample(() -> ChangeStreamsTxnExclusionSample.batchWriteAtLeastOnceExcludedFromChangeStreams(client));
-    assertThat(out).contains("New singer inserted.");
+    assertThat(out).contains("have been applied");
 
     out = runSample(() -> ChangeStreamsTxnExclusionSample.pdmlExcludedFromChangeStreams(client));
     assertThat(out).contains("Singers deleted.");
