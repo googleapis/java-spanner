@@ -217,6 +217,11 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
     }
 
     @Override
+    protected boolean isReadOnly() {
+      return false;
+    }
+
+    @Override
     protected boolean isRouteToLeader() {
       return true;
     }

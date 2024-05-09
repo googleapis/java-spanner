@@ -59,7 +59,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
   private final RetrySettings streamingRetrySettings;
   private final Set<Code> retryableCodes;
   private static final Logger logger = Logger.getLogger(ResumableStreamIterator.class.getName());
-  private final BackOff backOff;
+  private BackOff backOff;
   private final LinkedList<PartialResultSet> buffer = new LinkedList<>();
   private final int maxBufferSize;
   private final ISpan span;
@@ -87,7 +87,6 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
     this.span = tracer.spanBuilderWithExplicitParent(streamName, parent);
     this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
     this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
-    this.backOff = newBackOff();
   }
 
   private ExponentialBackOff newBackOff() {
@@ -252,7 +251,10 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
             if (delay != -1) {
               backoffSleep(context, delay);
             } else {
-              backoffSleep(context, backOff);
+              if (this.backOff == null) {
+                this.backOff = newBackOff();
+              }
+              backoffSleep(context, this.backOff);
             }
           }
 

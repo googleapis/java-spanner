@@ -45,6 +45,7 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest.Builder;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.PartialResultSet;
@@ -457,7 +458,7 @@ abstract class AbstractReadContext
 
   // A per-transaction sequence number used to identify this ExecuteSqlRequests. Required for DML,
   // ignored for query by the server.
-  private AtomicLong seqNo = new AtomicLong();
+  private final AtomicLong seqNo = new AtomicLong();
 
   // Allow up to 512MB to be buffered (assuming 1MB chunks). In practice, restart tokens are sent
   // much more frequently.
@@ -486,6 +487,10 @@ abstract class AbstractReadContext
 
   long getSeqNo() {
     return seqNo.incrementAndGet();
+  }
+
+  protected boolean isReadOnly() {
+    return true;
   }
 
   protected boolean isRouteToLeader() {
@@ -622,19 +627,18 @@ abstract class AbstractReadContext
   @VisibleForTesting
   QueryOptions buildQueryOptions(QueryOptions requestOptions) {
     // Shortcut for the most common return value.
-    if (defaultQueryOptions.equals(QueryOptions.getDefaultInstance()) && requestOptions == null) {
-      return QueryOptions.getDefaultInstance();
+    if (requestOptions == null) {
+      return defaultQueryOptions;
     }
-    // Create a builder based on the default query options.
-    QueryOptions.Builder builder = defaultQueryOptions.toBuilder();
-    // Then overwrite with specific options for this query.
-    if (requestOptions != null) {
-      builder.mergeFrom(requestOptions);
-    }
-    return builder.build();
+    return defaultQueryOptions.toBuilder().mergeFrom(requestOptions).build();
   }
 
   RequestOptions buildRequestOptions(Options options) {
+    // Shortcut for the most common return value.
+    if (!(options.hasPriority() || options.hasTag() || getTransactionTag() != null)) {
+      return RequestOptions.getDefaultInstance();
+    }
+
     RequestOptions.Builder builder = RequestOptions.newBuilder();
     if (options.hasPriority()) {
       builder.setPriority(options.priority());
@@ -655,16 +659,7 @@ abstract class AbstractReadContext
             .setSql(statement.getSql())
             .setQueryMode(queryMode)
             .setSession(session.getName());
-    Map<String, Value> stmtParameters = statement.getParameters();
-    if (!stmtParameters.isEmpty()) {
-      com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
-      for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-        if (param.getValue() != null && param.getValue().getType() != null) {
-          builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
-        }
-      }
-    }
+    addParameters(builder, statement.getParameters());
     if (withTransactionSelector) {
       TransactionSelector selector = getTransactionSelector();
       if (selector != null) {
@@ -679,10 +674,24 @@ abstract class AbstractReadContext
     } else if (defaultDirectedReadOptions != null) {
       builder.setDirectedReadOptions(defaultDirectedReadOptions);
     }
-    builder.setSeqno(getSeqNo());
+    if (!isReadOnly()) {
+      builder.setSeqno(getSeqNo());
+    }
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
     return builder;
+  }
+
+  static void addParameters(ExecuteSqlRequest.Builder builder, Map<String, Value> stmtParameters) {
+    if (!stmtParameters.isEmpty()) {
+      com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
+      for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
+        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+        if (param.getValue() != null && param.getValue().getType() != null) {
+          builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        }
+      }
+    }
   }
 
   ExecuteBatchDmlRequest.Builder getExecuteBatchDmlRequestBuilder(
