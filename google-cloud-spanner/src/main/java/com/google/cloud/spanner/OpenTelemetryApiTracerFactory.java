@@ -18,7 +18,6 @@ package com.google.cloud.spanner;
 
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.ApiTracerFactory;
-import com.google.api.gax.tracing.BaseApiTracerFactory;
 import com.google.api.gax.tracing.SpanName;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.api.common.Attributes;
@@ -28,7 +27,7 @@ import io.opentelemetry.context.Context;
 import javax.annotation.Nonnull;
 
 /** {@link ApiTracerFactory} that can be used with OpenTelemetry tracing. */
-public class OpenTelemetryApiTracerFactory extends BaseApiTracerFactory {
+public class OpenTelemetryApiTracerFactory implements ApiTracerFactory {
   @Nonnull private final Tracer internalTracer;
   @Nonnull private final Attributes spanAttributes;
 

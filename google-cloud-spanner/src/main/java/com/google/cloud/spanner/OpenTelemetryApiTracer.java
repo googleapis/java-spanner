@@ -16,8 +16,8 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.ApiTracerFactory.OperationType;
-import com.google.api.gax.tracing.BaseApiTracer;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -34,7 +34,7 @@ import org.threeten.bp.Duration;
  * {@link com.google.api.gax.tracing.ApiTracer} for use with OpenTelemetry. Based on {@link
  * com.google.api.gax.tracing.OpencensusTracer}.
  */
-public class OpenTelemetryApiTracer extends BaseApiTracer {
+public class OpenTelemetryApiTracer implements ApiTracer {
   private final AttributeKey<Long> ATTEMPT_COUNT_KEY = AttributeKey.longKey("attempt.count");
   private final AttributeKey<Long> TOTAL_REQUEST_COUNT_KEY =
       AttributeKey.longKey("total_request_count");
@@ -58,9 +58,9 @@ public class OpenTelemetryApiTracer extends BaseApiTracer {
 
   private volatile String lastConnectionId;
   private volatile long currentAttemptId;
-  private AtomicLong attemptSentMessages = new AtomicLong(0);
+  private final AtomicLong attemptSentMessages = new AtomicLong(0);
   private long attemptReceivedMessages = 0;
-  private AtomicLong totalSentMessages = new AtomicLong(0);
+  private final AtomicLong totalSentMessages = new AtomicLong(0);
   private long totalReceivedMessages = 0;
 
   OpenTelemetryApiTracer(
@@ -83,6 +83,7 @@ public class OpenTelemetryApiTracer extends BaseApiTracer {
   @Override
   public void operationSucceeded() {
     span.setAllAttributes(baseOperationAttributes());
+    span.setStatus(StatusCode.OK);
     span.end();
   }
 
@@ -90,18 +91,22 @@ public class OpenTelemetryApiTracer extends BaseApiTracer {
   public void operationCancelled() {
     span.setAllAttributes(baseOperationAttributes());
     span.setStatus(StatusCode.ERROR, "Cancelled by caller");
+    span.end();
   }
 
   @Override
   public void operationFailed(Throwable error) {
     span.setAllAttributes(baseOperationAttributes());
     span.setStatus(StatusCode.ERROR, error.getMessage());
+    span.end();
   }
 
   @Override
   public void lroStartFailed(Throwable error) {
     span.addEvent(
         "Operation failed to start", Attributes.of(EXCEPTION_MESSAGE_KEY, error.getMessage()));
+    span.setStatus(StatusCode.ERROR, error.getMessage());
+    span.end();
   }
 
   @Override
@@ -121,10 +126,12 @@ public class OpenTelemetryApiTracer extends BaseApiTracer {
     attemptReceivedMessages = 0;
 
     // Attempts start counting a zero, so more than zero indicates a retry.
-    if (attemptNumber > 0 && this.span != null) {
+    if (attemptNumber > 0 && operationType != OperationType.LongRunning) {
       // Add an event if the RPC retries, as this is otherwise transparent to the user. Retries
       // would then show up as higher latency without any logical explanation.
       span.addEvent("Starting RPC retry " + attemptNumber);
+    } else if (operationType == OperationType.LongRunning) {
+      span.addEvent("Starting poll attempt " + attemptNumber);
     }
   }
 
@@ -161,8 +168,12 @@ public class OpenTelemetryApiTracer extends BaseApiTracer {
   @Override
   public void attemptFailed(Throwable error, Duration delay) {
     AttributesBuilder builder = baseAttemptAttributesBuilder();
-    builder.put(RETRY_DELAY_KEY, delay.toMillis());
-    builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
+    if (delay != null) {
+      builder.put(RETRY_DELAY_KEY, delay.toMillis());
+    }
+    if (error != null) {
+      builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
+    }
     Attributes attributes = builder.build();
 
     // Same infrastructure is used for both polling and retries, so need to disambiguate it here.
@@ -178,7 +189,9 @@ public class OpenTelemetryApiTracer extends BaseApiTracer {
   @Override
   public void attemptFailedRetriesExhausted(Throwable error) {
     AttributesBuilder builder = baseAttemptAttributesBuilder();
-    builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
+    if (error != null) {
+      builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
+    }
     Attributes attributes = builder.build();
 
     // Same infrastructure is used for both polling and retries, so need to disambiguate it here.
@@ -193,7 +206,9 @@ public class OpenTelemetryApiTracer extends BaseApiTracer {
   @Override
   public void attemptPermanentFailure(Throwable error) {
     AttributesBuilder builder = baseAttemptAttributesBuilder();
-    builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
+    if (error != null) {
+      builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
+    }
     Attributes attributes = builder.build();
 
     // Same infrastructure is used for both polling and retries, so need to disambiguate it here.

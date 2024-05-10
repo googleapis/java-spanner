@@ -709,7 +709,7 @@ public class OpenTelemetrySpanTest {
     }
 
     assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    int numExpectedSpans = 6;
+    int numExpectedSpans = 7;
     waitForFinishedSpans(numExpectedSpans);
     List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     List<String> finishedSpanNames =
