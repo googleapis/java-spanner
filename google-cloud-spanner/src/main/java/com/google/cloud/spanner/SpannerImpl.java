@@ -68,7 +68,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
               .getTracer(
                   MetricRegistryConstants.INSTRUMENTATION_SCOPE,
                   GaxProperties.getLibraryVersion(this.getOptions().getClass())),
-          getOptions().isIncludeSqlStatementInOpenTelemetryTraces());
+          getOptions().isEnableExtendedTracing());
 
   static final String CREATE_MULTIPLEXED_SESSION = "CloudSpannerOperation.CreateMultiplexedSession";
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";

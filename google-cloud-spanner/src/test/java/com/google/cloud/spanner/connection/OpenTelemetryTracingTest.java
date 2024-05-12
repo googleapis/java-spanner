@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerOptions.SpannerEnvironment;
 import com.google.cloud.spanner.SpannerOptionsTestHelper;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
@@ -94,7 +95,7 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
   }
 
   Connection createTestConnection() {
-    return createTestConnection(getBaseUrl());
+    return createTestConnection(getBaseUrl() + ";enableExtendedTracing=true");
   }
 
   Connection createTestConnection(String url) {
@@ -107,7 +108,7 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
 
   @Test
   public void testSingleUseQuery_withoutSqlStatement() {
-    try (Connection connection = createTestConnection(getBaseUrl() + ";includeSqlInTraces=false")) {
+    try (Connection connection = createTestConnection(getBaseUrl())) {
       connection.setAutocommit(true);
       try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
         assertTrue(resultSet.next());
@@ -132,6 +133,43 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
                     span.getName().equals("CloudSpannerOperation.ExecuteStreamingQuery")
                         && span.getAttributes().get(AttributeKey.stringKey("db.statement")) == null)
             .count());
+  }
+
+  @Test
+  public void testSingleUseQuery_withoutSqlStatement_usingEnvVar() {
+    SpannerPool.closeSpannerPool();
+    SpannerOptions.useEnvironment(
+        new SpannerEnvironment() {
+          @Override
+          public boolean isEnableExtendedTracing() {
+            return true;
+          }
+        });
+
+    try (Connection connection = createTestConnection(getBaseUrl())) {
+      connection.setAutocommit(true);
+      try (ResultSet resultSet = connection.executeQuery(SELECT1_STATEMENT)) {
+        assertTrue(resultSet.next());
+        assertFalse(resultSet.next());
+      }
+    } finally {
+      SpannerOptions.useDefaultEnvironment();
+    }
+    assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    assertContains("CloudSpannerJdbc.SingleUseTransaction", spans);
+    assertContains("CloudSpanner.ReadOnlyTransaction", spans);
+    assertContains(
+        "CloudSpannerOperation.ExecuteStreamingQuery",
+        Attributes.of(AttributeKey.stringKey("db.statement"), SELECT1_STATEMENT.getSql()),
+        spans);
+    assertParent(
+        "CloudSpannerJdbc.SingleUseTransaction", "CloudSpanner.ReadOnlyTransaction", spans);
+    assertParent(
+        "CloudSpanner.ReadOnlyTransaction",
+        "CloudSpannerOperation.ExecuteStreamingQuery",
+        Attributes.of(AttributeKey.stringKey("db.statement"), SELECT1_STATEMENT.getSql()),
+        spans);
   }
 
   @Test

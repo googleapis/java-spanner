@@ -158,7 +158,7 @@ public class SpannerPool {
     private final boolean routeToLeader;
     private final boolean useVirtualGrpcTransportThreads;
     private final OpenTelemetry openTelemetry;
-    private final boolean includeSqlInTraces;
+    private final Boolean enableExtendedTracing;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -187,7 +187,7 @@ public class SpannerPool {
       this.routeToLeader = options.isRouteToLeader();
       this.useVirtualGrpcTransportThreads = options.isUseVirtualGrpcTransportThreads();
       this.openTelemetry = options.getOpenTelemetry();
-      this.includeSqlInTraces = options.isIncludeSqlInTraces();
+      this.enableExtendedTracing = options.isEnableExtendedTracing();
     }
 
     @Override
@@ -208,7 +208,7 @@ public class SpannerPool {
           && Objects.equals(
               this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
           && Objects.equals(this.openTelemetry, other.openTelemetry)
-          && Objects.equals(this.includeSqlInTraces, other.includeSqlInTraces);
+          && Objects.equals(this.enableExtendedTracing, other.enableExtendedTracing);
     }
 
     @Override
@@ -225,7 +225,7 @@ public class SpannerPool {
           this.routeToLeader,
           this.useVirtualGrpcTransportThreads,
           this.openTelemetry,
-          this.includeSqlInTraces);
+          this.enableExtendedTracing);
     }
   }
 
@@ -355,12 +355,14 @@ public class SpannerPool {
         // Use lazy decoding, so we can use the protobuf values for calculating the checksum that is
         // needed for read/write transactions.
         .setDecodeMode(DecodeMode.LAZY_PER_COL)
-        .setIncludeSqlStatementInOpenTelemetryTraces(options.isIncludeSqlInTraces())
         .setDatabaseRole(options.getDatabaseRole())
         .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);
     if (key.openTelemetry != null) {
       builder.setOpenTelemetry(key.openTelemetry);
+    }
+    if (key.enableExtendedTracing != null) {
+      builder.setEnableExtendedTracing(key.enableExtendedTracing);
     }
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);

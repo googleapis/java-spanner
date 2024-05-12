@@ -100,9 +100,12 @@ public class ConnectionOptions {
     }
 
     private static ConnectionProperty createBooleanProperty(
-        String name, String description, boolean defaultValue) {
+        String name, String description, Boolean defaultValue) {
       return new ConnectionProperty(
-          name, description, String.valueOf(defaultValue), BOOLEAN_VALUES);
+          name,
+          description,
+          defaultValue == null ? "" : String.valueOf(defaultValue),
+          BOOLEAN_VALUES);
     }
 
     private static ConnectionProperty createIntProperty(
@@ -195,7 +198,7 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
   private static final int DEFAULT_MAX_PARTITIONS = 0;
   private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
-  private static final boolean DEFAULT_INCLUDE_SQL_IN_TRACES = true;
+  private static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -276,7 +279,7 @@ public class ConnectionOptions {
   public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
       "maxPartitionedParallelism";
 
-  public static final String INCLUDE_SQL_IN_TRACES_PROPERTY_NAME = "includeSqlInTraces";
+  public static final String ENABLE_EXTENDED_TRACING_PROPERTY_NAME = "enableExtendedTracing";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "
@@ -441,11 +444,11 @@ public class ConnectionOptions {
                           + "dynamically use the number of processors available in the runtime.",
                       DEFAULT_MAX_PARTITIONED_PARALLELISM),
                   ConnectionProperty.createBooleanProperty(
-                      INCLUDE_SQL_IN_TRACES_PROPERTY_NAME,
+                      ENABLE_EXTENDED_TRACING_PROPERTY_NAME,
                       "Include the SQL string in the OpenTelemetry traces that are generated "
                           + "by this connection. The SQL string is added as the standard OpenTelemetry "
                           + "attribute 'db.statement'.",
-                      DEFAULT_INCLUDE_SQL_IN_TRACES))));
+                      DEFAULT_ENABLE_EXTENDED_TRACING))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -739,7 +742,7 @@ public class ConnectionOptions {
   private final boolean useVirtualGrpcTransportThreads;
   private final OpenTelemetry openTelemetry;
   private final String tracingPrefix;
-  private final boolean includeSqlInTraces;
+  private final Boolean enableExtendedTracing;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -847,7 +850,7 @@ public class ConnectionOptions {
     this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
     this.openTelemetry = builder.openTelemetry;
     this.tracingPrefix = builder.tracingPrefix;
-    this.includeSqlInTraces = parseIncludeSqlInTraces(this.uri);
+    this.enableExtendedTracing = parseEnableExtendedTracing(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -1243,9 +1246,9 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
-  static boolean parseIncludeSqlInTraces(String uri) {
-    String value = parseUriProperty(uri, INCLUDE_SQL_IN_TRACES_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_INCLUDE_SQL_IN_TRACES;
+  static Boolean parseEnableExtendedTracing(String uri) {
+    String value = parseUriProperty(uri, ENABLE_EXTENDED_TRACING_PROPERTY_NAME);
+    return value != null ? Boolean.valueOf(value) : DEFAULT_ENABLE_EXTENDED_TRACING;
   }
 
   @VisibleForTesting
@@ -1551,8 +1554,8 @@ public class ConnectionOptions {
     return this.maxPartitionedParallelism;
   }
 
-  boolean isIncludeSqlInTraces() {
-    return this.includeSqlInTraces;
+  Boolean isEnableExtendedTracing() {
+    return this.enableExtendedTracing;
   }
 
   /** Interceptors that should be executed after each statement */
