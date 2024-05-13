@@ -25,6 +25,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.common.collect.ImmutableList;
+import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import org.junit.After;
@@ -109,6 +110,26 @@ public class ExcludeTxnFromChangeStreamsMockServerTest extends AbstractMockServe
     assertTrue(request.getTransaction().hasBegin());
     assertTrue(request.getTransaction().getBegin().hasReadWrite());
     assertTrue(request.getTransaction().getBegin().getExcludeTxnFromChangeStreams());
+  }
+
+  @Test
+  public void testPartitionedDml() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      connection.setAutocommitDmlMode(AutocommitDmlMode.PARTITIONED_NON_ATOMIC);
+      connection.setExcludeTxnFromChangeStreams(true);
+      connection.executeUpdate(INSERT_STATEMENT);
+
+      // Verify that the setting is reset after executing a transaction.
+      assertFalse(connection.isExcludeTxnFromChangeStreams());
+    }
+
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    BeginTransactionRequest request =
+        mockSpanner.getRequestsOfType(BeginTransactionRequest.class).get(0);
+    assertTrue(request.hasOptions());
+    assertTrue(request.getOptions().hasPartitionedDml());
+    assertTrue(request.getOptions().getExcludeTxnFromChangeStreams());
   }
 
   @Test
