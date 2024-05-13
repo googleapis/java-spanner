@@ -150,6 +150,15 @@
 	  "exampleStatements": ["show variable transaction_tag"]
 	},
 	{
+		"name": "SHOW VARIABLE EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+exclude_txn_from_change_streams\\s*\\z",
+		"method": "statementShowExcludeTxnFromChangeStreams",
+		"exampleStatements": ["show variable exclude_txn_from_change_streams"]
+	},
+	{
 		"name": "SHOW VARIABLE RPC_PRIORITY",
 		"executorName": "ClientSideStatementNoParamExecutor",
 		"resultType": "RESULT_SET",
@@ -496,6 +505,21 @@
 	    "allowedValues": "'(.*)'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
+	},
+	{
+		"name": "SET EXCLUDE_TXN_FROM_CHANGE_STREAMS = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+		"regex": "(?is)\\A\\s*set\\s+exclude_txn_from_change_streams\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetExcludeTxnFromChangeStreams",
+		"exampleStatements": ["set exclude_txn_from_change_streams = true", "set exclude_txn_from_change_streams = false"],
+		"setStatement": {
+			"propertyName": "EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
 	},
 	{
 		"name": "SET RPC_PRIORITY = 'HIGH'|'MEDIUM'|'LOW'|'NULL'",

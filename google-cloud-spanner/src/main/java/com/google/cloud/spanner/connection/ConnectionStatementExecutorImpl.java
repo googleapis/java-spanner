@@ -29,6 +29,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
@@ -52,6 +53,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
@@ -407,6 +409,21 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sTRANSACTION_TAG", getNamespace(connection.getDialect())),
         MoreObjects.firstNonNull(getConnection().getTransactionTag(), ""),
         SHOW_TRANSACTION_TAG);
+  }
+
+  @Override
+  public StatementResult statementSetExcludeTxnFromChangeStreams(
+      Boolean excludeTxnFromChangeStreams) {
+    getConnection().setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams);
+    return noResult(SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS);
+  }
+
+  @Override
+  public StatementResult statementShowExcludeTxnFromChangeStreams() {
+    return resultSet(
+        String.format("%sEXCLUDE_TXN_FROM_CHANGE_STREAMS", getNamespace(connection.getDialect())),
+        getConnection().isExcludeTxnFromChangeStreams(),
+        SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS);
   }
 
   @Override

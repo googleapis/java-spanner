@@ -248,6 +248,8 @@ class ConnectionImpl implements Connection {
   private String transactionTag;
   private String statementTag;
 
+  private boolean excludeTxnFromChangeStreams;
+
   private Duration maxCommitDelay;
 
   /** Create a connection and register it in the SpannerPool. */
@@ -695,6 +697,24 @@ class ConnectionImpl implements Connection {
     this.statementTag = tag;
   }
 
+  @Override
+  public boolean isExcludeTxnFromChangeStreams() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(!isDdlBatchActive(), "This connection is in a DDL batch");
+    return excludeTxnFromChangeStreams;
+  }
+
+  @Override
+  public void setExcludeTxnFromChangeStreams(boolean excludeTxnFromChangeStreams) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Cannot set exclude_txn_from_change_streams while in a batch");
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(),
+        "exclude_txn_from_change_streams cannot be set after the transaction has started");
+    this.excludeTxnFromChangeStreams = excludeTxnFromChangeStreams;
+  }
+
   /**
    * Throws an {@link SpannerException} with code {@link ErrorCode#FAILED_PRECONDITION} if the
    * current state of this connection does not allow changing the setting for retryAbortsInternally.
@@ -851,6 +871,7 @@ class ConnectionImpl implements Connection {
               : UnitOfWorkType.READ_WRITE_TRANSACTION;
       batchMode = BatchMode.NONE;
       transactionTag = null;
+      excludeTxnFromChangeStreams = false;
     } else {
       popUnitOfWorkFromTransactionStack();
     }
@@ -1706,19 +1727,26 @@ class ConnectionImpl implements Connection {
     if (isInternalMetadataQuery
         || (isAutocommit() && !isInTransaction() && !isInBatch())
         || forceSingleUse) {
-      return SingleUseTransaction.newBuilder()
-          .setInternalMetadataQuery(isInternalMetadataQuery)
-          .setDdlClient(ddlClient)
-          .setDatabaseClient(dbClient)
-          .setBatchClient(batchClient)
-          .setReadOnly(isReadOnly())
-          .setReadOnlyStaleness(readOnlyStaleness)
-          .setAutocommitDmlMode(autocommitDmlMode)
-          .setReturnCommitStats(returnCommitStats)
-          .setMaxCommitDelay(maxCommitDelay)
-          .setStatementTimeout(statementTimeout)
-          .withStatementExecutor(statementExecutor)
-          .build();
+      SingleUseTransaction singleUseTransaction =
+          SingleUseTransaction.newBuilder()
+              .setInternalMetadataQuery(isInternalMetadataQuery)
+              .setDdlClient(ddlClient)
+              .setDatabaseClient(dbClient)
+              .setBatchClient(batchClient)
+              .setReadOnly(isReadOnly())
+              .setReadOnlyStaleness(readOnlyStaleness)
+              .setAutocommitDmlMode(autocommitDmlMode)
+              .setReturnCommitStats(returnCommitStats)
+              .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
+              .setMaxCommitDelay(maxCommitDelay)
+              .setStatementTimeout(statementTimeout)
+              .withStatementExecutor(statementExecutor)
+              .build();
+      if (!isInternalMetadataQuery && !forceSingleUse) {
+        // Reset the transaction options after starting a single-use transaction.
+        setDefaultTransactionOptions();
+      }
+      return singleUseTransaction;
     } else {
       switch (getUnitOfWorkType()) {
         case READ_ONLY_TRANSACTION:
@@ -1744,6 +1772,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
+              .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
               .setRpcPriority(rpcPriority)
               .build();
         case DML_BATCH:
@@ -1755,6 +1784,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setStatementTag(statementTag)
+              .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
               .setRpcPriority(rpcPriority)
               .build();
         case DDL_BATCH:

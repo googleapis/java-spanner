@@ -477,6 +477,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     if (returnCommitStats) {
       numOptions++;
     }
+    if (excludeTxnFromChangeStreams) {
+      numOptions++;
+    }
     if (maxCommitDelay != null) {
       numOptions++;
     }
@@ -490,6 +493,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     }
     if (returnCommitStats) {
       options[index++] = Options.commitStats();
+    }
+    if (excludeTxnFromChangeStreams) {
+      options[index++] = Options.excludeTxnFromChangeStreams();
     }
     if (maxCommitDelay != null) {
       options[index++] = Options.maxCommitDelay(maxCommitDelay);

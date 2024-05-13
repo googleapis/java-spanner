@@ -250,6 +250,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     if (this.transactionTag != null) {
       numOptions++;
     }
+    if (this.excludeTxnFromChangeStreams) {
+      numOptions++;
+    }
     if (this.rpcPriority != null) {
       numOptions++;
     }
@@ -263,6 +266,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
     if (this.transactionTag != null) {
       options[index++] = Options.tag(this.transactionTag);
+    }
+    if (this.excludeTxnFromChangeStreams) {
+      options[index++] = Options.excludeTxnFromChangeStreams();
     }
     if (this.rpcPriority != null) {
       options[index++] = Options.priority(this.rpcPriority);

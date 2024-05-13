@@ -388,6 +388,22 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets whether the next transaction should be excluded from all change streams with the DDL
+   * option `allow_txn_exclusion=true`
+   */
+  default void setExcludeTxnFromChangeStreams(boolean excludeTxnFromChangeStreams) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns true if the next transaction should be excluded from all change streams with the DDL
+   * option `allow_txn_exclusion=true`
+   */
+  default boolean isExcludeTxnFromChangeStreams() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * @return <code>true</code> if this connection will automatically retry read/write transactions
    *     that abort. This method may only be called when the connection is in read/write
    *     transactional mode and no transaction has been started yet.
