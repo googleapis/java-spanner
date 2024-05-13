@@ -269,6 +269,9 @@ SpannerOptions options = SpannerOptions.newBuilder()
   .build();
 ```
 
+This option can also be enabled by setting the environment variable
+`SPANNER_ENABLE_EXTENDED_TRACING=true`.
+
 ### Instrument with OpenCensus
 
 > Note: OpenCensus project is deprecated. See [Sunsetting OpenCensus](https://opentelemetry.io/blog/2023/sunsetting-opencensus/).
