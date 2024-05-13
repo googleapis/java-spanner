@@ -39,6 +39,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -219,6 +220,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
             asyncEndUnitOfWorkSpan(), unused -> new long[0], MoreExecutors.directExecutor());
       }
       // Set the DDL statements on the span.
+
       span.setAllAttributes(Attributes.of(DB_STATEMENT_ARRAY_KEY, statements));
       // create a statement that can be passed in to the execute method
       Callable<long[]> callable =
@@ -239,6 +241,8 @@ class DdlBatch extends AbstractBaseUnitOfWork {
                     e.getErrorCode(), e.getMessage(), updateCounts);
               }
             } catch (Throwable t) {
+              span.setStatus(StatusCode.ERROR);
+              span.recordException(t);
               state = UnitOfWorkState.RUN_FAILED;
               throw t;
             }

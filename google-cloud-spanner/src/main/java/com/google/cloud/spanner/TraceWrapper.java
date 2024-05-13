@@ -44,15 +44,15 @@ class TraceWrapper {
 
   private final Tracer openCensusTracer;
   private final io.opentelemetry.api.trace.Tracer openTelemetryTracer;
-  private final boolean includeSqlStatementInTrace;
+  private final boolean enableExtendedTracing;
 
   TraceWrapper(
       Tracer openCensusTracer,
       io.opentelemetry.api.trace.Tracer openTelemetryTracer,
-      boolean includeSqlStatementInTrace) {
+      boolean enableExtendedTracing) {
     this.openTelemetryTracer = openTelemetryTracer;
     this.openCensusTracer = openCensusTracer;
-    this.includeSqlStatementInTrace = includeSqlStatementInTrace;
+    this.enableExtendedTracing = enableExtendedTracing;
   }
 
   ISpan spanBuilder(String spanName) {
@@ -150,9 +150,9 @@ class TraceWrapper {
   }
 
   Attributes createStatementAttributes(Statement statement, Options options) {
-    if (this.includeSqlStatementInTrace || (options != null && options.hasTag())) {
+    if (this.enableExtendedTracing || (options != null && options.hasTag())) {
       AttributesBuilder builder = Attributes.builder();
-      if (this.includeSqlStatementInTrace) {
+      if (this.enableExtendedTracing) {
         builder.put(DB_STATEMENT_KEY, statement.getSql());
       }
       if (options != null && options.hasTag()) {
@@ -164,9 +164,9 @@ class TraceWrapper {
   }
 
   Attributes createStatementBatchAttributes(Iterable<Statement> statements, Options options) {
-    if (this.includeSqlStatementInTrace || (options != null && options.hasTag())) {
+    if (this.enableExtendedTracing || (options != null && options.hasTag())) {
       AttributesBuilder builder = Attributes.builder();
-      if (this.includeSqlStatementInTrace) {
+      if (this.enableExtendedTracing) {
         builder.put(
             DB_STATEMENT_ARRAY_KEY,
             StreamSupport.stream(statements.spliterator(), false)
