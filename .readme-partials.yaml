@@ -162,6 +162,9 @@ custom_content: |
     .setEnableExtendedTracing(true)
     .build();
   ```
+  
+  This option can also be enabled by setting the environment variable
+  `SPANNER_ENABLE_EXTENDED_TRACING=true`.
 
   ### Instrument with OpenCensus
 
