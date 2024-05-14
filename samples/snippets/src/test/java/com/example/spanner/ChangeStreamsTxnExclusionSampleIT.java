@@ -33,9 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Integration tests for {@link ChangeStreamsTxnExclusionSample}
- */
+/** Integration tests for {@link ChangeStreamsTxnExclusionSample} */
 @RunWith(JUnit4.class)
 public class ChangeStreamsTxnExclusionSampleIT extends SampleTestBase {
 
@@ -62,24 +60,24 @@ public class ChangeStreamsTxnExclusionSampleIT extends SampleTestBase {
   @Before
   public void insertTestData() {
     final DatabaseClient client = spanner.getDatabaseClient(databaseId);
-    client.write(Arrays.asList(
-        Mutation.newInsertBuilder("Singers")
-            .set("SingerId")
-            .to(1L)
-            .set("FirstName")
-            .to("first name 1")
-            .set("LastName")
-            .to("last name 1")
-            .build(),
-        Mutation.newInsertBuilder("Singers")
-            .set("SingerId")
-            .to(2L)
-            .set("FirstName")
-            .to("first name 2")
-            .set("LastName")
-            .to("last name 2")
-            .build()
-    ));
+    client.write(
+        Arrays.asList(
+            Mutation.newInsertBuilder("Singers")
+                .set("SingerId")
+                .to(1L)
+                .set("FirstName")
+                .to("first name 1")
+                .set("LastName")
+                .to("last name 1")
+                .build(),
+            Mutation.newInsertBuilder("Singers")
+                .set("SingerId")
+                .to(2L)
+                .set("FirstName")
+                .to("first name 2")
+                .set("LastName")
+                .to("last name 2")
+                .build()));
   }
 
   @After
@@ -91,23 +89,33 @@ public class ChangeStreamsTxnExclusionSampleIT extends SampleTestBase {
   @Test
   public void testSetExcludeTxnFromChangeStreamsSampleSample() throws Exception {
     final DatabaseClient client = spanner.getDatabaseClient(databaseId);
-    String out = runSample(() -> ChangeStreamsTxnExclusionSample.rwTxnExcludedFromChangeStreams(client));
+    String out =
+        runSample(() -> ChangeStreamsTxnExclusionSample.rwTxnExcludedFromChangeStreams(client));
     assertThat(out).contains("New singer inserted.");
     assertThat(out).contains("Singer first name updated.");
 
     out = runSample(() -> ChangeStreamsTxnExclusionSample.writeExcludedFromChangeStreams(client));
     assertThat(out).contains("New singer inserted.");
 
-    out = runSample(() -> ChangeStreamsTxnExclusionSample.writeAtLeastOnceExcludedFromChangeStreams(client));
+    out =
+        runSample(
+            () ->
+                ChangeStreamsTxnExclusionSample.writeAtLeastOnceExcludedFromChangeStreams(client));
     assertThat(out).contains("New singer inserted.");
 
-    out = runSample(() -> ChangeStreamsTxnExclusionSample.batchWriteAtLeastOnceExcludedFromChangeStreams(client));
+    out =
+        runSample(
+            () ->
+                ChangeStreamsTxnExclusionSample.batchWriteAtLeastOnceExcludedFromChangeStreams(
+                    client));
     assertThat(out).contains("have been applied");
 
     out = runSample(() -> ChangeStreamsTxnExclusionSample.pdmlExcludedFromChangeStreams(client));
     assertThat(out).contains("Singers deleted.");
 
-    out = runSample(() -> ChangeStreamsTxnExclusionSample.txnManagerExcludedFromChangeStreams(client));
+    out =
+        runSample(
+            () -> ChangeStreamsTxnExclusionSample.txnManagerExcludedFromChangeStreams(client));
     assertThat(out).contains("New singer inserted.");
   }
 }

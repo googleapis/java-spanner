@@ -16,24 +16,26 @@
 
 package com.example.spanner;
 
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.MutationGroup;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
-import java.util.Collections;
-import com.google.spanner.v1.BatchWriteResponse;
-import com.google.api.gax.rpc.ServerStream;
-import com.google.rpc.Code;
-import com.google.cloud.spanner.MutationGroup;
 import com.google.common.collect.ImmutableList;
+import com.google.rpc.Code;
+import com.google.spanner.v1.BatchWriteResponse;
+import java.util.Collections;
 
-/** Sample showing how to set exclude transaction from change streams in different write requests. */
+/**
+ * Sample showing how to set exclude transaction from change streams in different write requests.
+ */
 public class ChangeStreamsTxnExclusionSample {
 
   static void setExcludeTxnFromChangeStreams() {
@@ -107,15 +109,16 @@ public class ChangeStreamsTxnExclusionSample {
   static void batchWriteAtLeastOnceExcludedFromChangeStreams(DatabaseClient client) {
     ServerStream<BatchWriteResponse> responses =
         client.batchWriteAtLeastOnce(
-            ImmutableList.of(MutationGroup.of(
-                Mutation.newInsertOrUpdateBuilder("Singers")
-                    .set("SingerId")
-                    .to(116)
-                    .set("FirstName")
-                    .to("Scarlet")
-                    .set("LastName")
-                    .to("Terry")
-                    .build())),
+            ImmutableList.of(
+                MutationGroup.of(
+                    Mutation.newInsertOrUpdateBuilder("Singers")
+                        .set("SingerId")
+                        .to(116)
+                        .set("FirstName")
+                        .to("Scarlet")
+                        .set("LastName")
+                        .to("Terry")
+                        .build())),
             Options.excludeTxnFromChangeStreams());
     for (BatchWriteResponse response : responses) {
       if (response.getStatus().getCode() == Code.OK_VALUE) {
@@ -124,9 +127,10 @@ public class ChangeStreamsTxnExclusionSample {
             response.getIndexesList(), response.getCommitTimestamp());
       } else {
         System.out.printf(
-            "Mutation group could not be applied with error code %s and "
-                + "error message %s", response.getIndexesList(),
-            Code.forNumber(response.getStatus().getCode()), response.getStatus().getMessage());
+            "Mutation group could not be applied with error code %s and " + "error message %s",
+            response.getIndexesList(),
+            Code.forNumber(response.getStatus().getCode()),
+            response.getStatus().getMessage());
       }
     }
   }
@@ -138,7 +142,8 @@ public class ChangeStreamsTxnExclusionSample {
   }
 
   static void txnManagerExcludedFromChangeStreams(DatabaseClient client) {
-    try (TransactionManager manager = client.transactionManager(Options.excludeTxnFromChangeStreams())) {
+    try (TransactionManager manager =
+        client.transactionManager(Options.excludeTxnFromChangeStreams())) {
       TransactionContext transaction = manager.begin();
       transaction.buffer(
           Mutation.newInsertOrUpdateBuilder("Singers")
