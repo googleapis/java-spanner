@@ -40,8 +40,8 @@ public class ChangeStreamsTxnExclusionSample {
 
   static void setExcludeTxnFromChangeStreams() {
     // TODO(developer): Replace these variables before running the sample.
-    final String projectId = "span-cloud-testing";
-    final String instanceId = "weideng-test";
+    final String projectId = "my-instance";
+    final String instanceId = "my-project";
     final String databaseId = "my-database";
 
     try (Spanner spanner =
