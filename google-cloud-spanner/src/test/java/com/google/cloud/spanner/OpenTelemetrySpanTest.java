@@ -659,7 +659,7 @@ public class OpenTelemetrySpanTest {
             });
 
     assertEquals(2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
-    int numExpectedSpans = 8;
+    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 10 : 8;
     waitForFinishedSpans(numExpectedSpans);
     List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     List<String> finishedSpanNames =
@@ -709,7 +709,7 @@ public class OpenTelemetrySpanTest {
     }
 
     assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    int numExpectedSpans = 7;
+    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 9 : 7;
     waitForFinishedSpans(numExpectedSpans);
     List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     List<String> finishedSpanNames =
@@ -758,7 +758,7 @@ public class OpenTelemetrySpanTest {
         .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
 
     assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    int numExpectedSpans = 7;
+    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 9 : 7;
     waitForFinishedSpans(numExpectedSpans);
     List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     List<String> finishedSpanNames =
