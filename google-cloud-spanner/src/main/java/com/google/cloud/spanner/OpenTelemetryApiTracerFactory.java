@@ -55,6 +55,6 @@ public class OpenTelemetryApiTracerFactory implements ApiTracerFactory {
             .setAllAttributes(spanAttributes)
             .startSpan();
 
-    return new OpenTelemetryApiTracer(internalTracer, span, operationType);
+    return new OpenTelemetryApiTracer(span, operationType);
   }
 }

@@ -24,17 +24,16 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.threeten.bp.Duration;
 
 /**
  * {@link com.google.api.gax.tracing.ApiTracer} for use with OpenTelemetry. Based on {@link
  * com.google.api.gax.tracing.OpencensusTracer}.
  */
-public class OpenTelemetryApiTracer implements ApiTracer {
+class OpenTelemetryApiTracer implements ApiTracer {
   private final AttributeKey<Long> ATTEMPT_COUNT_KEY = AttributeKey.longKey("attempt.count");
   private final AttributeKey<Long> TOTAL_REQUEST_COUNT_KEY =
       AttributeKey.longKey("total_request_count");
@@ -52,7 +51,6 @@ public class OpenTelemetryApiTracer implements ApiTracer {
   private static final AttributeKey<Long> BATCH_SIZE_KEY = AttributeKey.longKey("batch.size");
   private static final AttributeKey<Long> BATCH_COUNT_KEY = AttributeKey.longKey("batch.count");
 
-  private final Tracer tracer;
   private final Span span;
   private final OperationType operationType;
 
@@ -63,9 +61,7 @@ public class OpenTelemetryApiTracer implements ApiTracer {
   private final AtomicLong totalSentMessages = new AtomicLong(0);
   private long totalReceivedMessages = 0;
 
-  OpenTelemetryApiTracer(
-      @Nonnull Tracer tracer, @Nonnull Span span, @Nonnull OperationType operationType) {
-    this.tracer = Preconditions.checkNotNull(tracer);
+  OpenTelemetryApiTracer(@Nonnull Span span, @Nonnull OperationType operationType) {
     this.span = Preconditions.checkNotNull(span);
     this.operationType = Preconditions.checkNotNull(operationType);
   }
@@ -76,8 +72,8 @@ public class OpenTelemetryApiTracer implements ApiTracer {
 
   @Override
   public Scope inScope() {
-    final io.opentelemetry.context.Scope scope = span.makeCurrent();
-    return scope::close;
+    final io.opentelemetry.context.Scope openTelemetryScope = span.makeCurrent();
+    return openTelemetryScope::close;
   }
 
   @Override
@@ -121,6 +117,11 @@ public class OpenTelemetryApiTracer implements ApiTracer {
 
   @Override
   public void attemptStarted(int attemptNumber) {
+    attemptStarted(null, attemptNumber);
+  }
+
+  @Override
+  public void attemptStarted(@Nullable Object request, int attemptNumber) {
     currentAttemptId = attemptNumber;
     attemptSentMessages.set(0);
     attemptReceivedMessages = 0;
@@ -133,11 +134,6 @@ public class OpenTelemetryApiTracer implements ApiTracer {
     } else if (operationType == OperationType.LongRunning) {
       span.addEvent("Starting poll attempt " + attemptNumber);
     }
-  }
-
-  @Override
-  public void attemptStarted(Object request, int attemptNumber) {
-    attemptStarted(attemptNumber);
   }
 
   @Override
