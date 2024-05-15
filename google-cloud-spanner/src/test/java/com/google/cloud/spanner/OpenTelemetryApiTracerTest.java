@@ -167,19 +167,14 @@ public class OpenTelemetryApiTracerTest extends AbstractMockServerTest {
     assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
     List<SpanData> spans = spanExporter.getFinishedSpanItems();
     assertContains("CloudSpanner.ReadWriteTransaction", spans);
-    // TODO: Enable the following line when tracing of update statements in the Java client has
-    //       been added.
-    // assertContains("CloudSpannerOperation.ExecuteUpdate", spans);
+    assertContains("CloudSpannerOperation.ExecuteUpdate", spans);
     assertContains("CloudSpannerOperation.Commit", spans);
     assertContains("Spanner.ExecuteSql", spans);
     assertContains("Spanner.Commit", spans);
 
-    // TODO: Enable the following line when tracing of update statements in the Java client has
-    //       been added.
-    // assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.ExecuteUpdate",
-    // spans);
+    assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.ExecuteUpdate", spans);
     assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.Commit", spans);
-    assertParent("CloudSpanner.ReadWriteTransaction", "Spanner.ExecuteSql", spans);
+    assertParent("CloudSpannerOperation.ExecuteUpdate", "Spanner.ExecuteSql", spans);
   }
 
   @Test
@@ -194,18 +189,13 @@ public class OpenTelemetryApiTracerTest extends AbstractMockServerTest {
     assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
     List<SpanData> spans = spanExporter.getFinishedSpanItems();
     assertContains("CloudSpanner.ReadWriteTransaction", spans);
-    // TODO: Enable the following line when tracing of update statements in the Java client has
-    //       been added.
-    // assertContains("CloudSpannerOperation.BatchUpdate", spans);
+    assertContains("CloudSpannerOperation.BatchUpdate", spans);
     assertContains("CloudSpannerOperation.Commit", spans);
     assertContains("Spanner.ExecuteBatchDml", spans);
     assertContains("Spanner.Commit", spans);
-    // TODO: Enable the following line when tracing of update statements in the Java client has
-    //       been added.
-    // assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.BatchUpdate",
-    // spans);
+    assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.BatchUpdate", spans);
     assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.Commit", spans);
-    assertParent("CloudSpanner.ReadWriteTransaction", "Spanner.ExecuteBatchDml", spans);
+    assertParent("CloudSpannerOperation.BatchUpdate", "Spanner.ExecuteBatchDml", spans);
     assertParent("CloudSpannerOperation.Commit", "Spanner.Commit", spans);
   }
 
