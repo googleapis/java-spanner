@@ -62,6 +62,7 @@ import com.google.spanner.v1.ResultSetStats;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
+import io.opentelemetry.api.trace.Span;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -176,6 +177,7 @@ public class ReadWriteTransactionTest {
         .setSavepointSupport(SavepointSupport.FAIL_AFTER_ROLLBACK)
         .setTransactionRetryListeners(Collections.emptyList())
         .withStatementExecutor(new StatementExecutor())
+        .setSpan(Span.getInvalid())
         .build();
   }
 
@@ -475,6 +477,7 @@ public class ReadWriteTransactionTest {
               .setTransactionRetryListeners(Collections.emptyList())
               .setDatabaseClient(client)
               .withStatementExecutor(new StatementExecutor())
+              .setSpan(Span.getInvalid())
               .build();
       subject.executeUpdateAsync(CallType.SYNC, update1);
       subject.executeUpdateAsync(CallType.SYNC, update2);
@@ -503,6 +506,7 @@ public class ReadWriteTransactionTest {
             .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
+            .setSpan(Span.getInvalid())
             .build();
     ParsedStatement parsedStatement = mock(ParsedStatement.class);
     Statement statement = Statement.of("SELECT * FROM FOO");
@@ -737,6 +741,7 @@ public class ReadWriteTransactionTest {
             .setTransactionRetryListeners(Collections.emptyList())
             .setDatabaseClient(client)
             .withStatementExecutor(new StatementExecutor())
+            .setSpan(Span.getInvalid())
             .build();
     ParsedStatement parsedStatement = mock(ParsedStatement.class);
     Statement statement = Statement.of("SELECT * FROM FOO");

@@ -63,11 +63,12 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   final TraceWrapper tracer =
       new TraceWrapper(
           Tracing.getTracer(),
-          this.getOptions()
+          getOptions()
               .getOpenTelemetry()
               .getTracer(
                   MetricRegistryConstants.INSTRUMENTATION_SCOPE,
-                  GaxProperties.getLibraryVersion(this.getOptions().getClass())));
+                  GaxProperties.getLibraryVersion(this.getOptions().getClass())),
+          getOptions().isEnableExtendedTracing());
 
   static final String CREATE_MULTIPLEXED_SESSION = "CloudSpannerOperation.CreateMultiplexedSession";
   static final String CREATE_SESSION = "CloudSpannerOperation.CreateSession";
@@ -80,6 +81,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   static final String QUERY = "CloudSpannerOperation.ExecuteStreamingQuery";
   static final String READ = "CloudSpannerOperation.ExecuteStreamingRead";
   static final String BATCH_WRITE = "CloudSpannerOperation.BatchWrite";
+  static final String UPDATE = "CloudSpannerOperation.ExecuteUpdate";
+  static final String BATCH_UPDATE = "CloudSpannerOperation.BatchUpdate";
 
   private static final Object CLIENT_ID_LOCK = new Object();
 

@@ -69,6 +69,7 @@ import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
+import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.cloud.spanner.connection.ConnectionImpl.UnitOfWorkType;
 import com.google.cloud.spanner.connection.ConnectionStatementExecutorImpl.StatementTimeoutGetter;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.GetExactStaleness;
@@ -1751,7 +1752,10 @@ public class ConnectionImplTest {
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery, boolean forceSingleUse) {
+          UnitOfWork createNewUnitOfWork(
+              boolean isInternalMetadataQuery,
+              boolean forceSingleUse,
+              StatementType statementType) {
             return unitOfWork;
           }
         }) {

@@ -507,12 +507,13 @@ public class SpanTest {
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
 
     if (isMultiplexedSessionsEnabled()) {
-      assertEquals(spans.toString(), 4, spans.size());
+      assertEquals(spans.toString(), 5, spans.size());
       assertThat(spans).containsEntry("CloudSpannerOperation.CreateMultiplexedSession", true);
     } else {
-      assertThat(spans.size()).isEqualTo(3);
+      assertThat(spans.size()).isEqualTo(4);
     }
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteUpdate", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
 

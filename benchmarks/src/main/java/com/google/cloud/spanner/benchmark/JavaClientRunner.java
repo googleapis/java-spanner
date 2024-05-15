@@ -20,6 +20,7 @@ import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.SessionPoolOptionsHelper;
@@ -161,7 +162,10 @@ class JavaClientRunner extends AbstractRunner {
     Stopwatch watch = Stopwatch.createStarted();
     switch (transactionType) {
       case READ_ONLY_SINGLE_USE:
-        executeReadOnlyTransaction(client);
+        executeSingleUseReadOnlyTransaction(client);
+        break;
+      case READ_ONLY_MULTI_USE:
+        executeMultiUseReadOnlyTransaction(client);
         break;
       case READ_WRITE:
         executeReadWriteTransaction(client);
@@ -172,7 +176,7 @@ class JavaClientRunner extends AbstractRunner {
     return elapsedTime;
   }
 
-  private void executeReadOnlyTransaction(DatabaseClient client) {
+  private void executeSingleUseReadOnlyTransaction(DatabaseClient client) {
     try (ResultSet resultSet = client.singleUse().executeQuery(getRandomisedReadStatement())) {
       while (resultSet.next()) {
         for (int i = 0; i < resultSet.getColumnCount(); i++) {
@@ -181,6 +185,34 @@ class JavaClientRunner extends AbstractRunner {
           } else {
             numNonNullValues++;
           }
+        }
+      }
+    }
+  }
+
+  private void executeMultiUseReadOnlyTransaction(DatabaseClient client) {
+    try (ReadOnlyTransaction transaction = client.readOnlyTransaction()) {
+      ResultSet resultSet = transaction.executeQuery(getRandomisedReadStatement());
+      iterateResultSet(resultSet);
+
+      ResultSet resultSet1 = transaction.executeQuery(getRandomisedReadStatement());
+      iterateResultSet(resultSet1);
+
+      ResultSet resultSet2 = transaction.executeQuery(getRandomisedReadStatement());
+      iterateResultSet(resultSet2);
+
+      ResultSet resultSet3 = transaction.executeQuery(getRandomisedReadStatement());
+      iterateResultSet(resultSet3);
+    }
+  }
+
+  private void iterateResultSet(ResultSet resultSet) {
+    while (resultSet.next()) {
+      for (int i = 0; i < resultSet.getColumnCount(); i++) {
+        if (resultSet.isNull(i)) {
+          numNullValues++;
+        } else {
+          numNonNullValues++;
         }
       }
     }

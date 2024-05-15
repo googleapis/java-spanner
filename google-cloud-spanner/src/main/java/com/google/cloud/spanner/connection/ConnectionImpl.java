@@ -21,12 +21,14 @@ import static com.google.cloud.spanner.connection.ConnectionPreconditions.checkV
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.core.GaxProperties;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
@@ -52,11 +54,17 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +74,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
@@ -77,6 +86,15 @@ import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
 class ConnectionImpl implements Connection {
+  private static final String INSTRUMENTATION_SCOPE = "cloud.google.com/java";
+  private static final String DEFAULT_TRACING_PREFIX = "CloudSpanner";
+  private static final String SINGLE_USE_TRANSACTION = "SingleUseTransaction";
+  private static final String READ_ONLY_TRANSACTION = "ReadOnlyTransaction";
+  private static final String READ_WRITE_TRANSACTION = "ReadWriteTransaction";
+  private static final String DML_BATCH = "DmlBatch";
+  private static final String DDL_BATCH = "DdlBatch";
+  private static final String DDL_STATEMENT = "DdlStatement";
+
   private static final String CLOSED_ERROR_MSG = "This connection is closed";
   private static final String ONLY_ALLOWED_IN_AUTOCOMMIT =
       "This method may only be called while in autocommit mode";
@@ -187,6 +205,9 @@ class ConnectionImpl implements Connection {
   private boolean closed = false;
 
   private final Spanner spanner;
+  private final Tracer tracer;
+  private final String tracingPrefix;
+  private final Attributes openTelemetryAttributes;
   private final DdlClient ddlClient;
   private final DatabaseClient dbClient;
   private final BatchClient batchClient;
@@ -261,6 +282,16 @@ class ConnectionImpl implements Connection {
     this.spannerPool = SpannerPool.INSTANCE;
     this.options = options;
     this.spanner = spannerPool.getSpanner(options, this);
+    this.tracer =
+        spanner
+            .getOptions()
+            .getOpenTelemetry()
+            .getTracer(
+                INSTRUMENTATION_SCOPE,
+                GaxProperties.getLibraryVersion(spanner.getOptions().getClass()));
+    this.tracingPrefix =
+        MoreObjects.firstNonNull(options.getTracingPrefix(), DEFAULT_TRACING_PREFIX);
+    this.openTelemetryAttributes = createOpenTelemetryAttributes(options.getDatabaseId());
     if (options.isAutoConfigEmulator()) {
       EmulatorUtil.maybeCreateInstanceAndDatabase(
           spanner, options.getDatabaseId(), options.getDialect());
@@ -300,6 +331,9 @@ class ConnectionImpl implements Connection {
     this.options = Preconditions.checkNotNull(options);
     this.ddlInTransactionMode = options.getDdlInTransactionMode();
     this.spanner = spannerPool.getSpanner(options, this);
+    this.tracer = OpenTelemetry.noop().getTracer(INSTRUMENTATION_SCOPE);
+    this.tracingPrefix = DEFAULT_TRACING_PREFIX;
+    this.openTelemetryAttributes = Attributes.empty();
     this.ddlClient = Preconditions.checkNotNull(ddlClient);
     this.dbClient = Preconditions.checkNotNull(dbClient);
     this.batchClient = Preconditions.checkNotNull(batchClient);
@@ -327,6 +361,20 @@ class ConnectionImpl implements Connection {
       this.statementParser = AbstractStatementParser.getInstance(dbClient.getDialect());
     }
     return this.statementParser;
+  }
+
+  Attributes getOpenTelemetryAttributes() {
+    return this.openTelemetryAttributes;
+  }
+
+  @VisibleForTesting
+  static Attributes createOpenTelemetryAttributes(DatabaseId databaseId) {
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    attributesBuilder.put("connection_id", UUID.randomUUID().toString());
+    attributesBuilder.put("database", databaseId.getDatabase());
+    attributesBuilder.put("instance_id", databaseId.getInstanceId().getInstance());
+    attributesBuilder.put("project_id", databaseId.getInstanceId().getProject());
+    return attributesBuilder.build();
   }
 
   @Override
@@ -1687,9 +1735,17 @@ class ConnectionImpl implements Connection {
               /* isInternalMetadataQuery = */ false,
               /* forceSingleUse = */ statementType == StatementType.DDL
                   && this.ddlInTransactionMode != DdlInTransactionMode.FAIL
-                  && !this.transactionBeginMarked);
+                  && !this.transactionBeginMarked,
+              statementType);
     }
     return this.currentUnitOfWork;
+  }
+
+  private Span createSpanForUnitOfWork(String name) {
+    return tracer
+        .spanBuilder(this.tracingPrefix + "." + name)
+        .setAllAttributes(getOpenTelemetryAttributes())
+        .startSpan();
   }
 
   void maybeAutoCommitCurrentTransaction(StatementType statementType) {
@@ -1703,6 +1759,12 @@ class ConnectionImpl implements Connection {
 
   @VisibleForTesting
   UnitOfWork createNewUnitOfWork(boolean isInternalMetadataQuery, boolean forceSingleUse) {
+    return createNewUnitOfWork(isInternalMetadataQuery, forceSingleUse, null);
+  }
+
+  @VisibleForTesting
+  UnitOfWork createNewUnitOfWork(
+      boolean isInternalMetadataQuery, boolean forceSingleUse, StatementType statementType) {
     if (isInternalMetadataQuery
         || (isAutocommit() && !isInTransaction() && !isInBatch())
         || forceSingleUse) {
@@ -1718,6 +1780,9 @@ class ConnectionImpl implements Connection {
           .setMaxCommitDelay(maxCommitDelay)
           .setStatementTimeout(statementTimeout)
           .withStatementExecutor(statementExecutor)
+          .setSpan(
+              createSpanForUnitOfWork(
+                  statementType == StatementType.DDL ? DDL_STATEMENT : SINGLE_USE_TRANSACTION))
           .build();
     } else {
       switch (getUnitOfWorkType()) {
@@ -1730,6 +1795,7 @@ class ConnectionImpl implements Connection {
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
               .setRpcPriority(rpcPriority)
+              .setSpan(createSpanForUnitOfWork(READ_ONLY_TRANSACTION))
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
@@ -1745,6 +1811,7 @@ class ConnectionImpl implements Connection {
               .withStatementExecutor(statementExecutor)
               .setTransactionTag(transactionTag)
               .setRpcPriority(rpcPriority)
+              .setSpan(createSpanForUnitOfWork(READ_WRITE_TRANSACTION))
               .build();
         case DML_BATCH:
           // A DML batch can run inside the current transaction. It should therefore only
@@ -1756,6 +1823,7 @@ class ConnectionImpl implements Connection {
               .withStatementExecutor(statementExecutor)
               .setStatementTag(statementTag)
               .setRpcPriority(rpcPriority)
+              .setSpan(createSpanForUnitOfWork(DML_BATCH))
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()
@@ -1763,6 +1831,7 @@ class ConnectionImpl implements Connection {
               .setDatabaseClient(dbClient)
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
+              .setSpan(createSpanForUnitOfWork(DDL_BATCH))
               .build();
         default:
       }
