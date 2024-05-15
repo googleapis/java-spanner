@@ -59,6 +59,7 @@ import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.common.base.Preconditions;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.trace.Span;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -452,6 +453,7 @@ public class SingleUseTransactionTest {
         .setStatementTimeout(
             timeout == 0L ? nullTimeout() : timeout(timeout, TimeUnit.MILLISECONDS))
         .withStatementExecutor(executor)
+        .setSpan(Span.getInvalid())
         .build();
   }
 
@@ -616,6 +618,7 @@ public class SingleUseTransactionTest {
             .setAutocommitDmlMode(AutocommitDmlMode.TRANSACTIONAL)
             .withStatementExecutor(executor)
             .setReadOnlyStaleness(TimestampBound.strong())
+            .setSpan(Span.getInvalid())
             .build();
     assertThat(
             get(

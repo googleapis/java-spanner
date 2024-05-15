@@ -3883,7 +3883,7 @@ public class DatabaseClientImplTest {
     TransactionOption option = mock(TransactionOption.class);
 
     TraceWrapper traceWrapper =
-        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+        new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
 
     DatabaseClientImpl client = new DatabaseClientImpl(pool, traceWrapper);
     client.readWriteTransaction(option);

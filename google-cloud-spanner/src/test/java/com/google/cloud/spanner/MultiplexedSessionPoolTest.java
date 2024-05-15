@@ -54,7 +54,7 @@ public class MultiplexedSessionPoolTest extends BaseSessionPoolTest {
   @Mock SpannerOptions spannerOptions;
   private final DatabaseId db = DatabaseId.of("projects/p/instances/i/databases/unused");
   private final TraceWrapper tracer =
-      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+      new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
   SessionPoolOptions options;
   SessionPool pool;
 

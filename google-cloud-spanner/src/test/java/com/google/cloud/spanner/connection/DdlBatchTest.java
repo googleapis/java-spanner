@@ -51,6 +51,7 @@ import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.Status;
+import io.opentelemetry.api.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -128,6 +129,7 @@ public class DdlBatchTest {
         .setDdlClient(ddlClient)
         .setDatabaseClient(dbClient)
         .withStatementExecutor(new StatementExecutor())
+        .setSpan(Span.getInvalid())
         .build();
   }
 
@@ -387,6 +389,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
+            .setSpan(Span.getInvalid())
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,
@@ -425,6 +428,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
+            .setSpan(Span.getInvalid())
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,
@@ -467,6 +471,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
+            .setSpan(Span.getInvalid())
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,

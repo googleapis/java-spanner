@@ -355,6 +355,10 @@ public final class Options implements Serializable {
       this.tag = tag;
     }
 
+    String getTag() {
+      return tag;
+    }
+
     @Override
     void appendToOptions(Options options) {
       options.tag = tag;

@@ -158,6 +158,7 @@ public class SpannerPool {
     private final boolean routeToLeader;
     private final boolean useVirtualGrpcTransportThreads;
     private final OpenTelemetry openTelemetry;
+    private final Boolean enableExtendedTracing;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -186,6 +187,7 @@ public class SpannerPool {
       this.routeToLeader = options.isRouteToLeader();
       this.useVirtualGrpcTransportThreads = options.isUseVirtualGrpcTransportThreads();
       this.openTelemetry = options.getOpenTelemetry();
+      this.enableExtendedTracing = options.isEnableExtendedTracing();
     }
 
     @Override
@@ -205,7 +207,8 @@ public class SpannerPool {
           && Objects.equals(this.routeToLeader, other.routeToLeader)
           && Objects.equals(
               this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
-          && Objects.equals(this.openTelemetry, other.openTelemetry);
+          && Objects.equals(this.openTelemetry, other.openTelemetry)
+          && Objects.equals(this.enableExtendedTracing, other.enableExtendedTracing);
     }
 
     @Override
@@ -221,7 +224,8 @@ public class SpannerPool {
           this.userAgent,
           this.routeToLeader,
           this.useVirtualGrpcTransportThreads,
-          this.openTelemetry);
+          this.openTelemetry,
+          this.enableExtendedTracing);
     }
   }
 
@@ -356,6 +360,9 @@ public class SpannerPool {
     builder.setSessionPoolOption(key.sessionPoolOptions);
     if (key.openTelemetry != null) {
       builder.setOpenTelemetry(key.openTelemetry);
+    }
+    if (key.enableExtendedTracing != null) {
+      builder.setEnableExtendedTracing(key.enableExtendedTracing);
     }
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);

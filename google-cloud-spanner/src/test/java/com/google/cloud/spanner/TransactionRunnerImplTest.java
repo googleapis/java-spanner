@@ -112,7 +112,7 @@ public class TransactionRunnerImplTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    tracer = new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""));
+    tracer = new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
     firstRun = true;
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(session.getTracer()).thenReturn(tracer);

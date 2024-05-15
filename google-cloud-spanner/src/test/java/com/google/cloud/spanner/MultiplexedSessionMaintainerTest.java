@@ -292,7 +292,7 @@ public class MultiplexedSessionMaintainerTest extends BaseSessionPoolTest {
             client.getSessionClient(db),
             clock,
             Position.FIRST,
-            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
             OpenTelemetry.noop());
     pool.multiplexedSessionRemovedListener =
         input -> {

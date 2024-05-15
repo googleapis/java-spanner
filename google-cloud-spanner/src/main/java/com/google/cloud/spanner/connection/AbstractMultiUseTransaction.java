@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.SpannerGrpc;
+import io.opentelemetry.context.Scope;
 import java.util.LinkedList;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -95,6 +96,11 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
+  boolean isSingleUse() {
+    return false;
+  }
+
+  @Override
   public Type getType() {
     return Type.TRANSACTION;
   }
@@ -124,16 +130,18 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
-    checkOrCreateValidTransaction(statement, callType);
-    return executeStatementAsync(
-        callType,
-        statement,
-        () -> {
-          checkAborted();
-          return DirectExecuteResultSet.ofResultSet(
-              internalExecuteQuery(statement, analyzeMode, options));
-        },
-        SpannerGrpc.getExecuteStreamingSqlMethod());
+    try (Scope ignore = span.makeCurrent()) {
+      checkOrCreateValidTransaction(statement, callType);
+      return executeStatementAsync(
+          callType,
+          statement,
+          () -> {
+            checkAborted();
+            return DirectExecuteResultSet.ofResultSet(
+                internalExecuteQuery(statement, analyzeMode, options));
+          },
+          SpannerGrpc.getExecuteStreamingSqlMethod());
+    }
   }
 
   ResultSet internalExecuteQuery(
