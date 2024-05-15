@@ -29,6 +29,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.SpannerOptions.SpannerEnvironment;
 import com.google.cloud.spanner.connection.RandomResultSetGenerator;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
@@ -406,6 +407,46 @@ public class OpenTelemetryApiTracerTest extends AbstractMockServerTest {
     assertContainsEvent("Starting poll attempt 0", updateDatabaseDdlOperation.getEvents());
     assertContainsEvent("Polling completed", updateDatabaseDdlOperation.getEvents());
     assertEquals(StatusCode.ERROR, updateDatabaseDdlOperation.getStatus().getStatusCode());
+  }
+
+  @Test
+  public void testEnableWithEnvVar() {
+    SpannerOptions.useEnvironment(
+        new SpannerEnvironment() {
+          @Override
+          public boolean isEnableApiTracing() {
+            return true;
+          }
+        });
+    // Create a Spanner instance without explicitly enabling API tracing.
+    Spanner spanner =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setChannelProvider(channelProvider)
+            .setCredentials(NoCredentials.getInstance())
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setWaitForMinSessions(Duration.ofSeconds(5L))
+                    .setFailOnSessionLeak()
+                    .build())
+            .build()
+            .getService();
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+
+    try (ResultSet resultSet = client.singleUse().executeQuery(SELECT_RANDOM)) {
+      assertTrue(resultSet.next());
+      assertFalse(resultSet.next());
+    }
+
+    assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    assertContains("CloudSpanner.ReadOnlyTransaction", spans);
+    assertContains("CloudSpannerOperation.ExecuteStreamingQuery", spans);
+    assertContains("Spanner.ExecuteStreamingSql", spans);
+    assertParent(
+        "CloudSpanner.ReadOnlyTransaction", "CloudSpannerOperation.ExecuteStreamingQuery", spans);
+    assertParent(
+        "CloudSpannerOperation.ExecuteStreamingQuery", "Spanner.ExecuteStreamingSql", spans);
   }
 
   void assertContains(String expected, List<SpanData> spans) {

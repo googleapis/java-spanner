@@ -690,6 +690,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default boolean isEnableExtendedTracing() {
       return false;
     }
+
+    default boolean isEnableApiTracing() {
+      return false;
+    }
   }
 
   /**
@@ -702,6 +706,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private static final String SPANNER_OPTIMIZER_STATISTICS_PACKAGE_ENV_VAR =
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
+    private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
 
     private SpannerEnvironmentImpl() {}
 
@@ -721,6 +726,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableExtendedTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_EXTENDED_TRACING));
+    }
+
+    @Override
+    public boolean isEnableApiTracing() {
+      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_API_TRACING));
     }
   }
 
@@ -785,7 +795,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private DirectedReadOptions directedReadOptions;
     private boolean useVirtualThreads = false;
     private OpenTelemetry openTelemetry;
-    private boolean enableApiTracing = false;
+    private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
 
     private static String createCustomClientLibToken(String token) {

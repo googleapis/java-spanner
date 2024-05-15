@@ -769,7 +769,7 @@ public class OpenTelemetrySpanTest {
         .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
 
     assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
-    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 9 : 7;
+    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 10 : 8;
     waitForFinishedSpans(numExpectedSpans);
     List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     List<String> finishedSpanNames =
