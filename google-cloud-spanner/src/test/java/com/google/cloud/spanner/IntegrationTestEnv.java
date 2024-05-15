@@ -17,6 +17,7 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -26,6 +27,7 @@ import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -89,9 +91,17 @@ public class IntegrationTestEnv extends ExternalResource {
     config = configClass.newInstance();
   }
 
+  boolean isCloudDevel() {
+    return Objects.equals(
+        System.getProperty("spanner.gce.config.server_url"),
+        "https://staging-wrenchworks.sandbox.googleapis.com");
+  }
+
   @Override
   protected void before() throws Throwable {
     this.initializeConfig();
+    assumeFalse(alwaysCreateNewInstance && isCloudDevel());
+
     this.config.setUp();
 
     SpannerOptions options = config.spannerOptions();
