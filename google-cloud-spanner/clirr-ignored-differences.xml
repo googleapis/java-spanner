@@ -668,6 +668,13 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.cloud.spanner.connection.DdlInTransactionMode getDdlInTransactionMode()</method>
   </difference>
+  
+  <!-- Added extended tracing option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableExtendedTracing()</method>
+  </difference>
 
   <!-- Added ExcludeTxnFromChangeStreams -->
   <difference>

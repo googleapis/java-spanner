@@ -96,7 +96,7 @@ public class ITSessionPoolIntegrationTest {
               }
             },
             ((SpannerImpl) env.getTestHelper().getClient()).getSessionClient(db.getId()),
-            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
             OpenTelemetry.noop());
   }
 

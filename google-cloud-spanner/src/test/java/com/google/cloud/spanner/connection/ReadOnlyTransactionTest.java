@@ -50,6 +50,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.trace.Span;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -180,6 +181,7 @@ public class ReadOnlyTransactionTest {
         .setBatchClient(mock(BatchClient.class))
         .setReadOnlyStaleness(staleness)
         .withStatementExecutor(new StatementExecutor())
+        .setSpan(Span.getInvalid())
         .build();
   }
 
@@ -320,6 +322,7 @@ public class ReadOnlyTransactionTest {
             .setBatchClient(mock(BatchClient.class))
             .setReadOnlyStaleness(TimestampBound.strong())
             .withStatementExecutor(new StatementExecutor())
+            .setSpan(Span.getInvalid())
             .build();
     ResultSet expectedWithOptions = DirectExecuteResultSet.ofResultSet(resWithOptions);
     assertThat(

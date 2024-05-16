@@ -100,9 +100,12 @@ public class ConnectionOptions {
     }
 
     private static ConnectionProperty createBooleanProperty(
-        String name, String description, boolean defaultValue) {
+        String name, String description, Boolean defaultValue) {
       return new ConnectionProperty(
-          name, description, String.valueOf(defaultValue), BOOLEAN_VALUES);
+          name,
+          description,
+          defaultValue == null ? "" : String.valueOf(defaultValue),
+          BOOLEAN_VALUES);
     }
 
     private static ConnectionProperty createIntProperty(
@@ -195,6 +198,7 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_AUTO_PARTITION_MODE = false;
   private static final int DEFAULT_MAX_PARTITIONS = 0;
   private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
+  private static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -274,6 +278,8 @@ public class ConnectionOptions {
   public static final String MAX_PARTITIONS_PROPERTY_NAME = "maxPartitions";
   public static final String MAX_PARTITIONED_PARALLELISM_PROPERTY_NAME =
       "maxPartitionedParallelism";
+
+  public static final String ENABLE_EXTENDED_TRACING_PROPERTY_NAME = "enableExtendedTracing";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "
@@ -436,7 +442,13 @@ public class ConnectionOptions {
                       "The maximum number of partitions that will be executed in parallel "
                           + "for partitioned queries on this connection. Set this value to 0 to "
                           + "dynamically use the number of processors available in the runtime.",
-                      DEFAULT_MAX_PARTITIONED_PARALLELISM))));
+                      DEFAULT_MAX_PARTITIONED_PARALLELISM),
+                  ConnectionProperty.createBooleanProperty(
+                      ENABLE_EXTENDED_TRACING_PROPERTY_NAME,
+                      "Include the SQL string in the OpenTelemetry traces that are generated "
+                          + "by this connection. The SQL string is added as the standard OpenTelemetry "
+                          + "attribute 'db.statement'.",
+                      DEFAULT_ENABLE_EXTENDED_TRACING))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -508,6 +520,7 @@ public class ConnectionOptions {
         Collections.emptyList();
     private SpannerOptionsConfigurator configurator;
     private OpenTelemetry openTelemetry;
+    private String tracingPrefix;
 
     private Builder() {}
 
@@ -662,6 +675,11 @@ public class ConnectionOptions {
       return this;
     }
 
+    public Builder setTracingPrefix(String tracingPrefix) {
+      this.tracingPrefix = tracingPrefix;
+      return this;
+    }
+
     /** @return the {@link ConnectionOptions} */
     public ConnectionOptions build() {
       Preconditions.checkState(this.uri != null, "Connection URI is required");
@@ -723,6 +741,8 @@ public class ConnectionOptions {
   private final boolean useVirtualThreads;
   private final boolean useVirtualGrpcTransportThreads;
   private final OpenTelemetry openTelemetry;
+  private final String tracingPrefix;
+  private final Boolean enableExtendedTracing;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -829,6 +849,8 @@ public class ConnectionOptions {
     this.useVirtualThreads = parseUseVirtualThreads(this.uri);
     this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
     this.openTelemetry = builder.openTelemetry;
+    this.tracingPrefix = builder.tracingPrefix;
+    this.enableExtendedTracing = parseEnableExtendedTracing(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -906,6 +928,15 @@ public class ConnectionOptions {
    */
   OpenTelemetry getOpenTelemetry() {
     return this.openTelemetry;
+  }
+
+  /**
+   * @return The prefix that will be added to all traces that are started by the Connection API.
+   *     This property is used by for example the JDBC driver to make sure all traces start with
+   *     CloudSpannerJdbc.
+   */
+  String getTracingPrefix() {
+    return this.tracingPrefix;
   }
 
   SpannerOptionsConfigurator getConfigurator() {
@@ -1215,6 +1246,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static Boolean parseEnableExtendedTracing(String uri) {
+    String value = parseUriProperty(uri, ENABLE_EXTENDED_TRACING_PROPERTY_NAME);
+    return value != null ? Boolean.valueOf(value) : DEFAULT_ENABLE_EXTENDED_TRACING;
+  }
+
+  @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
     Matcher matcher = pattern.matcher(uri);
@@ -1515,6 +1552,10 @@ public class ConnectionOptions {
 
   int getMaxPartitionedParallelism() {
     return this.maxPartitionedParallelism;
+  }
+
+  Boolean isEnableExtendedTracing() {
+    return this.enableExtendedTracing;
   }
 
   /** Interceptors that should be executed after each statement */

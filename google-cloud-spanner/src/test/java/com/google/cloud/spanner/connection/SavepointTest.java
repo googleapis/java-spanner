@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.AbstractMultiUseTransaction.Savepoint;
 import com.google.common.collect.ImmutableList;
+import io.opentelemetry.api.trace.Span;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -32,7 +33,10 @@ import org.junit.runners.JUnit4;
 public class SavepointTest {
   static class TestTransaction extends ReadOnlyTransaction {
     TestTransaction() {
-      super(ReadOnlyTransaction.newBuilder().withStatementExecutor(mock(StatementExecutor.class)));
+      super(
+          ReadOnlyTransaction.newBuilder()
+              .setSpan(Span.getInvalid())
+              .withStatementExecutor(mock(StatementExecutor.class)));
     }
   }
 

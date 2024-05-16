@@ -92,7 +92,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(session -> session.writeWithOptions(mutations, options));
     } catch (RuntimeException e) {
@@ -112,7 +112,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(
           session -> session.writeAtLeastOnceWithOptions(mutations, options));
@@ -128,7 +128,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
       final Iterable<MutationGroup> mutationGroups, final TransactionOption... options)
       throws SpannerException {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(session -> session.batchWriteAtLeastOnce(mutationGroups, options));
     } catch (RuntimeException e) {
@@ -213,7 +213,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return getSession().readWriteTransaction(options);
     } catch (RuntimeException e) {
@@ -225,7 +225,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public TransactionManager transactionManager(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return getSession().transactionManager(options);
     } catch (RuntimeException e) {
@@ -237,7 +237,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncRunner runAsync(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return getSession().runAsync(options);
     } catch (RuntimeException e) {
@@ -249,7 +249,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public AsyncTransactionManager transactionManagerAsync(TransactionOption... options) {
-    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION);
+    ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return getSession().transactionManagerAsync(options);
     } catch (RuntimeException e) {
