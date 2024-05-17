@@ -96,7 +96,7 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  boolean isSingleUse() {
+  public boolean isSingleUse() {
     return false;
   }
 

@@ -97,7 +97,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  boolean isSingleUse() {
+  public boolean isSingleUse() {
     return false;
   }
 
