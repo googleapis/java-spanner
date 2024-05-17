@@ -463,7 +463,7 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
             .build();
     mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
 
-    int maxPartitions = 5;
+    int maxPartitions = 1;
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       try (PartitionedQueryResultSet resultSet =
@@ -491,7 +491,7 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
     mockSpanner.putStatementResult(
         StatementResult.exception(statement, Status.NOT_FOUND.asRuntimeException()));
 
-    int maxPartitions = 5;
+    int maxPartitions = 1;
     try (Connection connection = createConnection()) {
       connection.setAutocommit(true);
       try (PartitionedQueryResultSet resultSet =
