@@ -70,17 +70,10 @@ public class ITProtoColumnTest {
   private static DatabaseAdminClient dbAdminClient;
   private static DatabaseClient databaseClient;
 
-  public static boolean isUsingAllowlistedProject() {
-    String projectId = System.getProperty("spanner.gce.config.project_id", "");
-    return projectId.equalsIgnoreCase("gcloud-devel")
-        || projectId.equalsIgnoreCase("span-cloud-testing");
-  }
-
   @BeforeClass
   public static void setUpDatabase() throws Exception {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
-    assumeTrue("Proto Column is not yet enabled in production", isUsingAllowlistedProject());
     RemoteSpannerHelper testHelper = env.getTestHelper();
     databaseID = DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId());
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
@@ -101,15 +94,15 @@ public class ITProtoColumnTest {
                 databaseToCreate,
                 Arrays.asList(
                     "CREATE PROTO BUNDLE ("
-                        + "spanner.examples.music.SingerInfo,"
-                        + "spanner.examples.music.Genre,"
+                        + "examples.spanner.music.SingerInfo,"
+                        + "examples.spanner.music.Genre,"
                         + ")",
                     "CREATE TABLE Singers ("
                         + "  SingerId   INT64 NOT NULL,"
                         + "  FirstName  STRING(1024),"
                         + "  LastName   STRING(1024),"
-                        + "  SingerInfo spanner.examples.music.SingerInfo,"
-                        + "  SingerGenre spanner.examples.music.Genre,"
+                        + "  SingerInfo examples.spanner.music.SingerInfo,"
+                        + "  SingerGenre examples.spanner.music.Genre,"
                         + "  SingerNationality STRING(1024) AS (SingerInfo.nationality) STORED,"
                         + "  ) PRIMARY KEY (SingerNationality, SingerGenre)",
                     "CREATE TABLE Types ("
@@ -118,10 +111,10 @@ public class ITProtoColumnTest {
                         + "  Bytes BYTES(MAX),"
                         + "  Int64Array ARRAY<INT64>,"
                         + "  BytesArray ARRAY<BYTES(MAX)>,"
-                        + "  ProtoMessage    spanner.examples.music.SingerInfo,"
-                        + "  ProtoEnum   spanner.examples.music.Genre,"
-                        + "  ProtoMessageArray   ARRAY<spanner.examples.music.SingerInfo>,"
-                        + "  ProtoEnumArray  ARRAY<spanner.examples.music.Genre>,"
+                        + "  ProtoMessage    examples.spanner.music.SingerInfo,"
+                        + "  ProtoEnum   examples.spanner.music.Genre,"
+                        + "  ProtoMessageArray   ARRAY<examples.spanner.music.SingerInfo>,"
+                        + "  ProtoEnumArray  ARRAY<examples.spanner.music.Genre>,"
                         + "  ) PRIMARY KEY (RowID)",
                     "CREATE INDEX SingerByNationalityAndGenre ON Singers(SingerNationality, SingerGenre)"
                         + "  STORING (SingerId, FirstName, LastName)"))
@@ -139,7 +132,7 @@ public class ITProtoColumnTest {
   @AfterClass
   public static void afterClass() throws Exception {
     try {
-      if (!isUsingEmulator() && isUsingAllowlistedProject()) {
+      if (!isUsingEmulator()) {
         dbAdminClient.dropDatabase(
             databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
       }
@@ -169,7 +162,6 @@ public class ITProtoColumnTest {
   public void testProtoColumnsUpdateAndRead() {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
-    assumeTrue("Proto Column is not yet enabled in production", isUsingAllowlistedProject());
     SingerInfo singerInfo =
         SingerInfo.newBuilder().setSingerId(1).setNationality("Country1").build();
     ByteArray singerInfoBytes = ByteArray.copyFrom(singerInfo.toByteArray());
@@ -277,7 +269,6 @@ public class ITProtoColumnTest {
   public void testProtoColumnsDMLParameterizedQueriesPKAndIndexes() {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
-    assumeTrue("Proto Column is not yet enabled in production", isUsingAllowlistedProject());
 
     SingerInfo singerInfo1 =
         SingerInfo.newBuilder().setSingerId(1).setNationality("Country1").build();
@@ -384,7 +375,6 @@ public class ITProtoColumnTest {
   public void testProtoMessageDeserializationError() {
     assumeFalse(
         "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
-    assumeTrue("Proto Column is not yet enabled in production", isUsingAllowlistedProject());
 
     SingerInfo singerInfo =
         SingerInfo.newBuilder().setSingerId(1).setNationality("Country1").build();
