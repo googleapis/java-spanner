@@ -22,61 +22,37 @@ package com.google.cloud.spanner;
 
 public final class SingerProto {
   private SingerProto() {}
-  public static void registerAllExtensions(
-      com.google.protobuf.ExtensionRegistryLite registry) {
-  }
 
-  public static void registerAllExtensions(
-      com.google.protobuf.ExtensionRegistry registry) {
-    registerAllExtensions(
-        (com.google.protobuf.ExtensionRegistryLite) registry);
+  public static void registerAllExtensions(com.google.protobuf.ExtensionRegistryLite registry) {}
+
+  public static void registerAllExtensions(com.google.protobuf.ExtensionRegistry registry) {
+    registerAllExtensions((com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  /**
-   * Protobuf enum {@code examples.spanner.music.Genre}
-   */
-  public enum Genre
-      implements com.google.protobuf.ProtocolMessageEnum {
-    /**
-     * <code>POP = 0;</code>
-     */
+  /** Protobuf enum {@code examples.spanner.music.Genre} */
+  public enum Genre implements com.google.protobuf.ProtocolMessageEnum {
+    /** <code>POP = 0;</code> */
     POP(0),
-    /**
-     * <code>JAZZ = 1;</code>
-     */
+    /** <code>JAZZ = 1;</code> */
     JAZZ(1),
-    /**
-     * <code>FOLK = 2;</code>
-     */
+    /** <code>FOLK = 2;</code> */
     FOLK(2),
-    /**
-     * <code>ROCK = 3;</code>
-     */
+    /** <code>ROCK = 3;</code> */
     ROCK(3),
     UNRECOGNIZED(-1),
     ;
 
-    /**
-     * <code>POP = 0;</code>
-     */
+    /** <code>POP = 0;</code> */
     public static final int POP_VALUE = 0;
-    /**
-     * <code>JAZZ = 1;</code>
-     */
+    /** <code>JAZZ = 1;</code> */
     public static final int JAZZ_VALUE = 1;
-    /**
-     * <code>FOLK = 2;</code>
-     */
+    /** <code>FOLK = 2;</code> */
     public static final int FOLK_VALUE = 2;
-    /**
-     * <code>ROCK = 3;</code>
-     */
+    /** <code>ROCK = 3;</code> */
     public static final int ROCK_VALUE = 3;
-
 
     public final int getNumber() {
       if (this == UNRECOGNIZED) {
-        throw new IllegalArgumentException(
-            "Can't get the number of an unknown enum value.");
+        throw new IllegalArgumentException("Can't get the number of an unknown enum value.");
       }
       return value;
     }
@@ -97,50 +73,50 @@ public final class SingerProto {
      */
     public static Genre forNumber(int value) {
       switch (value) {
-        case 0: return POP;
-        case 1: return JAZZ;
-        case 2: return FOLK;
-        case 3: return ROCK;
-        default: return null;
+        case 0:
+          return POP;
+        case 1:
+          return JAZZ;
+        case 2:
+          return FOLK;
+        case 3:
+          return ROCK;
+        default:
+          return null;
       }
     }
 
-    public static com.google.protobuf.Internal.EnumLiteMap<Genre>
-        internalGetValueMap() {
+    public static com.google.protobuf.Internal.EnumLiteMap<Genre> internalGetValueMap() {
       return internalValueMap;
     }
-    private static final com.google.protobuf.Internal.EnumLiteMap<
-        Genre> internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<Genre>() {
-            public Genre findValueByNumber(int number) {
-              return Genre.forNumber(number);
-            }
-          };
 
-    public final com.google.protobuf.Descriptors.EnumValueDescriptor
-        getValueDescriptor() {
+    private static final com.google.protobuf.Internal.EnumLiteMap<Genre> internalValueMap =
+        new com.google.protobuf.Internal.EnumLiteMap<Genre>() {
+          public Genre findValueByNumber(int number) {
+            return Genre.forNumber(number);
+          }
+        };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
       if (this == UNRECOGNIZED) {
-        throw new IllegalStateException(
-            "Can't get the descriptor of an unrecognized enum value.");
+        throw new IllegalStateException("Can't get the descriptor of an unrecognized enum value.");
       }
       return getDescriptor().getValues().get(ordinal());
     }
-    public final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptorForType() {
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
       return getDescriptor();
     }
-    public static final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptor() {
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
       return SingerProto.getDescriptor().getEnumTypes().get(0);
     }
 
     private static final Genre[] VALUES = values();
 
-    public static Genre valueOf(
-        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+    public static Genre valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
       if (desc.getType() != getDescriptor()) {
-        throw new IllegalArgumentException(
-          "EnumValueDescriptor is not for this type.");
+        throw new IllegalArgumentException("EnumValueDescriptor is not for this type.");
       }
       if (desc.getIndex() == -1) {
         return UNRECOGNIZED;
@@ -157,83 +133,92 @@ public final class SingerProto {
     // @@protoc_insertion_point(enum_scope:examples.spanner.music.Genre)
   }
 
-  public interface SingerInfoOrBuilder extends
+  public interface SingerInfoOrBuilder
+      extends
       // @@protoc_insertion_point(interface_extends:examples.spanner.music.SingerInfo)
       com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>optional int64 singer_id = 1;</code>
+     *
      * @return Whether the singerId field is set.
      */
     boolean hasSingerId();
     /**
      * <code>optional int64 singer_id = 1;</code>
+     *
      * @return The singerId.
      */
     long getSingerId();
 
     /**
      * <code>optional string birth_date = 2;</code>
+     *
      * @return Whether the birthDate field is set.
      */
     boolean hasBirthDate();
     /**
      * <code>optional string birth_date = 2;</code>
+     *
      * @return The birthDate.
      */
     String getBirthDate();
     /**
      * <code>optional string birth_date = 2;</code>
+     *
      * @return The bytes for birthDate.
      */
-    com.google.protobuf.ByteString
-        getBirthDateBytes();
+    com.google.protobuf.ByteString getBirthDateBytes();
 
     /**
      * <code>optional string nationality = 3;</code>
+     *
      * @return Whether the nationality field is set.
      */
     boolean hasNationality();
     /**
      * <code>optional string nationality = 3;</code>
+     *
      * @return The nationality.
      */
     String getNationality();
     /**
      * <code>optional string nationality = 3;</code>
+     *
      * @return The bytes for nationality.
      */
-    com.google.protobuf.ByteString
-        getNationalityBytes();
+    com.google.protobuf.ByteString getNationalityBytes();
 
     /**
      * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+     *
      * @return Whether the genre field is set.
      */
     boolean hasGenre();
     /**
      * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+     *
      * @return The enum numeric value on the wire for genre.
      */
     int getGenreValue();
     /**
      * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+     *
      * @return The genre.
      */
     Genre getGenre();
   }
-  /**
-   * Protobuf type {@code examples.spanner.music.SingerInfo}
-   */
-  public static final class SingerInfo extends
-      com.google.protobuf.GeneratedMessageV3 implements
+  /** Protobuf type {@code examples.spanner.music.SingerInfo} */
+  public static final class SingerInfo extends com.google.protobuf.GeneratedMessageV3
+      implements
       // @@protoc_insertion_point(message_implements:examples.spanner.music.SingerInfo)
       SingerInfoOrBuilder {
-  private static final long serialVersionUID = 0L;
+    private static final long serialVersionUID = 0L;
     // Use SingerInfo.newBuilder() to construct.
     private SingerInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
+
     private SingerInfo() {
       birthDate_ = "";
       nationality_ = "";
@@ -242,22 +227,18 @@ public final class SingerProto {
 
     @Override
     @SuppressWarnings({"unused"})
-    protected Object newInstance(
-        UnusedPrivateParameter unused) {
+    protected Object newInstance(UnusedPrivateParameter unused) {
       return new SingerInfo();
     }
 
-    public static final com.google.protobuf.Descriptors.Descriptor
-        getDescriptor() {
+    public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return SingerProto.internal_static_examples_spanner_music_SingerInfo_descriptor;
     }
 
     @Override
-    protected FieldAccessorTable
-        internalGetFieldAccessorTable() {
+    protected FieldAccessorTable internalGetFieldAccessorTable() {
       return SingerProto.internal_static_examples_spanner_music_SingerInfo_fieldAccessorTable
-          .ensureFieldAccessorsInitialized(
-              SingerInfo.class, Builder.class);
+          .ensureFieldAccessorsInitialized(SingerInfo.class, Builder.class);
     }
 
     private int bitField0_;
@@ -265,6 +246,7 @@ public final class SingerProto {
     private long singerId_ = 0L;
     /**
      * <code>optional int64 singer_id = 1;</code>
+     *
      * @return Whether the singerId field is set.
      */
     @Override
@@ -273,6 +255,7 @@ public final class SingerProto {
     }
     /**
      * <code>optional int64 singer_id = 1;</code>
+     *
      * @return The singerId.
      */
     @Override
@@ -281,10 +264,12 @@ public final class SingerProto {
     }
 
     public static final int BIRTH_DATE_FIELD_NUMBER = 2;
+
     @SuppressWarnings("serial")
     private volatile Object birthDate_ = "";
     /**
      * <code>optional string birth_date = 2;</code>
+     *
      * @return Whether the birthDate field is set.
      */
     @Override
@@ -293,6 +278,7 @@ public final class SingerProto {
     }
     /**
      * <code>optional string birth_date = 2;</code>
+     *
      * @return The birthDate.
      */
     @Override
@@ -301,8 +287,7 @@ public final class SingerProto {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         birthDate_ = s;
         return s;
@@ -310,16 +295,15 @@ public final class SingerProto {
     }
     /**
      * <code>optional string birth_date = 2;</code>
+     *
      * @return The bytes for birthDate.
      */
     @Override
-    public com.google.protobuf.ByteString
-        getBirthDateBytes() {
+    public com.google.protobuf.ByteString getBirthDateBytes() {
       Object ref = birthDate_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b =
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
         birthDate_ = b;
         return b;
       } else {
@@ -328,10 +312,12 @@ public final class SingerProto {
     }
 
     public static final int NATIONALITY_FIELD_NUMBER = 3;
+
     @SuppressWarnings("serial")
     private volatile Object nationality_ = "";
     /**
      * <code>optional string nationality = 3;</code>
+     *
      * @return Whether the nationality field is set.
      */
     @Override
@@ -340,6 +326,7 @@ public final class SingerProto {
     }
     /**
      * <code>optional string nationality = 3;</code>
+     *
      * @return The nationality.
      */
     @Override
@@ -348,8 +335,7 @@ public final class SingerProto {
       if (ref instanceof String) {
         return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
         nationality_ = s;
         return s;
@@ -357,16 +343,15 @@ public final class SingerProto {
     }
     /**
      * <code>optional string nationality = 3;</code>
+     *
      * @return The bytes for nationality.
      */
     @Override
-    public com.google.protobuf.ByteString
-        getNationalityBytes() {
+    public com.google.protobuf.ByteString getNationalityBytes() {
       Object ref = nationality_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b =
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
         nationality_ = b;
         return b;
       } else {
@@ -378,28 +363,35 @@ public final class SingerProto {
     private int genre_ = 0;
     /**
      * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+     *
      * @return Whether the genre field is set.
      */
-    @Override public boolean hasGenre() {
+    @Override
+    public boolean hasGenre() {
       return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+     *
      * @return The enum numeric value on the wire for genre.
      */
-    @Override public int getGenreValue() {
+    @Override
+    public int getGenreValue() {
       return genre_;
     }
     /**
      * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+     *
      * @return The genre.
      */
-    @Override public Genre getGenre() {
+    @Override
+    public Genre getGenre() {
       Genre result = Genre.forNumber(genre_);
       return result == null ? Genre.UNRECOGNIZED : result;
     }
 
     private byte memoizedIsInitialized = -1;
+
     @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -411,8 +403,7 @@ public final class SingerProto {
     }
 
     @Override
-    public void writeTo(com.google.protobuf.CodedOutputStream output)
-                        throws java.io.IOException {
+    public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
         output.writeInt64(1, singerId_);
       }
@@ -435,8 +426,7 @@ public final class SingerProto {
 
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(1, singerId_);
+        size += com.google.protobuf.CodedOutputStream.computeInt64Size(1, singerId_);
       }
       if (((bitField0_ & 0x00000002) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, birthDate_);
@@ -445,8 +435,7 @@ public final class SingerProto {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, nationality_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(4, genre_);
+        size += com.google.protobuf.CodedOutputStream.computeEnumSize(4, genre_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -456,7 +445,7 @@ public final class SingerProto {
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
-       return true;
+        return true;
       }
       if (!(obj instanceof SingerInfo)) {
         return super.equals(obj);
@@ -465,18 +454,15 @@ public final class SingerProto {
 
       if (hasSingerId() != other.hasSingerId()) return false;
       if (hasSingerId()) {
-        if (getSingerId()
-            != other.getSingerId()) return false;
+        if (getSingerId() != other.getSingerId()) return false;
       }
       if (hasBirthDate() != other.hasBirthDate()) return false;
       if (hasBirthDate()) {
-        if (!getBirthDate()
-            .equals(other.getBirthDate())) return false;
+        if (!getBirthDate().equals(other.getBirthDate())) return false;
       }
       if (hasNationality() != other.hasNationality()) return false;
       if (hasNationality()) {
-        if (!getNationality()
-            .equals(other.getNationality())) return false;
+        if (!getNationality().equals(other.getNationality())) return false;
       }
       if (hasGenre() != other.hasGenre()) return false;
       if (hasGenre()) {
@@ -495,8 +481,7 @@ public final class SingerProto {
       hash = (19 * hash) + getDescriptor().hashCode();
       if (hasSingerId()) {
         hash = (37 * hash) + SINGER_ID_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getSingerId());
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getSingerId());
       }
       if (hasBirthDate()) {
         hash = (37 * hash) + BIRTH_DATE_FIELD_NUMBER;
@@ -515,128 +500,122 @@ public final class SingerProto {
       return hash;
     }
 
-    public static SingerInfo parseFrom(
-        java.nio.ByteBuffer data)
+    public static SingerInfo parseFrom(java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
+
     public static SingerInfo parseFrom(
-        java.nio.ByteBuffer data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SingerInfo parseFrom(
-        com.google.protobuf.ByteString data)
+
+    public static SingerInfo parseFrom(com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
+
     public static SingerInfo parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
+
     public static SingerInfo parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
+
     public static SingerInfo parseFrom(
-        byte[] data,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SingerInfo parseFrom(java.io.InputStream input)
-        throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
+
+    public static SingerInfo parseFrom(java.io.InputStream input) throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
+
     public static SingerInfo parseFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
     }
 
     public static SingerInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input);
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
     }
 
     public static SingerInfo parseDelimitedFrom(
-        java.io.InputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
+          PARSER, input, extensionRegistry);
     }
-    public static SingerInfo parseFrom(
-        com.google.protobuf.CodedInputStream input)
+
+    public static SingerInfo parseFrom(com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input);
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
     }
+
     public static SingerInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return com.google.protobuf.GeneratedMessageV3
-          .parseWithIOException(PARSER, input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
+          PARSER, input, extensionRegistry);
     }
 
     @Override
-    public Builder newBuilderForType() { return newBuilder(); }
+    public Builder newBuilderForType() {
+      return newBuilder();
+    }
+
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
+
     public static Builder newBuilder(SingerInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+
     @Override
     public Builder toBuilder() {
-      return this == DEFAULT_INSTANCE
-          ? new Builder() : new Builder().mergeFrom(this);
+      return this == DEFAULT_INSTANCE ? new Builder() : new Builder().mergeFrom(this);
     }
 
     @Override
-    protected Builder newBuilderForType(
-        BuilderParent parent) {
+    protected Builder newBuilderForType(BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
-    /**
-     * Protobuf type {@code examples.spanner.music.SingerInfo}
-     */
-    public static final class Builder extends
-        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+    /** Protobuf type {@code examples.spanner.music.SingerInfo} */
+    public static final class Builder
+        extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
+        implements
         // @@protoc_insertion_point(builder_implements:examples.spanner.music.SingerInfo)
         SingerInfoOrBuilder {
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
+      public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
         return SingerProto.internal_static_examples_spanner_music_SingerInfo_descriptor;
       }
 
       @Override
-      protected FieldAccessorTable
-          internalGetFieldAccessorTable() {
+      protected FieldAccessorTable internalGetFieldAccessorTable() {
         return SingerProto.internal_static_examples_spanner_music_SingerInfo_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                SingerInfo.class, Builder.class);
+            .ensureFieldAccessorsInitialized(SingerInfo.class, Builder.class);
       }
 
       // Construct using com.google.cloud.spanner.SingerProto.SingerInfo.newBuilder()
-      private Builder() {
+      private Builder() {}
 
-      }
-
-      private Builder(
-          BuilderParent parent) {
+      private Builder(BuilderParent parent) {
         super(parent);
-
       }
+
       @Override
       public Builder clear() {
         super.clear();
@@ -649,8 +628,7 @@ public final class SingerProto {
       }
 
       @Override
-      public com.google.protobuf.Descriptors.Descriptor
-          getDescriptorForType() {
+      public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
         return SingerProto.internal_static_examples_spanner_music_SingerInfo_descriptor;
       }
 
@@ -671,7 +649,9 @@ public final class SingerProto {
       @Override
       public SingerInfo buildPartial() {
         SingerInfo result = new SingerInfo(this);
-        if (bitField0_ != 0) { buildPartial0(result); }
+        if (bitField0_ != 0) {
+          buildPartial0(result);
+        }
         onBuilt();
         return result;
       }
@@ -702,38 +682,38 @@ public final class SingerProto {
       public Builder clone() {
         return super.clone();
       }
+
       @Override
-      public Builder setField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+      public Builder setField(com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
         return super.setField(field, value);
       }
+
       @Override
-      public Builder clearField(
-          com.google.protobuf.Descriptors.FieldDescriptor field) {
+      public Builder clearField(com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
+
       @Override
-      public Builder clearOneof(
-          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+      public Builder clearOneof(com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
+
       @Override
       public Builder setRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field, int index, Object value) {
         return super.setRepeatedField(field, index, value);
       }
+
       @Override
       public Builder addRepeatedField(
-          com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          com.google.protobuf.Descriptors.FieldDescriptor field, Object value) {
         return super.addRepeatedField(field, value);
       }
+
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof SingerInfo) {
-          return mergeFrom((SingerInfo)other);
+          return mergeFrom((SingerInfo) other);
         } else {
           super.mergeFrom(other);
           return this;
@@ -784,32 +764,37 @@ public final class SingerProto {
               case 0:
                 done = true;
                 break;
-              case 8: {
-                singerId_ = input.readInt64();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 8
-              case 18: {
-                birthDate_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
-              case 26: {
-                nationality_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000004;
-                break;
-              } // case 26
-              case 32: {
-                genre_ = input.readEnum();
-                bitField0_ |= 0x00000008;
-                break;
-              } // case 32
-              default: {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
+              case 8:
+                {
+                  singerId_ = input.readInt64();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 8
+              case 18:
+                {
+                  birthDate_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
+              case 26:
+                {
+                  nationality_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000004;
+                  break;
+                } // case 26
+              case 32:
+                {
+                  genre_ = input.readEnum();
+                  bitField0_ |= 0x00000008;
+                  break;
+                } // case 32
+              default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
             } // switch (tag)
           } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -819,11 +804,13 @@ public final class SingerProto {
         } // finally
         return this;
       }
+
       private int bitField0_;
 
-      private long singerId_ ;
+      private long singerId_;
       /**
        * <code>optional int64 singer_id = 1;</code>
+       *
        * @return Whether the singerId field is set.
        */
       @Override
@@ -832,6 +819,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional int64 singer_id = 1;</code>
+       *
        * @return The singerId.
        */
       @Override
@@ -840,6 +828,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional int64 singer_id = 1;</code>
+       *
        * @param value The singerId to set.
        * @return This builder for chaining.
        */
@@ -852,6 +841,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional int64 singer_id = 1;</code>
+       *
        * @return This builder for chaining.
        */
       public Builder clearSingerId() {
@@ -864,6 +854,7 @@ public final class SingerProto {
       private Object birthDate_ = "";
       /**
        * <code>optional string birth_date = 2;</code>
+       *
        * @return Whether the birthDate field is set.
        */
       public boolean hasBirthDate() {
@@ -871,13 +862,13 @@ public final class SingerProto {
       }
       /**
        * <code>optional string birth_date = 2;</code>
+       *
        * @return The birthDate.
        */
       public String getBirthDate() {
         Object ref = birthDate_;
         if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
+          com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
           String s = bs.toStringUtf8();
           birthDate_ = s;
           return s;
@@ -887,15 +878,14 @@ public final class SingerProto {
       }
       /**
        * <code>optional string birth_date = 2;</code>
+       *
        * @return The bytes for birthDate.
        */
-      public com.google.protobuf.ByteString
-          getBirthDateBytes() {
+      public com.google.protobuf.ByteString getBirthDateBytes() {
         Object ref = birthDate_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b =
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+              com.google.protobuf.ByteString.copyFromUtf8((String) ref);
           birthDate_ = b;
           return b;
         } else {
@@ -904,12 +894,14 @@ public final class SingerProto {
       }
       /**
        * <code>optional string birth_date = 2;</code>
+       *
        * @param value The birthDate to set.
        * @return This builder for chaining.
        */
-      public Builder setBirthDate(
-          String value) {
-        if (value == null) { throw new NullPointerException(); }
+      public Builder setBirthDate(String value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
         birthDate_ = value;
         bitField0_ |= 0x00000002;
         onChanged();
@@ -917,6 +909,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional string birth_date = 2;</code>
+       *
        * @return This builder for chaining.
        */
       public Builder clearBirthDate() {
@@ -927,12 +920,14 @@ public final class SingerProto {
       }
       /**
        * <code>optional string birth_date = 2;</code>
+       *
        * @param value The bytes for birthDate to set.
        * @return This builder for chaining.
        */
-      public Builder setBirthDateBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+      public Builder setBirthDateBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
         checkByteStringIsUtf8(value);
         birthDate_ = value;
         bitField0_ |= 0x00000002;
@@ -943,6 +938,7 @@ public final class SingerProto {
       private Object nationality_ = "";
       /**
        * <code>optional string nationality = 3;</code>
+       *
        * @return Whether the nationality field is set.
        */
       public boolean hasNationality() {
@@ -950,13 +946,13 @@ public final class SingerProto {
       }
       /**
        * <code>optional string nationality = 3;</code>
+       *
        * @return The nationality.
        */
       public String getNationality() {
         Object ref = nationality_;
         if (!(ref instanceof String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
+          com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
           String s = bs.toStringUtf8();
           nationality_ = s;
           return s;
@@ -966,15 +962,14 @@ public final class SingerProto {
       }
       /**
        * <code>optional string nationality = 3;</code>
+       *
        * @return The bytes for nationality.
        */
-      public com.google.protobuf.ByteString
-          getNationalityBytes() {
+      public com.google.protobuf.ByteString getNationalityBytes() {
         Object ref = nationality_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b =
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+              com.google.protobuf.ByteString.copyFromUtf8((String) ref);
           nationality_ = b;
           return b;
         } else {
@@ -983,12 +978,14 @@ public final class SingerProto {
       }
       /**
        * <code>optional string nationality = 3;</code>
+       *
        * @param value The nationality to set.
        * @return This builder for chaining.
        */
-      public Builder setNationality(
-          String value) {
-        if (value == null) { throw new NullPointerException(); }
+      public Builder setNationality(String value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
         nationality_ = value;
         bitField0_ |= 0x00000004;
         onChanged();
@@ -996,6 +993,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional string nationality = 3;</code>
+       *
        * @return This builder for chaining.
        */
       public Builder clearNationality() {
@@ -1006,12 +1004,14 @@ public final class SingerProto {
       }
       /**
        * <code>optional string nationality = 3;</code>
+       *
        * @param value The bytes for nationality to set.
        * @return This builder for chaining.
        */
-      public Builder setNationalityBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
+      public Builder setNationalityBytes(com.google.protobuf.ByteString value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
         checkByteStringIsUtf8(value);
         nationality_ = value;
         bitField0_ |= 0x00000004;
@@ -1022,20 +1022,25 @@ public final class SingerProto {
       private int genre_ = 0;
       /**
        * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+       *
        * @return Whether the genre field is set.
        */
-      @Override public boolean hasGenre() {
+      @Override
+      public boolean hasGenre() {
         return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+       *
        * @return The enum numeric value on the wire for genre.
        */
-      @Override public int getGenreValue() {
+      @Override
+      public int getGenreValue() {
         return genre_;
       }
       /**
        * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+       *
        * @param value The enum numeric value on the wire for genre to set.
        * @return This builder for chaining.
        */
@@ -1047,6 +1052,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+       *
        * @return The genre.
        */
       @Override
@@ -1056,6 +1062,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+       *
        * @param value The genre to set.
        * @return This builder for chaining.
        */
@@ -1070,6 +1077,7 @@ public final class SingerProto {
       }
       /**
        * <code>optional .examples.spanner.music.Genre genre = 4;</code>
+       *
        * @return This builder for chaining.
        */
       public Builder clearGenre() {
@@ -1078,6 +1086,7 @@ public final class SingerProto {
         onChanged();
         return this;
       }
+
       @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -1090,12 +1099,12 @@ public final class SingerProto {
         return super.mergeUnknownFields(unknownFields);
       }
 
-
       // @@protoc_insertion_point(builder_scope:examples.spanner.music.SingerInfo)
     }
 
     // @@protoc_insertion_point(class_scope:examples.spanner.music.SingerInfo)
     private static final SingerInfo DEFAULT_INSTANCE;
+
     static {
       DEFAULT_INSTANCE = new SingerInfo();
     }
@@ -1104,27 +1113,28 @@ public final class SingerProto {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<SingerInfo>
-        PARSER = new com.google.protobuf.AbstractParser<SingerInfo>() {
-      @Override
-      public SingerInfo parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
-        }
-        return builder.buildPartial();
-      }
-    };
+    private static final com.google.protobuf.Parser<SingerInfo> PARSER =
+        new com.google.protobuf.AbstractParser<SingerInfo>() {
+          @Override
+          public SingerInfo parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException()
+                  .setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
+          }
+        };
 
     public static com.google.protobuf.Parser<SingerInfo> parser() {
       return PARSER;
@@ -1139,43 +1149,42 @@ public final class SingerProto {
     public SingerInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
-
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_examples_spanner_music_SingerInfo_descriptor;
-  private static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_examples_spanner_music_SingerInfo_descriptor;
+  private static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_examples_spanner_music_SingerInfo_fieldAccessorTable;
 
-  public static com.google.protobuf.Descriptors.FileDescriptor
-      getDescriptor() {
+  public static com.google.protobuf.Descriptors.FileDescriptor getDescriptor() {
     return descriptor;
   }
-  private static  com.google.protobuf.Descriptors.FileDescriptor
-      descriptor;
+
+  private static com.google.protobuf.Descriptors.FileDescriptor descriptor;
+
   static {
     String[] descriptorData = {
-      "\n\014singer.proto\022\026examples.spanner.music\"\301" +
-      "\001\n\nSingerInfo\022\026\n\tsinger_id\030\001 \001(\003H\000\210\001\001\022\027\n" +
-      "\nbirth_date\030\002 \001(\tH\001\210\001\001\022\030\n\013nationality\030\003 " +
-      "\001(\tH\002\210\001\001\0221\n\005genre\030\004 \001(\0162\035.examples.spann" +
-      "er.music.GenreH\003\210\001\001B\014\n\n_singer_idB\r\n\013_bi" +
-      "rth_dateB\016\n\014_nationalityB\010\n\006_genre*.\n\005Ge" +
-      "nre\022\007\n\003POP\020\000\022\010\n\004JAZZ\020\001\022\010\n\004FOLK\020\002\022\010\n\004ROCK" +
-      "\020\003B)\n\030com.google.cloud.spannerB\013SingerPr" +
-      "otoP\000b\006proto3"
+      "\n\014singer.proto\022\026examples.spanner.music\"\301"
+          + "\001\n\nSingerInfo\022\026\n\tsinger_id\030\001 \001(\003H\000\210\001\001\022\027\n"
+          + "\nbirth_date\030\002 \001(\tH\001\210\001\001\022\030\n\013nationality\030\003 "
+          + "\001(\tH\002\210\001\001\0221\n\005genre\030\004 \001(\0162\035.examples.spann"
+          + "er.music.GenreH\003\210\001\001B\014\n\n_singer_idB\r\n\013_bi"
+          + "rth_dateB\016\n\014_nationalityB\010\n\006_genre*.\n\005Ge"
+          + "nre\022\007\n\003POP\020\000\022\010\n\004JAZZ\020\001\022\010\n\004FOLK\020\002\022\010\n\004ROCK"
+          + "\020\003B)\n\030com.google.cloud.spannerB\013SingerPr"
+          + "otoP\000b\006proto3"
     };
-    descriptor = com.google.protobuf.Descriptors.FileDescriptor
-      .internalBuildGeneratedFileFrom(descriptorData,
-        new com.google.protobuf.Descriptors.FileDescriptor[] {
-        });
+    descriptor =
+        com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
+            descriptorData, new com.google.protobuf.Descriptors.FileDescriptor[] {});
     internal_static_examples_spanner_music_SingerInfo_descriptor =
-      getDescriptor().getMessageTypes().get(0);
-    internal_static_examples_spanner_music_SingerInfo_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_examples_spanner_music_SingerInfo_descriptor,
-        new String[] { "SingerId", "BirthDate", "Nationality", "Genre", });
+        getDescriptor().getMessageTypes().get(0);
+    internal_static_examples_spanner_music_SingerInfo_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_examples_spanner_music_SingerInfo_descriptor,
+            new String[] {
+              "SingerId", "BirthDate", "Nationality", "Genre",
+            });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
