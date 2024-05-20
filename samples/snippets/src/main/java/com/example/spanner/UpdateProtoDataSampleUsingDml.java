@@ -65,8 +65,10 @@ class UpdateProtoDataSampleUsingDml {
             transaction -> {
               Statement statement1 =
                   Statement.newBuilder(
-                          "UPDATE Singers SET SingerInfo = @singerInfo,  SingerInfoArray=@singerInfoArray, "
-                              + "SingerGenre=@singerGenre, SingerGenreArray=@singerGenreArray WHERE SingerId = 1")
+                          "UPDATE Singers SET SingerInfo = @singerInfo,  "
+                              + "SingerInfoArray=@singerInfoArray, "
+                              + "SingerGenre=@singerGenre, SingerGenreArray=@singerGenreArray "
+                              + "WHERE SingerId = 1")
                       .bind("singerInfo")
                       .to(singerInfo)
                       .bind("singerInfoArray")
@@ -79,7 +81,8 @@ class UpdateProtoDataSampleUsingDml {
 
               Statement statement2 =
                   Statement.newBuilder(
-                          "UPDATE Singers SET SingerInfo.nationality = @singerNationality WHERE SingerId = 1")
+                          "UPDATE Singers SET SingerInfo.nationality = @singerNationality "
+                              + "WHERE SingerId = 1")
                       .bind("singerNationality")
                       .to("Country2")
                       .build();

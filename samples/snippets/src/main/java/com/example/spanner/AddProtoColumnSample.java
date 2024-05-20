@@ -59,9 +59,11 @@ class AddProtoColumnSample {
                           + "examples.spanner.music.Genre,"
                           + ")",
                       "ALTER TABLE Singers ADD COLUMN SingerInfo examples.spanner.music.SingerInfo",
-                      "ALTER TABLE Singers ADD COLUMN SingerInfoArray ARRAY<examples.spanner.music.SingerInfo>",
+                      "ALTER TABLE Singers ADD COLUMN "
+                          + "SingerInfoArray ARRAY<examples.spanner.music.SingerInfo>",
                       "ALTER TABLE Singers ADD COLUMN SingerGenre examples.spanner.music.Genre",
-                      "ALTER TABLE Singers ADD COLUMN SingerGenreArray ARRAY<examples.spanner.music.Genre>"))
+                      "ALTER TABLE Singers ADD COLUMN "
+                          + "SingerGenreArray ARRAY<examples.spanner.music.Genre>"))
               .setProtoDescriptors(ByteString.readFrom(in))
               .build();
       // Wait for the operation to finish.

@@ -45,7 +45,9 @@ class QueryWithProtoParameterSample {
   static void queryWithProtoParameter(DatabaseClient client) {
     Statement statement =
         Statement.newBuilder(
-                "SELECT SingerId, SingerInfo, SingerInfo.nationality, SingerInfoArray, SingerGenre, SingerGenreArray FROM Singers WHERE SingerInfo.nationality=@country and SingerGenre=@singerGenre")
+                "SELECT SingerId, SingerInfo, SingerInfo.nationality, SingerInfoArray, "
+                    + "SingerGenre, SingerGenreArray FROM Singers "
+                    + "WHERE SingerInfo.nationality=@country and SingerGenre=@singerGenre")
             .bind("country")
             .to("Country2")
             .bind("singerGenre")
