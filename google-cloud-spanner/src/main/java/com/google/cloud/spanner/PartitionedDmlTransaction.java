@@ -221,14 +221,6 @@ public class PartitionedDmlTransaction implements SessionImpl.SessionTransaction
   private void setParameters(
       final ExecuteSqlRequest.Builder requestBuilder,
       final Map<String, Value> statementParameters) {
-    if (!statementParameters.isEmpty()) {
-      com.google.protobuf.Struct.Builder paramsBuilder = requestBuilder.getParamsBuilder();
-      for (Map.Entry<String, Value> param : statementParameters.entrySet()) {
-        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-        if (param.getValue() != null && param.getValue().getType() != null) {
-          requestBuilder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
-        }
-      }
-    }
+    AbstractReadContext.addParameters(requestBuilder, statementParameters);
   }
 }

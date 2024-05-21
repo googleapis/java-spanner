@@ -99,6 +99,15 @@ class SessionImpl implements Session {
     void close();
   }
 
+  private static final Map<SpannerRpc.Option, ?>[] CHANNEL_HINT_OPTIONS =
+      new Map[SpannerOptions.MAX_CHANNELS];
+
+  static {
+    for (int i = 0; i < CHANNEL_HINT_OPTIONS.length; i++) {
+      CHANNEL_HINT_OPTIONS[i] = optionMap(SessionOption.channelHint(i));
+    }
+  }
+
   static final int NO_CHANNEL_HINT = -1;
 
   private final SpannerImpl spanner;
@@ -125,7 +134,7 @@ class SessionImpl implements Session {
     if (channelHint == NO_CHANNEL_HINT) {
       return sessionReference.getOptions();
     }
-    return optionMap(SessionOption.channelHint(channelHint));
+    return CHANNEL_HINT_OPTIONS[channelHint % CHANNEL_HINT_OPTIONS.length];
   }
 
   @Override
