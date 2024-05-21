@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package examples.spanner.music;
 
-option java_package = "com.google.cloud.spanner";
+option java_package = "com.example.spanner";
 option java_outer_classname = "SingerProto";
 option java_multiple_files = false;
 

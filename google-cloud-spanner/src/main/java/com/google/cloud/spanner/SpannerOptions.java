@@ -104,7 +104,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       ImmutableSet.of(
           "https://www.googleapis.com/auth/spanner.admin",
           "https://www.googleapis.com/auth/spanner.data");
-  private static final int MAX_CHANNELS = 256;
+  static final int MAX_CHANNELS = 256;
   @VisibleForTesting static final int DEFAULT_CHANNELS = 4;
   // Set the default number of channels to GRPC_GCP_ENABLED_DEFAULT_CHANNELS when gRPC-GCP extension
   // is enabled, to make sure there are sufficient channels available to move the sessions to a
