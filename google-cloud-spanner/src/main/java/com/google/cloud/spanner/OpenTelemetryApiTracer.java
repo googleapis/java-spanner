@@ -34,7 +34,9 @@ import org.threeten.bp.Duration;
  * com.google.api.gax.tracing.OpencensusTracer}.
  */
 class OpenTelemetryApiTracer implements ApiTracer {
+  /** The attribute keys that are used by this tracer might change in a future release. */
   private final AttributeKey<Long> ATTEMPT_COUNT_KEY = AttributeKey.longKey("attempt.count");
+
   private final AttributeKey<Long> TOTAL_REQUEST_COUNT_KEY =
       AttributeKey.longKey("total_request_count");
   private final AttributeKey<Long> TOTAL_RESPONSE_COUNT_KEY =
@@ -183,11 +185,9 @@ class OpenTelemetryApiTracer implements ApiTracer {
   }
 
   @Override
-  public void attemptFailedRetriesExhausted(Throwable error) {
+  public void attemptFailedRetriesExhausted(@Nonnull Throwable error) {
     AttributesBuilder builder = baseAttemptAttributesBuilder();
-    if (error != null) {
-      builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
-    }
+    builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
     Attributes attributes = builder.build();
 
     // Same infrastructure is used for both polling and retries, so need to disambiguate it here.
@@ -200,11 +200,9 @@ class OpenTelemetryApiTracer implements ApiTracer {
   }
 
   @Override
-  public void attemptPermanentFailure(Throwable error) {
+  public void attemptPermanentFailure(@Nonnull Throwable error) {
     AttributesBuilder builder = baseAttemptAttributesBuilder();
-    if (error != null) {
-      builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
-    }
+    builder.put(EXCEPTION_MESSAGE_KEY, error.getMessage());
     Attributes attributes = builder.build();
 
     // Same infrastructure is used for both polling and retries, so need to disambiguate it here.

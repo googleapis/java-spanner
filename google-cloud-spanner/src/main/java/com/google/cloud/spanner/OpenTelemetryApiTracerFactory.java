@@ -27,7 +27,7 @@ import io.opentelemetry.context.Context;
 import javax.annotation.Nonnull;
 
 /** {@link ApiTracerFactory} that can be used with OpenTelemetry tracing. */
-public class OpenTelemetryApiTracerFactory implements ApiTracerFactory {
+class OpenTelemetryApiTracerFactory implements ApiTracerFactory {
   @Nonnull private final Tracer internalTracer;
   @Nonnull private final Attributes spanAttributes;
 
