@@ -1,5 +1,23 @@
 # Changelog
 
+## [6.67.0](https://github.com/googleapis/java-spanner/compare/v6.66.0...v6.67.0) (2024-05-22)
+
+
+### Features
+
+* Add tracing for batchUpdate, executeUpdate, and connections ([#3097](https://github.com/googleapis/java-spanner/issues/3097)) ([45cdcfc](https://github.com/googleapis/java-spanner/commit/45cdcfcde02aa7976b017a90f81c2ccd28658c8f))
+
+
+### Performance Improvements
+
+* Minor optimizations to the standard query path ([#3101](https://github.com/googleapis/java-spanner/issues/3101)) ([ec820a1](https://github.com/googleapis/java-spanner/commit/ec820a16e2b3cb1a12a15231491b75cd73afaa13))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:google-cloud-monitoring to v3.44.0 ([#3099](https://github.com/googleapis/java-spanner/issues/3099)) ([da44e93](https://github.com/googleapis/java-spanner/commit/da44e932a39ac0124b63914f8ea926998c10ea2e))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.30.1 ([#3116](https://github.com/googleapis/java-spanner/issues/3116)) ([d205a73](https://github.com/googleapis/java-spanner/commit/d205a73714786a609673012b771e7a0722b3e1f2))
+
 ## [6.66.0](https://github.com/googleapis/java-spanner/compare/v6.65.1...v6.66.0) (2024-05-03)
 
 
