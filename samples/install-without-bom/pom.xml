@@ -24,7 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
     <trace.version>2.41.0</trace.version>
-    <cloudmonitoring.version>3.43.0</cloudmonitoring.version>
+    <cloudmonitoring.version>3.44.0</cloudmonitoring.version>
   </properties>
 
 
@@ -33,7 +33,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.65.1</version>
+      <version>6.66.0</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     
@@ -107,6 +107,11 @@
 
   <!-- compile and run all snippet tests -->
   <build>
+    <resources>
+      <resource>
+        <directory>../snippets/src/main/resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -143,8 +148,8 @@
         <version>3.2.5</version>
         <configuration>
           <systemPropertyVariables>
-            <spanner.test.instance>java-client-integration-test</spanner.test.instance>
-            <spanner.test.instance.mr>java-client-mr-integration-test</spanner.test.instance.mr>
+            <spanner.test.instance>java-client-integration-tests</spanner.test.instance>
+            <spanner.test.instance.mr>java-client-mr-integration-tests</spanner.test.instance.mr>
             <spanner.test.instance.config>nam11</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>java-client-integration-test-cmek-ring</spanner.test.key.ring>

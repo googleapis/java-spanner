@@ -34,7 +34,7 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>libraries-bom</artifactId>
-        <version>26.37.0</version>
+        <version>26.39.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -178,8 +178,8 @@
         <version>3.2.5</version>
         <configuration>
           <systemPropertyVariables>
-            <spanner.test.instance>java-client-integration-test</spanner.test.instance>
-            <spanner.test.instance.mr>java-client-mr-integration-test</spanner.test.instance.mr>
+            <spanner.test.instance>java-client-integration-tests</spanner.test.instance>
+            <spanner.test.instance.mr>java-client-mr-integration-tests</spanner.test.instance.mr>
             <spanner.test.instance.config>nam11</spanner.test.instance.config>
             <spanner.test.key.location>us-east1</spanner.test.key.location>
             <spanner.test.key.ring>java-client-integration-test-cmek-ring</spanner.test.key.ring>
@@ -187,6 +187,15 @@
             <spanner.sample.database>mysample</spanner.sample.database>
             <spanner.quickstart.database>quick-db</spanner.quickstart.database>
           </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.3.1</version>
+        <configuration>
+          <!-- exclude protoc generated file from checkstyle validation -->
+          <excludes>**/SingerProto.java</excludes>
         </configuration>
       </plugin>
     </plugins>
