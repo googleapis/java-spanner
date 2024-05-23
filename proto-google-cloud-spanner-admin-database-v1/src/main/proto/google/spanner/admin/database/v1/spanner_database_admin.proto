@@ -51,8 +51,8 @@ option (google.api.resource_definition) = {
 service DatabaseAdmin {
   option (google.api.default_host) = "spanner.googleapis.com";
   option (google.api.oauth_scopes) =
-  "https://www.googleapis.com/auth/cloud-platform,"
-    "https://www.googleapis.com/auth/spanner.admin";
+      "https://www.googleapis.com/auth/cloud-platform,"
+      "https://www.googleapis.com/auth/spanner.admin";
 
   // Lists Cloud Spanner databases.
   rpc ListDatabases(ListDatabasesRequest) returns (ListDatabasesResponse) {
@@ -127,7 +127,7 @@ service DatabaseAdmin {
   // The [response][google.longrunning.Operation.response] field type is
   // [Database][google.spanner.admin.database.v1.Database], if successful.
   rpc UpdateDatabase(UpdateDatabaseRequest)
-    returns (google.longrunning.Operation) {
+      returns (google.longrunning.Operation) {
     option (google.api.http) = {
       patch: "/v1/{database.name=projects/*/instances/*/databases/*}"
       body: "database"
@@ -596,8 +596,8 @@ message CreateDatabaseRequest {
 message CreateDatabaseMetadata {
   // The database being created.
   string database = 1 [(google.api.resource_reference) = {
-    type: "spanner.googleapis.com/Database"
-  }];
+                         type: "spanner.googleapis.com/Database"
+                       }];
 }
 
 // The request for [GetDatabase][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase].
@@ -623,7 +623,7 @@ message UpdateDatabaseRequest {
   // Required. The list of fields to update. Currently, only
   // `enable_drop_protection` field can be updated.
   google.protobuf.FieldMask update_mask = 2
-  [(google.api.field_behavior) = REQUIRED];
+      [(google.api.field_behavior) = REQUIRED];
 }
 
 // Metadata type for the operation returned by
@@ -735,8 +735,8 @@ message DdlStatementActionInfo {
 message UpdateDatabaseDdlMetadata {
   // The database being modified.
   string database = 1 [(google.api.resource_reference) = {
-    type: "spanner.googleapis.com/Database"
-  }];
+                         type: "spanner.googleapis.com/Database"
+                       }];
 
   // For an update this list contains all the statements. For an
   // individual statement, this list contains only that statement.
@@ -913,8 +913,8 @@ message RestoreDatabaseRequest {
     // Name of the backup from which to restore.  Values are of the form
     // `projects/<project>/instances/<instance>/backups/<backup>`.
     string backup = 3 [(google.api.resource_reference) = {
-      type: "spanner.googleapis.com/Backup"
-    }];
+                         type: "spanner.googleapis.com/Backup"
+                       }];
   }
 
   // Optional. An encryption configuration describing the encryption type and key
@@ -966,8 +966,8 @@ message RestoreDatabaseEncryptionConfig {
 message RestoreDatabaseMetadata {
   // Name of the database being created and restored to.
   string name = 1 [(google.api.resource_reference) = {
-    type: "spanner.googleapis.com/Database"
-  }];
+                     type: "spanner.googleapis.com/Database"
+                   }];
 
   // The type of the restore source.
   RestoreSourceType source_type = 2;
@@ -1018,8 +1018,8 @@ message RestoreDatabaseMetadata {
 message OptimizeRestoredDatabaseMetadata {
   // Name of the restored database being optimized.
   string name = 1 [(google.api.resource_reference) = {
-    type: "spanner.googleapis.com/Database"
-  }];
+                     type: "spanner.googleapis.com/Database"
+                   }];
 
   // The progress of the post-restore optimizations.
   OperationProgress progress = 2;

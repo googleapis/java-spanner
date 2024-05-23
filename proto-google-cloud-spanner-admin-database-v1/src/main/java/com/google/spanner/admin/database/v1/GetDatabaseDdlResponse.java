@@ -56,7 +56,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-  internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -350,7 +350,7 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
           .internal_static_google_spanner_admin_database_v1_GetDatabaseDdlResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -502,25 +502,25 @@ public final class GetDatabaseDdlResponse extends com.google.protobuf.GeneratedM
               done = true;
               break;
             case 10:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              ensureStatementsIsMutable();
-              statements_.add(s);
-              break;
-            } // case 10
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureStatementsIsMutable();
+                statements_.add(s);
+                break;
+              } // case 10
             case 18:
-            {
-              protoDescriptors_ = input.readBytes();
-              bitField0_ |= 0x00000002;
-              break;
-            } // case 18
+              {
+                protoDescriptors_ = input.readBytes();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
             default:
-            {
-              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                done = true; // was an endgroup tag
-              }
-              break;
-            } // default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
           } // switch (tag)
         } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
