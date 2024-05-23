@@ -176,8 +176,6 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     return null;
   }
 
-  abstract boolean isSingleUse();
-
   /**
    * Returns a descriptive name for the type of transaction / unit of work. This is used in error
    * messages.

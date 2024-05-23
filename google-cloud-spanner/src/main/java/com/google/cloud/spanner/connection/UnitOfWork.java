@@ -77,6 +77,9 @@ interface UnitOfWork {
   /** @return <code>true</code> if this unit of work is still active. */
   boolean isActive();
 
+  /** Returns true if this transaction can only be used for a single statement. */
+  boolean isSingleUse();
+
   /**
    * Commits the changes in this unit of work to the database. For read-only transactions, this only
    * closes the {@link ReadContext}. This method will throw a {@link SpannerException} if called for

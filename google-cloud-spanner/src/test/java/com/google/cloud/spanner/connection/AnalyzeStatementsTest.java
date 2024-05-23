@@ -355,8 +355,9 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testAnalyzeUpdateDmlBatch() {
+  public void testAnalyzeUpdateDmlBatch_AutoCommit() {
     try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
       connection.startBatchDml();
 
       SpannerException exception =
@@ -371,8 +372,23 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
   }
 
   @Test
-  public void testAnalyzeUpdateStatementDmlBatch() {
+  public void testAnalyzeUpdateDmlBatch_Transactional() {
     try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      connection.startBatchDml();
+
+      assertNotNull(connection.analyzeUpdate(PLAN_UPDATE, QueryAnalyzeMode.PLAN));
+      assertEquals(-1L, connection.executeUpdate(INSERT_STATEMENT));
+      connection.runBatch();
+
+      assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    }
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementDmlBatch_AutoCommit() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
       connection.startBatchDml();
 
       SpannerException exception =
@@ -384,5 +400,19 @@ public class AnalyzeStatementsTest extends AbstractMockServerTest {
 
     assertEquals(0, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
     assertEquals(0, mockSpanner.countRequestsOfType(CommitRequest.class));
+  }
+
+  @Test
+  public void testAnalyzeUpdateStatementDmlBatch_Transactional() {
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(false);
+      connection.startBatchDml();
+
+      connection.analyzeUpdateStatement(PLAN_UPDATE, QueryAnalyzeMode.PLAN);
+      assertEquals(-1L, connection.executeUpdate(INSERT_STATEMENT));
+      connection.runBatch();
+
+      assertEquals(1, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    }
   }
 }

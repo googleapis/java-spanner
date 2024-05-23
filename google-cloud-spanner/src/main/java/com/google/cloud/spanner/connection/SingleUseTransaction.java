@@ -180,7 +180,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  boolean isSingleUse() {
+  public boolean isSingleUse() {
     return true;
   }
 
