@@ -1944,12 +1944,14 @@ public class ConnectionImplTest {
     when(unitOfWork.executeDdlAsync(any(), any(ParsedStatement.class)))
         .thenReturn(ApiFutures.immediateFuture(null));
     when(unitOfWork.executeQueryAsync(
-        any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
     try (ConnectionImpl connection =
-        new ConnectionImpl(connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
           @Override
-          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(StatementType statementType, boolean isInternalMetadataQuery) {
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
+              StatementType statementType, boolean isInternalMetadataQuery) {
             return unitOfWork;
           }
         }) {

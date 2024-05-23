@@ -66,10 +66,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import java.time.Duration;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,8 +85,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.threeten.bp.Instant;
 
 /** Implementation for {@link Connection}, the generic Spanner connection API (not JDBC). */
@@ -1940,11 +1940,11 @@ class ConnectionImpl implements Connection {
   }
 
   private ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
-      ApiFuture<Void> result = getOrStartDdlUnitOfWork().executeDdlAsync(callType, ddl);
-      // reset proto descriptors after executing a DDL statement
-      this.protoDescriptors = null;
-      this.protoDescriptorsFilePath = null;
-      return result;
+    ApiFuture<Void> result = getOrStartDdlUnitOfWork().executeDdlAsync(callType, ddl);
+    // reset proto descriptors after executing a DDL statement
+    this.protoDescriptors = null;
+    this.protoDescriptorsFilePath = null;
+    return result;
   }
 
   @Override
