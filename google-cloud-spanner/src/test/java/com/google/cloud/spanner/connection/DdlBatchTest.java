@@ -378,6 +378,7 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .withStatementExecutor(new StatementExecutor())
+            .setSpan(Span.getInvalid())
             .setProtoDescriptors(null)
             .build();
     batch.executeDdlAsync(CallType.SYNC, statement);
@@ -403,6 +404,7 @@ public class DdlBatchTest {
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
             .withStatementExecutor(new StatementExecutor())
+            .setSpan(Span.getInvalid())
             .setProtoDescriptors(protoDescriptors)
             .build();
     batch.executeDdlAsync(CallType.SYNC, statement);

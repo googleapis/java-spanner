@@ -668,7 +668,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.cloud.spanner.Spanner getSpanner()</method>
   </difference>
-  
+
   <!-- Add DdlInTransactionMode -->
   <difference>
     <differenceType>7012</differenceType>
@@ -680,7 +680,7 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>com.google.cloud.spanner.connection.DdlInTransactionMode getDdlInTransactionMode()</method>
   </difference>
-  
+
   <!-- Added extended tracing option -->
   <difference>
     <differenceType>7012</differenceType>
@@ -698,6 +698,18 @@
     <differenceType>7012</differenceType>
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void setExcludeTxnFromChangeStreams(boolean)</method>
+  </difference>
+
+  <!-- Added Proto descriptors for proto columns -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>byte[] getProtoDescriptors()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setProtoDescriptors(byte[])</method>
   </difference>
 
 </differences>

@@ -59,7 +59,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-  internalGetFieldAccessorTable() {
+      internalGetFieldAccessorTable() {
     return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
         .internal_static_google_spanner_admin_database_v1_CreateDatabaseRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -317,7 +317,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
    */
   @java.lang.Override
   public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
-  getEncryptionConfigOrBuilder() {
+      getEncryptionConfigOrBuilder() {
     return encryptionConfig_ == null
         ? com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()
         : encryptionConfig_;
@@ -424,7 +424,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
     if (databaseDialect_
         != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
-        .getNumber()) {
+            .getNumber()) {
       output.writeEnum(5, databaseDialect_);
     }
     if (!protoDescriptors_.isEmpty()) {
@@ -458,7 +458,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
     }
     if (databaseDialect_
         != com.google.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED
-        .getNumber()) {
+            .getNumber()) {
       size += com.google.protobuf.CodedOutputStream.computeEnumSize(5, databaseDialect_);
     }
     if (!protoDescriptors_.isEmpty()) {
@@ -637,7 +637,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-    internalGetFieldAccessorTable() {
+        internalGetFieldAccessorTable() {
       return com.google.spanner.admin.database.v1.SpannerDatabaseAdminProto
           .internal_static_google_spanner_admin_database_v1_CreateDatabaseRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -838,50 +838,50 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
               done = true;
               break;
             case 10:
-            {
-              parent_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000001;
-              break;
-            } // case 10
+              {
+                parent_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000001;
+                break;
+              } // case 10
             case 18:
-            {
-              createStatement_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000002;
-              break;
-            } // case 18
+              {
+                createStatement_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000002;
+                break;
+              } // case 18
             case 26:
-            {
-              java.lang.String s = input.readStringRequireUtf8();
-              ensureExtraStatementsIsMutable();
-              extraStatements_.add(s);
-              break;
-            } // case 26
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureExtraStatementsIsMutable();
+                extraStatements_.add(s);
+                break;
+              } // case 26
             case 34:
-            {
-              input.readMessage(
-                  getEncryptionConfigFieldBuilder().getBuilder(), extensionRegistry);
-              bitField0_ |= 0x00000008;
-              break;
-            } // case 34
+              {
+                input.readMessage(
+                    getEncryptionConfigFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00000008;
+                break;
+              } // case 34
             case 40:
-            {
-              databaseDialect_ = input.readEnum();
-              bitField0_ |= 0x00000010;
-              break;
-            } // case 40
+              {
+                databaseDialect_ = input.readEnum();
+                bitField0_ |= 0x00000010;
+                break;
+              } // case 40
             case 50:
-            {
-              protoDescriptors_ = input.readBytes();
-              bitField0_ |= 0x00000020;
-              break;
-            } // case 50
+              {
+                protoDescriptors_ = input.readBytes();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 50
             default:
-            {
-              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                done = true; // was an endgroup tag
-              }
-              break;
-            } // default:
+              {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
           } // switch (tag)
         } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1344,9 +1344,9 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
 
     private com.google.spanner.admin.database.v1.EncryptionConfig encryptionConfig_;
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.admin.database.v1.EncryptionConfig,
-        com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
-        com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
         encryptionConfigBuilder_;
     /**
      *
@@ -1460,7 +1460,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
         if (((bitField0_ & 0x00000008) != 0)
             && encryptionConfig_ != null
             && encryptionConfig_
-            != com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()) {
+                != com.google.spanner.admin.database.v1.EncryptionConfig.getDefaultInstance()) {
           getEncryptionConfigBuilder().mergeFrom(value);
         } else {
           encryptionConfig_ = value;
@@ -1511,7 +1511,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     public com.google.spanner.admin.database.v1.EncryptionConfig.Builder
-    getEncryptionConfigBuilder() {
+        getEncryptionConfigBuilder() {
       bitField0_ |= 0x00000008;
       onChanged();
       return getEncryptionConfigFieldBuilder().getBuilder();
@@ -1530,7 +1530,7 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     public com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder
-    getEncryptionConfigOrBuilder() {
+        getEncryptionConfigOrBuilder() {
       if (encryptionConfigBuilder_ != null) {
         return encryptionConfigBuilder_.getMessageOrBuilder();
       } else {
@@ -1553,10 +1553,10 @@ public final class CreateDatabaseRequest extends com.google.protobuf.GeneratedMe
      * </code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-        com.google.spanner.admin.database.v1.EncryptionConfig,
-        com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
-        com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
-    getEncryptionConfigFieldBuilder() {
+            com.google.spanner.admin.database.v1.EncryptionConfig,
+            com.google.spanner.admin.database.v1.EncryptionConfig.Builder,
+            com.google.spanner.admin.database.v1.EncryptionConfigOrBuilder>
+        getEncryptionConfigFieldBuilder() {
       if (encryptionConfigBuilder_ == null) {
         encryptionConfigBuilder_ =
             new com.google.protobuf.SingleFieldBuilderV3<
