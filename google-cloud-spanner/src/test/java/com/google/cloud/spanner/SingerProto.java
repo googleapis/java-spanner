@@ -765,36 +765,36 @@ public final class SingerProto {
                 done = true;
                 break;
               case 8:
-              {
-                singerId_ = input.readInt64();
-                bitField0_ |= 0x00000001;
-                break;
-              } // case 8
+                {
+                  singerId_ = input.readInt64();
+                  bitField0_ |= 0x00000001;
+                  break;
+                } // case 8
               case 18:
-              {
-                birthDate_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000002;
-                break;
-              } // case 18
+                {
+                  birthDate_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000002;
+                  break;
+                } // case 18
               case 26:
-              {
-                nationality_ = input.readStringRequireUtf8();
-                bitField0_ |= 0x00000004;
-                break;
-              } // case 26
+                {
+                  nationality_ = input.readStringRequireUtf8();
+                  bitField0_ |= 0x00000004;
+                  break;
+                } // case 26
               case 32:
-              {
-                genre_ = input.readEnum();
-                bitField0_ |= 0x00000008;
-                break;
-              } // case 32
+                {
+                  genre_ = input.readEnum();
+                  bitField0_ |= 0x00000008;
+                  break;
+                } // case 32
               default:
-              {
-                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
-                  done = true; // was an endgroup tag
-                }
-                break;
-              } // default:
+                {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
             } // switch (tag)
           } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1164,15 +1164,15 @@ public final class SingerProto {
 
   static {
     String[] descriptorData = {
-        "\n\014singer.proto\022\026examples.spanner.music\"\301"
-            + "\001\n\nSingerInfo\022\026\n\tsinger_id\030\001 \001(\003H\000\210\001\001\022\027\n"
-            + "\nbirth_date\030\002 \001(\tH\001\210\001\001\022\030\n\013nationality\030\003 "
-            + "\001(\tH\002\210\001\001\0221\n\005genre\030\004 \001(\0162\035.examples.spann"
-            + "er.music.GenreH\003\210\001\001B\014\n\n_singer_idB\r\n\013_bi"
-            + "rth_dateB\016\n\014_nationalityB\010\n\006_genre*.\n\005Ge"
-            + "nre\022\007\n\003POP\020\000\022\010\n\004JAZZ\020\001\022\010\n\004FOLK\020\002\022\010\n\004ROCK"
-            + "\020\003B)\n\030com.google.cloud.spannerB\013SingerPr"
-            + "otoP\000b\006proto3"
+      "\n\014singer.proto\022\026examples.spanner.music\"\301"
+          + "\001\n\nSingerInfo\022\026\n\tsinger_id\030\001 \001(\003H\000\210\001\001\022\027\n"
+          + "\nbirth_date\030\002 \001(\tH\001\210\001\001\022\030\n\013nationality\030\003 "
+          + "\001(\tH\002\210\001\001\0221\n\005genre\030\004 \001(\0162\035.examples.spann"
+          + "er.music.GenreH\003\210\001\001B\014\n\n_singer_idB\r\n\013_bi"
+          + "rth_dateB\016\n\014_nationalityB\010\n\006_genre*.\n\005Ge"
+          + "nre\022\007\n\003POP\020\000\022\010\n\004JAZZ\020\001\022\010\n\004FOLK\020\002\022\010\n\004ROCK"
+          + "\020\003B)\n\030com.google.cloud.spannerB\013SingerPr"
+          + "otoP\000b\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -1183,7 +1183,7 @@ public final class SingerProto {
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_examples_spanner_music_SingerInfo_descriptor,
             new String[] {
-                "SingerId", "BirthDate", "Nationality", "Genre",
+              "SingerId", "BirthDate", "Nationality", "Genre",
             });
   }
 

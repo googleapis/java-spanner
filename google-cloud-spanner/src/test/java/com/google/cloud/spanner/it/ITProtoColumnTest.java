@@ -139,8 +139,8 @@ public class ITProtoColumnTest {
       System.err.println(
           "Failed to drop database "
               + dbAdminClient
-              .getDatabase(databaseID.getInstanceId().getInstance(), databaseID.getDatabase())
-              .getId()
+                  .getDatabase(databaseID.getInstanceId().getInstance(), databaseID.getDatabase())
+                  .getId()
               + ", skipping...: "
               + e.getMessage());
     }
