@@ -17,16 +17,19 @@
 package com.google.cloud.spanner;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.junit.Assume.assumeFalse;
 
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.api.gax.paging.Page;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseInfo.DatabaseField;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.Iterators;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
-import io.grpc.Status;
+import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +54,9 @@ public class IntegrationTestEnv extends ExternalResource {
    * Names a property that, if set, identifies an existing Cloud Spanner instance to use for tests.
    */
   public static final String TEST_INSTANCE_PROPERTY = "spanner.testenv.instance";
+
+  public static final String MAX_CREATE_INSTANCE_ATTEMPTS =
+      "spanner.testenv.max_create_instance_attempts";
 
   private static final Logger logger = Logger.getLogger(IntegrationTestEnv.class.getName());
 
@@ -85,9 +91,17 @@ public class IntegrationTestEnv extends ExternalResource {
     config = configClass.newInstance();
   }
 
+  boolean isCloudDevel() {
+    return Objects.equals(
+        System.getProperty("spanner.gce.config.server_url"),
+        "https://staging-wrenchworks.sandbox.googleapis.com");
+  }
+
   @Override
   protected void before() throws Throwable {
     this.initializeConfig();
+    assumeFalse(alwaysCreateNewInstance && isCloudDevel());
+
     this.config.setUp();
 
     SpannerOptions options = config.spannerOptions();
@@ -126,9 +140,14 @@ public class IntegrationTestEnv extends ExternalResource {
     this.config.tearDown();
   }
 
-  private void initializeInstance(InstanceId instanceId) {
-    InstanceConfig instanceConfig =
-        Iterators.get(instanceAdminClient.listInstanceConfigs().iterateAll().iterator(), 0, null);
+  private void initializeInstance(InstanceId instanceId) throws Exception {
+    InstanceConfig instanceConfig;
+    try {
+      instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-central1");
+    } catch (Throwable ignore) {
+      instanceConfig =
+          Iterators.get(instanceAdminClient.listInstanceConfigs().iterateAll().iterator(), 0, null);
+    }
     checkState(instanceConfig != null, "No instance configs found");
 
     InstanceConfigId configId = instanceConfig.getId();
@@ -142,67 +161,91 @@ public class IntegrationTestEnv extends ExternalResource {
     OperationFuture<Instance, CreateInstanceMetadata> op =
         instanceAdminClient.createInstance(instance);
     Instance createdInstance;
+    int maxAttempts = 25;
     try {
-      createdInstance = op.get();
-    } catch (Exception e) {
-      boolean cancelled = false;
-      try {
-        // Try to cancel the createInstance operation.
-        instanceAdminClient.cancelOperation(op.getName());
-        com.google.longrunning.Operation createOperation =
-            instanceAdminClient.getOperation(op.getName());
-        cancelled =
-            createOperation.hasError()
-                && createOperation.getError().getCode() == Status.CANCELLED.getCode().value();
-        if (cancelled) {
-          logger.info("Cancelled the createInstance operation because the operation failed");
-        } else {
-          logger.info(
-              "Tried to cancel the createInstance operation because the operation failed, but the operation could not be cancelled. Current status: "
-                  + createOperation.getError().getCode());
-        }
-      } catch (Throwable t) {
-        logger.log(Level.WARNING, "Failed to cancel the createInstance operation", t);
-      }
-      if (!cancelled) {
-        try {
-          instanceAdminClient.deleteInstance(instanceId.getInstance());
-          logger.info(
-              "Deleted the test instance because the createInstance operation failed and cancelling the operation did not succeed");
-        } catch (Throwable t) {
-          logger.log(Level.WARNING, "Failed to delete the test instance", t);
-        }
-      }
-      throw SpannerExceptionFactory.newSpannerException(e);
+      maxAttempts =
+          Integer.parseInt(
+              System.getProperty(MAX_CREATE_INSTANCE_ATTEMPTS, String.valueOf(maxAttempts)));
+    } catch (NumberFormatException ignore) {
+      // Ignore and fall back to the default.
     }
-    logger.log(Level.INFO, "Created test instance: {0}", createdInstance.getId());
+    ExponentialBackOff backOff =
+        new ExponentialBackOff.Builder()
+            .setInitialIntervalMillis(5_000)
+            .setMaxIntervalMillis(500_000)
+            .setMultiplier(2.0)
+            .build();
+    int attempts = 0;
+    while (true) {
+      try {
+        createdInstance = op.get();
+      } catch (Exception e) {
+        SpannerException spannerException =
+            (e instanceof ExecutionException && e.getCause() != null)
+                ? SpannerExceptionFactory.asSpannerException(e.getCause())
+                : SpannerExceptionFactory.asSpannerException(e);
+        if (attempts < maxAttempts && isRetryableResourceExhaustedException(spannerException)) {
+          attempts++;
+          if (spannerException.getRetryDelayInMillis() > 0L) {
+            //noinspection BusyWait
+            Thread.sleep(spannerException.getRetryDelayInMillis());
+          } else {
+            // The Math.max(...) prevents Backoff#STOP (=-1) to be used as the sleep value.
+            //noinspection BusyWait
+            Thread.sleep(Math.max(backOff.getMaxIntervalMillis(), backOff.nextBackOffMillis()));
+          }
+          continue;
+        }
+        throw SpannerExceptionFactory.newSpannerException(
+            spannerException.getErrorCode(),
+            String.format(
+                "Could not create test instance and giving up after %d attempts: %s",
+                attempts, e.getMessage()),
+            e);
+      }
+      logger.log(Level.INFO, "Created test instance: {0}", createdInstance.getId());
+      break;
+    }
+  }
+
+  static boolean isRetryableResourceExhaustedException(SpannerException exception) {
+    if (exception.getErrorCode() != ErrorCode.RESOURCE_EXHAUSTED) {
+      return false;
+    }
+    return exception
+            .getMessage()
+            .contains(
+                "Quota exceeded for quota metric 'Instance create requests' and limit 'Instance create requests per minute'")
+        || exception.getMessage().matches(".*cannot add \\d+ nodes in region.*");
   }
 
   private void cleanUpOldDatabases(InstanceId instanceId) {
-    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(24L, TimeUnit.HOURS);
+    long OLD_DB_THRESHOLD_SECS = TimeUnit.SECONDS.convert(6L, TimeUnit.HOURS);
     Timestamp currentTimestamp = Timestamp.now();
     int numDropped = 0;
-    Page<Database> page = databaseAdminClient.listDatabases(instanceId.getInstance());
     String TEST_DB_REGEX = "(testdb_(.*)_(.*))|(mysample-(.*))";
 
     logger.log(Level.INFO, "Dropping old test databases from {0}", instanceId.getName());
-    while (page != null) {
-      for (Database db : page.iterateAll()) {
-        try {
-          long timeDiff = currentTimestamp.getSeconds() - db.getCreateTime().getSeconds();
-          // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds
-          // old.
-          if ((db.getId().getDatabase().matches(TEST_DB_REGEX))
-              && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
-            logger.log(Level.INFO, "Dropping test database {0}", db.getId());
-            db.drop();
-            ++numDropped;
+    for (Database db : databaseAdminClient.listDatabases(instanceId.getInstance()).iterateAll()) {
+      try {
+        long timeDiff = currentTimestamp.getSeconds() - db.getCreateTime().getSeconds();
+        // Delete all databases which are more than OLD_DB_THRESHOLD_SECS seconds old.
+        if ((db.getId().getDatabase().matches(TEST_DB_REGEX))
+            && (timeDiff > OLD_DB_THRESHOLD_SECS)) {
+          logger.log(Level.INFO, "Dropping test database {0}", db.getId());
+          if (db.isDropProtectionEnabled()) {
+            Database updatedDatabase =
+                databaseAdminClient.newDatabaseBuilder(db.getId()).disableDropProtection().build();
+            databaseAdminClient
+                .updateDatabase(updatedDatabase, DatabaseField.DROP_PROTECTION)
+                .get();
           }
-        } catch (SpannerException e) {
-          logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
+          db.drop();
+          ++numDropped;
         }
+      } catch (SpannerException | ExecutionException | InterruptedException e) {
+        logger.log(Level.SEVERE, "Failed to drop test database " + db.getId(), e);
       }
-      page = page.getNextPage();
     }
     logger.log(Level.INFO, "Dropped {0} test database(s)", numDropped);
   }

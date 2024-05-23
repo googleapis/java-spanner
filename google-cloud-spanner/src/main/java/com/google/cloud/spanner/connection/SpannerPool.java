@@ -17,18 +17,19 @@
 package com.google.cloud.spanner.connection;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.DecodeMode;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
-import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Ticker;
 import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.api.OpenTelemetry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -154,6 +155,10 @@ public class SpannerPool {
     private final boolean usePlainText;
     private final String userAgent;
     private final String databaseRole;
+    private final boolean routeToLeader;
+    private final boolean useVirtualGrpcTransportThreads;
+    private final OpenTelemetry openTelemetry;
+    private final Boolean enableExtendedTracing;
 
     @VisibleForTesting
     static SpannerPoolKey of(ConnectionOptions options) {
@@ -179,6 +184,10 @@ public class SpannerPool {
       this.numChannels = options.getNumChannels();
       this.usePlainText = options.isUsePlainText();
       this.userAgent = options.getUserAgent();
+      this.routeToLeader = options.isRouteToLeader();
+      this.useVirtualGrpcTransportThreads = options.isUseVirtualGrpcTransportThreads();
+      this.openTelemetry = options.getOpenTelemetry();
+      this.enableExtendedTracing = options.isEnableExtendedTracing();
     }
 
     @Override
@@ -194,7 +203,12 @@ public class SpannerPool {
           && Objects.equals(this.numChannels, other.numChannels)
           && Objects.equals(this.databaseRole, other.databaseRole)
           && Objects.equals(this.usePlainText, other.usePlainText)
-          && Objects.equals(this.userAgent, other.userAgent);
+          && Objects.equals(this.userAgent, other.userAgent)
+          && Objects.equals(this.routeToLeader, other.routeToLeader)
+          && Objects.equals(
+              this.useVirtualGrpcTransportThreads, other.useVirtualGrpcTransportThreads)
+          && Objects.equals(this.openTelemetry, other.openTelemetry)
+          && Objects.equals(this.enableExtendedTracing, other.enableExtendedTracing);
     }
 
     @Override
@@ -207,7 +221,11 @@ public class SpannerPool {
           this.numChannels,
           this.usePlainText,
           this.databaseRole,
-          this.userAgent);
+          this.userAgent,
+          this.routeToLeader,
+          this.useVirtualGrpcTransportThreads,
+          this.openTelemetry,
+          this.enableExtendedTracing);
     }
   }
 
@@ -328,19 +346,32 @@ public class SpannerPool {
 
   @VisibleForTesting
   Spanner createSpanner(SpannerPoolKey key, ConnectionOptions options) {
-    SpannerOptions.Builder builder = SpannerOptions.newBuilder();
+    ConnectionSpannerOptions.Builder builder = ConnectionSpannerOptions.newBuilder();
     builder
+        .setUseVirtualThreads(key.useVirtualGrpcTransportThreads)
         .setClientLibToken(MoreObjects.firstNonNull(key.userAgent, CONNECTION_API_CLIENT_LIB_TOKEN))
         .setHost(key.host)
         .setProjectId(key.projectId)
+        // Use lazy decoding, so we can use the protobuf values for calculating the checksum that is
+        // needed for read/write transactions.
+        .setDecodeMode(DecodeMode.LAZY_PER_COL)
         .setDatabaseRole(options.getDatabaseRole())
         .setCredentials(options.getCredentials());
     builder.setSessionPoolOption(key.sessionPoolOptions);
+    if (key.openTelemetry != null) {
+      builder.setOpenTelemetry(key.openTelemetry);
+    }
+    if (key.enableExtendedTracing != null) {
+      builder.setEnableExtendedTracing(key.enableExtendedTracing);
+    }
     if (key.numChannels != null) {
       builder.setNumChannels(key.numChannels);
     }
     if (options.getChannelProvider() != null) {
       builder.setChannelProvider(options.getChannelProvider());
+    }
+    if (!options.isRouteToLeader()) {
+      builder.disableLeaderAwareRouting();
     }
     if (key.usePlainText) {
       // Credentials may not be sent over a plain text channel.

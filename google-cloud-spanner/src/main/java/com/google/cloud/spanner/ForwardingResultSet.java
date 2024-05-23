@@ -23,16 +23,16 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 
 /** Forwarding implementation of ResultSet that forwards all calls to a delegate. */
-public class ForwardingResultSet extends ForwardingStructReader implements ResultSet {
+public class ForwardingResultSet extends ForwardingStructReader implements ProtobufResultSet {
 
-  private Supplier<ResultSet> delegate;
+  private Supplier<? extends ResultSet> delegate;
 
   public ForwardingResultSet(ResultSet delegate) {
     super(delegate);
     this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(delegate));
   }
 
-  public ForwardingResultSet(Supplier<ResultSet> supplier) {
+  public ForwardingResultSet(Supplier<? extends ResultSet> supplier) {
     super(supplier);
     this.delegate = supplier;
   }
@@ -50,9 +50,29 @@ public class ForwardingResultSet extends ForwardingStructReader implements Resul
     this.delegate = Suppliers.ofInstance(Preconditions.checkNotNull(newDelegate));
   }
 
+  ResultSet getDelegate() {
+    return delegate.get();
+  }
+
   @Override
   public boolean next() throws SpannerException {
     return delegate.get().next();
+  }
+
+  @Override
+  public boolean canGetProtobufValue(int columnIndex) {
+    ResultSet resultSetDelegate = delegate.get();
+    return (resultSetDelegate instanceof ProtobufResultSet)
+        && ((ProtobufResultSet) resultSetDelegate).canGetProtobufValue(columnIndex);
+  }
+
+  @Override
+  public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+    ResultSet resultSetDelegate = delegate.get();
+    Preconditions.checkState(
+        resultSetDelegate instanceof ProtobufResultSet,
+        "The result set does not support protobuf values");
+    return ((ProtobufResultSet) resultSetDelegate).getProtobufValue(columnIndex);
   }
 
   @Override

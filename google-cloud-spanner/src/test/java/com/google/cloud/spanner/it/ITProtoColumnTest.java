@@ -16,7 +16,9 @@
 
 package com.google.cloud.spanner.it;
 
+import static com.google.cloud.spanner.testing.EmulatorSpannerHelper.isUsingEmulator;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
@@ -42,6 +44,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException.InvalidWireTypeException;
 import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,8 +59,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-// Integration Tests to test DDL, DML and DQL for Proto Columns & Enums
-// TODO(harsha): Check session leak warning
+// Integration Tests to test DDL, DML and DQL for Proto Columns and Enums
 @Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITProtoColumnTest {
@@ -69,6 +71,8 @@ public class ITProtoColumnTest {
 
   @BeforeClass
   public static void setUpDatabase() throws Exception {
+    assumeFalse(
+        "Proto Column is not supported in the emulator", EmulatorSpannerHelper.isUsingEmulator());
     RemoteSpannerHelper testHelper = env.getTestHelper();
     databaseID = DatabaseId.of(testHelper.getInstanceId(), testHelper.getUniqueDatabaseId());
     dbAdminClient = testHelper.getClient().getDatabaseAdminClient();
@@ -89,15 +93,15 @@ public class ITProtoColumnTest {
                 databaseToCreate,
                 Arrays.asList(
                     "CREATE PROTO BUNDLE ("
-                        + "spanner.examples.music.SingerInfo,"
-                        + "spanner.examples.music.Genre,"
+                        + "examples.spanner.music.SingerInfo,"
+                        + "examples.spanner.music.Genre,"
                         + ")",
                     "CREATE TABLE Singers ("
                         + "  SingerId   INT64 NOT NULL,"
                         + "  FirstName  STRING(1024),"
                         + "  LastName   STRING(1024),"
-                        + "  SingerInfo spanner.examples.music.SingerInfo,"
-                        + "  SingerGenre spanner.examples.music.Genre,"
+                        + "  SingerInfo examples.spanner.music.SingerInfo,"
+                        + "  SingerGenre examples.spanner.music.Genre,"
                         + "  SingerNationality STRING(1024) AS (SingerInfo.nationality) STORED,"
                         + "  ) PRIMARY KEY (SingerNationality, SingerGenre)",
                     "CREATE TABLE Types ("
@@ -106,10 +110,10 @@ public class ITProtoColumnTest {
                         + "  Bytes BYTES(MAX),"
                         + "  Int64Array ARRAY<INT64>,"
                         + "  BytesArray ARRAY<BYTES(MAX)>,"
-                        + "  ProtoMessage    spanner.examples.music.SingerInfo,"
-                        + "  ProtoEnum   spanner.examples.music.Genre,"
-                        + "  ProtoMessageArray   ARRAY<spanner.examples.music.SingerInfo>,"
-                        + "  ProtoEnumArray  ARRAY<spanner.examples.music.Genre>,"
+                        + "  ProtoMessage    examples.spanner.music.SingerInfo,"
+                        + "  ProtoEnum   examples.spanner.music.Genre,"
+                        + "  ProtoMessageArray   ARRAY<examples.spanner.music.SingerInfo>,"
+                        + "  ProtoEnumArray  ARRAY<examples.spanner.music.Genre>,"
                         + "  ) PRIMARY KEY (RowID)",
                     "CREATE INDEX SingerByNationalityAndGenre ON Singers(SingerNationality, SingerGenre)"
                         + "  STORING (SingerId, FirstName, LastName)"))
@@ -117,25 +121,26 @@ public class ITProtoColumnTest {
 
     assertEquals(databaseID.getDatabase(), createdDatabase.getId().getDatabase());
 
-    // TODO(harsha): Check with backend team as this is not working for generated columns yet.
-    // GetDatabaseDdlResponse response =
-    // dbAdminClient.getDatabaseDdlResponse(databaseID.getInstanceId().getInstance(),
-    // databaseID.getDatabase());
-    // assertNotNull(response.getProtoDescriptors());
+    GetDatabaseDdlResponse response =
+        dbAdminClient.getDatabaseDdlResponse(
+            databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
+    assertNotNull(response.getProtoDescriptors());
     in.close();
   }
 
   @AfterClass
   public static void afterClass() throws Exception {
     try {
-      dbAdminClient.dropDatabase(
-          databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
+      if (!isUsingEmulator()) {
+        dbAdminClient.dropDatabase(
+            databaseID.getInstanceId().getInstance(), databaseID.getDatabase());
+      }
     } catch (Exception e) {
       System.err.println(
           "Failed to drop database "
               + dbAdminClient
-                  .getDatabase(databaseID.getInstanceId().getInstance(), databaseID.getDatabase())
-                  .getId()
+              .getDatabase(databaseID.getInstanceId().getInstance(), databaseID.getDatabase())
+              .getId()
               + ", skipping...: "
               + e.getMessage());
     }
@@ -149,8 +154,8 @@ public class ITProtoColumnTest {
 
   /**
    * Test to check data update and read queries on Proto Messages, Proto Enums and their arrays.
-   * Test also checks for compatability between following types: 1. Proto Messages & Bytes 2. Proto
-   * Enums & Int64
+   * Test also checks for compatability between following types: 1. Proto Messages and Bytes 2.
+   * Proto Enums and Int64
    */
   @Test
   public void testProtoColumnsUpdateAndRead() {
@@ -238,7 +243,7 @@ public class ITProtoColumnTest {
             resultSet.getProtoMessageList("ProtoMessageArray", SingerInfo.getDefaultInstance()));
         assertEquals(enumList, resultSet.getProtoEnumList("ProtoEnumArray", Genre::forNumber));
 
-        // Check compatability between Proto Messages & Bytes
+        // Check compatability between Proto Messages and Bytes
         assertEquals(singerInfoBytes, resultSet.getBytes("ProtoMessage"));
         assertEquals(
             singerInfo, resultSet.getProtoMessage("Bytes", SingerInfo.getDefaultInstance()));
@@ -248,7 +253,7 @@ public class ITProtoColumnTest {
             singerInfoList,
             resultSet.getProtoMessageList("BytesArray", SingerInfo.getDefaultInstance()));
 
-        // Check compatability between Proto Enum & Int64
+        // Check compatability between Proto Enum and Int64
         assertEquals(genreConst, resultSet.getLong("ProtoEnum"));
         assertEquals(genre, resultSet.getProtoEnum("Int64a", Genre::forNumber));
 
@@ -299,7 +304,7 @@ public class ITProtoColumnTest {
             });
 
     // Read all rows based on Proto Message field and Proto Enum Primary key column values
-    ResultSet resultSet1 =
+    try (ResultSet resultSet1 =
         databaseClient
             .singleUse()
             .read(
@@ -308,40 +313,42 @@ public class ITProtoColumnTest {
                     .addKey(Key.of("Country1", Genre.FOLK))
                     .addKey(Key.of("Country2", Genre.JAZZ))
                     .build(),
-                Arrays.asList("SingerId", "FirstName", "LastName", "SingerInfo", "SingerGenre"));
+                Arrays.asList("SingerId", "FirstName", "LastName", "SingerInfo", "SingerGenre"))) {
+      resultSet1.next();
+      assertEquals(1, resultSet1.getLong("SingerId"));
+      assertEquals("FirstName1", resultSet1.getString("FirstName"));
+      assertEquals("LastName1", resultSet1.getString("LastName"));
+      assertEquals(
+          singerInfo1, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
+      assertEquals(genre1, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
 
-    resultSet1.next();
-    assertEquals(1, resultSet1.getLong("SingerId"));
-    assertEquals("FirstName1", resultSet1.getString("FirstName"));
-    assertEquals("LastName1", resultSet1.getString("LastName"));
-    assertEquals(
-        singerInfo1, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
-    assertEquals(genre1, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
-
-    resultSet1.next();
-    assertEquals(2, resultSet1.getLong("SingerId"));
-    assertEquals("FirstName2", resultSet1.getString("FirstName"));
-    assertEquals("LastName2", resultSet1.getString("LastName"));
-    assertEquals(
-        singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
-    assertEquals(genre2, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
+      resultSet1.next();
+      assertEquals(2, resultSet1.getLong("SingerId"));
+      assertEquals("FirstName2", resultSet1.getString("FirstName"));
+      assertEquals("LastName2", resultSet1.getString("LastName"));
+      assertEquals(
+          singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
+      assertEquals(genre2, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
+    }
 
     // Read rows using Index on Proto Message field and Proto Enum column
-    ResultSet resultSet2 =
+    try (ResultSet resultSet2 =
         databaseClient
             .singleUse()
             .readUsingIndex(
                 "Singers",
                 "SingerByNationalityAndGenre",
                 KeySet.singleKey(Key.of("Country2", Genre.JAZZ)),
-                Arrays.asList("SingerId", "FirstName", "LastName"));
-    resultSet2.next();
-    assertEquals(2, resultSet2.getLong("SingerId"));
-    assertEquals("FirstName2", resultSet2.getString("FirstName"));
-    assertEquals("LastName2", resultSet2.getString("LastName"));
+                Arrays.asList("SingerId", "FirstName", "LastName"))) {
+
+      resultSet2.next();
+      assertEquals(2, resultSet2.getLong("SingerId"));
+      assertEquals("FirstName2", resultSet2.getString("FirstName"));
+      assertEquals("LastName2", resultSet2.getString("LastName"));
+    }
 
     // Filter using Parameterized DQL
-    ResultSet resultSet3 =
+    try (ResultSet resultSet3 =
         databaseClient
             .singleUse()
             .executeQuery(
@@ -352,13 +359,13 @@ public class ITProtoColumnTest {
                     .to("Country2")
                     .bind("genre")
                     .to(Genre.JAZZ)
-                    .build());
-
-    resultSet3.next();
-    assertEquals(2, resultSet1.getLong("SingerId"));
-    assertEquals(
-        singerInfo2, resultSet1.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
-    assertEquals(genre2, resultSet1.getProtoEnum("SingerGenre", Genre::forNumber));
+                    .build())) {
+      resultSet3.next();
+      assertEquals(2, resultSet3.getLong("SingerId"));
+      assertEquals(
+          singerInfo2, resultSet3.getProtoMessage("SingerInfo", SingerInfo.getDefaultInstance()));
+      assertEquals(genre2, resultSet3.getProtoEnum("SingerGenre", Genre::forNumber));
+    }
   }
 
   // Test the exception in case Invalid protocol message object is provided while deserializing the
@@ -380,18 +387,20 @@ public class ITProtoColumnTest {
                 .to(singerInfo)
                 .build()));
 
-    ResultSet resultSet =
+    try (ResultSet resultSet =
         databaseClient
             .singleUse()
-            .read("Types", KeySet.all(), Collections.singletonList("ProtoMessage"));
-    resultSet.next();
+            .read("Types", KeySet.all(), Collections.singletonList("ProtoMessage"))) {
 
-    SpannerException e =
-        assertThrows(
-            SpannerException.class,
-            () -> resultSet.getProtoMessage("ProtoMessage", Backup.getDefaultInstance()));
+      resultSet.next();
 
-    // Underlying cause is InvalidWireTypeException
-    assertEquals(InvalidWireTypeException.class, e.getCause().getClass());
+      SpannerException e =
+          assertThrows(
+              SpannerException.class,
+              () -> resultSet.getProtoMessage("ProtoMessage", Backup.getDefaultInstance()));
+
+      // Underlying cause is InvalidWireTypeException
+      assertEquals(InvalidWireTypeException.class, e.getCause().getClass());
+    }
   }
 }

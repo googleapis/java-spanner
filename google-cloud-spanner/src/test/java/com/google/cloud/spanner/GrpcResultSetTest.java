@@ -22,6 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.api.gax.grpc.GrpcCallContext;
+import com.google.api.gax.rpc.ApiCallContext;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -52,14 +54,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.threeten.bp.Duration;
 
-/** Unit tests for {@link com.google.cloud.spanner.SpannerImpl.GrpcResultSet}. */
+/** Unit tests for {@link GrpcResultSet}. */
 @RunWith(JUnit4.class)
 public class GrpcResultSetTest {
 
-  private AbstractResultSet.GrpcResultSet resultSet;
+  private GrpcResultSet resultSet;
   private SpannerRpc.ResultStreamConsumer consumer;
-  private AbstractResultSet.GrpcStreamIterator stream;
+  private GrpcStreamIterator stream;
+  private final Duration streamWaitTimeout = Duration.ofNanos(1L);
 
   private static class NoOpListener implements AbstractResultSet.Listener {
     @Override
@@ -77,9 +81,14 @@ public class GrpcResultSetTest {
 
   @Before
   public void setUp() {
-    stream = new AbstractResultSet.GrpcStreamIterator(10);
+    stream = new GrpcStreamIterator(10);
     stream.setCall(
         new SpannerRpc.StreamingCall() {
+          @Override
+          public ApiCallContext getCallContext() {
+            return GrpcCallContext.createDefault().withStreamWaitTimeout(streamWaitTimeout);
+          }
+
           @Override
           public void cancel(@Nullable String message) {}
 
@@ -88,11 +97,19 @@ public class GrpcResultSetTest {
         },
         false);
     consumer = stream.consumer();
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new GrpcResultSet(stream, new NoOpListener());
   }
 
-  public AbstractResultSet.GrpcResultSet resultSetWithMode(QueryMode queryMode) {
-    return new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+  public GrpcResultSet resultSetWithMode(QueryMode queryMode) {
+    return new GrpcResultSet(stream, new NoOpListener());
+  }
+
+  @Test
+  public void testStreamTimeout() {
+    // We don't add any results to the stream. That means that it will time out after 1ns.
+    SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
+    assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+    assertTrue(exception.getMessage(), exception.getMessage().contains("stream wait timeout"));
   }
 
   @Test
@@ -520,6 +537,8 @@ public class GrpcResultSetTest {
         Value.int64(null),
         Value.float64(1.0),
         Value.float64(null),
+        Value.float32(1.0f),
+        Value.float32(null),
         Value.bytes(ByteArray.fromBase64("abcd")),
         Value.bytesFromBase64(
             Base64.getEncoder().encodeToString("test".getBytes(StandardCharsets.UTF_8))),
@@ -537,6 +556,8 @@ public class GrpcResultSetTest {
         Value.int64Array((long[]) null),
         Value.float64Array(new double[] {1.1, 2.2, 3.3}),
         Value.float64Array((double[]) null),
+        Value.float32Array(new float[] {1.1f, 2.2f, 3.3f}),
+        Value.float32Array((float[]) null),
         Value.bytesArray(Arrays.asList(ByteArray.fromBase64("abcd"), null)),
         Value.bytesArrayFromBase64(
             Arrays.asList(
@@ -592,7 +613,7 @@ public class GrpcResultSetTest {
 
   private void verifySerialization(
       Function<Value, com.google.protobuf.Value> protoFn, Value... values) {
-    resultSet = new AbstractResultSet.GrpcResultSet(stream, new NoOpListener());
+    resultSet = new GrpcResultSet(stream, new NoOpListener());
     PartialResultSet.Builder builder = PartialResultSet.newBuilder();
     List<Type.StructField> types = new ArrayList<>();
     for (Value value : values) {
@@ -636,6 +657,22 @@ public class GrpcResultSetTest {
     assertThat(resultSet.getDouble(0)).isWithin(0.0).of(Double.MIN_VALUE);
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getDouble(0)).isWithin(0.0).of(Double.MAX_VALUE);
+  }
+
+  @Test
+  public void getFloat() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.float32()))))
+            .addValues(Value.float32(Float.MIN_VALUE).toProto())
+            .addValues(Value.float32(Float.MAX_VALUE).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getFloat(0)).isWithin(0.0f).of(Float.MIN_VALUE);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getFloat(0)).isWithin(0.0f).of(Float.MAX_VALUE);
   }
 
   @Test
@@ -751,6 +788,22 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getPgOid() {
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(makeMetadata(Type.struct(Type.StructField.of("f", Type.pgOid()))))
+            .addValues(Value.pgOid(Long.MIN_VALUE).toProto())
+            .addValues(Value.pgOid(Long.MAX_VALUE).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getLong(0)).isEqualTo(Long.MIN_VALUE);
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getLong(0)).isEqualTo(Long.MAX_VALUE);
+  }
+
+  @Test
   public void getProtoMessage() {
     SingerInfo singerInfo1 =
         SingerInfo.newBuilder()
@@ -861,6 +914,25 @@ public class GrpcResultSetTest {
   }
 
   @Test
+  public void getFloatArray() {
+    float[] floatArray = {Float.MAX_VALUE, Float.MIN_VALUE, 111, 333, 444, 0, -1, -2234};
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.float32())))))
+            .addValues(Value.float32Array(floatArray).toProto())
+            .build());
+    consumer.onCompleted();
+
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getFloatArray(0))
+        .usingTolerance(0.0)
+        .containsExactly(floatArray)
+        .inOrder();
+  }
+
+  @Test
   public void getBigDecimalList() {
     List<BigDecimal> bigDecimalsList = new ArrayList<>();
     bigDecimalsList.add(BigDecimal.valueOf(Double.MIN_VALUE));
@@ -952,6 +1024,21 @@ public class GrpcResultSetTest {
 
     assertTrue(resultSet.next());
     assertEquals(jsonList, resultSet.getPgJsonbList(0));
+  }
+
+  @Test
+  public void getPgOidArray() {
+    long[] longArray = {111, 333, 444, 0, -1, -2234, Long.MAX_VALUE, Long.MIN_VALUE};
+
+    consumer.onPartialResultSet(
+        PartialResultSet.newBuilder()
+            .setMetadata(
+                makeMetadata(Type.struct(Type.StructField.of("f", Type.array(Type.pgOid())))))
+            .addValues(Value.pgOidArray(longArray).toProto())
+            .build());
+    consumer.onCompleted();
+    assertThat(resultSet.next()).isTrue();
+    assertThat(resultSet.getLongArray(0)).isEqualTo(longArray);
   }
 
   @Test

@@ -77,6 +77,15 @@
       "exampleStatements": ["show spanner.read_only_staleness","show variable spanner.read_only_staleness"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.DIRECTED_READ",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_DIRECTED_READ",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.directed_read\\s*\\z",
+      "method": "statementShowDirectedRead",
+      "exampleStatements": ["show spanner.directed_read", "show variable spanner.directed_read"]
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.OPTIMIZER_VERSION",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -102,6 +111,15 @@
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.return_commit_stats\\s*\\z",
       "method": "statementShowReturnCommitStats",
       "exampleStatements": ["show spanner.return_commit_stats","show variable spanner.return_commit_stats"]
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.MAX_COMMIT_DELAY",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_MAX_COMMIT_DELAY",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.max_commit_delay\\s*\\z",
+      "method": "statementShowMaxCommitDelay",
+      "exampleStatements": ["show spanner.max_commit_delay", "show variable spanner.max_commit_delay"]
     },
     {
       "name": "SHOW [VARIABLE] SPANNER.COMMIT_RESPONSE",
@@ -130,6 +148,15 @@
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.transaction_tag\\s*\\z",
       "method": "statementShowTransactionTag",
       "exampleStatements": ["show spanner.transaction_tag","show variable spanner.transaction_tag"]
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.exclude_txn_from_change_streams\\s*\\z",
+      "method": "statementShowExcludeTxnFromChangeStreams",
+      "exampleStatements": ["show spanner.exclude_txn_from_change_streams","show variable spanner.exclude_txn_from_change_streams"]
     },
     {
       "name": "SHOW [VARIABLE] SPANNER.RPC_PRIORITY",
@@ -174,6 +201,33 @@
       "statementType": "EXPLAIN",
       "regex": "(?is)\\A\\s*explain(\\s+|\\()(.*)\\z",
       "method": "statementExplain",
+      "exampleStatements": []
+    },
+    {
+      "name": "PARTITION <sql>",
+      "executorName": "ClientSideStatementPartitionExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "PARTITION",
+      "regex": "(?is)\\A\\s*partition(\\s+|\\()(.*)\\z",
+      "method": "statementPartition",
+      "exampleStatements": []
+    },
+    {
+      "name": "RUN PARTITION ['<partition_id>']",
+      "executorName": "ClientSideStatementRunPartitionExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "RUN_PARTITION",
+      "regex": "(?is)\\A\\s*run\\s+partition(?:\\s*'(.*)')?\\s*\\z",
+      "method": "statementRunPartition",
+      "exampleStatements": []
+    },
+    {
+      "name": "RUN PARTITIONED QUERY <sql>",
+      "executorName": "ClientSideStatementRunPartitionedQueryExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "RUN_PARTITIONED_QUERY",
+      "regex": "(?is)\\A\\s*run\\s+partitioned\\s+query(\\s+|\\()(.*)\\z",
+      "method": "statementRunPartitionedQuery",
       "exampleStatements": []
     },
     {
@@ -224,13 +278,16 @@
       "examplePrerequisiteStatements": ["begin transaction"]
     },
     {
-      "name": "ROLLBACK [TRANSACTION | WORK] [AND NO CHAIN]",
+      "name": "{ROLLBACK | ABORT} [TRANSACTION | WORK] [AND NO CHAIN]",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "NO_RESULT",
       "statementType": "ROLLBACK",
-      "regex": "(?is)\\A\\s*(?:rollback)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
+      "regex": "(?is)\\A\\s*(?:rollback|abort)(?:\\s+transaction|\\s+work)?(?:\\s+and\\s+no\\s+chain)?\\s*\\z",
       "method": "statementRollback",
-      "exampleStatements": ["rollback", "rollback transaction", "rollback work", "rollback and no chain", "rollback transaction and no chain", "rollback work and no chain"],
+      "exampleStatements": [
+        "rollback", "rollback transaction", "rollback work", "rollback and no chain", "rollback transaction and no chain", "rollback work and no chain",
+        "abort", "abort transaction", "abort work", "abort and no chain", "abort transaction and no chain", "abort work and no chain"
+      ],
       "examplePrerequisiteStatements": ["begin transaction"]
     },
     {
@@ -496,6 +553,21 @@
       }
     },
     {
+      "name": "SET SPANNER.DIRECTED_READ =|TO '<directed-read-options>'|''",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_DIRECTED_READ",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.directed_read(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetDirectedRead",
+      "exampleStatements": ["set spanner.directed_read='{\"includeReplicas\":{\"replicaSelections\":[{\"location\":\"eu-west1\",\"type\":\"READ_ONLY\"}]}}'", "set spanner.directed_read=''"],
+      "setStatement": {
+        "propertyName": "SPANNER.DIRECTED_READ",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "'((\\S+)|())'",
+        "converterName": "ClientSideStatementValueConverters$DirectedReadOptionsConverter"
+      }
+    },
+    {
       "name": "SET SPANNER.OPTIMIZER_VERSION =|TO '<version>'|'LATEST'|''",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
@@ -555,6 +627,21 @@
       }
     },
     {
+      "name": "SET SPANNER.MAX_COMMIT_DELAY =|TO '<duration>'|NULL",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_MAX_COMMIT_DELAY",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.max_commit_delay(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetMaxCommitDelay",
+      "exampleStatements": ["set spanner.max_commit_delay=null", "set spanner.max_commit_delay='1s'", "set spanner.max_commit_delay='100ms'", "set spanner.max_commit_delay to '10000us'", "set spanner.max_commit_delay TO '9223372036854775807ns'"],
+      "setStatement": {
+        "propertyName": "SPANNER.MAX_COMMIT_DELAY",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+        "converterName": "ClientSideStatementValueConverters$DurationConverter"
+      }
+    },
+    {
       "name": "SET SPANNER.STATEMENT_TAG =|TO '<tag>'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
@@ -567,12 +654,13 @@
         "set spanner.statement_tag=''",
         "set spanner.statement_tag to 'tag1'",
         "set spanner.statement_tag to 'tag2'",
-        "set spanner.statement_tag to ''"
+        "set spanner.statement_tag to ''",
+        "set spanner.statement_tag to 'test_tag'"
       ],
       "setStatement": {
         "propertyName": "SPANNER.STATEMENT_TAG",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+        "allowedValues": "'(.*)'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
       }
     },
@@ -589,14 +677,30 @@
         "set spanner.transaction_tag=''",
         "set spanner.transaction_tag to 'tag1'",
         "set spanner.transaction_tag to 'tag2'",
-        "set spanner.transaction_tag to ''"
+        "set spanner.transaction_tag to ''",
+        "set spanner.transaction_tag to 'test_tag'"
       ],
       "examplePrerequisiteStatements": ["set autocommit = false"],
       "setStatement": {
         "propertyName": "SPANNER.TRANSACTION_TAG",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+        "allowedValues": "'(.*)'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS =|TO TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.exclude_txn_from_change_streams(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetReturnCommitStats",
+      "exampleStatements": ["set spanner.exclude_txn_from_change_streams = true", "set spanner.exclude_txn_from_change_streams = false", "set spanner.exclude_txn_from_change_streams to true", "set spanner.exclude_txn_from_change_streams to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
       }
     },
     {
@@ -658,6 +762,102 @@
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.DATA_BOOST_ENABLED",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_DATA_BOOST_ENABLED",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.data_boost_enabled\\s*\\z",
+      "method": "statementShowDataBoostEnabled",
+      "exampleStatements": ["show spanner.data_boost_enabled","show variable spanner.data_boost_enabled"]
+    },
+    {
+      "name": "SET SPANNER.DATA_BOOST_ENABLED = TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_DATA_BOOST_ENABLED",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.data_boost_enabled(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetDataBoostEnabled",
+      "exampleStatements": ["set spanner.data_boost_enabled = true", "set spanner.data_boost_enabled = false", "set spanner.data_boost_enabled to true", "set spanner.data_boost_enabled to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.DATA_BOOST_ENABLED",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.AUTO_PARTITION_MODE",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_AUTO_PARTITION_MODE",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.auto_partition_mode\\s*\\z",
+      "method": "statementShowAutoPartitionMode",
+      "exampleStatements": ["show spanner.auto_partition_mode","show variable spanner.auto_partition_mode"]
+    },
+    {
+      "name": "SET SPANNER.AUTO_PARTITION_MODE = TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_AUTO_PARTITION_MODE",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.auto_partition_mode(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetAutoPartitionMode",
+      "exampleStatements": ["set spanner.auto_partition_mode = true", "set spanner.auto_partition_mode = false", "set spanner.auto_partition_mode to true", "set spanner.auto_partition_mode to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.AUTO_PARTITION_MODE",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.MAX_PARTITIONS",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_MAX_PARTITIONS",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.max_partitions\\s*\\z",
+      "method": "statementShowMaxPartitions",
+      "exampleStatements": ["show spanner.max_partitions","show variable spanner.max_partitions"]
+    },
+    {
+      "name": "SET SPANNER.MAX_PARTITIONS = <INT64>",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_MAX_PARTITIONS",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.max_partitions(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetMaxPartitions",
+      "exampleStatements": ["set spanner.max_partitions = 1", "set spanner.max_partitions = 10", "set spanner.max_partitions to 5", "set spanner.max_partitions to 20"],
+      "setStatement": {
+        "propertyName": "SPANNER.MAX_PARTITIONS",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(\\d{1,9})",
+        "converterName": "ClientSideStatementValueConverters$NonNegativeIntegerConverter"
+      }
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.MAX_PARTITIONED_PARALLELISM",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_MAX_PARTITIONED_PARALLELISM",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.max_partitioned_parallelism\\s*\\z",
+      "method": "statementShowMaxPartitionedParallelism",
+      "exampleStatements": ["show spanner.max_partitioned_parallelism","show variable spanner.max_partitioned_parallelism"]
+    },
+    {
+      "name": "SET SPANNER.MAX_PARTITIONED_PARALLELISM = <INT64>",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_MAX_PARTITIONED_PARALLELISM",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.max_partitioned_parallelism(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetMaxPartitionedParallelism",
+      "exampleStatements": ["set spanner.max_partitioned_parallelism = 1", "set spanner.max_partitioned_parallelism = 10", "set spanner.max_partitioned_parallelism to 5", "set spanner.max_partitioned_parallelism to 20"],
+      "setStatement": {
+        "propertyName": "SPANNER.MAX_PARTITIONED_PARALLELISM",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(\\d{1,9})",
+        "converterName": "ClientSideStatementValueConverters$NonNegativeIntegerConverter"
       }
     }
   ]

@@ -33,6 +33,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStateme
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,8 +78,13 @@ class DmlBatch extends AbstractBaseUnitOfWork {
 
   private DmlBatch(Builder builder) {
     super(builder);
-    this.transaction = builder.transaction;
+    this.transaction = Preconditions.checkNotNull(builder.transaction);
     this.statementTag = builder.statementTag;
+  }
+
+  @Override
+  public boolean isSingleUse() {
+    return false;
   }
 
   @Override
@@ -168,8 +174,11 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
       CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DML batches.");
+    if (transaction.isSingleUse()) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DML batches.");
+    }
+    return transaction.analyzeUpdateAsync(callType, update, analyzeMode, options);
   }
 
   @Override
@@ -189,57 +198,61 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   public ApiFuture<long[]> runBatchAsync(CallType callType) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be ran");
-    if (statements.isEmpty()) {
-      this.state = UnitOfWorkState.RAN;
-      return ApiFutures.immediateFuture(new long[0]);
-    }
-    this.state = UnitOfWorkState.RUNNING;
-    // Use a SettableApiFuture to return the result, instead of directly returning the future that
-    // is returned by the executeBatchUpdateAsync method. This is needed because the state of the
-    // batch is set after the update has finished, and this happens in a listener. A listener is
-    // executed AFTER a Future is done, which means that a user could read the state of the Batch
-    // before it has been changed.
-    final SettableApiFuture<long[]> res = SettableApiFuture.create();
-    int numOptions = 0;
-    if (statementTag != null) {
-      numOptions++;
-    }
-    if (this.rpcPriority != null) {
-      numOptions++;
-    }
-    UpdateOption[] options = new UpdateOption[numOptions];
-    int index = 0;
-    if (statementTag != null) {
-      options[index++] = Options.tag(statementTag);
-    }
-    if (this.rpcPriority != null) {
-      options[index++] = Options.priority(this.rpcPriority);
-    }
-    ApiFuture<long[]> updateCounts =
-        transaction.executeBatchUpdateAsync(callType, statements, options);
-    ApiFutures.addCallback(
-        updateCounts,
-        new ApiFutureCallback<long[]>() {
-          @Override
-          public void onFailure(Throwable t) {
-            state = UnitOfWorkState.RUN_FAILED;
-            res.setException(t);
-          }
+    try (Scope ignore = span.makeCurrent()) {
+      if (statements.isEmpty()) {
+        this.state = UnitOfWorkState.RAN;
+        return ApiFutures.immediateFuture(new long[0]);
+      }
+      this.state = UnitOfWorkState.RUNNING;
+      // Use a SettableApiFuture to return the result, instead of directly returning the future that
+      // is returned by the executeBatchUpdateAsync method. This is needed because the state of the
+      // batch is set after the update has finished, and this happens in a listener. A listener is
+      // executed AFTER a Future is done, which means that a user could read the state of the Batch
+      // before it has been changed.
+      final SettableApiFuture<long[]> res = SettableApiFuture.create();
+      int numOptions = 0;
+      if (statementTag != null) {
+        numOptions++;
+      }
+      if (this.rpcPriority != null) {
+        numOptions++;
+      }
+      UpdateOption[] options = new UpdateOption[numOptions];
+      int index = 0;
+      if (statementTag != null) {
+        options[index++] = Options.tag(statementTag);
+      }
+      if (this.rpcPriority != null) {
+        options[index++] = Options.priority(this.rpcPriority);
+      }
+      ApiFuture<long[]> updateCounts =
+          transaction.executeBatchUpdateAsync(callType, statements, options);
+      ApiFutures.addCallback(
+          updateCounts,
+          new ApiFutureCallback<long[]>() {
+            @Override
+            public void onFailure(Throwable t) {
+              state = UnitOfWorkState.RUN_FAILED;
+              res.setException(t);
+            }
 
-          @Override
-          public void onSuccess(long[] result) {
-            state = UnitOfWorkState.RAN;
-            res.set(result);
-          }
-        },
-        MoreExecutors.directExecutor());
-    return res;
+            @Override
+            public void onSuccess(long[] result) {
+              state = UnitOfWorkState.RAN;
+              res.set(result);
+            }
+          },
+          MoreExecutors.directExecutor());
+      asyncEndUnitOfWorkSpan();
+      return res;
+    }
   }
 
   @Override
   public void abortBatch() {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED, "The batch is no longer active and cannot be aborted.");
+    asyncEndUnitOfWorkSpan();
     this.state = UnitOfWorkState.ABORTED;
   }
 

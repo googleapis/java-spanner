@@ -25,6 +25,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -35,9 +36,19 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.opencensus.trace.Tracing;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -90,6 +101,9 @@ public class SpanTest {
   private DatabaseClient client;
   private Spanner spannerWithTimeout;
   private DatabaseClient clientWithTimeout;
+
+  private static InMemorySpanExporter openTelemetrySpanExporter;
+
   private static FailOnOverkillTraceComponentImpl failOnOverkillTraceComponent =
       new FailOnOverkillTraceComponentImpl();
 
@@ -152,14 +166,43 @@ public class SpanTest {
     }
   }
 
+  @BeforeClass
+  public static void setupOpenTelemetry() {
+    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptions.enableOpenCensusTraces();
+  }
+
   @Before
   public void setUp() throws Exception {
+    failOnOverkillTraceComponent.clearSpans();
+    failOnOverkillTraceComponent.clearAnnotations();
+    // Incorporating OpenTelemetry configuration to ensure that OpenCensus traces are utilized by
+    // default,
+    // regardless of the presence of OpenTelemetry configuration.
+    openTelemetrySpanExporter = InMemorySpanExporter.create();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(openTelemetrySpanExporter))
+            .build();
+
+    GlobalOpenTelemetry.resetForTest();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(tracerProvider)
+            .build();
+
     SpannerOptions.Builder builder =
         SpannerOptions.newBuilder()
             .setProjectId(TEST_PROJECT)
             .setChannelProvider(channelProvider)
             .setCredentials(NoCredentials.getInstance())
-            .setSessionPoolOption(SessionPoolOptions.newBuilder().setMinSessions(0).build());
+            .setOpenTelemetry(openTelemetry)
+            .setSessionPoolOption(
+                SessionPoolOptions.newBuilder()
+                    .setMinSessions(2)
+                    .setWaitForMinSessions(Duration.ofSeconds(10))
+                    .build());
 
     spanner = builder.build().getService();
 
@@ -204,8 +247,6 @@ public class SpanTest {
     clientWithTimeout =
         spannerWithTimeout.getDatabaseClient(
             DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
-
-    failOnOverkillTraceComponent.clearSpans();
   }
 
   @After
@@ -240,12 +281,116 @@ public class SpanTest {
         // Just consume the result set.
       }
     }
+    verifySingleUseSpans();
+  }
+
+  @Test
+  public void singleUseWithoutTryWithResources() {
+    // NOTE: This is bad practice. Always use try-with-resources. This test is only here to verify
+    // that our safeguards work.
+    ResultSet rs = client.singleUse().executeQuery(SELECT1);
+    while (rs.next()) {
+      // Just consume the result set.
+    }
+    verifySingleUseSpans();
+  }
+
+  private void verifySingleUseSpans() {
+
+    // OpenTelemetry spans should be 0 as OpenCensus is default enabled.
+    assertEquals(openTelemetrySpanExporter.getFinishedSpanItems().size(), 0);
+
+    // OpenCensus spans and events verification
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions",
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting/Resuming stream");
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions",
+            "Starting/Resuming stream");
+    if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
+  }
+
+  @Test
+  public void singleUseWithError() {
+    Statement invalidStatement = Statement.of("select * from foo");
+    mockSpanner.putStatementResults(
+        StatementResult.exception(invalidStatement, Status.INVALID_ARGUMENT.asRuntimeException()));
+
+    SpannerException spannerException =
+        assertThrows(
+            SpannerException.class,
+            () -> client.singleUse().executeQuery(INVALID_UPDATE_STATEMENT).next());
+    assertEquals(ErrorCode.INVALID_ARGUMENT, spannerException.getErrorCode());
+
+    // OpenTelemetry spans should be 0 as OpenCensus is default enabled.
+    assertEquals(openTelemetrySpanExporter.getFinishedSpanItems().size(), 0);
+
+    // OpenCensus spans and events verification
+    Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
+    assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions",
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting/Resuming stream",
+            "Stream broken. Not safe to retry");
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions",
+            "Starting/Resuming stream",
+            "Stream broken. Not safe to retry");
+    if (spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
   }
 
   @Test
@@ -261,9 +406,42 @@ public class SpanTest {
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadOnlyTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteStreamingQuery", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions",
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting/Resuming stream",
+            "Creating Transaction",
+            "Transaction Creation Done");
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions",
+            "Starting/Resuming stream",
+            "Creating Transaction",
+            "Transaction Creation Done");
+    if (isMultiplexedSessionsEnabled()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
   }
 
   @Test
@@ -273,9 +451,47 @@ public class SpanTest {
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.Commit", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Starting Commit",
+            "Commit Done",
+            "Transaction Attempt Succeeded",
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions");
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Starting Commit",
+            "Commit Done",
+            "Transaction Attempt Succeeded",
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Creating 2 sessions");
+    if (isMultiplexedSessionsEnabled()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
   }
 
   @Test
@@ -288,10 +504,64 @@ public class SpanTest {
     assertEquals(ErrorCode.INVALID_ARGUMENT, e.getErrorCode());
 
     Map<String, Boolean> spans = failOnOverkillTraceComponent.getSpans();
-    assertThat(spans.size()).isEqualTo(4);
+
+    if (isMultiplexedSessionsEnabled()) {
+      assertEquals(spans.toString(), 5, spans.size());
+      assertThat(spans).containsEntry("CloudSpannerOperation.CreateMultiplexedSession", true);
+    } else {
+      assertThat(spans.size()).isEqualTo(4);
+    }
     assertThat(spans).containsEntry("CloudSpanner.ReadWriteTransaction", true);
+    assertThat(spans).containsEntry("CloudSpannerOperation.ExecuteUpdate", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessions", true);
-    assertThat(spans).containsEntry("SessionPool.WaitForSession", true);
     assertThat(spans).containsEntry("CloudSpannerOperation.BatchCreateSessionsRequest", true);
+
+    List<String> expectedAnnotations =
+        ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Transaction Attempt Failed in user operation",
+            "Requesting 2 sessions",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions");
+    List<String> expectedAnnotationsForMultiplexedSession =
+        ImmutableList.of(
+            "Acquiring session",
+            "Acquired session",
+            "Using Session",
+            "Starting Transaction Attempt",
+            "Transaction Attempt Failed in user operation",
+            "Requesting 2 sessions",
+            "Request for 1 multiplexed session returned 1 session",
+            "Request for 2 sessions returned 2 sessions",
+            "Creating 2 sessions");
+    if (isMultiplexedSessionsEnabled()) {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotationsForMultiplexedSession);
+    } else {
+      verifyAnnotations(
+          failOnOverkillTraceComponent.getAnnotations().stream()
+              .distinct()
+              .collect(Collectors.toList()),
+          expectedAnnotations);
+    }
+  }
+
+  private void verifyAnnotations(List<String> actualAnnotations, List<String> expectedAnnotations) {
+    assertEquals(
+        expectedAnnotations.stream().sorted().collect(Collectors.toList()),
+        actualAnnotations.stream().distinct().sorted().collect(Collectors.toList()));
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

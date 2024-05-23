@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,25 +43,37 @@ import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
 import com.google.spanner.admin.instance.v1.InstanceName;
+import com.google.spanner.admin.instance.v1.InstancePartition;
+import com.google.spanner.admin.instance.v1.InstancePartitionName;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
 import java.util.List;
@@ -106,19 +118,460 @@ import javax.annotation.Generated;
  * <p>Note: close() needs to be called on the InstanceAdminClient object to clean up resources such
  * as threads. In the example above, try-with-resources is used, which automatically calls close().
  *
- * <p>The surface of this class includes several types of Java methods for each of the API's
- * methods:
- *
- * <ol>
- *   <li>A "flattened" method. With this type of method, the fields of the request type have been
- *       converted into function parameters. It may be the case that not all fields are available as
- *       parameters, and not every API method will have a flattened method entry point.
- *   <li>A "request object" method. This type of method only takes one parameter, a request object,
- *       which must be constructed before the call. Not every API method will have a request object
- *       method.
- *   <li>A "callable" method. This type of method takes no parameters and returns an immutable API
- *       callable object, which can be used to initiate calls to the service.
- * </ol>
+ * <table>
+ *    <caption>Methods</caption>
+ *    <tr>
+ *      <th>Method</th>
+ *      <th>Description</th>
+ *      <th>Method Variants</th>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListInstanceConfigs</td>
+ *      <td><p> Lists the supported instance configurations for a given project.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listInstanceConfigs(ListInstanceConfigsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listInstanceConfigs(ProjectName parent)
+ *           <li><p> listInstanceConfigs(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listInstanceConfigsPagedCallable()
+ *           <li><p> listInstanceConfigsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetInstanceConfig</td>
+ *      <td><p> Gets information about a particular instance configuration.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getInstanceConfig(GetInstanceConfigRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getInstanceConfig(InstanceConfigName name)
+ *           <li><p> getInstanceConfig(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getInstanceConfigCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> CreateInstanceConfig</td>
+ *      <td><p> Creates an instance config and begins preparing it to be used. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of preparing the new instance config. The instance config name is assigned by the caller. If the named instance config already exists, `CreateInstanceConfig` returns `ALREADY_EXISTS`.
+ * <p>  Immediately after the request returns:
+ * <p>    &#42; The instance config is readable via the API, with all requested     attributes. The instance config's     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]     field is set to true. Its state is `CREATING`.
+ * <p>  While the operation is pending:
+ * <p>    &#42; Cancelling the operation renders the instance config immediately     unreadable via the API.   &#42; Except for deleting the creating resource, all other attempts to modify     the instance config are rejected.
+ * <p>  Upon completion of the returned operation:
+ * <p>    &#42; Instances can be created using the instance configuration.   &#42; The instance config's   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]   field becomes false. Its state becomes `READY`.
+ * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance config. The [metadata][google.longrunning.Operation.metadata] field type is [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata]. The [response][google.longrunning.Operation.response] field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+ * <p>  Authorization requires `spanner.instanceConfigs.create` permission on the resource [parent][google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> createInstanceConfigAsync(CreateInstanceConfigRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> createInstanceConfigAsync(ProjectName parent, InstanceConfig instanceConfig, String instanceConfigId)
+ *           <li><p> createInstanceConfigAsync(String parent, InstanceConfig instanceConfig, String instanceConfigId)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> createInstanceConfigOperationCallable()
+ *           <li><p> createInstanceConfigCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> UpdateInstanceConfig</td>
+ *      <td><p> Updates an instance config. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of updating the instance. If the named instance config does not exist, returns `NOT_FOUND`.
+ * <p>  Only user managed configurations can be updated.
+ * <p>  Immediately after the request returns:
+ * <p>    &#42; The instance config's     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]     field is set to true.
+ * <p>  While the operation is pending:
+ * <p>    &#42; Cancelling the operation sets its metadata's     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].     The operation is guaranteed to succeed at undoing all changes, after     which point it terminates with a `CANCELLED` status.   &#42; All other attempts to modify the instance config are rejected.   &#42; Reading the instance config via the API continues to give the     pre-request values.
+ * <p>  Upon completion of the returned operation:
+ * <p>    &#42; Creating instances using the instance configuration uses the new     values.   &#42; The instance config's new values are readable via the API.   &#42; The instance config's   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]   field becomes false.
+ * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance config modification.  The [metadata][google.longrunning.Operation.metadata] field type is [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata]. The [response][google.longrunning.Operation.response] field type is [InstanceConfig][google.spanner.admin.instance.v1.InstanceConfig], if successful.
+ * <p>  Authorization requires `spanner.instanceConfigs.update` permission on the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> updateInstanceConfigAsync(UpdateInstanceConfigRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> updateInstanceConfigAsync(InstanceConfig instanceConfig, FieldMask updateMask)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> updateInstanceConfigOperationCallable()
+ *           <li><p> updateInstanceConfigCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> DeleteInstanceConfig</td>
+ *      <td><p> Deletes the instance config. Deletion is only allowed when no instances are using the configuration. If any instances are using the config, returns `FAILED_PRECONDITION`.
+ * <p>  Only user managed configurations can be deleted.
+ * <p>  Authorization requires `spanner.instanceConfigs.delete` permission on the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> deleteInstanceConfig(DeleteInstanceConfigRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> deleteInstanceConfig(InstanceConfigName name)
+ *           <li><p> deleteInstanceConfig(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> deleteInstanceConfigCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListInstanceConfigOperations</td>
+ *      <td><p> Lists the user-managed instance config [long-running operations][google.longrunning.Operation] in the given project. An instance config operation has a name of the form `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`. The long-running operation [metadata][google.longrunning.Operation.metadata] field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations. Operations returned are ordered by `operation.metadata.value.start_time` in descending order starting from the most recently started operation.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listInstanceConfigOperations(ListInstanceConfigOperationsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listInstanceConfigOperations(ProjectName parent)
+ *           <li><p> listInstanceConfigOperations(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listInstanceConfigOperationsPagedCallable()
+ *           <li><p> listInstanceConfigOperationsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListInstances</td>
+ *      <td><p> Lists all instances in the given project.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listInstances(ListInstancesRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listInstances(ProjectName parent)
+ *           <li><p> listInstances(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listInstancesPagedCallable()
+ *           <li><p> listInstancesCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListInstancePartitions</td>
+ *      <td><p> Lists all instance partitions for the given instance.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listInstancePartitions(ListInstancePartitionsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listInstancePartitions(InstanceName parent)
+ *           <li><p> listInstancePartitions(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listInstancePartitionsPagedCallable()
+ *           <li><p> listInstancePartitionsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetInstance</td>
+ *      <td><p> Gets information about a particular instance.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getInstance(GetInstanceRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getInstance(InstanceName name)
+ *           <li><p> getInstance(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getInstanceCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> CreateInstance</td>
+ *      <td><p> Creates an instance and begins preparing it to begin serving. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of preparing the new instance. The instance name is assigned by the caller. If the named instance already exists, `CreateInstance` returns `ALREADY_EXISTS`.
+ * <p>  Immediately upon completion of this request:
+ * <p>    &#42; The instance is readable via the API, with all requested attributes     but no allocated resources. Its state is `CREATING`.
+ * <p>  Until completion of the returned operation:
+ * <p>    &#42; Cancelling the operation renders the instance immediately unreadable     via the API.   &#42; The instance can be deleted.   &#42; All other attempts to modify the instance are rejected.
+ * <p>  Upon completion of the returned operation:
+ * <p>    &#42; Billing for all successfully-allocated resources begins (some types     may have lower than the requested levels).   &#42; Databases can be created in the instance.   &#42; The instance's allocated resource levels are readable via the API.   &#42; The instance's state becomes `READY`.
+ * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance.  The [metadata][google.longrunning.Operation.metadata] field type is [CreateInstanceMetadata][google.spanner.admin.instance.v1.CreateInstanceMetadata]. The [response][google.longrunning.Operation.response] field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> createInstanceAsync(CreateInstanceRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> createInstanceAsync(ProjectName parent, String instanceId, Instance instance)
+ *           <li><p> createInstanceAsync(String parent, String instanceId, Instance instance)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> createInstanceOperationCallable()
+ *           <li><p> createInstanceCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> UpdateInstance</td>
+ *      <td><p> Updates an instance, and begins allocating or releasing resources as requested. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of updating the instance. If the named instance does not exist, returns `NOT_FOUND`.
+ * <p>  Immediately upon completion of this request:
+ * <p>    &#42; For resource types for which a decrease in the instance's allocation     has been requested, billing is based on the newly-requested level.
+ * <p>  Until completion of the returned operation:
+ * <p>    &#42; Cancelling the operation sets its metadata's     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time],     and begins restoring resources to their pre-request values. The     operation is guaranteed to succeed at undoing all resource changes,     after which point it terminates with a `CANCELLED` status.   &#42; All other attempts to modify the instance are rejected.   &#42; Reading the instance via the API continues to give the pre-request     resource levels.
+ * <p>  Upon completion of the returned operation:
+ * <p>    &#42; Billing begins for all successfully-allocated resources (some types     may have lower than the requested levels).   &#42; All newly-reserved resources are available for serving the instance's     tables.   &#42; The instance's new resource levels are readable via the API.
+ * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance modification.  The [metadata][google.longrunning.Operation.metadata] field type is [UpdateInstanceMetadata][google.spanner.admin.instance.v1.UpdateInstanceMetadata]. The [response][google.longrunning.Operation.response] field type is [Instance][google.spanner.admin.instance.v1.Instance], if successful.
+ * <p>  Authorization requires `spanner.instances.update` permission on the resource [name][google.spanner.admin.instance.v1.Instance.name].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> updateInstanceAsync(UpdateInstanceRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> updateInstanceAsync(Instance instance, FieldMask fieldMask)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> updateInstanceOperationCallable()
+ *           <li><p> updateInstanceCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> DeleteInstance</td>
+ *      <td><p> Deletes an instance.
+ * <p>  Immediately upon completion of the request:
+ * <p>    &#42; Billing ceases for all of the instance's reserved resources.
+ * <p>  Soon afterward:
+ * <p>    &#42; The instance and &#42;all of its databases&#42; immediately and     irrevocably disappear from the API. All data in the databases     is permanently deleted.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> deleteInstance(DeleteInstanceRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> deleteInstance(InstanceName name)
+ *           <li><p> deleteInstance(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> deleteInstanceCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> SetIamPolicy</td>
+ *      <td><p> Sets the access control policy on an instance resource. Replaces any existing policy.
+ * <p>  Authorization requires `spanner.instances.setIamPolicy` on [resource][google.iam.v1.SetIamPolicyRequest.resource].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> setIamPolicy(SetIamPolicyRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> setIamPolicy(ResourceName resource, Policy policy)
+ *           <li><p> setIamPolicy(String resource, Policy policy)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> setIamPolicyCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetIamPolicy</td>
+ *      <td><p> Gets the access control policy for an instance resource. Returns an empty policy if an instance exists but does not have a policy set.
+ * <p>  Authorization requires `spanner.instances.getIamPolicy` on [resource][google.iam.v1.GetIamPolicyRequest.resource].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getIamPolicy(GetIamPolicyRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getIamPolicy(ResourceName resource)
+ *           <li><p> getIamPolicy(String resource)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getIamPolicyCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> TestIamPermissions</td>
+ *      <td><p> Returns permissions that the caller has on the specified instance resource.
+ * <p>  Attempting this RPC on a non-existent Cloud Spanner instance resource will result in a NOT_FOUND error if the user has `spanner.instances.list` permission on the containing Google Cloud Project. Otherwise returns an empty set of permissions.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> testIamPermissions(TestIamPermissionsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> testIamPermissions(ResourceName resource, List&lt;String&gt; permissions)
+ *           <li><p> testIamPermissions(String resource, List&lt;String&gt; permissions)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> testIamPermissionsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetInstancePartition</td>
+ *      <td><p> Gets information about a particular instance partition.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getInstancePartition(GetInstancePartitionRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getInstancePartition(InstancePartitionName name)
+ *           <li><p> getInstancePartition(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getInstancePartitionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> CreateInstancePartition</td>
+ *      <td><p> Creates an instance partition and begins preparing it to be used. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of preparing the new instance partition. The instance partition name is assigned by the caller. If the named instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+ * <p>  Immediately upon completion of this request:
+ * <p>    &#42; The instance partition is readable via the API, with all requested     attributes but no allocated resources. Its state is `CREATING`.
+ * <p>  Until completion of the returned operation:
+ * <p>    &#42; Cancelling the operation renders the instance partition immediately     unreadable via the API.   &#42; The instance partition can be deleted.   &#42; All other attempts to modify the instance partition are rejected.
+ * <p>  Upon completion of the returned operation:
+ * <p>    &#42; Billing for all successfully-allocated resources begins (some types     may have lower than the requested levels).   &#42; Databases can start using this instance partition.   &#42; The instance partition's allocated resource levels are readable via the     API.   &#42; The instance partition's state becomes `READY`.
+ * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the instance partition.  The [metadata][google.longrunning.Operation.metadata] field type is [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata]. The [response][google.longrunning.Operation.response] field type is [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> createInstancePartitionAsync(CreateInstancePartitionRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> createInstancePartitionAsync(InstanceName parent, InstancePartition instancePartition, String instancePartitionId)
+ *           <li><p> createInstancePartitionAsync(String parent, InstancePartition instancePartition, String instancePartitionId)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> createInstancePartitionOperationCallable()
+ *           <li><p> createInstancePartitionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> DeleteInstancePartition</td>
+ *      <td><p> Deletes an existing instance partition. Requires that the instance partition is not used by any database or backup and is not the default instance partition of an instance.
+ * <p>  Authorization requires `spanner.instancePartitions.delete` permission on the resource [name][google.spanner.admin.instance.v1.InstancePartition.name].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> deleteInstancePartition(DeleteInstancePartitionRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> deleteInstancePartition(InstancePartitionName name)
+ *           <li><p> deleteInstancePartition(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> deleteInstancePartitionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> UpdateInstancePartition</td>
+ *      <td><p> Updates an instance partition, and begins allocating or releasing resources as requested. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of updating the instance partition. If the named instance partition does not exist, returns `NOT_FOUND`.
+ * <p>  Immediately upon completion of this request:
+ * <p>    &#42; For resource types for which a decrease in the instance partition's   allocation has been requested, billing is based on the newly-requested   level.
+ * <p>  Until completion of the returned operation:
+ * <p>    &#42; Cancelling the operation sets its metadata's     [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],     and begins restoring resources to their pre-request values. The     operation is guaranteed to succeed at undoing all resource changes,     after which point it terminates with a `CANCELLED` status.   &#42; All other attempts to modify the instance partition are rejected.   &#42; Reading the instance partition via the API continues to give the     pre-request resource levels.
+ * <p>  Upon completion of the returned operation:
+ * <p>    &#42; Billing begins for all successfully-allocated resources (some types     may have lower than the requested levels).   &#42; All newly-reserved resources are available for serving the instance     partition's tables.   &#42; The instance partition's new resource levels are readable via the API.
+ * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to track the instance partition modification. The [metadata][google.longrunning.Operation.metadata] field type is [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata]. The [response][google.longrunning.Operation.response] field type is [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+ * <p>  Authorization requires `spanner.instancePartitions.update` permission on the resource [name][google.spanner.admin.instance.v1.InstancePartition.name].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> updateInstancePartitionAsync(UpdateInstancePartitionRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> updateInstancePartitionAsync(InstancePartition instancePartition, FieldMask fieldMask)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> updateInstancePartitionOperationCallable()
+ *           <li><p> updateInstancePartitionCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListInstancePartitionOperations</td>
+ *      <td><p> Lists instance partition [long-running operations][google.longrunning.Operation] in the given instance. An instance partition operation has a name of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`. The long-running operation [metadata][google.longrunning.Operation.metadata] field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations. Operations returned are ordered by `operation.metadata.value.start_time` in descending order starting from the most recently started operation.
+ * <p>  Authorization requires `spanner.instancePartitionOperations.list` permission on the resource [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listInstancePartitionOperations(ListInstancePartitionOperationsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listInstancePartitionOperations(InstanceName parent)
+ *           <li><p> listInstancePartitionOperations(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listInstancePartitionOperationsPagedCallable()
+ *           <li><p> listInstancePartitionOperationsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *  </table>
  *
  * <p>See the individual methods for example code.
  *
@@ -1592,6 +2045,7 @@ public class InstanceAdminClient implements BackgroundResource {
    *           .setPageSize(883849137)
    *           .setPageToken("pageToken873572522")
    *           .setFilter("filter-1274492040")
+   *           .setInstanceDeadline(Timestamp.newBuilder().build())
    *           .build();
    *   for (Instance element : instanceAdminClient.listInstances(request).iterateAll()) {
    *     // doThingsWith(element);
@@ -1625,6 +2079,7 @@ public class InstanceAdminClient implements BackgroundResource {
    *           .setPageSize(883849137)
    *           .setPageToken("pageToken873572522")
    *           .setFilter("filter-1274492040")
+   *           .setInstanceDeadline(Timestamp.newBuilder().build())
    *           .build();
    *   ApiFuture<Instance> future =
    *       instanceAdminClient.listInstancesPagedCallable().futureCall(request);
@@ -1659,6 +2114,7 @@ public class InstanceAdminClient implements BackgroundResource {
    *           .setPageSize(883849137)
    *           .setPageToken("pageToken873572522")
    *           .setFilter("filter-1274492040")
+   *           .setInstanceDeadline(Timestamp.newBuilder().build())
    *           .build();
    *   while (true) {
    *     ListInstancesResponse response = instanceAdminClient.listInstancesCallable().call(request);
@@ -1677,6 +2133,180 @@ public class InstanceAdminClient implements BackgroundResource {
    */
   public final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable() {
     return stub.listInstancesCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists all instance partitions for the given instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (InstancePartition element :
+   *       instanceAdminClient.listInstancePartitions(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The instance whose instance partitions should be listed. Values are of
+   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancePartitionsPagedResponse listInstancePartitions(InstanceName parent) {
+    ListInstancePartitionsRequest request =
+        ListInstancePartitionsRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listInstancePartitions(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists all instance partitions for the given instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   for (InstancePartition element :
+   *       instanceAdminClient.listInstancePartitions(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The instance whose instance partitions should be listed. Values are of
+   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancePartitionsPagedResponse listInstancePartitions(String parent) {
+    ListInstancePartitionsRequest request =
+        ListInstancePartitionsRequest.newBuilder().setParent(parent).build();
+    return listInstancePartitions(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists all instance partitions for the given instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancePartitionsRequest request =
+   *       ListInstancePartitionsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setInstancePartitionDeadline(Timestamp.newBuilder().build())
+   *           .build();
+   *   for (InstancePartition element :
+   *       instanceAdminClient.listInstancePartitions(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancePartitionsPagedResponse listInstancePartitions(
+      ListInstancePartitionsRequest request) {
+    return listInstancePartitionsPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists all instance partitions for the given instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancePartitionsRequest request =
+   *       ListInstancePartitionsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setInstancePartitionDeadline(Timestamp.newBuilder().build())
+   *           .build();
+   *   ApiFuture<InstancePartition> future =
+   *       instanceAdminClient.listInstancePartitionsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (InstancePartition element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsPagedResponse>
+      listInstancePartitionsPagedCallable() {
+    return stub.listInstancePartitionsPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists all instance partitions for the given instance.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancePartitionsRequest request =
+   *       ListInstancePartitionsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setInstancePartitionDeadline(Timestamp.newBuilder().build())
+   *           .build();
+   *   while (true) {
+   *     ListInstancePartitionsResponse response =
+   *         instanceAdminClient.listInstancePartitionsCallable().call(request);
+   *     for (InstancePartition element : response.getInstancePartitionsList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+      listInstancePartitionsCallable() {
+    return stub.listInstancePartitionsCallable();
   }
 
   // AUTO-GENERATED DOCUMENTATION AND METHOD.
@@ -2920,6 +3550,1098 @@ public class InstanceAdminClient implements BackgroundResource {
     return stub.testIamPermissionsCallable();
   }
 
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Gets information about a particular instance partition.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstancePartitionName name =
+   *       InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]");
+   *   InstancePartition response = instanceAdminClient.getInstancePartition(name);
+   * }
+   * }</pre>
+   *
+   * @param name Required. The name of the requested instance partition. Values are of the form
+   *     `projects/{project}/instances/{instance}/instancePartitions/{instance_partition}`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final InstancePartition getInstancePartition(InstancePartitionName name) {
+    GetInstancePartitionRequest request =
+        GetInstancePartitionRequest.newBuilder()
+            .setName(name == null ? null : name.toString())
+            .build();
+    return getInstancePartition(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Gets information about a particular instance partition.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String name =
+   *       InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]").toString();
+   *   InstancePartition response = instanceAdminClient.getInstancePartition(name);
+   * }
+   * }</pre>
+   *
+   * @param name Required. The name of the requested instance partition. Values are of the form
+   *     `projects/{project}/instances/{instance}/instancePartitions/{instance_partition}`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final InstancePartition getInstancePartition(String name) {
+    GetInstancePartitionRequest request =
+        GetInstancePartitionRequest.newBuilder().setName(name).build();
+    return getInstancePartition(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Gets information about a particular instance partition.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetInstancePartitionRequest request =
+   *       GetInstancePartitionRequest.newBuilder()
+   *           .setName(
+   *               InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+   *                   .toString())
+   *           .build();
+   *   InstancePartition response = instanceAdminClient.getInstancePartition(request);
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final InstancePartition getInstancePartition(GetInstancePartitionRequest request) {
+    return getInstancePartitionCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Gets information about a particular instance partition.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   GetInstancePartitionRequest request =
+   *       GetInstancePartitionRequest.newBuilder()
+   *           .setName(
+   *               InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+   *                   .toString())
+   *           .build();
+   *   ApiFuture<InstancePartition> future =
+   *       instanceAdminClient.getInstancePartitionCallable().futureCall(request);
+   *   // Do something.
+   *   InstancePartition response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionCallable() {
+    return stub.getInstancePartitionCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance partition and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance partition. The instance partition name is assigned by the caller. If the named
+   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance partition is readable via the API, with all requested attributes but no
+   * allocated resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance partition immediately unreadable via the
+   * API. &#42; The instance partition can be deleted. &#42; All other attempts to modify the
+   * instance partition are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can start using this instance partition. &#42; The
+   * instance partition's allocated resource levels are readable via the API. &#42; The instance
+   * partition's state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
+   * field type is
+   * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   InstancePartition instancePartition = InstancePartition.newBuilder().build();
+   *   String instancePartitionId = "instancePartitionId1364450768";
+   *   InstancePartition response =
+   *       instanceAdminClient
+   *           .createInstancePartitionAsync(parent, instancePartition, instancePartitionId)
+   *           .get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the instance in which to create the instance partition.
+   *     Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param instancePartition Required. The instance partition to create. The
+   *     instance_partition.name may be omitted, but if specified must be
+   *     `&lt;parent&gt;/instancePartitions/&lt;instance_partition_id&gt;`.
+   * @param instancePartitionId Required. The ID of the instance partition to create. Valid
+   *     identifiers are of the form `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64
+   *     characters in length.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionAsync(
+          InstanceName parent, InstancePartition instancePartition, String instancePartitionId) {
+    CreateInstancePartitionRequest request =
+        CreateInstancePartitionRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .setInstancePartition(instancePartition)
+            .setInstancePartitionId(instancePartitionId)
+            .build();
+    return createInstancePartitionAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance partition and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance partition. The instance partition name is assigned by the caller. If the named
+   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance partition is readable via the API, with all requested attributes but no
+   * allocated resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance partition immediately unreadable via the
+   * API. &#42; The instance partition can be deleted. &#42; All other attempts to modify the
+   * instance partition are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can start using this instance partition. &#42; The
+   * instance partition's allocated resource levels are readable via the API. &#42; The instance
+   * partition's state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
+   * field type is
+   * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   InstancePartition instancePartition = InstancePartition.newBuilder().build();
+   *   String instancePartitionId = "instancePartitionId1364450768";
+   *   InstancePartition response =
+   *       instanceAdminClient
+   *           .createInstancePartitionAsync(parent, instancePartition, instancePartitionId)
+   *           .get();
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The name of the instance in which to create the instance partition.
+   *     Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @param instancePartition Required. The instance partition to create. The
+   *     instance_partition.name may be omitted, but if specified must be
+   *     `&lt;parent&gt;/instancePartitions/&lt;instance_partition_id&gt;`.
+   * @param instancePartitionId Required. The ID of the instance partition to create. Valid
+   *     identifiers are of the form `[a-z][-a-z0-9]&#42;[a-z0-9]` and must be between 2 and 64
+   *     characters in length.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionAsync(
+          String parent, InstancePartition instancePartition, String instancePartitionId) {
+    CreateInstancePartitionRequest request =
+        CreateInstancePartitionRequest.newBuilder()
+            .setParent(parent)
+            .setInstancePartition(instancePartition)
+            .setInstancePartitionId(instancePartitionId)
+            .build();
+    return createInstancePartitionAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance partition and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance partition. The instance partition name is assigned by the caller. If the named
+   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance partition is readable via the API, with all requested attributes but no
+   * allocated resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance partition immediately unreadable via the
+   * API. &#42; The instance partition can be deleted. &#42; All other attempts to modify the
+   * instance partition are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can start using this instance partition. &#42; The
+   * instance partition's allocated resource levels are readable via the API. &#42; The instance
+   * partition's state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
+   * field type is
+   * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstancePartitionRequest request =
+   *       CreateInstancePartitionRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setInstancePartitionId("instancePartitionId1364450768")
+   *           .setInstancePartition(InstancePartition.newBuilder().build())
+   *           .build();
+   *   InstancePartition response = instanceAdminClient.createInstancePartitionAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionAsync(CreateInstancePartitionRequest request) {
+    return createInstancePartitionOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance partition and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance partition. The instance partition name is assigned by the caller. If the named
+   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance partition is readable via the API, with all requested attributes but no
+   * allocated resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance partition immediately unreadable via the
+   * API. &#42; The instance partition can be deleted. &#42; All other attempts to modify the
+   * instance partition are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can start using this instance partition. &#42; The
+   * instance partition's allocated resource levels are readable via the API. &#42; The instance
+   * partition's state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
+   * field type is
+   * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstancePartitionRequest request =
+   *       CreateInstancePartitionRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setInstancePartitionId("instancePartitionId1364450768")
+   *           .setInstancePartition(InstancePartition.newBuilder().build())
+   *           .build();
+   *   OperationFuture<InstancePartition, CreateInstancePartitionMetadata> future =
+   *       instanceAdminClient.createInstancePartitionOperationCallable().futureCall(request);
+   *   // Do something.
+   *   InstancePartition response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationCallable() {
+    return stub.createInstancePartitionOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Creates an instance partition and begins preparing it to be used. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the progress of preparing the new
+   * instance partition. The instance partition name is assigned by the caller. If the named
+   * instance partition already exists, `CreateInstancePartition` returns `ALREADY_EXISTS`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; The instance partition is readable via the API, with all requested attributes but no
+   * allocated resources. Its state is `CREATING`.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation renders the instance partition immediately unreadable via the
+   * API. &#42; The instance partition can be deleted. &#42; All other attempts to modify the
+   * instance partition are rejected.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing for all successfully-allocated resources begins (some types may have lower
+   * than the requested levels). &#42; Databases can start using this instance partition. &#42; The
+   * instance partition's allocated resource levels are readable via the API. &#42; The instance
+   * partition's state becomes `READY`.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track creation of the instance partition. The [metadata][google.longrunning.Operation.metadata]
+   * field type is
+   * [CreateInstancePartitionMetadata][google.spanner.admin.instance.v1.CreateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   CreateInstancePartitionRequest request =
+   *       CreateInstancePartitionRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setInstancePartitionId("instancePartitionId1364450768")
+   *           .setInstancePartition(InstancePartition.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.createInstancePartitionCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionCallable() {
+    return stub.createInstancePartitionCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes an existing instance partition. Requires that the instance partition is not used by any
+   * database or backup and is not the default instance partition of an instance.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstancePartitionName name =
+   *       InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]");
+   *   instanceAdminClient.deleteInstancePartition(name);
+   * }
+   * }</pre>
+   *
+   * @param name Required. The name of the instance partition to be deleted. Values are of the form
+   *     `projects/{project}/instances/{instance}/instancePartitions/{instance_partition}`
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteInstancePartition(InstancePartitionName name) {
+    DeleteInstancePartitionRequest request =
+        DeleteInstancePartitionRequest.newBuilder()
+            .setName(name == null ? null : name.toString())
+            .build();
+    deleteInstancePartition(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes an existing instance partition. Requires that the instance partition is not used by any
+   * database or backup and is not the default instance partition of an instance.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String name =
+   *       InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]").toString();
+   *   instanceAdminClient.deleteInstancePartition(name);
+   * }
+   * }</pre>
+   *
+   * @param name Required. The name of the instance partition to be deleted. Values are of the form
+   *     `projects/{project}/instances/{instance}/instancePartitions/{instance_partition}`
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteInstancePartition(String name) {
+    DeleteInstancePartitionRequest request =
+        DeleteInstancePartitionRequest.newBuilder().setName(name).build();
+    deleteInstancePartition(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes an existing instance partition. Requires that the instance partition is not used by any
+   * database or backup and is not the default instance partition of an instance.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   DeleteInstancePartitionRequest request =
+   *       DeleteInstancePartitionRequest.newBuilder()
+   *           .setName(
+   *               InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+   *                   .toString())
+   *           .setEtag("etag3123477")
+   *           .build();
+   *   instanceAdminClient.deleteInstancePartition(request);
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final void deleteInstancePartition(DeleteInstancePartitionRequest request) {
+    deleteInstancePartitionCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Deletes an existing instance partition. Requires that the instance partition is not used by any
+   * database or backup and is not the default instance partition of an instance.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.delete` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   DeleteInstancePartitionRequest request =
+   *       DeleteInstancePartitionRequest.newBuilder()
+   *           .setName(
+   *               InstancePartitionName.of("[PROJECT]", "[INSTANCE]", "[INSTANCE_PARTITION]")
+   *                   .toString())
+   *           .setEtag("etag3123477")
+   *           .build();
+   *   ApiFuture<Empty> future =
+   *       instanceAdminClient.deleteInstancePartitionCallable().futureCall(request);
+   *   // Do something.
+   *   future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionCallable() {
+    return stub.deleteInstancePartitionCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance partition, and begins allocating or releasing resources as requested. The
+   * returned [long-running operation][google.longrunning.Operation] can be used to track the
+   * progress of updating the instance partition. If the named instance partition does not exist,
+   * returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance partition's allocation has
+   * been requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+   * and begins restoring resources to their pre-request values. The operation is guaranteed to
+   * succeed at undoing all resource changes, after which point it terminates with a `CANCELLED`
+   * status. &#42; All other attempts to modify the instance partition are rejected. &#42; Reading
+   * the instance partition via the API continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance partition's tables. &#42; The instance partition's new resource levels are readable
+   * via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track the instance partition modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstancePartition instancePartition = InstancePartition.newBuilder().build();
+   *   FieldMask fieldMask = FieldMask.newBuilder().build();
+   *   InstancePartition response =
+   *       instanceAdminClient.updateInstancePartitionAsync(instancePartition, fieldMask).get();
+   * }
+   * }</pre>
+   *
+   * @param instancePartition Required. The instance partition to update, which must always include
+   *     the instance partition name. Otherwise, only fields mentioned in
+   *     [field_mask][google.spanner.admin.instance.v1.UpdateInstancePartitionRequest.field_mask]
+   *     need be included.
+   * @param fieldMask Required. A mask specifying which fields in
+   *     [InstancePartition][google.spanner.admin.instance.v1.InstancePartition] should be updated.
+   *     The field mask must always be specified; this prevents any future fields in
+   *     [InstancePartition][google.spanner.admin.instance.v1.InstancePartition] from being erased
+   *     accidentally by clients that do not know about them.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionAsync(InstancePartition instancePartition, FieldMask fieldMask) {
+    UpdateInstancePartitionRequest request =
+        UpdateInstancePartitionRequest.newBuilder()
+            .setInstancePartition(instancePartition)
+            .setFieldMask(fieldMask)
+            .build();
+    return updateInstancePartitionAsync(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance partition, and begins allocating or releasing resources as requested. The
+   * returned [long-running operation][google.longrunning.Operation] can be used to track the
+   * progress of updating the instance partition. If the named instance partition does not exist,
+   * returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance partition's allocation has
+   * been requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+   * and begins restoring resources to their pre-request values. The operation is guaranteed to
+   * succeed at undoing all resource changes, after which point it terminates with a `CANCELLED`
+   * status. &#42; All other attempts to modify the instance partition are rejected. &#42; Reading
+   * the instance partition via the API continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance partition's tables. &#42; The instance partition's new resource levels are readable
+   * via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track the instance partition modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstancePartitionRequest request =
+   *       UpdateInstancePartitionRequest.newBuilder()
+   *           .setInstancePartition(InstancePartition.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   InstancePartition response = instanceAdminClient.updateInstancePartitionAsync(request).get();
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final OperationFuture<InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionAsync(UpdateInstancePartitionRequest request) {
+    return updateInstancePartitionOperationCallable().futureCall(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance partition, and begins allocating or releasing resources as requested. The
+   * returned [long-running operation][google.longrunning.Operation] can be used to track the
+   * progress of updating the instance partition. If the named instance partition does not exist,
+   * returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance partition's allocation has
+   * been requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+   * and begins restoring resources to their pre-request values. The operation is guaranteed to
+   * succeed at undoing all resource changes, after which point it terminates with a `CANCELLED`
+   * status. &#42; All other attempts to modify the instance partition are rejected. &#42; Reading
+   * the instance partition via the API continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance partition's tables. &#42; The instance partition's new resource levels are readable
+   * via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track the instance partition modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstancePartitionRequest request =
+   *       UpdateInstancePartitionRequest.newBuilder()
+   *           .setInstancePartition(InstancePartition.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   OperationFuture<InstancePartition, UpdateInstancePartitionMetadata> future =
+   *       instanceAdminClient.updateInstancePartitionOperationCallable().futureCall(request);
+   *   // Do something.
+   *   InstancePartition response = future.get();
+   * }
+   * }</pre>
+   */
+  public final OperationCallable<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationCallable() {
+    return stub.updateInstancePartitionOperationCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Updates an instance partition, and begins allocating or releasing resources as requested. The
+   * returned [long-running operation][google.longrunning.Operation] can be used to track the
+   * progress of updating the instance partition. If the named instance partition does not exist,
+   * returns `NOT_FOUND`.
+   *
+   * <p>Immediately upon completion of this request:
+   *
+   * <p>&#42; For resource types for which a decrease in the instance partition's allocation has
+   * been requested, billing is based on the newly-requested level.
+   *
+   * <p>Until completion of the returned operation:
+   *
+   * <p>&#42; Cancelling the operation sets its metadata's
+   * [cancel_time][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time],
+   * and begins restoring resources to their pre-request values. The operation is guaranteed to
+   * succeed at undoing all resource changes, after which point it terminates with a `CANCELLED`
+   * status. &#42; All other attempts to modify the instance partition are rejected. &#42; Reading
+   * the instance partition via the API continues to give the pre-request resource levels.
+   *
+   * <p>Upon completion of the returned operation:
+   *
+   * <p>&#42; Billing begins for all successfully-allocated resources (some types may have lower
+   * than the requested levels). &#42; All newly-reserved resources are available for serving the
+   * instance partition's tables. &#42; The instance partition's new resource levels are readable
+   * via the API.
+   *
+   * <p>The returned [long-running operation][google.longrunning.Operation] will have a name of the
+   * format `&lt;instance_partition_name&gt;/operations/&lt;operation_id&gt;` and can be used to
+   * track the instance partition modification. The
+   * [metadata][google.longrunning.Operation.metadata] field type is
+   * [UpdateInstancePartitionMetadata][google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata].
+   * The [response][google.longrunning.Operation.response] field type is
+   * [InstancePartition][google.spanner.admin.instance.v1.InstancePartition], if successful.
+   *
+   * <p>Authorization requires `spanner.instancePartitions.update` permission on the resource
+   * [name][google.spanner.admin.instance.v1.InstancePartition.name].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   UpdateInstancePartitionRequest request =
+   *       UpdateInstancePartitionRequest.newBuilder()
+   *           .setInstancePartition(InstancePartition.newBuilder().build())
+   *           .setFieldMask(FieldMask.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.updateInstancePartitionCallable().futureCall(request);
+   *   // Do something.
+   *   Operation response = future.get();
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionCallable() {
+    return stub.updateInstancePartitionCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
+   * instance. An instance partition operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   InstanceName parent = InstanceName.of("[PROJECT]", "[INSTANCE]");
+   *   for (Operation element :
+   *       instanceAdminClient.listInstancePartitionOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The parent instance of the instance partition operations. Values are of
+   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancePartitionOperationsPagedResponse listInstancePartitionOperations(
+      InstanceName parent) {
+    ListInstancePartitionOperationsRequest request =
+        ListInstancePartitionOperationsRequest.newBuilder()
+            .setParent(parent == null ? null : parent.toString())
+            .build();
+    return listInstancePartitionOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
+   * instance. An instance partition operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   String parent = InstanceName.of("[PROJECT]", "[INSTANCE]").toString();
+   *   for (Operation element :
+   *       instanceAdminClient.listInstancePartitionOperations(parent).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param parent Required. The parent instance of the instance partition operations. Values are of
+   *     the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancePartitionOperationsPagedResponse listInstancePartitionOperations(
+      String parent) {
+    ListInstancePartitionOperationsRequest request =
+        ListInstancePartitionOperationsRequest.newBuilder().setParent(parent).build();
+    return listInstancePartitionOperations(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
+   * instance. An instance partition operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancePartitionOperationsRequest request =
+   *       ListInstancePartitionOperationsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setInstancePartitionDeadline(Timestamp.newBuilder().build())
+   *           .build();
+   *   for (Operation element :
+   *       instanceAdminClient.listInstancePartitionOperations(request).iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   *
+   * @param request The request object containing all of the parameters for the API call.
+   * @throws com.google.api.gax.rpc.ApiException if the remote call fails
+   */
+  public final ListInstancePartitionOperationsPagedResponse listInstancePartitionOperations(
+      ListInstancePartitionOperationsRequest request) {
+    return listInstancePartitionOperationsPagedCallable().call(request);
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
+   * instance. An instance partition operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancePartitionOperationsRequest request =
+   *       ListInstancePartitionOperationsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setInstancePartitionDeadline(Timestamp.newBuilder().build())
+   *           .build();
+   *   ApiFuture<Operation> future =
+   *       instanceAdminClient.listInstancePartitionOperationsPagedCallable().futureCall(request);
+   *   // Do something.
+   *   for (Operation element : future.get().iterateAll()) {
+   *     // doThingsWith(element);
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsPagedCallable() {
+    return stub.listInstancePartitionOperationsPagedCallable();
+  }
+
+  // AUTO-GENERATED DOCUMENTATION AND METHOD.
+  /**
+   * Lists instance partition [long-running operations][google.longrunning.Operation] in the given
+   * instance. An instance partition operation has a name of the form
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/instancePartitions/&lt;instance_partition&gt;/operations/&lt;operation&gt;`.
+   * The long-running operation [metadata][google.longrunning.Operation.metadata] field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned include those that
+   * have completed/failed/canceled within the last 7 days, and pending operations. Operations
+   * returned are ordered by `operation.metadata.value.start_time` in descending order starting from
+   * the most recently started operation.
+   *
+   * <p>Authorization requires `spanner.instancePartitionOperations.list` permission on the resource
+   * [parent][google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent].
+   *
+   * <p>Sample code:
+   *
+   * <pre>{@code
+   * // This snippet has been automatically generated and should be regarded as a code template only.
+   * // It will require modifications to work:
+   * // - It may require correct/in-range values for request initialization.
+   * // - It may require specifying regional endpoints when creating the service client as shown in
+   * // https://cloud.google.com/java/docs/setup#configure_endpoints_for_the_client_library
+   * try (InstanceAdminClient instanceAdminClient = InstanceAdminClient.create()) {
+   *   ListInstancePartitionOperationsRequest request =
+   *       ListInstancePartitionOperationsRequest.newBuilder()
+   *           .setParent(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+   *           .setFilter("filter-1274492040")
+   *           .setPageSize(883849137)
+   *           .setPageToken("pageToken873572522")
+   *           .setInstancePartitionDeadline(Timestamp.newBuilder().build())
+   *           .build();
+   *   while (true) {
+   *     ListInstancePartitionOperationsResponse response =
+   *         instanceAdminClient.listInstancePartitionOperationsCallable().call(request);
+   *     for (Operation element : response.getOperationsList()) {
+   *       // doThingsWith(element);
+   *     }
+   *     String nextPageToken = response.getNextPageToken();
+   *     if (!Strings.isNullOrEmpty(nextPageToken)) {
+   *       request = request.toBuilder().setPageToken(nextPageToken).build();
+   *     } else {
+   *       break;
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
+  public final UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+      listInstancePartitionOperationsCallable() {
+    return stub.listInstancePartitionOperationsCallable();
+  }
+
   @Override
   public final void close() {
     stub.close();
@@ -3204,6 +4926,191 @@ public class InstanceAdminClient implements BackgroundResource {
     protected ListInstancesFixedSizeCollection createCollection(
         List<ListInstancesPage> pages, int collectionSize) {
       return new ListInstancesFixedSizeCollection(pages, collectionSize);
+    }
+  }
+
+  public static class ListInstancePartitionsPagedResponse
+      extends AbstractPagedListResponse<
+          ListInstancePartitionsRequest,
+          ListInstancePartitionsResponse,
+          InstancePartition,
+          ListInstancePartitionsPage,
+          ListInstancePartitionsFixedSizeCollection> {
+
+    public static ApiFuture<ListInstancePartitionsPagedResponse> createAsync(
+        PageContext<
+                ListInstancePartitionsRequest, ListInstancePartitionsResponse, InstancePartition>
+            context,
+        ApiFuture<ListInstancePartitionsResponse> futureResponse) {
+      ApiFuture<ListInstancePartitionsPage> futurePage =
+          ListInstancePartitionsPage.createEmptyPage().createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          input -> new ListInstancePartitionsPagedResponse(input),
+          MoreExecutors.directExecutor());
+    }
+
+    private ListInstancePartitionsPagedResponse(ListInstancePartitionsPage page) {
+      super(page, ListInstancePartitionsFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListInstancePartitionsPage
+      extends AbstractPage<
+          ListInstancePartitionsRequest,
+          ListInstancePartitionsResponse,
+          InstancePartition,
+          ListInstancePartitionsPage> {
+
+    private ListInstancePartitionsPage(
+        PageContext<
+                ListInstancePartitionsRequest, ListInstancePartitionsResponse, InstancePartition>
+            context,
+        ListInstancePartitionsResponse response) {
+      super(context, response);
+    }
+
+    private static ListInstancePartitionsPage createEmptyPage() {
+      return new ListInstancePartitionsPage(null, null);
+    }
+
+    @Override
+    protected ListInstancePartitionsPage createPage(
+        PageContext<
+                ListInstancePartitionsRequest, ListInstancePartitionsResponse, InstancePartition>
+            context,
+        ListInstancePartitionsResponse response) {
+      return new ListInstancePartitionsPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListInstancePartitionsPage> createPageAsync(
+        PageContext<
+                ListInstancePartitionsRequest, ListInstancePartitionsResponse, InstancePartition>
+            context,
+        ApiFuture<ListInstancePartitionsResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListInstancePartitionsFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListInstancePartitionsRequest,
+          ListInstancePartitionsResponse,
+          InstancePartition,
+          ListInstancePartitionsPage,
+          ListInstancePartitionsFixedSizeCollection> {
+
+    private ListInstancePartitionsFixedSizeCollection(
+        List<ListInstancePartitionsPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListInstancePartitionsFixedSizeCollection createEmptyCollection() {
+      return new ListInstancePartitionsFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListInstancePartitionsFixedSizeCollection createCollection(
+        List<ListInstancePartitionsPage> pages, int collectionSize) {
+      return new ListInstancePartitionsFixedSizeCollection(pages, collectionSize);
+    }
+  }
+
+  public static class ListInstancePartitionOperationsPagedResponse
+      extends AbstractPagedListResponse<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          Operation,
+          ListInstancePartitionOperationsPage,
+          ListInstancePartitionOperationsFixedSizeCollection> {
+
+    public static ApiFuture<ListInstancePartitionOperationsPagedResponse> createAsync(
+        PageContext<
+                ListInstancePartitionOperationsRequest,
+                ListInstancePartitionOperationsResponse,
+                Operation>
+            context,
+        ApiFuture<ListInstancePartitionOperationsResponse> futureResponse) {
+      ApiFuture<ListInstancePartitionOperationsPage> futurePage =
+          ListInstancePartitionOperationsPage.createEmptyPage()
+              .createPageAsync(context, futureResponse);
+      return ApiFutures.transform(
+          futurePage,
+          input -> new ListInstancePartitionOperationsPagedResponse(input),
+          MoreExecutors.directExecutor());
+    }
+
+    private ListInstancePartitionOperationsPagedResponse(ListInstancePartitionOperationsPage page) {
+      super(page, ListInstancePartitionOperationsFixedSizeCollection.createEmptyCollection());
+    }
+  }
+
+  public static class ListInstancePartitionOperationsPage
+      extends AbstractPage<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          Operation,
+          ListInstancePartitionOperationsPage> {
+
+    private ListInstancePartitionOperationsPage(
+        PageContext<
+                ListInstancePartitionOperationsRequest,
+                ListInstancePartitionOperationsResponse,
+                Operation>
+            context,
+        ListInstancePartitionOperationsResponse response) {
+      super(context, response);
+    }
+
+    private static ListInstancePartitionOperationsPage createEmptyPage() {
+      return new ListInstancePartitionOperationsPage(null, null);
+    }
+
+    @Override
+    protected ListInstancePartitionOperationsPage createPage(
+        PageContext<
+                ListInstancePartitionOperationsRequest,
+                ListInstancePartitionOperationsResponse,
+                Operation>
+            context,
+        ListInstancePartitionOperationsResponse response) {
+      return new ListInstancePartitionOperationsPage(context, response);
+    }
+
+    @Override
+    public ApiFuture<ListInstancePartitionOperationsPage> createPageAsync(
+        PageContext<
+                ListInstancePartitionOperationsRequest,
+                ListInstancePartitionOperationsResponse,
+                Operation>
+            context,
+        ApiFuture<ListInstancePartitionOperationsResponse> futureResponse) {
+      return super.createPageAsync(context, futureResponse);
+    }
+  }
+
+  public static class ListInstancePartitionOperationsFixedSizeCollection
+      extends AbstractFixedSizeCollection<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          Operation,
+          ListInstancePartitionOperationsPage,
+          ListInstancePartitionOperationsFixedSizeCollection> {
+
+    private ListInstancePartitionOperationsFixedSizeCollection(
+        List<ListInstancePartitionOperationsPage> pages, int collectionSize) {
+      super(pages, collectionSize);
+    }
+
+    private static ListInstancePartitionOperationsFixedSizeCollection createEmptyCollection() {
+      return new ListInstancePartitionOperationsFixedSizeCollection(null, 0);
+    }
+
+    @Override
+    protected ListInstancePartitionOperationsFixedSizeCollection createCollection(
+        List<ListInstancePartitionOperationsPage> pages, int collectionSize) {
+      return new ListInstancePartitionOperationsFixedSizeCollection(pages, collectionSize);
     }
   }
 }

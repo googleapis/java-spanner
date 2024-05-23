@@ -25,6 +25,10 @@ import static org.mockito.Mockito.when;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
@@ -36,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +50,14 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class AbstractReadContextTest {
+  private static final DirectedReadOptions DIRECTED_READ_OPTIONS =
+      DirectedReadOptions.newBuilder()
+          .setIncludeReplicas(
+              IncludeReplicas.newBuilder()
+                  .addReplicaSelections(
+                      ReplicaSelection.newBuilder().setLocation("us-west1").build()))
+          .build();
+
   @Parameter(0)
   public QueryOptions defaultQueryOptions;
 
@@ -87,6 +100,11 @@ public class AbstractReadContextTest {
     TransactionSelector getTransactionSelector() {
       return TransactionSelector.getDefaultInstance();
     }
+
+    @Override
+    Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
+      return null;
+    }
   }
 
   private final class TestReadContextWithTag extends AbstractReadContext {
@@ -97,6 +115,11 @@ public class AbstractReadContextTest {
     @Override
     TransactionSelector getTransactionSelector() {
       return TransactionSelector.getDefaultInstance();
+    }
+
+    @Override
+    Map<Option, ?> getTransactionChannelHint() {
+      return null;
     }
 
     String getTransactionTag() {
@@ -249,5 +272,16 @@ public class AbstractReadContextTest {
     assertThat(request.getRequestOptions().getRequestTag())
         .isEqualTo("app=spanner,env=test,action=query");
     assertThat(request.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
+  }
+
+  @Test
+  public void testGetExecuteSqlRequestBuilderWithDirectedReadOptions() {
+    ExecuteSqlRequest.Builder request =
+        context.getExecuteSqlRequestBuilder(
+            Statement.of("SELECT * FROM FOO"),
+            QueryMode.NORMAL,
+            Options.fromQueryOptions(Options.directedRead(DIRECTED_READ_OPTIONS)),
+            false);
+    assertEquals(DIRECTED_READ_OPTIONS, request.getDirectedReadOptions());
   }
 }

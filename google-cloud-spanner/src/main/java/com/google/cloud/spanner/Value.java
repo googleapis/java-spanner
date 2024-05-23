@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharSource;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
@@ -37,8 +38,10 @@ import com.google.protobuf.Value.KindCase;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -147,6 +150,20 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns a {@code FLOAT32} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value float32(@Nullable Float v) {
+    return new Float32Impl(v == null, v == null ? 0 : v);
+  }
+
+  /** Returns a {@code FLOAT32} value. */
+  public static Value float32(float v) {
+    return new Float32Impl(false, v);
+  }
+
+  /**
    * Returns a {@code FLOAT64} value.
    *
    * @param v the value, which may be null
@@ -235,6 +252,20 @@ public abstract class Value implements Serializable {
    */
   public static Value pgJsonb(@Nullable String v) {
     return new PgJsonbImpl(v == null, v);
+  }
+
+  /**
+   * Returns an {@code PG_OID} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value pgOid(@Nullable Long v) {
+    return new PgOidImpl(v == null, v == null ? 0 : v);
+  }
+
+  /** Returns an {@code PG_OID} value. */
+  public static Value pgOid(long v) {
+    return new PgOidImpl(false, v);
   }
 
   /**
@@ -452,6 +483,40 @@ public abstract class Value implements Serializable {
   }
 
   /**
+   * Returns an {@code ARRAY<FLOAT32>} value.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   */
+  public static Value float32Array(@Nullable float[] v) {
+    return float32Array(v, 0, v == null ? 0 : v.length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<FLOAT32>} value that takes its elements from a region of an array.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   * @param pos the start position of {@code v} to copy values from. Ignored if {@code v} is {@code
+   *     null}.
+   * @param length the number of values to copy from {@code v}. Ignored if {@code v} is {@code
+   *     null}.
+   */
+  public static Value float32Array(@Nullable float[] v, int pos, int length) {
+    return float32ArrayFactory.create(v, pos, length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<FLOAT32>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value float32Array(@Nullable Iterable<Float> v) {
+    return float32ArrayFactory.create(v);
+  }
+
+  /**
    * Returns an {@code ARRAY<FLOAT64>} value.
    *
    * @param v the source of element values, which may be null to produce a value for which {@code
@@ -534,6 +599,40 @@ public abstract class Value implements Serializable {
    */
   public static Value pgJsonbArray(@Nullable Iterable<String> v) {
     return new PgJsonbArrayImpl(v == null, v == null ? null : immutableCopyOf(v));
+  }
+
+  /**
+   * Returns an {@code ARRAY<PG_OID>} value.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   */
+  public static Value pgOidArray(@Nullable long[] v) {
+    return pgOidArray(v, 0, v == null ? 0 : v.length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<PG_OID>} value that takes its elements from a region of an array.
+   *
+   * @param v the source of element values, which may be null to produce a value for which {@code
+   *     isNull()} is {@code true}
+   * @param pos the start position of {@code v} to copy values from. Ignored if {@code v} is {@code
+   *     null}.
+   * @param length the number of values to copy from {@code v}. Ignored if {@code v} is {@code
+   *     null}.
+   */
+  public static Value pgOidArray(@Nullable long[] v, int pos, int length) {
+    return pgOidArrayFactory.create(v, pos, length);
+  }
+
+  /**
+   * Returns an {@code ARRAY<PG_OID>} value.
+   *
+   * @param v the source of element values. This may be {@code null} to produce a value for which
+   *     {@code isNull()} is {@code true}. Individual elements may also be {@code null}.
+   */
+  public static Value pgOidArray(@Nullable Iterable<Long> v) {
+    return pgOidArrayFactory.create(v);
   }
 
   /**
@@ -727,6 +826,13 @@ public abstract class Value implements Serializable {
   public abstract long getInt64();
 
   /**
+   * Returns the value of a {@code FLOAT32}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract float getFloat32();
+
+  /**
    * Returns the value of a {@code FLOAT64}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -831,6 +937,14 @@ public abstract class Value implements Serializable {
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
    */
   public abstract List<Long> getInt64Array();
+
+  /**
+   * Returns the value of an {@code ARRAY<FLOAT32>}-typed instance. While the returned list itself
+   * will never be {@code null}, elements of that list may be null.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract List<Float> getFloat32Array();
 
   /**
    * Returns the value of an {@code ARRAY<FLOAT64>}-typed instance. While the returned list itself
@@ -1049,6 +1163,42 @@ public abstract class Value implements Serializable {
           return new Int64ArrayImpl(isNull, nulls, values);
         }
       };
+
+  private static final PrimitiveArrayValueFactory<long[], Long> pgOidArrayFactory =
+      new PrimitiveArrayValueFactory<long[], Long>() {
+        @Override
+        long[] newArray(int size) {
+          return new long[size];
+        }
+
+        @Override
+        void set(long[] arr, int i, Long value) {
+          arr[i] = value;
+        }
+
+        @Override
+        Value newValue(boolean isNull, BitSet nulls, long[] values) {
+          return new PgOidArrayImpl(isNull, nulls, values);
+        }
+      };
+
+  private static final PrimitiveArrayValueFactory<float[], Float> float32ArrayFactory =
+      new PrimitiveArrayValueFactory<float[], Float>() {
+        @Override
+        float[] newArray(int size) {
+          return new float[size];
+        }
+
+        @Override
+        void set(float[] arr, int i, Float value) {
+          arr[i] = value;
+        }
+
+        @Override
+        Value newValue(boolean isNull, BitSet nulls, float[] values) {
+          return new Float32ArrayImpl(isNull, nulls, values);
+        }
+      };
   private static final PrimitiveArrayValueFactory<double[], Double> float64ArrayFactory =
       new PrimitiveArrayValueFactory<double[], Double>() {
         @Override
@@ -1120,6 +1270,11 @@ public abstract class Value implements Serializable {
     }
 
     @Override
+    public float getFloat32() {
+      throw defaultGetter(Type.float32());
+    }
+
+    @Override
     public double getFloat64() {
       throw defaultGetter(Type.float64());
     }
@@ -1176,6 +1331,11 @@ public abstract class Value implements Serializable {
     @Override
     public List<Long> getInt64Array() {
       throw defaultGetter(Type.array(Type.int64()));
+    }
+
+    @Override
+    public List<Float> getFloat32Array() {
+      throw defaultGetter(Type.array(Type.float32()));
     }
 
     @Override
@@ -1282,9 +1442,29 @@ public abstract class Value implements Serializable {
 
     @Override
     public final int hashCode() {
-      int result = Objects.hash(getType(), isNull);
+      Type typeToHash = getType();
+      int valueHash = isNull ? 0 : valueHash();
+
+      /**
+       * We are relaxing equality values here, making sure that Double.NaNs and Float.NaNs are equal
+       * to each other. This is because our Cloud Spanner Import / Export template in Apache Beam
+       * uses the mutation equality to check for modifications before committing. We noticed that
+       * when NaNs where used the template would always indicate a modification was present, when it
+       * turned out not to be the case.
+       *
+       * <p>With FLOAT32 being introduced, we want to ensure the backward compatibility of the NaN
+       * equality checks that existed for FLOAT64. We're promoting the type to FLOAT64 while
+       * calculating the type hash when the value is a NaN. We're doing a similar type promotion
+       * while calculating valueHash of Float32 type. Note that this is not applicable for composite
+       * types containing FLOAT32.
+       */
+      if (type.getCode() == Type.Code.FLOAT32 && !isNull && Float.isNaN(getFloat32())) {
+        typeToHash = Type.float64();
+      }
+
+      int result = Objects.hash(typeToHash, isNull);
       if (!isNull) {
-        result = 31 * result + valueHash();
+        result = 31 * result + valueHash;
       }
       return result;
     }
@@ -1489,6 +1669,50 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class Float32Impl extends AbstractValue {
+    private final float value;
+
+    private Float32Impl(boolean isNull, float value) {
+      super(isNull, Type.float32());
+      this.value = value;
+    }
+
+    @Override
+    public float getFloat32() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder().setNumberValue(value).build();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      // NaN == NaN always returns false, so we need a custom check.
+      if (Float.isNaN(this.value)) {
+        return Float.isNaN(((Float32Impl) v).value);
+      }
+      return ((Float32Impl) v).value == value;
+    }
+
+    @Override
+    int valueHash() {
+      // For backward compatibility of NaN equality checks with Float64 NaNs.
+      // Refer the comment in `Value.hashCode()` for more details.
+      if (!isNull() && Float.isNaN(value)) {
+        return Double.valueOf(Double.NaN).hashCode();
+      }
+      return Float.valueOf(value).hashCode();
+    }
+  }
+
   private static class Float64Impl extends AbstractValue {
     private final double value;
 
@@ -1515,6 +1739,10 @@ public abstract class Value implements Serializable {
 
     @Override
     boolean valueEquals(Value v) {
+      // NaN == NaN always returns false, so we need a custom check.
+      if (Double.isNaN(this.value)) {
+        return Double.isNaN(((Float64Impl) v).value);
+      }
       return ((Float64Impl) v).value == value;
     }
 
@@ -1661,6 +1889,41 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgOidImpl extends AbstractValue {
+    private final long value;
+
+    private PgOidImpl(boolean isNull, long value) {
+      super(isNull, Type.pgOid());
+      this.value = value;
+    }
+
+    @Override
+    public long getInt64() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder().setStringValue(Long.toString(value)).build();
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      return ((PgOidImpl) v).value == value;
+    }
+
+    @Override
+    int valueHash() {
+      return Long.valueOf(value).hashCode();
+    }
+  }
+
   private static class LazyBytesImpl extends AbstractObjectValue<LazyByteArray> {
 
     private LazyBytesImpl(boolean isNull, LazyByteArray value) {
@@ -1684,9 +1947,17 @@ public abstract class Value implements Serializable {
           "Proto message may not be null. Use MyProtoClass.getDefaultInstance() as a parameter value.");
       checkNotNull();
       try {
-        return (T) m.toBuilder().mergeFrom(value.getByteArray().toByteArray()).build();
-      } catch (InvalidProtocolBufferException e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
+        return (T)
+            m.toBuilder()
+                .mergeFrom(
+                    Base64.getDecoder()
+                        .wrap(
+                            CharSource.wrap(value.getBase64String())
+                                .asByteSource(StandardCharsets.UTF_8)
+                                .openStream()))
+                .build();
+      } catch (IOException ioException) {
+        throw SpannerExceptionFactory.asSpannerException(ioException);
       }
     }
 
@@ -1738,9 +2009,15 @@ public abstract class Value implements Serializable {
       return com.google.protobuf.Value.newBuilder().setStringValue(base64EncodedString).build();
     }
 
+    @Nonnull
+    @Override
+    public String getAsString() {
+      return value == null ? NULL_STRING : value.toBase64();
+    }
+
     @Override
     void valueToString(StringBuilder b) {
-      b.append(value.toString());
+      b.append(value.toBase64());
     }
   }
 
@@ -2085,6 +2362,46 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class Float32ArrayImpl extends PrimitiveArrayImpl<Float> {
+    private final float[] values;
+
+    private Float32ArrayImpl(boolean isNull, BitSet nulls, float[] values) {
+      super(isNull, Type.float32(), nulls);
+      this.values = values;
+    }
+
+    @Override
+    public List<Float> getFloat32Array() {
+      return getArray();
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      Float32ArrayImpl that = (Float32ArrayImpl) v;
+      return Arrays.equals(values, that.values);
+    }
+
+    @Override
+    int size() {
+      return values.length;
+    }
+
+    @Override
+    Float getValue(int i) {
+      return values[i];
+    }
+
+    @Override
+    com.google.protobuf.Value getValueAsProto(int i) {
+      return com.google.protobuf.Value.newBuilder().setNumberValue(values[i]).build();
+    }
+
+    @Override
+    int arrayHash() {
+      return Arrays.hashCode(values);
+    }
+  }
+
   private static class Float64ArrayImpl extends PrimitiveArrayImpl<Double> {
     private final double[] values;
 
@@ -2242,6 +2559,48 @@ public abstract class Value implements Serializable {
     }
   }
 
+  private static class PgOidArrayImpl extends PrimitiveArrayImpl<Long> {
+    private final long[] values;
+
+    private PgOidArrayImpl(boolean isNull, BitSet nulls, long[] values) {
+      super(isNull, Type.pgOid(), nulls);
+      this.values = values;
+    }
+
+    @Override
+    public List<Long> getInt64Array() {
+      return getArray();
+    }
+
+    @Override
+    boolean valueEquals(Value v) {
+      PgOidArrayImpl that = (PgOidArrayImpl) v;
+      return Arrays.equals(values, that.values);
+    }
+
+    @Override
+    int size() {
+      return values.length;
+    }
+
+    @Override
+    Long getValue(int i) {
+      return values[i];
+    }
+
+    @Override
+    com.google.protobuf.Value getValueAsProto(int i) {
+      return com.google.protobuf.Value.newBuilder()
+          .setStringValue(Long.toString(values[i]))
+          .build();
+    }
+
+    @Override
+    int arrayHash() {
+      return Arrays.hashCode(values);
+    }
+  }
+
   private static class LazyBytesArrayImpl extends AbstractArrayValue<LazyByteArray> {
     private transient AbstractLazyInitializer<List<ByteArray>> bytesArray = defaultInitializer();
 
@@ -2291,13 +2650,18 @@ public abstract class Value implements Serializable {
             protoMessagesList.add(
                 (T)
                     m.toBuilder()
-                        .mergeFrom(protoMessageBytes.getByteArray().toByteArray())
+                        .mergeFrom(
+                            Base64.getDecoder()
+                                .wrap(
+                                    CharSource.wrap(protoMessageBytes.getBase64String())
+                                        .asByteSource(StandardCharsets.UTF_8)
+                                        .openStream()))
                         .build());
           }
         }
         return protoMessagesList;
-      } catch (InvalidProtocolBufferException e) {
-        throw SpannerExceptionFactory.asSpannerException(e);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
 
@@ -2371,7 +2735,7 @@ public abstract class Value implements Serializable {
 
     @Override
     void appendElement(StringBuilder b, ByteArray element) {
-      b.append(element.toString());
+      b.append(element.toBase64());
     }
   }
 
@@ -2562,12 +2926,16 @@ public abstract class Value implements Serializable {
           return Value.pgJsonb(value.getPgJsonb(fieldIndex));
         case BYTES:
           return Value.bytes(value.getBytes(fieldIndex));
+        case FLOAT32:
+          return Value.float32(value.getFloat(fieldIndex));
         case FLOAT64:
           return Value.float64(value.getDouble(fieldIndex));
         case NUMERIC:
           return Value.numeric(value.getBigDecimal(fieldIndex));
         case PG_NUMERIC:
           return Value.pgNumeric(value.getString(fieldIndex));
+        case PG_OID:
+          return Value.pgOid(value.getLong(fieldIndex));
         case DATE:
           return Value.date(value.getDate(fieldIndex));
         case TIMESTAMP:
@@ -2593,9 +2961,13 @@ public abstract class Value implements Serializable {
                 return Value.jsonArray(value.getJsonList(fieldIndex));
               case PG_JSONB:
                 return Value.pgJsonbArray(value.getPgJsonbList(fieldIndex));
+              case PG_OID:
+                return Value.pgOidArray(value.getLongList(fieldIndex));
               case BYTES:
               case PROTO:
                 return Value.bytesArray(value.getBytesList(fieldIndex));
+              case FLOAT32:
+                return Value.float32Array(value.getFloatList(fieldIndex));
               case FLOAT64:
                 return Value.float64Array(value.getDoubleList(fieldIndex));
               case NUMERIC:

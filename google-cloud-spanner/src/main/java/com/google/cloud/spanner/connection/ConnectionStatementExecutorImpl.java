@@ -24,8 +24,15 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTO_PARTITION_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS;
@@ -42,9 +49,16 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_TRANSACTION_TAG;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTOCOMMIT_DML_MODE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_AUTO_PARTITION_MODE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_RESPONSE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_COMMIT_TIMESTAMP;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_COMMIT_DELAY;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS;
@@ -70,6 +84,7 @@ import com.google.cloud.spanner.CommitStats;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.ResultSets;
@@ -81,10 +96,12 @@ import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.cloud.spanner.connection.ReadOnlyStalenessUtil.DurationValueGetter;
+import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Duration;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.PlanNode;
 import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
@@ -278,6 +295,21 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public StatementResult statementSetDirectedRead(DirectedReadOptions directedReadOptions) {
+    getConnection().setDirectedRead(directedReadOptions);
+    return noResult(SET_DIRECTED_READ);
+  }
+
+  @Override
+  public StatementResult statementShowDirectedRead() {
+    DirectedReadOptions directedReadOptions = getConnection().getDirectedRead();
+    return resultSet(
+        String.format("%sDIRECTED_READ", getNamespace(connection.getDialect())),
+        DirectedReadOptionsUtil.toString(directedReadOptions),
+        SHOW_DIRECTED_READ);
+  }
+
+  @Override
   public StatementResult statementSetOptimizerVersion(String optimizerVersion) {
     getConnection().setOptimizerVersion(optimizerVersion);
     return noResult(SET_OPTIMIZER_VERSION);
@@ -317,6 +349,26 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sRETURN_COMMIT_STATS", getNamespace(connection.getDialect())),
         getConnection().isReturnCommitStats(),
         SHOW_RETURN_COMMIT_STATS);
+  }
+
+  @Override
+  public StatementResult statementSetMaxCommitDelay(Duration duration) {
+    getConnection()
+        .setMaxCommitDelay(
+            duration == null || duration.equals(Duration.getDefaultInstance())
+                ? null
+                : java.time.Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
+    return noResult(SET_MAX_COMMIT_DELAY);
+  }
+
+  @Override
+  public StatementResult statementShowMaxCommitDelay() {
+    return resultSet(
+        "MAX_COMMIT_DELAY",
+        getConnection().getMaxCommitDelay() == null
+            ? null
+            : getConnection().getMaxCommitDelay().toMillis() + "ms",
+        SHOW_MAX_COMMIT_DELAY);
   }
 
   @Override
@@ -361,6 +413,21 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
         String.format("%sTRANSACTION_TAG", getNamespace(connection.getDialect())),
         MoreObjects.firstNonNull(getConnection().getTransactionTag(), ""),
         SHOW_TRANSACTION_TAG);
+  }
+
+  @Override
+  public StatementResult statementSetExcludeTxnFromChangeStreams(
+      Boolean excludeTxnFromChangeStreams) {
+    getConnection().setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams);
+    return noResult(SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS);
+  }
+
+  @Override
+  public StatementResult statementShowExcludeTxnFromChangeStreams() {
+    return resultSet(
+        String.format("%sEXCLUDE_TXN_FROM_CHANGE_STREAMS", getNamespace(connection.getDialect())),
+        getConnection().isExcludeTxnFromChangeStreams(),
+        SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS);
   }
 
   @Override
@@ -495,6 +562,83 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   @Override
   public StatementResult statementShowTransactionIsolationLevel() {
     return resultSet("transaction_isolation", "serializable", SHOW_TRANSACTION_ISOLATION_LEVEL);
+  }
+
+  @Override
+  public StatementResult statementShowDataBoostEnabled() {
+    return resultSet(
+        String.format("%sDATA_BOOST_ENABLED", getNamespace(connection.getDialect())),
+        getConnection().isDataBoostEnabled(),
+        SHOW_DATA_BOOST_ENABLED);
+  }
+
+  @Override
+  public StatementResult statementSetDataBoostEnabled(Boolean dataBoostEnabled) {
+    getConnection().setDataBoostEnabled(Preconditions.checkNotNull(dataBoostEnabled));
+    return noResult(SET_DATA_BOOST_ENABLED);
+  }
+
+  @Override
+  public StatementResult statementShowAutoPartitionMode() {
+    return resultSet(
+        String.format("%sAUTO_PARTITION_MODE", getNamespace(connection.getDialect())),
+        getConnection().isAutoPartitionMode(),
+        SHOW_AUTO_PARTITION_MODE);
+  }
+
+  @Override
+  public StatementResult statementSetAutoPartitionMode(Boolean autoPartitionMode) {
+    getConnection().setAutoPartitionMode(Preconditions.checkNotNull(autoPartitionMode));
+    return noResult(SET_AUTO_PARTITION_MODE);
+  }
+
+  @Override
+  public StatementResult statementShowMaxPartitions() {
+    return resultSet(
+        String.format("%sMAX_PARTITIONS", getNamespace(connection.getDialect())),
+        Long.valueOf(getConnection().getMaxPartitions()),
+        SHOW_MAX_PARTITIONS);
+  }
+
+  @Override
+  public StatementResult statementSetMaxPartitions(Integer maxPartitions) {
+    getConnection().setMaxPartitions(Preconditions.checkNotNull(maxPartitions));
+    return noResult(SET_MAX_PARTITIONS);
+  }
+
+  @Override
+  public StatementResult statementShowMaxPartitionedParallelism() {
+    return resultSet(
+        String.format("%sMAX_PARTITIONED_PARALLELISM", getNamespace(connection.getDialect())),
+        Long.valueOf(getConnection().getMaxPartitionedParallelism()),
+        SHOW_MAX_PARTITIONED_PARALLELISM);
+  }
+
+  @Override
+  public StatementResult statementSetMaxPartitionedParallelism(Integer maxPartitionedParallelism) {
+    getConnection()
+        .setMaxPartitionedParallelism(Preconditions.checkNotNull(maxPartitionedParallelism));
+    return noResult(SET_MAX_PARTITIONED_PARALLELISM);
+  }
+
+  @Override
+  public StatementResult statementPartition(Statement statement) {
+    return StatementResultImpl.of(
+        getConnection().partitionQuery(statement, PartitionOptions.getDefaultInstance()),
+        ClientSideStatementType.PARTITION);
+  }
+
+  @Override
+  public StatementResult statementRunPartition(String partitionId) {
+    return StatementResultImpl.of(
+        getConnection().runPartition(partitionId), ClientSideStatementType.RUN_PARTITION);
+  }
+
+  @Override
+  public StatementResult statementRunPartitionedQuery(Statement statement) {
+    return StatementResultImpl.of(
+        getConnection().runPartitionedQuery(statement, PartitionOptions.getDefaultInstance()),
+        ClientSideStatementType.RUN_PARTITIONED_QUERY);
   }
 
   @Override

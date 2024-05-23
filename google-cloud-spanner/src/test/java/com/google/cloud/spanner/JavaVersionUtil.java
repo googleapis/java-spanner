@@ -16,20 +16,13 @@
 
 package com.google.cloud.spanner;
 
+import com.google.gson.internal.JavaVersion;
+
 /** Util class for getting the Java version the tests are executed on. */
 public class JavaVersionUtil {
 
   /** Returns the major Java version (e.g. 8, 11, 17) */
   public static int getJavaMajorVersion() {
-    String version = System.getProperty("java.version");
-    if (version.startsWith("1.")) {
-      version = version.substring(2, 3);
-    } else {
-      int dot = version.indexOf(".");
-      if (dot != -1) {
-        version = version.substring(0, dot);
-      }
-    }
-    return Integer.parseInt(version);
+    return JavaVersion.getMajorJavaVersion();
   }
 }

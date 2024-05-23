@@ -3855,6 +3855,403 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.read_only_staleness;
 NEW_CONNECTION;
+show spanner.directed_read;
+NEW_CONNECTION;
+SHOW SPANNER.DIRECTED_READ;
+NEW_CONNECTION;
+show spanner.directed_read;
+NEW_CONNECTION;
+   show spanner.directed_read;
+NEW_CONNECTION;
+			show spanner.directed_read;
+NEW_CONNECTION;
+
+
+
+show spanner.directed_read;
+NEW_CONNECTION;
+show spanner.directed_read  ;
+NEW_CONNECTION;
+show spanner.directed_read		;
+NEW_CONNECTION;
+show spanner.directed_read
+
+;
+NEW_CONNECTION;
+show   spanner.directed_read;
+NEW_CONNECTION;
+show	spanner.directed_read;
+NEW_CONNECTION;
+show
+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.directed_read/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.directed_read;
+NEW_CONNECTION;
+show variable spanner.directed_read;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.DIRECTED_READ;
+NEW_CONNECTION;
+show variable spanner.directed_read;
+NEW_CONNECTION;
+   show variable spanner.directed_read;
+NEW_CONNECTION;
+			show variable spanner.directed_read;
+NEW_CONNECTION;
+
+
+
+show variable spanner.directed_read;
+NEW_CONNECTION;
+show variable spanner.directed_read  ;
+NEW_CONNECTION;
+show variable spanner.directed_read		;
+NEW_CONNECTION;
+show variable spanner.directed_read
+
+;
+NEW_CONNECTION;
+show   variable   spanner.directed_read;
+NEW_CONNECTION;
+show	variable	spanner.directed_read;
+NEW_CONNECTION;
+show
+variable
+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.directed_read;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.directed_read/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.directed_read;
+NEW_CONNECTION;
 show spanner.optimizer_version;
 NEW_CONNECTION;
 SHOW SPANNER.OPTIMIZER_VERSION;
@@ -5045,6 +5442,403 @@ show variable spanner.return_commit_stats/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.return_commit_stats;
+NEW_CONNECTION;
+show spanner.max_commit_delay;
+NEW_CONNECTION;
+SHOW SPANNER.MAX_COMMIT_DELAY;
+NEW_CONNECTION;
+show spanner.max_commit_delay;
+NEW_CONNECTION;
+   show spanner.max_commit_delay;
+NEW_CONNECTION;
+			show spanner.max_commit_delay;
+NEW_CONNECTION;
+
+
+
+show spanner.max_commit_delay;
+NEW_CONNECTION;
+show spanner.max_commit_delay  ;
+NEW_CONNECTION;
+show spanner.max_commit_delay		;
+NEW_CONNECTION;
+show spanner.max_commit_delay
+
+;
+NEW_CONNECTION;
+show   spanner.max_commit_delay;
+NEW_CONNECTION;
+show	spanner.max_commit_delay;
+NEW_CONNECTION;
+show
+spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_commit_delay/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.max_commit_delay;
+NEW_CONNECTION;
+show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.MAX_COMMIT_DELAY;
+NEW_CONNECTION;
+show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+   show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+			show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+
+
+
+show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+show variable spanner.max_commit_delay  ;
+NEW_CONNECTION;
+show variable spanner.max_commit_delay		;
+NEW_CONNECTION;
+show variable spanner.max_commit_delay
+
+;
+NEW_CONNECTION;
+show   variable   spanner.max_commit_delay;
+NEW_CONNECTION;
+show	variable	spanner.max_commit_delay;
+NEW_CONNECTION;
+show
+variable
+spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.max_commit_delay;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_commit_delay/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.max_commit_delay;
 NEW_CONNECTION;
 update foo set bar=1;
 show spanner.commit_response;
@@ -6372,6 +7166,403 @@ show variable spanner.transaction_tag/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.transaction_tag;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+SHOW SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+   show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+			show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+
+
+
+show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams  ;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams		;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams
+
+;
+NEW_CONNECTION;
+show   spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show	spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show
+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+   show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+			show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+
+
+
+show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams  ;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams		;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams
+
+;
+NEW_CONNECTION;
+show   variable   spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show	variable	spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show
+variable
+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.exclude_txn_from_change_streams;
 NEW_CONNECTION;
 show spanner.rpc_priority;
 NEW_CONNECTION;
@@ -41438,6 +42629,1609 @@ begin transaction;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 rollback work and no/-chain;
 NEW_CONNECTION;
+begin transaction;
+abort;
+NEW_CONNECTION;
+begin transaction;
+ABORT;
+NEW_CONNECTION;
+begin transaction;
+abort;
+NEW_CONNECTION;
+begin transaction;
+   abort;
+NEW_CONNECTION;
+begin transaction;
+			abort;
+NEW_CONNECTION;
+begin transaction;
+
+
+
+abort;
+NEW_CONNECTION;
+begin transaction;
+abort  ;
+NEW_CONNECTION;
+begin transaction;
+abort		;
+NEW_CONNECTION;
+begin transaction;
+abort
+
+;
+NEW_CONNECTION;
+begin transaction;
+abort;
+NEW_CONNECTION;
+begin transaction;
+abort;
+NEW_CONNECTION;
+begin transaction;
+abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort bar;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort%;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort%;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort_;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort_;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort&;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort&;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort$;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort$;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort@;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort@;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort!;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort!;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort*;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort*;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort(;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort(;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort);
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort);
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort+;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort+;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort\;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort\;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort?;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort?;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-abort;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/-;
+NEW_CONNECTION;
+begin transaction;
+abort transaction;
+NEW_CONNECTION;
+begin transaction;
+ABORT TRANSACTION;
+NEW_CONNECTION;
+begin transaction;
+abort transaction;
+NEW_CONNECTION;
+begin transaction;
+   abort transaction;
+NEW_CONNECTION;
+begin transaction;
+			abort transaction;
+NEW_CONNECTION;
+begin transaction;
+
+
+
+abort transaction;
+NEW_CONNECTION;
+begin transaction;
+abort transaction  ;
+NEW_CONNECTION;
+begin transaction;
+abort transaction		;
+NEW_CONNECTION;
+begin transaction;
+abort transaction
+
+;
+NEW_CONNECTION;
+begin transaction;
+abort   transaction;
+NEW_CONNECTION;
+begin transaction;
+abort	transaction;
+NEW_CONNECTION;
+begin transaction;
+abort
+transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction bar;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction%;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort%transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction_;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort_transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction&;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort&transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction$;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort$transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction@;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort@transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction!;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort!transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction*;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort*transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction(;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort(transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction);
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort)transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction+;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort+transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction-#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-#transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction\;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort\transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction?;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort?transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction-/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-/transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction/#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/#transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-abort transaction;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction/-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/-transaction;
+NEW_CONNECTION;
+begin transaction;
+abort work;
+NEW_CONNECTION;
+begin transaction;
+ABORT WORK;
+NEW_CONNECTION;
+begin transaction;
+abort work;
+NEW_CONNECTION;
+begin transaction;
+   abort work;
+NEW_CONNECTION;
+begin transaction;
+			abort work;
+NEW_CONNECTION;
+begin transaction;
+
+
+
+abort work;
+NEW_CONNECTION;
+begin transaction;
+abort work  ;
+NEW_CONNECTION;
+begin transaction;
+abort work		;
+NEW_CONNECTION;
+begin transaction;
+abort work
+
+;
+NEW_CONNECTION;
+begin transaction;
+abort   work;
+NEW_CONNECTION;
+begin transaction;
+abort	work;
+NEW_CONNECTION;
+begin transaction;
+abort
+work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work bar;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work%;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort%work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work_;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort_work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work&;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort&work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work$;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort$work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work@;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort@work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work!;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort!work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work*;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort*work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work(;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort(work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work);
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort)work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work+;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort+work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work-#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-#work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work\;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort\work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work?;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort?work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work-/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort-/work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work/#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/#work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-abort work;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work/-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort/-work;
+NEW_CONNECTION;
+begin transaction;
+abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+ABORT AND NO CHAIN;
+NEW_CONNECTION;
+begin transaction;
+abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+   abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+			abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+
+
+
+abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+abort and no chain  ;
+NEW_CONNECTION;
+begin transaction;
+abort and no chain		;
+NEW_CONNECTION;
+begin transaction;
+abort and no chain
+
+;
+NEW_CONNECTION;
+begin transaction;
+abort   and   no   chain;
+NEW_CONNECTION;
+begin transaction;
+abort	and	no	chain;
+NEW_CONNECTION;
+begin transaction;
+abort
+and
+no
+chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain bar;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain%;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no%chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain_;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no_chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain&;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no&chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain$;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no$chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain@;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no@chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain!;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no!chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain*;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no*chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain(;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no(chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain);
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no)chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no-chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain+;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no+chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain-#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no-#chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no/chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain\;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no\chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain?;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no?chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain-/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no-/chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain/#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no/#chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-abort and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no chain/-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort and no/-chain;
+NEW_CONNECTION;
+begin transaction;
+abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+ABORT TRANSACTION AND NO CHAIN;
+NEW_CONNECTION;
+begin transaction;
+abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+   abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+			abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+
+
+
+abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+abort transaction and no chain  ;
+NEW_CONNECTION;
+begin transaction;
+abort transaction and no chain		;
+NEW_CONNECTION;
+begin transaction;
+abort transaction and no chain
+
+;
+NEW_CONNECTION;
+begin transaction;
+abort   transaction   and   no   chain;
+NEW_CONNECTION;
+begin transaction;
+abort	transaction	and	no	chain;
+NEW_CONNECTION;
+begin transaction;
+abort
+transaction
+and
+no
+chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain bar;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain%;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no%chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain_;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no_chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain&;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no&chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain$;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no$chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain@;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no@chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain!;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no!chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain*;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no*chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain(;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no(chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain);
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no)chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no-chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain+;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no+chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain-#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no-#chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no/chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain\;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no\chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain?;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no?chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain-/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no-/chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain/#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no/#chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-abort transaction and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no chain/-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort transaction and no/-chain;
+NEW_CONNECTION;
+begin transaction;
+abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+ABORT WORK AND NO CHAIN;
+NEW_CONNECTION;
+begin transaction;
+abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+   abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+			abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+
+
+
+abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+abort work and no chain  ;
+NEW_CONNECTION;
+begin transaction;
+abort work and no chain		;
+NEW_CONNECTION;
+begin transaction;
+abort work and no chain
+
+;
+NEW_CONNECTION;
+begin transaction;
+abort   work   and   no   chain;
+NEW_CONNECTION;
+begin transaction;
+abort	work	and	no	chain;
+NEW_CONNECTION;
+begin transaction;
+abort
+work
+and
+no
+chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain bar;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain%;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no%chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain_;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no_chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain&;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no&chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain$;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no$chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain@;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no@chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain!;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no!chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain*;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no*chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain(;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no(chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain);
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no)chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no-chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain+;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no+chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain-#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no-#chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no/chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain\;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no\chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain?;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no?chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain-/;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no-/chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain/#;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no/#chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-abort work and no chain;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no chain/-;
+NEW_CONNECTION;
+begin transaction;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+abort work and no/-chain;
+NEW_CONNECTION;
 start batch ddl;
 NEW_CONNECTION;
 START BATCH DDL;
@@ -60552,6 +63346,394 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.read_only_staleness to 'EXACT_STALENESS/-9999ns';
 NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+   set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+			set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+
+
+
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'  ;
+NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'		;
+NEW_CONNECTION;
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'
+
+;
+NEW_CONNECTION;
+set   spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set	spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set
+spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.directed_read='{"includeReplicas":{"replicaSelections":[{"location":"eu-west1","type":"READ_ONLY"}]}}';
+NEW_CONNECTION;
+set spanner.directed_read='';
+NEW_CONNECTION;
+   set spanner.directed_read='';
+NEW_CONNECTION;
+			set spanner.directed_read='';
+NEW_CONNECTION;
+
+
+
+set spanner.directed_read='';
+NEW_CONNECTION;
+set spanner.directed_read=''  ;
+NEW_CONNECTION;
+set spanner.directed_read=''		;
+NEW_CONNECTION;
+set spanner.directed_read=''
+
+;
+NEW_CONNECTION;
+set   spanner.directed_read='';
+NEW_CONNECTION;
+set	spanner.directed_read='';
+NEW_CONNECTION;
+set
+spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read='');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.directed_read='';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.directed_read=''/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.directed_read='';
+NEW_CONNECTION;
 set spanner.optimizer_version='1';
 NEW_CONNECTION;
 SET SPANNER.OPTIMIZER_VERSION='1';
@@ -63740,6 +66922,1000 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.return_commit_stats to/-false;
 NEW_CONNECTION;
+set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+SET SPANNER.MAX_COMMIT_DELAY=NULL;
+NEW_CONNECTION;
+set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+   set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+			set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+
+
+
+set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+set spanner.max_commit_delay=null  ;
+NEW_CONNECTION;
+set spanner.max_commit_delay=null		;
+NEW_CONNECTION;
+set spanner.max_commit_delay=null
+
+;
+NEW_CONNECTION;
+set   spanner.max_commit_delay=null;
+NEW_CONNECTION;
+set	spanner.max_commit_delay=null;
+NEW_CONNECTION;
+set
+spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_commit_delay=null;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay=null/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.max_commit_delay=null;
+NEW_CONNECTION;
+set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+SET SPANNER.MAX_COMMIT_DELAY='1S';
+NEW_CONNECTION;
+set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+   set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+			set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+
+
+
+set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+set spanner.max_commit_delay='1s'  ;
+NEW_CONNECTION;
+set spanner.max_commit_delay='1s'		;
+NEW_CONNECTION;
+set spanner.max_commit_delay='1s'
+
+;
+NEW_CONNECTION;
+set   spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+set	spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+set
+spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='1s'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.max_commit_delay='1s';
+NEW_CONNECTION;
+set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+SET SPANNER.MAX_COMMIT_DELAY='100MS';
+NEW_CONNECTION;
+set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+   set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+			set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+
+
+
+set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+set spanner.max_commit_delay='100ms'  ;
+NEW_CONNECTION;
+set spanner.max_commit_delay='100ms'		;
+NEW_CONNECTION;
+set spanner.max_commit_delay='100ms'
+
+;
+NEW_CONNECTION;
+set   spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+set	spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+set
+spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay='100ms'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-spanner.max_commit_delay='100ms';
+NEW_CONNECTION;
+set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+SET SPANNER.MAX_COMMIT_DELAY TO '10000US';
+NEW_CONNECTION;
+set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+   set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+			set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+
+
+
+set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+set spanner.max_commit_delay to '10000us'  ;
+NEW_CONNECTION;
+set spanner.max_commit_delay to '10000us'		;
+NEW_CONNECTION;
+set spanner.max_commit_delay to '10000us'
+
+;
+NEW_CONNECTION;
+set   spanner.max_commit_delay   to   '10000us';
+NEW_CONNECTION;
+set	spanner.max_commit_delay	to	'10000us';
+NEW_CONNECTION;
+set
+spanner.max_commit_delay
+to
+'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to%'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to_'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to&'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to$'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to@'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to!'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to*'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to('10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to)'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to-'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to+'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to-#'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to/'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to\'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to?'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to-/'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to/#'10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_commit_delay to '10000us';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to '10000us'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay to/-'10000us';
+NEW_CONNECTION;
+set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+SET SPANNER.MAX_COMMIT_DELAY TO '9223372036854775807NS';
+NEW_CONNECTION;
+set spanner.max_commit_delay to '9223372036854775807ns';
+NEW_CONNECTION;
+   set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+			set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+
+
+
+set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+set spanner.max_commit_delay TO '9223372036854775807ns'  ;
+NEW_CONNECTION;
+set spanner.max_commit_delay TO '9223372036854775807ns'		;
+NEW_CONNECTION;
+set spanner.max_commit_delay TO '9223372036854775807ns'
+
+;
+NEW_CONNECTION;
+set   spanner.max_commit_delay   TO   '9223372036854775807ns';
+NEW_CONNECTION;
+set	spanner.max_commit_delay	TO	'9223372036854775807ns';
+NEW_CONNECTION;
+set
+spanner.max_commit_delay
+TO
+'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO%'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO_'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO&'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO$'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO@'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO!'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO*'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO('9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO)'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO-'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO+'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO-#'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO/'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO\'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO?'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO-/'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO/#'9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_commit_delay TO '9223372036854775807ns';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO '9223372036854775807ns'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_commit_delay TO/-'9223372036854775807ns';
+NEW_CONNECTION;
 set spanner.statement_tag='tag1';
 NEW_CONNECTION;
 SET SPANNER.STATEMENT_TAG='TAG1';
@@ -64933,6 +69109,206 @@ set spanner.statement_tag to ''/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.statement_tag to/-'';
+NEW_CONNECTION;
+set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+SET SPANNER.STATEMENT_TAG TO 'TEST_TAG';
+NEW_CONNECTION;
+set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+   set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+			set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+
+
+
+set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+set spanner.statement_tag to 'test_tag'  ;
+NEW_CONNECTION;
+set spanner.statement_tag to 'test_tag'		;
+NEW_CONNECTION;
+set spanner.statement_tag to 'test_tag'
+
+;
+NEW_CONNECTION;
+set   spanner.statement_tag   to   'test_tag';
+NEW_CONNECTION;
+set	spanner.statement_tag	to	'test_tag';
+NEW_CONNECTION;
+set
+spanner.statement_tag
+to
+'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to%'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to_'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to&'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to$'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to@'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to!'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to*'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to('test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to)'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to-'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to+'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to-#'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to/'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to\'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to?'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to-/'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to/#'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.statement_tag to 'test_tag';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to 'test_tag'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.statement_tag to/-'test_tag';
 NEW_CONNECTION;
 set autocommit = false;
 set spanner.transaction_tag='tag1';
@@ -66535,6 +70911,1074 @@ NEW_CONNECTION;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.transaction_tag to/-'';
+NEW_CONNECTION;
+set autocommit = false;
+set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+SET SPANNER.TRANSACTION_TAG TO 'TEST_TAG';
+NEW_CONNECTION;
+set autocommit = false;
+set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+   set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+			set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+
+
+
+set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set spanner.transaction_tag to 'test_tag'  ;
+NEW_CONNECTION;
+set autocommit = false;
+set spanner.transaction_tag to 'test_tag'		;
+NEW_CONNECTION;
+set autocommit = false;
+set spanner.transaction_tag to 'test_tag'
+
+;
+NEW_CONNECTION;
+set autocommit = false;
+set   spanner.transaction_tag   to   'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set	spanner.transaction_tag	to	'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+set
+spanner.transaction_tag
+to
+'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag' bar;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'%;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to%'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'_;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to_'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'&;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to&'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'$;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to$'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'@;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to@'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'!;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to!'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'*;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to*'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'(;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to('test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag');
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to)'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to-'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'+;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to+'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'-#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to-#'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to/'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'\;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to\'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'?;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to?'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'-/;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to-/'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'/#;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to/#'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.transaction_tag to 'test_tag';
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to 'test_tag'/-;
+NEW_CONNECTION;
+set autocommit = false;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.transaction_tag to/-'test_tag';
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS = TRUE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   =   true;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	=	true;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/-true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS = FALSE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   =   false;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	=	false;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/-false;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS TO TRUE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   to   true;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	to	true;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+to
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/-true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS TO FALSE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   to   false;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	to	false;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+to
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/-false;
 NEW_CONNECTION;
 set spanner.rpc_priority='HIGH';
 NEW_CONNECTION;
@@ -70121,3 +75565,4791 @@ set spanner.delay_transaction_start_until_first_write to false/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.delay_transaction_start_until_first_write to/-false;
+NEW_CONNECTION;
+show spanner.data_boost_enabled;
+NEW_CONNECTION;
+SHOW SPANNER.DATA_BOOST_ENABLED;
+NEW_CONNECTION;
+show spanner.data_boost_enabled;
+NEW_CONNECTION;
+   show spanner.data_boost_enabled;
+NEW_CONNECTION;
+			show spanner.data_boost_enabled;
+NEW_CONNECTION;
+
+
+
+show spanner.data_boost_enabled;
+NEW_CONNECTION;
+show spanner.data_boost_enabled  ;
+NEW_CONNECTION;
+show spanner.data_boost_enabled		;
+NEW_CONNECTION;
+show spanner.data_boost_enabled
+
+;
+NEW_CONNECTION;
+show   spanner.data_boost_enabled;
+NEW_CONNECTION;
+show	spanner.data_boost_enabled;
+NEW_CONNECTION;
+show
+spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.data_boost_enabled/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.data_boost_enabled;
+NEW_CONNECTION;
+show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.DATA_BOOST_ENABLED;
+NEW_CONNECTION;
+show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+   show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+			show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+
+
+
+show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+show variable spanner.data_boost_enabled  ;
+NEW_CONNECTION;
+show variable spanner.data_boost_enabled		;
+NEW_CONNECTION;
+show variable spanner.data_boost_enabled
+
+;
+NEW_CONNECTION;
+show   variable   spanner.data_boost_enabled;
+NEW_CONNECTION;
+show	variable	spanner.data_boost_enabled;
+NEW_CONNECTION;
+show
+variable
+spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.data_boost_enabled;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.data_boost_enabled/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.data_boost_enabled;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+SET SPANNER.DATA_BOOST_ENABLED = TRUE;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+   set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+			set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+
+
+
+set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = true  ;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = true		;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = true
+
+;
+NEW_CONNECTION;
+set   spanner.data_boost_enabled   =   true;
+NEW_CONNECTION;
+set	spanner.data_boost_enabled	=	true;
+NEW_CONNECTION;
+set
+spanner.data_boost_enabled
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.data_boost_enabled = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =/-true;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+SET SPANNER.DATA_BOOST_ENABLED = FALSE;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+   set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+			set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+
+
+
+set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = false  ;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = false		;
+NEW_CONNECTION;
+set spanner.data_boost_enabled = false
+
+;
+NEW_CONNECTION;
+set   spanner.data_boost_enabled   =   false;
+NEW_CONNECTION;
+set	spanner.data_boost_enabled	=	false;
+NEW_CONNECTION;
+set
+spanner.data_boost_enabled
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.data_boost_enabled = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled =/-false;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+SET SPANNER.DATA_BOOST_ENABLED TO TRUE;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+   set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+			set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+
+
+
+set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to true  ;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to true		;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to true
+
+;
+NEW_CONNECTION;
+set   spanner.data_boost_enabled   to   true;
+NEW_CONNECTION;
+set	spanner.data_boost_enabled	to	true;
+NEW_CONNECTION;
+set
+spanner.data_boost_enabled
+to
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.data_boost_enabled to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to/-true;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+SET SPANNER.DATA_BOOST_ENABLED TO FALSE;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+   set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+			set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+
+
+
+set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to false  ;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to false		;
+NEW_CONNECTION;
+set spanner.data_boost_enabled to false
+
+;
+NEW_CONNECTION;
+set   spanner.data_boost_enabled   to   false;
+NEW_CONNECTION;
+set	spanner.data_boost_enabled	to	false;
+NEW_CONNECTION;
+set
+spanner.data_boost_enabled
+to
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.data_boost_enabled to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.data_boost_enabled to/-false;
+NEW_CONNECTION;
+show spanner.auto_partition_mode;
+NEW_CONNECTION;
+SHOW SPANNER.AUTO_PARTITION_MODE;
+NEW_CONNECTION;
+show spanner.auto_partition_mode;
+NEW_CONNECTION;
+   show spanner.auto_partition_mode;
+NEW_CONNECTION;
+			show spanner.auto_partition_mode;
+NEW_CONNECTION;
+
+
+
+show spanner.auto_partition_mode;
+NEW_CONNECTION;
+show spanner.auto_partition_mode  ;
+NEW_CONNECTION;
+show spanner.auto_partition_mode		;
+NEW_CONNECTION;
+show spanner.auto_partition_mode
+
+;
+NEW_CONNECTION;
+show   spanner.auto_partition_mode;
+NEW_CONNECTION;
+show	spanner.auto_partition_mode;
+NEW_CONNECTION;
+show
+spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.auto_partition_mode/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.auto_partition_mode;
+NEW_CONNECTION;
+show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.AUTO_PARTITION_MODE;
+NEW_CONNECTION;
+show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+   show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+			show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+
+
+
+show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+show variable spanner.auto_partition_mode  ;
+NEW_CONNECTION;
+show variable spanner.auto_partition_mode		;
+NEW_CONNECTION;
+show variable spanner.auto_partition_mode
+
+;
+NEW_CONNECTION;
+show   variable   spanner.auto_partition_mode;
+NEW_CONNECTION;
+show	variable	spanner.auto_partition_mode;
+NEW_CONNECTION;
+show
+variable
+spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.auto_partition_mode;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.auto_partition_mode/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.auto_partition_mode;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+SET SPANNER.AUTO_PARTITION_MODE = TRUE;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+   set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+			set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+
+
+
+set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = true  ;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = true		;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = true
+
+;
+NEW_CONNECTION;
+set   spanner.auto_partition_mode   =   true;
+NEW_CONNECTION;
+set	spanner.auto_partition_mode	=	true;
+NEW_CONNECTION;
+set
+spanner.auto_partition_mode
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.auto_partition_mode = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =/-true;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+SET SPANNER.AUTO_PARTITION_MODE = FALSE;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+   set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+			set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+
+
+
+set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = false  ;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = false		;
+NEW_CONNECTION;
+set spanner.auto_partition_mode = false
+
+;
+NEW_CONNECTION;
+set   spanner.auto_partition_mode   =   false;
+NEW_CONNECTION;
+set	spanner.auto_partition_mode	=	false;
+NEW_CONNECTION;
+set
+spanner.auto_partition_mode
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.auto_partition_mode = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode =/-false;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+SET SPANNER.AUTO_PARTITION_MODE TO TRUE;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+   set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+			set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+
+
+
+set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to true  ;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to true		;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to true
+
+;
+NEW_CONNECTION;
+set   spanner.auto_partition_mode   to   true;
+NEW_CONNECTION;
+set	spanner.auto_partition_mode	to	true;
+NEW_CONNECTION;
+set
+spanner.auto_partition_mode
+to
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.auto_partition_mode to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to/-true;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+SET SPANNER.AUTO_PARTITION_MODE TO FALSE;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+   set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+			set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+
+
+
+set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to false  ;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to false		;
+NEW_CONNECTION;
+set spanner.auto_partition_mode to false
+
+;
+NEW_CONNECTION;
+set   spanner.auto_partition_mode   to   false;
+NEW_CONNECTION;
+set	spanner.auto_partition_mode	to	false;
+NEW_CONNECTION;
+set
+spanner.auto_partition_mode
+to
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.auto_partition_mode to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.auto_partition_mode to/-false;
+NEW_CONNECTION;
+show spanner.max_partitions;
+NEW_CONNECTION;
+SHOW SPANNER.MAX_PARTITIONS;
+NEW_CONNECTION;
+show spanner.max_partitions;
+NEW_CONNECTION;
+   show spanner.max_partitions;
+NEW_CONNECTION;
+			show spanner.max_partitions;
+NEW_CONNECTION;
+
+
+
+show spanner.max_partitions;
+NEW_CONNECTION;
+show spanner.max_partitions  ;
+NEW_CONNECTION;
+show spanner.max_partitions		;
+NEW_CONNECTION;
+show spanner.max_partitions
+
+;
+NEW_CONNECTION;
+show   spanner.max_partitions;
+NEW_CONNECTION;
+show	spanner.max_partitions;
+NEW_CONNECTION;
+show
+spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitions/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.max_partitions;
+NEW_CONNECTION;
+show variable spanner.max_partitions;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.MAX_PARTITIONS;
+NEW_CONNECTION;
+show variable spanner.max_partitions;
+NEW_CONNECTION;
+   show variable spanner.max_partitions;
+NEW_CONNECTION;
+			show variable spanner.max_partitions;
+NEW_CONNECTION;
+
+
+
+show variable spanner.max_partitions;
+NEW_CONNECTION;
+show variable spanner.max_partitions  ;
+NEW_CONNECTION;
+show variable spanner.max_partitions		;
+NEW_CONNECTION;
+show variable spanner.max_partitions
+
+;
+NEW_CONNECTION;
+show   variable   spanner.max_partitions;
+NEW_CONNECTION;
+show	variable	spanner.max_partitions;
+NEW_CONNECTION;
+show
+variable
+spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.max_partitions;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitions/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.max_partitions;
+NEW_CONNECTION;
+set spanner.max_partitions = 1;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONS = 1;
+NEW_CONNECTION;
+set spanner.max_partitions = 1;
+NEW_CONNECTION;
+   set spanner.max_partitions = 1;
+NEW_CONNECTION;
+			set spanner.max_partitions = 1;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitions = 1;
+NEW_CONNECTION;
+set spanner.max_partitions = 1  ;
+NEW_CONNECTION;
+set spanner.max_partitions = 1		;
+NEW_CONNECTION;
+set spanner.max_partitions = 1
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitions   =   1;
+NEW_CONNECTION;
+set	spanner.max_partitions	=	1;
+NEW_CONNECTION;
+set
+spanner.max_partitions
+=
+1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =%1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =_1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =&1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =$1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =@1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =!1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =*1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =(1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =)1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =-1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =+1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =-#1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =/1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =\1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =?1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =-/1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =/#1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitions = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 1/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =/-1;
+NEW_CONNECTION;
+set spanner.max_partitions = 10;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONS = 10;
+NEW_CONNECTION;
+set spanner.max_partitions = 10;
+NEW_CONNECTION;
+   set spanner.max_partitions = 10;
+NEW_CONNECTION;
+			set spanner.max_partitions = 10;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitions = 10;
+NEW_CONNECTION;
+set spanner.max_partitions = 10  ;
+NEW_CONNECTION;
+set spanner.max_partitions = 10		;
+NEW_CONNECTION;
+set spanner.max_partitions = 10
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitions   =   10;
+NEW_CONNECTION;
+set	spanner.max_partitions	=	10;
+NEW_CONNECTION;
+set
+spanner.max_partitions
+=
+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =%10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =_10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =&10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =$10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =@10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =!10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =*10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =(10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =)10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =-10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =-#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =\10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =?10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =-/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =/#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitions = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions = 10/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions =/-10;
+NEW_CONNECTION;
+set spanner.max_partitions to 5;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONS TO 5;
+NEW_CONNECTION;
+set spanner.max_partitions to 5;
+NEW_CONNECTION;
+   set spanner.max_partitions to 5;
+NEW_CONNECTION;
+			set spanner.max_partitions to 5;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitions to 5;
+NEW_CONNECTION;
+set spanner.max_partitions to 5  ;
+NEW_CONNECTION;
+set spanner.max_partitions to 5		;
+NEW_CONNECTION;
+set spanner.max_partitions to 5
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitions   to   5;
+NEW_CONNECTION;
+set	spanner.max_partitions	to	5;
+NEW_CONNECTION;
+set
+spanner.max_partitions
+to
+5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to%5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to_5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to&5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to$5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to@5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to!5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to*5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to(5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to)5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to-5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to+5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to-#5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to/5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to\5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to?5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to-/5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to/#5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitions to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 5/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to/-5;
+NEW_CONNECTION;
+set spanner.max_partitions to 20;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONS TO 20;
+NEW_CONNECTION;
+set spanner.max_partitions to 20;
+NEW_CONNECTION;
+   set spanner.max_partitions to 20;
+NEW_CONNECTION;
+			set spanner.max_partitions to 20;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitions to 20;
+NEW_CONNECTION;
+set spanner.max_partitions to 20  ;
+NEW_CONNECTION;
+set spanner.max_partitions to 20		;
+NEW_CONNECTION;
+set spanner.max_partitions to 20
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitions   to   20;
+NEW_CONNECTION;
+set	spanner.max_partitions	to	20;
+NEW_CONNECTION;
+set
+spanner.max_partitions
+to
+20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to%20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to_20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to&20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to$20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to@20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to!20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to*20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to(20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to)20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to-20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to+20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to-#20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to/20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to\20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to?20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to-/20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to/#20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitions to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to 20/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitions to/-20;
+NEW_CONNECTION;
+show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+SHOW SPANNER.MAX_PARTITIONED_PARALLELISM;
+NEW_CONNECTION;
+show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+   show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+			show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+
+
+
+show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+show spanner.max_partitioned_parallelism  ;
+NEW_CONNECTION;
+show spanner.max_partitioned_parallelism		;
+NEW_CONNECTION;
+show spanner.max_partitioned_parallelism
+
+;
+NEW_CONNECTION;
+show   spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+show	spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+show
+spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.max_partitioned_parallelism/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.MAX_PARTITIONED_PARALLELISM;
+NEW_CONNECTION;
+show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+   show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+			show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+
+
+
+show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+show variable spanner.max_partitioned_parallelism  ;
+NEW_CONNECTION;
+show variable spanner.max_partitioned_parallelism		;
+NEW_CONNECTION;
+show variable spanner.max_partitioned_parallelism
+
+;
+NEW_CONNECTION;
+show   variable   spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+show	variable	spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+show
+variable
+spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.max_partitioned_parallelism/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.max_partitioned_parallelism;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONED_PARALLELISM = 1;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+   set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+			set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 1  ;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 1		;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 1
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitioned_parallelism   =   1;
+NEW_CONNECTION;
+set	spanner.max_partitioned_parallelism	=	1;
+NEW_CONNECTION;
+set
+spanner.max_partitioned_parallelism
+=
+1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =%1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =_1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =&1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =$1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =@1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =!1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =*1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =(1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =)1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =-1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =+1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =-#1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =/1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =\1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =?1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =-/1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =/#1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitioned_parallelism = 1;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 1/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =/-1;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONED_PARALLELISM = 10;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+   set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+			set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 10  ;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 10		;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism = 10
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitioned_parallelism   =   10;
+NEW_CONNECTION;
+set	spanner.max_partitioned_parallelism	=	10;
+NEW_CONNECTION;
+set
+spanner.max_partitioned_parallelism
+=
+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =%10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =_10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =&10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =$10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =@10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =!10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =*10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =(10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =)10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =-10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =+10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =-#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =\10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =?10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =-/10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =/#10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitioned_parallelism = 10;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism = 10/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism =/-10;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONED_PARALLELISM TO 5;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+   set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+			set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 5  ;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 5		;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 5
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitioned_parallelism   to   5;
+NEW_CONNECTION;
+set	spanner.max_partitioned_parallelism	to	5;
+NEW_CONNECTION;
+set
+spanner.max_partitioned_parallelism
+to
+5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to%5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to_5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to&5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to$5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to@5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to!5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to*5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to(5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to)5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to-5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to+5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to-#5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to/5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to\5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to?5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to-/5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to/#5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitioned_parallelism to 5;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 5/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to/-5;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+SET SPANNER.MAX_PARTITIONED_PARALLELISM TO 20;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+   set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+			set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+
+
+
+set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 20  ;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 20		;
+NEW_CONNECTION;
+set spanner.max_partitioned_parallelism to 20
+
+;
+NEW_CONNECTION;
+set   spanner.max_partitioned_parallelism   to   20;
+NEW_CONNECTION;
+set	spanner.max_partitioned_parallelism	to	20;
+NEW_CONNECTION;
+set
+spanner.max_partitioned_parallelism
+to
+20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20 bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to%20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to_20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to&20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to$20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to@20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to!20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to*20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to(20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to)20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to-20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to+20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to-#20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to/20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to\20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to?20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to-/20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to/#20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.max_partitioned_parallelism to 20;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to 20/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.max_partitioned_parallelism to/-20;

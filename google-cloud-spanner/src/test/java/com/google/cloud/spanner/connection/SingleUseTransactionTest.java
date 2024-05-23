@@ -33,6 +33,7 @@ import com.google.api.core.ApiFuture;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
@@ -60,6 +61,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.trace.Span;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -464,6 +466,7 @@ public class SingleUseTransactionTest {
 
     return SingleUseTransaction.newBuilder()
         .setDatabaseClient(dbClient)
+        .setBatchClient(mock(BatchClient.class))
         .setDdlClient(ddlClient)
         .setAutocommitDmlMode(dmlMode)
         .setReadOnly(readOnly)
@@ -471,6 +474,7 @@ public class SingleUseTransactionTest {
         .setStatementTimeout(
             timeout == 0L ? nullTimeout() : timeout(timeout, TimeUnit.MILLISECONDS))
         .withStatementExecutor(executor)
+        .setSpan(Span.getInvalid())
         .setProtoDescriptors(protoDescriptors)
         .build();
   }
@@ -658,10 +662,12 @@ public class SingleUseTransactionTest {
     SingleUseTransaction transaction =
         SingleUseTransaction.newBuilder()
             .setDatabaseClient(client)
+            .setBatchClient(mock(BatchClient.class))
             .setDdlClient(mock(DdlClient.class))
             .setAutocommitDmlMode(AutocommitDmlMode.TRANSACTIONAL)
             .withStatementExecutor(executor)
             .setReadOnlyStaleness(TimestampBound.strong())
+            .setSpan(Span.getInvalid())
             .build();
     assertThat(
             get(

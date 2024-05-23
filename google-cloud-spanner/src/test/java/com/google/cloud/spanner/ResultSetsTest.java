@@ -31,6 +31,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.SingerProto.Genre;
 import com.google.cloud.spanner.SingerProto.SingerInfo;
 import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Longs;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
@@ -53,6 +54,7 @@ public class ResultSetsTest {
   @Test
   public void resultSetIteration() {
     double doubleVal = 1.2;
+    float floatVal = 6.626f;
     BigDecimal bigDecimalVal = BigDecimal.valueOf(123, 2);
     String stringVal = "stringVal";
     String jsonVal = "{\"color\":\"red\",\"value\":\"#f00\"}";
@@ -71,6 +73,7 @@ public class ResultSetsTest {
     boolean[] boolArray = {true, false, true, true, false};
     long[] longArray = {Long.MAX_VALUE, Long.MIN_VALUE, 0, 1, -1};
     double[] doubleArray = {Double.MIN_VALUE, Double.MAX_VALUE, 0, 1, -1, 1.2341};
+    float[] floatArray = {Float.MIN_VALUE, Float.MAX_VALUE, 0, 1, -1, 1.2341f};
     BigDecimal[] bigDecimalArray = {
       BigDecimal.valueOf(1, Integer.MAX_VALUE),
       BigDecimal.valueOf(1, Integer.MIN_VALUE),
@@ -102,10 +105,12 @@ public class ResultSetsTest {
             Type.StructField.of("f2", Type.int64()),
             Type.StructField.of("f3", Type.bool()),
             Type.StructField.of("doubleVal", Type.float64()),
+            Type.StructField.of("floatVal", Type.float32()),
             Type.StructField.of("bigDecimalVal", Type.numeric()),
             Type.StructField.of("stringVal", Type.string()),
             Type.StructField.of("jsonVal", Type.json()),
             Type.StructField.of("pgJsonbVal", Type.pgJsonb()),
+            Type.StructField.of("pgOidVal", Type.pgOid()),
             Type.StructField.of("byteVal", Type.bytes()),
             Type.StructField.of("timestamp", Type.timestamp()),
             Type.StructField.of("date", Type.date()),
@@ -116,6 +121,7 @@ public class ResultSetsTest {
             Type.StructField.of("boolArray", Type.array(Type.bool())),
             Type.StructField.of("longArray", Type.array(Type.int64())),
             Type.StructField.of("doubleArray", Type.array(Type.float64())),
+            Type.StructField.of("floatArray", Type.array(Type.float32())),
             Type.StructField.of("bigDecimalArray", Type.array(Type.numeric())),
             Type.StructField.of("byteArray", Type.array(Type.bytes())),
             Type.StructField.of("timestampArray", Type.array(Type.timestamp())),
@@ -123,6 +129,7 @@ public class ResultSetsTest {
             Type.StructField.of("stringArray", Type.array(Type.string())),
             Type.StructField.of("jsonArray", Type.array(Type.json())),
             Type.StructField.of("pgJsonbArray", Type.array(Type.pgJsonb())),
+            Type.StructField.of("pgOidArray", Type.array(Type.pgOid())),
             Type.StructField.of(
                 "protoMessageArray",
                 Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),
@@ -138,6 +145,8 @@ public class ResultSetsTest {
             .to(Value.bool(true))
             .set("doubleVal")
             .to(Value.float64(doubleVal))
+            .set("floatVal")
+            .to(Value.float32(floatVal))
             .set("bigDecimalVal")
             .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
@@ -146,6 +155,8 @@ public class ResultSetsTest {
             .to(Value.json(jsonVal))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(jsonVal))
+            .set("pgOidVal")
+            .to(Value.pgOid(2))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -162,6 +173,8 @@ public class ResultSetsTest {
             .to(Value.int64Array(longArray))
             .set("doubleArray")
             .to(Value.float64Array(doubleArray))
+            .set("floatArray")
+            .to(Value.float32Array(floatArray))
             .set("bigDecimalArray")
             .to(Value.numericArray(Arrays.asList(bigDecimalArray)))
             .set("byteArray")
@@ -176,6 +189,8 @@ public class ResultSetsTest {
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .set("pgJsonbArray")
             .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(longArray))
             .set("protoMessageArray")
             .to(
                 Value.protoMessageArray(
@@ -195,6 +210,8 @@ public class ResultSetsTest {
             .to(Value.bool(null))
             .set("doubleVal")
             .to(Value.float64(doubleVal))
+            .set("floatVal")
+            .to(Value.float32(floatVal))
             .set("bigDecimalVal")
             .to(Value.numeric(bigDecimalVal))
             .set("stringVal")
@@ -203,6 +220,8 @@ public class ResultSetsTest {
             .to(Value.json(jsonVal))
             .set("pgJsonbVal")
             .to(Value.pgJsonb(jsonVal))
+            .set("pgOidVal")
+            .to(Value.pgOid(3))
             .set("byteVal")
             .to(Value.bytes(ByteArray.copyFrom(byteVal)))
             .set("timestamp")
@@ -219,6 +238,8 @@ public class ResultSetsTest {
             .to(Value.int64Array(longArray))
             .set("doubleArray")
             .to(Value.float64Array(doubleArray))
+            .set("floatArray")
+            .to(Value.float32Array(floatArray))
             .set("bigDecimalArray")
             .to(Value.numericArray(Arrays.asList(bigDecimalArray)))
             .set("byteArray")
@@ -233,6 +254,8 @@ public class ResultSetsTest {
             .to(Value.jsonArray(Arrays.asList(jsonArray)))
             .set("pgJsonbArray")
             .to(Value.pgJsonbArray(Arrays.asList(jsonArray)))
+            .set("pgOidArray")
+            .to(Value.pgOidArray(longArray))
             .set("protoMessageArray")
             .to(
                 Value.protoMessageArray(
@@ -274,6 +297,10 @@ public class ResultSetsTest {
     assertThat(rs.getValue("doubleVal").getFloat64()).isWithin(0.0).of(doubleVal);
     assertThat(rs.getDouble(columnIndex)).isWithin(0.0).of(doubleVal);
     assertThat(rs.getValue(columnIndex++).getFloat64()).isWithin(0.0).of(doubleVal);
+    assertThat(rs.getFloat(columnIndex)).isWithin(0.0f).of(floatVal);
+    assertThat(rs.getValue(columnIndex++).getFloat32()).isWithin(0.0f).of(floatVal);
+    assertThat(rs.getFloat("floatVal")).isWithin(0.0f).of(floatVal);
+    assertThat(rs.getValue("floatVal").getFloat32()).isWithin(0.0f).of(floatVal);
     assertThat(rs.getBigDecimal("bigDecimalVal")).isEqualTo(new BigDecimal("1.23"));
     assertThat(rs.getValue("bigDecimalVal")).isEqualTo(Value.numeric(new BigDecimal("1.23")));
     assertThat(rs.getBigDecimal(columnIndex)).isEqualTo(new BigDecimal("1.23"));
@@ -291,6 +318,10 @@ public class ResultSetsTest {
     assertEquals(Value.pgJsonb(jsonVal), rs.getValue(columnIndex++));
     assertEquals(jsonVal, rs.getPgJsonb("pgJsonbVal"));
     assertEquals(Value.pgJsonb(jsonVal), rs.getValue("pgJsonbVal"));
+
+    assertThat(rs.getLong(columnIndex)).isEqualTo(2L);
+    assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.pgOid(2L));
+    assertThat(rs.getColumnType("pgOidVal")).isEqualTo(Type.pgOid());
 
     assertThat(rs.getBytes(columnIndex)).isEqualTo(ByteArray.copyFrom(byteVal));
     assertThat(rs.getValue(columnIndex++)).isEqualTo(Value.bytes(ByteArray.copyFrom(byteVal)));
@@ -338,6 +369,17 @@ public class ResultSetsTest {
     assertThat(rs.getValue("doubleArray")).isEqualTo(Value.float64Array(doubleArray));
     assertThat(rs.getDoubleList(columnIndex++)).isEqualTo(Doubles.asList(doubleArray));
     assertThat(rs.getDoubleList("doubleArray")).isEqualTo(Doubles.asList(doubleArray));
+
+    assertThat(rs.getFloatArray(columnIndex)).usingTolerance(0.0f).containsAtLeast(floatArray);
+    assertThat(rs.getValue(columnIndex)).isEqualTo(Value.float32Array(floatArray));
+    assertThat(rs.getFloatArray("floatArray"))
+        .usingTolerance(0.0f)
+        .containsExactly(floatArray)
+        .inOrder();
+    assertThat(rs.getValue("floatArray")).isEqualTo(Value.float32Array(floatArray));
+    assertThat(rs.getFloatList(columnIndex++)).isEqualTo(Floats.asList(floatArray));
+    assertThat(rs.getFloatList("floatArray")).isEqualTo(Floats.asList(floatArray));
+
     assertThat(rs.getBigDecimalList(columnIndex)).isEqualTo(Arrays.asList(bigDecimalArray));
     assertThat(rs.getValue(columnIndex++))
         .isEqualTo(Value.numericArray(Arrays.asList(bigDecimalArray)));
@@ -367,6 +409,13 @@ public class ResultSetsTest {
 
     assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList(columnIndex++));
     assertEquals(Arrays.asList(jsonArray), rs.getPgJsonbList("pgJsonbArray"));
+
+    assertThat(rs.getLongArray(columnIndex)).isEqualTo(longArray);
+    assertThat(rs.getValue(columnIndex)).isEqualTo(Value.pgOidArray(longArray));
+    assertThat(rs.getLongArray("pgOidArray")).isEqualTo(longArray);
+    assertThat(rs.getValue("pgOidArray")).isEqualTo(Value.pgOidArray(longArray));
+    assertThat(rs.getLongList(columnIndex++)).isEqualTo(Longs.asList(longArray));
+    assertThat(rs.getLongList("pgOidArray")).isEqualTo(Longs.asList(longArray));
 
     assertThat(rs.getProtoMessageList(columnIndex, SingerInfo.getDefaultInstance()))
         .isEqualTo(Arrays.asList(protoMessageArray));

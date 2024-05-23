@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,19 +107,415 @@ import javax.annotation.Generated;
  * <p>Note: close() needs to be called on the DatabaseAdminClient object to clean up resources such
  * as threads. In the example above, try-with-resources is used, which automatically calls close().
  *
- * <p>The surface of this class includes several types of Java methods for each of the API's
- * methods:
- *
- * <ol>
- *   <li>A "flattened" method. With this type of method, the fields of the request type have been
- *       converted into function parameters. It may be the case that not all fields are available as
- *       parameters, and not every API method will have a flattened method entry point.
- *   <li>A "request object" method. This type of method only takes one parameter, a request object,
- *       which must be constructed before the call. Not every API method will have a request object
- *       method.
- *   <li>A "callable" method. This type of method takes no parameters and returns an immutable API
- *       callable object, which can be used to initiate calls to the service.
- * </ol>
+ * <table>
+ *    <caption>Methods</caption>
+ *    <tr>
+ *      <th>Method</th>
+ *      <th>Description</th>
+ *      <th>Method Variants</th>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListDatabases</td>
+ *      <td><p> Lists Cloud Spanner databases.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listDatabases(ListDatabasesRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listDatabases(InstanceName parent)
+ *           <li><p> listDatabases(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listDatabasesPagedCallable()
+ *           <li><p> listDatabasesCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> CreateDatabase</td>
+ *      <td><p> Creates a new Cloud Spanner database and starts to prepare it for serving. The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to track preparation of the database. The [metadata][google.longrunning.Operation.metadata] field type is [CreateDatabaseMetadata][google.spanner.admin.database.v1.CreateDatabaseMetadata]. The [response][google.longrunning.Operation.response] field type is [Database][google.spanner.admin.database.v1.Database], if successful.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> createDatabaseAsync(CreateDatabaseRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> createDatabaseAsync(InstanceName parent, String createStatement)
+ *           <li><p> createDatabaseAsync(String parent, String createStatement)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> createDatabaseOperationCallable()
+ *           <li><p> createDatabaseCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetDatabase</td>
+ *      <td><p> Gets the state of a Cloud Spanner database.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getDatabase(GetDatabaseRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getDatabase(DatabaseName name)
+ *           <li><p> getDatabase(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getDatabaseCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> UpdateDatabase</td>
+ *      <td><p> Updates a Cloud Spanner database. The returned [long-running operation][google.longrunning.Operation] can be used to track the progress of updating the database. If the named database does not exist, returns `NOT_FOUND`.
+ * <p>  While the operation is pending:
+ * <p>    &#42; The database's     [reconciling][google.spanner.admin.database.v1.Database.reconciling]     field is set to true.   &#42; Cancelling the operation is best-effort. If the cancellation succeeds,     the operation metadata's     [cancel_time][google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time]     is set, the updates are reverted, and the operation terminates with a     `CANCELLED` status.   &#42; New UpdateDatabase requests will return a `FAILED_PRECONDITION` error     until the pending operation is done (returns successfully or with     error).   &#42; Reading the database via the API continues to give the pre-request     values.
+ * <p>  Upon completion of the returned operation:
+ * <p>    &#42; The new values are in effect and readable via the API.   &#42; The database's     [reconciling][google.spanner.admin.database.v1.Database.reconciling]     field becomes false.
+ * <p>  The returned [long-running operation][google.longrunning.Operation] will have a name of the format `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;` and can be used to track the database modification. The [metadata][google.longrunning.Operation.metadata] field type is [UpdateDatabaseMetadata][google.spanner.admin.database.v1.UpdateDatabaseMetadata]. The [response][google.longrunning.Operation.response] field type is [Database][google.spanner.admin.database.v1.Database], if successful.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> updateDatabaseAsync(UpdateDatabaseRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> updateDatabaseAsync(Database database, FieldMask updateMask)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> updateDatabaseOperationCallable()
+ *           <li><p> updateDatabaseCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> UpdateDatabaseDdl</td>
+ *      <td><p> Updates the schema of a Cloud Spanner database by creating/altering/dropping tables, columns, indexes, etc. The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to track execution of the schema change(s). The [metadata][google.longrunning.Operation.metadata] field type is [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].  The operation has no response.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> updateDatabaseDdlAsync(UpdateDatabaseDdlRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> updateDatabaseDdlAsync(DatabaseName database, List&lt;String&gt; statements)
+ *           <li><p> updateDatabaseDdlAsync(String database, List&lt;String&gt; statements)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> updateDatabaseDdlOperationCallable()
+ *           <li><p> updateDatabaseDdlCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> DropDatabase</td>
+ *      <td><p> Drops (aka deletes) a Cloud Spanner database. Completed backups for the database will be retained according to their `expire_time`. Note: Cloud Spanner might continue to accept requests for a few seconds after the database has been deleted.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> dropDatabase(DropDatabaseRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> dropDatabase(DatabaseName database)
+ *           <li><p> dropDatabase(String database)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> dropDatabaseCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetDatabaseDdl</td>
+ *      <td><p> Returns the schema of a Cloud Spanner database as a list of formatted DDL statements. This method does not show pending schema updates, those may be queried using the [Operations][google.longrunning.Operations] API.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getDatabaseDdl(GetDatabaseDdlRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getDatabaseDdl(DatabaseName database)
+ *           <li><p> getDatabaseDdl(String database)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getDatabaseDdlCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> SetIamPolicy</td>
+ *      <td><p> Sets the access control policy on a database or backup resource. Replaces any existing policy.
+ * <p>  Authorization requires `spanner.databases.setIamPolicy` permission on [resource][google.iam.v1.SetIamPolicyRequest.resource]. For backups, authorization requires `spanner.backups.setIamPolicy` permission on [resource][google.iam.v1.SetIamPolicyRequest.resource].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> setIamPolicy(SetIamPolicyRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> setIamPolicy(ResourceName resource, Policy policy)
+ *           <li><p> setIamPolicy(String resource, Policy policy)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> setIamPolicyCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetIamPolicy</td>
+ *      <td><p> Gets the access control policy for a database or backup resource. Returns an empty policy if a database or backup exists but does not have a policy set.
+ * <p>  Authorization requires `spanner.databases.getIamPolicy` permission on [resource][google.iam.v1.GetIamPolicyRequest.resource]. For backups, authorization requires `spanner.backups.getIamPolicy` permission on [resource][google.iam.v1.GetIamPolicyRequest.resource].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getIamPolicy(GetIamPolicyRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getIamPolicy(ResourceName resource)
+ *           <li><p> getIamPolicy(String resource)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getIamPolicyCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> TestIamPermissions</td>
+ *      <td><p> Returns permissions that the caller has on the specified database or backup resource.
+ * <p>  Attempting this RPC on a non-existent Cloud Spanner database will result in a NOT_FOUND error if the user has `spanner.databases.list` permission on the containing Cloud Spanner instance. Otherwise returns an empty set of permissions. Calling this method on a backup that does not exist will result in a NOT_FOUND error if the user has `spanner.backups.list` permission on the containing instance.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> testIamPermissions(TestIamPermissionsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> testIamPermissions(ResourceName resource, List&lt;String&gt; permissions)
+ *           <li><p> testIamPermissions(String resource, List&lt;String&gt; permissions)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> testIamPermissionsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> CreateBackup</td>
+ *      <td><p> Starts creating a new Cloud Spanner Backup. The returned backup [long-running operation][google.longrunning.Operation] will have a name of the format `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;` and can be used to track creation of the backup. The [metadata][google.longrunning.Operation.metadata] field type is [CreateBackupMetadata][google.spanner.admin.database.v1.CreateBackupMetadata]. The [response][google.longrunning.Operation.response] field type is [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the creation and delete the backup. There can be only one pending backup creation per database. Backup creation of different databases can run concurrently.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> createBackupAsync(CreateBackupRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> createBackupAsync(InstanceName parent, Backup backup, String backupId)
+ *           <li><p> createBackupAsync(String parent, Backup backup, String backupId)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> createBackupOperationCallable()
+ *           <li><p> createBackupCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> CopyBackup</td>
+ *      <td><p> Starts copying a Cloud Spanner Backup. The returned backup [long-running operation][google.longrunning.Operation] will have a name of the format `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;` and can be used to track copying of the backup. The operation is associated with the destination backup. The [metadata][google.longrunning.Operation.metadata] field type is [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The [response][google.longrunning.Operation.response] field type is [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run on the same source backup.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> copyBackupAsync(CopyBackupRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> copyBackupAsync(InstanceName parent, String backupId, BackupName sourceBackup, Timestamp expireTime)
+ *           <li><p> copyBackupAsync(InstanceName parent, String backupId, String sourceBackup, Timestamp expireTime)
+ *           <li><p> copyBackupAsync(String parent, String backupId, BackupName sourceBackup, Timestamp expireTime)
+ *           <li><p> copyBackupAsync(String parent, String backupId, String sourceBackup, Timestamp expireTime)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> copyBackupOperationCallable()
+ *           <li><p> copyBackupCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> GetBackup</td>
+ *      <td><p> Gets metadata on a pending or completed [Backup][google.spanner.admin.database.v1.Backup].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> getBackup(GetBackupRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> getBackup(BackupName name)
+ *           <li><p> getBackup(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> getBackupCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> UpdateBackup</td>
+ *      <td><p> Updates a pending or completed [Backup][google.spanner.admin.database.v1.Backup].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> updateBackup(UpdateBackupRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> updateBackup(Backup backup, FieldMask updateMask)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> updateBackupCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> DeleteBackup</td>
+ *      <td><p> Deletes a pending or completed [Backup][google.spanner.admin.database.v1.Backup].</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> deleteBackup(DeleteBackupRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> deleteBackup(BackupName name)
+ *           <li><p> deleteBackup(String name)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> deleteBackupCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListBackups</td>
+ *      <td><p> Lists completed and pending backups. Backups returned are ordered by `create_time` in descending order, starting from the most recent `create_time`.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listBackups(ListBackupsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listBackups(InstanceName parent)
+ *           <li><p> listBackups(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listBackupsPagedCallable()
+ *           <li><p> listBackupsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> RestoreDatabase</td>
+ *      <td><p> Create a new database by restoring from a completed backup. The new database must be in the same project and in an instance with the same instance configuration as the instance containing the backup. The returned database [long-running operation][google.longrunning.Operation] has a name of the format `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation_id&gt;`, and can be used to track the progress of the operation, and to cancel it. The [metadata][google.longrunning.Operation.metadata] field type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]. The [response][google.longrunning.Operation.response] type is [Database][google.spanner.admin.database.v1.Database], if successful. Cancelling the returned operation will stop the restore and delete the database. There can be only one database being restored into an instance at a time. Once the restore operation completes, a new restore operation can be initiated, without waiting for the optimize operation associated with the first restore to complete.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> restoreDatabaseAsync(RestoreDatabaseRequest request)
+ *      </ul>
+ *      <p>Methods that return long-running operations have "Async" method variants that return `OperationFuture`, which is used to track polling of the service.</p>
+ *      <ul>
+ *           <li><p> restoreDatabaseAsync(InstanceName parent, String databaseId, BackupName backup)
+ *           <li><p> restoreDatabaseAsync(InstanceName parent, String databaseId, String backup)
+ *           <li><p> restoreDatabaseAsync(String parent, String databaseId, BackupName backup)
+ *           <li><p> restoreDatabaseAsync(String parent, String databaseId, String backup)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> restoreDatabaseOperationCallable()
+ *           <li><p> restoreDatabaseCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListDatabaseOperations</td>
+ *      <td><p> Lists database [longrunning-operations][google.longrunning.Operation]. A database operation has a name of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`. The long-running operation [metadata][google.longrunning.Operation.metadata] field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listDatabaseOperations(ListDatabaseOperationsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listDatabaseOperations(InstanceName parent)
+ *           <li><p> listDatabaseOperations(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listDatabaseOperationsPagedCallable()
+ *           <li><p> listDatabaseOperationsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListBackupOperations</td>
+ *      <td><p> Lists the backup [long-running operations][google.longrunning.Operation] in the given instance. A backup operation has a name of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation&gt;`. The long-running operation [metadata][google.longrunning.Operation.metadata] field type `metadata.type_url` describes the type of the metadata. Operations returned include those that have completed/failed/canceled within the last 7 days, and pending operations. Operations returned are ordered by `operation.metadata.value.progress.start_time` in descending order starting from the most recently started operation.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listBackupOperations(ListBackupOperationsRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listBackupOperations(InstanceName parent)
+ *           <li><p> listBackupOperations(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listBackupOperationsPagedCallable()
+ *           <li><p> listBackupOperationsCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *    <tr>
+ *      <td><p> ListDatabaseRoles</td>
+ *      <td><p> Lists Cloud Spanner database roles.</td>
+ *      <td>
+ *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
+ *      <ul>
+ *           <li><p> listDatabaseRoles(ListDatabaseRolesRequest request)
+ *      </ul>
+ *      <p>"Flattened" method variants have converted the fields of the request object into function parameters to enable multiple ways to call the same method.</p>
+ *      <ul>
+ *           <li><p> listDatabaseRoles(DatabaseName parent)
+ *           <li><p> listDatabaseRoles(String parent)
+ *      </ul>
+ *      <p>Callable method variants take no parameters and return an immutable API callable object, which can be used to initiate calls to the service.</p>
+ *      <ul>
+ *           <li><p> listDatabaseRolesPagedCallable()
+ *           <li><p> listDatabaseRolesCallable()
+ *      </ul>
+ *       </td>
+ *    </tr>
+ *  </table>
  *
  * <p>See the individual methods for example code.
  *

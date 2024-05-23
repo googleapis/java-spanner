@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,15 @@ import com.google.api.gax.core.BackgroundResourceAggregation;
 import com.google.api.gax.grpc.GrpcCallSettings;
 import com.google.api.gax.grpc.GrpcStubCallableFactory;
 import com.google.api.gax.rpc.ClientContext;
+import com.google.api.gax.rpc.RequestParamsBuilder;
 import com.google.api.gax.rpc.ServerStreamingCallable;
 import com.google.api.gax.rpc.UnaryCallable;
-import com.google.common.collect.ImmutableMap;
 import com.google.longrunning.stub.GrpcOperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BatchCreateSessionsResponse;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -202,6 +204,15 @@ public class GrpcSpannerStub extends SpannerStub {
               .setResponseMarshaller(ProtoUtils.marshaller(PartitionResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<BatchWriteRequest, BatchWriteResponse>
+      batchWriteMethodDescriptor =
+          MethodDescriptor.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.SERVER_STREAMING)
+              .setFullMethodName("google.spanner.v1.Spanner/BatchWrite")
+              .setRequestMarshaller(ProtoUtils.marshaller(BatchWriteRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(BatchWriteResponse.getDefaultInstance()))
+              .build();
+
   private final UnaryCallable<CreateSessionRequest, Session> createSessionCallable;
   private final UnaryCallable<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
       batchCreateSessionsCallable;
@@ -222,6 +233,7 @@ public class GrpcSpannerStub extends SpannerStub {
   private final UnaryCallable<RollbackRequest, Empty> rollbackCallable;
   private final UnaryCallable<PartitionQueryRequest, PartitionResponse> partitionQueryCallable;
   private final UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable;
+  private final ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable;
 
   private final BackgroundResource backgroundResources;
   private final GrpcOperationsStub operationsStub;
@@ -267,9 +279,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(createSessionMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("database", String.valueOf(request.getDatabase()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("database", String.valueOf(request.getDatabase()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
@@ -278,9 +290,9 @@ public class GrpcSpannerStub extends SpannerStub {
                 .setMethodDescriptor(batchCreateSessionsMethodDescriptor)
                 .setParamsExtractor(
                     request -> {
-                      ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                      params.put("database", String.valueOf(request.getDatabase()));
-                      return params.build();
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("database", String.valueOf(request.getDatabase()));
+                      return builder.build();
                     })
                 .build();
     GrpcCallSettings<GetSessionRequest, Session> getSessionTransportSettings =
@@ -288,9 +300,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(getSessionMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("name", String.valueOf(request.getName()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<ListSessionsRequest, ListSessionsResponse> listSessionsTransportSettings =
@@ -298,9 +310,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(listSessionsMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("database", String.valueOf(request.getDatabase()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("database", String.valueOf(request.getDatabase()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<DeleteSessionRequest, Empty> deleteSessionTransportSettings =
@@ -308,9 +320,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(deleteSessionMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("name", String.valueOf(request.getName()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<ExecuteSqlRequest, ResultSet> executeSqlTransportSettings =
@@ -318,9 +330,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(executeSqlMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<ExecuteSqlRequest, PartialResultSet> executeStreamingSqlTransportSettings =
@@ -328,9 +340,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(executeStreamingSqlMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
@@ -339,9 +351,9 @@ public class GrpcSpannerStub extends SpannerStub {
                 .setMethodDescriptor(executeBatchDmlMethodDescriptor)
                 .setParamsExtractor(
                     request -> {
-                      ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                      params.put("session", String.valueOf(request.getSession()));
-                      return params.build();
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("session", String.valueOf(request.getSession()));
+                      return builder.build();
                     })
                 .build();
     GrpcCallSettings<ReadRequest, ResultSet> readTransportSettings =
@@ -349,9 +361,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(readMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<ReadRequest, PartialResultSet> streamingReadTransportSettings =
@@ -359,9 +371,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(streamingReadMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<BeginTransactionRequest, Transaction> beginTransactionTransportSettings =
@@ -369,9 +381,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(beginTransactionMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<CommitRequest, CommitResponse> commitTransportSettings =
@@ -379,9 +391,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(commitMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<RollbackRequest, Empty> rollbackTransportSettings =
@@ -389,9 +401,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(rollbackMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<PartitionQueryRequest, PartitionResponse> partitionQueryTransportSettings =
@@ -399,9 +411,9 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(partitionQueryMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
     GrpcCallSettings<PartitionReadRequest, PartitionResponse> partitionReadTransportSettings =
@@ -409,9 +421,19 @@ public class GrpcSpannerStub extends SpannerStub {
             .setMethodDescriptor(partitionReadMethodDescriptor)
             .setParamsExtractor(
                 request -> {
-                  ImmutableMap.Builder<String, String> params = ImmutableMap.builder();
-                  params.put("session", String.valueOf(request.getSession()));
-                  return params.build();
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
+                })
+            .build();
+    GrpcCallSettings<BatchWriteRequest, BatchWriteResponse> batchWriteTransportSettings =
+        GrpcCallSettings.<BatchWriteRequest, BatchWriteResponse>newBuilder()
+            .setMethodDescriptor(batchWriteMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("session", String.valueOf(request.getSession()));
+                  return builder.build();
                 })
             .build();
 
@@ -467,6 +489,9 @@ public class GrpcSpannerStub extends SpannerStub {
     this.partitionReadCallable =
         callableFactory.createUnaryCallable(
             partitionReadTransportSettings, settings.partitionReadSettings(), clientContext);
+    this.batchWriteCallable =
+        callableFactory.createServerStreamingCallable(
+            batchWriteTransportSettings, settings.batchWriteSettings(), clientContext);
 
     this.backgroundResources =
         new BackgroundResourceAggregation(clientContext.getBackgroundResources());
@@ -556,6 +581,11 @@ public class GrpcSpannerStub extends SpannerStub {
   @Override
   public UnaryCallable<PartitionReadRequest, PartitionResponse> partitionReadCallable() {
     return partitionReadCallable;
+  }
+
+  @Override
+  public ServerStreamingCallable<BatchWriteRequest, BatchWriteResponse> batchWriteCallable() {
+    return batchWriteCallable;
   }
 
   @Override

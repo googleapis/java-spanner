@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
+import com.google.cloud.spanner.SessionPool.SessionFutureWrapper;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 
 /**
@@ -45,8 +46,9 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     }
 
     @Override
-    DatabaseClientImpl createDatabaseClient(String clientId, SessionPool pool) {
-      return new DatabaseClientWithClosedSessionImpl(clientId, pool);
+    DatabaseClientImpl createDatabaseClient(
+        String clientId, SessionPool pool, MultiplexedSessionDatabaseClient ignore) {
+      return new DatabaseClientWithClosedSessionImpl(clientId, pool, tracer);
     }
   }
 
@@ -58,8 +60,8 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
     private boolean invalidateNextSession = false;
     private boolean allowReplacing = true;
 
-    DatabaseClientWithClosedSessionImpl(String clientId, SessionPool pool) {
-      super(clientId, pool);
+    DatabaseClientWithClosedSessionImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
+      super(clientId, pool, tracer);
     }
 
     /** Invalidate the next session that is checked out from the pool. */
@@ -83,6 +85,20 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
         invalidateNextSession = false;
       }
       session.get().setAllowReplacing(allowReplacing);
+      return session;
+    }
+
+    @Override
+    SessionFutureWrapper getMultiplexedSession() {
+      SessionFutureWrapper session = (SessionFutureWrapper) super.getMultiplexedSession();
+      if (invalidateNextSession) {
+        session.get().get().getDelegate().close();
+        session.get().get().setAllowReplacing(false);
+        awaitDeleted(session.get().get().getDelegate());
+        session.get().get().setAllowReplacing(allowReplacing);
+        invalidateNextSession = false;
+      }
+      session.get().get().setAllowReplacing(allowReplacing);
       return session;
     }
 

@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.SpannerGrpc;
+import io.opentelemetry.context.Scope;
 import java.util.LinkedList;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -42,13 +43,15 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
   /** In-memory savepoint implementation that is used by the Connection API. */
   static class Savepoint {
     private final String name;
+    private final boolean autoSavepoint;
 
     static Savepoint of(String name) {
-      return new Savepoint(name);
+      return new Savepoint(name, false);
     }
 
-    Savepoint(String name) {
+    Savepoint(String name, boolean autoSavepoint) {
       this.name = name;
+      this.autoSavepoint = autoSavepoint;
     }
 
     /** Returns the index of the first statement that was executed after this savepoint. */
@@ -61,17 +64,23 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       return -1;
     }
 
+    boolean isAutoSavepoint() {
+      return this.autoSavepoint;
+    }
+
     @Override
     public boolean equals(Object o) {
       if (!(o instanceof Savepoint)) {
         return false;
       }
-      return Objects.equals(((Savepoint) o).name, name);
+      Savepoint other = (Savepoint) o;
+      return Objects.equals(other.name, this.name)
+          && Objects.equals(other.autoSavepoint, this.autoSavepoint);
     }
 
     @Override
     public int hashCode() {
-      return name.hashCode();
+      return Objects.hash(this.name, this.autoSavepoint);
     }
 
     @Override
@@ -84,6 +93,11 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
 
   AbstractMultiUseTransaction(Builder<?, ? extends AbstractMultiUseTransaction> builder) {
     super(builder);
+  }
+
+  @Override
+  public boolean isSingleUse() {
+    return false;
   }
 
   @Override
@@ -116,16 +130,18 @@ abstract class AbstractMultiUseTransaction extends AbstractBaseUnitOfWork {
       final AnalyzeMode analyzeMode,
       final QueryOption... options) {
     Preconditions.checkArgument(statement.isQuery(), "Statement is not a query");
-    checkOrCreateValidTransaction(statement, callType);
-    return executeStatementAsync(
-        callType,
-        statement,
-        () -> {
-          checkAborted();
-          return DirectExecuteResultSet.ofResultSet(
-              internalExecuteQuery(statement, analyzeMode, options));
-        },
-        SpannerGrpc.getExecuteStreamingSqlMethod());
+    try (Scope ignore = span.makeCurrent()) {
+      checkOrCreateValidTransaction(statement, callType);
+      return executeStatementAsync(
+          callType,
+          statement,
+          () -> {
+            checkAborted();
+            return DirectExecuteResultSet.ofResultSet(
+                internalExecuteQuery(statement, analyzeMode, options));
+          },
+          SpannerGrpc.getExecuteStreamingSqlMethod());
+    }
   }
 
   ResultSet internalExecuteQuery(

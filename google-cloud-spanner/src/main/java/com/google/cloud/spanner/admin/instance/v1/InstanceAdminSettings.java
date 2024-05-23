@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.google.cloud.spanner.admin.instance.v1;
 
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
 import com.google.api.core.ApiFunction;
@@ -44,22 +46,33 @@ import com.google.protobuf.Empty;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstancePartition;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
 import java.util.List;
@@ -160,6 +173,15 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     return ((InstanceAdminStubSettings) getStubSettings()).listInstancesSettings();
   }
 
+  /** Returns the object with the settings used for calls to listInstancePartitions. */
+  public PagedCallSettings<
+          ListInstancePartitionsRequest,
+          ListInstancePartitionsResponse,
+          ListInstancePartitionsPagedResponse>
+      listInstancePartitionsSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).listInstancePartitionsSettings();
+  }
+
   /** Returns the object with the settings used for calls to getInstance. */
   public UnaryCallSettings<GetInstanceRequest, Instance> getInstanceSettings() {
     return ((InstanceAdminStubSettings) getStubSettings()).getInstanceSettings();
@@ -208,6 +230,56 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     return ((InstanceAdminStubSettings) getStubSettings()).testIamPermissionsSettings();
   }
 
+  /** Returns the object with the settings used for calls to getInstancePartition. */
+  public UnaryCallSettings<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).getInstancePartitionSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createInstancePartition. */
+  public UnaryCallSettings<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).createInstancePartitionSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createInstancePartition. */
+  public OperationCallSettings<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings())
+        .createInstancePartitionOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to deleteInstancePartition. */
+  public UnaryCallSettings<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).deleteInstancePartitionSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateInstancePartition. */
+  public UnaryCallSettings<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).updateInstancePartitionSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateInstancePartition. */
+  public OperationCallSettings<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings())
+        .updateInstancePartitionOperationSettings();
+  }
+
+  /** Returns the object with the settings used for calls to listInstancePartitionOperations. */
+  public PagedCallSettings<
+          ListInstancePartitionOperationsRequest,
+          ListInstancePartitionOperationsResponse,
+          ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings())
+        .listInstancePartitionOperationsSettings();
+  }
+
   public static final InstanceAdminSettings create(InstanceAdminStubSettings stub)
       throws IOException {
     return new InstanceAdminSettings.Builder(stub.toBuilder()).build();
@@ -249,7 +321,6 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     return InstanceAdminStubSettings.defaultTransportChannelProvider();
   }
 
-  @BetaApi("The surface for customizing headers is not stable yet and may change in the future.")
   public static ApiClientHeaderProvider.Builder defaultApiClientHeaderProviderBuilder() {
     return InstanceAdminStubSettings.defaultApiClientHeaderProviderBuilder();
   }
@@ -260,7 +331,6 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
   }
 
   /** Returns a new REST builder for this class. */
-  @BetaApi
   public static Builder newHttpJsonBuilder() {
     return Builder.createHttpJsonDefault();
   }
@@ -302,7 +372,6 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
       return new Builder(InstanceAdminStubSettings.newBuilder());
     }
 
-    @BetaApi
     private static Builder createHttpJsonDefault() {
       return new Builder(InstanceAdminStubSettings.newHttpJsonBuilder());
     }
@@ -386,6 +455,15 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
       return getStubSettingsBuilder().listInstancesSettings();
     }
 
+    /** Returns the builder for the settings used for calls to listInstancePartitions. */
+    public PagedCallSettings.Builder<
+            ListInstancePartitionsRequest,
+            ListInstancePartitionsResponse,
+            ListInstancePartitionsPagedResponse>
+        listInstancePartitionsSettings() {
+      return getStubSettingsBuilder().listInstancePartitionsSettings();
+    }
+
     /** Returns the builder for the settings used for calls to getInstance. */
     public UnaryCallSettings.Builder<GetInstanceRequest, Instance> getInstanceSettings() {
       return getStubSettingsBuilder().getInstanceSettings();
@@ -432,6 +510,53 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
     public UnaryCallSettings.Builder<TestIamPermissionsRequest, TestIamPermissionsResponse>
         testIamPermissionsSettings() {
       return getStubSettingsBuilder().testIamPermissionsSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to getInstancePartition. */
+    public UnaryCallSettings.Builder<GetInstancePartitionRequest, InstancePartition>
+        getInstancePartitionSettings() {
+      return getStubSettingsBuilder().getInstancePartitionSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createInstancePartition. */
+    public UnaryCallSettings.Builder<CreateInstancePartitionRequest, Operation>
+        createInstancePartitionSettings() {
+      return getStubSettingsBuilder().createInstancePartitionSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createInstancePartition. */
+    public OperationCallSettings.Builder<
+            CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+        createInstancePartitionOperationSettings() {
+      return getStubSettingsBuilder().createInstancePartitionOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to deleteInstancePartition. */
+    public UnaryCallSettings.Builder<DeleteInstancePartitionRequest, Empty>
+        deleteInstancePartitionSettings() {
+      return getStubSettingsBuilder().deleteInstancePartitionSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstancePartition. */
+    public UnaryCallSettings.Builder<UpdateInstancePartitionRequest, Operation>
+        updateInstancePartitionSettings() {
+      return getStubSettingsBuilder().updateInstancePartitionSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateInstancePartition. */
+    public OperationCallSettings.Builder<
+            UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+        updateInstancePartitionOperationSettings() {
+      return getStubSettingsBuilder().updateInstancePartitionOperationSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to listInstancePartitionOperations. */
+    public PagedCallSettings.Builder<
+            ListInstancePartitionOperationsRequest,
+            ListInstancePartitionOperationsResponse,
+            ListInstancePartitionOperationsPagedResponse>
+        listInstancePartitionOperationsSettings() {
+      return getStubSettingsBuilder().listInstancePartitionOperationsSettings();
     }
 
     @Override

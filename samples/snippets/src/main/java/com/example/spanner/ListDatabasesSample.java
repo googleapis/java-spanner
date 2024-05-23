@@ -18,11 +18,13 @@ package com.example.spanner;
 
 //[START spanner_list_databases]
 
-import com.google.api.gax.paging.Page;
-import com.google.cloud.spanner.Database;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPage;
+import com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabasesPagedResponse;
+import com.google.spanner.admin.database.v1.Database;
+import com.google.spanner.admin.database.v1.InstanceName;
 
 public class ListDatabasesSample {
 
@@ -34,21 +36,20 @@ public class ListDatabasesSample {
   }
 
   static void listDatabases(String projectId, String instanceId) {
-    try (Spanner spanner = SpannerOptions
-        .newBuilder()
-        .setProjectId(projectId)
-        .build()
-        .getService()) {
-      final DatabaseAdminClient databaseAdminClient = spanner.getDatabaseAdminClient();
-      Page<Database> page = databaseAdminClient.listDatabases(instanceId);
+    try (Spanner spanner =
+        SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
+        DatabaseAdminClient databaseAdminClient = spanner.createDatabaseAdminClient()) {
+      ListDatabasesPagedResponse response =
+          databaseAdminClient.listDatabases(InstanceName.of(projectId, instanceId));
+
       System.out.println("Databases for projects/" + projectId + "/instances/" + instanceId);
-      while (page != null) {
+
+      for (ListDatabasesPage page : response.iteratePages()) {
         for (Database database : page.iterateAll()) {
           final String defaultLeader = database.getDefaultLeader().equals("")
               ? "" : "(default leader = " + database.getDefaultLeader() + ")";
-          System.out.println("\t" + database.getId() + " " + defaultLeader);
+          System.out.println("\t" + database.getName() + " " + defaultLeader);
         }
-        page = page.getNextPage();
       }
     }
   }

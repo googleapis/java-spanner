@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -75,6 +76,9 @@ interface UnitOfWork {
 
   /** @return <code>true</code> if this unit of work is still active. */
   boolean isActive();
+
+  /** Returns true if this transaction can only be used for a single statement. */
+  boolean isSingleUse();
 
   /**
    * Commits the changes in this unit of work to the database. For read-only transactions, this only
@@ -128,6 +132,14 @@ interface UnitOfWork {
   boolean isReadOnly();
 
   /**
+   * @return <code>true</code> if this unit of work supports {@link
+   *     com.google.spanner.v1.DirectedReadOptions}
+   */
+  default boolean supportsDirectedReads(ParsedStatement parsedStatement) {
+    return false;
+  }
+
+  /**
    * Executes a query with the given options. If {@link AnalyzeMode} is set to {@link
    * AnalyzeMode#PLAN} or {@link AnalyzeMode#PROFILE}, the returned {@link ResultSet} will include
    * {@link ResultSetStats}.
@@ -147,6 +159,12 @@ interface UnitOfWork {
       CallType callType,
       ParsedStatement statement,
       AnalyzeMode analyzeMode,
+      QueryOption... options);
+
+  ApiFuture<ResultSet> partitionQueryAsync(
+      CallType callType,
+      ParsedStatement query,
+      PartitionOptions partitionOptions,
       QueryOption... options);
 
   /**

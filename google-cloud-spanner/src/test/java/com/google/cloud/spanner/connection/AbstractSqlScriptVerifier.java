@@ -70,9 +70,9 @@ import java.util.stream.Stream;
  *       equal. The value of a variable can be set using a @PUT statement.
  * </ul>
  *
- * The parser can set a temporary variable value using a @PUT statement: <code>
- * @PUT 'variable_name'\nSQL statement</code> The SQL statement must be a statement that returns a
- * {@link ResultSet} containing exactly one row and one column.
+ * The parser can set a temporary variable value using a @PUT statement: {@code @PUT
+ * 'variable_name'\nSQL statement} The SQL statement must be a statement that returns a {@link
+ * ResultSet} containing exactly one row and one column.
  *
  * <p>In addition the verifier can create new connections if the script contains NEW_CONNECTION;
  * statements and the verifier has been created with a {@link GenericConnectionProvider}. See {@link
@@ -130,7 +130,7 @@ public abstract class AbstractSqlScriptVerifier {
 
   /**
    * Generic wrapper around a connection to a database. The underlying connection could be a Spanner
-   * {@link com.google.cloud.spanner.jdbc.Connection} or a JDBC {@link java.sql.Connection}
+   * {@link com.google.cloud.spanner.connection.Connection} or a JDBC {@link java.sql.Connection}
    */
   public abstract static class GenericConnection implements AutoCloseable {
     protected abstract GenericStatementResult execute(String sql) throws Exception;
@@ -208,8 +208,8 @@ public abstract class AbstractSqlScriptVerifier {
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *
-   * <p>The {@link com.google.cloud.spanner.jdbc.Connection}s that the statements are executed on
-   * must be created by a {@link GenericConnectionProvider}
+   * <p>The {@link com.google.cloud.spanner.connection.Connection}s that the statements are executed
+   * on must be created by a {@link GenericConnectionProvider}
    *
    * @param filename The file name containing the statements. Statements must be separated by a
    *     semicolon (;)
@@ -229,8 +229,8 @@ public abstract class AbstractSqlScriptVerifier {
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *
-   * <p>The {@link com.google.cloud.spanner.jdbc.Connection}s that the statements are executed on
-   * must be created by a {@link GenericConnectionProvider}
+   * <p>The {@link com.google.cloud.spanner.connection.Connection}s that the statements are executed
+   * on must be created by a {@link GenericConnectionProvider}
    *
    * @param filename The file name containing the statements. Statements must be separated by a
    *     semicolon (;)
@@ -250,8 +250,8 @@ public abstract class AbstractSqlScriptVerifier {
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *
-   * @param providedConnection The {@link com.google.cloud.spanner.jdbc.Connection} to execute the
-   *     statements against
+   * @param providedConnection The {@link com.google.cloud.spanner.connection.Connection} to execute
+   *     the statements against
    * @param filename The file name containing the statements. Statements must be separated by a
    *     semicolon (;)
    * @param resourceClass The class that defines the package where to find the input file
@@ -271,8 +271,8 @@ public abstract class AbstractSqlScriptVerifier {
    * Statements without an @EXPECT statement will be executed and its result will be ignored, unless
    * the statement throws an exception, which will fail the test case.
    *
-   * @param providedConnection The {@link com.google.cloud.spanner.jdbc.Connection} to execute the
-   *     statements against
+   * @param providedConnection The {@link com.google.cloud.spanner.connection.Connection} to execute
+   *     the statements against
    * @param filename The file name containing the statements. Statements must be separated by a
    *     semicolon (;)
    * @param resourceClass The class that defines the package where to find the input file

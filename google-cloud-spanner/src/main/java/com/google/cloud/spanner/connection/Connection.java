@@ -30,16 +30,21 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.UpdateOption;
+import com.google.cloud.spanner.PartitionOptions;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ResultSetStats;
+import java.time.Duration;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
@@ -384,6 +389,22 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets whether the next transaction should be excluded from all change streams with the DDL
+   * option `allow_txn_exclusion=true`
+   */
+  default void setExcludeTxnFromChangeStreams(boolean excludeTxnFromChangeStreams) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns true if the next transaction should be excluded from all change streams with the DDL
+   * option `allow_txn_exclusion=true`
+   */
+  default boolean isExcludeTxnFromChangeStreams() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * Sets the proto descriptors to use for the next DDL statement (single or batch) that will be
    * executed. The proto descriptor is automatically cleared after the statement is executed.
    *
@@ -508,6 +529,22 @@ public interface Connection extends AutoCloseable {
   TimestampBound getReadOnlyStaleness();
 
   /**
+   * Sets the {@link DirectedReadOptions} to use for both single-use and multi-use read-only
+   * transactions on this connection.
+   */
+  default void setDirectedRead(DirectedReadOptions directedReadOptions) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Returns the {@link DirectedReadOptions} that are used for both single-use and multi-use
+   * read-only transactions on this connection.
+   */
+  default DirectedReadOptions getDirectedRead() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Sets the query optimizer version to use for this connection.
    *
    * @param optimizerVersion The query optimizer version to use. Must be a valid optimizer version
@@ -556,6 +593,16 @@ public interface Connection extends AutoCloseable {
 
   /** @return true if this connection requests commit statistics from Cloud Spanner */
   boolean isReturnCommitStats();
+
+  /** Sets the max_commit_delay that will be applied to commit requests from this connection. */
+  default void setMaxCommitDelay(Duration maxCommitDelay) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /** Returns the max_commit_delay that will be applied to commit requests from this connection. */
+  default Duration getMaxCommitDelay() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
 
   /**
    * Sets the priority to use for RPCs executed by this connection..
@@ -761,6 +808,12 @@ public interface Connection extends AutoCloseable {
 
   /** Sets how savepoints should be supported on this connection. */
   void setSavepointSupport(SavepointSupport savepointSupport);
+
+  /** Returns the current {@link DdlInTransactionMode} for this connection. */
+  DdlInTransactionMode getDdlInTransactionMode();
+
+  /** Sets how the connection should behave if a DDL statement is executed during a transaction. */
+  void setDdlInTransactionMode(DdlInTransactionMode ddlInTransactionMode);
 
   /**
    * Creates a savepoint with the given name.
@@ -970,6 +1023,35 @@ public interface Connection extends AutoCloseable {
 
   /**
    * Executes the given statement if allowed in the current {@link TransactionMode} and connection
+   * state, and if the result that would be returned is in the set of allowed result types. The
+   * statement will not be sent to Cloud Spanner if the result type would not be allowed. This
+   * method can be used by drivers that must limit the type of statements that are allowed for a
+   * given method, e.g. for the {@link java.sql.Statement#executeQuery(String)} and {@link
+   * java.sql.Statement#executeUpdate(String)} methods.
+   *
+   * <p>The returned value depends on the type of statement:
+   *
+   * <ul>
+   *   <li>Queries and DML statements with returning clause will return a {@link ResultSet}.
+   *   <li>Simple DML statements will return an update count
+   *   <li>DDL statements will return a {@link ResultType#NO_RESULT}
+   *   <li>Connection and transaction statements (SET AUTOCOMMIT=TRUE|FALSE, SHOW AUTOCOMMIT, SET
+   *       TRANSACTION READ ONLY, etc) will return either a {@link ResultSet} or {@link
+   *       ResultType#NO_RESULT}, depending on the type of statement (SHOW or SET)
+   * </ul>
+   *
+   * @param statement The statement to execute
+   * @param allowedResultTypes The result types that this method may return. The statement will not
+   *     be sent to Cloud Spanner if the statement would return a result that is not one of the
+   *     types in this set.
+   * @return the result of the statement
+   */
+  default StatementResult execute(Statement statement, Set<ResultType> allowedResultTypes) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Executes the given statement if allowed in the current {@link TransactionMode} and connection
    * state asynchronously. The returned value depends on the type of statement:
    *
    * <ul>
@@ -1050,6 +1132,89 @@ public interface Connection extends AutoCloseable {
    * @param queryMode the mode in which to execute the query
    */
   ResultSet analyzeQuery(Statement query, QueryAnalyzeMode queryMode);
+
+  /**
+   * Enable data boost for partitioned queries. See also {@link #partitionQuery(Statement,
+   * PartitionOptions, QueryOption...)}
+   */
+  void setDataBoostEnabled(boolean dataBoostEnabled);
+
+  /**
+   * Returns whether data boost is enabled for partitioned queries. See also {@link
+   * #partitionQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  boolean isDataBoostEnabled();
+
+  /**
+   * Sets whether this connection should always use partitioned queries when a query is executed on
+   * this connection. Setting this flag to <code>true</code> and then executing a query that cannot
+   * be partitioned, or executing a query in a read/write transaction, will cause an error. Use this
+   * flag in combination with {@link #setDataBoostEnabled(boolean)} to force all queries on this
+   * connection to use data boost.
+   */
+  void setAutoPartitionMode(boolean autoPartitionMode);
+
+  /** Returns whether this connection will execute all queries as partitioned queries. */
+  boolean isAutoPartitionMode();
+
+  /**
+   * Sets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
+  void setMaxPartitions(int maxPartitions);
+
+  /**
+   * Gets the maximum number of partitions that should be included as a hint to Cloud Spanner when
+   * partitioning a query on this connection. Note that this is only a hint and Cloud Spanner might
+   * choose to ignore the hint.
+   */
+  int getMaxPartitions();
+
+  /**
+   * Partitions the given query, so it can be executed in parallel. This method returns a {@link
+   * ResultSet} with a string-representation of the partitions that were created. These strings can
+   * be used to execute a partition either on this connection or an any other connection (on this
+   * host or an any other host) by calling the method {@link #runPartition(String)}. This method
+   * will automatically enable data boost for the query if {@link #isDataBoostEnabled()} returns
+   * true.
+   */
+  ResultSet partitionQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
+
+  /**
+   * Executes the given partition of a query. The encodedPartitionId should be a string that was
+   * returned by {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)}.
+   */
+  ResultSet runPartition(String encodedPartitionId);
+
+  /**
+   * Sets the maximum degree of parallelism that is used when executing a partitioned query using
+   * {@link #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}. The method will use
+   * up to <code>maxThreads</code> to execute and retrieve the results from Cloud Spanner. Set this
+   * value to <code>0</code>> to use the number of available processors as returned by {@link
+   * Runtime#availableProcessors()}.
+   */
+  void setMaxPartitionedParallelism(int maxThreads);
+
+  /**
+   * Returns the maximum degree of parallelism that is used for {@link
+   * #runPartitionedQuery(Statement, PartitionOptions, QueryOption...)}
+   */
+  int getMaxPartitionedParallelism();
+
+  /**
+   * Executes the given query as a partitioned query. The query will first be partitioned using the
+   * {@link #partitionQuery(Statement, PartitionOptions, QueryOption...)} method. Each of the
+   * partitions will then be executed in the background, and the results will be merged into a
+   * single result set.
+   *
+   * <p>This method will use <code>maxPartitionedParallelism</code> threads to execute the
+   * partitioned query. Set this variable to a higher/lower value to increase/decrease the degree of
+   * parallelism used for execution.
+   */
+  PartitionedQueryResultSet runPartitionedQuery(
+      Statement query, PartitionOptions partitionOptions, QueryOption... options);
 
   /**
    * Executes the given statement as a simple DML statement. If the statement does not contain a
@@ -1245,6 +1410,12 @@ public interface Connection extends AutoCloseable {
   /** The {@link DatabaseClient} that is used by this {@link Connection}. */
   @InternalApi
   default DatabaseClient getDatabaseClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /** The {@link Spanner} instance that is used by this {@link Connection}. */
+  @InternalApi
+  default Spanner getSpanner() {
     throw new UnsupportedOperationException("Not implemented");
   }
 

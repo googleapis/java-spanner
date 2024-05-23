@@ -21,9 +21,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -35,14 +37,23 @@ import com.google.cloud.spanner.connection.ITAbstractSpannerTest.ITConnection;
 import com.google.cloud.spanner.connection.it.ITTransactionRetryTest.CountTransactionRetryListener;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Value;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import com.google.spanner.v1.ResultSetMetadata;
+import com.google.spanner.v1.StructType;
+import com.google.spanner.v1.StructType.Field;
+import com.google.spanner.v1.Type;
+import com.google.spanner.v1.TypeCode;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -497,6 +508,7 @@ public class AbortedTest extends AbstractMockServerTest {
     assertEquals(2L, commitRequestCount);
   }
 
+  @Test
   public void testRetryUsesAnalyzeModeForUpdate() {
     mockSpanner.putStatementResult(
         StatementResult.query(SELECT_COUNT_STATEMENT, SELECT_COUNT_RESULTSET_BEFORE_INSERT));
@@ -529,6 +541,69 @@ public class AbortedTest extends AbstractMockServerTest {
 
     assertEquals(QueryMode.NORMAL, requests.get(3).getQueryMode());
     assertEquals(QueryMode.NORMAL, requests.get(4).getQueryMode());
+  }
+
+  @Test
+  public void testAbortedWithBitReversedSequence() {
+    // A bit-reversed sequence can only be used in a read/write transaction. However, calling
+    // get_next_sequence_value will update the sequence durably, even if the transaction is aborted.
+    // That means that retrying a transaction that called get_next_sequence_value will always fail.
+    String getSequenceValuesSql =
+        "WITH t AS (\n"
+            + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+            + "\tUNION ALL\n"
+            + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+            + "\tUNION ALL\n"
+            + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+            + "\tUNION ALL\n"
+            + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+            + "\tUNION ALL\n"
+            + "\tselect get_next_sequence_value(sequence enhanced_sequence) AS n\n"
+            + ")\n"
+            + "SELECT n FROM t";
+    mockSpanner.putStatementResult(
+        StatementResult.queryAndThen(
+            Statement.of(getSequenceValuesSql),
+            createBitReversedSequenceResultSet(1L, 5L),
+            createBitReversedSequenceResultSet(6L, 10L)));
+    long currentValue = 0L;
+    try (ITConnection connection = createConnection()) {
+      try (ResultSet resultSet = connection.executeQuery(Statement.of(getSequenceValuesSql))) {
+        while (resultSet.next()) {
+          assertEquals(Long.reverse(++currentValue), resultSet.getLong(0));
+        }
+      }
+      mockSpanner.abortNextStatement();
+      // The retry should fail, because the sequence will return new values during the retry.
+      assertThrows(AbortedDueToConcurrentModificationException.class, connection::commit);
+    }
+  }
+
+  static com.google.spanner.v1.ResultSet createBitReversedSequenceResultSet(
+      long startValue, long endValue) {
+    return com.google.spanner.v1.ResultSet.newBuilder()
+        .setMetadata(
+            ResultSetMetadata.newBuilder()
+                .setRowType(
+                    StructType.newBuilder()
+                        .addFields(
+                            Field.newBuilder()
+                                .setName("n")
+                                .setType(Type.newBuilder().setCode(TypeCode.INT64).build())
+                                .build())
+                        .build())
+                .build())
+        .addAllRows(
+            LongStream.range(startValue, endValue)
+                .map(Long::reverse)
+                .mapToObj(
+                    id ->
+                        ListValue.newBuilder()
+                            .addValues(
+                                Value.newBuilder().setStringValue(String.valueOf(id)).build())
+                            .build())
+                .collect(Collectors.toList()))
+        .build();
   }
 
   ITConnection createConnection(TransactionRetryListener listener) {

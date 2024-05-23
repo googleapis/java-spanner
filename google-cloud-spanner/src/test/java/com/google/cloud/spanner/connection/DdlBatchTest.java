@@ -43,21 +43,19 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ReadContext;
-import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerBatchUpdateException;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
-import com.google.cloud.spanner.connection.Connection.InternalMetadataQuery;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import io.grpc.Status;
+import io.opentelemetry.api.trace.Span;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -136,6 +134,7 @@ public class DdlBatchTest {
         .setDdlClient(ddlClient)
         .setDatabaseClient(dbClient)
         .withStatementExecutor(new StatementExecutor())
+        .setSpan(Span.getInvalid())
         .build();
   }
 
@@ -160,25 +159,6 @@ public class DdlBatchTest {
                 CallType.SYNC,
                 AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
                     .parse(Statement.of("CREATE DATABASE foo"))));
-  }
-
-  @Test
-  public void testExecuteMetadataQuery() {
-    Statement statement = Statement.of("SELECT * FROM INFORMATION_SCHEMA.TABLES");
-    ParsedStatement parsedStatement = mock(ParsedStatement.class);
-    when(parsedStatement.isQuery()).thenReturn(true);
-    when(parsedStatement.getStatement()).thenReturn(statement);
-    DatabaseClient dbClient = mock(DatabaseClient.class);
-    ReadContext singleUse = mock(ReadContext.class);
-    ResultSet resultSet = mock(ResultSet.class);
-    when(singleUse.executeQuery(statement)).thenReturn(resultSet);
-    when(dbClient.singleUse()).thenReturn(singleUse);
-    DdlBatch batch = createSubject(createDefaultMockDdlClient(), dbClient);
-    assertThat(
-        get(batch.executeQueryAsync(
-                CallType.SYNC, parsedStatement, AnalyzeMode.NONE, InternalMetadataQuery.INSTANCE))
-            .hashCode(),
-        is(equalTo(resultSet.hashCode())));
   }
 
   @Test
@@ -454,6 +434,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
+            .setSpan(Span.getInvalid())
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,
@@ -493,6 +474,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
+            .setSpan(Span.getInvalid())
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,
@@ -536,6 +518,7 @@ public class DdlBatchTest {
             .withStatementExecutor(new StatementExecutor())
             .setDdlClient(client)
             .setDatabaseClient(mock(DatabaseClient.class))
+            .setSpan(Span.getInvalid())
             .build();
     batch.executeDdlAsync(
         CallType.SYNC,

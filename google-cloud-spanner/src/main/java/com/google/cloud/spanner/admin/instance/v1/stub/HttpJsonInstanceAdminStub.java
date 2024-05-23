@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ package com.google.cloud.spanner.admin.instance.v1.stub;
 
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstanceConfigsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancePartitionsPagedResponse;
 import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.ListInstancesPagedResponse;
 
 import com.google.api.HttpRule;
-import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
 import com.google.api.gax.core.BackgroundResource;
 import com.google.api.gax.core.BackgroundResourceAggregation;
@@ -35,6 +36,7 @@ import com.google.api.gax.httpjson.ProtoRestSerializer;
 import com.google.api.gax.httpjson.longrunning.stub.HttpJsonOperationsStub;
 import com.google.api.gax.rpc.ClientContext;
 import com.google.api.gax.rpc.OperationCallable;
+import com.google.api.gax.rpc.RequestParamsBuilder;
 import com.google.api.gax.rpc.UnaryCallable;
 import com.google.common.collect.ImmutableMap;
 import com.google.iam.v1.GetIamPolicyRequest;
@@ -48,22 +50,33 @@ import com.google.protobuf.TypeRegistry;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.DeleteInstanceRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceConfigRequest;
+import com.google.spanner.admin.instance.v1.GetInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.GetInstanceRequest;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfig;
+import com.google.spanner.admin.instance.v1.InstancePartition;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsRequest;
 import com.google.spanner.admin.instance.v1.ListInstanceConfigsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+import com.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,12 +93,14 @@ import javax.annotation.Generated;
  * <p>This class is for advanced usage and reflects the underlying API directly.
  */
 @Generated("by gapic-generator-java")
-@BetaApi
 public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   private static final TypeRegistry typeRegistry =
       TypeRegistry.newBuilder()
           .add(InstanceConfig.getDescriptor())
+          .add(CreateInstancePartitionMetadata.getDescriptor())
+          .add(UpdateInstancePartitionMetadata.getDescriptor())
           .add(Instance.getDescriptor())
+          .add(InstancePartition.getDescriptor())
           .add(CreateInstanceConfigMetadata.getDescriptor())
           .add(UpdateInstanceMetadata.getDescriptor())
           .add(CreateInstanceMetadata.getDescriptor())
@@ -350,6 +365,8 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                             ProtoRestSerializer<ListInstancesRequest> serializer =
                                 ProtoRestSerializer.create();
                             serializer.putQueryParam(fields, "filter", request.getFilter());
+                            serializer.putQueryParam(
+                                fields, "instanceDeadline", request.getInstanceDeadline());
                             serializer.putQueryParam(fields, "pageSize", request.getPageSize());
                             serializer.putQueryParam(fields, "pageToken", request.getPageToken());
                             serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
@@ -360,6 +377,49 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
               .setResponseParser(
                   ProtoMessageResponseParser.<ListInstancesResponse>newBuilder()
                       .setDefaultInstance(ListInstancesResponse.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<
+          ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+      listInstancePartitionsMethodDescriptor =
+          ApiMethodDescriptor
+              .<ListInstancePartitionsRequest, ListInstancePartitionsResponse>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/ListInstancePartitions")
+              .setHttpMethod("GET")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<ListInstancePartitionsRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*/instances/*}/instancePartitions",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<ListInstancePartitionsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<ListInstancePartitionsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(
+                                fields,
+                                "instancePartitionDeadline",
+                                request.getInstancePartitionDeadline());
+                            serializer.putQueryParam(fields, "pageSize", request.getPageSize());
+                            serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<ListInstancePartitionsResponse>newBuilder()
+                      .setDefaultInstance(ListInstancePartitionsResponse.getDefaultInstance())
                       .setDefaultTypeRegistry(typeRegistry)
                       .build())
               .build();
@@ -626,6 +686,208 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                       .build())
               .build();
 
+  private static final ApiMethodDescriptor<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionMethodDescriptor =
+          ApiMethodDescriptor.<GetInstancePartitionRequest, InstancePartition>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/GetInstancePartition")
+              .setHttpMethod("GET")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<GetInstancePartitionRequest>newBuilder()
+                      .setPath(
+                          "/v1/{name=projects/*/instances/*/instancePartitions/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<GetInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "name", request.getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<GetInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<InstancePartition>newBuilder()
+                      .setDefaultInstance(InstancePartition.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionMethodDescriptor =
+          ApiMethodDescriptor.<CreateInstancePartitionRequest, Operation>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/CreateInstancePartition")
+              .setHttpMethod("POST")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<CreateInstancePartitionRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*/instances/*}/instancePartitions",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<CreateInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<CreateInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().clearParent().build(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Operation>newBuilder()
+                      .setDefaultInstance(Operation.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .setOperationSnapshotFactory(
+                  (CreateInstancePartitionRequest request, Operation response) ->
+                      HttpJsonOperationSnapshot.create(response))
+              .build();
+
+  private static final ApiMethodDescriptor<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionMethodDescriptor =
+          ApiMethodDescriptor.<DeleteInstancePartitionRequest, Empty>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/DeleteInstancePartition")
+              .setHttpMethod("DELETE")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<DeleteInstancePartitionRequest>newBuilder()
+                      .setPath(
+                          "/v1/{name=projects/*/instances/*/instancePartitions/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<DeleteInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "name", request.getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<DeleteInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "etag", request.getEtag());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Empty>newBuilder()
+                      .setDefaultInstance(Empty.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionMethodDescriptor =
+          ApiMethodDescriptor.<UpdateInstancePartitionRequest, Operation>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/UpdateInstancePartition")
+              .setHttpMethod("PATCH")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<UpdateInstancePartitionRequest>newBuilder()
+                      .setPath(
+                          "/v1/{instancePartition.name=projects/*/instances/*/instancePartitions/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(
+                                fields,
+                                "instancePartition.name",
+                                request.getInstancePartition().getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateInstancePartitionRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().build(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Operation>newBuilder()
+                      .setDefaultInstance(Operation.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .setOperationSnapshotFactory(
+                  (UpdateInstancePartitionRequest request, Operation response) ->
+                      HttpJsonOperationSnapshot.create(response))
+              .build();
+
+  private static final ApiMethodDescriptor<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+      listInstancePartitionOperationsMethodDescriptor =
+          ApiMethodDescriptor
+              .<ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+                  newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.instance.v1.InstanceAdmin/ListInstancePartitionOperations")
+              .setHttpMethod("GET")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<ListInstancePartitionOperationsRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*/instances/*}/instancePartitionOperations",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<ListInstancePartitionOperationsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<ListInstancePartitionOperationsRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "filter", request.getFilter());
+                            serializer.putQueryParam(
+                                fields,
+                                "instancePartitionDeadline",
+                                request.getInstancePartitionDeadline());
+                            serializer.putQueryParam(fields, "pageSize", request.getPageSize());
+                            serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<ListInstancePartitionOperationsResponse>newBuilder()
+                      .setDefaultInstance(
+                          ListInstancePartitionOperationsResponse.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable;
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
@@ -649,6 +911,10 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<ListInstancesRequest, ListInstancesResponse> listInstancesCallable;
   private final UnaryCallable<ListInstancesRequest, ListInstancesPagedResponse>
       listInstancesPagedCallable;
+  private final UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+      listInstancePartitionsCallable;
+  private final UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsPagedResponse>
+      listInstancePartitionsPagedCallable;
   private final UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable;
   private final UnaryCallable<CreateInstanceRequest, Operation> createInstanceCallable;
   private final OperationCallable<CreateInstanceRequest, Instance, CreateInstanceMetadata>
@@ -661,6 +927,26 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<GetIamPolicyRequest, Policy> getIamPolicyCallable;
   private final UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable;
+  private final UnaryCallable<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionCallable;
+  private final UnaryCallable<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionCallable;
+  private final OperationCallable<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationCallable;
+  private final UnaryCallable<DeleteInstancePartitionRequest, Empty>
+      deleteInstancePartitionCallable;
+  private final UnaryCallable<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionCallable;
+  private final OperationCallable<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationCallable;
+  private final UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+      listInstancePartitionOperationsCallable;
+  private final UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsPagedCallable;
 
   private final BackgroundResource backgroundResources;
   private final HttpJsonOperationsStub httpJsonOperationsStub;
@@ -755,29 +1041,61 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                 .<ListInstanceConfigsRequest, ListInstanceConfigsResponse>newBuilder()
                 .setMethodDescriptor(listInstanceConfigsMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<GetInstanceConfigRequest, InstanceConfig>
         getInstanceConfigTransportSettings =
             HttpJsonCallSettings.<GetInstanceConfigRequest, InstanceConfig>newBuilder()
                 .setMethodDescriptor(getInstanceConfigMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("name", String.valueOf(request.getName()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<CreateInstanceConfigRequest, Operation>
         createInstanceConfigTransportSettings =
             HttpJsonCallSettings.<CreateInstanceConfigRequest, Operation>newBuilder()
                 .setMethodDescriptor(createInstanceConfigMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<UpdateInstanceConfigRequest, Operation>
         updateInstanceConfigTransportSettings =
             HttpJsonCallSettings.<UpdateInstanceConfigRequest, Operation>newBuilder()
                 .setMethodDescriptor(updateInstanceConfigMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add(
+                          "instance_config.name",
+                          String.valueOf(request.getInstanceConfig().getName()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<DeleteInstanceConfigRequest, Empty> deleteInstanceConfigTransportSettings =
         HttpJsonCallSettings.<DeleteInstanceConfigRequest, Empty>newBuilder()
             .setMethodDescriptor(deleteInstanceConfigMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<ListInstanceConfigOperationsRequest, ListInstanceConfigOperationsResponse>
         listInstanceConfigOperationsTransportSettings =
@@ -786,48 +1104,180 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                     newBuilder()
                 .setMethodDescriptor(listInstanceConfigOperationsMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<ListInstancesRequest, ListInstancesResponse>
         listInstancesTransportSettings =
             HttpJsonCallSettings.<ListInstancesRequest, ListInstancesResponse>newBuilder()
                 .setMethodDescriptor(listInstancesMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+        listInstancePartitionsTransportSettings =
+            HttpJsonCallSettings
+                .<ListInstancePartitionsRequest, ListInstancePartitionsResponse>newBuilder()
+                .setMethodDescriptor(listInstancePartitionsMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
                 .build();
     HttpJsonCallSettings<GetInstanceRequest, Instance> getInstanceTransportSettings =
         HttpJsonCallSettings.<GetInstanceRequest, Instance>newBuilder()
             .setMethodDescriptor(getInstanceMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<CreateInstanceRequest, Operation> createInstanceTransportSettings =
         HttpJsonCallSettings.<CreateInstanceRequest, Operation>newBuilder()
             .setMethodDescriptor(createInstanceMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("parent", String.valueOf(request.getParent()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<UpdateInstanceRequest, Operation> updateInstanceTransportSettings =
         HttpJsonCallSettings.<UpdateInstanceRequest, Operation>newBuilder()
             .setMethodDescriptor(updateInstanceMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("instance.name", String.valueOf(request.getInstance().getName()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<DeleteInstanceRequest, Empty> deleteInstanceTransportSettings =
         HttpJsonCallSettings.<DeleteInstanceRequest, Empty>newBuilder()
             .setMethodDescriptor(deleteInstanceMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<SetIamPolicyRequest, Policy> setIamPolicyTransportSettings =
         HttpJsonCallSettings.<SetIamPolicyRequest, Policy>newBuilder()
             .setMethodDescriptor(setIamPolicyMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("resource", String.valueOf(request.getResource()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<GetIamPolicyRequest, Policy> getIamPolicyTransportSettings =
         HttpJsonCallSettings.<GetIamPolicyRequest, Policy>newBuilder()
             .setMethodDescriptor(getIamPolicyMethodDescriptor)
             .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("resource", String.valueOf(request.getResource()));
+                  return builder.build();
+                })
             .build();
     HttpJsonCallSettings<TestIamPermissionsRequest, TestIamPermissionsResponse>
         testIamPermissionsTransportSettings =
             HttpJsonCallSettings.<TestIamPermissionsRequest, TestIamPermissionsResponse>newBuilder()
                 .setMethodDescriptor(testIamPermissionsMethodDescriptor)
                 .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("resource", String.valueOf(request.getResource()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<GetInstancePartitionRequest, InstancePartition>
+        getInstancePartitionTransportSettings =
+            HttpJsonCallSettings.<GetInstancePartitionRequest, InstancePartition>newBuilder()
+                .setMethodDescriptor(getInstancePartitionMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("name", String.valueOf(request.getName()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<CreateInstancePartitionRequest, Operation>
+        createInstancePartitionTransportSettings =
+            HttpJsonCallSettings.<CreateInstancePartitionRequest, Operation>newBuilder()
+                .setMethodDescriptor(createInstancePartitionMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<DeleteInstancePartitionRequest, Empty>
+        deleteInstancePartitionTransportSettings =
+            HttpJsonCallSettings.<DeleteInstancePartitionRequest, Empty>newBuilder()
+                .setMethodDescriptor(deleteInstancePartitionMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("name", String.valueOf(request.getName()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<UpdateInstancePartitionRequest, Operation>
+        updateInstancePartitionTransportSettings =
+            HttpJsonCallSettings.<UpdateInstancePartitionRequest, Operation>newBuilder()
+                .setMethodDescriptor(updateInstancePartitionMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add(
+                          "instance_partition.name",
+                          String.valueOf(request.getInstancePartition().getName()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<
+            ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+        listInstancePartitionOperationsTransportSettings =
+            HttpJsonCallSettings
+                .<ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+                    newBuilder()
+                .setMethodDescriptor(listInstancePartitionOperationsMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
                 .build();
 
     this.listInstanceConfigsCallable =
@@ -888,6 +1338,16 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
     this.listInstancesPagedCallable =
         callableFactory.createPagedCallable(
             listInstancesTransportSettings, settings.listInstancesSettings(), clientContext);
+    this.listInstancePartitionsCallable =
+        callableFactory.createUnaryCallable(
+            listInstancePartitionsTransportSettings,
+            settings.listInstancePartitionsSettings(),
+            clientContext);
+    this.listInstancePartitionsPagedCallable =
+        callableFactory.createPagedCallable(
+            listInstancePartitionsTransportSettings,
+            settings.listInstancePartitionsSettings(),
+            clientContext);
     this.getInstanceCallable =
         callableFactory.createUnaryCallable(
             getInstanceTransportSettings, settings.getInstanceSettings(), clientContext);
@@ -923,6 +1383,48 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
             testIamPermissionsTransportSettings,
             settings.testIamPermissionsSettings(),
             clientContext);
+    this.getInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            getInstancePartitionTransportSettings,
+            settings.getInstancePartitionSettings(),
+            clientContext);
+    this.createInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            createInstancePartitionTransportSettings,
+            settings.createInstancePartitionSettings(),
+            clientContext);
+    this.createInstancePartitionOperationCallable =
+        callableFactory.createOperationCallable(
+            createInstancePartitionTransportSettings,
+            settings.createInstancePartitionOperationSettings(),
+            clientContext,
+            httpJsonOperationsStub);
+    this.deleteInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            deleteInstancePartitionTransportSettings,
+            settings.deleteInstancePartitionSettings(),
+            clientContext);
+    this.updateInstancePartitionCallable =
+        callableFactory.createUnaryCallable(
+            updateInstancePartitionTransportSettings,
+            settings.updateInstancePartitionSettings(),
+            clientContext);
+    this.updateInstancePartitionOperationCallable =
+        callableFactory.createOperationCallable(
+            updateInstancePartitionTransportSettings,
+            settings.updateInstancePartitionOperationSettings(),
+            clientContext,
+            httpJsonOperationsStub);
+    this.listInstancePartitionOperationsCallable =
+        callableFactory.createUnaryCallable(
+            listInstancePartitionOperationsTransportSettings,
+            settings.listInstancePartitionOperationsSettings(),
+            clientContext);
+    this.listInstancePartitionOperationsPagedCallable =
+        callableFactory.createPagedCallable(
+            listInstancePartitionOperationsTransportSettings,
+            settings.listInstancePartitionOperationsSettings(),
+            clientContext);
 
     this.backgroundResources =
         new BackgroundResourceAggregation(clientContext.getBackgroundResources());
@@ -938,6 +1440,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
     methodDescriptors.add(deleteInstanceConfigMethodDescriptor);
     methodDescriptors.add(listInstanceConfigOperationsMethodDescriptor);
     methodDescriptors.add(listInstancesMethodDescriptor);
+    methodDescriptors.add(listInstancePartitionsMethodDescriptor);
     methodDescriptors.add(getInstanceMethodDescriptor);
     methodDescriptors.add(createInstanceMethodDescriptor);
     methodDescriptors.add(updateInstanceMethodDescriptor);
@@ -945,6 +1448,11 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
     methodDescriptors.add(setIamPolicyMethodDescriptor);
     methodDescriptors.add(getIamPolicyMethodDescriptor);
     methodDescriptors.add(testIamPermissionsMethodDescriptor);
+    methodDescriptors.add(getInstancePartitionMethodDescriptor);
+    methodDescriptors.add(createInstancePartitionMethodDescriptor);
+    methodDescriptors.add(deleteInstancePartitionMethodDescriptor);
+    methodDescriptors.add(updateInstancePartitionMethodDescriptor);
+    methodDescriptors.add(listInstancePartitionOperationsMethodDescriptor);
     return methodDescriptors;
   }
 
@@ -1023,6 +1531,18 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   }
 
   @Override
+  public UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsResponse>
+      listInstancePartitionsCallable() {
+    return listInstancePartitionsCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListInstancePartitionsRequest, ListInstancePartitionsPagedResponse>
+      listInstancePartitionsPagedCallable() {
+    return listInstancePartitionsPagedCallable;
+  }
+
+  @Override
   public UnaryCallable<GetInstanceRequest, Instance> getInstanceCallable() {
     return getInstanceCallable;
   }
@@ -1068,6 +1588,57 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   public UnaryCallable<TestIamPermissionsRequest, TestIamPermissionsResponse>
       testIamPermissionsCallable() {
     return testIamPermissionsCallable;
+  }
+
+  @Override
+  public UnaryCallable<GetInstancePartitionRequest, InstancePartition>
+      getInstancePartitionCallable() {
+    return getInstancePartitionCallable;
+  }
+
+  @Override
+  public UnaryCallable<CreateInstancePartitionRequest, Operation>
+      createInstancePartitionCallable() {
+    return createInstancePartitionCallable;
+  }
+
+  @Override
+  public OperationCallable<
+          CreateInstancePartitionRequest, InstancePartition, CreateInstancePartitionMetadata>
+      createInstancePartitionOperationCallable() {
+    return createInstancePartitionOperationCallable;
+  }
+
+  @Override
+  public UnaryCallable<DeleteInstancePartitionRequest, Empty> deleteInstancePartitionCallable() {
+    return deleteInstancePartitionCallable;
+  }
+
+  @Override
+  public UnaryCallable<UpdateInstancePartitionRequest, Operation>
+      updateInstancePartitionCallable() {
+    return updateInstancePartitionCallable;
+  }
+
+  @Override
+  public OperationCallable<
+          UpdateInstancePartitionRequest, InstancePartition, UpdateInstancePartitionMetadata>
+      updateInstancePartitionOperationCallable() {
+    return updateInstancePartitionOperationCallable;
+  }
+
+  @Override
+  public UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsResponse>
+      listInstancePartitionOperationsCallable() {
+    return listInstancePartitionOperationsCallable;
+  }
+
+  @Override
+  public UnaryCallable<
+          ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
+      listInstancePartitionOperationsPagedCallable() {
+    return listInstancePartitionOperationsPagedCallable;
   }
 
   @Override

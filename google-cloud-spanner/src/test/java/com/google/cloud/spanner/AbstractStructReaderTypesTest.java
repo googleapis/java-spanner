@@ -59,6 +59,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected float getFloatInternal(int columnIndex) {
+      return 0f;
+    }
+
+    @Override
     protected double getDoubleInternal(int columnIndex) {
       return 0;
     }
@@ -131,6 +136,16 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected List<Long> getLongListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected float[] getFloatArrayInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected List<Float> getFloatListInternal(int columnIndex) {
       return null;
     }
 
@@ -223,6 +238,13 @@ public class AbstractStructReaderTypesTest {
           },
           {Type.int64(), "getLongInternal", 123L, "getLong", Collections.singletonList("getValue")},
           {
+            Type.float32(),
+            "getFloatInternal",
+            2.0f,
+            "getFloat",
+            Collections.singletonList("getValue")
+          },
+          {
             Type.float64(),
             "getDoubleInternal",
             2.0,
@@ -264,6 +286,7 @@ public class AbstractStructReaderTypesTest {
             "getJson",
             Collections.singletonList("getValue")
           },
+          {Type.pgOid(), "getLongInternal", 123L, "getLong", Collections.singletonList("getValue")},
           {
             Type.timestamp(),
             "getTimestampInternal",
@@ -307,6 +330,20 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList("getLongArray", "getValue")
           },
           {
+            Type.array(Type.float32()),
+            "getFloatArrayInternal",
+            new float[] {1.0f, 2.0f},
+            "getFloatArray",
+            Arrays.asList("getFloatList", "getValue")
+          },
+          {
+            Type.array(Type.float32()),
+            "getFloatListInternal",
+            Arrays.asList(2.0f, 4.0f),
+            "getFloatList",
+            Arrays.asList("getFloatArray", "getValue")
+          },
+          {
             Type.array(Type.float64()),
             "getDoubleArrayInternal",
             new double[] {1.0, 2.0},
@@ -347,6 +384,20 @@ public class AbstractStructReaderTypesTest {
             Arrays.asList("{}", "{\"color\":\"red\",\"value\":\"#f00\"}", "[]"),
             "getJsonList",
             Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getLongArrayInternal",
+            new long[] {1, 2},
+            "getLongArray",
+            Arrays.asList("getLongList", "getValue")
+          },
+          {
+            Type.array(Type.pgOid()),
+            "getLongListInternal",
+            Arrays.asList(3L, 4L),
+            "getLongList",
+            Arrays.asList("getLongArray", "getValue")
           },
           {
             Type.array(Type.bytes()),

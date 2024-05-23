@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
@@ -49,6 +50,7 @@ import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.trace.Span;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -176,8 +178,10 @@ public class ReadOnlyTransactionTest {
         .thenReturn(new SimpleReadOnlyTransaction(staleness));
     return ReadOnlyTransaction.newBuilder()
         .setDatabaseClient(client)
+        .setBatchClient(mock(BatchClient.class))
         .setReadOnlyStaleness(staleness)
         .withStatementExecutor(new StatementExecutor())
+        .setSpan(Span.getInvalid())
         .build();
   }
 
@@ -315,8 +319,10 @@ public class ReadOnlyTransactionTest {
     ReadOnlyTransaction transaction =
         ReadOnlyTransaction.newBuilder()
             .setDatabaseClient(client)
+            .setBatchClient(mock(BatchClient.class))
             .setReadOnlyStaleness(TimestampBound.strong())
             .withStatementExecutor(new StatementExecutor())
+            .setSpan(Span.getInvalid())
             .build();
     ResultSet expectedWithOptions = DirectExecuteResultSet.ofResultSet(resWithOptions);
     assertThat(

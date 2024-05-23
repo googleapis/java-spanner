@@ -19,6 +19,7 @@ package com.google.cloud.spanner.connection;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.ProtobufResultSet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Struct;
@@ -40,7 +41,7 @@ import java.util.function.Function;
  * to the actual query execution. It also ensures that any invalid query will throw an exception at
  * execution instead of the first next() call by a client.
  */
-class DirectExecuteResultSet implements ResultSet {
+class DirectExecuteResultSet implements ProtobufResultSet {
   private static final String MISSING_NEXT_CALL = "Must be preceded by a next() call";
   private final ResultSet delegate;
   private boolean nextCalledByClient = false;
@@ -77,6 +78,21 @@ class DirectExecuteResultSet implements ResultSet {
     nextCalledByClient = true;
     nextHasReturnedFalse = !initialNextResult;
     return initialNextResult;
+  }
+
+  @Override
+  public boolean canGetProtobufValue(int columnIndex) {
+    return nextCalledByClient
+        && delegate instanceof ProtobufResultSet
+        && ((ProtobufResultSet) delegate).canGetProtobufValue(columnIndex);
+  }
+
+  @Override
+  public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    Preconditions.checkState(
+        delegate instanceof ProtobufResultSet, "The result set does not support protobuf values");
+    return ((ProtobufResultSet) delegate).getProtobufValue(columnIndex);
   }
 
   @Override
@@ -165,6 +181,12 @@ class DirectExecuteResultSet implements ResultSet {
   }
 
   @Override
+  public float getFloat(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloat(columnIndex);
+  }
+
+  @Override
   public double getDouble(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getDouble(columnIndex);
@@ -180,6 +202,12 @@ class DirectExecuteResultSet implements ResultSet {
   public BigDecimal getBigDecimal(int columnIndex) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getBigDecimal(columnIndex);
+  }
+
+  @Override
+  public float getFloat(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloat(columnName);
   }
 
   @Override
@@ -318,6 +346,30 @@ class DirectExecuteResultSet implements ResultSet {
   public List<Long> getLongList(String columnName) {
     Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
     return delegate.getLongList(columnName);
+  }
+
+  @Override
+  public float[] getFloatArray(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatArray(columnIndex);
+  }
+
+  @Override
+  public float[] getFloatArray(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatArray(columnName);
+  }
+
+  @Override
+  public List<Float> getFloatList(int columnIndex) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatList(columnIndex);
+  }
+
+  @Override
+  public List<Float> getFloatList(String columnName) {
+    Preconditions.checkState(nextCalledByClient, MISSING_NEXT_CALL);
+    return delegate.getFloatList(columnName);
   }
 
   @Override

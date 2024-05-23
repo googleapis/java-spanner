@@ -78,6 +78,22 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
     assertEquals(
         ClientSideStatementType.ROLLBACK,
         parser.parse(Statement.of("ROLLBACK TRANSACTION")).getClientSideStatementType());
+    if (dialect == Dialect.POSTGRESQL) {
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser.parse(Statement.of("ABORT")).getClientSideStatementType());
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser.parse(Statement.of("ABORT TRANSACTION")).getClientSideStatementType());
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser.parse(Statement.of("ABORT WORK")).getClientSideStatementType());
+      assertEquals(
+          ClientSideStatementType.ROLLBACK,
+          parser
+              .parse(Statement.of("ABORT TRANSACTION and no chain"))
+              .getClientSideStatementType());
+    }
 
     for (ClientSideStatementImpl statement : parser.getClientSideStatements()) {
       assertNotNull(
@@ -151,8 +167,13 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
       AbstractStatementParser parser, ClientSideStatementImpl statement) {
     for (String sql : statement.getExampleStatements()) {
       log(statement.getExamplePrerequisiteStatements(), sql);
-      log(statement.getExamplePrerequisiteStatements(), upper(sql));
-      log(statement.getExamplePrerequisiteStatements(), lower(sql));
+      if (statement.getStatementType() != ClientSideStatementType.RUN_PARTITION
+          && statement.getStatementType() != ClientSideStatementType.SET_DIRECTED_READ) {
+        // Partition ids are case-sensitive.
+        // DirectedReadOptions are case-sensitive.
+        log(statement.getExamplePrerequisiteStatements(), upper(sql));
+        log(statement.getExamplePrerequisiteStatements(), lower(sql));
+      }
       log(statement.getExamplePrerequisiteStatements(), withLeadingSpaces(sql));
       log(statement.getExamplePrerequisiteStatements(), withLeadingTabs(sql));
       log(statement.getExamplePrerequisiteStatements(), withLeadingLinefeeds(sql));
@@ -167,12 +188,20 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
           statement.getExamplePrerequisiteStatements(),
           withInvalidPrefix(sql),
           ErrorCode.INVALID_ARGUMENT);
-      log(
-          statement.getExamplePrerequisiteStatements(),
-          withInvalidSuffix(sql),
-          parser.isQuery(withInvalidSuffix(sql))
-              ? ErrorCode.UNIMPLEMENTED
-              : ErrorCode.INVALID_ARGUMENT);
+
+      boolean anySuffixAllowed =
+          statement.getStatementType() == ClientSideStatementType.PARTITION
+              || statement.getStatementType() == ClientSideStatementType.RUN_PARTITIONED_QUERY;
+      if (anySuffixAllowed) {
+        log(statement.getExamplePrerequisiteStatements(), withInvalidSuffix(sql));
+      } else {
+        log(
+            statement.getExamplePrerequisiteStatements(),
+            withInvalidSuffix(sql),
+            parser.isQuery(withInvalidSuffix(sql))
+                ? ErrorCode.UNIMPLEMENTED
+                : ErrorCode.INVALID_ARGUMENT);
+      }
 
       final String[] replacements = {
         "%", "_", "&", "$", "@", "!", "*", "(", ")", "-", "+", "-#", "/", "\\", "?", "-/", "/#",
@@ -183,18 +212,22 @@ public class ClientSideStatementsTest extends AbstractSqlScriptTest {
             statement.getExamplePrerequisiteStatements(),
             withPrefix(replacement, sql),
             ErrorCode.INVALID_ARGUMENT);
-        log(
-            statement.getExamplePrerequisiteStatements(),
-            withSuffix(replacement, sql),
-            parser.isQuery(withSuffix(replacement, sql))
-                ? ErrorCode.UNIMPLEMENTED
-                : ErrorCode.INVALID_ARGUMENT);
-        log(
-            statement.getExamplePrerequisiteStatements(),
-            replaceLastSpaceWith(replacement, sql),
-            parser.isQuery(replaceLastSpaceWith(replacement, sql))
-                ? ErrorCode.UNIMPLEMENTED
-                : ErrorCode.INVALID_ARGUMENT);
+        if (anySuffixAllowed) {
+          log(statement.getExamplePrerequisiteStatements(), withSuffix(replacement, sql));
+        } else {
+          log(
+              statement.getExamplePrerequisiteStatements(),
+              withSuffix(replacement, sql),
+              parser.isQuery(withSuffix(replacement, sql))
+                  ? ErrorCode.UNIMPLEMENTED
+                  : ErrorCode.INVALID_ARGUMENT);
+          log(
+              statement.getExamplePrerequisiteStatements(),
+              replaceLastSpaceWith(replacement, sql),
+              parser.isQuery(replaceLastSpaceWith(replacement, sql))
+                  ? ErrorCode.UNIMPLEMENTED
+                  : ErrorCode.INVALID_ARGUMENT);
+        }
       }
     }
   }

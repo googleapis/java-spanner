@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
+import static com.google.cloud.spanner.ThreadFactoryUtil.tryCreateVirtualThreadPerTaskExecutor;
 
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
@@ -45,6 +46,7 @@ import com.google.api.gax.rpc.OperationCallable;
 import com.google.api.gax.rpc.ResponseObserver;
 import com.google.api.gax.rpc.ServerStream;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.api.gax.rpc.StreamController;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.rpc.UnaryCallSettings;
@@ -157,6 +159,8 @@ import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
+import com.google.spanner.v1.BatchWriteRequest;
+import com.google.spanner.v1.BatchWriteResponse;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
 import com.google.spanner.v1.CommitResponse;
@@ -198,6 +202,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -231,8 +236,13 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private boolean rpcIsClosed;
   private final SpannerStub spannerStub;
+  private final RetrySettings executeQueryRetrySettings;
+  private final Set<Code> executeQueryRetryableCodes;
+  private final RetrySettings readRetrySettings;
+  private final Set<Code> readRetryableCodes;
   private final SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
+  private final InstanceAdminStubSettings instanceAdminStubSettings;
   private final InstanceAdminStub instanceAdminStub;
   private final DatabaseAdminStubSettings databaseAdminStubSettings;
   private final DatabaseAdminStub databaseAdminStub;
@@ -329,14 +339,24 @@ public class GapicSpannerRpc implements SpannerRpc {
                   SpannerInterceptorProvider.create(
                           MoreObjects.firstNonNull(
                               options.getInterceptorProvider(),
-                              SpannerInterceptorProvider.createDefault()))
+                              SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
-              // Attempts direct access to spanner service over gRPC to improve throughput,
-              // whether the attempt is allowed is totally controlled by service owner.
-              .setAttemptDirectPath(true);
-
+              .setAllowNonDefaultServiceAccount(true);
+      String directPathXdsEnv = System.getenv("GOOGLE_SPANNER_ENABLE_DIRECT_ACCESS");
+      boolean isAttemptDirectPathXds = Boolean.parseBoolean(directPathXdsEnv);
+      if (isAttemptDirectPathXds) {
+        defaultChannelProviderBuilder.setAttemptDirectPath(true);
+        defaultChannelProviderBuilder.setAttemptDirectPathXds();
+      }
+      if (options.isUseVirtualThreads()) {
+        ExecutorService executor =
+            tryCreateVirtualThreadPerTaskExecutor("spanner-virtual-grpc-executor");
+        if (executor != null) {
+          defaultChannelProviderBuilder.setExecutor(executor);
+        }
+      }
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
@@ -369,6 +389,14 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setCredentialsProvider(credentialsProvider)
                     .setStreamWatchdogProvider(watchdogProvider)
                     .build());
+        this.readRetrySettings =
+            options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
+        this.readRetryableCodes =
+            options.getSpannerStubSettings().streamingReadSettings().getRetryableCodes();
+        this.executeQueryRetrySettings =
+            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
+        this.executeQueryRetryableCodes =
+            options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
         partitionedDmlRetrySettings =
             options
                 .getSpannerStubSettings()
@@ -404,16 +432,15 @@ public class GapicSpannerRpc implements SpannerRpc {
                   .withCheckInterval(pdmlSettings.getStreamWatchdogCheckInterval()));
         }
         this.partitionedDmlStub = GrpcSpannerStub.create(pdmlSettings.build());
-
-        this.instanceAdminStub =
-            GrpcInstanceAdminStub.create(
-                options
-                    .getInstanceAdminStubSettings()
-                    .toBuilder()
-                    .setTransportChannelProvider(channelProvider)
-                    .setCredentialsProvider(credentialsProvider)
-                    .setStreamWatchdogProvider(watchdogProvider)
-                    .build());
+        this.instanceAdminStubSettings =
+            options
+                .getInstanceAdminStubSettings()
+                .toBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider)
+                .setStreamWatchdogProvider(watchdogProvider)
+                .build();
+        this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
         this.databaseAdminStubSettings =
             options
@@ -473,8 +500,13 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.databaseAdminStub = null;
       this.instanceAdminStub = null;
       this.spannerStub = null;
+      this.readRetrySettings = null;
+      this.readRetryableCodes = null;
+      this.executeQueryRetrySettings = null;
+      this.executeQueryRetryableCodes = null;
       this.partitionedDmlStub = null;
       this.databaseAdminStubSettings = null;
+      this.instanceAdminStubSettings = null;
       this.spannerWatchdog = null;
       this.partitionedDmlRetrySettings = null;
     }
@@ -1564,6 +1596,18 @@ public class GapicSpannerRpc implements SpannerRpc {
       @Nullable Map<String, String> labels,
       @Nullable Map<Option, ?> options)
       throws SpannerException {
+    // By default sessions are not multiplexed
+    return createSession(databaseName, databaseRole, labels, options, false);
+  }
+
+  @Override
+  public Session createSession(
+      String databaseName,
+      @Nullable String databaseRole,
+      @Nullable Map<String, String> labels,
+      @Nullable Map<Option, ?> options,
+      boolean isMultiplexed)
+      throws SpannerException {
     CreateSessionRequest.Builder requestBuilder =
         CreateSessionRequest.newBuilder().setDatabase(databaseName);
     Session.Builder sessionBuilder = Session.newBuilder();
@@ -1573,6 +1617,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     if (databaseRole != null && !databaseRole.isEmpty()) {
       sessionBuilder.setCreatorRole(databaseRole);
     }
+    sessionBuilder.setMultiplexed(isMultiplexed);
     requestBuilder.setSession(sessionBuilder);
     CreateSessionRequest request = requestBuilder.build();
     GrpcCallContext context =
@@ -1595,6 +1640,16 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public RetrySettings getReadRetrySettings() {
+    return readRetrySettings;
+  }
+
+  @Override
+  public Set<Code> getReadRetryableCodes() {
+    return readRetryableCodes;
+  }
+
+  @Override
   public StreamingCall read(
       ReadRequest request,
       ResultStreamConsumer consumer,
@@ -1605,20 +1660,17 @@ public class GapicSpannerRpc implements SpannerRpc {
             options, request.getSession(), request, SpannerGrpc.getReadMethod(), routeToLeader);
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.streamingReadCallable().call(request, responseObserver, context);
-    final StreamController controller = responseObserver.getController();
-    return new StreamingCall() {
-      @Override
-      public void request(int numMessage) {
-        controller.request(numMessage);
-      }
+    return new GrpcStreamingCall(context, responseObserver.getController());
+  }
 
-      // TODO(hzyi): streamController currently does not support cancel with message. Add
-      // this in gax and update this method later
-      @Override
-      public void cancel(String message) {
-        controller.cancel();
-      }
-    };
+  @Override
+  public RetrySettings getExecuteQueryRetrySettings() {
+    return executeQueryRetrySettings;
+  }
+
+  @Override
+  public Set<Code> getExecuteQueryRetryableCodes() {
+    return executeQueryRetryableCodes;
   }
 
   @Override
@@ -1670,6 +1722,14 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public ServerStream<BatchWriteResponse> batchWriteAtLeastOnce(
+      BatchWriteRequest request, @Nullable Map<Option, ?> options) {
+    GrpcCallContext context =
+        newCallContext(options, request.getSession(), request, SpannerGrpc.getBatchWriteMethod());
+    return spannerStub.batchWriteCallable().call(request, context);
+  }
+
+  @Override
   public StreamingCall executeQuery(
       ExecuteSqlRequest request,
       ResultStreamConsumer consumer,
@@ -1682,22 +1742,10 @@ public class GapicSpannerRpc implements SpannerRpc {
             request,
             SpannerGrpc.getExecuteStreamingSqlMethod(),
             routeToLeader);
+
     SpannerResponseObserver responseObserver = new SpannerResponseObserver(consumer);
     spannerStub.executeStreamingSqlCallable().call(request, responseObserver, context);
-    final StreamController controller = responseObserver.getController();
-    return new StreamingCall() {
-      @Override
-      public void request(int numMessage) {
-        controller.request(numMessage);
-      }
-
-      // TODO(hzyi): streamController currently does not support cancel with message. Add
-      // this in gax and update this method later
-      @Override
-      public void cancel(String message) {
-        controller.cancel();
-      }
-    };
+    return new GrpcStreamingCall(context, responseObserver.getController());
   }
 
   @Override
@@ -1964,6 +2012,41 @@ public class GapicSpannerRpc implements SpannerRpc {
   @Override
   public boolean isClosed() {
     return rpcIsClosed;
+  }
+
+  @Override
+  public DatabaseAdminStubSettings getDatabaseAdminStubSettings() {
+    return databaseAdminStubSettings;
+  }
+
+  @Override
+  public InstanceAdminStubSettings getInstanceAdminStubSettings() {
+    return instanceAdminStubSettings;
+  }
+
+  private static final class GrpcStreamingCall implements StreamingCall {
+    private final ApiCallContext callContext;
+    private final StreamController controller;
+
+    GrpcStreamingCall(ApiCallContext callContext, StreamController controller) {
+      this.callContext = callContext;
+      this.controller = controller;
+    }
+
+    @Override
+    public ApiCallContext getCallContext() {
+      return callContext;
+    }
+
+    @Override
+    public void request(int numMessages) {
+      controller.request(numMessages);
+    }
+
+    @Override
+    public void cancel(@Nullable String message) {
+      controller.cancel();
+    }
   }
 
   /**

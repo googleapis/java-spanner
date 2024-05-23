@@ -47,15 +47,6 @@ public interface Session extends DatabaseClient, AutoCloseable {
   /** Returns the resource name associated with this session. */
   String getName();
 
-  /**
-   * Prepares a transaction for use by a subsequent {@link #readWriteTransaction()} or {@link
-   * #write(Iterable)} call. It is not necessary to call this method before running a transaction or
-   * performing a write, but doing so may allow one round trip of the protocol to be performed in
-   * advance; calling this method on an idle session that is expected to execute a transaction or
-   * write in the near future may reduce the latency of the subsequent transaction/write.
-   */
-  void prepareReadWriteTransaction();
-
   @Override
   void close();
 

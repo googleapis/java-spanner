@@ -138,7 +138,7 @@ public interface DatabaseAdminClient {
    * Database db = op.waitFor().getResult();
    * }</pre>
    *
-   * @see also #createDatabase(String, String, Iterable)
+   * @see #createDatabase(String, String, Iterable)
    */
   OperationFuture<Database, CreateDatabaseMetadata> createDatabase(
       Database database, Iterable<String> statements) throws SpannerException;
@@ -453,7 +453,8 @@ public interface DatabaseAdminClient {
 
   /**
    * Updates a database in a Cloud Spanner instance. Any proto descriptors that have been set for
-   * the {@link Database} instance will be included in the {@link UpdateDatabaseDdlRequest}.
+   * the {@link com.google.cloud.spanner.Database} instance will be included in the {@link
+   * com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest}.
    *
    * <p>If an operation already exists with the given operation id, the operation will be resumed
    * and the returned future will complete when the original operation finishes. See more

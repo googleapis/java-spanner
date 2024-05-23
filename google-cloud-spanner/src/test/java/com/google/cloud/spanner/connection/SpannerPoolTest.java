@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
+import com.google.cloud.spanner.BatchClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
@@ -38,6 +39,8 @@ import com.google.cloud.spanner.connection.SpannerPool.CheckAndCloseSpannersMode
 import com.google.cloud.spanner.connection.SpannerPool.SpannerPoolKey;
 import com.google.common.base.Ticker;
 import com.google.common.testing.FakeTicker;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
@@ -65,6 +68,12 @@ public class SpannerPoolTest {
 
   private ConnectionOptions options5 = mock(ConnectionOptions.class);
   private ConnectionOptions options6 = mock(ConnectionOptions.class);
+  private ConnectionOptions options7 = mock(ConnectionOptions.class);
+  private ConnectionOptions options8 = mock(ConnectionOptions.class);
+
+  private ConnectionOptions optionsOpenTelemetry1 = mock(ConnectionOptions.class);
+  private ConnectionOptions optionsOpenTelemetry2 = mock(ConnectionOptions.class);
+  private ConnectionOptions optionsOpenTelemetry3 = mock(ConnectionOptions.class);
 
   private SpannerPool createSubjectAndMocks() {
     return createSubjectAndMocks(0L, Ticker.systemTicker());
@@ -80,6 +89,9 @@ public class SpannerPoolTest {
           }
         };
 
+    OpenTelemetry openTelemetry1 = OpenTelemetrySdk.builder().build();
+    OpenTelemetry openTelemetry2 = OpenTelemetrySdk.builder().build();
+
     when(options1.getCredentialsUrl()).thenReturn(credentials1);
     when(options1.getProjectId()).thenReturn("test-project-1");
     when(options2.getCredentialsUrl()).thenReturn(credentials2);
@@ -93,6 +105,17 @@ public class SpannerPoolTest {
     // ConnectionOptions with no specific credentials.
     when(options5.getProjectId()).thenReturn("test-project-3");
     when(options6.getProjectId()).thenReturn("test-project-3");
+    when(options7.getProjectId()).thenReturn("test-project-3");
+    when(options7.isRouteToLeader()).thenReturn(true);
+    when(options8.getProjectId()).thenReturn("test-project-3");
+    when(options8.isRouteToLeader()).thenReturn(false);
+
+    when(optionsOpenTelemetry1.getProjectId()).thenReturn("test-project-1");
+    when(optionsOpenTelemetry1.getOpenTelemetry()).thenReturn(openTelemetry1);
+    when(optionsOpenTelemetry2.getProjectId()).thenReturn("test-project-1");
+    when(optionsOpenTelemetry2.getOpenTelemetry()).thenReturn(openTelemetry1);
+    when(optionsOpenTelemetry3.getProjectId()).thenReturn("test-project-1");
+    when(optionsOpenTelemetry3.getOpenTelemetry()).thenReturn(openTelemetry2);
 
     return pool;
   }
@@ -111,40 +134,43 @@ public class SpannerPoolTest {
     // assert equal
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options1, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options3, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options4, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
     // Options 5 and 6 both use default credentials.
     spanner1 = pool.getSpanner(options5, connection1);
     spanner2 = pool.getSpanner(options6, connection2);
-    assertThat(spanner1).isEqualTo(spanner2);
+    assertEquals(spanner1, spanner2);
 
     // assert not equal
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options2, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options1, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options3, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options2, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
     spanner1 = pool.getSpanner(options3, connection1);
     spanner2 = pool.getSpanner(options4, connection2);
-    assertThat(spanner1).isNotEqualTo(spanner2);
+    assertNotEquals(spanner1, spanner2);
+    spanner1 = pool.getSpanner(options7, connection1);
+    spanner2 = pool.getSpanner(options8, connection2);
+    assertNotEquals(spanner1, spanner2);
   }
 
   @Test
@@ -288,7 +314,9 @@ public class SpannerPoolTest {
     DatabaseClient dbClient = mock(DatabaseClient.class);
     when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
     // create an actual connection object but not in a try-with-resources block
-    Connection connection = new ConnectionImpl(options, SpannerPool.INSTANCE, ddlClient, dbClient);
+    Connection connection =
+        new ConnectionImpl(
+            options, SpannerPool.INSTANCE, ddlClient, dbClient, mock(BatchClient.class));
     // try to close the application which should fail
     try {
       ConnectionOptions.closeSpanner();
@@ -460,14 +488,47 @@ public class SpannerPoolTest {
             .setUri("cloudspanner:/projects/p/instances/i/databases/d")
             .setCredentials(NoCredentials.getInstance())
             .build();
+    // Not passing in routeToLeader in Connection URI is equivalent to passing it as true,
+    // as routeToLeader is true by default.
+    ConnectionOptions options4 =
+        ConnectionOptions.newBuilder()
+            .setUri("cloudspanner:/projects/p/instances/i/databases/d?routeToLeader=true")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
+    ConnectionOptions options5 =
+        ConnectionOptions.newBuilder()
+            .setUri("cloudspanner:/projects/p/instances/i/databases/d?routeToLeader=false")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
 
     SpannerPoolKey key1 = SpannerPoolKey.of(options1);
     SpannerPoolKey key2 = SpannerPoolKey.of(options2);
     SpannerPoolKey key3 = SpannerPoolKey.of(options3);
+    SpannerPoolKey key4 = SpannerPoolKey.of(options4);
+    SpannerPoolKey key5 = SpannerPoolKey.of(options5);
 
     assertNotEquals(key1, key2);
     assertEquals(key2, key3);
     assertNotEquals(key1, key3);
     assertNotEquals(key1, new Object());
+    assertEquals(key3, key4);
+    assertNotEquals(key4, key5);
+  }
+
+  @Test
+  public void testOpenTelemetry() {
+    SpannerPool pool = createSubjectAndMocks();
+    Spanner spanner1;
+    Spanner spanner2;
+
+    // assert equal
+    spanner1 = pool.getSpanner(optionsOpenTelemetry1, connection1);
+    spanner2 = pool.getSpanner(optionsOpenTelemetry2, connection2);
+    assertEquals(spanner1, spanner2);
+
+    // assert not equal
+    spanner1 = pool.getSpanner(optionsOpenTelemetry1, connection1);
+    spanner2 = pool.getSpanner(optionsOpenTelemetry3, connection2);
+    assertNotEquals(spanner1, spanner2);
   }
 }

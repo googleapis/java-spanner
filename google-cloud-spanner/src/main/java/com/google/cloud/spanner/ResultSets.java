@@ -109,7 +109,7 @@ public final class ResultSets {
     }
   }
 
-  private static class PrePopulatedResultSet implements ResultSet {
+  private static class PrePopulatedResultSet implements ProtobufResultSet {
     private final List<Struct> rows;
     private final Type type;
     private int index = -1;
@@ -135,6 +135,19 @@ public final class ResultSets {
     @Override
     public boolean next() throws SpannerException {
       return ++index < rows.size();
+    }
+
+    @Override
+    public boolean canGetProtobufValue(int columnIndex) {
+      return !closed && index >= 0 && index < rows.size();
+    }
+
+    @Override
+    public com.google.protobuf.Value getProtobufValue(int columnIndex) {
+      Preconditions.checkState(!closed, "ResultSet is closed");
+      Preconditions.checkState(index >= 0, "Must be preceded by a next() call");
+      Preconditions.checkElementIndex(index, rows.size(), "All rows have been yielded");
+      return getValue(columnIndex).toProto();
     }
 
     @Override
@@ -221,6 +234,16 @@ public final class ResultSets {
     @Override
     public long getLong(String columnName) {
       return getCurrentRowAsStruct().getLong(columnName);
+    }
+
+    @Override
+    public float getFloat(int columnIndex) {
+      return getCurrentRowAsStruct().getFloat(columnIndex);
+    }
+
+    @Override
+    public float getFloat(String columnName) {
+      return getCurrentRowAsStruct().getFloat(columnName);
     }
 
     @Override
@@ -373,6 +396,26 @@ public final class ResultSets {
     @Override
     public List<Long> getLongList(String columnName) {
       return getCurrentRowAsStruct().getLongList(columnName);
+    }
+
+    @Override
+    public float[] getFloatArray(int columnIndex) {
+      return getCurrentRowAsStruct().getFloatArray(columnIndex);
+    }
+
+    @Override
+    public float[] getFloatArray(String columnName) {
+      return getCurrentRowAsStruct().getFloatArray(columnName);
+    }
+
+    @Override
+    public List<Float> getFloatList(int columnIndex) {
+      return getCurrentRowAsStruct().getFloatList(columnIndex);
+    }
+
+    @Override
+    public List<Float> getFloatList(String columnName) {
+      return getCurrentRowAsStruct().getFloatList(columnName);
     }
 
     @Override

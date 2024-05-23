@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.spanner.SessionClient.optionMap;
 import static com.google.cloud.spanner.SpannerExceptionFactory.newSpannerException;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -28,21 +29,23 @@ import com.google.api.core.SettableApiFuture;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractResultSet.CloseableIterator;
-import com.google.cloud.spanner.AbstractResultSet.GrpcResultSet;
-import com.google.cloud.spanner.AbstractResultSet.GrpcStreamIterator;
-import com.google.cloud.spanner.AbstractResultSet.ResumableStreamIterator;
 import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncResultSet.ReadyCallback;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.SessionClient.SessionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
+import com.google.spanner.v1.ExecuteSqlRequest.Builder;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.PartialResultSet;
@@ -51,9 +54,8 @@ import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.Transaction;
 import com.google.spanner.v1.TransactionOptions;
 import com.google.spanner.v1.TransactionSelector;
-import io.opencensus.trace.Span;
-import io.opencensus.trace.Tracing;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -68,10 +70,14 @@ abstract class AbstractReadContext
   abstract static class Builder<B extends Builder<?, T>, T extends AbstractReadContext> {
     private SessionImpl session;
     private SpannerRpc rpc;
-    private Span span = Tracing.getTracer().getCurrentSpan();
+    private ISpan span;
+    private TraceWrapper tracer;
     private int defaultPrefetchChunks = SpannerOptions.Builder.DEFAULT_PREFETCH_CHUNKS;
     private QueryOptions defaultQueryOptions = SpannerOptions.Builder.DEFAULT_QUERY_OPTIONS;
+    private DecodeMode defaultDecodeMode = SpannerOptions.Builder.DEFAULT_DECODE_MODE;
+    private DirectedReadOptions defaultDirectedReadOption;
     private ExecutorProvider executorProvider;
+    private Clock clock = Clock.INSTANCE;
 
     Builder() {}
 
@@ -90,8 +96,13 @@ abstract class AbstractReadContext
       return self();
     }
 
-    B setSpan(Span span) {
+    B setSpan(ISpan span) {
       this.span = span;
+      return self();
+    }
+
+    B setTracer(TraceWrapper tracer) {
+      this.tracer = tracer;
       return self();
     }
 
@@ -105,8 +116,23 @@ abstract class AbstractReadContext
       return self();
     }
 
+    B setDefaultDecodeMode(DecodeMode defaultDecodeMode) {
+      this.defaultDecodeMode = defaultDecodeMode;
+      return self();
+    }
+
     B setExecutorProvider(ExecutorProvider executorProvider) {
       this.executorProvider = executorProvider;
+      return self();
+    }
+
+    B setClock(Clock clock) {
+      this.clock = Preconditions.checkNotNull(clock);
+      return self();
+    }
+
+    B setDefaultDirectedReadOptions(DirectedReadOptions directedReadOptions) {
+      this.defaultDirectedReadOption = directedReadOptions;
       return self();
     }
 
@@ -158,9 +184,18 @@ abstract class AbstractReadContext
     @GuardedBy("lock")
     private boolean used;
 
+    private final Map<SpannerRpc.Option, ?> channelHint;
+
     private SingleReadContext(Builder builder) {
       super(builder);
       this.bound = builder.bound;
+      // single use transaction have a single RPC and hence there is no need
+      // of a channel hint. GAX will automatically choose a hint when used
+      // with a multiplexed session to perform a round-robin channel selection. We are
+      // passing a hint here to prefer random channel selection instead of doing GAX round-robin.
+      this.channelHint =
+          getChannelHintOptions(
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
     }
 
     @Override
@@ -187,6 +222,11 @@ abstract class AbstractReadContext
           .setSingleUse(TransactionOptions.newBuilder().setReadOnly(bound.toProto()))
           .build();
     }
+
+    @Override
+    Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
+      return channelHint;
+    }
   }
 
   private static void assertTimestampAvailable(boolean available) {
@@ -195,6 +235,7 @@ abstract class AbstractReadContext
 
   static class SingleUseReadOnlyTransaction extends SingleReadContext
       implements ReadOnlyTransaction {
+
     @GuardedBy("lock")
     private Timestamp timestamp;
 
@@ -278,6 +319,8 @@ abstract class AbstractReadContext
     @GuardedBy("txnLock")
     private ByteString transactionId;
 
+    private final Map<SpannerRpc.Option, ?> channelHint;
+
     MultiUseReadOnlyTransaction(Builder builder) {
       super(builder);
       checkArgument(
@@ -296,6 +339,14 @@ abstract class AbstractReadContext
         this.timestamp = builder.timestamp;
         this.transactionId = builder.transactionId;
       }
+      this.channelHint =
+          getChannelHintOptions(
+              session.getOptions(), ThreadLocalRandom.current().nextLong(Long.MAX_VALUE));
+    }
+
+    @Override
+    public Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
+      return channelHint;
     }
 
     @Override
@@ -358,7 +409,7 @@ abstract class AbstractReadContext
                   .setOptions(options)
                   .build();
           Transaction transaction =
-              rpc.beginTransaction(request, session.getOptions(), isRouteToLeader());
+              rpc.beginTransaction(request, getTransactionChannelHint(), isRouteToLeader());
           if (!transaction.hasReadTimestamp()) {
             throw SpannerExceptionFactory.newSpannerException(
                 ErrorCode.INTERNAL, "Missing expected transaction.read_timestamp metadata field");
@@ -375,9 +426,12 @@ abstract class AbstractReadContext
           }
           transactionId = transaction.getId();
           span.addAnnotation(
-              "Transaction Creation Done", TraceUtil.getTransactionAnnotations(transaction));
+              "Transaction Creation Done",
+              ImmutableMap.of(
+                  "Id", transaction.getId().toStringUtf8(), "Timestamp", timestamp.toString()));
+
         } catch (SpannerException e) {
-          span.addAnnotation("Transaction Creation Failed", TraceUtil.getExceptionAnnotations(e));
+          span.addAnnotation("Transaction Creation Failed", e);
           throw e;
         }
       }
@@ -388,9 +442,13 @@ abstract class AbstractReadContext
   final SessionImpl session;
   final SpannerRpc rpc;
   final ExecutorProvider executorProvider;
-  Span span;
+  ISpan span;
+  TraceWrapper tracer;
   private final int defaultPrefetchChunks;
   private final QueryOptions defaultQueryOptions;
+  private final DirectedReadOptions defaultDirectedReadOptions;
+  private final DecodeMode defaultDecodeMode;
+  private final Clock clock;
 
   @GuardedBy("lock")
   private boolean isValid = true;
@@ -400,7 +458,7 @@ abstract class AbstractReadContext
 
   // A per-transaction sequence number used to identify this ExecuteSqlRequests. Required for DML,
   // ignored for query by the server.
-  private AtomicLong seqNo = new AtomicLong();
+  private final AtomicLong seqNo = new AtomicLong();
 
   // Allow up to 512MB to be buffered (assuming 1MB chunks). In practice, restart tokens are sent
   // much more frequently.
@@ -414,17 +472,25 @@ abstract class AbstractReadContext
     this.rpc = builder.rpc;
     this.defaultPrefetchChunks = builder.defaultPrefetchChunks;
     this.defaultQueryOptions = builder.defaultQueryOptions;
+    this.defaultDirectedReadOptions = builder.defaultDirectedReadOption;
+    this.defaultDecodeMode = builder.defaultDecodeMode;
     this.span = builder.span;
     this.executorProvider = builder.executorProvider;
+    this.clock = builder.clock;
+    this.tracer = builder.tracer;
   }
 
   @Override
-  public void setSpan(Span span) {
+  public void setSpan(ISpan span) {
     this.span = span;
   }
 
   long getSeqNo() {
     return seqNo.incrementAndGet();
+  }
+
+  protected boolean isReadOnly() {
+    return true;
   }
 
   protected boolean isRouteToLeader() {
@@ -561,19 +627,18 @@ abstract class AbstractReadContext
   @VisibleForTesting
   QueryOptions buildQueryOptions(QueryOptions requestOptions) {
     // Shortcut for the most common return value.
-    if (defaultQueryOptions.equals(QueryOptions.getDefaultInstance()) && requestOptions == null) {
-      return QueryOptions.getDefaultInstance();
+    if (requestOptions == null) {
+      return defaultQueryOptions;
     }
-    // Create a builder based on the default query options.
-    QueryOptions.Builder builder = defaultQueryOptions.toBuilder();
-    // Then overwrite with specific options for this query.
-    if (requestOptions != null) {
-      builder.mergeFrom(requestOptions);
-    }
-    return builder.build();
+    return defaultQueryOptions.toBuilder().mergeFrom(requestOptions).build();
   }
 
   RequestOptions buildRequestOptions(Options options) {
+    // Shortcut for the most common return value.
+    if (!(options.hasPriority() || options.hasTag() || getTransactionTag() != null)) {
+      return RequestOptions.getDefaultInstance();
+    }
+
     RequestOptions.Builder builder = RequestOptions.newBuilder();
     if (options.hasPriority()) {
       builder.setPriority(options.priority());
@@ -594,16 +659,7 @@ abstract class AbstractReadContext
             .setSql(statement.getSql())
             .setQueryMode(queryMode)
             .setSession(session.getName());
-    Map<String, Value> stmtParameters = statement.getParameters();
-    if (!stmtParameters.isEmpty()) {
-      com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
-      for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
-        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
-        if (param.getValue() != null && param.getValue().getType() != null) {
-          builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
-        }
-      }
-    }
+    addParameters(builder, statement.getParameters());
     if (withTransactionSelector) {
       TransactionSelector selector = getTransactionSelector();
       if (selector != null) {
@@ -613,10 +669,29 @@ abstract class AbstractReadContext
     if (options.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(options.dataBoostEnabled());
     }
-    builder.setSeqno(getSeqNo());
+    if (options.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(options.directedReadOptions());
+    } else if (defaultDirectedReadOptions != null) {
+      builder.setDirectedReadOptions(defaultDirectedReadOptions);
+    }
+    if (!isReadOnly()) {
+      builder.setSeqno(getSeqNo());
+    }
     builder.setQueryOptions(buildQueryOptions(statement.getQueryOptions()));
     builder.setRequestOptions(buildRequestOptions(options));
     return builder;
+  }
+
+  static void addParameters(ExecuteSqlRequest.Builder builder, Map<String, Value> stmtParameters) {
+    if (!stmtParameters.isEmpty()) {
+      com.google.protobuf.Struct.Builder paramsBuilder = builder.getParamsBuilder();
+      for (Map.Entry<String, Value> param : stmtParameters.entrySet()) {
+        paramsBuilder.putFields(param.getKey(), Value.toProto(param.getValue()));
+        if (param.getValue() != null && param.getValue().getType() != null) {
+          builder.putParamTypes(param.getKey(), param.getValue().getType().toProto());
+        }
+      }
+    }
   }
 
   ExecuteBatchDmlRequest.Builder getExecuteBatchDmlRequestBuilder(
@@ -664,7 +739,14 @@ abstract class AbstractReadContext
         getExecuteSqlRequestBuilder(
             statement, queryMode, options, /* withTransactionSelector = */ false);
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.QUERY, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.QUERY,
+            span,
+            tracer,
+            tracer.createStatementAttributes(statement, options),
+            rpc.getExecuteQueryRetrySettings(),
+            rpc.getExecuteQueryRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(statement, prefetchChunks);
@@ -683,13 +765,28 @@ abstract class AbstractReadContext
             }
             SpannerRpc.StreamingCall call =
                 rpc.executeQuery(
-                    request.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
+                    request.build(),
+                    stream.consumer(),
+                    getTransactionChannelHint(),
+                    isRouteToLeader());
+            session.markUsed(clock.instant());
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
           }
         };
-    return new GrpcResultSet(stream, this);
+    return new GrpcResultSet(
+        stream, this, options.hasDecodeMode() ? options.decodeMode() : defaultDecodeMode);
+  }
+
+  Map<SpannerRpc.Option, ?> getChannelHintOptions(
+      Map<SpannerRpc.Option, ?> channelHintForSession, Long channelHintForTransaction) {
+    if (channelHintForSession != null) {
+      return channelHintForSession;
+    } else if (channelHintForTransaction != null) {
+      return optionMap(SessionOption.channelHint(channelHintForTransaction));
+    }
+    return null;
   }
 
   /**
@@ -722,7 +819,8 @@ abstract class AbstractReadContext
 
   @Override
   public void close() {
-    span.end(TraceUtil.END_SPAN_OPTIONS);
+    session.onTransactionDone();
+    span.end();
     synchronized (lock) {
       isClosed = true;
     }
@@ -735,6 +833,12 @@ abstract class AbstractReadContext
    */
   @Nullable
   abstract TransactionSelector getTransactionSelector();
+
+  /**
+   * Channel hint to be used for a transaction. This enables soft-stickiness per transaction by
+   * ensuring all RPCs within a transaction land up on the same channel.
+   */
+  abstract Map<SpannerRpc.Option, ?> getTransactionChannelHint();
 
   /**
    * Returns the transaction tag for this {@link AbstractReadContext} or <code>null</code> if this
@@ -751,11 +855,14 @@ abstract class AbstractReadContext
 
   @Override
   public SpannerException onError(SpannerException e, boolean withBeginTransaction) {
+    this.session.onError(e);
     return e;
   }
 
   @Override
-  public void onDone(boolean withBeginTransaction) {}
+  public void onDone(boolean withBeginTransaction) {
+    this.session.onReadDone();
+  }
 
   private ResultSet readInternal(
       String table,
@@ -795,10 +902,21 @@ abstract class AbstractReadContext
     if (readOptions.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
     }
+    if (readOptions.hasDirectedReadOptions()) {
+      builder.setDirectedReadOptions(readOptions.directedReadOptions());
+    } else if (defaultDirectedReadOptions != null) {
+      builder.setDirectedReadOptions(defaultDirectedReadOptions);
+    }
     final int prefetchChunks =
         readOptions.hasPrefetchChunks() ? readOptions.prefetchChunks() : defaultPrefetchChunks;
     ResumableStreamIterator stream =
-        new ResumableStreamIterator(MAX_BUFFERED_CHUNKS, SpannerImpl.READ, span) {
+        new ResumableStreamIterator(
+            MAX_BUFFERED_CHUNKS,
+            SpannerImpl.READ,
+            span,
+            tracer,
+            rpc.getReadRetrySettings(),
+            rpc.getReadRetryableCodes()) {
           @Override
           CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken) {
             GrpcStreamIterator stream = new GrpcStreamIterator(prefetchChunks);
@@ -815,13 +933,18 @@ abstract class AbstractReadContext
             builder.setRequestOptions(buildRequestOptions(readOptions));
             SpannerRpc.StreamingCall call =
                 rpc.read(
-                    builder.build(), stream.consumer(), session.getOptions(), isRouteToLeader());
+                    builder.build(),
+                    stream.consumer(),
+                    getTransactionChannelHint(),
+                    isRouteToLeader());
+            session.markUsed(clock.instant());
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;
           }
         };
-    return new GrpcResultSet(stream, this);
+    return new GrpcResultSet(
+        stream, this, readOptions.hasDecodeMode() ? readOptions.decodeMode() : defaultDecodeMode);
   }
 
   private Struct consumeSingleRow(ResultSet resultSet) {

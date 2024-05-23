@@ -86,6 +86,12 @@ public final class Statement implements Serializable {
           statement.queryOptions == null ? null : statement.queryOptions.toBuilder().build();
     }
 
+    /** Replaces the current SQL of this builder with the given string. */
+    public Builder replace(String sql) {
+      sqlBuffer.replace(0, sqlBuffer.length(), sql);
+      return this;
+    }
+
     /** Appends {@code sqlFragment} to the statement. */
     public Builder append(String sqlFragment) {
       sqlBuffer.append(checkNotNull(sqlFragment));
@@ -170,6 +176,11 @@ public final class Statement implements Serializable {
   /** Returns the current SQL statement text. */
   public String getSql() {
     return sql;
+  }
+
+  /** Returns a copy of this statement with the SQL string replaced by the given SQL string. */
+  public Statement withReplacedSql(String sql) {
+    return new Statement(sql, this.parameters, this.queryOptions);
   }
 
   /** Returns the {@link QueryOptions} that will be used with this {@link Statement}. */

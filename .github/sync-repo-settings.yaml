@@ -10,16 +10,18 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (17)
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
+      - 'Kokoro - Test: Integration with Multiplexed Sessions'
       - cla/google
       - checkstyle
       - compile (8)
       - compile (11)
       - OwlBot Post Processor
-      - 'Kokoro - Test: Java GraalVM Native Image'
-      - 'Kokoro - Test: Java 17 GraalVM Native Image'
+      - units-with-multiplexed-session (8)
+      - units-with-multiplexed-session (11)
   - pattern: 3.3.x
     isAdminEnforced: true
     requiredApprovingReviewCount: 1
@@ -28,6 +30,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -42,6 +45,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -56,6 +60,7 @@ branchProtectionRules:
     requiredStatusCheckContexts:
       - dependencies (11)
       - lint
+      - javadoc
       - units (7)
       - units (8)
       - units (11)
@@ -69,6 +74,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -81,6 +87,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -95,6 +102,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -109,6 +117,7 @@ branchProtectionRules:
     requiresStrictStatusChecks: false
     requiredStatusCheckContexts:
       - lint
+      - javadoc
       - units (8)
       - units (11)
       - 'Kokoro - Test: Integration'
@@ -116,6 +125,23 @@ branchProtectionRules:
       - checkstyle
       - compile (8)
       - compile (11)
+  - pattern: 6.55.x
+    isAdminEnforced: true
+    requiredApprovingReviewCount: 1
+    requiresCodeOwnerReviews: true
+    requiresStrictStatusChecks: false
+    requiredStatusCheckContexts:
+      - dependencies (17)
+      - lint
+      - javadoc
+      - units (8)
+      - units (11)
+      - 'Kokoro - Test: Integration'
+      - cla/google
+      - checkstyle
+      - compile (8)
+      - compile (11)
+      - OwlBot Post Processor
 permissionRules:
   - team: yoshi-admins
     permission: admin

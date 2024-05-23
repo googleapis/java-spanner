@@ -27,6 +27,7 @@ import com.google.cloud.spanner.Type.StructField;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Longs;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
@@ -181,6 +182,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected float getFloatInternal(int columnIndex) {
+      return values.get(columnIndex).getFloat32();
+    }
+
+    @Override
     protected double getDoubleInternal(int columnIndex) {
       return values.get(columnIndex).getFloat64();
     }
@@ -259,6 +265,16 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     @Override
     protected List<Long> getLongListInternal(int columnIndex) {
       return values.get(columnIndex).getInt64Array();
+    }
+
+    @Override
+    protected float[] getFloatArrayInternal(int columnIndex) {
+      return Floats.toArray(getFloatListInternal(columnIndex));
+    }
+
+    @Override
+    protected List<Float> getFloatListInternal(int columnIndex) {
+      return values.get(columnIndex).getFloat32Array();
     }
 
     @Override
@@ -380,8 +396,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
       case BOOL:
         return getBooleanInternal(columnIndex);
       case INT64:
+      case PG_OID:
       case ENUM:
         return getLongInternal(columnIndex);
+      case FLOAT32:
+        return getFloatInternal(columnIndex);
       case FLOAT64:
         return getDoubleInternal(columnIndex);
       case NUMERIC:
@@ -408,8 +427,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
           case BOOL:
             return getBooleanListInternal(columnIndex);
           case INT64:
+          case PG_OID:
           case ENUM:
             return getLongListInternal(columnIndex);
+          case FLOAT32:
+            return getFloatListInternal(columnIndex);
           case FLOAT64:
             return getDoubleListInternal(columnIndex);
           case NUMERIC:

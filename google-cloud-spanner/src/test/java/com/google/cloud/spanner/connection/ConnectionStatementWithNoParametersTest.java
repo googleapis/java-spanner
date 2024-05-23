@@ -51,6 +51,10 @@ public class ConnectionStatementWithNoParametersTest {
     parser = AbstractStatementParser.getInstance(dialect);
   }
 
+  ParsedStatement parse(String sql) {
+    return parser.parse(Statement.of(sql));
+  }
+
   @Test
   public void testExecuteGetAutocommit() {
     ParsedStatement statement = parser.parse(Statement.of("show variable autocommit"));
@@ -58,7 +62,7 @@ public class ConnectionStatementWithNoParametersTest {
     ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
     when(executor.getConnection()).thenReturn(connection);
     when(executor.statementShowAutocommit()).thenCallRealMethod();
-    statement.getClientSideStatement().execute(executor, "show variable autocommit");
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).isAutocommit();
   }
 
@@ -70,9 +74,7 @@ public class ConnectionStatementWithNoParametersTest {
     ConnectionImpl connection = mock(ConnectionImpl.class);
     when(connection.getDialect()).thenReturn(dialect);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
-    statement
-        .getClientSideStatement()
-        .execute(executor, String.format("show variable %sreadonly", getNamespace(dialect)));
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).isReadOnly();
   }
 
@@ -86,10 +88,7 @@ public class ConnectionStatementWithNoParametersTest {
     when(connection.getDialect()).thenReturn(dialect);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getAutocommitDmlMode()).thenReturn(AutocommitDmlMode.TRANSACTIONAL);
-    statement
-        .getClientSideStatement()
-        .execute(
-            executor, String.format("show variable %sautocommit_dml_mode", getNamespace(dialect)));
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).getAutocommitDmlMode();
   }
 
@@ -102,7 +101,7 @@ public class ConnectionStatementWithNoParametersTest {
     when(executor.statementShowStatementTimeout()).thenCallRealMethod();
     when(connection.hasStatementTimeout()).thenReturn(true);
     when(connection.getStatementTimeout(TimeUnit.NANOSECONDS)).thenReturn(1L);
-    statement.getClientSideStatement().execute(executor, "show variable statement_timeout");
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(2)).getStatementTimeout(TimeUnit.NANOSECONDS);
   }
 
@@ -115,9 +114,7 @@ public class ConnectionStatementWithNoParametersTest {
     when(connection.getDialect()).thenReturn(dialect);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getReadTimestampOrNull()).thenReturn(Timestamp.now());
-    statement
-        .getClientSideStatement()
-        .execute(executor, String.format("show variable %sread_timestamp", getNamespace(dialect)));
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).getReadTimestampOrNull();
   }
 
@@ -130,10 +127,7 @@ public class ConnectionStatementWithNoParametersTest {
     when(connection.getDialect()).thenReturn(dialect);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getCommitTimestampOrNull()).thenReturn(Timestamp.now());
-    statement
-        .getClientSideStatement()
-        .execute(
-            executor, String.format("show variable %scommit_timestamp", getNamespace(dialect)));
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).getCommitTimestampOrNull();
   }
 
@@ -147,10 +141,7 @@ public class ConnectionStatementWithNoParametersTest {
     when(connection.getDialect()).thenReturn(dialect);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getReadOnlyStaleness()).thenReturn(TimestampBound.strong());
-    statement
-        .getClientSideStatement()
-        .execute(
-            executor, String.format("show variable %sread_only_staleness", getNamespace(dialect)));
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).getReadOnlyStaleness();
   }
 
@@ -164,10 +155,7 @@ public class ConnectionStatementWithNoParametersTest {
     when(connection.getDialect()).thenReturn(dialect);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getOptimizerVersion()).thenReturn("1");
-    statement
-        .getClientSideStatement()
-        .execute(
-            executor, String.format("show variable %soptimizer_version", getNamespace(dialect)));
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).getOptimizerVersion();
   }
 
@@ -182,11 +170,7 @@ public class ConnectionStatementWithNoParametersTest {
     when(connection.getDialect()).thenReturn(dialect);
     ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
     when(connection.getOptimizerStatisticsPackage()).thenReturn("custom-package");
-    statement
-        .getClientSideStatement()
-        .execute(
-            executor,
-            String.format("show variable %soptimizer_statistics_package", getNamespace(dialect)));
+    statement.getClientSideStatement().execute(executor, statement);
     verify(connection, times(1)).getOptimizerStatisticsPackage();
   }
 
@@ -196,7 +180,7 @@ public class ConnectionStatementWithNoParametersTest {
     for (String statement : subject.getClientSideStatement().getExampleStatements()) {
       ConnectionImpl connection = mock(ConnectionImpl.class);
       ConnectionStatementExecutorImpl executor = new ConnectionStatementExecutorImpl(connection);
-      subject.getClientSideStatement().execute(executor, statement);
+      subject.getClientSideStatement().execute(executor, parse(statement));
       verify(connection, times(1)).beginTransaction();
     }
   }
@@ -209,7 +193,7 @@ public class ConnectionStatementWithNoParametersTest {
       ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
       when(executor.getConnection()).thenReturn(connection);
       when(executor.statementCommit()).thenCallRealMethod();
-      subject.getClientSideStatement().execute(executor, statement);
+      subject.getClientSideStatement().execute(executor, parse(statement));
       verify(connection, times(1)).commit();
     }
   }
@@ -222,7 +206,7 @@ public class ConnectionStatementWithNoParametersTest {
       ConnectionStatementExecutorImpl executor = mock(ConnectionStatementExecutorImpl.class);
       when(executor.getConnection()).thenReturn(connection);
       when(executor.statementRollback()).thenCallRealMethod();
-      subject.getClientSideStatement().execute(executor, statement);
+      subject.getClientSideStatement().execute(executor, parse(statement));
       verify(connection, times(1)).rollback();
     }
   }

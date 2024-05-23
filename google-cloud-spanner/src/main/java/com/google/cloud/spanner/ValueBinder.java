@@ -35,6 +35,8 @@ import javax.annotation.Nullable;
  *
  * <p>{@code ValueBinder} subclasses typically carry state and are therefore not thread-safe,
  * although the core implementation itself is thread-safe.
+ *
+ * @param <R> The context which is used to bind the {@link Value}.
  */
 public abstract class ValueBinder<R> {
   /**
@@ -77,6 +79,16 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.int64(value)} */
   public R to(@Nullable Long value) {
     return handle(Value.int64(value));
+  }
+
+  /** Binds to {@code Value.float32(value)} */
+  public R to(float value) {
+    return handle(Value.float32(value));
+  }
+
+  /** Binds to {@code Value.float32(value)} */
+  public R to(@Nullable Float value) {
+    return handle(Value.float32(value));
   }
 
   /** Binds to {@code Value.float64(value)} */
@@ -196,6 +208,21 @@ public abstract class ValueBinder<R> {
     return handle(Value.int64Array(values));
   }
 
+  /** Binds to {@code Value.float32Array(values)} */
+  public R toFloat32Array(@Nullable float[] values) {
+    return handle(Value.float32Array(values));
+  }
+
+  /** Binds to {@code Value.float32Array(values, pos, length)} */
+  public R toFloat32Array(@Nullable float[] values, int pos, int length) {
+    return handle(Value.float32Array(values, pos, length));
+  }
+
+  /** Binds to {@code Value.float32Array(values)} */
+  public R toFloat32Array(@Nullable Iterable<Float> values) {
+    return handle(Value.float32Array(values));
+  }
+
   /** Binds to {@code Value.float64Array(values)} */
   public R toFloat64Array(@Nullable double[] values) {
     return handle(Value.float64Array(values));
@@ -234,6 +261,21 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.jsonbArray(values)} */
   public R toPgJsonbArray(@Nullable Iterable<String> values) {
     return handle(Value.pgJsonbArray(values));
+  }
+
+  /** Binds to {@code Value.pgOidArray(values)} */
+  public R toPgOidArray(@Nullable long[] values) {
+    return handle(Value.pgOidArray(values));
+  }
+
+  /** Binds to {@code Value.pgOidArray(values, pos, length)} */
+  public R toPgOidArray(@Nullable long[] values, int pos, int length) {
+    return handle(Value.pgOidArray(values, pos, length));
+  }
+
+  /** Binds to {@code Value.pgOidArray(values)} */
+  public R toPgOidArray(@Nullable Iterable<Long> values) {
+    return handle(Value.pgOidArray(values));
   }
 
   /** Binds to {@code Value.bytesArray(values)} */

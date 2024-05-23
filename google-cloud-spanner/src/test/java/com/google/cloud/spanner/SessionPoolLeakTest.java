@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
@@ -106,19 +107,23 @@ public class SessionPoolLeakTest {
   @Test
   public void testIgnoreLeakedSession() {
     for (boolean trackStackTraceofSessionCheckout : new boolean[] {true, false}) {
-      SpannerOptions.Builder builder =
-          SpannerOptions.newBuilder()
-              .setProjectId("[PROJECT]")
-              .setChannelProvider(channelProvider)
-              .setCredentials(NoCredentials.getInstance());
-      builder.setSessionPoolOption(
+      SessionPoolOptions sessionPoolOptions =
           SessionPoolOptions.newBuilder()
               .setMinSessions(0)
               .setMaxSessions(2)
               .setIncStep(1)
               .setFailOnSessionLeak()
               .setTrackStackTraceOfSessionCheckout(trackStackTraceofSessionCheckout)
-              .build());
+              .build();
+      assumeFalse(
+          "Session Leaks do not occur with Multiplexed Sessions",
+          sessionPoolOptions.getUseMultiplexedSession());
+      SpannerOptions.Builder builder =
+          SpannerOptions.newBuilder()
+              .setProjectId("[PROJECT]")
+              .setChannelProvider(channelProvider)
+              .setCredentials(NoCredentials.getInstance());
+      builder.setSessionPoolOption(sessionPoolOptions);
       Spanner spanner = builder.build().getService();
       DatabaseClient client =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -148,6 +153,7 @@ public class SessionPoolLeakTest {
       // This will cause a session leak.
       ReadOnlyTransaction transaction = client.readOnlyTransaction();
       try (ResultSet resultSet = transaction.executeQuery(Statement.of("SELECT 1"))) {
+        //noinspection StatementWithEmptyBody
         while (resultSet.next()) {
           // ignore
         }
@@ -218,7 +224,7 @@ public class SessionPoolLeakTest {
     assertEquals(0, pool.getNumberOfSessionsInPool());
     setup.run();
     try (TransactionManager txManager = client.transactionManager()) {
-      SpannerException e = assertThrows(SpannerException.class, () -> txManager.begin());
+      SpannerException e = assertThrows(SpannerException.class, txManager::begin);
       assertEquals(ErrorCode.FAILED_PRECONDITION, e.getErrorCode());
     }
     assertEquals(expectedNumberOfSessionsAfterExecution, pool.getNumberOfSessionsInPool());

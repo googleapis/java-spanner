@@ -22,6 +22,11 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
+import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerRpcMetrics;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.spanner.admin.database.v1.DatabaseName;
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -37,6 +42,9 @@ import io.opencensus.tags.TagContext;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -47,15 +55,22 @@ import java.util.regex.Pattern;
  * Missing count metrics.
  */
 class HeaderInterceptor implements ClientInterceptor {
-
+  private static final DatabaseName UNDEFINED_DATABASE_NAME =
+      DatabaseName.of("undefined-project", "undefined-instance", "undefined-database");
   private static final Metadata.Key<String> SERVER_TIMING_HEADER_KEY =
       Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER);
-  private static final Pattern SERVER_TIMING_HEADER_PATTERN = Pattern.compile(".*dur=(?<dur>\\d+)");
+  private static final String SERVER_TIMING_HEADER_PREFIX = "gfet4t7; dur=";
   private static final Metadata.Key<String> GOOGLE_CLOUD_RESOURCE_PREFIX_KEY =
       Metadata.Key.of("google-cloud-resource-prefix", Metadata.ASCII_STRING_MARSHALLER);
   private static final Pattern GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN =
       Pattern.compile(
           ".*projects/(?<project>\\p{ASCII}[^/]*)(/instances/(?<instance>\\p{ASCII}[^/]*))?(/databases/(?<database>\\p{ASCII}[^/]*))?");
+  private final Cache<String, DatabaseName> databaseNameCache =
+      CacheBuilder.newBuilder().maximumSize(100).build();
+  private final Cache<String, TagContext> tagsCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
+  private final Cache<String, Attributes> attributesCache =
+      CacheBuilder.newBuilder().maximumSize(1000).build();
 
   // Get the global singleton Tagger object.
   private static final Tagger TAGGER = Tags.getTagger();
@@ -63,8 +78,11 @@ class HeaderInterceptor implements ClientInterceptor {
 
   private static final Logger LOGGER = Logger.getLogger(HeaderInterceptor.class.getName());
   private static final Level LEVEL = Level.INFO;
+  private final SpannerRpcMetrics spannerRpcMetrics;
 
-  HeaderInterceptor() {}
+  HeaderInterceptor(SpannerRpcMetrics spannerRpcMetrics) {
+    this.spannerRpcMetrics = spannerRpcMetrics;
+  }
 
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
@@ -72,71 +90,104 @@ class HeaderInterceptor implements ClientInterceptor {
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
-        TagContext tagContext = getTagContext(headers, method.getFullMethodName());
-        super.start(
-            new SimpleForwardingClientCallListener<RespT>(responseListener) {
-              @Override
-              public void onHeaders(Metadata metadata) {
-
-                processHeader(metadata, tagContext);
-                super.onHeaders(metadata);
-              }
-            },
-            headers);
+        try {
+          DatabaseName databaseName = extractDatabaseName(headers);
+          String key = databaseName + method.getFullMethodName();
+          TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
+          Attributes attributes =
+              getMetricAttributes(key, method.getFullMethodName(), databaseName);
+          super.start(
+              new SimpleForwardingClientCallListener<RespT>(responseListener) {
+                @Override
+                public void onHeaders(Metadata metadata) {
+                  processHeader(metadata, tagContext, attributes);
+                  super.onHeaders(metadata);
+                }
+              },
+              headers);
+        } catch (ExecutionException executionException) {
+          // This should never happen,
+          throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
+        }
       }
     };
   }
 
-  private void processHeader(Metadata metadata, TagContext tagContext) {
+  private void processHeader(Metadata metadata, TagContext tagContext, Attributes attributes) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
-    if (metadata.get(SERVER_TIMING_HEADER_KEY) != null) {
-      String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
-      Matcher matcher = SERVER_TIMING_HEADER_PATTERN.matcher(serverTiming);
-      if (matcher.find()) {
-        try {
-          long latency = Long.parseLong(matcher.group("dur"));
-          measureMap.put(SPANNER_GFE_LATENCY, latency);
-          measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
-          measureMap.record(tagContext);
-        } catch (NumberFormatException e) {
-          LOGGER.log(LEVEL, "Invalid server-timing object in header", matcher.group("dur"));
-        }
+    String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
+    if (serverTiming != null && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
+      try {
+        long latency = Long.parseLong(serverTiming.substring(SERVER_TIMING_HEADER_PREFIX.length()));
+        measureMap.put(SPANNER_GFE_LATENCY, latency);
+        measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 0L);
+        measureMap.record(tagContext);
+
+        spannerRpcMetrics.recordGfeLatency(latency, attributes);
+        spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
+      } catch (NumberFormatException e) {
+        LOGGER.log(LEVEL, "Invalid server-timing object in header: {}", serverTiming);
       }
     } else {
+      spannerRpcMetrics.recordGfeHeaderMissingCount(1L, attributes);
       measureMap.put(SPANNER_GFE_HEADER_MISSING_COUNT, 1L).record(tagContext);
     }
   }
 
-  private TagContext getTagContext(
-      String method, String projectId, String instanceId, String databaseId) {
-    return TAGGER
-        .currentBuilder()
-        .putLocal(PROJECT_ID, TagValue.create(projectId))
-        .putLocal(INSTANCE_ID, TagValue.create(instanceId))
-        .putLocal(DATABASE_ID, TagValue.create(databaseId))
-        .putLocal(METHOD, TagValue.create(method))
-        .build();
+  private DatabaseName extractDatabaseName(Metadata headers) throws ExecutionException {
+    String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
+    if (googleResourcePrefix != null) {
+      return databaseNameCache.get(
+          googleResourcePrefix,
+          () -> {
+            String projectId = "undefined-project";
+            String instanceId = "undefined-database";
+            String databaseId = "undefined-database";
+            Matcher matcher = GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN.matcher(googleResourcePrefix);
+            if (matcher.find()) {
+              projectId = matcher.group("project");
+              if (matcher.group("instance") != null) {
+                instanceId = matcher.group("instance");
+              }
+              if (matcher.group("database") != null) {
+                databaseId = matcher.group("database");
+              }
+            } else {
+              LOGGER.log(
+                  LEVEL, "Error parsing google cloud resource header: " + googleResourcePrefix);
+            }
+            return DatabaseName.of(projectId, instanceId, databaseId);
+          });
+    }
+    return UNDEFINED_DATABASE_NAME;
   }
 
-  private TagContext getTagContext(Metadata headers, String method) {
-    String projectId = "undefined-project";
-    String instanceId = "undefined-database";
-    String databaseId = "undefined-database";
-    if (headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY) != null) {
-      String googleResourcePrefix = headers.get(GOOGLE_CLOUD_RESOURCE_PREFIX_KEY);
-      Matcher matcher = GOOGLE_CLOUD_RESOURCE_PREFIX_PATTERN.matcher(googleResourcePrefix);
-      if (matcher.find()) {
-        projectId = matcher.group("project");
-        if (matcher.group("instance") != null) {
-          instanceId = matcher.group("instance");
-        }
-        if (matcher.group("database") != null) {
-          databaseId = matcher.group("database");
-        }
-      } else {
-        LOGGER.log(LEVEL, "Error parsing google cloud resource header: " + googleResourcePrefix);
-      }
-    }
-    return getTagContext(method, projectId, instanceId, databaseId);
+  private TagContext getTagContext(String key, String method, DatabaseName databaseName)
+      throws ExecutionException {
+    return tagsCache.get(
+        key,
+        () ->
+            TAGGER
+                .currentBuilder()
+                .putLocal(PROJECT_ID, TagValue.create(databaseName.getProject()))
+                .putLocal(INSTANCE_ID, TagValue.create(databaseName.getInstance()))
+                .putLocal(DATABASE_ID, TagValue.create(databaseName.getDatabase()))
+                .putLocal(METHOD, TagValue.create(method))
+                .build());
+  }
+
+  private Attributes getMetricAttributes(String key, String method, DatabaseName databaseName)
+      throws ExecutionException {
+    return attributesCache.get(
+        key,
+        () -> {
+          AttributesBuilder attributesBuilder = Attributes.builder();
+          attributesBuilder.put("database", databaseName.getDatabase());
+          attributesBuilder.put("instance_id", databaseName.getInstance());
+          attributesBuilder.put("project_id", databaseName.getProject());
+          attributesBuilder.put("method", method);
+
+          return attributesBuilder.build();
+        });
   }
 }

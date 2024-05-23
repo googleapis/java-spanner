@@ -77,6 +77,15 @@
 	  "exampleStatements": ["show variable read_only_staleness"]
 	},
 	{
+		"name": "SHOW VARIABLE DIRECTED_READ",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_DIRECTED_READ",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+directed_read\\s*\\z",
+		"method": "statementShowDirectedRead",
+		"exampleStatements": ["show variable directed_read"]
+	},
+	{
 	  "name": "SHOW VARIABLE OPTIMIZER_VERSION",
 	  "executorName": "ClientSideStatementNoParamExecutor",
 	  "resultType": "RESULT_SET",
@@ -102,6 +111,15 @@
 	  "regex": "(?is)\\A\\s*show\\s+variable\\s+return_commit_stats\\s*\\z",
 	  "method": "statementShowReturnCommitStats",
 	  "exampleStatements": ["show variable return_commit_stats"]
+	},
+	{
+		"name": "SHOW VARIABLE MAX_COMMIT_DELAY",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_MAX_COMMIT_DELAY",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+max_commit_delay\\s*\\z",
+		"method": "statementShowMaxCommitDelay",
+		"exampleStatements": ["show variable max_commit_delay"]
 	},
 	{
 	  "name": "SHOW VARIABLE COMMIT_RESPONSE",
@@ -132,6 +150,15 @@
 	  "exampleStatements": ["show variable transaction_tag"]
 	},
 	{
+		"name": "SHOW VARIABLE EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+exclude_txn_from_change_streams\\s*\\z",
+		"method": "statementShowExcludeTxnFromChangeStreams",
+		"exampleStatements": ["show variable exclude_txn_from_change_streams"]
+	},
+	{
 		"name": "SHOW VARIABLE RPC_PRIORITY",
 		"executorName": "ClientSideStatementNoParamExecutor",
 		"resultType": "RESULT_SET",
@@ -157,6 +184,33 @@
 		"regex": "(?is)\\A\\s*show\\s+variable\\s+delay_transaction_start_until_first_write\\s*\\z",
 		"method": "statementShowDelayTransactionStartUntilFirstWrite",
 		"exampleStatements": ["show variable delay_transaction_start_until_first_write"]
+	},
+	{
+		"name": "PARTITION <sql>",
+		"executorName": "ClientSideStatementPartitionExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "PARTITION",
+		"regex": "(?is)\\A\\s*partition(\\s+|\\()(.*)\\z",
+		"method": "statementPartition",
+		"exampleStatements": ["partition select col1, col2 from my_table"]
+	},
+	{
+		"name": "RUN PARTITION ['<partition_id>']",
+		"executorName": "ClientSideStatementRunPartitionExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "RUN_PARTITION",
+		"regex": "(?is)\\A\\s*run\\s+partition(?:\\s*'(.*)')?\\s*\\z",
+		"method": "statementRunPartition",
+		"exampleStatements": []
+	},
+	{
+		"name": "RUN PARTITIONED QUERY <sql>",
+		"executorName": "ClientSideStatementRunPartitionedQueryExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "RUN_PARTITIONED_QUERY",
+		"regex": "(?is)\\A\\s*run\\s+partitioned\\s+query(\\s+|\\()(.*)\\z",
+		"method": "statementRunPartitionedQuery",
+		"exampleStatements": ["run partitioned query select col1, col2 from my_table"]
 	},
 	{
 	  "name": "BEGIN TRANSACTION",
@@ -347,6 +401,21 @@
 	  }
 	},
 	{
+		"name": "SET DIRECTED_READ = '<directed-read-options>'|''",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_DIRECTED_READ",
+		"regex": "(?is)\\A\\s*set\\s+directed_read\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetDirectedRead",
+		"exampleStatements": ["set directed_read='{\"includeReplicas\":{\"replicaSelections\":[{\"location\":\"eu-west1\",\"type\":\"READ_ONLY\"}]}}'", "set directed_read=''"],
+		"setStatement": {
+			"propertyName": "DIRECTED_READ",
+			"separator": "=",
+			"allowedValues": "'((\\S+)|())'",
+			"converterName": "ClientSideStatementValueConverters$DirectedReadOptionsConverter"
+		}
+	},
+	{
 	  "name": "SET OPTIMIZER_VERSION = '<version>'|'LATEST'|''",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
@@ -392,17 +461,32 @@
 	  }
 	},
 	{
+		"name": "SET MAX_COMMIT_DELAY = '<duration>'|NULL",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_MAX_COMMIT_DELAY",
+		"regex": "(?is)\\A\\s*set\\s+max_commit_delay\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetMaxCommitDelay",
+		"exampleStatements": ["set max_commit_delay=null", "set max_commit_delay='1s'", "set max_commit_delay='100ms'", "set max_commit_delay='10000us'", "set max_commit_delay='9223372036854775807ns'"],
+		"setStatement": {
+			"propertyName": "MAX_COMMIT_DELAY",
+			"separator": "=",
+			"allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+			"converterName": "ClientSideStatementValueConverters$DurationConverter"
+		}
+	},
+	{
 	  "name": "SET STATEMENT_TAG = '<tag>'",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
 	  "statementType": "SET_STATEMENT_TAG",
 	  "regex": "(?is)\\A\\s*set\\s+statement_tag\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetStatementTag",
-	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''"],
+	  "exampleStatements": ["set statement_tag='tag1'", "set statement_tag='tag2'", "set statement_tag=''", "set statement_tag='test_tag'"],
 	  "setStatement": {
 	    "propertyName": "STATEMENT_TAG",
 	    "separator": "=",
-	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "allowedValues": "'(.*)'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
 	},
@@ -413,14 +497,29 @@
 	  "statementType": "SET_TRANSACTION_TAG",
 	  "regex": "(?is)\\A\\s*set\\s+transaction_tag\\s*(?:=)\\s*(.*)\\z",
 	  "method": "statementSetTransactionTag",
-	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''"],
+	  "exampleStatements": ["set transaction_tag='tag1'", "set transaction_tag='tag2'", "set transaction_tag=''", "set transaction_tag='test_tag'"],
 	  "examplePrerequisiteStatements": ["set autocommit = false"],
 	  "setStatement": {
 	    "propertyName": "TRANSACTION_TAG",
 	    "separator": "=",
-	    "allowedValues": "'(([a-zA-Z][a-zA-Z0-9_\\-]{1,63})|())'",
+	    "allowedValues": "'(.*)'",
 	    "converterName": "ClientSideStatementValueConverters$StringValueConverter"
 	  }
+	},
+	{
+		"name": "SET EXCLUDE_TXN_FROM_CHANGE_STREAMS = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+		"regex": "(?is)\\A\\s*set\\s+exclude_txn_from_change_streams\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetExcludeTxnFromChangeStreams",
+		"exampleStatements": ["set exclude_txn_from_change_streams = true", "set exclude_txn_from_change_streams = false"],
+		"setStatement": {
+			"propertyName": "EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
 	},
 	{
 		"name": "SET RPC_PRIORITY = 'HIGH'|'MEDIUM'|'LOW'|'NULL'",
@@ -476,6 +575,102 @@
 		}
 	},
 	{
+		"name": "SHOW VARIABLE DATA_BOOST_ENABLED",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_DATA_BOOST_ENABLED",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+data_boost_enabled\\s*\\z",
+		"method": "statementShowDataBoostEnabled",
+		"exampleStatements": ["show variable data_boost_enabled"]
+	},
+	{
+		"name": "SET DATA_BOOST_ENABLED = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_DATA_BOOST_ENABLED",
+		"regex": "(?is)\\A\\s*set\\s+data_boost_enabled\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetDataBoostEnabled",
+		"exampleStatements": ["set data_boost_enabled = true", "set data_boost_enabled = false"],
+		"setStatement": {
+			"propertyName": "DATA_BOOST_ENABLED",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
+	},
+	{
+		"name": "SHOW VARIABLE AUTO_PARTITION_MODE",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_AUTO_PARTITION_MODE",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+auto_partition_mode\\s*\\z",
+		"method": "statementShowAutoPartitionMode",
+		"exampleStatements": ["show variable auto_partition_mode"]
+	},
+	{
+		"name": "SET AUTO_PARTITION_MODE = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_AUTO_PARTITION_MODE",
+		"regex": "(?is)\\A\\s*set\\s+auto_partition_mode\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetAutoPartitionMode",
+		"exampleStatements": ["set auto_partition_mode = true", "set auto_partition_mode = false"],
+		"setStatement": {
+			"propertyName": "AUTO_PARTITION_MODE",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
+	},
+	{
+		"name": "SHOW VARIABLE MAX_PARTITIONS",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_MAX_PARTITIONS",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+max_partitions\\s*\\z",
+		"method": "statementShowMaxPartitions",
+		"exampleStatements": ["show variable max_partitions"]
+	},
+	{
+		"name": "SET MAX_PARTITIONS = <INT64>",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_MAX_PARTITIONS",
+		"regex": "(?is)\\A\\s*set\\s+max_partitions\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetMaxPartitions",
+		"exampleStatements": ["set max_partitions = 0", "set max_partitions = 10"],
+		"setStatement": {
+			"propertyName": "MAX_PARTITIONS",
+			"separator": "=",
+			"allowedValues": "(\\d{1,9})",
+			"converterName": "ClientSideStatementValueConverters$NonNegativeIntegerConverter"
+		}
+	},
+	{
+		"name": "SHOW VARIABLE MAX_PARTITIONED_PARALLELISM",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_MAX_PARTITIONED_PARALLELISM",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+max_partitioned_parallelism\\s*\\z",
+		"method": "statementShowMaxPartitionedParallelism",
+		"exampleStatements": ["show variable max_partitioned_parallelism"]
+	},
+	{
+		"name": "SET MAX_PARTITIONED_PARALLELISM = <INT64>",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_MAX_PARTITIONED_PARALLELISM",
+		"regex": "(?is)\\A\\s*set\\s+max_partitioned_parallelism\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetMaxPartitionedParallelism",
+		"exampleStatements": ["set max_partitioned_parallelism = 0", "set max_partitioned_parallelism = 10"],
+		"setStatement": {
+			"propertyName": "MAX_PARTITIONED_PARALLELISM",
+			"separator": "=",
+			"allowedValues": "(\\d{1,9})",
+			"converterName": "ClientSideStatementValueConverters$NonNegativeIntegerConverter"
+		}
+	},
+	{
 		"name": "SET PROTO_DESCRIPTORS = '<proto_descriptor>'",
 		"executorName": "ClientSideStatementSetExecutor",
 		"resultType": "NO_RESULT",
@@ -484,10 +679,10 @@
 		"method": "statementSetProtoDescriptors",
 		"exampleStatements": ["set proto_descriptors='protodescriptorsbase64'"],
 		"setStatement": {
-			"propertyName": "PROTO_DESCRIPTORS",
-			"separator": "=",
-			"allowedValues": "'((\\S+)|())'",
-			"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsConverter"
+		"propertyName": "PROTO_DESCRIPTORS",
+		"separator": "=",
+		"allowedValues": "'((\\S+)|())'",
+		"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsConverter"
 		}
 	},
 	{
@@ -521,7 +716,9 @@
 		"statementType": "SHOW_PROTO_DESCRIPTORS_FILE_PATH",
 		"regex": "(?is)\\A\\s*show\\s+variable\\s+proto_descriptors_file_path\\s*\\z",
 		"method": "statementShowProtoDescriptorsFilePath",
-		"exampleStatements": ["show variable proto_descriptors_file_path"]
+		"exampleStatements": [
+			"show variable proto_descriptors_file_path"
+		]
 	}
 	]
 }

@@ -21,13 +21,22 @@ import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.GrpcCallContext;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.rpc.ApiCallContext;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
+import com.google.cloud.spanner.Partition;
+import com.google.cloud.spanner.PartitionOptions;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.ResultSets;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.common.base.Preconditions;
@@ -36,9 +45,12 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Context;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -46,16 +58,24 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Base for all {@link Connection}-based transactions and batches. */
 abstract class AbstractBaseUnitOfWork implements UnitOfWork {
+  static final String DB_STATEMENT = "db.statement";
+  static final AttributeKey<String> DB_STATEMENT_KEY = AttributeKey.stringKey(DB_STATEMENT);
+  static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
+      AttributeKey.stringArrayKey(DB_STATEMENT);
+
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
   protected final String transactionTag;
+  protected final boolean excludeTxnFromChangeStreams;
   protected final RpcPriority rpcPriority;
+  protected final Span span;
 
   /** Class for keeping track of the stacktrace of the caller of an async statement. */
   static final class SpannerAsyncExecutionException extends RuntimeException {
@@ -88,7 +108,10 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     private StatementExecutor statementExecutor;
     private StatementTimeout statementTimeout = new StatementTimeout();
     private String transactionTag;
+
+    private boolean excludeTxnFromChangeStreams;
     private RpcPriority rpcPriority;
+    private Span span;
 
     Builder() {}
 
@@ -114,8 +137,18 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       return self();
     }
 
+    B setExcludeTxnFromChangeStreams(boolean excludeTxnFromChangeStreams) {
+      this.excludeTxnFromChangeStreams = excludeTxnFromChangeStreams;
+      return self();
+    }
+
     B setRpcPriority(@Nullable RpcPriority rpcPriority) {
       this.rpcPriority = rpcPriority;
+      return self();
+    }
+
+    B setSpan(@Nullable Span span) {
+      this.span = span;
       return self();
     }
 
@@ -127,7 +160,20 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.statementExecutor = builder.statementExecutor;
     this.statementTimeout = builder.statementTimeout;
     this.transactionTag = builder.transactionTag;
+    this.excludeTxnFromChangeStreams = builder.excludeTxnFromChangeStreams;
     this.rpcPriority = builder.rpcPriority;
+    this.span = Preconditions.checkNotNull(builder.span);
+  }
+
+  ApiFuture<Void> asyncEndUnitOfWorkSpan() {
+    return this.statementExecutor.submit(this::endUnitOfWorkSpan);
+  }
+
+  private Void endUnitOfWorkSpan() {
+    if (this.span != null) {
+      this.span.end();
+    }
+    return null;
   }
 
   /**
@@ -155,6 +201,39 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION,
         "Rollback to savepoint is not supported for " + getUnitOfWorkName());
+  }
+
+  @Override
+  public ApiFuture<ResultSet> partitionQueryAsync(
+      CallType callType,
+      ParsedStatement query,
+      PartitionOptions partitionOptions,
+      QueryOption... options) {
+    throw SpannerExceptionFactory.newSpannerException(
+        ErrorCode.FAILED_PRECONDITION,
+        "Partition query is not supported for " + getUnitOfWorkName());
+  }
+
+  ResultSet partitionQuery(
+      BatchReadOnlyTransaction transaction,
+      PartitionOptions partitionOptions,
+      ParsedStatement query,
+      QueryOption... options) {
+    final String partitionColumnName = "PARTITION";
+    BatchTransactionId transactionId = transaction.getBatchTransactionId();
+    List<Partition> partitions =
+        transaction.partitionQuery(partitionOptions, query.getStatement(), options);
+    return ResultSets.forRows(
+        com.google.cloud.spanner.Type.struct(
+            StructField.of(partitionColumnName, com.google.cloud.spanner.Type.string())),
+        partitions.stream()
+            .map(
+                partition ->
+                    Struct.newBuilder()
+                        .set(partitionColumnName)
+                        .to(PartitionId.encodeToString(transactionId, partition))
+                        .build())
+            .collect(Collectors.toList()));
   }
 
   StatementExecutor getStatementExecutor() {
@@ -301,6 +380,9 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
               if (currentlyRunningStatementFuture == future) {
                 currentlyRunningStatementFuture = null;
               }
+            }
+            if (isSingleUse()) {
+              endUnitOfWorkSpan();
             }
           }
         },

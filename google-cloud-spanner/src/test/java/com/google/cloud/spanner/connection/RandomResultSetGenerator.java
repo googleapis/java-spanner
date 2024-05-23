@@ -34,6 +34,7 @@ import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +51,7 @@ public class RandomResultSetGenerator {
             Arrays.asList(
                 Type.newBuilder().setCode(TypeCode.BOOL).build(),
                 Type.newBuilder().setCode(TypeCode.INT64).build(),
+                Type.newBuilder().setCode(TypeCode.FLOAT32).build(),
                 Type.newBuilder().setCode(TypeCode.FLOAT64).build(),
                 dialect == Dialect.POSTGRESQL
                     ? Type.newBuilder()
@@ -66,56 +68,80 @@ public class RandomResultSetGenerator {
                     : Type.newBuilder().setCode(TypeCode.JSON).build(),
                 Type.newBuilder().setCode(TypeCode.BYTES).build(),
                 Type.newBuilder().setCode(TypeCode.DATE).build(),
-                Type.newBuilder().setCode(TypeCode.TIMESTAMP).build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(
-                        dialect == Dialect.POSTGRESQL
-                            ? Type.newBuilder()
-                                .setCode(TypeCode.NUMERIC)
-                                .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
-                            : Type.newBuilder().setCode(TypeCode.NUMERIC))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(
-                        dialect == Dialect.POSTGRESQL
-                            ? Type.newBuilder()
-                                .setCode(TypeCode.JSON)
-                                .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
-                            : Type.newBuilder().setCode(TypeCode.JSON))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
-                    .build(),
-                Type.newBuilder()
-                    .setCode(TypeCode.ARRAY)
-                    .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
-                    .build()));
+                Type.newBuilder().setCode(TypeCode.TIMESTAMP).build()));
+    if (dialect == Dialect.POSTGRESQL) {
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.INT64)
+              .setTypeAnnotation(TypeAnnotationCode.PG_OID)
+              .build());
+    }
+    types.addAll(
+        Arrays.asList(
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.BOOL))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.INT64))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT32))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.FLOAT64))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(
+                    dialect == Dialect.POSTGRESQL
+                        ? Type.newBuilder()
+                            .setCode(TypeCode.NUMERIC)
+                            .setTypeAnnotation(TypeAnnotationCode.PG_NUMERIC)
+                        : Type.newBuilder().setCode(TypeCode.NUMERIC))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.STRING))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(
+                    dialect == Dialect.POSTGRESQL
+                        ? Type.newBuilder()
+                            .setCode(TypeCode.JSON)
+                            .setTypeAnnotation(TypeAnnotationCode.PG_JSONB)
+                        : Type.newBuilder().setCode(TypeCode.JSON))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.BYTES))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.DATE))
+                .build(),
+            Type.newBuilder()
+                .setCode(TypeCode.ARRAY)
+                .setArrayElementType(Type.newBuilder().setCode(TypeCode.TIMESTAMP))
+                .build()));
 
-    // TODO(harsha): add test corresponding to this in testGetAllTypesAsString()
-    // appendProtoTypes(types, dialect);
+    appendProtoTypes(types, dialect);
+
+    if (dialect == Dialect.POSTGRESQL) {
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ARRAY)
+              .setArrayElementType(
+                  Type.newBuilder()
+                      .setCode(TypeCode.INT64)
+                      .setTypeAnnotation(TypeAnnotationCode.PG_OID))
+              .build());
+    }
+
     Type[] typeArray = new Type[types.size()];
     typeArray = types.toArray(typeArray);
     return typeArray;
@@ -124,8 +150,16 @@ public class RandomResultSetGenerator {
   /** To append Proto & Enum types * */
   private static void appendProtoTypes(List<Type> types, Dialect dialect) {
     if (dialect == Dialect.GOOGLE_STANDARD_SQL) {
-      types.add(Type.newBuilder().setCode(TypeCode.PROTO).setProtoTypeFqn("testProto").build());
-      types.add(Type.newBuilder().setCode(TypeCode.ENUM).setProtoTypeFqn("testEnum").build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.PROTO)
+              .setProtoTypeFqn(SingerInfo.getDescriptor().getFullName())
+              .build());
+      types.add(
+          Type.newBuilder()
+              .setCode(TypeCode.ENUM)
+              .setProtoTypeFqn(Genre.getDescriptor().getFullName())
+              .build());
       types.add(
           Type.newBuilder()
               .setCode(TypeCode.ARRAY)
@@ -221,6 +255,13 @@ public class RandomResultSetGenerator {
                   random.nextInt(2019) + 1, random.nextInt(11) + 1, random.nextInt(28) + 1);
           builder.setStringValue(date.toString());
           break;
+        case FLOAT32:
+          if (randomNaN()) {
+            builder.setNumberValue(Float.NaN);
+          } else {
+            builder.setNumberValue(random.nextFloat());
+          }
+          break;
         case FLOAT64:
           if (randomNaN()) {
             builder.setNumberValue(Double.NaN);
@@ -232,7 +273,10 @@ public class RandomResultSetGenerator {
           if (dialect == Dialect.POSTGRESQL && randomNaN()) {
             builder.setStringValue("NaN");
           } else {
-            builder.setStringValue(BigDecimal.valueOf(random.nextDouble()).toString());
+            builder.setStringValue(
+                BigDecimal.valueOf(random.nextDouble())
+                    .setScale(9, RoundingMode.HALF_UP)
+                    .toString());
           }
           break;
         case INT64:

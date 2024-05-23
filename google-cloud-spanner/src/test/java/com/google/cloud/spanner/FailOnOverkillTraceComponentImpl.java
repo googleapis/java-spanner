@@ -29,6 +29,7 @@ import io.opencensus.trace.Span.Options;
 import io.opencensus.trace.SpanBuilder;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
+import io.opencensus.trace.Status;
 import io.opencensus.trace.TraceComponent;
 import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
@@ -43,6 +44,8 @@ import io.opencensus.trace.export.SpanExporter;
 import io.opencensus.trace.propagation.BinaryFormat;
 import io.opencensus.trace.propagation.PropagationComponent;
 import io.opencensus.trace.propagation.TextFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,7 +63,10 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
   private final Clock clock = ZeroTimeClock.getInstance();
   private final ExportComponent exportComponent = new TestExportComponent();
   private final TraceConfig traceConfig = new TestTraceConfig();
-  private static final Map<String, Boolean> spans = new LinkedHashMap<>();
+  private static final Map<String, Boolean> spans =
+      Collections.synchronizedMap(new LinkedHashMap<>());
+
+  private static final List<String> annotations = new ArrayList<>();
 
   public static class TestSpan extends Span {
     @GuardedBy("this")
@@ -75,13 +81,26 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
     }
 
     @Override
-    public void addAnnotation(String description, Map<String, AttributeValue> attributes) {}
+    public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
+      annotations.add(description);
+    }
 
     @Override
-    public void addAnnotation(Annotation annotation) {}
+    public void addAnnotation(Annotation annotation) {
+      annotations.add(annotation.getDescription());
+    }
+
+    @Override
+    public void putAttributes(Map<String, AttributeValue> attributes) {}
+
+    @Override
+    public void addAttributes(Map<String, AttributeValue> attributes) {}
 
     @Override
     public void addLink(Link link) {}
+
+    @Override
+    public void setStatus(Status status) {}
 
     @Override
     public void end(EndSpanOptions options) {
@@ -210,8 +229,16 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
     return spans;
   }
 
+  List<String> getAnnotations() {
+    return annotations;
+  }
+
   void clearSpans() {
     spans.clear();
+  }
+
+  void clearAnnotations() {
+    annotations.clear();
   }
 
   @Override

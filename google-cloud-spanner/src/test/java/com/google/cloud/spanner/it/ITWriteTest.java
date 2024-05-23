@@ -25,10 +25,12 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -41,6 +43,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.MutationGroup;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.ResultSet;
@@ -48,11 +51,15 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.NullValue;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import com.google.spanner.v1.BatchWriteResponse;
 import io.grpc.Context;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -60,9 +67,11 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -100,51 +109,65 @@ public class ITWriteTest {
   private static DatabaseClient googleStandardSQLClient;
   private static DatabaseClient postgreSQLClient;
 
-  private static final String GOOGLE_STANDARD_SQL_SCHEMA =
-      "CREATE TABLE T ("
-          + "  K                   STRING(MAX) NOT NULL,"
-          + "  BoolValue           BOOL,"
-          + "  Int64Value          INT64,"
-          + "  Float64Value        FLOAT64,"
-          + "  StringValue         STRING(MAX),"
-          + "  JsonValue           JSON,"
-          + "  BytesValue          BYTES(MAX),"
-          + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
-          + "  DateValue           DATE,"
-          + "  NumericValue        NUMERIC,"
-          + "  BoolArrayValue      ARRAY<BOOL>,"
-          + "  Int64ArrayValue     ARRAY<INT64>,"
-          + "  Float64ArrayValue   ARRAY<FLOAT64>,"
-          + "  StringArrayValue    ARRAY<STRING(MAX)>,"
-          + "  JsonArrayValue      ARRAY<JSON>,"
-          + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
-          + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
-          + "  DateArrayValue      ARRAY<DATE>,"
-          + "  NumericArrayValue   ARRAY<NUMERIC>,"
-          + ") PRIMARY KEY (K)";
+  private static final String[] GOOGLE_STANDARD_SQL_SCHEMA =
+      new String[] {
+        "CREATE TABLE T ("
+            + "  K                   STRING(MAX) NOT NULL,"
+            + "  BoolValue           BOOL,"
+            + "  Int64Value          INT64,"
+            + "  Float64Value        FLOAT64,"
+            + "  StringValue         STRING(MAX),"
+            + "  JsonValue           JSON,"
+            + "  BytesValue          BYTES(MAX),"
+            + "  TimestampValue      TIMESTAMP OPTIONS (allow_commit_timestamp = true),"
+            + "  DateValue           DATE,"
+            + "  NumericValue        NUMERIC,"
+            + "  BoolArrayValue      ARRAY<BOOL>,"
+            + "  Int64ArrayValue     ARRAY<INT64>,"
+            + "  Float64ArrayValue   ARRAY<FLOAT64>,"
+            + "  StringArrayValue    ARRAY<STRING(MAX)>,"
+            + "  JsonArrayValue      ARRAY<JSON>,"
+            + "  BytesArrayValue     ARRAY<BYTES(MAX)>,"
+            + "  TimestampArrayValue ARRAY<TIMESTAMP>,"
+            + "  DateArrayValue      ARRAY<DATE>,"
+            + "  NumericArrayValue   ARRAY<NUMERIC>,"
+            + ") PRIMARY KEY (K)",
+        "CREATE TABLE T1 ("
+            + "  K1                  STRING(MAX) NOT NULL,"
+            + "  K                   STRING(MAX) NOT NULL,"
+            + "  CONSTRAINT FK FOREIGN KEY (K) REFERENCES T(K)"
+            + ") PRIMARY KEY (K1)"
+      };
 
-  private static final String POSTGRESQL_SCHEMA =
-      "CREATE TABLE T ("
-          + "  K                   VARCHAR PRIMARY KEY,"
-          + "  BoolValue           BOOL,"
-          + "  Int64Value          BIGINT,"
-          + "  Float64Value        DOUBLE PRECISION,"
-          + "  StringValue         VARCHAR,"
-          + "  JsonValue           JSONB,"
-          + "  BytesValue          BYTEA,"
-          + "  TimestampValue      TIMESTAMPTZ,"
-          + "  DateValue           DATE,"
-          + "  NumericValue        NUMERIC,"
-          + "  BoolArrayValue      BOOL[],"
-          + "  Int64ArrayValue     BIGINT[],"
-          + "  Float64ArrayValue   DOUBLE PRECISION[],"
-          + "  StringArrayValue    VARCHAR[],"
-          + "  JsonArrayValue      JSONB[],"
-          + "  BytesArrayValue     BYTEA[],"
-          + "  TimestampArrayValue TIMESTAMPTZ[],"
-          + "  DateArrayValue      DATE[],"
-          + "  NumericArrayValue   NUMERIC[]"
-          + ")";
+  private static final String[] POSTGRESQL_SCHEMA =
+      new String[] {
+        "CREATE TABLE T ("
+            + "  K                   VARCHAR PRIMARY KEY,"
+            + "  BoolValue           BOOL,"
+            + "  Int64Value          BIGINT,"
+            + "  Float64Value        DOUBLE PRECISION,"
+            + "  StringValue         VARCHAR,"
+            + "  JsonValue           JSONB,"
+            + "  BytesValue          BYTEA,"
+            + "  TimestampValue      TIMESTAMPTZ,"
+            + "  DateValue           DATE,"
+            + "  NumericValue        NUMERIC,"
+            + "  BoolArrayValue      BOOL[],"
+            + "  Int64ArrayValue     BIGINT[],"
+            + "  Float64ArrayValue   DOUBLE PRECISION[],"
+            + "  StringArrayValue    VARCHAR[],"
+            + "  JsonArrayValue      JSONB[],"
+            + "  BytesArrayValue     BYTEA[],"
+            + "  TimestampArrayValue TIMESTAMPTZ[],"
+            + "  DateArrayValue      DATE[],"
+            + "  NumericArrayValue   NUMERIC[]"
+            + ")",
+        "CREATE TABLE T1 ("
+            + "  K1                  VARCHAR PRIMARY KEY,"
+            + "  K                   VARCHAR,"
+            + "  CONSTRAINT FK FOREIGN KEY (K) REFERENCES T(K)"
+            + ")"
+      };
 
   /** Sequence used to generate unique keys. */
   private static int seq;
@@ -161,7 +184,7 @@ public class ITWriteTest {
     if (!EmulatorSpannerHelper.isUsingEmulator()) {
       Database postgreSQLDatabase =
           env.getTestHelper()
-              .createTestDatabase(Dialect.POSTGRESQL, Collections.singletonList(POSTGRESQL_SCHEMA));
+              .createTestDatabase(Dialect.POSTGRESQL, Arrays.asList(POSTGRESQL_SCHEMA));
       postgreSQLClient = env.getTestHelper().getDatabaseClient(postgreSQLDatabase);
     }
   }
@@ -192,9 +215,13 @@ public class ITWriteTest {
   }
 
   private Struct readLastRow(String... columns) {
+    return readRow("T", lastKey, columns);
+  }
+
+  private Struct readRow(String table, String key, String... columns) {
     return client
         .singleUse(TimestampBound.strong())
-        .readRow("T", Key.of(lastKey), Arrays.asList(columns));
+        .readRow(table, Key.of(key), Arrays.asList(columns));
   }
 
   @Test
@@ -210,6 +237,87 @@ public class ITWriteTest {
     Struct row = readLastRow("StringValue");
     assertThat(row.isNull(0)).isFalse();
     assertThat(row.getString(0)).isEqualTo("v1");
+  }
+
+  @Test
+  public void batchWriteAtLeastOnce() {
+    assumeFalse("Emulator does not support BatchWriteAtLeastOnce", isUsingEmulator());
+    final String k1 = uniqueString(), k2 = uniqueString(), k3 = uniqueString(), k4 = uniqueString();
+    lastKey = k3;
+    final List<MutationGroup> mutationGroups =
+        ImmutableList.of(
+            MutationGroup.of(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(k1)
+                    .set("StringValue")
+                    .to("v1")
+                    .set("BoolValue")
+                    .to(true)
+                    .build(),
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(k2)
+                    .set("StringValue")
+                    .to("v2")
+                    .build()),
+            MutationGroup.of(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(k3)
+                    .set("StringValue")
+                    .to("v1")
+                    .set("BoolValue")
+                    .to(false)
+                    .build(),
+                Mutation.newInsertOrUpdateBuilder("T1").set("K1").to(k4).set("K").to(k3).build()));
+    ServerStream<BatchWriteResponse> responses = client.batchWriteAtLeastOnce(mutationGroups);
+    Set<Integer> responseIndexes = new HashSet<>();
+    Set<Integer> appliedMutationIndexes = new HashSet<>();
+    for (BatchWriteResponse response : responses) {
+      responseIndexes.addAll(response.getIndexesList());
+      if (response.getStatus().equals(Status.newBuilder().setCode(Code.OK_VALUE).build())) {
+        appliedMutationIndexes.addAll(response.getIndexesList());
+        assertNotNull(response.getCommitTimestamp());
+      }
+    }
+    assertEquals(responseIndexes, new HashSet<>(Arrays.asList(0, 1)));
+
+    Struct row;
+    // assert row with key k1
+    if (appliedMutationIndexes.contains(0)) {
+      row = readRow("T", k1, "StringValue", "BoolValue");
+      assertEquals(row.getString(0), "v1");
+      assertTrue(row.getBoolean(1));
+      row = readRow("T", k2, "StringValue", "BoolValue");
+      assertEquals(row.getString(0), "v2");
+      assertTrue(row.isNull(1));
+    }
+
+    // assert row with key k4, and corresponding referencing table.
+    if (appliedMutationIndexes.contains(1)) {
+      row = readRow("T", k3, "StringValue", "BoolValue");
+      assertEquals(row.getString(0), "v1");
+      assertFalse(row.getBoolean(1));
+      row = readRow("T1", k4, "K");
+      assertEquals(row.getString(0), k3);
+    }
+  }
+
+  @Test
+  public void testWriteWithMaxCommitDelay() {
+    CommitResponse response =
+        client.writeWithOptions(
+            Collections.singletonList(
+                Mutation.newInsertOrUpdateBuilder("T")
+                    .set("K")
+                    .to(lastKey = uniqueString())
+                    .set("StringValue")
+                    .to("v1")
+                    .build()),
+            Options.maxCommitDelay(java.time.Duration.ofMillis(100)));
+    assertNotNull(response);
+    assertNotNull(response.getCommitTimestamp());
   }
 
   @Test
@@ -1057,6 +1165,138 @@ public class ITWriteTest {
   }
 
   @Test
+  public void testTypeNamesGoogleSQL() {
+    assumeTrue(
+        "GoogleSQL uses different type names", dialect.dialect == Dialect.GOOGLE_STANDARD_SQL);
+
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(
+                        "select column_name, spanner_type "
+                            + "from information_schema.columns "
+                            + "where table_schema=@schema "
+                            + "and table_name=@table "
+                            + "order by ordinal_position")
+                    .bind("schema")
+                    .to(dialect.dialect.getDefaultSchema())
+                    .bind("table")
+                    .to("T")
+                    .build())) {
+      assertTrue(resultSet.next());
+      assertEquals("K", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("BoolValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bool().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Int64Value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.int64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Float64Value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.float64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("StringValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("JsonValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.json().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("BytesValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bytes().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("TimestampValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.timestamp().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("DateValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.date().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("NumericValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.numeric().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("BoolArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bool()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Int64ArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.int64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("Float64ArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.float64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("StringArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.string()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("JsonArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.json()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("BytesArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bytes()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type").replaceFirst("\\((?:\\d+|MAX)\\)", ""));
+
+      assertTrue(resultSet.next());
+      assertEquals("TimestampArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.timestamp()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("DateArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.date()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("NumericArrayValue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.numeric()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertFalse(resultSet.next());
+    }
+  }
+
+  @Test
   public void testWriteUntypedNullValuesPostgreSQL() {
     assumeTrue(
         "PostgreSQL uses a different parameter format", dialect.dialect == Dialect.POSTGRESQL);
@@ -1132,5 +1372,134 @@ public class ITWriteTest {
                             .bind("p19")
                             .to(untypedNull)
                             .build())));
+  }
+
+  @Test
+  public void testTypeNamesPostgreSQL() {
+    assumeTrue("PostgreSQL uses different type names", dialect.dialect == Dialect.POSTGRESQL);
+
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .executeQuery(
+                Statement.newBuilder(
+                        "select column_name, spanner_type "
+                            + "from information_schema.columns "
+                            + "where table_schema=$1 "
+                            + "and table_name=$2 "
+                            + "order by ordinal_position")
+                    .bind("p1")
+                    .to(dialect.dialect.getDefaultSchema())
+                    .bind("p2")
+                    .to("t")
+                    .build())) {
+      assertTrue(resultSet.next());
+      assertEquals("k", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("boolvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bool().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("int64value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.int64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("float64value", resultSet.getString("column_name"));
+      assertEquals(
+          Type.float64().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("stringvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.string().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("jsonvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.pgJsonb().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("bytesvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.bytes().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("timestampvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.timestamp().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("datevalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.date().getSpannerTypeName(dialect.dialect), resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("numericvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.pgNumeric().getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("boolarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bool()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("int64arrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.int64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("float64arrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.float64()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("stringarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.string()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("jsonarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.pgJsonb()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("bytesarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.bytes()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("timestamparrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.timestamp()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("datearrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.date()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertTrue(resultSet.next());
+      assertEquals("numericarrayvalue", resultSet.getString("column_name"));
+      assertEquals(
+          Type.array(Type.pgNumeric()).getSpannerTypeName(dialect.dialect),
+          resultSet.getString("spanner_type"));
+
+      assertFalse(resultSet.next());
+    }
   }
 }

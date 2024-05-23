@@ -20,6 +20,12 @@
     <differenceType>8001</differenceType>
     <className>com/google/cloud/spanner/connection/StatementParser</className>
   </difference>
+  <!-- (Remove since prepareReadWriteTransaction() has no usage. Session interface is annotated as internal API) -->
+  <difference>
+    <differenceType>7002</differenceType>
+    <className>com/google/cloud/spanner/Session</className>
+    <method>void prepareReadWriteTransaction()</method>
+  </difference>
   <difference>
     <differenceType>7002</differenceType>
     <className>com/google/cloud/spanner/SpannerOptions</className>
@@ -438,7 +444,6 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void rollbackToSavepoint(java.lang.String)</method>
   </difference>
-  
   <!-- Delay start transaction -->
   <difference>
     <differenceType>7012</differenceType>
@@ -450,4 +455,249 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>boolean isDelayTransactionStartUntilFirstWrite()</method>
   </difference>
+
+  <!-- Partitioned queries in Connection API -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>int getMaxPartitionedParallelism()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>int getMaxPartitions()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isAutoPartitionMode()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isDataBoostEnabled()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.ResultSet partitionQuery(com.google.cloud.spanner.Statement, com.google.cloud.spanner.PartitionOptions, com.google.cloud.spanner.Options$QueryOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.ResultSet runPartition(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.PartitionedQueryResultSet runPartitionedQuery(com.google.cloud.spanner.Statement, com.google.cloud.spanner.PartitionOptions, com.google.cloud.spanner.Options$QueryOption[])</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setAutoPartitionMode(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDataBoostEnabled(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxPartitionedParallelism(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxPartitions(int)</method>
+  </difference>
+  <!-- Add an execute method that allows the driver to state what types should be allowed or not.
+       This fixes the gap between what JDBC allows, and what is currently allowed in the Connection
+       API:
+       1. JDBC allows executeUpdate to be used for everything that does not return a ResultSet.
+       2. Connection API requires executeUpdate to be used with something that returns an update
+          count (i.e. no DDL and no client-side statements. -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.StatementResult execute(com.google.cloud.spanner.Statement, java.util.Set)</method>
+  </difference>
+
+  <!-- FLOAT32 -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>float getFloat(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>float getFloat(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>float[] getFloatArray(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>float[] getFloatArray(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getFloatList(int)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/StructReader</className>
+    <method>java.util.List getFloatList(java.lang.String)</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>float getFloat32()</method>
+  </difference>
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Value</className>
+    <method>java.util.List getFloat32Array()</method>
+  </difference>
+
+  <!-- (Internal change, use stream timeout) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc$StreamingCall</className>
+    <method>com.google.api.gax.rpc.ApiCallContext getCallContext()</method>
+  </difference>
+  <!-- (Internal change, propagate streaming retry settings) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getReadRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.api.gax.retrying.RetrySettings getExecuteQueryRetrySettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getReadRetryableCodes()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>java.util.Set getExecuteQueryRetryableCodes()</method>
+  </difference>
+  <!-- Added getDefaultSchema() to Dialect enum. -->
+  <difference>
+    <differenceType>7013</differenceType>
+    <className>com/google/cloud/spanner/Dialect</className>
+    <method>java.lang.String getDefaultSchema()</method>
+  </difference>
+  <!-- Exposing auto-generated admin/instance clients for admin operations -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient createDatabaseAdminClient()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/Spanner</className>
+    <method>com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient createInstanceAdminClient()</method>
+  </difference>
+
+  <!-- (Internal change, use stub objects for generating auto-generated client object) -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.admin.database.v1.stub.DatabaseAdminStubSettings getDatabaseAdminStubSettings()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/spi/v1/SpannerRpc</className>
+    <method>com.google.cloud.spanner.admin.instance.v1.stub.InstanceAdminStubSettings getInstanceAdminStubSettings()</method>
+  </difference>
+
+  <!-- (Modify return type of maxCommitDelay. Feature not announced) -->
+  <difference>
+    <differenceType>7006</differenceType>
+    <className>com/google/cloud/spanner/Options</className>
+    <method>com.google.cloud.spanner.Options$ReadQueryUpdateTransactionOption maxCommitDelay(java.time.Duration)</method>
+    <to>com.google.cloud.spanner.Options$TransactionOption</to>
+  </difference>
+
+  <difference>
+    <differenceType>7005</differenceType>
+    <className>com/google/cloud/spanner/PartitionedDmlTransaction</className>
+    <method>void setSpan(io.opencensus.trace.Span)</method>
+    <to>void setSpan(com.google.cloud.spanner.ISpan)</to>
+  </difference>
+
+  <!-- Added DirectedReadOptions -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.spanner.v1.DirectedReadOptions getDirectedRead()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDirectedRead(com.google.spanner.v1.DirectedReadOptions)</method>
+  </difference>
+
+  <!-- Added MaxCommitDelay -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>java.time.Duration getMaxCommitDelay()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setMaxCommitDelay(java.time.Duration)</method>
+  </difference>
+
+  <!-- Make getSpanner() public -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.Spanner getSpanner()</method>
+  </difference>
+  
+  <!-- Add DdlInTransactionMode -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setDdlInTransactionMode(com.google.cloud.spanner.connection.DdlInTransactionMode)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>com.google.cloud.spanner.connection.DdlInTransactionMode getDdlInTransactionMode()</method>
+  </difference>
+  
+  <!-- Added extended tracing option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableExtendedTracing()</method>
+  </difference>
+
+  <!-- Added ExcludeTxnFromChangeStreams -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isExcludeTxnFromChangeStreams()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setExcludeTxnFromChangeStreams(boolean)</method>
+  </difference>
+
 </differences>

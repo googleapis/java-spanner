@@ -49,6 +49,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.CreateSessionRequest;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
@@ -344,18 +345,34 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            // The first update that fails. This will cause a transaction retry.
-            ExecuteSqlRequest.class,
-            // The retry will use an explicit BeginTransaction call.
-            BeginTransactionRequest.class,
-            // The first update will again fail, but now there is a transaction id, so the
-            // transaction can continue.
-            ExecuteSqlRequest.class,
-            ExecuteSqlRequest.class,
-            CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              // The first update that fails. This will cause a transaction retry.
+              ExecuteSqlRequest.class,
+              // The retry will use an explicit BeginTransaction call.
+              BeginTransactionRequest.class,
+              // The first update will again fail, but now there is a transaction id, so the
+              // transaction can continue.
+              ExecuteSqlRequest.class,
+              ExecuteSqlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              // The first update that fails. This will cause a transaction retry.
+              ExecuteSqlRequest.class,
+              // The retry will use an explicit BeginTransaction call.
+              BeginTransactionRequest.class,
+              // The first update will again fail, but now there is a transaction id, so the
+              // transaction can continue.
+              ExecuteSqlRequest.class,
+              ExecuteSqlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test
@@ -549,9 +566,18 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                   executor)
               .commitAsync()
               .get();
-          assertThat(mockSpanner.getRequestTypes())
-              .containsExactly(
-                  BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+          if (isMultiplexedSessionsEnabled()) {
+            assertThat(mockSpanner.getRequestTypes())
+                .containsExactly(
+                    CreateSessionRequest.class,
+                    BatchCreateSessionsRequest.class,
+                    ExecuteSqlRequest.class,
+                    CommitRequest.class);
+          } else {
+            assertThat(mockSpanner.getRequestTypes())
+                .containsExactly(
+                    BatchCreateSessionsRequest.class, ExecuteSqlRequest.class, CommitRequest.class);
+          }
           break;
         } catch (AbortedException e) {
           txn = mgr.resetForRetryAsync();
@@ -655,12 +681,22 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            ExecuteBatchDmlRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test
@@ -693,13 +729,24 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     // There should only be 1 CommitRequest, as the first attempt should abort already after the
     // ExecuteBatchDmlRequest.
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            ExecuteBatchDmlRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test
@@ -730,13 +777,24 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     assertThat(attempt.get()).isEqualTo(2);
     // There should only be 1 CommitRequest, as the first attempt should abort already after the
     // ExecuteBatchDmlRequest.
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            ExecuteBatchDmlRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test
@@ -785,14 +843,26 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
     } finally {
       mockSpanner.putStatementResult(StatementResult.update(UPDATE_STATEMENT, UPDATE_COUNT));
     }
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class,
-            BeginTransactionRequest.class,
-            ExecuteBatchDmlRequest.class,
-            CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class,
+              BeginTransactionRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    }
   }
 
   @Test
@@ -828,7 +898,10 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       }
     }
     assertThat(attempt.get()).isEqualTo(2);
-    Iterable<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
+    List<Class<? extends AbstractMessage>> requests = mockSpanner.getRequestTypes();
+    // Remove the CreateSession requests for multiplexed sessions, as those are not relevant for
+    // this test.
+    requests.removeIf(request -> request == CreateSessionRequest.class);
     int size = Iterables.size(requests);
     assertThat(size).isIn(Range.closed(5, 6));
     if (size == 5) {
@@ -875,9 +948,18 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
       assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    }
   }
 
   @Test
@@ -901,9 +983,18 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
-    assertThat(mockSpanner.getRequestTypes())
-        .containsExactly(
-            BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    if (isMultiplexedSessionsEnabled()) {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              CreateSessionRequest.class,
+              BatchCreateSessionsRequest.class,
+              ExecuteBatchDmlRequest.class,
+              CommitRequest.class);
+    } else {
+      assertThat(mockSpanner.getRequestTypes())
+          .containsExactly(
+              BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+    }
   }
 
   @Test
@@ -1033,5 +1124,12 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
 
       assertThat(res.get(10L, TimeUnit.SECONDS)).isNull();
     }
+  }
+
+  private boolean isMultiplexedSessionsEnabled() {
+    if (spanner.getOptions() == null || spanner.getOptions().getSessionPoolOptions() == null) {
+      return false;
+    }
+    return spanner.getOptions().getSessionPoolOptions().getUseMultiplexedSession();
   }
 }

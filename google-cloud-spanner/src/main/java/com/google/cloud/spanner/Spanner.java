@@ -26,7 +26,12 @@ import com.google.cloud.Service;
  * quota.
  */
 public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
-  /** Returns a {@code DatabaseAdminClient} to do admin operations on Cloud Spanner databases. */
+
+  /**
+   * Returns a {@code DatabaseAdminClient} to execute admin operations on Cloud Spanner databases.
+   *
+   * @return {@code DatabaseAdminClient}
+   */
   /*
    * <!--SNIPPET get_dbadmin_client-->
    * <pre>{@code
@@ -38,7 +43,34 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    */
   DatabaseAdminClient getDatabaseAdminClient();
 
-  /** Returns an {@code InstanceAdminClient} to do admin operations on Cloud Spanner instances. */
+  /**
+   * Returns a {@link com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient} to execute
+   * admin operations on Cloud Spanner databases. This method always creates a new instance of
+   * {@link com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient} which is an {@link
+   * AutoCloseable} resource. For optimising the number of clients, caller may choose to cache the
+   * clients instead of repeatedly invoking this method and creating new instances.
+   *
+   * @return {@link com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient}
+   */
+  /*
+   * <!--SNIPPET get_dbadmin_client-->
+   * <pre>{@code
+   * SpannerOptions options = SpannerOptions.newBuilder().build();
+   * Spanner spanner = options.getService();
+   * DatabaseAdminClient dbAdminClient = spanner.createDatabaseAdminClient();
+   * }</pre>
+   * <!--SNIPPET get_dbadmin_client-->
+   */
+  default com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient
+      createDatabaseAdminClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Returns an {@code InstanceAdminClient} to execute admin operations on Cloud Spanner instances.
+   *
+   * @return {@code InstanceAdminClient}
+   */
   /*
    * <!--SNIPPET get_instance_admin_client-->
    * <pre>{@code
@@ -49,6 +81,29 @@ public interface Spanner extends Service<SpannerOptions>, AutoCloseable {
    * <!--SNIPPET get_instance_admin_client-->
    */
   InstanceAdminClient getInstanceAdminClient();
+
+  /**
+   * Returns a {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient} to execute
+   * admin operations on Cloud Spanner databases. This method always creates a new instance of
+   * {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient} which is an {@link
+   * AutoCloseable} resource. For optimising the number of clients, caller may choose to cache the
+   * clients instead of repeatedly invoking this method and creating new instances.
+   *
+   * @return {@link com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient}
+   */
+  /*
+   * <!--SNIPPET get_instance_admin_client-->
+   * <pre>{@code
+   * SpannerOptions options = SpannerOptions.newBuilder().build();
+   * Spanner spanner = options.getService();
+   * InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient();
+   * }</pre>
+   * <!--SNIPPET get_instance_admin_client-->
+   */
+  default com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient
+      createInstanceAdminClient() {
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
   /**
    * Returns a {@code DatabaseClient} for the given database. It uses a pool of sessions to talk to
