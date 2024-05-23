@@ -1981,7 +1981,7 @@ public class ConnectionImplTest {
       // proto descriptor should reset after executing a DDL statement
       connection.setProtoDescriptors(protoDescriptors);
       assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
-      connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
       assertNull(connection.getProtoDescriptors());
 
       // proto descriptor should not reset if the statement is not a DDL statement
@@ -1993,7 +1993,7 @@ public class ConnectionImplTest {
       // proto descriptor file path should reset after executing a DDL statement
       connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
       assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
-      connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
       assertNull(connection.getProtoDescriptors());
       assertNull(connection.getProtoDescriptorsFilePath());
 
@@ -2007,7 +2007,7 @@ public class ConnectionImplTest {
       // test proto descriptor file path as input
       connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
       assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
-      connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
       assertNull(connection.getProtoDescriptors());
 
       // proto descriptor set through file path should overwrite the proto descriptor set from
@@ -2015,14 +2015,14 @@ public class ConnectionImplTest {
       connection.setProtoDescriptors("protoDescriptors".getBytes());
       connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
       assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
-      connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
       assertNull(connection.getProtoDescriptors());
 
       // proto descriptor set through byte[] should overwrite the proto descriptor from file path
       connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
       connection.setProtoDescriptors("protoDescriptors".getBytes());
       assertArrayEquals("protoDescriptors".getBytes(), connection.getProtoDescriptors());
-      connection.execute(Statement.of("CREATE PROTO BUNDLE (spanner.examples.music.SingerInfo)"));
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
       assertNull(connection.getProtoDescriptors());
     }
   }

@@ -127,7 +127,7 @@ WHERE TABLE_NAME='VALID_MULTIPLE_DDL_IN_DDL_BATCH_1' OR TABLE_NAME='VALID_MULTIP
 
 
 NEW_CONNECTION;
-/* 
+/*
  * Do a test that shows that a DDL batch might only execute some of the statements,
  * for example if data in a table prevents a unique index from being created.
  */
@@ -195,7 +195,7 @@ SET PROTO_DESCRIPTORS_FILE_PATH = 'src/test/resources/com/google/cloud/spanner/d
 @EXPECT RESULT_SET 'PROTO_DESCRIPTORS_FILE_PATH'
 SHOW VARIABLE PROTO_DESCRIPTORS_FILE_PATH;
 
-CREATE PROTO BUNDLE (spanner.examples.music.Genre);
+CREATE PROTO BUNDLE (examples.spanner.music.Genre);
 -- Check if Proto descriptors is reset to null
 @EXPECT RESULT_SET 'PROTO_DESCRIPTORS',null
 SHOW VARIABLE PROTO_DESCRIPTORS;
@@ -209,13 +209,13 @@ SET PROTO_DESCRIPTORS = 'CvgBCgxzaW5nZXIucHJvdG8SFnNwYW5uZXIuZXhhbXBsZXMubXVzaWM
 SHOW VARIABLE PROTO_DESCRIPTORS;
 
 START BATCH DDL;
-ALTER PROTO BUNDLE INSERT (spanner.examples.music.SingerInfo);
+ALTER PROTO BUNDLE INSERT (examples.spanner.music.SingerInfo);
 CREATE TABLE Singers (
                          SingerId   INT64 NOT NULL,
                          FirstName  STRING(1024),
                          LastName   STRING(1024),
-                         SingerInfo spanner.examples.music.SingerInfo,
-                         SingerGenre spanner.examples.music.Genre
+                         SingerInfo examples.spanner.music.SingerInfo,
+                         SingerGenre examples.spanner.music.Genre
 ) PRIMARY KEY (SingerId);
 -- Run the batch
 RUN BATCH;
