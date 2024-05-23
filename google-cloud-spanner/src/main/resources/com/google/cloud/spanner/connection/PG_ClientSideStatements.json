@@ -150,6 +150,15 @@
       "exampleStatements": ["show spanner.transaction_tag","show variable spanner.transaction_tag"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.exclude_txn_from_change_streams\\s*\\z",
+      "method": "statementShowExcludeTxnFromChangeStreams",
+      "exampleStatements": ["show spanner.exclude_txn_from_change_streams","show variable spanner.exclude_txn_from_change_streams"]
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.RPC_PRIORITY",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -677,6 +686,21 @@
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "'(.*)'",
         "converterName": "ClientSideStatementValueConverters$StringValueConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS =|TO TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.exclude_txn_from_change_streams(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetReturnCommitStats",
+      "exampleStatements": ["set spanner.exclude_txn_from_change_streams = true", "set spanner.exclude_txn_from_change_streams = false", "set spanner.exclude_txn_from_change_streams to true", "set spanner.exclude_txn_from_change_streams to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
       }
     },
     {

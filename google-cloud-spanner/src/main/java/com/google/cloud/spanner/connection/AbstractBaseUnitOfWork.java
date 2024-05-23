@@ -73,6 +73,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
   private final StatementExecutor statementExecutor;
   private final StatementTimeout statementTimeout;
   protected final String transactionTag;
+  protected final boolean excludeTxnFromChangeStreams;
   protected final RpcPriority rpcPriority;
   protected final Span span;
 
@@ -107,6 +108,8 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     private StatementExecutor statementExecutor;
     private StatementTimeout statementTimeout = new StatementTimeout();
     private String transactionTag;
+
+    private boolean excludeTxnFromChangeStreams;
     private RpcPriority rpcPriority;
     private Span span;
 
@@ -134,6 +137,11 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
       return self();
     }
 
+    B setExcludeTxnFromChangeStreams(boolean excludeTxnFromChangeStreams) {
+      this.excludeTxnFromChangeStreams = excludeTxnFromChangeStreams;
+      return self();
+    }
+
     B setRpcPriority(@Nullable RpcPriority rpcPriority) {
       this.rpcPriority = rpcPriority;
       return self();
@@ -152,6 +160,7 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.statementExecutor = builder.statementExecutor;
     this.statementTimeout = builder.statementTimeout;
     this.transactionTag = builder.transactionTag;
+    this.excludeTxnFromChangeStreams = builder.excludeTxnFromChangeStreams;
     this.rpcPriority = builder.rpcPriority;
     this.span = Preconditions.checkNotNull(builder.span);
   }

@@ -676,4 +676,16 @@
     <method>boolean isEnableExtendedTracing()</method>
   </difference>
 
+  <!-- Added ExcludeTxnFromChangeStreams -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isExcludeTxnFromChangeStreams()</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setExcludeTxnFromChangeStreams(boolean)</method>
+  </difference>
+
 </differences>

@@ -99,6 +99,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowTransactionTag();
 
+  StatementResult statementSetExcludeTxnFromChangeStreams(Boolean excludeTxnFromChangeStreams);
+
+  StatementResult statementShowExcludeTxnFromChangeStreams();
+
   StatementResult statementBeginTransaction();
 
   StatementResult statementBeginPgTransaction(PgTransactionMode transactionMode);
