@@ -24,7 +24,6 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.util.Collections;
@@ -36,15 +35,12 @@ import java.util.List;
  */
 class DdlClient {
   private final DatabaseAdminClient dbAdminClient;
-  private final String projectId;
-  private final String instanceId;
-  private final String databaseName;
+  private final DatabaseId databaseId;
 
   static class Builder {
     private DatabaseAdminClient dbAdminClient;
-    private String projectId;
-    private String instanceId;
-    private String databaseName;
+
+    private DatabaseId databaseId;
 
     private Builder() {}
 
@@ -54,33 +50,15 @@ class DdlClient {
       return this;
     }
 
-    Builder setProjectId(String projectId) {
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(projectId), "Empty projectId is not allowed");
-      this.projectId = projectId;
-      return this;
-    }
-
-    Builder setInstanceId(String instanceId) {
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(instanceId), "Empty instanceId is not allowed");
-      this.instanceId = instanceId;
-      return this;
-    }
-
-    Builder setDatabaseName(String name) {
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(name), "Empty database name is not allowed");
-      this.databaseName = name;
+    Builder setDatabaseId(DatabaseId databaseId) {
+      Preconditions.checkNotNull(databaseId);
+      this.databaseId = databaseId;
       return this;
     }
 
     DdlClient build() {
       Preconditions.checkState(dbAdminClient != null, "No DatabaseAdminClient specified");
-      Preconditions.checkState(!Strings.isNullOrEmpty(projectId), "No ProjectId specified");
-      Preconditions.checkState(!Strings.isNullOrEmpty(instanceId), "No InstanceId specified");
-      Preconditions.checkArgument(
-          !Strings.isNullOrEmpty(databaseName), "No database name specified");
+      Preconditions.checkState(databaseId != null, "No DatabaseId specified");
       return new DdlClient(this);
     }
   }
@@ -91,16 +69,17 @@ class DdlClient {
 
   private DdlClient(Builder builder) {
     this.dbAdminClient = builder.dbAdminClient;
-    this.projectId = builder.projectId;
-    this.instanceId = builder.instanceId;
-    this.databaseName = builder.databaseName;
+    this.databaseId = builder.databaseId;
   }
 
   OperationFuture<Database, CreateDatabaseMetadata> executeCreateDatabase(
       String createStatement, Dialect dialect) {
     Preconditions.checkArgument(isCreateDatabaseStatement(createStatement));
     return dbAdminClient.createDatabase(
-        instanceId, createStatement, dialect, Collections.emptyList());
+        databaseId.getInstanceId().getInstance(),
+        createStatement,
+        dialect,
+        Collections.emptyList());
   }
 
   /** Execute a single DDL statement. */
@@ -115,8 +94,7 @@ class DdlClient {
       throw SpannerExceptionFactory.newSpannerException(
           ErrorCode.INVALID_ARGUMENT, "CREATE DATABASE is not supported in a DDL batch");
     }
-    Database.Builder dbBuilder =
-        dbAdminClient.newDatabaseBuilder(DatabaseId.of(projectId, instanceId, databaseName));
+    Database.Builder dbBuilder = dbAdminClient.newDatabaseBuilder(databaseId);
     if (protoDescriptors != null) {
       dbBuilder.setProtoDescriptors(protoDescriptors);
     }
