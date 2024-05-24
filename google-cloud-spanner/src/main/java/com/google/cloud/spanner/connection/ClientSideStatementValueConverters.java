@@ -26,10 +26,12 @@ import com.google.cloud.spanner.connection.PgTransactionMode.AccessMode;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
+import java.util.Base64;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
@@ -561,6 +563,48 @@ class ClientSideStatementValueConverters {
         return null;
       }
       return value.substring(7).trim();
+    }
+  }
+
+  /** Converter for converting Base64 encoded string to byte[] */
+  static class ProtoDescriptorsConverter implements ClientSideStatementValueConverter<byte[]> {
+
+    public ProtoDescriptorsConverter(String allowedValues) {}
+
+    @Override
+    public Class<byte[]> getParameterClass() {
+      return byte[].class;
+    }
+
+    @Override
+    public byte[] convert(String value) {
+      if (value == null || value.length() == 0 || value.equalsIgnoreCase("null")) {
+        return null;
+      }
+      try {
+        return Base64.getDecoder().decode(value);
+      } catch (IllegalArgumentException e) {
+        return null;
+      }
+    }
+  }
+
+  /** Converter for converting String that take in file path as input to String */
+  static class ProtoDescriptorsFileConverter implements ClientSideStatementValueConverter<String> {
+
+    public ProtoDescriptorsFileConverter(String allowedValues) {}
+
+    @Override
+    public Class<String> getParameterClass() {
+      return String.class;
+    }
+
+    @Override
+    public String convert(String filePath) {
+      if (Strings.isNullOrEmpty(filePath)) {
+        return null;
+      }
+      return filePath;
     }
   }
 }

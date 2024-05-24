@@ -22,6 +22,7 @@ import static com.google.cloud.spanner.connection.ConnectionPreconditions.checkV
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.core.GaxProperties;
+import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.BatchClient;
@@ -65,6 +66,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,6 +85,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.threeten.bp.Instant;
 
@@ -113,7 +118,7 @@ class ConnectionImpl implements Connection {
     }
   }
 
-  private volatile LeakedConnectionException leakedException;;
+  private volatile LeakedConnectionException leakedException;
   private final SpannerPool spannerPool;
   private AbstractStatementParser statementParser;
   /**
@@ -268,10 +273,11 @@ class ConnectionImpl implements Connection {
 
   private String transactionTag;
   private String statementTag;
-
   private boolean excludeTxnFromChangeStreams;
 
   private Duration maxCommitDelay;
+  private byte[] protoDescriptors;
+  private String protoDescriptorsFilePath;
 
   /** Create a connection and register it in the SpannerPool. */
   ConnectionImpl(ConnectionOptions options) {
@@ -353,6 +359,7 @@ class ConnectionImpl implements Connection {
   private DdlClient createDdlClient() {
     return DdlClient.newBuilder()
         .setDatabaseAdminClient(spanner.getDatabaseAdminClient())
+        .setProjectId(options.getProjectId())
         .setInstanceId(options.getInstanceId())
         .setDatabaseName(options.getDatabaseName())
         .build();
@@ -761,6 +768,52 @@ class ConnectionImpl implements Connection {
         !isTransactionStarted(),
         "exclude_txn_from_change_streams cannot be set after the transaction has started");
     this.excludeTxnFromChangeStreams = excludeTxnFromChangeStreams;
+  }
+
+  @Override
+  public byte[] getProtoDescriptors() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    if (this.protoDescriptors == null && this.protoDescriptorsFilePath != null) {
+      // Read from file if filepath is valid
+      try {
+        File protoDescriptorsFile = new File(this.protoDescriptorsFilePath);
+        if (!protoDescriptorsFile.isFile()) {
+          throw SpannerExceptionFactory.newSpannerException(
+              ErrorCode.INVALID_ARGUMENT,
+              String.format(
+                  "File %s is not a valid proto descriptors file", this.protoDescriptorsFilePath));
+        }
+        InputStream pdStream = new FileInputStream(protoDescriptorsFile);
+        this.protoDescriptors = ByteArray.copyFrom(pdStream).toByteArray();
+      } catch (Exception exception) {
+        throw SpannerExceptionFactory.newSpannerException(exception);
+      }
+    }
+    return this.protoDescriptors;
+  }
+
+  @Override
+  public void setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
+    Preconditions.checkNotNull(protoDescriptors);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Proto descriptors cannot be set when a batch is active");
+    this.protoDescriptors = protoDescriptors;
+    this.protoDescriptorsFilePath = null;
+  }
+
+  void setProtoDescriptorsFilePath(@Nonnull String protoDescriptorsFilePath) {
+    Preconditions.checkNotNull(protoDescriptorsFilePath);
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isBatchActive(), "Proto descriptors file path cannot be set when a batch is active");
+    this.protoDescriptorsFilePath = protoDescriptorsFilePath;
+    this.protoDescriptors = null;
+  }
+
+  String getProtoDescriptorsFilePath() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.protoDescriptorsFilePath;
   }
 
   /**
@@ -1806,6 +1859,7 @@ class ConnectionImpl implements Connection {
               .setSpan(
                   createSpanForUnitOfWork(
                       statementType == StatementType.DDL ? DDL_STATEMENT : SINGLE_USE_TRANSACTION))
+              .setProtoDescriptors(getProtoDescriptors())
               .build();
       if (!isInternalMetadataQuery && !forceSingleUse) {
         // Reset the transaction options after starting a single-use transaction.
@@ -1862,6 +1916,7 @@ class ConnectionImpl implements Connection {
               .setStatementTimeout(statementTimeout)
               .withStatementExecutor(statementExecutor)
               .setSpan(createSpanForUnitOfWork(DDL_BATCH))
+              .setProtoDescriptors(getProtoDescriptors())
               .build();
         default:
       }
@@ -1885,7 +1940,11 @@ class ConnectionImpl implements Connection {
   }
 
   private ApiFuture<Void> executeDdlAsync(CallType callType, ParsedStatement ddl) {
-    return getOrStartDdlUnitOfWork().executeDdlAsync(callType, ddl);
+    ApiFuture<Void> result = getOrStartDdlUnitOfWork().executeDdlAsync(callType, ddl);
+    // reset proto descriptors after executing a DDL statement
+    this.protoDescriptors = null;
+    this.protoDescriptorsFilePath = null;
+    return result;
   }
 
   @Override
@@ -1985,6 +2044,11 @@ class ConnectionImpl implements Connection {
       }
       return ApiFutures.immediateFuture(new long[0]);
     } finally {
+      if (isDdlBatchActive()) {
+        // reset proto descriptors after executing a DDL batch
+        this.protoDescriptors = null;
+        this.protoDescriptorsFilePath = null;
+      }
       this.batchMode = BatchMode.NONE;
       setDefaultTransactionOptions();
     }

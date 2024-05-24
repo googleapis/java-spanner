@@ -23196,3 +23196,797 @@ set max_partitioned_parallelism = 10/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set max_partitioned_parallelism =/-10;
+NEW_CONNECTION;
+set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+SET PROTO_DESCRIPTORS='PROTODESCRIPTORSBASE64';
+NEW_CONNECTION;
+set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+   set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+			set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+
+
+
+set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+set proto_descriptors='protodescriptorsbase64'  ;
+NEW_CONNECTION;
+set proto_descriptors='protodescriptorsbase64'		;
+NEW_CONNECTION;
+set proto_descriptors='protodescriptorsbase64'
+
+;
+NEW_CONNECTION;
+set   proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+set	proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+set
+proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors='protodescriptorsbase64'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-proto_descriptors='protodescriptorsbase64';
+NEW_CONNECTION;
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+SET PROTO_DESCRIPTORS_FILE_PATH='SRC/TEST/RESOURCES/COM/GOOGLE/CLOUD/SPANNER/DESCRIPTORS.PB';
+NEW_CONNECTION;
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+   set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+			set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+
+
+
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'  ;
+NEW_CONNECTION;
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'		;
+NEW_CONNECTION;
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'
+
+;
+NEW_CONNECTION;
+set   proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+set	proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+set
+proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb' bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set%proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set_proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set&proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set$proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set@proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set!proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set*proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set(proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb');
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set)proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set+proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-#proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set\proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set?proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set-/proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/#proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set/-proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb';
+NEW_CONNECTION;
+show variable proto_descriptors;
+NEW_CONNECTION;
+SHOW VARIABLE PROTO_DESCRIPTORS;
+NEW_CONNECTION;
+show variable proto_descriptors;
+NEW_CONNECTION;
+   show variable proto_descriptors;
+NEW_CONNECTION;
+			show variable proto_descriptors;
+NEW_CONNECTION;
+
+
+
+show variable proto_descriptors;
+NEW_CONNECTION;
+show variable proto_descriptors  ;
+NEW_CONNECTION;
+show variable proto_descriptors		;
+NEW_CONNECTION;
+show variable proto_descriptors
+
+;
+NEW_CONNECTION;
+show   variable   proto_descriptors;
+NEW_CONNECTION;
+show	variable	proto_descriptors;
+NEW_CONNECTION;
+show
+variable
+proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable proto_descriptors;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-proto_descriptors;
+NEW_CONNECTION;
+show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+SHOW VARIABLE PROTO_DESCRIPTORS_FILE_PATH;
+NEW_CONNECTION;
+show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+   show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+			show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+
+
+
+show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+show variable proto_descriptors_file_path  ;
+NEW_CONNECTION;
+show variable proto_descriptors_file_path		;
+NEW_CONNECTION;
+show variable proto_descriptors_file_path
+
+;
+NEW_CONNECTION;
+show   variable   proto_descriptors_file_path;
+NEW_CONNECTION;
+show	variable	proto_descriptors_file_path;
+NEW_CONNECTION;
+show
+variable
+proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable proto_descriptors_file_path;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable proto_descriptors_file_path/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-proto_descriptors_file_path;

@@ -59,10 +59,12 @@ class DdlBatch extends AbstractBaseUnitOfWork {
   private final DatabaseClient dbClient;
   private final List<String> statements = new ArrayList<>();
   private UnitOfWorkState state = UnitOfWorkState.STARTED;
+  private final byte[] protoDescriptors;
 
   static class Builder extends AbstractBaseUnitOfWork.Builder<Builder, DdlBatch> {
     private DdlClient ddlClient;
     private DatabaseClient dbClient;
+    private byte[] protoDescriptors;
 
     private Builder() {}
 
@@ -75,6 +77,11 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     Builder setDatabaseClient(DatabaseClient client) {
       Preconditions.checkNotNull(client);
       this.dbClient = client;
+      return this;
+    }
+
+    Builder setProtoDescriptors(byte[] protoDescriptors) {
+      this.protoDescriptors = protoDescriptors;
       return this;
     }
 
@@ -94,6 +101,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
     super(builder);
     this.ddlClient = builder.ddlClient;
     this.dbClient = builder.dbClient;
+    this.protoDescriptors = builder.protoDescriptors;
   }
 
   @Override
@@ -227,7 +235,7 @@ class DdlBatch extends AbstractBaseUnitOfWork {
           () -> {
             try {
               OperationFuture<Void, UpdateDatabaseDdlMetadata> operation =
-                  ddlClient.executeDdl(statements);
+                  ddlClient.executeDdl(statements, protoDescriptors);
               try {
                 // Wait until the operation has finished.
                 getWithStatementTimeout(operation, RUN_BATCH_STATEMENT);

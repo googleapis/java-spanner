@@ -35,6 +35,8 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
@@ -59,6 +61,8 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
@@ -635,6 +639,36 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     return StatementResultImpl.of(
         getConnection().runPartitionedQuery(statement, PartitionOptions.getDefaultInstance()),
         ClientSideStatementType.RUN_PARTITIONED_QUERY);
+  }
+
+  @Override
+  public StatementResult statementSetProtoDescriptors(byte[] protoDescriptors) {
+    Preconditions.checkNotNull(protoDescriptors);
+    getConnection().setProtoDescriptors(protoDescriptors);
+    return noResult(SET_PROTO_DESCRIPTORS);
+  }
+
+  @Override
+  public StatementResult statementSetProtoDescriptorsFilePath(String filePath) {
+    Preconditions.checkNotNull(filePath);
+    getConnection().setProtoDescriptorsFilePath(filePath);
+    return noResult(SET_PROTO_DESCRIPTORS_FILE_PATH);
+  }
+
+  @Override
+  public StatementResult statementShowProtoDescriptors() {
+    return resultSet(
+        String.format("%sPROTO_DESCRIPTORS", getNamespace(connection.getDialect())),
+        getConnection().getProtoDescriptors(),
+        SHOW_PROTO_DESCRIPTORS);
+  }
+
+  @Override
+  public StatementResult statementShowProtoDescriptorsFilePath() {
+    return resultSet(
+        String.format("%sPROTO_DESCRIPTORS_FILE_PATH", getNamespace(connection.getDialect())),
+        getConnection().getProtoDescriptorsFilePath(),
+        SHOW_PROTO_DESCRIPTORS_FILE_PATH);
   }
 
   private String processQueryPlan(PlanNode planNode) {

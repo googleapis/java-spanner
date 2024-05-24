@@ -138,6 +138,14 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowTransactionIsolationLevel();
 
+  StatementResult statementSetProtoDescriptors(byte[] protoDescriptors);
+
+  StatementResult statementSetProtoDescriptorsFilePath(String filePath);
+
+  StatementResult statementShowProtoDescriptors();
+
+  StatementResult statementShowProtoDescriptorsFilePath();
+
   StatementResult statementExplain(String sql);
 
   StatementResult statementShowDataBoostEnabled();
