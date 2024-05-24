@@ -27,6 +27,10 @@ import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.tracing.ApiTracerFactory;
+import com.google.api.gax.tracing.BaseApiTracerFactory;
+import com.google.api.gax.tracing.MetricsTracerFactory;
+import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
 import com.google.cloud.ServiceOptions;
@@ -34,6 +38,7 @@ import com.google.cloud.ServiceRpc;
 import com.google.cloud.TransportOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.opentelemetry.metric.GoogleCloudMetricExporter;
 import com.google.cloud.spanner.Options.DirectedReadOption;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.UpdateOption;
@@ -49,9 +54,11 @@ import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.protobuf.Api;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
@@ -64,6 +71,17 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.metrics.Aggregation;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -76,6 +94,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -150,6 +169,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
   private final boolean enableExtendedTracing;
+  private OpenTelemetry builtInOpenTelemetry;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -1584,9 +1604,75 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public OpenTelemetry getOpenTelemetry() {
     if (this.openTelemetry != null) {
       return this.openTelemetry;
+
     } else {
       return GlobalOpenTelemetry.get();
     }
+  }
+
+  public ApiTracerFactory getApiTracerFactory() {
+    // Prefer any direct ApiTracerFactory that might have been set on the builder.
+    try {
+      return MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private ApiTracerFactory getDefaultApiTracerFactory() throws IOException {
+    // TODO: Introduce a option to enable disable Builtin metrics
+    if (true) {
+      new MetricsTracerFactory(new OpenTelemetryMetricsRecorder(
+          getBuiltInOpenTelemetry(), "spanner"));
+    }
+    return BaseApiTracerFactory.getInstance();
+}
+
+  public OpenTelemetry getBuiltInOpenTelemetry() throws IOException {
+    if (this.builtInOpenTelemetry == null) {
+
+      // Use custom exporter
+      MetricExporter metricExporter = SpannerCloudMonitoringExporter.create(getDefaultProject(), credentials);
+
+      Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
+          Aggregation.explicitBucketHistogram(
+              ImmutableList.of(
+                  0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 13.0, 16.0, 20.0, 25.0, 30.0, 40.0,
+                  50.0, 65.0, 80.0, 100.0, 130.0, 160.0, 200.0, 250.0, 300.0, 400.0, 500.0, 650.0,
+                  800.0, 1000.0, 2000.0, 5000.0, 10000.0, 20000.0, 50000.0, 100000.0, 200000.0,
+                  400000.0, 800000.0, 1600000.0, 3200000.0));
+
+      SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
+      InstrumentSelector selector =
+          InstrumentSelector.builder()
+              .setName("spanner/operation_latency")
+              .setMeterName("gax-java")
+              .setType(InstrumentType.HISTOGRAM)
+              .setUnit("ms")
+              .build();
+      Set<String> attributesFilter =
+          ImmutableSet.<String>builder()
+              .addAll(
+                  SpannerMetricsConstant.COMMON_ATTRIBUTES.stream().map(AttributeKey::getKey).collect(
+                      Collectors.toSet()))
+              .build();
+      View view =
+          View.builder()
+              .setName(SpannerMetricsConstant.METER_NAME + SpannerMetricsConstant.OPERATION_LATENCIES_NAME)
+              .setAggregation(AGGREGATION_WITH_MILLIS_HISTOGRAM)
+              .setAttributeFilter(attributesFilter)
+              .build();
+      sdkMeterProviderBuilder.registerView(selector, view);
+      SdkMeterProvider sdkMeterProvider =
+              sdkMeterProviderBuilder
+              .registerMetricReader(PeriodicMetricReader.create(metricExporter))
+              .build();
+
+      this.builtInOpenTelemetry = OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProvider)
+          .build();
+    }
+
+    return this.builtInOpenTelemetry;
   }
 
   @BetaApi

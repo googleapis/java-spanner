@@ -15,6 +15,7 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
+import static com.google.api.gax.grpc.GrpcCallContext.TRACER_KEY;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.DATABASE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.INSTANCE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.METHOD;
@@ -23,6 +24,7 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.api.gax.tracing.MetricsTracer;
 import com.google.cloud.spanner.SpannerRpcMetrics;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -94,8 +96,10 @@ class HeaderInterceptor implements ClientInterceptor {
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = databaseName + method.getFullMethodName();
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
+          MetricsTracer metricsTracer = (MetricsTracer) callOptions.getOption(TRACER_KEY);
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
+          addBuiltInMetricAttributes(metricsTracer, databaseName);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
@@ -189,5 +193,12 @@ class HeaderInterceptor implements ClientInterceptor {
 
           return attributesBuilder.build();
         });
+  }
+
+  private void addBuiltInMetricAttributes(MetricsTracer metricsTracer, DatabaseName databaseName) {
+    // Built in metrics Attributes.
+    metricsTracer.addAttributes("database", databaseName.getDatabase());
+    metricsTracer.addAttributes("instance_id", databaseName.getInstance());
+    metricsTracer.addAttributes("project_id", databaseName.getProject());
   }
 }
