@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.68.0](https://github.com/googleapis/java-spanner/compare/v6.67.0...v6.68.0) (2024-05-27)
+
+
+### Features
+
+* [java] allow passing libraries_bom_version from env ([#1967](https://github.com/googleapis/java-spanner/issues/1967)) ([#3112](https://github.com/googleapis/java-spanner/issues/3112)) ([7d5a52c](https://github.com/googleapis/java-spanner/commit/7d5a52c19a4b8028b78fc64a10f1ba6127fa6ffe))
+* Allow DML batches in transactions to execute analyzeUpdate ([#3114](https://github.com/googleapis/java-spanner/issues/3114)) ([dee7cda](https://github.com/googleapis/java-spanner/commit/dee7cdabe74058434e4d630846f066dc82fdf512))
+* **spanner:** Add support for Proto Columns in Connection API ([#3123](https://github.com/googleapis/java-spanner/issues/3123)) ([7e7c814](https://github.com/googleapis/java-spanner/commit/7e7c814045dc84aaa57e7c716b0221e6cb19bcd1))
+
+
+### Bug Fixes
+
+* Allow getMetadata() calls before calling next() ([#3111](https://github.com/googleapis/java-spanner/issues/3111)) ([39902c3](https://github.com/googleapis/java-spanner/commit/39902c384f3f7f9438252cbee287f2428faf1440))
+
+
+### Dependencies
+
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.10.2 ([#3117](https://github.com/googleapis/java-spanner/issues/3117)) ([ddebbbb](https://github.com/googleapis/java-spanner/commit/ddebbbbeef976f61f23cdd66c5f7c1f412e2f9bd))
+
 ## [6.67.0](https://github.com/googleapis/java-spanner/compare/v6.66.0...v6.67.0) (2024-05-22)
 
 
