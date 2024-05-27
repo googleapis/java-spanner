@@ -52,7 +52,7 @@ libraries:
     excluded_poms: "google-cloud-spanner-bom"
     recommended_package: "com.google.cloud.spanner"
     GAPICs:
-    - proto_path: google/spanner/admin/database/v1
-    - proto_path: google/spanner/admin/instance/v1
-    - proto_path: google/spanner/executor/v1
-    - proto_path: google/spanner/v1
+      - proto_path: google/spanner/admin/database/v1
+      - proto_path: google/spanner/admin/instance/v1
+      - proto_path: google/spanner/executor/v1
+      - proto_path: google/spanner/v1
