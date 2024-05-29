@@ -676,4 +676,10 @@
     <method>boolean isEnableExtendedTracing()</method>
   </difference>
 
+  <!-- Multiplexed session enable setter to package private -->
+  <difference>
+    <differenceType>7009</differenceType>
+    <className>com/google/cloud/spanner/SessionPoolOptions$Builder</className>
+    <method>com.google.cloud.spanner.SessionPoolOptions$Builder setUseMultiplexedSession(boolean)</method>
+  </difference>
 </differences>
