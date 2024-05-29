@@ -7167,6 +7167,403 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-spanner.transaction_tag;
 NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+SHOW SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+   show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+			show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+
+
+
+show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams  ;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams		;
+NEW_CONNECTION;
+show spanner.exclude_txn_from_change_streams
+
+;
+NEW_CONNECTION;
+show   spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show	spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show
+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show%spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show_spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show&spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show$spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show@spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show!spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show*spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show(spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show)spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show\spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show?spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show-/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show spanner.exclude_txn_from_change_streams/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+show/-spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+SHOW VARIABLE SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+   show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+			show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+
+
+
+show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams  ;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams		;
+NEW_CONNECTION;
+show variable spanner.exclude_txn_from_change_streams
+
+;
+NEW_CONNECTION;
+show   variable   spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show	variable	spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+show
+variable
+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable spanner.exclude_txn_from_change_streams/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-spanner.exclude_txn_from_change_streams;
+NEW_CONNECTION;
 show spanner.rpc_priority;
 NEW_CONNECTION;
 SHOW SPANNER.RPC_PRIORITY;
@@ -70782,6 +71179,806 @@ NEW_CONNECTION;
 set autocommit = false;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set spanner.transaction_tag to/-'test_tag';
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS = TRUE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = true
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   =   true;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	=	true;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/-true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS = FALSE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams = false
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   =   false;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	=	false;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams =/-false;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS TO TRUE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to true
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   to   true;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	to	true;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+to
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams to true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/-true;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS TO FALSE;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+   set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+			set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+
+
+
+set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false  ;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false		;
+NEW_CONNECTION;
+set spanner.exclude_txn_from_change_streams to false
+
+;
+NEW_CONNECTION;
+set   spanner.exclude_txn_from_change_streams   to   false;
+NEW_CONNECTION;
+set	spanner.exclude_txn_from_change_streams	to	false;
+NEW_CONNECTION;
+set
+spanner.exclude_txn_from_change_streams
+to
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set spanner.exclude_txn_from_change_streams to false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set spanner.exclude_txn_from_change_streams to/-false;
 NEW_CONNECTION;
 set spanner.rpc_priority='HIGH';
 NEW_CONNECTION;

@@ -29,11 +29,14 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DEFAULT_TRANSACTION_ISOLATION;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_OPTIMIZER_VERSION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_RETRY_ABORTS_INTERNALLY;
@@ -52,11 +55,14 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DATA_BOOST_ENABLED;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_STATISTICS_PACKAGE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_OPTIMIZER_VERSION;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_PROTO_DESCRIPTORS_FILE_PATH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READONLY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_ONLY_STALENESS;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_READ_TIMESTAMP;
@@ -410,6 +416,21 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public StatementResult statementSetExcludeTxnFromChangeStreams(
+      Boolean excludeTxnFromChangeStreams) {
+    getConnection().setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams);
+    return noResult(SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS);
+  }
+
+  @Override
+  public StatementResult statementShowExcludeTxnFromChangeStreams() {
+    return resultSet(
+        String.format("%sEXCLUDE_TXN_FROM_CHANGE_STREAMS", getNamespace(connection.getDialect())),
+        getConnection().isExcludeTxnFromChangeStreams(),
+        SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS);
+  }
+
+  @Override
   public StatementResult statementBeginTransaction() {
     getConnection().beginTransaction();
     return noResult(BEGIN);
@@ -618,6 +639,36 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
     return StatementResultImpl.of(
         getConnection().runPartitionedQuery(statement, PartitionOptions.getDefaultInstance()),
         ClientSideStatementType.RUN_PARTITIONED_QUERY);
+  }
+
+  @Override
+  public StatementResult statementSetProtoDescriptors(byte[] protoDescriptors) {
+    Preconditions.checkNotNull(protoDescriptors);
+    getConnection().setProtoDescriptors(protoDescriptors);
+    return noResult(SET_PROTO_DESCRIPTORS);
+  }
+
+  @Override
+  public StatementResult statementSetProtoDescriptorsFilePath(String filePath) {
+    Preconditions.checkNotNull(filePath);
+    getConnection().setProtoDescriptorsFilePath(filePath);
+    return noResult(SET_PROTO_DESCRIPTORS_FILE_PATH);
+  }
+
+  @Override
+  public StatementResult statementShowProtoDescriptors() {
+    return resultSet(
+        String.format("%sPROTO_DESCRIPTORS", getNamespace(connection.getDialect())),
+        getConnection().getProtoDescriptors(),
+        SHOW_PROTO_DESCRIPTORS);
+  }
+
+  @Override
+  public StatementResult statementShowProtoDescriptorsFilePath() {
+    return resultSet(
+        String.format("%sPROTO_DESCRIPTORS_FILE_PATH", getNamespace(connection.getDialect())),
+        getConnection().getProtoDescriptorsFilePath(),
+        SHOW_PROTO_DESCRIPTORS_FILE_PATH);
   }
 
   private String processQueryPlan(PlanNode planNode) {

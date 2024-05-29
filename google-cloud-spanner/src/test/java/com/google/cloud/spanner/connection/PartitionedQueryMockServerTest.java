@@ -418,6 +418,94 @@ public class PartitionedQueryMockServerTest extends AbstractMockServerTest {
   }
 
   @Test
+  public void testGetMetadataWithoutNextCall() {
+    int generatedRowCount = 1;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
+    Statement statement =
+        Statement.newBuilder("select * from random_table where active=@active")
+            .bind("active")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+
+    int maxPartitions = 1;
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      try (PartitionedQueryResultSet resultSet =
+          connection.runPartitionedQuery(
+              statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
+        assertNotNull(resultSet.getMetadata());
+        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertNotNull(resultSet.getType());
+        assertEquals(24, resultSet.getType().getStructFields().size());
+
+        assertTrue(resultSet.next());
+        assertNotNull(resultSet.getMetadata());
+        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertNotNull(resultSet.getType());
+        assertEquals(24, resultSet.getType().getStructFields().size());
+
+        assertFalse(resultSet.next());
+      }
+    }
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
+  }
+
+  @Test
+  public void testGetMetadataWithoutNextCallOnEmptyResultSet() {
+    int generatedRowCount = 0;
+    RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);
+    Statement statement =
+        Statement.newBuilder("select * from random_table where active=@active")
+            .bind("active")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(StatementResult.query(statement, generator.generate()));
+
+    int maxPartitions = 1;
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      try (PartitionedQueryResultSet resultSet =
+          connection.runPartitionedQuery(
+              statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
+        assertNotNull(resultSet.getMetadata());
+        assertEquals(24, resultSet.getMetadata().getRowType().getFieldsCount());
+        assertNotNull(resultSet.getType());
+        assertEquals(24, resultSet.getType().getStructFields().size());
+
+        assertFalse(resultSet.next());
+      }
+    }
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
+  }
+
+  @Test
+  public void testGetMetadataWithoutNextCallOnResultSetWithError() {
+    Statement statement =
+        Statement.newBuilder("select * from random_table where active=@active")
+            .bind("active")
+            .to(true)
+            .build();
+    mockSpanner.putStatementResult(
+        StatementResult.exception(statement, Status.NOT_FOUND.asRuntimeException()));
+
+    int maxPartitions = 1;
+    try (Connection connection = createConnection()) {
+      connection.setAutocommit(true);
+      try (PartitionedQueryResultSet resultSet =
+          connection.runPartitionedQuery(
+              statement, PartitionOptions.newBuilder().setMaxPartitions(maxPartitions).build())) {
+        assertThrows(SpannerException.class, resultSet::getMetadata);
+        assertThrows(SpannerException.class, resultSet::getType);
+      }
+    }
+    assertEquals(1, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    assertEquals(1, mockSpanner.countRequestsOfType(PartitionQueryRequest.class));
+  }
+
+  @Test
   public void testRunPartitionedQueryUsingSql() {
     int generatedRowCount = 20;
     RandomResultSetGenerator generator = new RandomResultSetGenerator(generatedRowCount);

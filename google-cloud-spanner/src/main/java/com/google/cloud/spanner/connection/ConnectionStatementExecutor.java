@@ -99,6 +99,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowTransactionTag();
 
+  StatementResult statementSetExcludeTxnFromChangeStreams(Boolean excludeTxnFromChangeStreams);
+
+  StatementResult statementShowExcludeTxnFromChangeStreams();
+
   StatementResult statementBeginTransaction();
 
   StatementResult statementBeginPgTransaction(PgTransactionMode transactionMode);
@@ -133,6 +137,14 @@ interface ConnectionStatementExecutor {
   StatementResult statementShowSavepointSupport();
 
   StatementResult statementShowTransactionIsolationLevel();
+
+  StatementResult statementSetProtoDescriptors(byte[] protoDescriptors);
+
+  StatementResult statementSetProtoDescriptorsFilePath(String filePath);
+
+  StatementResult statementShowProtoDescriptors();
+
+  StatementResult statementShowProtoDescriptorsFilePath();
 
   StatementResult statementExplain(String sql);
 
