@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.67.1](https://github.com/googleapis/java-spanner/compare/v6.67.0...v6.67.1) (2024-05-29)
+
+
+### Bug Fixes
+
+* Make SessionPoolOptions#setUseMultiplexedSession(boolean) package private ([#3136](https://github.com/googleapis/java-spanner/issues/3136)) ([207cd1c](https://github.com/googleapis/java-spanner/commit/207cd1cdf4ac44739bc9bc32662473fc61fdeeaa))
+
 ## [6.67.0](https://github.com/googleapis/java-spanner/compare/v6.66.0...v6.67.0) (2024-05-22)
 
 
