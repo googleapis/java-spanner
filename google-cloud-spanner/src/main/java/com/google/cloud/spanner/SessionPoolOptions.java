@@ -105,11 +105,12 @@ public class SessionPoolOptions {
     this.randomizePositionQPSThreshold = builder.randomizePositionQPSThreshold;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
-    // TODO: Remove when multiplexed sessions are guaranteed to be supported.
+    // useMultiplexedSession priority => Environment var > private setter > client default
+    Boolean useMultiplexedSessionFromEnvVariable = getUseMultiplexedSessionFromEnvVariable();
     this.useMultiplexedSession =
-        builder.useMultiplexedSession
-            && !Boolean.parseBoolean(
-                System.getenv("GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS"));
+        (useMultiplexedSessionFromEnvVariable != null)
+            ? useMultiplexedSessionFromEnvVariable
+            : builder.useMultiplexedSession;
     this.useRandomChannelHint = builder.useRandomChannelHint;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
@@ -310,6 +311,16 @@ public class SessionPoolOptions {
   @InternalApi
   public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
+  }
+
+  private static Boolean getUseMultiplexedSessionFromEnvVariable() {
+    String useMultiplexedSessionFromEnvVariable =
+        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+    if (useMultiplexedSessionFromEnvVariable != null
+        && useMultiplexedSessionFromEnvVariable.length() > 0) {
+      return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
+    }
+    return null;
   }
 
   boolean isUseRandomChannelHint() {
@@ -518,7 +529,9 @@ public class SessionPoolOptions {
      */
     private long randomizePositionQPSThreshold = 0L;
 
-    private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
+    // This field controls the default behavior of session management in Java client.
+    // Set useMultiplexedSession to true to make multiplexed session as default.
+    private boolean useMultiplexedSession = false;
 
     private boolean useRandomChannelHint;
 
@@ -536,18 +549,6 @@ public class SessionPoolOptions {
         }
       }
       return Position.FIRST;
-    }
-
-    /**
-     * This environment is only added to support internal spanner testing. Support for it can be
-     * removed in the future. Use {@link SessionPoolOptions#useMultiplexedSession} instead to use
-     * multiplexed sessions.
-     */
-    @InternalApi
-    @BetaApi
-    private static boolean getUseMultiplexedSessionFromEnvVariable() {
-      return Boolean.parseBoolean(
-          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
     }
 
     public Builder() {}
