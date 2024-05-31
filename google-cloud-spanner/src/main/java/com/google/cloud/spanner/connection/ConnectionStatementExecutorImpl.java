@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getName
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ABORT_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.BEGIN;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.COMMIT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RESET_ALL;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ROLLBACK;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
@@ -526,6 +527,12 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementAbortBatch() {
     getConnection().abortBatch();
     return noResult(ABORT_BATCH);
+  }
+
+  @Override
+  public StatementResult statementResetAll() {
+    getConnection().reset();
+    return noResult(RESET_ALL);
   }
 
   @Override

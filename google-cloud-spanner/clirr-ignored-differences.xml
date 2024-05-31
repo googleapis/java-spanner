@@ -718,4 +718,11 @@
     <className>com/google/cloud/spanner/SessionPoolOptions$Builder</className>
     <method>com.google.cloud.spanner.SessionPoolOptions$Builder setUseMultiplexedSession(boolean)</method>
   </difference>
+  
+  <!-- Added reset() method -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void reset()</method>
+  </difference>
 </differences>

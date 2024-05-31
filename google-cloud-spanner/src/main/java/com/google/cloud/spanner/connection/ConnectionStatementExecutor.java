@@ -128,6 +128,8 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementAbortBatch();
 
+  StatementResult statementResetAll();
+
   StatementResult statementSetRPCPriority(Priority priority);
 
   StatementResult statementShowRPCPriority();

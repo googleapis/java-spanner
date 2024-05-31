@@ -90,6 +90,7 @@ public interface StatementResult {
     START_BATCH_DML,
     RUN_BATCH,
     ABORT_BATCH,
+    RESET_ALL,
     SET_RPC_PRIORITY,
     SHOW_RPC_PRIORITY,
     SHOW_TRANSACTION_ISOLATION_LEVEL,
