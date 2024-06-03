@@ -29,6 +29,7 @@ import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Empty;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.common.export.MemoryMode;
+import io.opentelemetry.sdk.metrics.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -116,14 +117,15 @@ public class SpannerCloudMonitoringExporterTest {
     @Test
     public void createWhenNullCredentials() throws IOException {
         Credentials credentials =  null;
-        SpannerCloudMonitoringExporter actualExporter = SpannerCloudMonitoringExporter.create(projectId, credentials);
+        SpannerCloudMonitoringExporter actualExporter = SpannerCloudMonitoringExporter.create(projectId, null);
         assertThat(actualExporter.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
 
     @Test
     public void createWhenValidCredentials() throws IOException {
         Credentials credentials =  new NoCredentialsProvider().getCredentials();
-        SpannerCloudMonitoringExporter.create(projectId, credentials);
+        SpannerCloudMonitoringExporter actualExporter = SpannerCloudMonitoringExporter.create(projectId, credentials);
+        assertThat(actualExporter.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
     }
 
     @Test
@@ -181,7 +183,9 @@ public class SpannerCloudMonitoringExporterTest {
     }
 
     @Test
-    public void getAggregationTemporality() {
+    public void getAggregationTemporality() throws IOException {
+        SpannerCloudMonitoringExporter actualExporter = SpannerCloudMonitoringExporter.create(projectId, null);
+        assertThat(actualExporter.getAggregationTemporality(InstrumentType.COUNTER)).isEqualTo(AggregationTemporality.CUMULATIVE);
     }
 
     private static class FakeMetricServiceClient extends MetricServiceClient {
