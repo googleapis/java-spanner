@@ -1621,7 +1621,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   private ApiTracerFactory getDefaultApiTracerFactory() throws IOException {
     // TODO: Introduce a option to enable disable Builtin metrics
-    if (true) {
+    if (false) {
       new MetricsTracerFactory(new OpenTelemetryMetricsRecorder(
           getBuiltInOpenTelemetry(), "spanner"));
     }
@@ -1646,7 +1646,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       InstrumentSelector selector =
           InstrumentSelector.builder()
               .setName("spanner/operation_latency")
-              .setMeterName("gax-java")
+              .setMeterName(SpannerMetricsConstant.GAX_METER_NAME)
               .setType(InstrumentType.HISTOGRAM)
               .setUnit("ms")
               .build();

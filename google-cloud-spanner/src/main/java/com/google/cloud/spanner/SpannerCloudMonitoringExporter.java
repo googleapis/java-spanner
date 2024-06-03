@@ -131,9 +131,7 @@ public final class SpannerCloudMonitoringExporter implements MetricExporter {
   private CompletableResultCode exportSpannerResourceMetrics(Collection<MetricData> collection) {
     // Filter spanner metrics
     List<MetricData> spannerMetricData =
-        collection.stream()
-            .filter(md -> SPANNER_METRICS.contains(md.getName()))
-            .collect(Collectors.toList());
+        collection.stream().filter(md -> SPANNER_METRICS.contains(md.getName())).collect(Collectors.toList());
 
     // Skips exporting if there's none
     if (spannerMetricData.isEmpty()) {

@@ -25,6 +25,8 @@ public class SpannerMetricsConstant {
 
   public static final String METER_NAME = "spanner.googleapis.com/internal/client/";
 
+  public static final String GAX_METER_NAME = "gax-java";
+
   static final String OPERATION_LATENCIES_NAME = "operation_latencies";
   static final String ATTEMPT_LATENCIES_NAME = "attempt_latencies";
   static final String OPERATION_COUNT_NAME = "operation_count";
