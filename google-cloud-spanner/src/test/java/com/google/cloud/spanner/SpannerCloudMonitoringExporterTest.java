@@ -18,7 +18,9 @@ package com.google.cloud.spanner;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.rpc.UnaryCallable;
+import com.google.auth.Credentials;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.monitoring.v3.stub.MetricServiceStub;
 import com.google.common.collect.ImmutableList;
@@ -26,6 +28,7 @@ import com.google.monitoring.v3.CreateTimeSeriesRequest;
 import com.google.monitoring.v3.TimeSeries;
 import com.google.protobuf.Empty;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.common.export.MemoryMode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -58,6 +61,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class SpannerCloudMonitoringExporterTest {
@@ -110,7 +114,16 @@ public class SpannerCloudMonitoringExporterTest {
     }
 
     @Test
-    public void create() {
+    public void createWhenNullCredentials() throws IOException {
+        Credentials credentials =  null;
+        SpannerCloudMonitoringExporter actualExporter = SpannerCloudMonitoringExporter.create(projectId, credentials);
+        assertThat(actualExporter.getMemoryMode()).isEqualTo(MemoryMode.IMMUTABLE_DATA);
+    }
+
+    @Test
+    public void createWhenValidCredentials() throws IOException {
+        Credentials credentials =  new NoCredentialsProvider().getCredentials();
+        SpannerCloudMonitoringExporter.create(projectId, credentials);
     }
 
     @Test
