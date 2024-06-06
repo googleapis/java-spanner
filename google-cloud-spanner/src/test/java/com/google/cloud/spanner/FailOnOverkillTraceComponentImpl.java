@@ -48,9 +48,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import javax.annotation.Nullable;
 
 /**
  * Simple {@link TraceComponent} implementation that will throw an exception if a {@link Span} is
@@ -65,6 +67,7 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
   private final TraceConfig traceConfig = new TestTraceConfig();
   private static final Map<String, Boolean> spans =
       Collections.synchronizedMap(new LinkedHashMap<>());
+  private static final List<TestSpan> spanList = Collections.synchronizedList(new LinkedList<>());
 
   private static final List<String> annotations = new ArrayList<>();
 
@@ -72,22 +75,37 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
     @GuardedBy("this")
     private volatile boolean ended = false;
 
-    private String spanName;
+    private final String spanName;
+
+    private Status status;
+
+    private final List<String> annotations = Collections.synchronizedList(new ArrayList<>());
 
     private TestSpan(String spanName, SpanContext context, EnumSet<Options> options) {
       super(context, options);
       this.spanName = spanName;
       spans.put(this.spanName, false);
+      spanList.add(this);
+    }
+
+    public String getSpanName() {
+      return this.spanName;
+    }
+
+    public List<String> getAnnotations() {
+      return this.annotations;
     }
 
     @Override
     public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
-      annotations.add(description);
+      FailOnOverkillTraceComponentImpl.annotations.add(description);
+      this.annotations.add(description);
     }
 
     @Override
     public void addAnnotation(Annotation annotation) {
-      annotations.add(annotation.getDescription());
+      FailOnOverkillTraceComponentImpl.annotations.add(annotation.getDescription());
+      this.annotations.add(annotation.getDescription());
     }
 
     @Override
@@ -99,8 +117,15 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
     @Override
     public void addLink(Link link) {}
 
+    @Nullable
+    public Status getStatus() {
+      return this.status;
+    }
+
     @Override
-    public void setStatus(Status status) {}
+    public void setStatus(Status status) {
+      this.status = status;
+    }
 
     @Override
     public void end(EndSpanOptions options) {
@@ -229,12 +254,17 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
     return spans;
   }
 
+  List<TestSpan> getTestSpans() {
+    return spanList;
+  }
+
   List<String> getAnnotations() {
     return annotations;
   }
 
   void clearSpans() {
     spans.clear();
+    spanList.clear();
   }
 
   void clearAnnotations() {
