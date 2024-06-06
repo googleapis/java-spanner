@@ -133,8 +133,10 @@ public class FailOnOverkillTraceComponentImpl extends TraceComponent {
         if (ended) {
           throw new IllegalStateException(this.spanName + " already ended");
         }
-        spans.put(this.spanName, true);
-        ended = true;
+        if (spans.containsKey(this.spanName)) {
+          spans.put(this.spanName, true);
+          ended = true;
+        }
       }
     }
   }
