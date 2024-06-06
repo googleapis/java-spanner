@@ -59,6 +59,7 @@ import org.threeten.bp.Duration;
 
 @Category(TracerTest.class)
 @RunWith(JUnit4.class)
+@Ignore("OpenCensus is too intrusive and affects other tests, so this test is by default disabled")
 public class OpenCensusApiTracerTest extends AbstractMockServerTest {
   private static final Statement SELECT_RANDOM = Statement.of("SELECT * FROM random");
 
