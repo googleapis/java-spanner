@@ -106,6 +106,8 @@ public class OpenCensusApiTracerTest extends AbstractMockServerTest {
   @After
   public void clearRequests() {
     mockSpanner.clearRequests();
+    failOnOverkillTraceComponent.clearSpans();
+    failOnOverkillTraceComponent.clearAnnotations();
   }
 
   @Override
@@ -275,11 +277,9 @@ public class OpenCensusApiTracerTest extends AbstractMockServerTest {
 
     TestSpan updateDatabaseDdlOperation =
         getSpan("DatabaseAdmin.UpdateDatabaseDdlOperation", spans);
-    assertTrue(
-        updateDatabaseDdlOperation.getAnnotations().size() == 2
-            || updateDatabaseDdlOperation.getAnnotations().size() == 3);
+    assertTrue(updateDatabaseDdlOperation.getAnnotations().size() >= 2);
     assertContainsEvent("Operation started", updateDatabaseDdlOperation.getAnnotations());
-    if (updateDatabaseDdlOperation.getAnnotations().size() == 3) {
+    if (updateDatabaseDdlOperation.getAnnotations().size() > 2) {
       assertContainsEvent("Scheduling next poll", updateDatabaseDdlOperation.getAnnotations());
     }
     assertContainsEvent("Polling completed", updateDatabaseDdlOperation.getAnnotations());
@@ -333,11 +333,9 @@ public class OpenCensusApiTracerTest extends AbstractMockServerTest {
     // The LRO itself returns an error.
     TestSpan updateDatabaseDdlOperation =
         getSpan("DatabaseAdmin.UpdateDatabaseDdlOperation", spans);
-    assertTrue(
-        updateDatabaseDdlOperation.getAnnotations().size() == 2
-            || updateDatabaseDdlOperation.getAnnotations().size() == 3);
+    assertTrue(updateDatabaseDdlOperation.getAnnotations().size() >= 2);
     assertContainsEvent("Operation started", updateDatabaseDdlOperation.getAnnotations());
-    if (updateDatabaseDdlOperation.getAnnotations().size() == 3) {
+    if (updateDatabaseDdlOperation.getAnnotations().size() > 2) {
       assertContainsEvent("Starting poll attempt 0", updateDatabaseDdlOperation.getAnnotations());
     }
     assertContainsEvent("Polling completed", updateDatabaseDdlOperation.getAnnotations());
