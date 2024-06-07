@@ -57,13 +57,13 @@ implementation 'com.google.cloud:google-cloud-spanner'
 If you are using Gradle without BOM, add this to your dependencies:
 
 ```Groovy
-implementation 'com.google.cloud:google-cloud-spanner:6.68.0'
+implementation 'com.google.cloud:google-cloud-spanner:6.68.1'
 ```
 
 If you are using SBT, add this to your dependencies:
 
 ```Scala
-libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.68.0"
+libraryDependencies += "com.google.cloud" % "google-cloud-spanner" % "6.68.1"
 ```
 <!-- {x-version-update-end} -->
 
@@ -271,6 +271,22 @@ SpannerOptions options = SpannerOptions.newBuilder()
 
 This option can also be enabled by setting the environment variable
 `SPANNER_ENABLE_EXTENDED_TRACING=true`.
+
+#### OpenTelemetry API Tracing
+You can enable tracing of each API call that the Spanner client executes with the `enableApiTracing`
+option. These traces also include any retry attempts for an API call:
+  
+```
+SpannerOptions options = SpannerOptions.newBuilder()
+.setOpenTelemetry(openTelemetry)
+.setEnableApiTracing(true)
+.build();
+```
+  
+This option can also be enabled by setting the environment variable
+`SPANNER_ENABLE_API_TRACING=true`.
+
+> Note: The attribute keys that are used for additional information about retry attempts and the number of requests might change in a future release.
 
 ### Instrument with OpenCensus
 
@@ -671,7 +687,7 @@ Java is a registered trademark of Oracle and/or its affiliates.
 [kokoro-badge-link-5]: http://storage.googleapis.com/cloud-devrel-public/java/badges/java-spanner/java11.html
 [stability-image]: https://img.shields.io/badge/stability-stable-green
 [maven-version-image]: https://img.shields.io/maven-central/v/com.google.cloud/google-cloud-spanner.svg
-[maven-version-link]: https://central.sonatype.com/artifact/com.google.cloud/google-cloud-spanner/6.68.0
+[maven-version-link]: https://central.sonatype.com/artifact/com.google.cloud/google-cloud-spanner/6.68.1
 [authentication]: https://github.com/googleapis/google-cloud-java#authentication
 [auth-scopes]: https://developers.google.com/identity/protocols/oauth2/scopes
 [predefined-iam-roles]: https://cloud.google.com/iam/docs/understanding-roles#predefined_roles

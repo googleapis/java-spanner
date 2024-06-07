@@ -166,6 +166,22 @@ custom_content: |
   This option can also be enabled by setting the environment variable
   `SPANNER_ENABLE_EXTENDED_TRACING=true`.
 
+  #### OpenTelemetry API Tracing
+  You can enable tracing of each API call that the Spanner client executes with the `enableApiTracing`
+  option. These traces also include any retry attempts for an API call:
+    
+  ```
+  SpannerOptions options = SpannerOptions.newBuilder()
+  .setOpenTelemetry(openTelemetry)
+  .setEnableApiTracing(true)
+  .build();
+  ```
+    
+  This option can also be enabled by setting the environment variable
+  `SPANNER_ENABLE_API_TRACING=true`.
+  
+  > Note: The attribute keys that are used for additional information about retry attempts and the number of requests might change in a future release.
+
   ### Instrument with OpenCensus
 
   > Note: OpenCensus project is deprecated. See [Sunsetting OpenCensus](https://opentelemetry.io/blog/2023/sunsetting-opencensus/).

@@ -44,6 +44,7 @@ import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,6 +92,7 @@ class HeaderInterceptor implements ClientInterceptor {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         try {
+          Span span = Span.current();
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = databaseName + method.getFullMethodName();
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
@@ -100,7 +102,7 @@ class HeaderInterceptor implements ClientInterceptor {
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
-                  processHeader(metadata, tagContext, attributes);
+                  processHeader(metadata, tagContext, attributes, span);
                   super.onHeaders(metadata);
                 }
               },
@@ -113,7 +115,8 @@ class HeaderInterceptor implements ClientInterceptor {
     };
   }
 
-  private void processHeader(Metadata metadata, TagContext tagContext, Attributes attributes) {
+  private void processHeader(
+      Metadata metadata, TagContext tagContext, Attributes attributes, Span span) {
     MeasureMap measureMap = STATS_RECORDER.newMeasureMap();
     String serverTiming = metadata.get(SERVER_TIMING_HEADER_KEY);
     if (serverTiming != null && serverTiming.startsWith(SERVER_TIMING_HEADER_PREFIX)) {
@@ -125,6 +128,10 @@ class HeaderInterceptor implements ClientInterceptor {
 
         spannerRpcMetrics.recordGfeLatency(latency, attributes);
         spannerRpcMetrics.recordGfeHeaderMissingCount(0L, attributes);
+
+        if (span != null) {
+          span.setAttribute("gfe_latency", String.valueOf(latency));
+        }
       } catch (NumberFormatException e) {
         LOGGER.log(LEVEL, "Invalid server-timing object in header: {}", serverTiming);
       }
