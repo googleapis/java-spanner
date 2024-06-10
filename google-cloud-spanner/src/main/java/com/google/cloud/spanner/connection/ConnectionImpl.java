@@ -220,6 +220,7 @@ class ConnectionImpl implements Connection {
   private boolean readOnly;
   private boolean returnCommitStats;
   private boolean delayTransactionStartUntilFirstWrite;
+  private boolean keepTransactionAlive;
 
   private UnitOfWork currentUnitOfWork = null;
   /**
@@ -439,6 +440,7 @@ class ConnectionImpl implements Connection {
     this.ddlInTransactionMode = options.getDdlInTransactionMode();
     this.returnCommitStats = options.isReturnCommitStats();
     this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
+    this.keepTransactionAlive = options.isKeepTransactionAlive();
     this.dataBoostEnabled = options.isDataBoostEnabled();
     this.autoPartitionMode = options.isAutoPartitionMode();
     this.maxPartitions = options.getMaxPartitions();
@@ -986,6 +988,20 @@ class ConnectionImpl implements Connection {
   public boolean isDelayTransactionStartUntilFirstWrite() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.delayTransactionStartUntilFirstWrite;
+  }
+
+  @Override
+  public void setKeepTransactionAlive(boolean keepTransactionAlive) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(), "Cannot set KeepTransactionAlive while a transaction is active");
+    this.keepTransactionAlive = keepTransactionAlive;
+  }
+
+  @Override
+  public boolean isKeepTransactionAlive() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.keepTransactionAlive;
   }
 
   /** Resets this connection to its default transaction options. */
@@ -1909,6 +1925,7 @@ class ConnectionImpl implements Connection {
               .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
               .setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite)
+              .setKeepTransactionAlive(keepTransactionAlive)
               .setRetryAbortsInternally(retryAbortsInternally)
               .setSavepointSupport(savepointSupport)
               .setReturnCommitStats(returnCommitStats)

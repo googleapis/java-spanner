@@ -186,6 +186,15 @@
 		"exampleStatements": ["show variable delay_transaction_start_until_first_write"]
 	},
 	{
+		"name": "SHOW VARIABLE KEEP_TRANSACTION_ALIVE",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_KEEP_TRANSACTION_ALIVE",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+keep_transaction_alive\\s*\\z",
+		"method": "statementShowKeepTransactionAlive",
+		"exampleStatements": ["show variable keep_transaction_alive"]
+	},
+	{
 		"name": "PARTITION <sql>",
 		"executorName": "ClientSideStatementPartitionExecutor",
 		"resultType": "RESULT_SET",
@@ -578,6 +587,21 @@
 		"exampleStatements": ["set delay_transaction_start_until_first_write = true", "set delay_transaction_start_until_first_write = false"],
 		"setStatement": {
 			"propertyName": "DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
+	},
+	{
+		"name": "SET KEEP_TRANSACTION_ALIVE = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_KEEP_TRANSACTION_ALIVE",
+		"regex": "(?is)\\A\\s*set\\s+keep_transaction_alive\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetKeepTransactionAlive",
+		"exampleStatements": ["set keep_transaction_alive = true", "set keep_transaction_alive = false"],
+		"setStatement": {
+			"propertyName": "KEEP_TRANSACTION_ALIVE",
 			"separator": "=",
 			"allowedValues": "(TRUE|FALSE)",
 			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
