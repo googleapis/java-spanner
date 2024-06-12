@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.69.0](https://github.com/googleapis/java-spanner/compare/v6.68.1...v6.69.0) (2024-06-12)
+
+
+### Features
+
+* Add option to enable ApiTracer ([#3095](https://github.com/googleapis/java-spanner/issues/3095)) ([a0a4bc5](https://github.com/googleapis/java-spanner/commit/a0a4bc58d4269a8c1e5e76d9a0469f649bb69148))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.31.0 ([#3159](https://github.com/googleapis/java-spanner/issues/3159)) ([1ee19d1](https://github.com/googleapis/java-spanner/commit/1ee19d19c2db30d79c8741cc5739de1c69fb95f9))
+
 ## [6.68.1](https://github.com/googleapis/java-spanner/compare/v6.68.0...v6.68.1) (2024-05-29)
 
 
