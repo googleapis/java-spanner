@@ -173,6 +173,19 @@ public interface Connection extends AutoCloseable {
   boolean isClosed();
 
   /**
+   * Resets the state of this connection to the default state that it had when it was first created.
+   * Calling this method after a transaction has started (that is; after a statement has been
+   * executed in the transaction), does not change the active transaction. If for example a
+   * transaction has been started with a transaction tag, the transaction tag for the active
+   * transaction is not reset.
+   *
+   * <p>You can use this method to reset the state of the connection before returning a connection
+   * to a connection pool, and/or before using a connection that was retrieved from a connection
+   * pool.
+   */
+  void reset();
+
+  /**
    * Sets autocommit on/off for this {@link Connection}. Connections in autocommit mode will apply
    * any changes to the database directly without waiting for an explicit commit. DDL- and DML
    * statements as well as {@link Mutation}s are sent directly to Spanner, and committed

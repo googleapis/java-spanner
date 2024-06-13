@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner-bom</artifactId>
-  <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>pom</packaging>
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>sdk-platform-java-config</artifactId>
-    <version>3.30.1</version>
+    <version>3.31.0</version>
   </parent>
 
   <name>Google Cloud Spanner BOM</name>
@@ -53,43 +53,43 @@
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner</artifactId>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.cloud</groupId>
         <artifactId>google-cloud-spanner</artifactId>
         <type>test-jar</type>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-v1</artifactId>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-v1:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-admin-instance-v1</artifactId>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-instance-v1:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-instance-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>grpc-google-cloud-spanner-admin-database-v1</artifactId>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-database-v1:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:grpc-google-cloud-spanner-admin-database-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-admin-instance-v1</artifactId>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-instance-v1:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-instance-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-v1</artifactId>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-v1:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-v1:current} -->
       </dependency>
       <dependency>
         <groupId>com.google.api.grpc</groupId>
         <artifactId>proto-google-cloud-spanner-admin-database-v1</artifactId>
-        <version>6.68.2-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-database-v1:current} -->
+        <version>6.69.1-SNAPSHOT</version><!-- {x-version-update:proto-google-cloud-spanner-admin-database-v1:current} -->
       </dependency>
     </dependencies>
   </dependencyManagement>

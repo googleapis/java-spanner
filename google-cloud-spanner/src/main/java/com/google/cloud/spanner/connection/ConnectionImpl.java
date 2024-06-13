@@ -306,21 +306,10 @@ class ConnectionImpl implements Connection {
     }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
-    this.retryAbortsInternally = options.isRetryAbortsInternally();
-    this.readOnly = options.isReadOnly();
-    this.autocommit = options.isAutocommit();
-    this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
-    this.rpcPriority = options.getRPCPriority();
-    this.ddlInTransactionMode = options.getDdlInTransactionMode();
-    this.returnCommitStats = options.isReturnCommitStats();
-    this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
-    this.dataBoostEnabled = options.isDataBoostEnabled();
-    this.autoPartitionMode = options.isAutoPartitionMode();
-    this.maxPartitions = options.getMaxPartitions();
-    this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
-    this.maxCommitDelay = options.getMaxCommitDelay();
     this.ddlClient = createDdlClient();
-    setDefaultTransactionOptions();
+
+    // (Re)set the state of the connection to the default.
+    reset();
   }
 
   /** Constructor only for test purposes. */
@@ -432,6 +421,42 @@ class ConnectionImpl implements Connection {
       }
     }
     return ApiFutures.immediateFuture(null);
+  }
+
+  /**
+   * Resets the state of this connection to the default state in the {@link ConnectionOptions} of
+   * this connection.
+   */
+  public void reset() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+
+    this.retryAbortsInternally = options.isRetryAbortsInternally();
+    this.readOnly = options.isReadOnly();
+    this.autocommit = options.isAutocommit();
+    this.queryOptions =
+        QueryOptions.getDefaultInstance().toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.rpcPriority = options.getRPCPriority();
+    this.ddlInTransactionMode = options.getDdlInTransactionMode();
+    this.returnCommitStats = options.isReturnCommitStats();
+    this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
+    this.dataBoostEnabled = options.isDataBoostEnabled();
+    this.autoPartitionMode = options.isAutoPartitionMode();
+    this.maxPartitions = options.getMaxPartitions();
+    this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
+    this.maxCommitDelay = options.getMaxCommitDelay();
+
+    this.autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
+    this.readOnlyStaleness = TimestampBound.strong();
+    this.statementTag = null;
+    this.statementTimeout = new StatementExecutor.StatementTimeout();
+    this.directedReadOptions = null;
+    this.savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
+    this.protoDescriptors = null;
+    this.protoDescriptorsFilePath = null;
+
+    if (!isTransactionStarted()) {
+      setDefaultTransactionOptions();
+    }
   }
 
   /** Get the current unit-of-work type of this connection. */

@@ -280,6 +280,15 @@
 	  "examplePrerequisiteStatements": ["start batch ddl"]
 	},
 	{
+		"name": "RESET ALL",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "RESET_ALL",
+		"regex": "(?is)\\A\\s*(?:reset)(?:\\s+all)\\s*\\z",
+		"method": "statementResetAll",
+		"exampleStatements": ["reset all"]
+	},
+	{
 	  "name": "SET AUTOCOMMIT = TRUE|FALSE",
 	  "executorName": "ClientSideStatementSetExecutor",
 	  "resultType": "NO_RESULT",
