@@ -340,16 +340,16 @@
       <scope>test</scope>
     </dependency>
     
-    <!-- Executor tests -->
+    <!-- Executor tests - The 'provided' scope is overwritten to compile time scope for the profile 'executor-tests' -->
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>grpc-google-cloud-spanner-executor-v1</artifactId>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Need testing utility classes for generated gRPC clients tests -->
@@ -581,6 +581,19 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>executor-tests</id>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.api.grpc</groupId>
+          <artifactId>proto-google-cloud-spanner-executor-v1</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.google.api.grpc</groupId>
+          <artifactId>grpc-google-cloud-spanner-executor-v1</artifactId>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 </project>
