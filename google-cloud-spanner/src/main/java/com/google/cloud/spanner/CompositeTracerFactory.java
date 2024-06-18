@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
@@ -24,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 
+@InternalApi
 public class CompositeTracerFactory extends BaseApiTracerFactory {
 
   private final List<ApiTracerFactory> apiTracerFactories;

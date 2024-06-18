@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.tracing.ApiTracer;
 import com.google.api.gax.tracing.BaseApiTracer;
 import com.google.api.gax.tracing.MetricsTracer;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.threeten.bp.Duration;
 
+@InternalApi
 public class CompositeTracer extends BaseApiTracer {
   private final List<ApiTracer> children;
 
