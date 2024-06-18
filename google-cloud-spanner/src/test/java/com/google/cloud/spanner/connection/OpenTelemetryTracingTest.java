@@ -447,6 +447,9 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
             .filter(span -> span.getName().equals("CloudSpannerJdbc.ReadWriteTransaction"))
             .findFirst()
             .orElseThrow(IllegalStateException::new);
+    assertEquals(
+        Boolean.TRUE,
+        transactionSpan.getAttributes().get(AttributeKey.booleanKey("transaction.retried")));
     assertEquals(1, transactionSpan.getTotalRecordedEvents());
     EventData event = transactionSpan.getEvents().get(0);
     assertEquals(

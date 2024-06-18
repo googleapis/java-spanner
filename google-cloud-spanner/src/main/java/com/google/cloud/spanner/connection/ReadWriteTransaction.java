@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.spanner.v1.SpannerGrpc;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Scope;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -80,6 +81,8 @@ import java.util.logging.Logger;
  * exact same results as the original transaction.
  */
 class ReadWriteTransaction extends AbstractMultiUseTransaction {
+  private static final AttributeKey<Boolean> TRANSACTION_RETRIED =
+      AttributeKey.booleanKey("transaction.retried");
   private static final Logger logger = Logger.getLogger(ReadWriteTransaction.class.getName());
   private static final AtomicLong ID_GENERATOR = new AtomicLong();
   private static final String MAX_INTERNAL_RETRIES_EXCEEDED =
@@ -990,6 +993,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
         long delay = aborted.getRetryDelayInMillis();
         span.addEvent(
             "Transaction aborted. Backing off for " + delay + " milliseconds and retrying.");
+        span.setAttribute(TRANSACTION_RETRIED, true);
         try {
           if (delay > 0L) {
             //noinspection BusyWait

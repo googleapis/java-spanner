@@ -49,6 +49,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -452,6 +453,14 @@ public class OpenTelemetrySpanTest {
     DatabaseClient client = getClient();
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
+    // Wait until the list of spans contains "CloudSpannerOperation.BatchCreateSessions", as this is
+    // an async operation.
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    while (spanExporter.getFinishedSpanItems().stream()
+            .noneMatch(span -> span.getName().equals("CloudSpannerOperation.BatchCreateSessions"))
+        && stopwatch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+      Thread.yield();
+    }
     List<String> actualSpanItems = new ArrayList<>();
     spanExporter
         .getFinishedSpanItems()
