@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.sdk.metrics.Aggregation;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,4 +81,12 @@ public class BuiltInMetricsConstant {
           CLIENT_NAME_KEY,
           DIRECT_PATH_ENABLED_KEY,
           DIRECT_PATH_USED_KEY);
+
+  public static Aggregation AGGREGATION_WITH_MILLIS_HISTOGRAM =
+      Aggregation.explicitBucketHistogram(
+          ImmutableList.of(
+              0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 13.0, 16.0, 20.0, 25.0, 30.0, 40.0,
+              50.0, 65.0, 80.0, 100.0, 130.0, 160.0, 200.0, 250.0, 300.0, 400.0, 500.0, 650.0,
+              800.0, 1000.0, 2000.0, 5000.0, 10000.0, 20000.0, 50000.0, 100000.0, 200000.0,
+              400000.0, 800000.0, 1600000.0, 3200000.0));
 }
