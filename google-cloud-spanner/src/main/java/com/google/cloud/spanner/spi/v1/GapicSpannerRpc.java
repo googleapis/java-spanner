@@ -370,9 +370,13 @@ public class GapicSpannerRpc implements SpannerRpc {
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
+      InstantiatingGrpcChannelProvider defaultChannelProvider =
+          defaultChannelProviderBuilder.build();
+
       TransportChannelProvider channelProvider =
-          MoreObjects.firstNonNull(
-              options.getChannelProvider(), defaultChannelProviderBuilder.build());
+          MoreObjects.firstNonNull(options.getChannelProvider(), defaultChannelProvider);
+
+      options.toBuilder().canUseDirectPath(defaultChannelProvider.canUseDirectPath()).build();
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);
