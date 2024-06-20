@@ -1,38 +1,8 @@
 gapic_generator_version: 2.41.0
-protoc_version: '25.3'
 googleapis_commitish: 6f289d775912966eb0cf04bda91e5e355c998d30
 libraries_bom_version: 26.38.0
-template_excludes:
-  - ".kokoro/continuous/common.cfg"
-  - ".kokoro/nightly/common.cfg"
-  - ".kokoro/nightly/integration.cfg"
-  - ".kokoro/nightly/java8-samples.cfg"
-  - ".kokoro/nightly/java11-samples.cfg"
-  - ".kokoro/nightly/samples.cfg"
-  - ".kokoro/build.bat"
-  - ".kokoro/presubmit/common.cfg"
-  - ".kokoro/presubmit/java8-samples.cfg"
-  - ".kokoro/presubmit/java11-samples.cfg"
-  - ".kokoro/presubmit/samples.cfg"
-  - ".kokoro/presubmit/graalvm-native.cfg"
-  - ".kokoro/presubmit/graalvm-native-17.cfg"
-  - ".kokoro/release/common.cfg"
-  - "samples/install-without-bom/pom.xml"
-  - "samples/snapshot/pom.xml"
-  - "samples/snippets/pom.xml"
-  - ".github/CODEOWNERS"
-  - ".github/sync-repo-settings.yaml"
-  - ".github/release-please.yml"
-  - ".github/blunderbuss.yml"
-  - ".github/workflows/samples.yaml"
-  - ".github/workflows/ci.yaml"
-  - ".kokoro/common.sh"
-  - ".kokoro/build.sh"
-  - ".kokoro/dependencies.sh"
-  - ".kokoro/requirements.in"
-  - ".kokoro/requirements.txt"
 libraries:
-  - api_shortname: "spanner"
+  - api_shortname: spanner
     name_pretty: "Cloud Spanner"
     product_documentation: "https://cloud.google.com/spanner/docs/"
     client_documentation: "https://cloud.google.com/java/docs/reference/google-cloud-spanner/latest/history"
