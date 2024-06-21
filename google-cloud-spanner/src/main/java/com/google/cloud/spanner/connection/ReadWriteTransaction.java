@@ -1142,22 +1142,29 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
   }
 
-  private ApiFuture<Void> rollbackAsync(CallType callType, boolean updateStatus) {
+  private ApiFuture<Void> rollbackAsync(CallType callType, boolean updateStatusAndEndSpan) {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED || state == UnitOfWorkState.ABORTED,
         "This transaction has status " + state.name());
-    if (updateStatus) {
+    if (updateStatusAndEndSpan) {
       state = UnitOfWorkState.ROLLED_BACK;
-      asyncEndUnitOfWorkSpan();
     }
     if (txContextFuture != null && state != UnitOfWorkState.ABORTED) {
       ApiFuture<Void> result =
           executeStatementAsync(
               callType, ROLLBACK_STATEMENT, rollbackCallable, SpannerGrpc.getRollbackMethod());
-      asyncEndUnitOfWorkSpan();
+      if (updateStatusAndEndSpan) {
+        // Note: We end the transaction span after executing the rollback to include the rollback in
+        // the transaction span. Even though both methods are executed asynchronously, they are both
+        // executed using the same single-threaded executor, meaning that the span will only be
+        // ended after the rollback has finished.
+        asyncEndUnitOfWorkSpan();
+      }
       return result;
-    } else {
+    } else if (updateStatusAndEndSpan) {
       return asyncEndUnitOfWorkSpan();
+    } else {
+      return ApiFutures.immediateFuture(null);
     }
   }
 
