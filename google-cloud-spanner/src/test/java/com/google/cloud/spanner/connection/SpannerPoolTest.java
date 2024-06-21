@@ -516,6 +516,48 @@ public class SpannerPoolTest {
   }
 
   @Test
+  public void testEnableApiTracing() {
+    SpannerPoolKey keyWithoutApiTracingConfig =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+                .build());
+    SpannerPoolKey keyWithApiTracingEnabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableApiTracing=true")
+                .build());
+    SpannerPoolKey keyWithApiTracingDisabled =
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableApiTracing=false")
+                .build());
+
+    assertNotEquals(keyWithoutApiTracingConfig, keyWithApiTracingEnabled);
+    assertNotEquals(keyWithoutApiTracingConfig, keyWithApiTracingDisabled);
+    assertNotEquals(keyWithApiTracingEnabled, keyWithApiTracingDisabled);
+
+    assertEquals(
+        keyWithApiTracingEnabled,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableApiTracing=true")
+                .build()));
+    assertEquals(
+        keyWithApiTracingDisabled,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d?enableApiTracing=false")
+                .build()));
+    assertEquals(
+        keyWithoutApiTracingConfig,
+        SpannerPoolKey.of(
+            ConnectionOptions.newBuilder()
+                .setUri("cloudspanner:/projects/p/instances/i/databases/d")
+                .build()));
+  }
+
+  @Test
   public void testOpenTelemetry() {
     SpannerPool pool = createSubjectAndMocks();
     Spanner spanner1;
