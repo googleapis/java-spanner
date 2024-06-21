@@ -96,7 +96,6 @@ class ConnectionImpl implements Connection {
   private static final String SINGLE_USE_TRANSACTION = "SingleUseTransaction";
   private static final String READ_ONLY_TRANSACTION = "ReadOnlyTransaction";
   private static final String READ_WRITE_TRANSACTION = "ReadWriteTransaction";
-  private static final String DML_BATCH = "DmlBatch";
   private static final String DDL_BATCH = "DdlBatch";
   private static final String DDL_STATEMENT = "DdlStatement";
 
@@ -1932,7 +1931,8 @@ class ConnectionImpl implements Connection {
               .setStatementTag(statementTag)
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
               .setRpcPriority(rpcPriority)
-              .setSpan(createSpanForUnitOfWork(DML_BATCH))
+              // Use the transaction Span for the DML batch.
+              .setSpan(transactionStack.peek().getSpan())
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()
