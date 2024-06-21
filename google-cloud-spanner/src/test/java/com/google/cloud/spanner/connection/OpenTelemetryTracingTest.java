@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.SpannerEnvironment;
@@ -470,6 +471,59 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
         Attributes.of(AttributeKey.stringKey("db.statement"), INSERT_STATEMENT.getSql()),
         spans);
     assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.Commit", spans);
+  }
+
+  @Test
+  public void testSavepoint() {
+    Statement statement1 = Statement.of("insert into foo (id) values (1)");
+    Statement statement2 = Statement.of("insert into foo (id) values (2)");
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(statement1, 1));
+    mockSpanner.putStatementResult(MockSpannerServiceImpl.StatementResult.update(statement2, 1));
+
+    try (Connection connection = createTestConnection()) {
+      connection.setAutocommit(false);
+      connection.setReadOnly(false);
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+      assertEquals(1L, connection.executeUpdate(statement1));
+      connection.savepoint("test");
+      assertEquals(1L, connection.executeUpdate(statement2));
+      connection.rollbackToSavepoint("test");
+      connection.commit();
+    }
+    assertEquals(CompletableResultCode.ofSuccess(), spanExporter.flush());
+    List<SpanData> spans = spanExporter.getFinishedSpanItems();
+    assertContains("CloudSpannerJdbc.ReadWriteTransaction", spans);
+    assertContains("CloudSpanner.ReadWriteTransaction", spans);
+    // Statement 1 is executed 2 times, because the original transaction needs to be
+    // retried after the transaction was rolled back to the savepoint.
+    assertContains(
+        "CloudSpannerOperation.ExecuteUpdate",
+        2,
+        Attributes.of(AttributeKey.stringKey("db.statement"), statement1.getSql()),
+        spans);
+    assertContains(
+        "CloudSpannerOperation.ExecuteUpdate",
+        1,
+        Attributes.of(AttributeKey.stringKey("db.statement"), statement2.getSql()),
+        spans);
+    assertContains("CloudSpannerOperation.Commit", spans);
+
+    // Verify that we have two Cloud Spanner transactions, and that these are both children of one
+    // JDBC transaction.
+    List<SpanData> transactionSpans =
+        getSpans("CloudSpanner.ReadWriteTransaction", Attributes.empty(), spans);
+    assertEquals(2, transactionSpans.size());
+    assertEquals(
+        transactionSpans.get(0).getParentSpanId(), transactionSpans.get(1).getParentSpanId());
+    List<SpanData> jdbcTransactionSpans =
+        getSpans("CloudSpannerJdbc.ReadWriteTransaction", Attributes.empty(), spans);
+    assertEquals(1, jdbcTransactionSpans.size());
+    assertEquals(
+        jdbcTransactionSpans.get(0).getSpanId(), transactionSpans.get(0).getParentSpanId());
+    List<SpanData> commitSpans =
+        getSpans("CloudSpannerOperation.Commit", Attributes.empty(), spans);
+    assertEquals(1, commitSpans.size());
+    assertEquals(transactionSpans.get(1).getSpanId(), commitSpans.get(0).getParentSpanId());
   }
 
   @Test
