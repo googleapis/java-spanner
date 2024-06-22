@@ -64,7 +64,6 @@ import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
-import com.google.cloud.spanner.SessionPool.MultiplexedSessionInitializationConsumer;
 import com.google.cloud.spanner.SessionPool.PooledSession;
 import com.google.cloud.spanner.SessionPool.PooledSessionFuture;
 import com.google.cloud.spanner.SessionPool.Position;
@@ -2212,16 +2211,6 @@ public class SessionPoolTest extends BaseSessionPoolTest {
                     }))
         .when(sessionClient)
         .asyncBatchCreateSessions(Mockito.eq(1), Mockito.anyBoolean(), any(SessionConsumer.class));
-    doAnswer(
-            invocation ->
-                executor.submit(
-                    () -> {
-                      MultiplexedSessionInitializationConsumer consumer =
-                          invocation.getArgument(0, MultiplexedSessionInitializationConsumer.class);
-                      consumer.onSessionReady(mockMultiplexedSession());
-                    }))
-        .when(sessionClient)
-        .asyncCreateMultiplexedSession(any(MultiplexedSessionInitializationConsumer.class));
 
     pool = createPool(new FakeClock(), new FakeMetricRegistry(), SPANNER_DEFAULT_LABEL_VALUES);
     pool.maybeWaitOnMinSessions();
