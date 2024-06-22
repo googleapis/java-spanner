@@ -199,6 +199,7 @@ public class ConnectionOptions {
   private static final int DEFAULT_MAX_PARTITIONS = 0;
   private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
   private static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
+  private static final Boolean DEFAULT_ENABLE_API_TRACING = null;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -280,6 +281,7 @@ public class ConnectionOptions {
       "maxPartitionedParallelism";
 
   public static final String ENABLE_EXTENDED_TRACING_PROPERTY_NAME = "enableExtendedTracing";
+  public static final String ENABLE_API_TRACING_PROPERTY_NAME = "enableApiTracing";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "
@@ -448,7 +450,14 @@ public class ConnectionOptions {
                       "Include the SQL string in the OpenTelemetry traces that are generated "
                           + "by this connection. The SQL string is added as the standard OpenTelemetry "
                           + "attribute 'db.statement'.",
-                      DEFAULT_ENABLE_EXTENDED_TRACING))));
+                      DEFAULT_ENABLE_EXTENDED_TRACING),
+                  ConnectionProperty.createBooleanProperty(
+                      ENABLE_API_TRACING_PROPERTY_NAME,
+                      "Add OpenTelemetry traces for each individual RPC call. Enable this "
+                          + "to get a detailed view of each RPC that is being executed by your application, "
+                          + "or if you want to debug potential latency problems caused by RPCs that are "
+                          + "being retried.",
+                      DEFAULT_ENABLE_API_TRACING))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -743,6 +752,7 @@ public class ConnectionOptions {
   private final OpenTelemetry openTelemetry;
   private final String tracingPrefix;
   private final Boolean enableExtendedTracing;
+  private final Boolean enableApiTracing;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -851,6 +861,7 @@ public class ConnectionOptions {
     this.openTelemetry = builder.openTelemetry;
     this.tracingPrefix = builder.tracingPrefix;
     this.enableExtendedTracing = parseEnableExtendedTracing(this.uri);
+    this.enableApiTracing = parseEnableApiTracing(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -1252,6 +1263,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static Boolean parseEnableApiTracing(String uri) {
+    String value = parseUriProperty(uri, ENABLE_API_TRACING_PROPERTY_NAME);
+    return value != null ? Boolean.valueOf(value) : DEFAULT_ENABLE_API_TRACING;
+  }
+
+  @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
     Matcher matcher = pattern.matcher(uri);
@@ -1556,6 +1573,10 @@ public class ConnectionOptions {
 
   Boolean isEnableExtendedTracing() {
     return this.enableExtendedTracing;
+  }
+
+  Boolean isEnableApiTracing() {
+    return this.enableApiTracing;
   }
 
   /** Interceptors that should be executed after each statement */
