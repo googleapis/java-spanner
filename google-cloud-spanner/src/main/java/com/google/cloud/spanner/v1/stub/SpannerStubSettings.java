@@ -127,8 +127,9 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   private final UnaryCallSettings<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
       batchCreateSessionsSettings;
   private final UnaryCallSettings<GetSessionRequest, Session> getSessionSettings;
-  private final PagedCallSettings<ListSessionsRequest, ListSessionsResponse,
-      ListSessionsPagedResponse> listSessionsSettings;
+  private final PagedCallSettings<
+          ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
+      listSessionsSettings;
   private final UnaryCallSettings<DeleteSessionRequest, Empty> deleteSessionSettings;
   private final UnaryCallSettings<ExecuteSqlRequest, ResultSet> executeSqlSettings;
   private final ServerStreamingCallSettings<ExecuteSqlRequest, PartialResultSet>
@@ -175,25 +176,28 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
             @Override
             public Iterable<Session> extractResources(ListSessionsResponse payload) {
-              return payload.getSessionsList() == null ? ImmutableList.<Session>of()
-                                                       : payload.getSessionsList();
+              return payload.getSessionsList() == null
+                  ? ImmutableList.<Session>of()
+                  : payload.getSessionsList();
             }
           };
 
-  private static final PagedListResponseFactory<ListSessionsRequest, ListSessionsResponse,
-      ListSessionsPagedResponse> LIST_SESSIONS_PAGE_STR_FACT =
-      new PagedListResponseFactory<ListSessionsRequest, ListSessionsResponse,
-          ListSessionsPagedResponse>() {
-        @Override
-        public ApiFuture<ListSessionsPagedResponse> getFuturePagedResponse(
-            UnaryCallable<ListSessionsRequest, ListSessionsResponse> callable,
-            ListSessionsRequest request, ApiCallContext context,
-            ApiFuture<ListSessionsResponse> futureResponse) {
-          PageContext<ListSessionsRequest, ListSessionsResponse, Session> pageContext =
-              PageContext.create(callable, LIST_SESSIONS_PAGE_STR_DESC, request, context);
-          return ListSessionsPagedResponse.createAsync(pageContext, futureResponse);
-        }
-      };
+  private static final PagedListResponseFactory<
+          ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
+      LIST_SESSIONS_PAGE_STR_FACT =
+          new PagedListResponseFactory<
+              ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>() {
+            @Override
+            public ApiFuture<ListSessionsPagedResponse> getFuturePagedResponse(
+                UnaryCallable<ListSessionsRequest, ListSessionsResponse> callable,
+                ListSessionsRequest request,
+                ApiCallContext context,
+                ApiFuture<ListSessionsResponse> futureResponse) {
+              PageContext<ListSessionsRequest, ListSessionsResponse, Session> pageContext =
+                  PageContext.create(callable, LIST_SESSIONS_PAGE_STR_DESC, request, context);
+              return ListSessionsPagedResponse.createAsync(pageContext, futureResponse);
+            }
+          };
 
   /** Returns the object with the settings used for calls to createSession. */
   public UnaryCallSettings<CreateSessionRequest, Session> createSessionSettings() {
@@ -202,7 +206,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
   /** Returns the object with the settings used for calls to batchCreateSessions. */
   public UnaryCallSettings<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
-  batchCreateSessionsSettings() {
+      batchCreateSessionsSettings() {
     return batchCreateSessionsSettings;
   }
 
@@ -213,7 +217,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
   /** Returns the object with the settings used for calls to listSessions. */
   public PagedCallSettings<ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
-  listSessionsSettings() {
+      listSessionsSettings() {
     return listSessionsSettings;
   }
 
@@ -229,13 +233,13 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
   /** Returns the object with the settings used for calls to executeStreamingSql. */
   public ServerStreamingCallSettings<ExecuteSqlRequest, PartialResultSet>
-  executeStreamingSqlSettings() {
+      executeStreamingSqlSettings() {
     return executeStreamingSqlSettings;
   }
 
   /** Returns the object with the settings used for calls to executeBatchDml. */
   public UnaryCallSettings<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
-  executeBatchDmlSettings() {
+      executeBatchDmlSettings() {
     return executeBatchDmlSettings;
   }
 
@@ -280,25 +284,19 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   }
 
   public SpannerStub createStub() throws IOException {
-    if (getTransportChannelProvider().getTransportName().equals(
-            GrpcTransportChannel.getGrpcTransportName())) {
+    if (getTransportChannelProvider()
+        .getTransportName()
+        .equals(GrpcTransportChannel.getGrpcTransportName())) {
       return GrpcSpannerStub.create(this);
     }
-    if (getTransportChannelProvider().getTransportName().equals(
-            HttpJsonTransportChannel.getHttpJsonTransportName())) {
+    if (getTransportChannelProvider()
+        .getTransportName()
+        .equals(HttpJsonTransportChannel.getHttpJsonTransportName())) {
       return HttpJsonSpannerStub.create(this);
     }
-    throw new UnsupportedOperationException(String.format(
-        "Transport not supported: %s", getTransportChannelProvider().getTransportName()));
-  }
-
-  /** Returns the endpoint set by the user or the the service's default endpoint. */
-  @Override
-  public String getEndpoint() {
-    if (super.getEndpoint() != null) {
-      return super.getEndpoint();
-    }
-    return getDefaultEndpoint();
+    throw new UnsupportedOperationException(
+        String.format(
+            "Transport not supported: %s", getTransportChannelProvider().getTransportName()));
   }
 
   /** Returns the default service name. */
@@ -336,14 +334,14 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
   /** Returns a builder for the default gRPC ChannelProvider for this service. */
   public static InstantiatingGrpcChannelProvider.Builder defaultGrpcTransportProviderBuilder() {
-    return InstantiatingGrpcChannelProvider.newBuilder().setMaxInboundMessageSize(
-        Integer.MAX_VALUE);
+    return InstantiatingGrpcChannelProvider.newBuilder()
+        .setMaxInboundMessageSize(Integer.MAX_VALUE);
   }
 
   /** Returns a builder for the default REST ChannelProvider for this service. */
   @BetaApi
   public static InstantiatingHttpJsonChannelProvider.Builder
-  defaultHttpJsonTransportProviderBuilder() {
+      defaultHttpJsonTransportProviderBuilder() {
     return InstantiatingHttpJsonChannelProvider.newBuilder();
   }
 
@@ -361,7 +359,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
   public static ApiClientHeaderProvider.Builder defaultHttpJsonApiClientHeaderProviderBuilder() {
     return ApiClientHeaderProvider.newBuilder()
         .setGeneratedLibToken("gapic", GaxProperties.getLibraryVersion(SpannerStubSettings.class))
-        .setTransportToken(GaxHttpJsonProperties.getHttpJsonTokenName(),
+        .setTransportToken(
+            GaxHttpJsonProperties.getHttpJsonTokenName(),
             GaxHttpJsonProperties.getHttpJsonVersion());
   }
 
@@ -417,45 +416,49 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     private final UnaryCallSettings.Builder<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
         batchCreateSessionsSettings;
     private final UnaryCallSettings.Builder<GetSessionRequest, Session> getSessionSettings;
-    private final PagedCallSettings.Builder<ListSessionsRequest, ListSessionsResponse,
-        ListSessionsPagedResponse> listSessionsSettings;
+    private final PagedCallSettings.Builder<
+            ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
+        listSessionsSettings;
     private final UnaryCallSettings.Builder<DeleteSessionRequest, Empty> deleteSessionSettings;
     private final UnaryCallSettings.Builder<ExecuteSqlRequest, ResultSet> executeSqlSettings;
-    private final ServerStreamingCallSettings
-        .Builder<ExecuteSqlRequest, PartialResultSet> executeStreamingSqlSettings;
-    private final UnaryCallSettings
-        .Builder<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse> executeBatchDmlSettings;
+    private final ServerStreamingCallSettings.Builder<ExecuteSqlRequest, PartialResultSet>
+        executeStreamingSqlSettings;
+    private final UnaryCallSettings.Builder<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
+        executeBatchDmlSettings;
     private final UnaryCallSettings.Builder<ReadRequest, ResultSet> readSettings;
-    private final ServerStreamingCallSettings
-        .Builder<ReadRequest, PartialResultSet> streamingReadSettings;
-    private final UnaryCallSettings
-        .Builder<BeginTransactionRequest, Transaction> beginTransactionSettings;
+    private final ServerStreamingCallSettings.Builder<ReadRequest, PartialResultSet>
+        streamingReadSettings;
+    private final UnaryCallSettings.Builder<BeginTransactionRequest, Transaction>
+        beginTransactionSettings;
     private final UnaryCallSettings.Builder<CommitRequest, CommitResponse> commitSettings;
     private final UnaryCallSettings.Builder<RollbackRequest, Empty> rollbackSettings;
-    private final UnaryCallSettings
-        .Builder<PartitionQueryRequest, PartitionResponse> partitionQuerySettings;
-    private final UnaryCallSettings
-        .Builder<PartitionReadRequest, PartitionResponse> partitionReadSettings;
-    private final ServerStreamingCallSettings
-        .Builder<BatchWriteRequest, BatchWriteResponse> batchWriteSettings;
+    private final UnaryCallSettings.Builder<PartitionQueryRequest, PartitionResponse>
+        partitionQuerySettings;
+    private final UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
+        partitionReadSettings;
+    private final ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
+        batchWriteSettings;
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
     static {
       ImmutableMap.Builder<String, ImmutableSet<StatusCode.Code>> definitions =
           ImmutableMap.builder();
-      definitions.put("retry_policy_3_codes",
+      definitions.put(
+          "retry_policy_3_codes",
           ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
-      definitions.put("retry_policy_2_codes",
+      definitions.put(
+          "retry_policy_2_codes",
           ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
-      definitions.put("retry_policy_1_codes",
+      definitions.put(
+          "retry_policy_1_codes",
           ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
-      definitions.put("retry_policy_3_codes",
-          ImmutableSet.copyOf(
-              Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
-      definitions.put("retry_policy_2_codes",
-          ImmutableSet.copyOf(
-              Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
+      definitions.put(
+          "retry_policy_3_codes",
+          ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
+      definitions.put(
+          "retry_policy_2_codes",
+          ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
       definitions.put(
           "no_retry_0_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       RETRYABLE_CODE_DEFINITIONS = definitions.build();
@@ -466,42 +469,46 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     static {
       ImmutableMap.Builder<String, RetrySettings> definitions = ImmutableMap.builder();
       RetrySettings settings = null;
-      settings = RetrySettings.newBuilder()
-                     .setInitialRetryDelay(Duration.ofMillis(250L))
-                     .setRetryDelayMultiplier(1.3)
-                     .setMaxRetryDelay(Duration.ofMillis(32000L))
-                     .setInitialRpcTimeout(Duration.ofMillis(30000L))
-                     .setRpcTimeoutMultiplier(1.0)
-                     .setMaxRpcTimeout(Duration.ofMillis(30000L))
-                     .setTotalTimeout(Duration.ofMillis(30000L))
-                     .build();
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRetryDelay(Duration.ofMillis(250L))
+              .setRetryDelayMultiplier(1.3)
+              .setMaxRetryDelay(Duration.ofMillis(32000L))
+              .setInitialRpcTimeout(Duration.ofMillis(30000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(30000L))
+              .setTotalTimeout(Duration.ofMillis(30000L))
+              .build();
       definitions.put("retry_policy_3_params", settings);
-      settings = RetrySettings.newBuilder()
-                     .setInitialRetryDelay(Duration.ofMillis(250L))
-                     .setRetryDelayMultiplier(1.3)
-                     .setMaxRetryDelay(Duration.ofMillis(32000L))
-                     .setInitialRpcTimeout(Duration.ofMillis(60000L))
-                     .setRpcTimeoutMultiplier(1.0)
-                     .setMaxRpcTimeout(Duration.ofMillis(60000L))
-                     .setTotalTimeout(Duration.ofMillis(60000L))
-                     .build();
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRetryDelay(Duration.ofMillis(250L))
+              .setRetryDelayMultiplier(1.3)
+              .setMaxRetryDelay(Duration.ofMillis(32000L))
+              .setInitialRpcTimeout(Duration.ofMillis(60000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(60000L))
+              .setTotalTimeout(Duration.ofMillis(60000L))
+              .build();
       definitions.put("retry_policy_2_params", settings);
-      settings = RetrySettings.newBuilder()
-                     .setInitialRetryDelay(Duration.ofMillis(250L))
-                     .setRetryDelayMultiplier(1.3)
-                     .setMaxRetryDelay(Duration.ofMillis(32000L))
-                     .setInitialRpcTimeout(Duration.ofMillis(3600000L))
-                     .setRpcTimeoutMultiplier(1.0)
-                     .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-                     .setTotalTimeout(Duration.ofMillis(3600000L))
-                     .build();
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRetryDelay(Duration.ofMillis(250L))
+              .setRetryDelayMultiplier(1.3)
+              .setMaxRetryDelay(Duration.ofMillis(32000L))
+              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+              .setTotalTimeout(Duration.ofMillis(3600000L))
+              .build();
       definitions.put("retry_policy_1_params", settings);
-      settings = RetrySettings.newBuilder()
-                     .setInitialRpcTimeout(Duration.ofMillis(3600000L))
-                     .setRpcTimeoutMultiplier(1.0)
-                     .setMaxRpcTimeout(Duration.ofMillis(3600000L))
-                     .setTotalTimeout(Duration.ofMillis(3600000L))
-                     .build();
+      settings =
+          RetrySettings.newBuilder()
+              .setInitialRpcTimeout(Duration.ofMillis(3600000L))
+              .setRpcTimeoutMultiplier(1.0)
+              .setMaxRpcTimeout(Duration.ofMillis(3600000L))
+              .setTotalTimeout(Duration.ofMillis(3600000L))
+              .build();
       definitions.put("no_retry_0_params", settings);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
@@ -530,11 +537,21 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       partitionReadSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
       batchWriteSettings = ServerStreamingCallSettings.newBuilder();
 
-      unaryMethodSettingsBuilders = ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
-          createSessionSettings, batchCreateSessionsSettings, getSessionSettings,
-          listSessionsSettings, deleteSessionSettings, executeSqlSettings, executeBatchDmlSettings,
-          readSettings, beginTransactionSettings, commitSettings, rollbackSettings,
-          partitionQuerySettings, partitionReadSettings);
+      unaryMethodSettingsBuilders =
+          ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
+              createSessionSettings,
+              batchCreateSessionsSettings,
+              getSessionSettings,
+              listSessionsSettings,
+              deleteSessionSettings,
+              executeSqlSettings,
+              executeBatchDmlSettings,
+              readSettings,
+              beginTransactionSettings,
+              commitSettings,
+              rollbackSettings,
+              partitionQuerySettings,
+              partitionReadSettings);
       initDefaults(this);
     }
 
@@ -558,11 +575,21 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
       partitionReadSettings = settings.partitionReadSettings.toBuilder();
       batchWriteSettings = settings.batchWriteSettings.toBuilder();
 
-      unaryMethodSettingsBuilders = ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
-          createSessionSettings, batchCreateSessionsSettings, getSessionSettings,
-          listSessionsSettings, deleteSessionSettings, executeSqlSettings, executeBatchDmlSettings,
-          readSettings, beginTransactionSettings, commitSettings, rollbackSettings,
-          partitionQuerySettings, partitionReadSettings);
+      unaryMethodSettingsBuilders =
+          ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
+              createSessionSettings,
+              batchCreateSessionsSettings,
+              getSessionSettings,
+              listSessionsSettings,
+              deleteSessionSettings,
+              executeSqlSettings,
+              executeBatchDmlSettings,
+              readSettings,
+              beginTransactionSettings,
+              commitSettings,
+              rollbackSettings,
+              partitionQuerySettings,
+              partitionReadSettings);
     }
 
     private static Builder createDefault() {
@@ -590,67 +617,83 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     }
 
     private static Builder initDefaults(Builder builder) {
-      builder.createSessionSettings()
+      builder
+          .createSessionSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.batchCreateSessionsSettings()
+      builder
+          .batchCreateSessionsSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_2_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_2_params"));
 
-      builder.getSessionSettings()
+      builder
+          .getSessionSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.listSessionsSettings()
+      builder
+          .listSessionsSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
 
-      builder.deleteSessionSettings()
+      builder
+          .deleteSessionSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.executeSqlSettings()
+      builder
+          .executeSqlSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.executeStreamingSqlSettings()
+      builder
+          .executeStreamingSqlSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
 
-      builder.executeBatchDmlSettings()
+      builder
+          .executeBatchDmlSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.readSettings()
+      builder
+          .readSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.streamingReadSettings()
+      builder
+          .streamingReadSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
 
-      builder.beginTransactionSettings()
+      builder
+          .beginTransactionSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.commitSettings()
+      builder
+          .commitSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_1_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_1_params"));
 
-      builder.rollbackSettings()
+      builder
+          .rollbackSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.partitionQuerySettings()
+      builder
+          .partitionQuerySettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.partitionReadSettings()
+      builder
+          .partitionReadSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("retry_policy_3_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("retry_policy_3_params"));
 
-      builder.batchWriteSettings()
+      builder
+          .batchWriteSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_0_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_0_params"));
 
@@ -679,7 +722,7 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
     /** Returns the builder for the settings used for calls to batchCreateSessions. */
     public UnaryCallSettings.Builder<BatchCreateSessionsRequest, BatchCreateSessionsResponse>
-    batchCreateSessionsSettings() {
+        batchCreateSessionsSettings() {
       return batchCreateSessionsSettings;
     }
 
@@ -689,8 +732,8 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
     }
 
     /** Returns the builder for the settings used for calls to listSessions. */
-    public PagedCallSettings
-        .Builder<ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
+    public PagedCallSettings.Builder<
+            ListSessionsRequest, ListSessionsResponse, ListSessionsPagedResponse>
         listSessionsSettings() {
       return listSessionsSettings;
     }
@@ -707,13 +750,13 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
     /** Returns the builder for the settings used for calls to executeStreamingSql. */
     public ServerStreamingCallSettings.Builder<ExecuteSqlRequest, PartialResultSet>
-    executeStreamingSqlSettings() {
+        executeStreamingSqlSettings() {
       return executeStreamingSqlSettings;
     }
 
     /** Returns the builder for the settings used for calls to executeBatchDml. */
     public UnaryCallSettings.Builder<ExecuteBatchDmlRequest, ExecuteBatchDmlResponse>
-    executeBatchDmlSettings() {
+        executeBatchDmlSettings() {
       return executeBatchDmlSettings;
     }
 
@@ -724,13 +767,13 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
     /** Returns the builder for the settings used for calls to streamingRead. */
     public ServerStreamingCallSettings.Builder<ReadRequest, PartialResultSet>
-    streamingReadSettings() {
+        streamingReadSettings() {
       return streamingReadSettings;
     }
 
     /** Returns the builder for the settings used for calls to beginTransaction. */
     public UnaryCallSettings.Builder<BeginTransactionRequest, Transaction>
-    beginTransactionSettings() {
+        beginTransactionSettings() {
       return beginTransactionSettings;
     }
 
@@ -746,29 +789,20 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
 
     /** Returns the builder for the settings used for calls to partitionQuery. */
     public UnaryCallSettings.Builder<PartitionQueryRequest, PartitionResponse>
-    partitionQuerySettings() {
+        partitionQuerySettings() {
       return partitionQuerySettings;
     }
 
     /** Returns the builder for the settings used for calls to partitionRead. */
     public UnaryCallSettings.Builder<PartitionReadRequest, PartitionResponse>
-    partitionReadSettings() {
+        partitionReadSettings() {
       return partitionReadSettings;
     }
 
     /** Returns the builder for the settings used for calls to batchWrite. */
     public ServerStreamingCallSettings.Builder<BatchWriteRequest, BatchWriteResponse>
-    batchWriteSettings() {
+        batchWriteSettings() {
       return batchWriteSettings;
-    }
-
-    /** Returns the endpoint set by the user or the the service's default endpoint. */
-    @Override
-    public String getEndpoint() {
-      if (super.getEndpoint() != null) {
-        return super.getEndpoint();
-      }
-      return getDefaultEndpoint();
     }
 
     @Override
