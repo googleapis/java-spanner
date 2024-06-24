@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import com.google.cloud.spanner.Options.TagOption;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.SpannerOptions.TracingFramework;
+import com.google.common.base.MoreObjects;
 import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.Tracer;
@@ -41,6 +42,7 @@ class TraceWrapper {
       AttributeKey.stringKey("db.statement");
   private static final AttributeKey<List<String>> DB_STATEMENT_ARRAY_KEY =
       AttributeKey.stringArrayKey("db.statement");
+  private static final AttributeKey<String> THREAD_NAME_KEY = AttributeKey.stringKey("thread.name");
 
   private final Tracer openCensusTracer;
   private final io.opentelemetry.api.trace.Tracer openTelemetryTracer;
@@ -154,6 +156,10 @@ class TraceWrapper {
       AttributesBuilder builder = Attributes.builder();
       if (this.enableExtendedTracing) {
         builder.put(DB_STATEMENT_KEY, statement.getSql());
+        String threadName = Context.current().get(OpenTelemetryContextKeys.THREAD_NAME_KEY);
+        builder.put(
+            THREAD_NAME_KEY,
+            MoreObjects.firstNonNull(threadName, Thread.currentThread().getName()));
       }
       if (options != null && options.hasTag()) {
         builder.put(STATEMENT_TAG_KEY, options.tag());
@@ -172,6 +178,7 @@ class TraceWrapper {
             StreamSupport.stream(statements.spliterator(), false)
                 .map(Statement::getSql)
                 .collect(Collectors.toList()));
+        builder.put(THREAD_NAME_KEY, Thread.currentThread().getName());
       }
       if (options != null && options.hasTag()) {
         builder.put(STATEMENT_TAG_KEY, options.tag());
