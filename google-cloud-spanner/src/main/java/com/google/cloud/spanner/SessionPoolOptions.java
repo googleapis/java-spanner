@@ -317,7 +317,13 @@ public class SessionPoolOptions {
         System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
     if (useMultiplexedSessionFromEnvVariable != null
         && useMultiplexedSessionFromEnvVariable.length() > 0) {
-      return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
+      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)
+          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)) {
+        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
+      } else {
+        throw new IllegalArgumentException(
+            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false.");
+      }
     }
     return null;
   }
@@ -529,7 +535,7 @@ public class SessionPoolOptions {
     private long randomizePositionQPSThreshold = 0L;
 
     // This field controls the default behavior of session management in Java client.
-    // Set useMultiplexedSession to true to make multiplexed session as default.
+    // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
 
     private boolean useRandomChannelHint;
