@@ -455,10 +455,12 @@ public class SpannerStubSettings extends StubSettings<SpannerStubSettings> {
           ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.UNAVAILABLE)));
       definitions.put(
           "retry_policy_3_codes",
-          ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
+          ImmutableSet.copyOf(
+              Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
       definitions.put(
           "retry_policy_2_codes",
-          ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
+          ImmutableSet.copyOf(
+              Lists.<StatusCode.Code>newArrayList(StatusCode.Code.RESOURCE_EXHAUSTED)));
       definitions.put(
           "no_retry_0_codes", ImmutableSet.copyOf(Lists.<StatusCode.Code>newArrayList()));
       RETRYABLE_CODE_DEFINITIONS = definitions.build();
