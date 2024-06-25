@@ -81,8 +81,8 @@ public interface ListDatabasesResponseOrBuilder
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-   * of the matching databases.
+   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+   * call to fetch more of the matching databases.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -95,8 +95,8 @@ public interface ListDatabasesResponseOrBuilder
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-   * of the matching databases.
+   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+   * call to fetch more of the matching databases.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
