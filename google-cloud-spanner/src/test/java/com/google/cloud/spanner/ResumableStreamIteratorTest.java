@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.client.util.BackOff;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Duration;
@@ -53,6 +54,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
 
 /** Unit tests for {@link ResumableStreamIterator}. */
@@ -69,15 +72,12 @@ public class ResumableStreamIteratorTest {
     void close();
   }
 
-  @Parameterized.Parameter(0)
+  @Parameter(0)
   public ErrorCode errorCodeParameter;
 
-  @Parameterized.Parameters(name = "errorCodeParameter = {0}")
+  @Parameters(name = "errorCodeParameter = {0}")
   public static List<ErrorCode> data() {
-    List<ErrorCode> params = new ArrayList<>();
-    params.add(ErrorCode.UNAVAILABLE);
-    params.add(ErrorCode.RESOURCE_EXHAUSTED);
-    return params;
+    return ImmutableList.of(ErrorCode.UNAVAILABLE, ErrorCode.RESOURCE_EXHAUSTED);
   }
 
   private static StatusRuntimeException statusWithRetryInfo(ErrorCode code) {
@@ -157,7 +157,7 @@ public class ResumableStreamIteratorTest {
             maxBufferSize,
             "",
             new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),
-            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer("")),
+            new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override
