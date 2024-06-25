@@ -110,11 +110,11 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   @Override
   public CompletableResultCode export(Collection<MetricData> collection) {
     if (isShutdown.get()) {
-      logger.log(Level.WARNING, "Exporter is shutting down");
+      logger.log(Level.WARNING, "Exporter is shut down");
       return CompletableResultCode.ofFailure();
     }
 
-    lastExportCode = exportSpannerClientMetrics(collection);
+    this.lastExportCode = exportSpannerClientMetrics(collection);
     return lastExportCode;
   }
 
@@ -131,12 +131,12 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
       return CompletableResultCode.ofSuccess();
     }
 
-    // Verifies metrics project id are the same as the spanner project id set on this client
+    // Verifies metrics project id is the same as the spanner project id set on this client
     if (!spannerMetricData.stream()
         .flatMap(metricData -> metricData.getData().getPoints().stream())
         .allMatch(
             pd -> spannerProjectId.equals(SpannerCloudMonitoringExporterUtils.getProjectId(pd)))) {
-      logger.log(Level.WARNING, "Metric data has different a projectId. Skip exporting.");
+      logger.log(Level.WARNING, "Metric data has a different projectId. Skipping export.");
       return CompletableResultCode.ofFailure();
     }
 
@@ -199,8 +199,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
               .setName(projectName.toString())
               .addAllTimeSeries(batch)
               .build();
-      ApiFuture<Empty> f = this.client.createServiceTimeSeriesCallable().futureCall(req);
-      batchResults.add(f);
+      batchResults.add(this.client.createServiceTimeSeriesCallable().futureCall(req));
     }
 
     return ApiFutures.allAsList(batchResults);

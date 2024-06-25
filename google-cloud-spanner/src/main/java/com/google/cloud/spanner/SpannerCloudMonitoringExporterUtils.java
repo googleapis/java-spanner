@@ -60,6 +60,8 @@ class SpannerCloudMonitoringExporterUtils {
   private static final Logger logger =
       Logger.getLogger(SpannerCloudMonitoringExporterUtils.class.getName());
 
+  private SpannerCloudMonitoringExporterUtils() {}
+
   static String getProjectId(PointData pointData) {
     return pointData.getAttributes().get(PROJECT_ID_KEY);
   }
