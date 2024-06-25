@@ -72,7 +72,9 @@ import io.opentelemetry.api.common.Attributes;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -1634,8 +1636,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @Override
   public ApiTracerFactory getApiTracerFactory() {
+    List<ApiTracerFactory> apiTracerFactories = new ArrayList();
     // Prefer any direct ApiTracerFactory that might have been set on the builder.
-    return MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory());
+    apiTracerFactories.add(
+        MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory()));
+
+    return new CompositeTracerFactory(apiTracerFactories);
   }
 
   private ApiTracerFactory getDefaultApiTracerFactory() {
