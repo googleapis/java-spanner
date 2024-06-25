@@ -229,7 +229,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   public void asyncRunnerCommitFails() throws Exception {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
-            Status.RESOURCE_EXHAUSTED
+            Status.INVALID_ARGUMENT
                 .withDescription("mutation limit exceeded")
                 .asRuntimeException()));
     AsyncRunner runner = client().runAsync();
@@ -245,7 +245,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
     assertThat(e.getCause()).isInstanceOf(SpannerException.class);
     SpannerException se = (SpannerException) e.getCause();
-    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
     assertThat(se.getMessage()).contains("mutation limit exceeded");
   }
 
@@ -432,7 +432,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
   public void asyncRunnerWithBatchUpdateCommitFails() throws Exception {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
-            Status.RESOURCE_EXHAUSTED
+            Status.INVALID_ARGUMENT
                 .withDescription("mutation limit exceeded")
                 .asRuntimeException()));
     AsyncRunner runner = client().runAsync();
@@ -448,7 +448,7 @@ public class AsyncRunnerTest extends AbstractAsyncTransactionTest {
     ExecutionException e = assertThrows(ExecutionException.class, () -> updateCount.get());
     assertThat(e.getCause()).isInstanceOf(SpannerException.class);
     SpannerException se = (SpannerException) e.getCause();
-    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+    assertThat(se.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
     assertThat(se.getMessage()).contains("mutation limit exceeded");
   }
 
