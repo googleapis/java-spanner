@@ -208,7 +208,7 @@ public class MultiplexedSessionDatabaseClientTest {
 
   @Test
   public void testThrowExceptionMultiplexedSessionEnvVarInvalidValues() throws Exception {
-    // assumeTrue(isJava8() && !isWindows());
+    assumeTrue(isJava8() && !isWindows());
     assumeFalse(System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS"));
 
     // Assert that the mux sessions setting is respected by default.
