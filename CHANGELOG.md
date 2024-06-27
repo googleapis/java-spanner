@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.70.0](https://github.com/googleapis/java-spanner/compare/v6.69.0...v6.70.0) (2024-06-27)
+
+
+### Features
+
+* Add field order_by in spanner.proto ([#3064](https://github.com/googleapis/java-spanner/issues/3064)) ([52ee196](https://github.com/googleapis/java-spanner/commit/52ee1967ee3a37fb0482ad8b51c6e77e28b79844))
+
+
+### Bug Fixes
+
+* Do not end transaction span when rolling back to savepoint ([#3167](https://github.com/googleapis/java-spanner/issues/3167)) ([8ec0cf2](https://github.com/googleapis/java-spanner/commit/8ec0cf2032dece545c9e4d8a794b80d06550b710))
+* Remove unused DmlBatch span ([#3147](https://github.com/googleapis/java-spanner/issues/3147)) ([f7891c1](https://github.com/googleapis/java-spanner/commit/f7891c1ca42727c775cdbe91bff8d55191a3d799))
+
+
+### Dependencies
+
+* Update dependencies ([#3181](https://github.com/googleapis/java-spanner/issues/3181)) ([0c787e6](https://github.com/googleapis/java-spanner/commit/0c787e6fa67d2a259a76bbd2d7f1cfa20a1dbee8))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.32.0 ([#3184](https://github.com/googleapis/java-spanner/issues/3184)) ([9c85a6f](https://github.com/googleapis/java-spanner/commit/9c85a6fabea527253ea40a8970cc9071804d94c4))
+* Update dependency commons-cli:commons-cli to v1.8.0 ([#3073](https://github.com/googleapis/java-spanner/issues/3073)) ([36b5340](https://github.com/googleapis/java-spanner/commit/36b5340ef8bf197fbc8ed882f76caff9a6fe84b6))
+
 ## [6.69.0](https://github.com/googleapis/java-spanner/compare/v6.68.1...v6.69.0) (2024-06-12)
 
 
