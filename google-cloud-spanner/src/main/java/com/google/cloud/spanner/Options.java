@@ -18,6 +18,7 @@ package com.google.cloud.spanner;
 
 import com.google.common.base.Preconditions;
 import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import java.io.Serializable;
 import java.time.Duration;
@@ -48,6 +49,29 @@ public final class Options implements Serializable {
         if (e.proto.equals(proto)) return e;
       }
       return RpcPriority.UNSPECIFIED;
+    }
+  }
+
+  /**
+   * OrderBy for an RPC invocation. The default orderby is {@link #PRIMARY_KEY}. This enum can be
+   * used to control the order in which rows are returned from a read.
+   */
+  public enum RpcOrderBy {
+    PRIMARY_KEY(OrderBy.ORDER_BY_PRIMARY_KEY),
+    NO_ORDER(OrderBy.ORDER_BY_NO_ORDER),
+    UNSPECIFIED(OrderBy.ORDER_BY_UNSPECIFIED);
+
+    private final OrderBy proto;
+
+    RpcOrderBy(OrderBy proto) {
+      this.proto = Preconditions.checkNotNull(proto);
+    }
+
+    public static RpcOrderBy fromProto(OrderBy proto) {
+      for (RpcOrderBy e : RpcOrderBy.values()) {
+        if (e.proto.equals(proto)) return e;
+      }
+      return RpcOrderBy.UNSPECIFIED;
     }
   }
 
@@ -129,6 +153,11 @@ public final class Options implements Serializable {
   public static ReadOption limit(long limit) {
     Preconditions.checkArgument(limit > 0, "Limit should be greater than 0");
     return new LimitOption(limit);
+  }
+
+  /** Specifies the order_by to use for the RPC. */
+  public static ReadOption orderBy(RpcOrderBy orderBy) {
+    return new OrderByOption(orderBy);
   }
 
   /**
@@ -439,6 +468,7 @@ public final class Options implements Serializable {
   private Boolean dataBoostEnabled;
   private DirectedReadOptions directedReadOptions;
   private DecodeMode decodeMode;
+  private RpcOrderBy orderBy;
 
   // Construction is via factory methods below.
   private Options() {}
@@ -567,6 +597,14 @@ public final class Options implements Serializable {
     return decodeMode;
   }
 
+  boolean hasOrderBy() {
+    return orderBy != null;
+  }
+
+  OrderBy orderBy() {
+    return orderBy == null ? null : orderBy.proto;
+  }
+
   @Override
   public String toString() {
     StringBuilder b = new StringBuilder();
@@ -620,6 +658,9 @@ public final class Options implements Serializable {
     if (decodeMode != null) {
       b.append("decodeMode: ").append(decodeMode).append(' ');
     }
+    if (orderBy != null) {
+      b.append("orderBy: ").append(orderBy).append(' ');
+    }
     return b.toString();
   }
 
@@ -658,7 +699,8 @@ public final class Options implements Serializable {
         && Objects.equals(withOptimisticLock(), that.withOptimisticLock())
         && Objects.equals(withExcludeTxnFromChangeStreams(), that.withExcludeTxnFromChangeStreams())
         && Objects.equals(dataBoostEnabled(), that.dataBoostEnabled())
-        && Objects.equals(directedReadOptions(), that.directedReadOptions());
+        && Objects.equals(directedReadOptions(), that.directedReadOptions())
+        && Objects.equals(orderBy(), that.orderBy());
   }
 
   @Override
@@ -714,6 +756,9 @@ public final class Options implements Serializable {
     }
     if (decodeMode != null) {
       result = 31 * result + decodeMode.hashCode();
+    }
+    if (orderBy != null) {
+      result = 31 * result + orderBy.hashCode();
     }
     return result;
   }
@@ -792,6 +837,19 @@ public final class Options implements Serializable {
     @Override
     void appendToOptions(Options options) {
       options.limit = limit;
+    }
+  }
+
+  static class OrderByOption extends InternalOption implements ReadOption {
+    private final RpcOrderBy orderBy;
+
+    OrderByOption(RpcOrderBy orderBy) {
+      this.orderBy = orderBy;
+    }
+
+    @Override
+    void appendToOptions(Options options) {
+      options.orderBy = orderBy;
     }
   }
 

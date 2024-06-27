@@ -18,16 +18,19 @@ package com.google.cloud.spanner;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.DirectedReadOptions.IncludeReplicas;
 import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,7 +82,8 @@ public class OptionsTest {
             Options.limit(10),
             Options.prefetchChunks(1),
             Options.dataBoostEnabled(true),
-            Options.directedRead(DIRECTED_READ_OPTIONS));
+            Options.directedRead(DIRECTED_READ_OPTIONS),
+            Options.orderBy(RpcOrderBy.NO_ORDER));
     assertThat(options.hasLimit()).isTrue();
     assertThat(options.limit()).isEqualTo(10);
     assertThat(options.hasPrefetchChunks()).isTrue();
@@ -87,6 +91,7 @@ public class OptionsTest {
     assertThat(options.hasDataBoostEnabled()).isTrue();
     assertTrue(options.dataBoostEnabled());
     assertTrue(options.hasDirectedReadOptions());
+    assertTrue(options.hasOrderBy());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
   }
 
@@ -101,6 +106,7 @@ public class OptionsTest {
     assertThat(options.hasTag()).isFalse();
     assertThat(options.hasDataBoostEnabled()).isFalse();
     assertThat(options.hasDirectedReadOptions()).isFalse();
+    assertThat(options.hasOrderBy()).isFalse();
     assertNull(options.withExcludeTxnFromChangeStreams());
     assertThat(options.toString()).isEqualTo("");
     assertThat(options.equals(options)).isTrue();
@@ -182,7 +188,8 @@ public class OptionsTest {
             Options.limit(limit),
             Options.tag(tag),
             Options.dataBoostEnabled(true),
-            Options.directedRead(DIRECTED_READ_OPTIONS));
+            Options.directedRead(DIRECTED_READ_OPTIONS),
+            Options.orderBy(RpcOrderBy.NO_ORDER));
 
     assertThat(options.toString())
         .isEqualTo(
@@ -197,10 +204,14 @@ public class OptionsTest {
                 + " "
                 + "directedReadOptions: "
                 + DIRECTED_READ_OPTIONS
+                + " "
+                + "orderBy: "
+                + RpcOrderBy.NO_ORDER
                 + " ");
     assertThat(options.tag()).isEqualTo(tag);
     assertEquals(dataBoost, options.dataBoostEnabled());
     assertEquals(DIRECTED_READ_OPTIONS, options.directedReadOptions());
+    assertEquals(OrderBy.ORDER_BY_NO_ORDER, options.orderBy());
   }
 
   @Test
@@ -352,6 +363,24 @@ public class OptionsTest {
     Options options = Options.fromTransactionOptions(Options.priority(priority));
     assertTrue(options.hasPriority());
     assertEquals("priority: " + priority + " ", options.toString());
+  }
+
+  @Test
+  public void testReadOptionsOrderBy() {
+    RpcOrderBy orderBy = RpcOrderBy.NO_ORDER;
+    Options options = Options.fromReadOptions(Options.orderBy(orderBy));
+    assertTrue(options.hasOrderBy());
+    assertEquals("orderBy: " + orderBy + " ", options.toString());
+  }
+
+  @Test
+  public void testReadOptionsWithOrderByEquality() {
+    Options optionsWithNoOrderBy1 = Options.fromReadOptions(Options.orderBy(RpcOrderBy.NO_ORDER));
+    Options optionsWithNoOrderBy2 = Options.fromReadOptions(Options.orderBy(RpcOrderBy.NO_ORDER));
+    assertTrue(optionsWithNoOrderBy1.equals(optionsWithNoOrderBy2));
+
+    Options optionsWithPkOrder = Options.fromReadOptions(Options.orderBy(RpcOrderBy.PRIMARY_KEY));
+    assertFalse(optionsWithNoOrderBy1.equals(optionsWithPkOrder));
   }
 
   @Test

@@ -33,8 +33,11 @@ import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
+import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
+import com.google.spanner.v1.SessionName;
 import com.google.spanner.v1.TransactionSelector;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -221,6 +224,21 @@ public class AbstractReadContextTest {
             Options.fromQueryOptions(Options.dataBoostEnabled(true)),
             false);
     assertTrue(request.getDataBoostEnabled());
+  }
+
+  @Test
+  public void testGetReadRequestBuilderWithOrderBy() {
+    ReadRequest request =
+        ReadRequest.newBuilder()
+            .setSession(
+                SessionName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SESSION]").toString())
+            .setTransaction(TransactionSelector.newBuilder().build())
+            .setTable("table110115790")
+            .setIndex("index100346066")
+            .addAllColumns(new ArrayList<String>())
+            .setOrderByValue(2)
+            .build();
+    assertEquals(OrderBy.ORDER_BY_NO_ORDER, request.getOrderBy());
   }
 
   @Test
