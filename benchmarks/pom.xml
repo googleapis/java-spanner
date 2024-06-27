@@ -34,7 +34,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <junixsocket.version>2.9.1</junixsocket.version>
-    <opentelemetry.version>1.36.0</opentelemetry.version>
+    <opentelemetry.version>1.39.0</opentelemetry.version>
   </properties>
 
   <dependencies>
@@ -49,12 +49,12 @@
     <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-trace</artifactId>
-      <version>0.25.2</version>
+      <version>0.29.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-metrics</artifactId>
-      <version>0.25.2</version>
+      <version>0.29.0</version>
     </dependency>
     <!-- OpenTelemetry test dependencies -->
     <dependency>
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-bom</artifactId>
-      <version>1.37.0</version>
+      <version>1.39.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
