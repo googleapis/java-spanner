@@ -667,6 +667,25 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets whether this connection should keep read/write transactions alive by executing a SELECT 1
+   * once every 10 seconds during inactive read/write transactions.
+   *
+   * <p>NOTE: This will keep read/write transactions alive and hold on to locks until it is
+   * explicitly committed or rolled back.
+   */
+  default void setKeepTransactionAlive(boolean keepTransactionAlive) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * @return true if this connection keeps read/write transactions alive by executing a SELECT 1
+   *     once every 10 seconds during inactive read/write transactions.
+   */
+  default boolean isKeepTransactionAlive() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
    * Commits the current transaction of this connection. All mutations that have been buffered
    * during the current transaction will be written to the database.
    *

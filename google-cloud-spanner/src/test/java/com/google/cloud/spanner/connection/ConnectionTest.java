@@ -258,6 +258,11 @@ public class ConnectionTest {
             connection::setDelayTransactionStartUntilFirstWrite,
             connection::isDelayTransactionStartUntilFirstWrite);
         assertResetBooleanProperty(
+            connection,
+            false,
+            connection::setKeepTransactionAlive,
+            connection::isKeepTransactionAlive);
+        assertResetBooleanProperty(
             connection, false, connection::setDataBoostEnabled, connection::isDataBoostEnabled);
         assertResetBooleanProperty(
             connection, false, connection::setAutoPartitionMode, connection::isAutoPartitionMode);

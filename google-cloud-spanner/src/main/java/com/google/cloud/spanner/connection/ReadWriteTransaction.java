@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.connection.AbstractStatementParser.BEGIN_
 import static com.google.cloud.spanner.connection.AbstractStatementParser.COMMIT_STATEMENT;
 import static com.google.cloud.spanner.connection.AbstractStatementParser.ROLLBACK_STATEMENT;
 import static com.google.cloud.spanner.connection.AbstractStatementParser.RUN_BATCH_STATEMENT;
+import static com.google.cloud.spanner.connection.ConnectionOptions.tryParseLong;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.core.ApiFuture;
@@ -33,6 +34,7 @@ import com.google.cloud.spanner.AbortedDueToConcurrentModificationException;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.CommitResponse;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
@@ -45,6 +47,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.ThreadFactoryUtil;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
@@ -65,7 +68,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -84,6 +92,16 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private static final AttributeKey<Boolean> TRANSACTION_RETRIED =
       AttributeKey.booleanKey("transaction.retried");
   private static final Logger logger = Logger.getLogger(ReadWriteTransaction.class.getName());
+  private static final ThreadFactory KEEP_ALIVE_THREAD_FACTORY =
+      ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory(
+          "read-write-transaction-keep-alive", true);
+  private static final ScheduledExecutorService KEEP_ALIVE_SERVICE =
+      Executors.newSingleThreadScheduledExecutor(KEEP_ALIVE_THREAD_FACTORY);
+  private static final ParsedStatement SELECT1_STATEMENT =
+      AbstractStatementParser.getInstance(Dialect.GOOGLE_STANDARD_SQL)
+          .parse(Statement.of("SELECT 1"));
+  private static final long DEFAULT_KEEP_ALIVE_INTERVAL_MILLIS = 8000L;
+
   private static final AtomicLong ID_GENERATOR = new AtomicLong();
   private static final String MAX_INTERNAL_RETRIES_EXCEEDED =
       "Internal transaction retry maximum exceeded";
@@ -126,6 +144,9 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private TransactionManager txManager;
   private final boolean retryAbortsInternally;
   private final boolean delayTransactionStartUntilFirstWrite;
+  private final boolean keepTransactionAlive;
+  private final long keepAliveIntervalMillis;
+  private final ReentrantLock keepAliveLock;
   private final SavepointSupport savepointSupport;
   private int transactionRetryAttempts;
   private int successfulRetries;
@@ -140,6 +161,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   private final List<RetriableStatement> statements = new ArrayList<>();
   private final List<Mutation> mutations = new ArrayList<>();
   private Timestamp transactionStarted;
+  private ScheduledFuture<?> keepAliveFuture;
 
   private static final class RollbackToSavepointException extends Exception {
     private final Savepoint savepoint;
@@ -153,11 +175,27 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     }
   }
 
+  private final class StatementResultCallback<V> implements ApiFutureCallback<V> {
+    @Override
+    public void onFailure(Throwable t) {
+      if (t instanceof SpannerException) {
+        handlePossibleInvalidatingException((SpannerException) t);
+      }
+      maybeScheduleKeepAlivePing();
+    }
+
+    @Override
+    public void onSuccess(V result) {
+      maybeScheduleKeepAlivePing();
+    }
+  }
+
   static class Builder extends AbstractMultiUseTransaction.Builder<Builder, ReadWriteTransaction> {
     private boolean useAutoSavepointsForEmulator;
     private DatabaseClient dbClient;
     private Boolean retryAbortsInternally;
     private boolean delayTransactionStartUntilFirstWrite;
+    private boolean keepTransactionAlive;
     private boolean returnCommitStats;
     private Duration maxCommitDelay;
     private SavepointSupport savepointSupport;
@@ -178,6 +216,11 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
 
     Builder setDelayTransactionStartUntilFirstWrite(boolean delayTransactionStartUntilFirstWrite) {
       this.delayTransactionStartUntilFirstWrite = delayTransactionStartUntilFirstWrite;
+      return this;
+    }
+
+    Builder setKeepTransactionAlive(boolean keepTransactionAlive) {
+      this.keepTransactionAlive = keepTransactionAlive;
       return this;
     }
 
@@ -237,6 +280,16 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
             : DEFAULT_MAX_INTERNAL_RETRIES;
     this.dbClient = builder.dbClient;
     this.delayTransactionStartUntilFirstWrite = builder.delayTransactionStartUntilFirstWrite;
+    this.keepTransactionAlive = builder.keepTransactionAlive;
+    this.keepAliveIntervalMillis =
+        this.keepTransactionAlive
+            ? tryParseLong(
+                System.getProperty(
+                    "spanner.connection.keep_alive_interval_millis",
+                    String.valueOf(DEFAULT_KEEP_ALIVE_INTERVAL_MILLIS)),
+                DEFAULT_KEEP_ALIVE_INTERVAL_MILLIS)
+            : 0L;
+    this.keepAliveLock = this.keepTransactionAlive ? new ReentrantLock() : null;
     this.retryAbortsInternally = builder.retryAbortsInternally;
     this.savepointSupport = builder.savepointSupport;
     this.transactionRetryListeners = builder.transactionRetryListeners;
@@ -354,6 +407,64 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     checkTimedOut();
     if (transactionStarted == null) {
       transactionStarted = Timestamp.now();
+    }
+  }
+
+  private boolean shouldPing() {
+    return isActive()
+        && keepAliveLock != null
+        && keepTransactionAlive
+        && !timedOutOrCancelled
+        && rolledBackToSavepointException == null;
+  }
+
+  private void maybeScheduleKeepAlivePing() {
+    if (shouldPing()) {
+      keepAliveLock.lock();
+      try {
+        if (keepAliveFuture == null || keepAliveFuture.isDone()) {
+          keepAliveFuture =
+              KEEP_ALIVE_SERVICE.schedule(
+                  new KeepAliveRunnable(),
+                  keepAliveIntervalMillis > 0
+                      ? keepAliveIntervalMillis
+                      : DEFAULT_KEEP_ALIVE_INTERVAL_MILLIS,
+                  TimeUnit.MILLISECONDS);
+        }
+      } finally {
+        keepAliveLock.unlock();
+      }
+    }
+  }
+
+  private void cancelScheduledKeepAlivePing() {
+    if (keepAliveLock != null) {
+      keepAliveLock.lock();
+      try {
+        if (keepAliveFuture != null) {
+          keepAliveFuture.cancel(false);
+        }
+      } finally {
+        keepAliveLock.unlock();
+      }
+    }
+  }
+
+  private class KeepAliveRunnable implements Runnable {
+    @Override
+    public void run() {
+      if (shouldPing()) {
+        // Do a shoot-and-forget ping and schedule a new ping over 8 seconds after this ping has
+        // finished.
+        ApiFuture<ResultSet> future =
+            executeQueryAsync(
+                CallType.SYNC,
+                SELECT1_STATEMENT,
+                AnalyzeMode.NONE,
+                Options.tag("connection.transaction-keep-alive"));
+        future.addListener(
+            ReadWriteTransaction.this::maybeScheduleKeepAlivePing, MoreExecutors.directExecutor());
+      }
     }
   }
 
@@ -532,20 +643,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
       } else {
         res = super.executeQueryAsync(callType, statement, analyzeMode, options);
       }
-      ApiFutures.addCallback(
-          res,
-          new ApiFutureCallback<ResultSet>() {
-            @Override
-            public void onFailure(Throwable t) {
-              if (t instanceof SpannerException) {
-                handlePossibleInvalidatingException((SpannerException) t);
-              }
-            }
-
-            @Override
-            public void onSuccess(ResultSet result) {}
-          },
-          MoreExecutors.directExecutor());
+      ApiFutures.addCallback(res, new StatementResultCallback<>(), MoreExecutors.directExecutor());
       return res;
     }
   }
@@ -656,20 +754,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
               },
               SpannerGrpc.getExecuteSqlMethod());
     }
-    ApiFutures.addCallback(
-        res,
-        new ApiFutureCallback<Tuple<Long, ResultSet>>() {
-          @Override
-          public void onFailure(Throwable t) {
-            if (t instanceof SpannerException) {
-              handlePossibleInvalidatingException((SpannerException) t);
-            }
-          }
-
-          @Override
-          public void onSuccess(Tuple<Long, ResultSet> result) {}
-        },
-        MoreExecutors.directExecutor());
+    ApiFutures.addCallback(res, new StatementResultCallback<>(), MoreExecutors.directExecutor());
     return res;
   }
 
@@ -730,20 +815,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 },
                 SpannerGrpc.getExecuteBatchDmlMethod());
       }
-      ApiFutures.addCallback(
-          res,
-          new ApiFutureCallback<long[]>() {
-            @Override
-            public void onFailure(Throwable t) {
-              if (t instanceof SpannerException) {
-                handlePossibleInvalidatingException((SpannerException) t);
-              }
-            }
-
-            @Override
-            public void onSuccess(long[] result) {}
-          },
-          MoreExecutors.directExecutor());
+      ApiFutures.addCallback(res, new StatementResultCallback<>(), MoreExecutors.directExecutor());
       return res;
     }
   }
@@ -781,6 +853,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
   public ApiFuture<Void> commitAsync(CallType callType) {
     try (Scope ignore = span.makeCurrent()) {
       checkOrCreateValidTransaction(COMMIT_STATEMENT, callType);
+      cancelScheduledKeepAlivePing();
       state = UnitOfWorkState.COMMITTING;
       commitResponseFuture = SettableApiFuture.create();
       ApiFuture<Void> res;
@@ -1146,6 +1219,7 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
     ConnectionPreconditions.checkState(
         state == UnitOfWorkState.STARTED || state == UnitOfWorkState.ABORTED,
         "This transaction has status " + state.name());
+    cancelScheduledKeepAlivePing();
     if (updateStatusAndEndSpan) {
       state = UnitOfWorkState.ROLLED_BACK;
     }

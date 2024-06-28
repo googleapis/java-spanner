@@ -186,6 +186,15 @@
       "exampleStatements": ["show spanner.delay_transaction_start_until_first_write","show variable spanner.delay_transaction_start_until_first_write"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.KEEP_TRANSACTION_ALIVE",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_KEEP_TRANSACTION_ALIVE",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.keep_transaction_alive\\s*\\z",
+      "method": "statementShowKeepTransactionAlive",
+      "exampleStatements": ["show spanner.keep_transaction_alive","show variable spanner.keep_transaction_alive"]
+    },
+    {
       "name": "SHOW [VARIABLE] TRANSACTION ISOLATION LEVEL",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -768,6 +777,21 @@
       "exampleStatements": ["set spanner.delay_transaction_start_until_first_write = true", "set spanner.delay_transaction_start_until_first_write = false", "set spanner.delay_transaction_start_until_first_write to true", "set spanner.delay_transaction_start_until_first_write to false"],
       "setStatement": {
         "propertyName": "SPANNER.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.KEEP_TRANSACTION_ALIVE = TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_KEEP_TRANSACTION_ALIVE",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.keep_transaction_alive(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetKeepTransactionAlive",
+      "exampleStatements": ["set spanner.keep_transaction_alive = true", "set spanner.keep_transaction_alive = false", "set spanner.keep_transaction_alive to true", "set spanner.keep_transaction_alive to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.KEEP_TRANSACTION_ALIVE",
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"

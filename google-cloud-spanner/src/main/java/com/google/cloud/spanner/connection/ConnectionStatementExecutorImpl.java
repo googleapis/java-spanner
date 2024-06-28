@@ -31,6 +31,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
@@ -57,6 +58,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
@@ -386,6 +388,20 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
             "%sDELAY_TRANSACTION_START_UNTIL_FIRST_WRITE", getNamespace(connection.getDialect())),
         getConnection().isDelayTransactionStartUntilFirstWrite(),
         SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE);
+  }
+
+  @Override
+  public StatementResult statementSetKeepTransactionAlive(Boolean keepTransactionAlive) {
+    getConnection().setKeepTransactionAlive(keepTransactionAlive);
+    return noResult(SET_KEEP_TRANSACTION_ALIVE);
+  }
+
+  @Override
+  public StatementResult statementShowKeepTransactionAlive() {
+    return resultSet(
+        String.format("%sKEEP_TRANSACTION_ALIVE", getNamespace(connection.getDialect())),
+        getConnection().isKeepTransactionAlive(),
+        SHOW_KEEP_TRANSACTION_ALIVE);
   }
 
   @Override
