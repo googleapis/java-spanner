@@ -25,6 +25,7 @@ import com.google.cloud.spanner.BatchReadOnlyTransaction;
 import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
+import com.google.cloud.spanner.OpenTelemetryContextKeys;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Partition;
@@ -47,6 +48,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -358,40 +360,47 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
                 }
               });
     }
-    ApiFuture<T> f = statementExecutor.submit(context.wrap(callable));
-    final SpannerAsyncExecutionException caller =
-        callType == CallType.ASYNC
-            ? new SpannerAsyncExecutionException(statement.getStatement())
-            : null;
-    final ApiFuture<T> future =
-        ApiFutures.catching(
-            f,
-            Throwable.class,
-            input -> {
-              if (caller != null) {
-                input.addSuppressed(caller);
+    // Register the name of the thread that called this method as the thread name that should be
+    // traced.
+    try (Scope ignore =
+        io.opentelemetry.context.Context.current()
+            .with(OpenTelemetryContextKeys.THREAD_NAME_KEY, Thread.currentThread().getName())
+            .makeCurrent()) {
+      ApiFuture<T> f = statementExecutor.submit(context.wrap(callable));
+      final SpannerAsyncExecutionException caller =
+          callType == CallType.ASYNC
+              ? new SpannerAsyncExecutionException(statement.getStatement())
+              : null;
+      final ApiFuture<T> future =
+          ApiFutures.catching(
+              f,
+              Throwable.class,
+              input -> {
+                if (caller != null) {
+                  input.addSuppressed(caller);
+                }
+                throw SpannerExceptionFactory.asSpannerException(input);
+              },
+              MoreExecutors.directExecutor());
+      synchronized (this) {
+        this.currentlyRunningStatementFuture = future;
+      }
+      future.addListener(
+          new Runnable() {
+            @Override
+            public void run() {
+              synchronized (this) {
+                if (currentlyRunningStatementFuture == future) {
+                  currentlyRunningStatementFuture = null;
+                }
               }
-              throw SpannerExceptionFactory.asSpannerException(input);
-            },
-            MoreExecutors.directExecutor());
-    synchronized (this) {
-      this.currentlyRunningStatementFuture = future;
+              if (isSingleUse()) {
+                endUnitOfWorkSpan();
+              }
+            }
+          },
+          MoreExecutors.directExecutor());
+      return future;
     }
-    future.addListener(
-        new Runnable() {
-          @Override
-          public void run() {
-            synchronized (this) {
-              if (currentlyRunningStatementFuture == future) {
-                currentlyRunningStatementFuture = null;
-              }
-            }
-            if (isSingleUse()) {
-              endUnitOfWorkSpan();
-            }
-          }
-        },
-        MoreExecutors.directExecutor());
-    return future;
   }
 }
