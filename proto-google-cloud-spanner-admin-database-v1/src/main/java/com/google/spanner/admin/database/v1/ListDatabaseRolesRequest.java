@@ -23,7 +23,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
+ * The request for
+ * [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.ListDatabaseRolesRequest}
@@ -74,7 +75,7 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
    * <pre>
    * Required. The database whose roles should be listed.
    * Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
    * <code>
@@ -101,7 +102,7 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
    * <pre>
    * Required. The database whose roles should be listed.
    * Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
    * <code>
@@ -151,8 +152,9 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-   * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+   * from a previous
+   * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -176,8 +178,9 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-   * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+   * from a previous
+   * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -379,7 +382,8 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
    *
    *
    * <pre>
-   * The request for [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
+   * The request for
+   * [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.ListDatabaseRolesRequest}
@@ -596,7 +600,7 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      * <pre>
      * Required. The database whose roles should be listed.
      * Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
      * <code>
@@ -622,7 +626,7 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      * <pre>
      * Required. The database whose roles should be listed.
      * Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
      * <code>
@@ -648,7 +652,7 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      * <pre>
      * Required. The database whose roles should be listed.
      * Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
      * <code>
@@ -673,7 +677,7 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      * <pre>
      * Required. The database whose roles should be listed.
      * Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
      * <code>
@@ -694,7 +698,7 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      * <pre>
      * Required. The database whose roles should be listed.
      * Values are of the form
-     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+     * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
      * </pre>
      *
      * <code>
@@ -777,8 +781,9 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-     * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+     * from a previous
+     * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -801,8 +806,9 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-     * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+     * from a previous
+     * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -825,8 +831,9 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-     * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+     * from a previous
+     * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -848,8 +855,9 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-     * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+     * from a previous
+     * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>
@@ -867,8 +875,9 @@ public final class ListDatabaseRolesRequest extends com.google.protobuf.Generate
      *
      * <pre>
      * If non-empty, `page_token` should contain a
-     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-     * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+     * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+     * from a previous
+     * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
      * </pre>
      *
      * <code>string page_token = 3;</code>

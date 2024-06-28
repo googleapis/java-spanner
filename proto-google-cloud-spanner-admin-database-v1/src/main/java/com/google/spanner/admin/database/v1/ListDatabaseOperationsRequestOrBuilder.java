@@ -73,7 +73,9 @@ public interface ListDatabaseOperationsRequestOrBuilder
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
    *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-   *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
+   *      for
+   *      [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]
+   *      is
    *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
    *      `metadata.&#64;type` must be specified first, if filtering on metadata
@@ -95,7 +97,8 @@ public interface ListDatabaseOperationsRequestOrBuilder
    *     `(metadata.name:restored_howl) AND` &#92;
    *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Return operations where:
-   *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
+   *     * The operation's metadata type is
+   *     [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
    *     * The database is restored from a backup.
    *     * The backup name contains "backup_howl".
    *     * The restored database's name contains "restored_howl".
@@ -126,7 +129,9 @@ public interface ListDatabaseOperationsRequestOrBuilder
    *   * `name` - The name of the long-running operation
    *   * `done` - False if the operation is in progress, else true.
    *   * `metadata.&#64;type` - the type of metadata. For example, the type string
-   *      for [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata] is
+   *      for
+   *      [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata]
+   *      is
    *      `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *   * `metadata.&lt;field_name&gt;` - any field in metadata.value.
    *      `metadata.&#64;type` must be specified first, if filtering on metadata
@@ -148,7 +153,8 @@ public interface ListDatabaseOperationsRequestOrBuilder
    *     `(metadata.name:restored_howl) AND` &#92;
    *     `(metadata.progress.start_time &lt; &#92;"2018-03-28T14:50:00Z&#92;") AND` &#92;
    *     `(error:*)` - Return operations where:
-   *     * The operation's metadata type is [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
+   *     * The operation's metadata type is
+   *     [RestoreDatabaseMetadata][google.spanner.admin.database.v1.RestoreDatabaseMetadata].
    *     * The database is restored from a backup.
    *     * The backup name contains "backup_howl".
    *     * The restored database's name contains "restored_howl".
@@ -182,8 +188,9 @@ public interface ListDatabaseOperationsRequestOrBuilder
    * <pre>
    * If non-empty, `page_token` should contain a
    * [next_page_token][google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token]
-   * from a previous [ListDatabaseOperationsResponse][google.spanner.admin.database.v1.ListDatabaseOperationsResponse] to the
-   * same `parent` and with the same `filter`.
+   * from a previous
+   * [ListDatabaseOperationsResponse][google.spanner.admin.database.v1.ListDatabaseOperationsResponse]
+   * to the same `parent` and with the same `filter`.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -197,8 +204,9 @@ public interface ListDatabaseOperationsRequestOrBuilder
    * <pre>
    * If non-empty, `page_token` should contain a
    * [next_page_token][google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token]
-   * from a previous [ListDatabaseOperationsResponse][google.spanner.admin.database.v1.ListDatabaseOperationsResponse] to the
-   * same `parent` and with the same `filter`.
+   * from a previous
+   * [ListDatabaseOperationsResponse][google.spanner.admin.database.v1.ListDatabaseOperationsResponse]
+   * to the same `parent` and with the same `filter`.
    * </pre>
    *
    * <code>string page_token = 4;</code>
