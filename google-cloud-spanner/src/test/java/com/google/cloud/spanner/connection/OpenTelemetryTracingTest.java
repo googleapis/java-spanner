@@ -19,7 +19,6 @@ package com.google.cloud.spanner.connection;
 import static com.google.cloud.spanner.connection.Repeat.twice;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.spanner.MockSpannerServiceImpl;
@@ -276,8 +275,7 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
                 ImmutableList.of(INSERT_STATEMENT.getSql(), INSERT_STATEMENT.getSql())),
             spans);
     String threadName = executeQuerySpan.getAttributes().get(AttributeKey.stringKey("thread.name"));
-    assertNotNull(threadName);
-    assertTrue(threadName, threadName.startsWith("connection-executor-"));
+    assertEquals(Thread.currentThread().getName(), threadName);
     assertContains("CloudSpannerOperation.Commit", spans);
 
     assertParent(

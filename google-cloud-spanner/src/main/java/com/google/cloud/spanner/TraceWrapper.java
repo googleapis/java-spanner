@@ -156,10 +156,7 @@ class TraceWrapper {
       AttributesBuilder builder = Attributes.builder();
       if (this.enableExtendedTracing) {
         builder.put(DB_STATEMENT_KEY, statement.getSql());
-        String threadName = Context.current().get(OpenTelemetryContextKeys.THREAD_NAME_KEY);
-        builder.put(
-            THREAD_NAME_KEY,
-            MoreObjects.firstNonNull(threadName, Thread.currentThread().getName()));
+        builder.put(THREAD_NAME_KEY, getTraceThreadName());
       }
       if (options != null && options.hasTag()) {
         builder.put(STATEMENT_TAG_KEY, options.tag());
@@ -178,7 +175,7 @@ class TraceWrapper {
             StreamSupport.stream(statements.spliterator(), false)
                 .map(Statement::getSql)
                 .collect(Collectors.toList()));
-        builder.put(THREAD_NAME_KEY, Thread.currentThread().getName());
+        builder.put(THREAD_NAME_KEY, getTraceThreadName());
       }
       if (options != null && options.hasTag()) {
         builder.put(STATEMENT_TAG_KEY, options.tag());
@@ -186,5 +183,11 @@ class TraceWrapper {
       return builder.build();
     }
     return Attributes.empty();
+  }
+
+  private static String getTraceThreadName() {
+    return MoreObjects.firstNonNull(
+        Context.current().get(OpenTelemetryContextKeys.THREAD_NAME_KEY),
+        Thread.currentThread().getName());
   }
 }
