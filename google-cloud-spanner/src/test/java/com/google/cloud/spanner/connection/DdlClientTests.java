@@ -53,9 +53,7 @@ public class DdlClientTests {
 
   private DdlClient createSubject(DatabaseAdminClient client) {
     return DdlClient.newBuilder()
-        .setProjectId(projectId)
-        .setInstanceId(instanceId)
-        .setDatabaseName(databaseId)
+        .setDatabaseId(DatabaseId.of(projectId, instanceId, databaseId))
         .setDatabaseAdminClient(client)
         .build();
   }
