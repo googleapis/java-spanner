@@ -56,6 +56,7 @@ import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
@@ -1950,7 +1951,16 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
+      // Set channel affinity in GAX
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+      // Set channel affinity in gRPC-GCP
+      context =
+          context.withCallOptions(
+              context
+                  .getCallOptions()
+                  .withOption(
+                      GcpManagedChannel.AFFINITY_KEY,
+                      Option.CHANNEL_HINT.getLong(options).toString()));
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.
