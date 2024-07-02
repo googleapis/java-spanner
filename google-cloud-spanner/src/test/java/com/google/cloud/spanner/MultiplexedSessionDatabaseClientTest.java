@@ -16,8 +16,10 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
@@ -27,6 +29,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Duration;
@@ -110,10 +114,9 @@ public class MultiplexedSessionDatabaseClientTest {
   }
 
   @Test
-  public void testForceDisableEnvVar() throws Exception {
+  public void testDisableMultiplexedSessionEnvVar() throws Exception {
     assumeTrue(isJava8() && !isWindows());
-    assumeFalse(
-        System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS"));
+    assumeFalse(System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS"));
 
     // Assert that the mux sessions setting is respected by default.
     assertTrue(
@@ -129,8 +132,7 @@ public class MultiplexedSessionDatabaseClientTest {
         (Map<String, String>) field.get(System.getenv());
 
     try {
-      writeableEnvironmentVariables.put(
-          "GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS", "true");
+      writeableEnvironmentVariables.put("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS", "false");
       // Assert that the env var overrides the mux sessions setting.
       assertFalse(
           SessionPoolOptions.newBuilder()
@@ -138,8 +140,108 @@ public class MultiplexedSessionDatabaseClientTest {
               .build()
               .getUseMultiplexedSession());
     } finally {
-      writeableEnvironmentVariables.remove(
-          "GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS");
+      writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+    }
+  }
+
+  @Test
+  public void testEnableMultiplexedSessionEnvVar() throws Exception {
+    assumeTrue(isJava8() && !isWindows());
+    assumeFalse(System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS"));
+
+    // Assert that the mux sessions setting is respected by default.
+    assertFalse(
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(false)
+            .build()
+            .getUseMultiplexedSession());
+
+    Class<?> classOfMap = System.getenv().getClass();
+    Field field = classOfMap.getDeclaredField("m");
+    field.setAccessible(true);
+    Map<String, String> writeableEnvironmentVariables =
+        (Map<String, String>) field.get(System.getenv());
+
+    try {
+      writeableEnvironmentVariables.put("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS", "true");
+      // Assert that the env var overrides the mux sessions setting.
+      assertTrue(
+          SessionPoolOptions.newBuilder()
+              .setUseMultiplexedSession(false)
+              .build()
+              .getUseMultiplexedSession());
+    } finally {
+      writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+    }
+  }
+
+  @Test
+  public void testIgnoreMultiplexedSessionEnvVar() throws Exception {
+    assumeTrue(isJava8() && !isWindows());
+    assumeFalse(System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS"));
+
+    // Assert that the mux sessions setting is respected by default.
+    assertFalse(
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(false)
+            .build()
+            .getUseMultiplexedSession());
+
+    Class<?> classOfMap = System.getenv().getClass();
+    Field field = classOfMap.getDeclaredField("m");
+    field.setAccessible(true);
+    Map<String, String> writeableEnvironmentVariables =
+        (Map<String, String>) field.get(System.getenv());
+
+    try {
+      writeableEnvironmentVariables.put("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS", "");
+      // Assert that the env var overrides the mux sessions setting.
+      assertFalse(
+          SessionPoolOptions.newBuilder()
+              .setUseMultiplexedSession(false)
+              .build()
+              .getUseMultiplexedSession());
+    } finally {
+      writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+    }
+  }
+
+  @Test
+  public void testThrowExceptionMultiplexedSessionEnvVarInvalidValues() throws Exception {
+    assumeTrue(isJava8() && !isWindows());
+    assumeFalse(System.getenv().containsKey("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS"));
+
+    // Assert that the mux sessions setting is respected by default.
+    assertFalse(
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(false)
+            .build()
+            .getUseMultiplexedSession());
+
+    Class<?> classOfMap = System.getenv().getClass();
+    Field field = classOfMap.getDeclaredField("m");
+    field.setAccessible(true);
+    Map<String, String> writeableEnvironmentVariables =
+        (Map<String, String>) field.get(System.getenv());
+
+    try {
+      writeableEnvironmentVariables.put("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS", "test");
+
+      // setting an invalid GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS value throws error.
+      IllegalArgumentException e =
+          assertThrows(
+              IllegalArgumentException.class,
+              () ->
+                  SessionPoolOptions.newBuilder()
+                      .setUseMultiplexedSession(false)
+                      .build()
+                      .getUseMultiplexedSession());
+      StringWriter sw = new StringWriter();
+      e.printStackTrace(new PrintWriter(sw));
+      assertThat(sw.toString())
+          .contains("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false");
+    } finally {
+      writeableEnvironmentVariables.remove("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
     }
   }
 
