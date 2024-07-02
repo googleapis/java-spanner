@@ -322,7 +322,7 @@ public class SessionPoolOptions {
     }
     return null;
   }
-  
+
   Duration getMultiplexedSessionMaintenanceDuration() {
     return multiplexedSessionMaintenanceDuration;
   }
