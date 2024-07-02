@@ -30,6 +30,8 @@ import com.google.api.gax.rpc.ApiCallContext;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.api.gax.tracing.ApiTracerFactory;
 import com.google.api.gax.tracing.BaseApiTracerFactory;
+import com.google.api.gax.tracing.MetricsTracerFactory;
+import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.api.gax.tracing.OpencensusTracerFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.ServiceDefaults;
@@ -157,7 +159,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final boolean useVirtualThreads;
   private final OpenTelemetry openTelemetry;
   private final boolean enableApiTracing;
+  private final boolean enableBuiltInMetrics;
   private final boolean enableExtendedTracing;
+  private OpenTelemetry builtInOpenTelemetry;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -664,6 +668,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
+    enableBuiltInMetrics = builder.enableBuiltInMetrics;
   }
 
   /**
@@ -696,6 +701,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default boolean isEnableApiTracing() {
       return false;
     }
+
+    default boolean isEnableBuiltInMetrics() {
+      return true;
+    }
   }
 
   /**
@@ -709,6 +718,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
+    private static final String SPANNER_ENABLE_BUILTIN_METRICS = "SPANNER_ENABLE_BUILTIN_METRICS";
 
     private SpannerEnvironmentImpl() {}
 
@@ -733,6 +743,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableApiTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_API_TRACING));
+    }
+
+    @Override
+    public boolean isEnableBuiltInMetrics() {
+      if (System.getenv(SPANNER_ENABLE_BUILTIN_METRICS) != null)
+        return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_BUILTIN_METRICS));
+      return true;
     }
   }
 
@@ -799,6 +816,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
+    private boolean enableBuiltInMetrics = SpannerOptions.environment.isEnableBuiltInMetrics();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -864,6 +882,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
       this.enableExtendedTracing = options.enableExtendedTracing;
+      this.enableBuiltInMetrics = options.enableBuiltInMetrics;
     }
 
     @Override
@@ -1384,6 +1403,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /** Disables client built in metrics. */
+    public Builder disableBuiltInMetrics() {
+      this.enableBuiltInMetrics = false;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1616,6 +1641,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   public OpenTelemetry getOpenTelemetry() {
     if (this.openTelemetry != null) {
       return this.openTelemetry;
+
     } else {
       return GlobalOpenTelemetry.get();
     }
@@ -1627,13 +1653,19 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     // Prefer any direct ApiTracerFactory that might have been set on the builder.
     apiTracerFactories.add(
         MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory()));
-
+    // Add Metrics Tracer factory
+    if (isEnableBuiltInMetrics()) {
+      ApiTracerFactory metricsTracerFactory = getMetricsApiTracerFactory();
+      if (metricsTracerFactory != null) {
+        apiTracerFactories.add(metricsTracerFactory);
+      }
+    }
     return new CompositeTracerFactory(apiTracerFactories);
   }
 
   private ApiTracerFactory getDefaultApiTracerFactory() {
-    if (isEnableApiTracing()) {
-      if (activeTracingFramework == TracingFramework.OPEN_TELEMETRY) {
+    if (!isEnableApiTracing()) {
+      if (activeTracingFramework != TracingFramework.OPEN_TELEMETRY) {
         return new OpenTelemetryApiTracerFactory(
             getOpenTelemetry()
                 .getTracer(
@@ -1647,6 +1679,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return BaseApiTracerFactory.getInstance();
   }
 
+  private ApiTracerFactory getMetricsApiTracerFactory() {
+    OpenTelemetry openTelemetry =
+        new BuiltInOpenTelemetryMetricsProvider()
+            .getOpenTelemetry(getDefaultProjectId(), getCredentials());
+
+    return openTelemetry != null
+        ? new MetricsTracerFactory(
+            new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME))
+        : null;
+  }
+
   /**
    * Returns true if an {@link com.google.api.gax.tracing.ApiTracer} should be created and set on
    * the Spanner client. Enabling this only has effect if an OpenTelemetry or OpenCensus trace
@@ -1654,6 +1697,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableApiTracing() {
     return enableApiTracing;
+  }
+
+  /**
+   * Returns true if an {@link com.google.api.gax.tracing.ApiTracer} should be created and set on
+   * the Spanner client. Enabling this only has effect if an OpenTelemetry or OpenCensus trace
+   * exporter has been configured.
+   */
+  public boolean isEnableBuiltInMetrics() {
+    return enableBuiltInMetrics;
   }
 
   @BetaApi
