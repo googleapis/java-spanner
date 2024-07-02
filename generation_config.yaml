@@ -6,7 +6,7 @@ libraries:
     name_pretty: Cloud Spanner
     product_documentation: https://cloud.google.com/spanner/docs/
     client_documentation: https://cloud.google.com/java/docs/reference/google-cloud-spanner/latest/history
-    api_description: is a fully managed, mission-critical, \nrelational database service that offers transactional consistency at global scale, \nschemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication \nfor high availability.\n\nBe sure to activate the Cloud Spanner API on the Developer's Console to\nuse Cloud Spanner from your project.
+    api_description: is a fully managed, mission-critical,  relational database service that offers transactional consistency at global scale, \nschemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication \nfor high availability.\n\nBe sure to activate the Cloud Spanner API on the Developer's Console to\nuse Cloud Spanner from your project.
     issue_tracker: https://issuetracker.google.com/issues?q=componentid:190851%2B%20status:open
     release_level: stable
     language: java
