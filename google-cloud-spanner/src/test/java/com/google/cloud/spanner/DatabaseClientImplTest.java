@@ -5082,8 +5082,7 @@ public class DatabaseClientImplTest {
       // Deliberately leak 4 sessions.
       for (int i = 0; i < 4; i++) {
         // Get a transaction manager without doing anything with it. This will reserve a session
-        // from
-        // the pool, but not increase the number of sessions marked as in use.
+        // from the pool, but not increase the number of sessions marked as in use.
         transactions.add(client.transactionManager());
       }
       // Trying to get yet another transaction will fail.
@@ -5110,6 +5109,19 @@ public class DatabaseClientImplTest {
       // Release the sessions back into the pool.
       for (TransactionManager transaction : transactions) {
         transaction.close();
+      }
+      // Wait up to 100 milliseconds for the sessions to actually all be in the pool, as there are
+      // two possible ways that the session pool handles the above:
+      // 1. The pool starts to create 4 sessions.
+      // 2. It then hands out whatever session has been created to one of the waiters.
+      // 3. The waiting process then executes its transaction, and when finished, the session is
+      //    given to any other process waiting at that moment.
+      // The above means that although there will always be 4 sessions created, it could in theory
+      // be that not all of them are used, as it could be that a transaction finishes before the
+      // creation of session 2, 3, or 4 finished, and then the existing session is re-used.
+      Stopwatch watch = Stopwatch.createStarted();
+      while (pool.getNumberOfSessionsInPool() < 4 && watch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+        Thread.yield();
       }
       // Closing the transactions should return the sessions to the pool.
       assertEquals(4, pool.getNumberOfSessionsInPool());

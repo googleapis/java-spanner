@@ -73,8 +73,6 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSession;
 
-  private final boolean useRandomChannelHint;
-
   // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
@@ -110,7 +108,6 @@ public class SessionPoolOptions {
         (useMultiplexedSessionFromEnvVariable != null)
             ? useMultiplexedSessionFromEnvVariable
             : builder.useMultiplexedSession;
-    this.useRandomChannelHint = builder.useRandomChannelHint;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -147,7 +144,6 @@ public class SessionPoolOptions {
             this.inactiveTransactionRemovalOptions, other.inactiveTransactionRemovalOptions)
         && Objects.equals(this.poolMaintainerClock, other.poolMaintainerClock)
         && Objects.equals(this.useMultiplexedSession, other.useMultiplexedSession)
-        && Objects.equals(this.useRandomChannelHint, other.useRandomChannelHint)
         && Objects.equals(
             this.multiplexedSessionMaintenanceDuration,
             other.multiplexedSessionMaintenanceDuration);
@@ -178,7 +174,6 @@ public class SessionPoolOptions {
         this.inactiveTransactionRemovalOptions,
         this.poolMaintainerClock,
         this.useMultiplexedSession,
-        this.useRandomChannelHint,
         this.multiplexedSessionMaintenanceDuration);
   }
 
@@ -327,11 +322,7 @@ public class SessionPoolOptions {
     }
     return null;
   }
-
-  boolean isUseRandomChannelHint() {
-    return useRandomChannelHint;
-  }
-
+  
   Duration getMultiplexedSessionMaintenanceDuration() {
     return multiplexedSessionMaintenanceDuration;
   }
@@ -366,24 +357,24 @@ public class SessionPoolOptions {
   static class InactiveTransactionRemovalOptions {
 
     /** Option to set the behaviour when there are inactive transactions. */
-    private ActionOnInactiveTransaction actionOnInactiveTransaction;
+    private final ActionOnInactiveTransaction actionOnInactiveTransaction;
 
     /**
      * Frequency for closing inactive transactions. Between two consecutive task executions, it's
      * ensured that the duration is greater or equal to this duration.
      */
-    private Duration executionFrequency;
+    private final Duration executionFrequency;
 
     /**
      * Long-running transactions will be cleaned up if utilisation is greater than the below value.
      */
-    private double usedSessionsRatioThreshold;
+    private final double usedSessionsRatioThreshold;
 
     /**
      * A transaction is considered to be idle if it has not been used for a duration greater than
      * the below value.
      */
-    private Duration idleTimeThreshold;
+    private final Duration idleTimeThreshold;
 
     InactiveTransactionRemovalOptions(final Builder builder) {
       this.actionOnInactiveTransaction = builder.actionOnInactiveTransaction;
@@ -525,7 +516,7 @@ public class SessionPoolOptions {
     private boolean autoDetectDialect = false;
     private Duration waitForMinSessions = Duration.ZERO;
     private Duration acquireSessionTimeout = Duration.ofSeconds(60);
-    private Position releaseToPosition = getReleaseToPositionFromSystemProperty();
+    private final Position releaseToPosition = getReleaseToPositionFromSystemProperty();
     /**
      * The session pool will randomize the position of a session that is being returned when this
      * threshold is exceeded. That is: If the transactions per second exceeds this threshold, then
@@ -537,8 +528,6 @@ public class SessionPoolOptions {
     // This field controls the default behavior of session management in Java client.
     // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
-
-    private boolean useRandomChannelHint;
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
@@ -766,11 +755,6 @@ public class SessionPoolOptions {
       return this;
     }
 
-    Builder setUseRandomChannelHint(boolean useRandomChannelHint) {
-      this.useRandomChannelHint = useRandomChannelHint;
-      return this;
-    }
-
     @VisibleForTesting
     Builder setMultiplexedSessionMaintenanceDuration(
         Duration multiplexedSessionMaintenanceDuration) {
@@ -881,11 +865,6 @@ public class SessionPoolOptions {
             "acquireSessionTimeout in millis should be lesser than Long.MAX_VALUE");
       }
       this.acquireSessionTimeout = acquireSessionTimeout;
-      return this;
-    }
-
-    Builder setReleaseToPosition(Position releaseToPosition) {
-      this.releaseToPosition = Preconditions.checkNotNull(releaseToPosition);
       return this;
     }
 

@@ -63,6 +63,7 @@ import org.threeten.bp.Duration;
 @Category(TracerTest.class)
 @RunWith(JUnit4.class)
 public class SpanTest {
+
   private static final String TEST_PROJECT = "my-project";
   private static final String TEST_INSTANCE = "my-instance";
   private static final String TEST_DATABASE = "my-database";

@@ -165,6 +165,11 @@ abstract class AbstractBaseUnitOfWork implements UnitOfWork {
     this.span = Preconditions.checkNotNull(builder.span);
   }
 
+  @Override
+  public Span getSpan() {
+    return this.span;
+  }
+
   ApiFuture<Void> asyncEndUnitOfWorkSpan() {
     return this.statementExecutor.submit(this::endUnitOfWorkSpan);
   }

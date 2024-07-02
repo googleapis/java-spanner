@@ -801,6 +801,8 @@ public class SpannerClientTest {
     Assert.assertEquals(request.getRequestOptions(), actualRequest.getRequestOptions());
     Assert.assertEquals(request.getDirectedReadOptions(), actualRequest.getDirectedReadOptions());
     Assert.assertEquals(request.getDataBoostEnabled(), actualRequest.getDataBoostEnabled());
+    Assert.assertEquals(request.getOrderBy(), actualRequest.getOrderBy());
+    Assert.assertEquals(request.getLockHint(), actualRequest.getLockHint());
     Assert.assertTrue(
         channelProvider.isHeaderSent(
             ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),

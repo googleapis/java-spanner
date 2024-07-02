@@ -164,7 +164,8 @@ public interface RestoreDatabaseMetadataOrBuilder
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
    * an [Operation.error][google.longrunning.Operation.error] value with a
-   * [google.rpc.Status.code][google.rpc.Status.code] of 1, corresponding to `Code.CANCELLED`.
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1, corresponding to
+   * `Code.CANCELLED`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp cancel_time = 5;</code>
@@ -186,7 +187,8 @@ public interface RestoreDatabaseMetadataOrBuilder
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
    * an [Operation.error][google.longrunning.Operation.error] value with a
-   * [google.rpc.Status.code][google.rpc.Status.code] of 1, corresponding to `Code.CANCELLED`.
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1, corresponding to
+   * `Code.CANCELLED`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp cancel_time = 5;</code>
@@ -208,7 +210,8 @@ public interface RestoreDatabaseMetadataOrBuilder
    * operation completed despite cancellation. On successful cancellation,
    * the operation is not deleted; instead, it becomes an operation with
    * an [Operation.error][google.longrunning.Operation.error] value with a
-   * [google.rpc.Status.code][google.rpc.Status.code] of 1, corresponding to `Code.CANCELLED`.
+   * [google.rpc.Status.code][google.rpc.Status.code] of 1, corresponding to
+   * `Code.CANCELLED`.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp cancel_time = 5;</code>
@@ -226,10 +229,10 @@ public interface RestoreDatabaseMetadataOrBuilder
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`
    * where the &lt;database&gt; is the name of database being created and restored to.
    * The metadata type of the  long-running operation is
-   * [OptimizeRestoredDatabaseMetadata][google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata]. This long-running operation will be
-   * automatically created by the system after the RestoreDatabase long-running
-   * operation completes successfully. This operation will not be created if the
-   * restore was not successful.
+   * [OptimizeRestoredDatabaseMetadata][google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata].
+   * This long-running operation will be automatically created by the system
+   * after the RestoreDatabase long-running operation completes successfully.
+   * This operation will not be created if the restore was not successful.
    * </pre>
    *
    * <code>string optimize_database_operation_name = 6;</code>
@@ -248,10 +251,10 @@ public interface RestoreDatabaseMetadataOrBuilder
    * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/operations/&lt;operation&gt;`
    * where the &lt;database&gt; is the name of database being created and restored to.
    * The metadata type of the  long-running operation is
-   * [OptimizeRestoredDatabaseMetadata][google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata]. This long-running operation will be
-   * automatically created by the system after the RestoreDatabase long-running
-   * operation completes successfully. This operation will not be created if the
-   * restore was not successful.
+   * [OptimizeRestoredDatabaseMetadata][google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata].
+   * This long-running operation will be automatically created by the system
+   * after the RestoreDatabase long-running operation completes successfully.
+   * This operation will not be created if the restore was not successful.
    * </pre>
    *
    * <code>string optimize_database_operation_name = 6;</code>

@@ -91,6 +91,7 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     GENERATE_DB_PARTITIONS_QUERY(43),
     EXECUTE_PARTITION(44),
     EXECUTE_CHANGE_STREAM_QUERY(50),
+    QUERY_CANCELLATION(51),
     ACTION_NOT_SET(0);
     private final int value;
 
@@ -141,6 +142,8 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
           return EXECUTE_PARTITION;
         case 50:
           return EXECUTE_CHANGE_STREAM_QUERY;
+        case 51:
+          return QUERY_CANCELLATION;
         case 0:
           return ACTION_NOT_SET;
         default:
@@ -1105,6 +1108,58 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     return com.google.spanner.executor.v1.ExecuteChangeStreamQuery.getDefaultInstance();
   }
 
+  public static final int QUERY_CANCELLATION_FIELD_NUMBER = 51;
+  /**
+   *
+   *
+   * <pre>
+   * Query cancellation action for testing the cancellation of a query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+   *
+   * @return Whether the queryCancellation field is set.
+   */
+  @java.lang.Override
+  public boolean hasQueryCancellation() {
+    return actionCase_ == 51;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Query cancellation action for testing the cancellation of a query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+   *
+   * @return The queryCancellation.
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.QueryCancellationAction getQueryCancellation() {
+    if (actionCase_ == 51) {
+      return (com.google.spanner.executor.v1.QueryCancellationAction) action_;
+    }
+    return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Query cancellation action for testing the cancellation of a query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+   */
+  @java.lang.Override
+  public com.google.spanner.executor.v1.QueryCancellationActionOrBuilder
+      getQueryCancellationOrBuilder() {
+    if (actionCase_ == 51) {
+      return (com.google.spanner.executor.v1.QueryCancellationAction) action_;
+    }
+    return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1174,6 +1229,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
     }
     if (actionCase_ == 50) {
       output.writeMessage(50, (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_);
+    }
+    if (actionCase_ == 51) {
+      output.writeMessage(51, (com.google.spanner.executor.v1.QueryCancellationAction) action_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -1270,6 +1328,11 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               50, (com.google.spanner.executor.v1.ExecuteChangeStreamQuery) action_);
     }
+    if (actionCase_ == 51) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              51, (com.google.spanner.executor.v1.QueryCancellationAction) action_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1343,6 +1406,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       case 50:
         if (!getExecuteChangeStreamQuery().equals(other.getExecuteChangeStreamQuery()))
           return false;
+        break;
+      case 51:
+        if (!getQueryCancellation().equals(other.getQueryCancellation())) return false;
         break;
       case 0:
       default:
@@ -1428,6 +1494,10 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       case 50:
         hash = (37 * hash) + EXECUTE_CHANGE_STREAM_QUERY_FIELD_NUMBER;
         hash = (53 * hash) + getExecuteChangeStreamQuery().hashCode();
+        break;
+      case 51:
+        hash = (37 * hash) + QUERY_CANCELLATION_FIELD_NUMBER;
+        hash = (53 * hash) + getQueryCancellation().hashCode();
         break;
       case 0:
       default:
@@ -1636,6 +1706,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       if (executeChangeStreamQueryBuilder_ != null) {
         executeChangeStreamQueryBuilder_.clear();
       }
+      if (queryCancellationBuilder_ != null) {
+        queryCancellationBuilder_.clear();
+      }
       actionCase_ = 0;
       action_ = null;
       return this;
@@ -1737,6 +1810,9 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       }
       if (actionCase_ == 50 && executeChangeStreamQueryBuilder_ != null) {
         result.action_ = executeChangeStreamQueryBuilder_.build();
+      }
+      if (actionCase_ == 51 && queryCancellationBuilder_ != null) {
+        result.action_ = queryCancellationBuilder_.build();
       }
     }
 
@@ -1872,6 +1948,11 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
         case EXECUTE_CHANGE_STREAM_QUERY:
           {
             mergeExecuteChangeStreamQuery(other.getExecuteChangeStreamQuery());
+            break;
+          }
+        case QUERY_CANCELLATION:
+          {
+            mergeQueryCancellation(other.getQueryCancellation());
             break;
           }
         case ACTION_NOT_SET:
@@ -2018,6 +2099,13 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
                 actionCase_ = 50;
                 break;
               } // case 402
+            case 410:
+              {
+                input.readMessage(
+                    getQueryCancellationFieldBuilder().getBuilder(), extensionRegistry);
+                actionCase_ = 51;
+                break;
+              } // case 410
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -5799,6 +5887,220 @@ public final class SpannerAction extends com.google.protobuf.GeneratedMessageV3
       actionCase_ = 50;
       onChanged();
       return executeChangeStreamQueryBuilder_;
+    }
+
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.QueryCancellationAction,
+            com.google.spanner.executor.v1.QueryCancellationAction.Builder,
+            com.google.spanner.executor.v1.QueryCancellationActionOrBuilder>
+        queryCancellationBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     *
+     * @return Whether the queryCancellation field is set.
+     */
+    @java.lang.Override
+    public boolean hasQueryCancellation() {
+      return actionCase_ == 51;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     *
+     * @return The queryCancellation.
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.QueryCancellationAction getQueryCancellation() {
+      if (queryCancellationBuilder_ == null) {
+        if (actionCase_ == 51) {
+          return (com.google.spanner.executor.v1.QueryCancellationAction) action_;
+        }
+        return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
+      } else {
+        if (actionCase_ == 51) {
+          return queryCancellationBuilder_.getMessage();
+        }
+        return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     */
+    public Builder setQueryCancellation(
+        com.google.spanner.executor.v1.QueryCancellationAction value) {
+      if (queryCancellationBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        action_ = value;
+        onChanged();
+      } else {
+        queryCancellationBuilder_.setMessage(value);
+      }
+      actionCase_ = 51;
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     */
+    public Builder setQueryCancellation(
+        com.google.spanner.executor.v1.QueryCancellationAction.Builder builderForValue) {
+      if (queryCancellationBuilder_ == null) {
+        action_ = builderForValue.build();
+        onChanged();
+      } else {
+        queryCancellationBuilder_.setMessage(builderForValue.build());
+      }
+      actionCase_ = 51;
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     */
+    public Builder mergeQueryCancellation(
+        com.google.spanner.executor.v1.QueryCancellationAction value) {
+      if (queryCancellationBuilder_ == null) {
+        if (actionCase_ == 51
+            && action_
+                != com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance()) {
+          action_ =
+              com.google.spanner.executor.v1.QueryCancellationAction.newBuilder(
+                      (com.google.spanner.executor.v1.QueryCancellationAction) action_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          action_ = value;
+        }
+        onChanged();
+      } else {
+        if (actionCase_ == 51) {
+          queryCancellationBuilder_.mergeFrom(value);
+        } else {
+          queryCancellationBuilder_.setMessage(value);
+        }
+      }
+      actionCase_ = 51;
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     */
+    public Builder clearQueryCancellation() {
+      if (queryCancellationBuilder_ == null) {
+        if (actionCase_ == 51) {
+          actionCase_ = 0;
+          action_ = null;
+          onChanged();
+        }
+      } else {
+        if (actionCase_ == 51) {
+          actionCase_ = 0;
+          action_ = null;
+        }
+        queryCancellationBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     */
+    public com.google.spanner.executor.v1.QueryCancellationAction.Builder
+        getQueryCancellationBuilder() {
+      return getQueryCancellationFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     */
+    @java.lang.Override
+    public com.google.spanner.executor.v1.QueryCancellationActionOrBuilder
+        getQueryCancellationOrBuilder() {
+      if ((actionCase_ == 51) && (queryCancellationBuilder_ != null)) {
+        return queryCancellationBuilder_.getMessageOrBuilder();
+      } else {
+        if (actionCase_ == 51) {
+          return (com.google.spanner.executor.v1.QueryCancellationAction) action_;
+        }
+        return com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Query cancellation action for testing the cancellation of a query.
+     * </pre>
+     *
+     * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.executor.v1.QueryCancellationAction,
+            com.google.spanner.executor.v1.QueryCancellationAction.Builder,
+            com.google.spanner.executor.v1.QueryCancellationActionOrBuilder>
+        getQueryCancellationFieldBuilder() {
+      if (queryCancellationBuilder_ == null) {
+        if (!(actionCase_ == 51)) {
+          action_ = com.google.spanner.executor.v1.QueryCancellationAction.getDefaultInstance();
+        }
+        queryCancellationBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.executor.v1.QueryCancellationAction,
+                com.google.spanner.executor.v1.QueryCancellationAction.Builder,
+                com.google.spanner.executor.v1.QueryCancellationActionOrBuilder>(
+                (com.google.spanner.executor.v1.QueryCancellationAction) action_,
+                getParentForChildren(),
+                isClean());
+        action_ = null;
+      }
+      actionCase_ = 51;
+      onChanged();
+      return queryCancellationBuilder_;
     }
 
     @java.lang.Override

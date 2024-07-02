@@ -28,6 +28,7 @@ import com.google.cloud.spanner.SessionPoolOptions.InactiveTransactionRemovalOpt
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -167,6 +168,36 @@ public class SessionPoolOptionsTest {
     assertFalse(sessionPoolOptions.warnInactiveTransactions());
     assertFalse(sessionPoolOptions.warnAndCloseInactiveTransactions());
     assertTrue(sessionPoolOptions.closeInactiveTransactions());
+  }
+
+  @Test
+  public void testSetUsedSessionsRatioThreshold() {
+    double threshold = ThreadLocalRandom.current().nextDouble();
+    InactiveTransactionRemovalOptions inactiveTransactionRemovalOptions =
+        InactiveTransactionRemovalOptions.newBuilder()
+            .setUsedSessionsRatioThreshold(threshold)
+            .build();
+    assertEquals(
+        threshold, inactiveTransactionRemovalOptions.getUsedSessionsRatioThreshold(), 0.0d);
+  }
+
+  @Test
+  public void testBlockIfPoolExhausted() {
+    assertTrue(SessionPoolOptions.newBuilder().build().isBlockIfPoolExhausted());
+    assertTrue(
+        SessionPoolOptions.newBuilder().setBlockIfPoolExhausted().build().isBlockIfPoolExhausted());
+    assertFalse(
+        SessionPoolOptions.newBuilder().setFailIfPoolExhausted().build().isBlockIfPoolExhausted());
+  }
+
+  @Test
+  public void testFailIfSessionNotFound() {
+    assertFalse(SessionPoolOptions.newBuilder().build().isFailIfSessionNotFound());
+    assertTrue(
+        SessionPoolOptions.newBuilder()
+            .setFailIfSessionNotFound()
+            .build()
+            .isFailIfSessionNotFound());
   }
 
   @Test(expected = IllegalArgumentException.class)

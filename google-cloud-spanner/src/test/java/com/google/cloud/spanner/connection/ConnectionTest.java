@@ -30,22 +30,31 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.MockSpannerServiceImpl;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TimestampBound;
 import com.google.common.collect.ImmutableList;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.CommitRequest;
+import com.google.spanner.v1.DirectedReadOptions;
+import com.google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+import com.google.spanner.v1.DirectedReadOptions.ReplicaSelection;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.RequestOptions;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -227,6 +236,145 @@ public class ConnectionTest {
           }
         }
       }
+    }
+
+    @Test
+    public void testReset() {
+      try (ConnectionImpl connection = (ConnectionImpl) createConnection()) {
+        assertResetBooleanProperty(
+            connection,
+            true,
+            connection::setRetryAbortsInternally,
+            connection::isRetryAbortsInternally);
+        assertResetBooleanProperty(
+            connection, false, connection::setReadOnly, connection::isReadOnly);
+        assertResetBooleanProperty(
+            connection, false, connection::setAutocommit, connection::isAutocommit);
+        assertResetBooleanProperty(
+            connection, false, connection::setReturnCommitStats, connection::isReturnCommitStats);
+        assertResetBooleanProperty(
+            connection,
+            false,
+            connection::setDelayTransactionStartUntilFirstWrite,
+            connection::isDelayTransactionStartUntilFirstWrite);
+        assertResetBooleanProperty(
+            connection, false, connection::setDataBoostEnabled, connection::isDataBoostEnabled);
+        assertResetBooleanProperty(
+            connection, false, connection::setAutoPartitionMode, connection::isAutoPartitionMode);
+        assertResetBooleanProperty(
+            connection,
+            false,
+            connection::setExcludeTxnFromChangeStreams,
+            connection::isExcludeTxnFromChangeStreams);
+
+        assertResetProperty(
+            connection, "", "1", connection::setOptimizerVersion, connection::getOptimizerVersion);
+        assertResetProperty(
+            connection,
+            null,
+            RpcPriority.LOW,
+            connection::setRPCPriority,
+            connection::getRPCPriority);
+        assertResetProperty(
+            connection,
+            DdlInTransactionMode.ALLOW_IN_EMPTY_TRANSACTION,
+            DdlInTransactionMode.AUTO_COMMIT_TRANSACTION,
+            connection::setDdlInTransactionMode,
+            connection::getDdlInTransactionMode);
+        assertResetProperty(
+            connection, 0, 4, connection::setMaxPartitions, connection::getMaxPartitions);
+        assertResetProperty(
+            connection,
+            1,
+            8,
+            connection::setMaxPartitionedParallelism,
+            connection::getMaxPartitionedParallelism);
+        assertResetProperty(
+            connection,
+            null,
+            Duration.ofMillis(20),
+            connection::setMaxCommitDelay,
+            connection::getMaxCommitDelay);
+        assertResetProperty(
+            connection,
+            TimestampBound.strong(),
+            TimestampBound.ofExactStaleness(10L, TimeUnit.SECONDS),
+            connection::setReadOnlyStaleness,
+            connection::getReadOnlyStaleness);
+        assertResetProperty(
+            connection, null, "tag", connection::setStatementTag, connection::getStatementTag);
+        assertResetProperty(
+            connection, null, "tag", connection::setTransactionTag, connection::getTransactionTag);
+        assertResetProperty(
+            connection,
+            null,
+            DirectedReadOptions.newBuilder()
+                .setExcludeReplicas(
+                    ExcludeReplicas.newBuilder()
+                        .addReplicaSelections(
+                            ReplicaSelection.newBuilder().setLocation("foo").build())
+                        .build())
+                .build(),
+            connection::setDirectedRead,
+            connection::getDirectedRead);
+        assertResetProperty(
+            connection,
+            SavepointSupport.FAIL_AFTER_ROLLBACK,
+            SavepointSupport.ENABLED,
+            connection::setSavepointSupport,
+            connection::getSavepointSupport);
+        assertResetProperty(
+            connection,
+            null,
+            "descriptor".getBytes(StandardCharsets.UTF_8),
+            connection::setProtoDescriptors,
+            connection::getProtoDescriptors);
+        assertResetProperty(
+            connection,
+            null,
+            "filename",
+            connection::setProtoDescriptorsFilePath,
+            connection::getProtoDescriptorsFilePath);
+
+        // Test the AutocommitDmlMode property that is only supported in auto-commit mode.
+        connection.rollback();
+        connection.setAutocommit(true);
+        assertResetProperty(
+            connection,
+            AutocommitDmlMode.TRANSACTIONAL,
+            AutocommitDmlMode.PARTITIONED_NON_ATOMIC,
+            connection::setAutocommitDmlMode,
+            connection::getAutocommitDmlMode);
+        connection.setAutocommit(false);
+
+        // Statement timeouts use a customer getter/setter, so we need to manually test that.
+        assertEquals(0L, connection.getStatementTimeout(TimeUnit.MILLISECONDS));
+        connection.setStatementTimeout(10L, TimeUnit.SECONDS);
+        assertEquals(10L, connection.getStatementTimeout(TimeUnit.SECONDS));
+        connection.reset();
+        assertEquals(0L, connection.getStatementTimeout(TimeUnit.MILLISECONDS));
+      }
+    }
+
+    private void assertResetBooleanProperty(
+        ConnectionImpl connection,
+        boolean defaultValue,
+        Consumer<Boolean> setter,
+        Supplier<Boolean> getter) {
+      assertResetProperty(connection, defaultValue, !defaultValue, setter, getter);
+    }
+
+    private <T> void assertResetProperty(
+        ConnectionImpl connection,
+        T defaultValue,
+        T alternativeValue,
+        Consumer<T> setter,
+        Supplier<T> getter) {
+      assertEquals(defaultValue, getter.get());
+      setter.accept(alternativeValue);
+      assertEquals(alternativeValue, getter.get());
+      connection.reset();
+      assertEquals(defaultValue, getter.get());
     }
   }
 
