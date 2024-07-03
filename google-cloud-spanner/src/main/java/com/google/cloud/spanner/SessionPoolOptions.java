@@ -569,6 +569,8 @@ public class SessionPoolOptions {
       this.acquireSessionTimeout = options.acquireSessionTimeout;
       this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
+      this.useMultiplexedSession = options.useMultiplexedSession;
+      this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
 

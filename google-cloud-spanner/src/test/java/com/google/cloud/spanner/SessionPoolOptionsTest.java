@@ -318,4 +318,95 @@ public class SessionPoolOptionsTest {
             .build()
             .getMultiplexedSessionMaintenanceDuration());
   }
+
+  @Test
+  public void testToBuilder() {
+    assertToBuilderRoundtrip(SessionPoolOptions.newBuilder().build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(ThreadLocalRandom.current().nextBoolean())
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setMinSessions(ThreadLocalRandom.current().nextInt(400))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setMaxSessions(ThreadLocalRandom.current().nextInt(1000))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setIncStep(ThreadLocalRandom.current().nextInt(1000))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setMaxIdleSessions(ThreadLocalRandom.current().nextInt(1000))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setWriteSessionsFraction(ThreadLocalRandom.current().nextFloat())
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setInactiveTransactionRemovalOptions(
+                InactiveTransactionRemovalOptions.newBuilder()
+                    .setUsedSessionsRatioThreshold(ThreadLocalRandom.current().nextDouble())
+                    .build())
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setLoopFrequency(ThreadLocalRandom.current().nextInt(1000))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setMultiplexedSessionMaintenanceLoopFrequency(
+                java.time.Duration.ofMillis(ThreadLocalRandom.current().nextInt(1000)))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setKeepAliveIntervalMinutes(ThreadLocalRandom.current().nextInt(60))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setRemoveInactiveSessionAfter(
+                Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder().setCloseIfInactiveTransactions().build());
+    assertToBuilderRoundtrip(SessionPoolOptions.newBuilder().setFailOnSessionLeak().build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setTrackStackTraceOfSessionCheckout(ThreadLocalRandom.current().nextBoolean())
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setInitialWaitForSessionTimeoutMillis(ThreadLocalRandom.current().nextLong(1000))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setAutoDetectDialect(ThreadLocalRandom.current().nextBoolean())
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setWaitForMinSessions(Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setAcquireSessionTimeout(
+                Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setRandomizePositionQPSThreshold(ThreadLocalRandom.current().nextLong(10000))
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
+            .setMultiplexedSessionMaintenanceDuration(
+                Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
+            .build());
+  }
+
+  static void assertToBuilderRoundtrip(SessionPoolOptions options) {
+    assertEquals(options, options.toBuilder().build());
+  }
 }
