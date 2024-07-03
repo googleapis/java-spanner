@@ -1383,6 +1383,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      *
      * <ul>
      *   <li>db.statement: Contains the SQL statement that is being executed.
+     *   <li>thread.name: The name of the thread that executes the statement.
      * </ul>
      */
     public Builder setEnableExtendedTracing(boolean enableExtendedTracing) {
@@ -1673,6 +1674,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *
    * <ul>
    *   <li>db.statement: Contains the SQL statement that is being executed.
+   *   <li>thread.name: The name of the thread that executes the statement.
    * </ul>
    */
   public boolean isEnableExtendedTracing() {

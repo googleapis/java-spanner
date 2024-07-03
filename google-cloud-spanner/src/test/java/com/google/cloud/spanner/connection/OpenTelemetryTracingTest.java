@@ -164,6 +164,14 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
         "CloudSpannerOperation.ExecuteStreamingQuery",
         Attributes.of(AttributeKey.stringKey("db.statement"), SELECT1_STATEMENT.getSql()),
         spans);
+    SpanData executeQuerySpan =
+        getSpan(
+            "CloudSpannerOperation.ExecuteStreamingQuery",
+            Attributes.of(
+                AttributeKey.stringKey("db.statement"), SELECT1_STATEMENT.getSql(),
+                AttributeKey.stringKey("thread.name"), Thread.currentThread().getName()),
+            spans);
+
     assertParent(
         "CloudSpannerJdbc.SingleUseTransaction", "CloudSpanner.ReadOnlyTransaction", spans);
     assertParent(
@@ -190,6 +198,14 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
         "CloudSpannerOperation.ExecuteStreamingQuery",
         Attributes.of(AttributeKey.stringKey("db.statement"), SELECT1_STATEMENT.getSql()),
         spans);
+    SpanData executeQuerySpan =
+        getSpan(
+            "CloudSpannerOperation.ExecuteStreamingQuery",
+            Attributes.of(
+                AttributeKey.stringKey("db.statement"), SELECT1_STATEMENT.getSql(),
+                AttributeKey.stringKey("thread.name"), Thread.currentThread().getName()),
+            spans);
+
     assertParent(
         "CloudSpannerJdbc.SingleUseTransaction", "CloudSpanner.ReadOnlyTransaction", spans);
     assertParent(
@@ -222,6 +238,13 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
         "CloudSpannerOperation.ExecuteUpdate",
         Attributes.of(AttributeKey.stringKey("db.statement"), INSERT_STATEMENT.getSql()),
         spans);
+    SpanData executeQuerySpan =
+        getSpan(
+            "CloudSpannerOperation.ExecuteUpdate",
+            Attributes.of(
+                AttributeKey.stringKey("db.statement"), INSERT_STATEMENT.getSql(),
+                AttributeKey.stringKey("thread.name"), Thread.currentThread().getName()),
+            spans);
     assertParent("CloudSpanner.ReadWriteTransaction", "CloudSpannerOperation.Commit", spans);
   }
 
@@ -244,6 +267,15 @@ public class OpenTelemetryTracingTest extends AbstractMockServerTest {
             AttributeKey.stringArrayKey("db.statement"),
             ImmutableList.of(INSERT_STATEMENT.getSql(), INSERT_STATEMENT.getSql())),
         spans);
+    SpanData executeQuerySpan =
+        getSpan(
+            "CloudSpannerOperation.BatchUpdate",
+            Attributes.of(
+                AttributeKey.stringArrayKey("db.statement"),
+                ImmutableList.of(INSERT_STATEMENT.getSql(), INSERT_STATEMENT.getSql())),
+            spans);
+    String threadName = executeQuerySpan.getAttributes().get(AttributeKey.stringKey("thread.name"));
+    assertEquals(Thread.currentThread().getName(), threadName);
     assertContains("CloudSpannerOperation.Commit", spans);
 
     assertParent(
