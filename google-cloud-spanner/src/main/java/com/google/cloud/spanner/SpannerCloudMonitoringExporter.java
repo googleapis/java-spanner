@@ -43,7 +43,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,7 +77,6 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
   private CompletableResultCode lastExportCode;
   private final MetricServiceClient client;
   private final String spannerProjectId;
-  private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   static SpannerCloudMonitoringExporter create(String projectId, @Nullable Credentials credentials)
       throws IOException {
@@ -109,7 +107,7 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode export(Collection<MetricData> collection) {
-    if (isShutdown.get()) {
+    if (client.isShutdown()) {
       logger.log(Level.WARNING, "Exporter is shut down");
       return CompletableResultCode.ofFailure();
     }
@@ -207,31 +205,24 @@ class SpannerCloudMonitoringExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode flush() {
-    if (lastExportCode != null) {
-      return lastExportCode;
-    }
     return CompletableResultCode.ofSuccess();
   }
 
   @Override
   public CompletableResultCode shutdown() {
-    if (!isShutdown.compareAndSet(false, true)) {
+    if (client.isShutdown()) {
       logger.log(Level.WARNING, "shutdown is called multiple times");
       return CompletableResultCode.ofSuccess();
     }
-    CompletableResultCode flushResult = flush();
     CompletableResultCode shutdownResult = new CompletableResultCode();
-    flushResult.whenComplete(
-        () -> {
-          try {
-            client.shutdown();
-            shutdownResult.succeed();
-          } catch (Throwable e) {
-            logger.log(Level.WARNING, "failed to shutdown the monitoring client", e);
-            shutdownResult.fail();
-          }
-        });
-    return CompletableResultCode.ofAll(Arrays.asList(flushResult, shutdownResult));
+    try {
+      client.shutdown();
+      shutdownResult.succeed();
+    } catch (Throwable e) {
+      logger.log(Level.WARNING, "failed to shutdown the monitoring client", e);
+      shutdownResult.fail();
+    }
+    return shutdownResult;
   }
 
   /**
