@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.71.0](https://github.com/googleapis/java-spanner/compare/v6.70.0...v6.71.0) (2024-07-03)
+
+
+### Features
+
+* Include thread name in traces ([#3173](https://github.com/googleapis/java-spanner/issues/3173)) ([92b1e07](https://github.com/googleapis/java-spanner/commit/92b1e079e6093bc4a2e7b458c1bbe0f62a0fada9))
+* Support multiplexed sessions for RO transactions ([#3141](https://github.com/googleapis/java-spanner/issues/3141)) ([2b8e9ed](https://github.com/googleapis/java-spanner/commit/2b8e9ededc1ea1a5e8d4f90083f2cf862fcc198a))
+
 ## [6.70.0](https://github.com/googleapis/java-spanner/compare/v6.69.0...v6.70.0) (2024-06-27)
 
 
