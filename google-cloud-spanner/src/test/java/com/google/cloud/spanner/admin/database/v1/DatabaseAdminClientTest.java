@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.admin.database.v1;
 
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupSchedulesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
@@ -43,29 +44,39 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Duration;
 import com.google.protobuf.Empty;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Timestamp;
 import com.google.spanner.admin.database.v1.Backup;
 import com.google.spanner.admin.database.v1.BackupName;
+import com.google.spanner.admin.database.v1.BackupSchedule;
+import com.google.spanner.admin.database.v1.BackupScheduleName;
+import com.google.spanner.admin.database.v1.BackupScheduleSpec;
 import com.google.spanner.admin.database.v1.CopyBackupRequest;
+import com.google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseDialect;
 import com.google.spanner.admin.database.v1.DatabaseName;
 import com.google.spanner.admin.database.v1.DatabaseRole;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
+import com.google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.EncryptionConfig;
 import com.google.spanner.admin.database.v1.EncryptionInfo;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
+import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.InstanceName;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesResponse;
 import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
@@ -77,6 +88,7 @@ import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.RestoreInfo;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import io.grpc.StatusRuntimeException;
@@ -993,6 +1005,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1056,6 +1069,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1119,6 +1133,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1186,6 +1201,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1253,6 +1269,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1320,6 +1337,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1387,6 +1405,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1436,6 +1455,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1485,6 +1505,7 @@ public class DatabaseAdminClientTest {
             .setDatabaseDialect(DatabaseDialect.forNumber(0))
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
+            .addAllBackupSchedules(new ArrayList<String>())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -2187,6 +2208,408 @@ public class DatabaseAdminClientTest {
     try {
       String parent = "parent-995424086";
       client.listDatabaseRoles(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void createBackupScheduleTest() throws Exception {
+    BackupSchedule expectedResponse =
+        BackupSchedule.newBuilder()
+            .setName(
+                BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]")
+                    .toString())
+            .setSpec(BackupScheduleSpec.newBuilder().build())
+            .setRetentionDuration(Duration.newBuilder().build())
+            .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+    BackupSchedule backupSchedule = BackupSchedule.newBuilder().build();
+    String backupScheduleId = "backupScheduleId1704974708";
+
+    BackupSchedule actualResponse =
+        client.createBackupSchedule(parent, backupSchedule, backupScheduleId);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CreateBackupScheduleRequest actualRequest =
+        ((CreateBackupScheduleRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertEquals(backupSchedule, actualRequest.getBackupSchedule());
+    Assert.assertEquals(backupScheduleId, actualRequest.getBackupScheduleId());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void createBackupScheduleExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      BackupSchedule backupSchedule = BackupSchedule.newBuilder().build();
+      String backupScheduleId = "backupScheduleId1704974708";
+      client.createBackupSchedule(parent, backupSchedule, backupScheduleId);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void createBackupScheduleTest2() throws Exception {
+    BackupSchedule expectedResponse =
+        BackupSchedule.newBuilder()
+            .setName(
+                BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]")
+                    .toString())
+            .setSpec(BackupScheduleSpec.newBuilder().build())
+            .setRetentionDuration(Duration.newBuilder().build())
+            .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    String parent = "parent-995424086";
+    BackupSchedule backupSchedule = BackupSchedule.newBuilder().build();
+    String backupScheduleId = "backupScheduleId1704974708";
+
+    BackupSchedule actualResponse =
+        client.createBackupSchedule(parent, backupSchedule, backupScheduleId);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    CreateBackupScheduleRequest actualRequest =
+        ((CreateBackupScheduleRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertEquals(backupSchedule, actualRequest.getBackupSchedule());
+    Assert.assertEquals(backupScheduleId, actualRequest.getBackupScheduleId());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void createBackupScheduleExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      BackupSchedule backupSchedule = BackupSchedule.newBuilder().build();
+      String backupScheduleId = "backupScheduleId1704974708";
+      client.createBackupSchedule(parent, backupSchedule, backupScheduleId);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void getBackupScheduleTest() throws Exception {
+    BackupSchedule expectedResponse =
+        BackupSchedule.newBuilder()
+            .setName(
+                BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]")
+                    .toString())
+            .setSpec(BackupScheduleSpec.newBuilder().build())
+            .setRetentionDuration(Duration.newBuilder().build())
+            .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    BackupScheduleName name =
+        BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]");
+
+    BackupSchedule actualResponse = client.getBackupSchedule(name);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    GetBackupScheduleRequest actualRequest = ((GetBackupScheduleRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name.toString(), actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void getBackupScheduleExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      BackupScheduleName name =
+          BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]");
+      client.getBackupSchedule(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void getBackupScheduleTest2() throws Exception {
+    BackupSchedule expectedResponse =
+        BackupSchedule.newBuilder()
+            .setName(
+                BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]")
+                    .toString())
+            .setSpec(BackupScheduleSpec.newBuilder().build())
+            .setRetentionDuration(Duration.newBuilder().build())
+            .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    String name = "name3373707";
+
+    BackupSchedule actualResponse = client.getBackupSchedule(name);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    GetBackupScheduleRequest actualRequest = ((GetBackupScheduleRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name, actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void getBackupScheduleExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String name = "name3373707";
+      client.getBackupSchedule(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void updateBackupScheduleTest() throws Exception {
+    BackupSchedule expectedResponse =
+        BackupSchedule.newBuilder()
+            .setName(
+                BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]")
+                    .toString())
+            .setSpec(BackupScheduleSpec.newBuilder().build())
+            .setRetentionDuration(Duration.newBuilder().build())
+            .setEncryptionConfig(CreateBackupEncryptionConfig.newBuilder().build())
+            .setUpdateTime(Timestamp.newBuilder().build())
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    BackupSchedule backupSchedule = BackupSchedule.newBuilder().build();
+    FieldMask updateMask = FieldMask.newBuilder().build();
+
+    BackupSchedule actualResponse = client.updateBackupSchedule(backupSchedule, updateMask);
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    UpdateBackupScheduleRequest actualRequest =
+        ((UpdateBackupScheduleRequest) actualRequests.get(0));
+
+    Assert.assertEquals(backupSchedule, actualRequest.getBackupSchedule());
+    Assert.assertEquals(updateMask, actualRequest.getUpdateMask());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void updateBackupScheduleExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      BackupSchedule backupSchedule = BackupSchedule.newBuilder().build();
+      FieldMask updateMask = FieldMask.newBuilder().build();
+      client.updateBackupSchedule(backupSchedule, updateMask);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void deleteBackupScheduleTest() throws Exception {
+    Empty expectedResponse = Empty.newBuilder().build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    BackupScheduleName name =
+        BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]");
+
+    client.deleteBackupSchedule(name);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    DeleteBackupScheduleRequest actualRequest =
+        ((DeleteBackupScheduleRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name.toString(), actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void deleteBackupScheduleExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      BackupScheduleName name =
+          BackupScheduleName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]", "[SCHEDULE]");
+      client.deleteBackupSchedule(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void deleteBackupScheduleTest2() throws Exception {
+    Empty expectedResponse = Empty.newBuilder().build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    String name = "name3373707";
+
+    client.deleteBackupSchedule(name);
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    DeleteBackupScheduleRequest actualRequest =
+        ((DeleteBackupScheduleRequest) actualRequests.get(0));
+
+    Assert.assertEquals(name, actualRequest.getName());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void deleteBackupScheduleExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String name = "name3373707";
+      client.deleteBackupSchedule(name);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listBackupSchedulesTest() throws Exception {
+    BackupSchedule responsesElement = BackupSchedule.newBuilder().build();
+    ListBackupSchedulesResponse expectedResponse =
+        ListBackupSchedulesResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllBackupSchedules(Arrays.asList(responsesElement))
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+
+    ListBackupSchedulesPagedResponse pagedListResponse = client.listBackupSchedules(parent);
+
+    List<BackupSchedule> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getBackupSchedulesList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListBackupSchedulesRequest actualRequest = ((ListBackupSchedulesRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent.toString(), actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listBackupSchedulesExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      DatabaseName parent = DatabaseName.of("[PROJECT]", "[INSTANCE]", "[DATABASE]");
+      client.listBackupSchedules(parent);
+      Assert.fail("No exception raised");
+    } catch (InvalidArgumentException e) {
+      // Expected exception.
+    }
+  }
+
+  @Test
+  public void listBackupSchedulesTest2() throws Exception {
+    BackupSchedule responsesElement = BackupSchedule.newBuilder().build();
+    ListBackupSchedulesResponse expectedResponse =
+        ListBackupSchedulesResponse.newBuilder()
+            .setNextPageToken("")
+            .addAllBackupSchedules(Arrays.asList(responsesElement))
+            .build();
+    mockDatabaseAdmin.addResponse(expectedResponse);
+
+    String parent = "parent-995424086";
+
+    ListBackupSchedulesPagedResponse pagedListResponse = client.listBackupSchedules(parent);
+
+    List<BackupSchedule> resources = Lists.newArrayList(pagedListResponse.iterateAll());
+
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(expectedResponse.getBackupSchedulesList().get(0), resources.get(0));
+
+    List<AbstractMessage> actualRequests = mockDatabaseAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    ListBackupSchedulesRequest actualRequest = ((ListBackupSchedulesRequest) actualRequests.get(0));
+
+    Assert.assertEquals(parent, actualRequest.getParent());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void listBackupSchedulesExceptionTest2() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockDatabaseAdmin.addException(exception);
+
+    try {
+      String parent = "parent-995424086";
+      client.listBackupSchedules(parent);
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.

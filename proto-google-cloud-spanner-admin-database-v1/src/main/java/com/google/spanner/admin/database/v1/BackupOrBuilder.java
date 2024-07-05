@@ -675,4 +675,91 @@ public interface BackupOrBuilder
    * </code>
    */
   com.google.protobuf.TimestampOrBuilder getMaxExpireTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return A list containing the backupSchedules.
+   */
+  java.util.List<java.lang.String> getBackupSchedulesList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The count of backupSchedules.
+   */
+  int getBackupSchedulesCount();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @param index The index of the element to return.
+   * @return The backupSchedules at the given index.
+   */
+  java.lang.String getBackupSchedules(int index);
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the backupSchedules at the given index.
+   */
+  com.google.protobuf.ByteString getBackupSchedulesBytes(int index);
 }
