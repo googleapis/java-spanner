@@ -86,8 +86,8 @@ import javax.annotation.Generated;
  * Service Description: Cloud Spanner Database Admin API
  *
  * <p>The Cloud Spanner Database Admin API can be used to: &#42; create, drop, and list databases
- * &#42; update the schema of pre-existing databases &#42; create, delete and list backups for a
- * database &#42; restore a database from an existing backup
+ * &#42; update the schema of pre-existing databases &#42; create, delete, copy and list backups for
+ * a database &#42; restore a database from an existing backup
  *
  * <p>This class provides the ability to make remote calls to the backing service through method
  * calls that map to API methods. Sample code to get started:
@@ -199,7 +199,7 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> UpdateDatabaseDdl</td>
- *      <td><p> Updates the schema of a Cloud Spanner database by creating/altering/dropping tables, columns, indexes, etc. The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to track execution of the schema change(s). The [metadata][google.longrunning.Operation.metadata] field type is [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata].  The operation has no response.</td>
+ *      <td><p> Updates the schema of a Cloud Spanner database by creating/altering/dropping tables, columns, indexes, etc. The returned [long-running operation][google.longrunning.Operation] will have a name of the format `&lt;database_name&gt;/operations/&lt;operation_id&gt;` and can be used to track execution of the schema change(s). The [metadata][google.longrunning.Operation.metadata] field type is [UpdateDatabaseDdlMetadata][google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata]. The operation has no response.</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
  *      <ul>
@@ -337,7 +337,7 @@ import javax.annotation.Generated;
  *    </tr>
  *    <tr>
  *      <td><p> CopyBackup</td>
- *      <td><p> Starts copying a Cloud Spanner Backup. The returned backup [long-running operation][google.longrunning.Operation] will have a name of the format `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;` and can be used to track copying of the backup. The operation is associated with the destination backup. The [metadata][google.longrunning.Operation.metadata] field type is [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The [response][google.longrunning.Operation.response] field type is [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run on the same source backup.</td>
+ *      <td><p> Starts copying a Cloud Spanner Backup. The returned backup [long-running operation][google.longrunning.Operation] will have a name of the format `projects/&lt;project&gt;/instances/&lt;instance&gt;/backups/&lt;backup&gt;/operations/&lt;operation_id&gt;` and can be used to track copying of the backup. The operation is associated with the destination backup. The [metadata][google.longrunning.Operation.metadata] field type is [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The [response][google.longrunning.Operation.response] field type is [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned operation will stop the copying and delete the destination backup. Concurrent CopyBackup requests can run on the same source backup.</td>
  *      <td>
  *      <p>Request object method variants only take one parameter, a request object, which must be constructed before the call.</p>
  *      <ul>
@@ -2459,8 +2459,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
-   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
-   * on the same source backup.
+   * operation will stop the copying and delete the destination backup. Concurrent CopyBackup
+   * requests can run on the same source backup.
    *
    * <p>Sample code:
    *
@@ -2517,8 +2517,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
-   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
-   * on the same source backup.
+   * operation will stop the copying and delete the destination backup. Concurrent CopyBackup
+   * requests can run on the same source backup.
    *
    * <p>Sample code:
    *
@@ -2575,8 +2575,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
-   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
-   * on the same source backup.
+   * operation will stop the copying and delete the destination backup. Concurrent CopyBackup
+   * requests can run on the same source backup.
    *
    * <p>Sample code:
    *
@@ -2633,8 +2633,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
-   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
-   * on the same source backup.
+   * operation will stop the copying and delete the destination backup. Concurrent CopyBackup
+   * requests can run on the same source backup.
    *
    * <p>Sample code:
    *
@@ -2691,8 +2691,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
-   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
-   * on the same source backup.
+   * operation will stop the copying and delete the destination backup. Concurrent CopyBackup
+   * requests can run on the same source backup.
    *
    * <p>Sample code:
    *
@@ -2733,8 +2733,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
-   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
-   * on the same source backup.
+   * operation will stop the copying and delete the destination backup. Concurrent CopyBackup
+   * requests can run on the same source backup.
    *
    * <p>Sample code:
    *
@@ -2775,8 +2775,8 @@ public class DatabaseAdminClient implements BackgroundResource {
    * [CopyBackupMetadata][google.spanner.admin.database.v1.CopyBackupMetadata]. The
    * [response][google.longrunning.Operation.response] field type is
    * [Backup][google.spanner.admin.database.v1.Backup], if successful. Cancelling the returned
-   * operation will stop the copying and delete the backup. Concurrent CopyBackup requests can run
-   * on the same source backup.
+   * operation will stop the copying and delete the destination backup. Concurrent CopyBackup
+   * requests can run on the same source backup.
    *
    * <p>Sample code:
    *
@@ -4069,7 +4069,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * }</pre>
    *
    * @param parent Required. The database whose roles should be listed. Values are of the form
-   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final ListDatabaseRolesPagedResponse listDatabaseRoles(DatabaseName parent) {
@@ -4101,7 +4101,7 @@ public class DatabaseAdminClient implements BackgroundResource {
    * }</pre>
    *
    * @param parent Required. The database whose roles should be listed. Values are of the form
-   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   *     `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * @throws com.google.api.gax.rpc.ApiException if the remote call fails
    */
   public final ListDatabaseRolesPagedResponse listDatabaseRoles(String parent) {

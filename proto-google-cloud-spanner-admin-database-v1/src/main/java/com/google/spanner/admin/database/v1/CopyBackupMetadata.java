@@ -23,7 +23,7 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * Metadata type for the google.longrunning.Operation returned by
+ * Metadata type for the operation returned by
  * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup].
  * </pre>
  *
@@ -183,7 +183,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * The progress of the
-   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+   * operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -199,7 +200,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * The progress of the
-   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+   * operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -217,7 +219,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
    *
    * <pre>
    * The progress of the
-   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+   * operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -509,7 +512,7 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * Metadata type for the google.longrunning.Operation returned by
+   * Metadata type for the operation returned by
    * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup].
    * </pre>
    *
@@ -995,7 +998,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1010,7 +1014,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1031,7 +1036,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1054,7 +1060,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1075,7 +1082,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1104,7 +1112,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1124,7 +1133,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1139,7 +1149,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -1158,7 +1169,8 @@ public final class CopyBackupMetadata extends com.google.protobuf.GeneratedMessa
      *
      * <pre>
      * The progress of the
-     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+     * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+     * operation.
      * </pre>
      *
      * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>

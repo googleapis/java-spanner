@@ -1,0 +1,28 @@
+gapic_generator_version: 2.42.0
+googleapis_commitish: 6f289d775912966eb0cf04bda91e5e355c998d30
+libraries_bom_version: 26.38.0
+libraries:
+  - api_shortname: spanner
+    name_pretty: Cloud Spanner
+    product_documentation: https://cloud.google.com/spanner/docs/
+    client_documentation: https://cloud.google.com/java/docs/reference/google-cloud-spanner/latest/history
+    api_description: is a fully managed, mission-critical,  relational database service that offers transactional consistency at global scale, \nschemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication \nfor high availability.\n\nBe sure to activate the Cloud Spanner API on the Developer's Console to\nuse Cloud Spanner from your project.
+    issue_tracker: https://issuetracker.google.com/issues?q=componentid:190851%2B%20status:open
+    release_level: stable
+    language: java
+    min_java_version: 8
+    repo: googleapis/java-spanner
+    repo_short: java-spanner
+    distribution_name: com.google.cloud:google-cloud-spanner
+    api_id: spanner.googleapis.com
+    transport: grpc
+    requires_billing: true
+    codeowner_team: '@googleapis/api-spanner-java'
+    library_type: GAPIC_COMBO
+    excluded_poms: google-cloud-spanner-bom
+    recommended_package: com.google.cloud.spanner
+    GAPICs:
+      - proto_path: google/spanner/admin/database/v1
+      - proto_path: google/spanner/admin/instance/v1
+      - proto_path: google/spanner/executor/v1
+      - proto_path: google/spanner/v1

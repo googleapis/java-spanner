@@ -67,7 +67,9 @@ public interface ListBackupsRequestOrBuilder
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
+   * The following fields in the
+   * [Backup][google.spanner.admin.database.v1.Backup] are eligible for
+   * filtering:
    *
    *   * `name`
    *   * `database`
@@ -113,7 +115,9 @@ public interface ListBackupsRequestOrBuilder
    * must be one of: `&lt;`, `&gt;`, `&lt;=`, `&gt;=`, `!=`, `=`, or `:`.
    * Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   * The following fields in the [Backup][google.spanner.admin.database.v1.Backup] are eligible for filtering:
+   * The following fields in the
+   * [Backup][google.spanner.admin.database.v1.Backup] are eligible for
+   * filtering:
    *
    *   * `name`
    *   * `database`
@@ -167,9 +171,10 @@ public interface ListBackupsRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListBackupsResponse.next_page_token] from a
-   * previous [ListBackupsResponse][google.spanner.admin.database.v1.ListBackupsResponse] to the same `parent` and with the same
-   * `filter`.
+   * [next_page_token][google.spanner.admin.database.v1.ListBackupsResponse.next_page_token]
+   * from a previous
+   * [ListBackupsResponse][google.spanner.admin.database.v1.ListBackupsResponse]
+   * to the same `parent` and with the same `filter`.
    * </pre>
    *
    * <code>string page_token = 4;</code>
@@ -182,9 +187,10 @@ public interface ListBackupsRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListBackupsResponse.next_page_token] from a
-   * previous [ListBackupsResponse][google.spanner.admin.database.v1.ListBackupsResponse] to the same `parent` and with the same
-   * `filter`.
+   * [next_page_token][google.spanner.admin.database.v1.ListBackupsResponse.next_page_token]
+   * from a previous
+   * [ListBackupsResponse][google.spanner.admin.database.v1.ListBackupsResponse]
+   * to the same `parent` and with the same `filter`.
    * </pre>
    *
    * <code>string page_token = 4;</code>

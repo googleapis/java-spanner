@@ -46,6 +46,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     columns_ = com.google.protobuf.LazyStringArrayList.emptyList();
     resumeToken_ = com.google.protobuf.ByteString.EMPTY;
     partitionToken_ = com.google.protobuf.ByteString.EMPTY;
+    orderBy_ = 0;
+    lockHint_ = 0;
   }
 
   @java.lang.Override
@@ -67,6 +69,402 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         .ensureFieldAccessorsInitialized(
             com.google.spanner.v1.ReadRequest.class,
             com.google.spanner.v1.ReadRequest.Builder.class);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * An option to control the order in which rows are returned from a read.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.v1.ReadRequest.OrderBy}
+   */
+  public enum OrderBy implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Default value.
+     *
+     * ORDER_BY_UNSPECIFIED is equivalent to ORDER_BY_PRIMARY_KEY.
+     * </pre>
+     *
+     * <code>ORDER_BY_UNSPECIFIED = 0;</code>
+     */
+    ORDER_BY_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * Read rows are returned in primary key order.
+     *
+     * In the event that this option is used in conjunction with the
+     * `partition_token` field, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>ORDER_BY_PRIMARY_KEY = 1;</code>
+     */
+    ORDER_BY_PRIMARY_KEY(1),
+    /**
+     *
+     *
+     * <pre>
+     * Read rows are returned in any order.
+     * </pre>
+     *
+     * <code>ORDER_BY_NO_ORDER = 2;</code>
+     */
+    ORDER_BY_NO_ORDER(2),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Default value.
+     *
+     * ORDER_BY_UNSPECIFIED is equivalent to ORDER_BY_PRIMARY_KEY.
+     * </pre>
+     *
+     * <code>ORDER_BY_UNSPECIFIED = 0;</code>
+     */
+    public static final int ORDER_BY_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Read rows are returned in primary key order.
+     *
+     * In the event that this option is used in conjunction with the
+     * `partition_token` field, the API will return an `INVALID_ARGUMENT` error.
+     * </pre>
+     *
+     * <code>ORDER_BY_PRIMARY_KEY = 1;</code>
+     */
+    public static final int ORDER_BY_PRIMARY_KEY_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * Read rows are returned in any order.
+     * </pre>
+     *
+     * <code>ORDER_BY_NO_ORDER = 2;</code>
+     */
+    public static final int ORDER_BY_NO_ORDER_VALUE = 2;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static OrderBy valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static OrderBy forNumber(int value) {
+      switch (value) {
+        case 0:
+          return ORDER_BY_UNSPECIFIED;
+        case 1:
+          return ORDER_BY_PRIMARY_KEY;
+        case 2:
+          return ORDER_BY_NO_ORDER;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<OrderBy> internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<OrderBy> internalValueMap =
+        new com.google.protobuf.Internal.EnumLiteMap<OrderBy>() {
+          public OrderBy findValueByNumber(int number) {
+            return OrderBy.forNumber(number);
+          }
+        };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.v1.ReadRequest.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final OrderBy[] VALUES = values();
+
+    public static OrderBy valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private OrderBy(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.v1.ReadRequest.OrderBy)
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * A lock hint mechanism for reads done within a transaction.
+   * </pre>
+   *
+   * Protobuf enum {@code google.spanner.v1.ReadRequest.LockHint}
+   */
+  public enum LockHint implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     *
+     *
+     * <pre>
+     * Default value.
+     *
+     * LOCK_HINT_UNSPECIFIED is equivalent to LOCK_HINT_SHARED.
+     * </pre>
+     *
+     * <code>LOCK_HINT_UNSPECIFIED = 0;</code>
+     */
+    LOCK_HINT_UNSPECIFIED(0),
+    /**
+     *
+     *
+     * <pre>
+     * Acquire shared locks.
+     *
+     * By default when you perform a read as part of a read-write transaction,
+     * Spanner acquires shared read locks, which allows other reads to still
+     * access the data until your transaction is ready to commit. When your
+     * transaction is committing and writes are being applied, the transaction
+     * attempts to upgrade to an exclusive lock for any data you are writing.
+     * For more information about locks, see [Lock
+     * modes](https://cloud.google.com/spanner/docs/introspection/lock-statistics#explain-lock-modes).
+     * </pre>
+     *
+     * <code>LOCK_HINT_SHARED = 1;</code>
+     */
+    LOCK_HINT_SHARED(1),
+    /**
+     *
+     *
+     * <pre>
+     * Acquire exclusive locks.
+     *
+     * Requesting exclusive locks is beneficial if you observe high write
+     * contention, which means you notice that multiple transactions are
+     * concurrently trying to read and write to the same data, resulting in a
+     * large number of aborts. This problem occurs when two transactions
+     * initially acquire shared locks and then both try to upgrade to exclusive
+     * locks at the same time. In this situation both transactions are waiting
+     * for the other to give up their lock, resulting in a deadlocked situation.
+     * Spanner is able to detect this occurring and force one of the
+     * transactions to abort. However, this is a slow and expensive operation
+     * and results in lower performance. In this case it makes sense to acquire
+     * exclusive locks at the start of the transaction because then when
+     * multiple transactions try to act on the same data, they automatically get
+     * serialized. Each transaction waits its turn to acquire the lock and
+     * avoids getting into deadlock situations.
+     *
+     * Because the exclusive lock hint is just a hint, it should not be
+     * considered equivalent to a mutex. In other words, you should not use
+     * Spanner exclusive locks as a mutual exclusion mechanism for the execution
+     * of code outside of Spanner.
+     *
+     * **Note:** Request exclusive locks judiciously because they block others
+     * from reading that data for the entire transaction, rather than just when
+     * the writes are being performed. Unless you observe high write contention,
+     * you should use the default of shared read locks so you don't prematurely
+     * block other clients from reading the data that you're writing to.
+     * </pre>
+     *
+     * <code>LOCK_HINT_EXCLUSIVE = 2;</code>
+     */
+    LOCK_HINT_EXCLUSIVE(2),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     *
+     *
+     * <pre>
+     * Default value.
+     *
+     * LOCK_HINT_UNSPECIFIED is equivalent to LOCK_HINT_SHARED.
+     * </pre>
+     *
+     * <code>LOCK_HINT_UNSPECIFIED = 0;</code>
+     */
+    public static final int LOCK_HINT_UNSPECIFIED_VALUE = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Acquire shared locks.
+     *
+     * By default when you perform a read as part of a read-write transaction,
+     * Spanner acquires shared read locks, which allows other reads to still
+     * access the data until your transaction is ready to commit. When your
+     * transaction is committing and writes are being applied, the transaction
+     * attempts to upgrade to an exclusive lock for any data you are writing.
+     * For more information about locks, see [Lock
+     * modes](https://cloud.google.com/spanner/docs/introspection/lock-statistics#explain-lock-modes).
+     * </pre>
+     *
+     * <code>LOCK_HINT_SHARED = 1;</code>
+     */
+    public static final int LOCK_HINT_SHARED_VALUE = 1;
+    /**
+     *
+     *
+     * <pre>
+     * Acquire exclusive locks.
+     *
+     * Requesting exclusive locks is beneficial if you observe high write
+     * contention, which means you notice that multiple transactions are
+     * concurrently trying to read and write to the same data, resulting in a
+     * large number of aborts. This problem occurs when two transactions
+     * initially acquire shared locks and then both try to upgrade to exclusive
+     * locks at the same time. In this situation both transactions are waiting
+     * for the other to give up their lock, resulting in a deadlocked situation.
+     * Spanner is able to detect this occurring and force one of the
+     * transactions to abort. However, this is a slow and expensive operation
+     * and results in lower performance. In this case it makes sense to acquire
+     * exclusive locks at the start of the transaction because then when
+     * multiple transactions try to act on the same data, they automatically get
+     * serialized. Each transaction waits its turn to acquire the lock and
+     * avoids getting into deadlock situations.
+     *
+     * Because the exclusive lock hint is just a hint, it should not be
+     * considered equivalent to a mutex. In other words, you should not use
+     * Spanner exclusive locks as a mutual exclusion mechanism for the execution
+     * of code outside of Spanner.
+     *
+     * **Note:** Request exclusive locks judiciously because they block others
+     * from reading that data for the entire transaction, rather than just when
+     * the writes are being performed. Unless you observe high write contention,
+     * you should use the default of shared read locks so you don't prematurely
+     * block other clients from reading the data that you're writing to.
+     * </pre>
+     *
+     * <code>LOCK_HINT_EXCLUSIVE = 2;</code>
+     */
+    public static final int LOCK_HINT_EXCLUSIVE_VALUE = 2;
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static LockHint valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static LockHint forNumber(int value) {
+      switch (value) {
+        case 0:
+          return LOCK_HINT_UNSPECIFIED;
+        case 1:
+          return LOCK_HINT_SHARED;
+        case 2:
+          return LOCK_HINT_EXCLUSIVE;
+        default:
+          return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<LockHint> internalGetValueMap() {
+      return internalValueMap;
+    }
+
+    private static final com.google.protobuf.Internal.EnumLiteMap<LockHint> internalValueMap =
+        new com.google.protobuf.Internal.EnumLiteMap<LockHint>() {
+          public LockHint findValueByNumber(int number) {
+            return LockHint.forNumber(number);
+          }
+        };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+
+    public final com.google.protobuf.Descriptors.EnumDescriptor getDescriptorForType() {
+      return getDescriptor();
+    }
+
+    public static final com.google.protobuf.Descriptors.EnumDescriptor getDescriptor() {
+      return com.google.spanner.v1.ReadRequest.getDescriptor().getEnumTypes().get(1);
+    }
+
+    private static final LockHint[] VALUES = values();
+
+    public static LockHint valueOf(com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException("EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private LockHint(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:google.spanner.v1.ReadRequest.LockHint)
   }
 
   private int bitField0_;
@@ -635,6 +1033,98 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     return dataBoostEnabled_;
   }
 
+  public static final int ORDER_BY_FIELD_NUMBER = 16;
+  private int orderBy_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Order for the returned rows.
+   *
+   * By default, Spanner will return result rows in primary key order except for
+   * PartitionRead requests. For applications that do not require rows to be
+   * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+   * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for orderBy.
+   */
+  @java.lang.Override
+  public int getOrderByValue() {
+    return orderBy_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Order for the returned rows.
+   *
+   * By default, Spanner will return result rows in primary key order except for
+   * PartitionRead requests. For applications that do not require rows to be
+   * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+   * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The orderBy.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.ReadRequest.OrderBy getOrderBy() {
+    com.google.spanner.v1.ReadRequest.OrderBy result =
+        com.google.spanner.v1.ReadRequest.OrderBy.forNumber(orderBy_);
+    return result == null ? com.google.spanner.v1.ReadRequest.OrderBy.UNRECOGNIZED : result;
+  }
+
+  public static final int LOCK_HINT_FIELD_NUMBER = 17;
+  private int lockHint_ = 0;
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Lock Hint for the request, it can only be used with read-write
+   * transactions.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for lockHint.
+   */
+  @java.lang.Override
+  public int getLockHintValue() {
+    return lockHint_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Lock Hint for the request, it can only be used with read-write
+   * transactions.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The lockHint.
+   */
+  @java.lang.Override
+  public com.google.spanner.v1.ReadRequest.LockHint getLockHint() {
+    com.google.spanner.v1.ReadRequest.LockHint result =
+        com.google.spanner.v1.ReadRequest.LockHint.forNumber(lockHint_);
+    return result == null ? com.google.spanner.v1.ReadRequest.LockHint.UNRECOGNIZED : result;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -684,6 +1174,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
     if (dataBoostEnabled_ != false) {
       output.writeBool(15, dataBoostEnabled_);
+    }
+    if (orderBy_ != com.google.spanner.v1.ReadRequest.OrderBy.ORDER_BY_UNSPECIFIED.getNumber()) {
+      output.writeEnum(16, orderBy_);
+    }
+    if (lockHint_ != com.google.spanner.v1.ReadRequest.LockHint.LOCK_HINT_UNSPECIFIED.getNumber()) {
+      output.writeEnum(17, lockHint_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -736,6 +1232,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     if (dataBoostEnabled_ != false) {
       size += com.google.protobuf.CodedOutputStream.computeBoolSize(15, dataBoostEnabled_);
     }
+    if (orderBy_ != com.google.spanner.v1.ReadRequest.OrderBy.ORDER_BY_UNSPECIFIED.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(16, orderBy_);
+    }
+    if (lockHint_ != com.google.spanner.v1.ReadRequest.LockHint.LOCK_HINT_UNSPECIFIED.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream.computeEnumSize(17, lockHint_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -775,6 +1277,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       if (!getDirectedReadOptions().equals(other.getDirectedReadOptions())) return false;
     }
     if (getDataBoostEnabled() != other.getDataBoostEnabled()) return false;
+    if (orderBy_ != other.orderBy_) return false;
+    if (lockHint_ != other.lockHint_) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -820,6 +1324,10 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + DATA_BOOST_ENABLED_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getDataBoostEnabled());
+    hash = (37 * hash) + ORDER_BY_FIELD_NUMBER;
+    hash = (53 * hash) + orderBy_;
+    hash = (37 * hash) + LOCK_HINT_FIELD_NUMBER;
+    hash = (53 * hash) + lockHint_;
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -999,6 +1507,8 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
         directedReadOptionsBuilder_ = null;
       }
       dataBoostEnabled_ = false;
+      orderBy_ = 0;
+      lockHint_ = 0;
       return this;
     }
 
@@ -1080,6 +1590,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (((from_bitField0_ & 0x00000800) != 0)) {
         result.dataBoostEnabled_ = dataBoostEnabled_;
+      }
+      if (((from_bitField0_ & 0x00001000) != 0)) {
+        result.orderBy_ = orderBy_;
+      }
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        result.lockHint_ = lockHint_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1177,6 +1693,12 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
       }
       if (other.getDataBoostEnabled() != false) {
         setDataBoostEnabled(other.getDataBoostEnabled());
+      }
+      if (other.orderBy_ != 0) {
+        setOrderByValue(other.getOrderByValue());
+      }
+      if (other.lockHint_ != 0) {
+        setLockHintValue(other.getLockHintValue());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1278,6 +1800,18 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
                 bitField0_ |= 0x00000800;
                 break;
               } // case 120
+            case 128:
+              {
+                orderBy_ = input.readEnum();
+                bitField0_ |= 0x00001000;
+                break;
+              } // case 128
+            case 136:
+              {
+                lockHint_ = input.readEnum();
+                bitField0_ |= 0x00002000;
+                break;
+              } // case 136
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -2970,6 +3504,241 @@ public final class ReadRequest extends com.google.protobuf.GeneratedMessageV3
     public Builder clearDataBoostEnabled() {
       bitField0_ = (bitField0_ & ~0x00000800);
       dataBoostEnabled_ = false;
+      onChanged();
+      return this;
+    }
+
+    private int orderBy_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Order for the returned rows.
+     *
+     * By default, Spanner will return result rows in primary key order except for
+     * PartitionRead requests. For applications that do not require rows to be
+     * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+     * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for orderBy.
+     */
+    @java.lang.Override
+    public int getOrderByValue() {
+      return orderBy_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Order for the returned rows.
+     *
+     * By default, Spanner will return result rows in primary key order except for
+     * PartitionRead requests. For applications that do not require rows to be
+     * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+     * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for orderBy to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOrderByValue(int value) {
+      orderBy_ = value;
+      bitField0_ |= 0x00001000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Order for the returned rows.
+     *
+     * By default, Spanner will return result rows in primary key order except for
+     * PartitionRead requests. For applications that do not require rows to be
+     * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+     * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The orderBy.
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.ReadRequest.OrderBy getOrderBy() {
+      com.google.spanner.v1.ReadRequest.OrderBy result =
+          com.google.spanner.v1.ReadRequest.OrderBy.forNumber(orderBy_);
+      return result == null ? com.google.spanner.v1.ReadRequest.OrderBy.UNRECOGNIZED : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Order for the returned rows.
+     *
+     * By default, Spanner will return result rows in primary key order except for
+     * PartitionRead requests. For applications that do not require rows to be
+     * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+     * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The orderBy to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOrderBy(com.google.spanner.v1.ReadRequest.OrderBy value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00001000;
+      orderBy_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Order for the returned rows.
+     *
+     * By default, Spanner will return result rows in primary key order except for
+     * PartitionRead requests. For applications that do not require rows to be
+     * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+     * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+     * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearOrderBy() {
+      bitField0_ = (bitField0_ & ~0x00001000);
+      orderBy_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int lockHint_ = 0;
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Lock Hint for the request, it can only be used with read-write
+     * transactions.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The enum numeric value on the wire for lockHint.
+     */
+    @java.lang.Override
+    public int getLockHintValue() {
+      return lockHint_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Lock Hint for the request, it can only be used with read-write
+     * transactions.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The enum numeric value on the wire for lockHint to set.
+     * @return This builder for chaining.
+     */
+    public Builder setLockHintValue(int value) {
+      lockHint_ = value;
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Lock Hint for the request, it can only be used with read-write
+     * transactions.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return The lockHint.
+     */
+    @java.lang.Override
+    public com.google.spanner.v1.ReadRequest.LockHint getLockHint() {
+      com.google.spanner.v1.ReadRequest.LockHint result =
+          com.google.spanner.v1.ReadRequest.LockHint.forNumber(lockHint_);
+      return result == null ? com.google.spanner.v1.ReadRequest.LockHint.UNRECOGNIZED : result;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Lock Hint for the request, it can only be used with read-write
+     * transactions.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @param value The lockHint to set.
+     * @return This builder for chaining.
+     */
+    public Builder setLockHint(com.google.spanner.v1.ReadRequest.LockHint value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      bitField0_ |= 0x00002000;
+      lockHint_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Lock Hint for the request, it can only be used with read-write
+     * transactions.
+     * </pre>
+     *
+     * <code>
+     * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearLockHint() {
+      bitField0_ = (bitField0_ & ~0x00002000);
+      lockHint_ = 0;
       onChanged();
       return this;
     }
