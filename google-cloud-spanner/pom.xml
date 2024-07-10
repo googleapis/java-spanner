@@ -256,9 +256,12 @@
       <artifactId>opentelemetry-context</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.opentelemetry.instrumentation</groupId>
-      <artifactId>opentelemetry-grpc-1.6</artifactId>
-      <version>2.1.0-alpha</version>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-metrics</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
