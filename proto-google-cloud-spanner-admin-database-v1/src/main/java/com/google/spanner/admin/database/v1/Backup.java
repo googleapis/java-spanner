@@ -46,6 +46,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     encryptionInformation_ = java.util.Collections.emptyList();
     databaseDialect_ = 0;
     referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
+    backupSchedules_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
@@ -1069,6 +1070,106 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         : maxExpireTime_;
   }
 
+  public static final int BACKUP_SCHEDULES_FIELD_NUMBER = 14;
+
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList backupSchedules_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return A list containing the backupSchedules.
+   */
+  public com.google.protobuf.ProtocolStringList getBackupSchedulesList() {
+    return backupSchedules_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The count of backupSchedules.
+   */
+  public int getBackupSchedulesCount() {
+    return backupSchedules_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @param index The index of the element to return.
+   * @return The backupSchedules at the given index.
+   */
+  public java.lang.String getBackupSchedules(int index) {
+    return backupSchedules_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. List of backup schedule URIs that are associated with
+   * creating this backup. This is only applicable for scheduled backups, and
+   * is empty for on-demand backups.
+   *
+   * To optimize for storage, whenever possible, multiple schedules are
+   * collapsed together to create one backup. In such cases, this field captures
+   * the list of all backup schedule URIs that are associated with creating
+   * this backup. If collapsing is not done, then this field captures the
+   * single backup schedule URI associated with creating this backup.
+   * </pre>
+   *
+   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the backupSchedules at the given index.
+   */
+  public com.google.protobuf.ByteString getBackupSchedulesBytes(int index) {
+    return backupSchedules_.getByteString(index);
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1124,6 +1225,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     }
     for (int i = 0; i < encryptionInformation_.size(); i++) {
       output.writeMessage(13, encryptionInformation_.get(i));
+    }
+    for (int i = 0; i < backupSchedules_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 14, backupSchedules_.getRaw(i));
     }
     getUnknownFields().writeTo(output);
   }
@@ -1187,6 +1291,14 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               13, encryptionInformation_.get(i));
     }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < backupSchedules_.size(); i++) {
+        dataSize += computeStringSizeNoTag(backupSchedules_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getBackupSchedulesList().size();
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1231,6 +1343,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (hasMaxExpireTime()) {
       if (!getMaxExpireTime().equals(other.getMaxExpireTime())) return false;
     }
+    if (!getBackupSchedulesList().equals(other.getBackupSchedulesList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1283,6 +1396,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (hasMaxExpireTime()) {
       hash = (37 * hash) + MAX_EXPIRE_TIME_FIELD_NUMBER;
       hash = (53 * hash) + getMaxExpireTime().hashCode();
+    }
+    if (getBackupSchedulesCount() > 0) {
+      hash = (37 * hash) + BACKUP_SCHEDULES_FIELD_NUMBER;
+      hash = (53 * hash) + getBackupSchedulesList().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -1476,6 +1593,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         maxExpireTimeBuilder_.dispose();
         maxExpireTimeBuilder_ = null;
       }
+      backupSchedules_ = com.google.protobuf.LazyStringArrayList.emptyList();
       return this;
     }
 
@@ -1571,6 +1689,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         result.maxExpireTime_ =
             maxExpireTimeBuilder_ == null ? maxExpireTime_ : maxExpireTimeBuilder_.build();
         to_bitField0_ |= 0x00000010;
+      }
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        backupSchedules_.makeImmutable();
+        result.backupSchedules_ = backupSchedules_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1701,6 +1823,16 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (other.hasMaxExpireTime()) {
         mergeMaxExpireTime(other.getMaxExpireTime());
       }
+      if (!other.backupSchedules_.isEmpty()) {
+        if (backupSchedules_.isEmpty()) {
+          backupSchedules_ = other.backupSchedules_;
+          bitField0_ |= 0x00002000;
+        } else {
+          ensureBackupSchedulesIsMutable();
+          backupSchedules_.addAll(other.backupSchedules_);
+        }
+        onChanged();
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -1815,6 +1947,13 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
                 }
                 break;
               } // case 106
+            case 114:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureBackupSchedulesIsMutable();
+                backupSchedules_.add(s);
+                break;
+              } // case 114
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -4504,6 +4643,261 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         maxExpireTime_ = null;
       }
       return maxExpireTimeBuilder_;
+    }
+
+    private com.google.protobuf.LazyStringArrayList backupSchedules_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+
+    private void ensureBackupSchedulesIsMutable() {
+      if (!backupSchedules_.isModifiable()) {
+        backupSchedules_ = new com.google.protobuf.LazyStringArrayList(backupSchedules_);
+      }
+      bitField0_ |= 0x00002000;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return A list containing the backupSchedules.
+     */
+    public com.google.protobuf.ProtocolStringList getBackupSchedulesList() {
+      backupSchedules_.makeImmutable();
+      return backupSchedules_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The count of backupSchedules.
+     */
+    public int getBackupSchedulesCount() {
+      return backupSchedules_.size();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param index The index of the element to return.
+     * @return The backupSchedules at the given index.
+     */
+    public java.lang.String getBackupSchedules(int index) {
+      return backupSchedules_.get(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param index The index of the value to return.
+     * @return The bytes of the backupSchedules at the given index.
+     */
+    public com.google.protobuf.ByteString getBackupSchedulesBytes(int index) {
+      return backupSchedules_.getByteString(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param index The index to set the value at.
+     * @param value The backupSchedules to set.
+     * @return This builder for chaining.
+     */
+    public Builder setBackupSchedules(int index, java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureBackupSchedulesIsMutable();
+      backupSchedules_.set(index, value);
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The backupSchedules to add.
+     * @return This builder for chaining.
+     */
+    public Builder addBackupSchedules(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureBackupSchedulesIsMutable();
+      backupSchedules_.add(value);
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param values The backupSchedules to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllBackupSchedules(java.lang.Iterable<java.lang.String> values) {
+      ensureBackupSchedulesIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(values, backupSchedules_);
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearBackupSchedules() {
+      backupSchedules_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00002000);
+      ;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. List of backup schedule URIs that are associated with
+     * creating this backup. This is only applicable for scheduled backups, and
+     * is empty for on-demand backups.
+     *
+     * To optimize for storage, whenever possible, multiple schedules are
+     * collapsed together to create one backup. In such cases, this field captures
+     * the list of all backup schedule URIs that are associated with creating
+     * this backup. If collapsing is not done, then this field captures the
+     * single backup schedule URI associated with creating this backup.
+     * </pre>
+     *
+     * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The bytes of the backupSchedules to add.
+     * @return This builder for chaining.
+     */
+    public Builder addBackupSchedulesBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+      ensureBackupSchedulesIsMutable();
+      backupSchedules_.add(value);
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
     }
 
     @java.lang.Override
