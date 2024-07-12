@@ -66,7 +66,8 @@ class JavaClientRunner extends AbstractRunner {
       int numClients,
       int numOperations,
       int waitMillis,
-      boolean useMultiplexedSession) {
+      boolean useMultiplexedSession,
+      boolean enableGrpcGcpExtension) {
     // setup open telemetry metrics and traces
     // setup open telemetry metrics and traces
     SpanExporter traceExporter = TraceExporter.createWithDefaultConfiguration();
@@ -97,13 +98,18 @@ class JavaClientRunner extends AbstractRunner {
             .build();
     SpannerOptions.enableOpenTelemetryMetrics();
     SpannerOptions.enableOpenTelemetryTraces();
-    SpannerOptions options =
+    SpannerOptions.Builder optionsBuilder =
         SpannerOptions.newBuilder()
             .setOpenTelemetry(openTelemetry)
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
-            .setHost(SERVER_URL)
-            .build();
+            .setHost(SERVER_URL);
+    if(enableGrpcGcpExtension) {
+      System.out.println("Using gRPC-GCP extension for channel management");
+      optionsBuilder.enableGrpcGcpExtension();
+    }
+
+    SpannerOptions options = optionsBuilder.build();
     // Register query stats metric.
     // This should be done once before start recording the data.
     Meter meter = openTelemetry.getMeter("cloud.google.com/java");
