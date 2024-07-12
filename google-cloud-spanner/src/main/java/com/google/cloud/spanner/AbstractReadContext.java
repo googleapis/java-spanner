@@ -902,6 +902,9 @@ abstract class AbstractReadContext
     if (readOptions.hasDataBoostEnabled()) {
       builder.setDataBoostEnabled(readOptions.dataBoostEnabled());
     }
+    if (readOptions.hasOrderBy()) {
+      builder.setOrderBy(readOptions.orderBy());
+    }
     if (readOptions.hasDirectedReadOptions()) {
       builder.setDirectedReadOptions(readOptions.directedReadOptions());
     } else if (defaultDirectedReadOptions != null) {
