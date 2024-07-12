@@ -548,7 +548,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
-   * encryption state and the Cloud KMS key versions that are in use.
+   * all Cloud KMS key versions that are in use. The `encryption_status' field
+   * inside of each `EncryptionInfo` is not populated.
    *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
@@ -572,7 +573,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
-   * encryption state and the Cloud KMS key versions that are in use.
+   * all Cloud KMS key versions that are in use. The `encryption_status' field
+   * inside of each `EncryptionInfo` is not populated.
    *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
@@ -596,7 +598,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
-   * encryption state and the Cloud KMS key versions that are in use.
+   * all Cloud KMS key versions that are in use. The `encryption_status' field
+   * inside of each `EncryptionInfo` is not populated.
    *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
@@ -619,7 +622,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
-   * encryption state and the Cloud KMS key versions that are in use.
+   * all Cloud KMS key versions that are in use. The `encryption_status' field
+   * inside of each `EncryptionInfo` is not populated.
    *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
@@ -642,7 +646,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * <pre>
    * Output only. For databases that are using customer managed encryption, this
    * field contains the encryption information for the database, such as
-   * encryption state and the Cloud KMS key versions that are in use.
+   * all Cloud KMS key versions that are in use. The `encryption_status' field
+   * inside of each `EncryptionInfo` is not populated.
    *
    * For databases that are using Google default or other types of encryption,
    * this field is empty.
@@ -672,8 +677,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The period in which Cloud Spanner retains all versions of data
    * for the database. This is the same as the value of version_retention_period
    * database option set using
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-   * if not set.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+   * Defaults to 1 hour, if not set.
    * </pre>
    *
    * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -699,8 +704,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    * Output only. The period in which Cloud Spanner retains all versions of data
    * for the database. This is the same as the value of version_retention_period
    * database option set using
-   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-   * if not set.
+   * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+   * Defaults to 1 hour, if not set.
    * </pre>
    *
    * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
@@ -897,7 +902,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
    *
    * <pre>
    * Whether drop protection is enabled for this database. Defaults to false,
-   * if not set.
+   * if not set. For more details, please see how to [prevent accidental
+   * database
+   * deletion](https://cloud.google.com/spanner/docs/prevent-database-deletion).
    * </pre>
    *
    * <code>bool enable_drop_protection = 11;</code>
@@ -2538,7 +2545,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2565,7 +2573,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2591,7 +2600,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2617,7 +2627,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2650,7 +2661,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2680,7 +2692,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2712,7 +2725,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2745,7 +2759,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2775,7 +2790,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2805,7 +2821,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2835,7 +2852,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2864,7 +2882,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2893,7 +2912,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2916,7 +2936,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2943,7 +2964,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2970,7 +2992,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -2993,7 +3016,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -3018,7 +3042,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * <pre>
      * Output only. For databases that are using customer managed encryption, this
      * field contains the encryption information for the database, such as
-     * encryption state and the Cloud KMS key versions that are in use.
+     * all Cloud KMS key versions that are in use. The `encryption_status' field
+     * inside of each `EncryptionInfo` is not populated.
      *
      * For databases that are using Google default or other types of encryption,
      * this field is empty.
@@ -3064,8 +3089,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -3091,8 +3116,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -3118,8 +3143,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -3144,8 +3169,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -3166,8 +3191,8 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      * Output only. The period in which Cloud Spanner retains all versions of data
      * for the database. This is the same as the value of version_retention_period
      * database option set using
-     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl]. Defaults to 1 hour,
-     * if not set.
+     * [UpdateDatabaseDdl][google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl].
+     * Defaults to 1 hour, if not set.
      * </pre>
      *
      * <code>string version_retention_period = 6 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -3665,7 +3690,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Whether drop protection is enabled for this database. Defaults to false,
-     * if not set.
+     * if not set. For more details, please see how to [prevent accidental
+     * database
+     * deletion](https://cloud.google.com/spanner/docs/prevent-database-deletion).
      * </pre>
      *
      * <code>bool enable_drop_protection = 11;</code>
@@ -3681,7 +3708,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Whether drop protection is enabled for this database. Defaults to false,
-     * if not set.
+     * if not set. For more details, please see how to [prevent accidental
+     * database
+     * deletion](https://cloud.google.com/spanner/docs/prevent-database-deletion).
      * </pre>
      *
      * <code>bool enable_drop_protection = 11;</code>
@@ -3701,7 +3730,9 @@ public final class Database extends com.google.protobuf.GeneratedMessageV3
      *
      * <pre>
      * Whether drop protection is enabled for this database. Defaults to false,
-     * if not set.
+     * if not set. For more details, please see how to [prevent accidental
+     * database
+     * deletion](https://cloud.google.com/spanner/docs/prevent-database-deletion).
      * </pre>
      *
      * <code>bool enable_drop_protection = 11;</code>

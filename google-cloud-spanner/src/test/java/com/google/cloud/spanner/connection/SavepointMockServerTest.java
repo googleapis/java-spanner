@@ -39,6 +39,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.RollbackRequest;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
@@ -677,5 +678,81 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
         assertEquals(numRows, count);
       }
     }
+  }
+
+  @Test
+  public void testKeepAlive() throws InterruptedException, TimeoutException {
+    System.setProperty("spanner.connection.keep_alive_interval_millis", "1");
+    try (Connection connection = createConnection()) {
+      connection.setSavepointSupport(SavepointSupport.ENABLED);
+      connection.setKeepTransactionAlive(true);
+      // Start a transaction by executing a statement.
+      connection.execute(INSERT_STATEMENT);
+      // Verify that we get a keep-alive request.
+      verifyHasKeepAliveRequest();
+      // Set a savepoint, execute another statement, and rollback to the savepoint.
+      // The keep-alive should not be sent after the transaction has been rolled back to the
+      // savepoint.
+      connection.savepoint("s1");
+      connection.execute(INSERT_STATEMENT);
+      connection.rollbackToSavepoint("s1");
+      mockSpanner.waitForRequestsToContain(RollbackRequest.class, 1000L);
+      // Wait for up to 2 milliseconds to make sure that any keep-alive requests that were in flight
+      // have finished.
+      try {
+        mockSpanner.waitForRequestsToContain(
+            r -> {
+              if (!(r instanceof ExecuteSqlRequest)) {
+                return false;
+              }
+              ExecuteSqlRequest request = (ExecuteSqlRequest) r;
+              return request.getSql().equals("SELECT 1")
+                  && request
+                      .getRequestOptions()
+                      .getRequestTag()
+                      .equals("connection.transaction-keep-alive");
+            },
+            2L);
+      } catch (TimeoutException ignore) {
+      }
+
+      // Verify that we don't get any keep-alive requests from this point.
+      mockSpanner.clearRequests();
+      Thread.sleep(2L);
+      assertEquals(0, countKeepAliveRequest());
+      // Resume the transaction and verify that we get a keep-alive again.
+      connection.execute(INSERT_STATEMENT);
+      verifyHasKeepAliveRequest();
+    } finally {
+      System.clearProperty("spanner.connection.keep_alive_interval_millis");
+    }
+  }
+
+  private void verifyHasKeepAliveRequest() throws InterruptedException, TimeoutException {
+    mockSpanner.waitForRequestsToContain(
+        r -> {
+          if (!(r instanceof ExecuteSqlRequest)) {
+            return false;
+          }
+          ExecuteSqlRequest request = (ExecuteSqlRequest) r;
+          return request.getSql().equals("SELECT 1")
+              && request
+                  .getRequestOptions()
+                  .getRequestTag()
+                  .equals("connection.transaction-keep-alive");
+        },
+        1000L);
+  }
+
+  private long countKeepAliveRequest() {
+    return mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
+        .filter(
+            request ->
+                request.getSql().equals("SELECT 1")
+                    && request
+                        .getRequestOptions()
+                        .getRequestTag()
+                        .equals("connection.transaction-keep-alive"))
+        .count();
   }
 }

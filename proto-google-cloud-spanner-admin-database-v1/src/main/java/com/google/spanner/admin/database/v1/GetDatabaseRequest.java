@@ -23,7 +23,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for [GetDatabase][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase].
+ * The request for
+ * [GetDatabase][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.GetDatabaseRequest}
@@ -284,7 +285,8 @@ public final class GetDatabaseRequest extends com.google.protobuf.GeneratedMessa
    *
    *
    * <pre>
-   * The request for [GetDatabase][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase].
+   * The request for
+   * [GetDatabase][google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.GetDatabaseRequest}

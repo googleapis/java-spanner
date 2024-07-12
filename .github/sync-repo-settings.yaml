@@ -19,7 +19,6 @@ branchProtectionRules:
       - checkstyle
       - compile (8)
       - compile (11)
-      - OwlBot Post Processor
       - units-with-multiplexed-session (8)
       - units-with-multiplexed-session (11)
   - pattern: 3.3.x
@@ -141,7 +140,6 @@ branchProtectionRules:
       - checkstyle
       - compile (8)
       - compile (11)
-      - OwlBot Post Processor
 permissionRules:
   - team: yoshi-admins
     permission: admin

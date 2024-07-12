@@ -41,6 +41,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
   private CreateBackupEncryptionConfig() {
     encryptionType_ = 0;
     kmsKeyName_ = "";
+    kmsKeyNames_ = com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   @java.lang.Override
@@ -91,9 +92,10 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Use the same encryption configuration as the database. This is the
      * default option when
-     * [encryption_config][google.spanner.admin.database.v1.CreateBackupEncryptionConfig] is empty.
-     * For example, if the database is using `Customer_Managed_Encryption`, the
-     * backup will be using the same Cloud KMS key as the database.
+     * [encryption_config][google.spanner.admin.database.v1.CreateBackupEncryptionConfig]
+     * is empty. For example, if the database is using
+     * `Customer_Managed_Encryption`, the backup will be using the same Cloud
+     * KMS key as the database.
      * </pre>
      *
      * <code>USE_DATABASE_ENCRYPTION = 1;</code>
@@ -139,9 +141,10 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Use the same encryption configuration as the database. This is the
      * default option when
-     * [encryption_config][google.spanner.admin.database.v1.CreateBackupEncryptionConfig] is empty.
-     * For example, if the database is using `Customer_Managed_Encryption`, the
-     * backup will be using the same Cloud KMS key as the database.
+     * [encryption_config][google.spanner.admin.database.v1.CreateBackupEncryptionConfig]
+     * is empty. For example, if the database is using
+     * `Customer_Managed_Encryption`, the backup will be using the same Cloud
+     * KMS key as the database.
      * </pre>
      *
      * <code>USE_DATABASE_ENCRYPTION = 1;</code>
@@ -310,8 +313,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    * <pre>
    * Optional. The Cloud KMS key that will be used to protect the backup.
    * This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
-   * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+   * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
    *
@@ -339,8 +342,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
    * <pre>
    * Optional. The Cloud KMS key that will be used to protect the backup.
    * This field should be set only when
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
-   * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+   * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
    * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
    * </pre>
    *
@@ -361,6 +364,134 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     } else {
       return (com.google.protobuf.ByteString) ref;
     }
+  }
+
+  public static final int KMS_KEY_NAMES_FIELD_NUMBER = 3;
+
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList kmsKeyNames_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Specifies the KMS configuration for the one or more keys used to
+   * protect the backup. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   *
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the backup's instance configuration. Some examples:
+   * * For single region instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For an instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return A list containing the kmsKeyNames.
+   */
+  public com.google.protobuf.ProtocolStringList getKmsKeyNamesList() {
+    return kmsKeyNames_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Specifies the KMS configuration for the one or more keys used to
+   * protect the backup. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   *
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the backup's instance configuration. Some examples:
+   * * For single region instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For an instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @return The count of kmsKeyNames.
+   */
+  public int getKmsKeyNamesCount() {
+    return kmsKeyNames_.size();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Specifies the KMS configuration for the one or more keys used to
+   * protect the backup. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   *
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the backup's instance configuration. Some examples:
+   * * For single region instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For an instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the element to return.
+   * @return The kmsKeyNames at the given index.
+   */
+  public java.lang.String getKmsKeyNames(int index) {
+    return kmsKeyNames_.get(index);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Specifies the KMS configuration for the one or more keys used to
+   * protect the backup. Values are of the form
+   * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+   *
+   * The keys referenced by kms_key_names must fully cover all
+   * regions of the backup's instance configuration. Some examples:
+   * * For single region instance configs, specify a single regional
+   * location KMS key.
+   * * For multi-regional instance configs of type GOOGLE_MANAGED,
+   * either specify a multi-regional location KMS key or multiple regional
+   * location KMS keys that cover all regions in the instance config.
+   * * For an instance config of type USER_MANAGED, please specify only
+   * regional location KMS keys to cover each region in the instance config.
+   * Multi-regional location KMS keys are not supported for USER_MANAGED
+   * instance configs.
+   * </pre>
+   *
+   * <code>
+   * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+   * </code>
+   *
+   * @param index The index of the value to return.
+   * @return The bytes of the kmsKeyNames at the given index.
+   */
+  public com.google.protobuf.ByteString getKmsKeyNamesBytes(int index) {
+    return kmsKeyNames_.getByteString(index);
   }
 
   private byte memoizedIsInitialized = -1;
@@ -386,6 +517,9 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, kmsKeyName_);
     }
+    for (int i = 0; i < kmsKeyNames_.size(); i++) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, kmsKeyNames_.getRaw(i));
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -403,6 +537,14 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     }
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(kmsKeyName_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, kmsKeyName_);
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < kmsKeyNames_.size(); i++) {
+        dataSize += computeStringSizeNoTag(kmsKeyNames_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getKmsKeyNamesList().size();
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -422,6 +564,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
 
     if (encryptionType_ != other.encryptionType_) return false;
     if (!getKmsKeyName().equals(other.getKmsKeyName())) return false;
+    if (!getKmsKeyNamesList().equals(other.getKmsKeyNamesList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -437,6 +580,10 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
     hash = (53 * hash) + encryptionType_;
     hash = (37 * hash) + KMS_KEY_NAME_FIELD_NUMBER;
     hash = (53 * hash) + getKmsKeyName().hashCode();
+    if (getKmsKeyNamesCount() > 0) {
+      hash = (37 * hash) + KMS_KEY_NAMES_FIELD_NUMBER;
+      hash = (53 * hash) + getKmsKeyNamesList().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -581,6 +728,7 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
       bitField0_ = 0;
       encryptionType_ = 0;
       kmsKeyName_ = "";
+      kmsKeyNames_ = com.google.protobuf.LazyStringArrayList.emptyList();
       return this;
     }
 
@@ -624,6 +772,10 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.kmsKeyName_ = kmsKeyName_;
+      }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        kmsKeyNames_.makeImmutable();
+        result.kmsKeyNames_ = kmsKeyNames_;
       }
     }
 
@@ -683,6 +835,16 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
         bitField0_ |= 0x00000002;
         onChanged();
       }
+      if (!other.kmsKeyNames_.isEmpty()) {
+        if (kmsKeyNames_.isEmpty()) {
+          kmsKeyNames_ = other.kmsKeyNames_;
+          bitField0_ |= 0x00000004;
+        } else {
+          ensureKmsKeyNamesIsMutable();
+          kmsKeyNames_.addAll(other.kmsKeyNames_);
+        }
+        onChanged();
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -721,6 +883,13 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
                 bitField0_ |= 0x00000002;
                 break;
               } // case 18
+            case 26:
+              {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureKmsKeyNamesIsMutable();
+                kmsKeyNames_.add(s);
+                break;
+              } // case 26
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -853,8 +1022,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
-     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -881,8 +1050,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
-     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -909,8 +1078,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
-     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -936,8 +1105,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
-     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -959,8 +1128,8 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
      * <pre>
      * Optional. The Cloud KMS key that will be used to protect the backup.
      * This field should be set only when
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] is
-     * `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * is `CUSTOMER_MANAGED_ENCRYPTION`. Values are of the form
      * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
      * </pre>
      *
@@ -978,6 +1147,324 @@ public final class CreateBackupEncryptionConfig extends com.google.protobuf.Gene
       checkByteStringIsUtf8(value);
       kmsKeyName_ = value;
       bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.LazyStringArrayList kmsKeyNames_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+
+    private void ensureKmsKeyNamesIsMutable() {
+      if (!kmsKeyNames_.isModifiable()) {
+        kmsKeyNames_ = new com.google.protobuf.LazyStringArrayList(kmsKeyNames_);
+      }
+      bitField0_ |= 0x00000004;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @return A list containing the kmsKeyNames.
+     */
+    public com.google.protobuf.ProtocolStringList getKmsKeyNamesList() {
+      kmsKeyNames_.makeImmutable();
+      return kmsKeyNames_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @return The count of kmsKeyNames.
+     */
+    public int getKmsKeyNamesCount() {
+      return kmsKeyNames_.size();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param index The index of the element to return.
+     * @return The kmsKeyNames at the given index.
+     */
+    public java.lang.String getKmsKeyNames(int index) {
+      return kmsKeyNames_.get(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param index The index of the value to return.
+     * @return The bytes of the kmsKeyNames at the given index.
+     */
+    public com.google.protobuf.ByteString getKmsKeyNamesBytes(int index) {
+      return kmsKeyNames_.getByteString(index);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param index The index to set the value at.
+     * @param value The kmsKeyNames to set.
+     * @return This builder for chaining.
+     */
+    public Builder setKmsKeyNames(int index, java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureKmsKeyNamesIsMutable();
+      kmsKeyNames_.set(index, value);
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param value The kmsKeyNames to add.
+     * @return This builder for chaining.
+     */
+    public Builder addKmsKeyNames(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      ensureKmsKeyNamesIsMutable();
+      kmsKeyNames_.add(value);
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param values The kmsKeyNames to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllKmsKeyNames(java.lang.Iterable<java.lang.String> values) {
+      ensureKmsKeyNamesIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(values, kmsKeyNames_);
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearKmsKeyNames() {
+      kmsKeyNames_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000004);
+      ;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Optional. Specifies the KMS configuration for the one or more keys used to
+     * protect the backup. Values are of the form
+     * `projects/&lt;project&gt;/locations/&lt;location&gt;/keyRings/&lt;key_ring&gt;/cryptoKeys/&lt;kms_key_name&gt;`.
+     *
+     * The keys referenced by kms_key_names must fully cover all
+     * regions of the backup's instance configuration. Some examples:
+     * * For single region instance configs, specify a single regional
+     * location KMS key.
+     * * For multi-regional instance configs of type GOOGLE_MANAGED,
+     * either specify a multi-regional location KMS key or multiple regional
+     * location KMS keys that cover all regions in the instance config.
+     * * For an instance config of type USER_MANAGED, please specify only
+     * regional location KMS keys to cover each region in the instance config.
+     * Multi-regional location KMS keys are not supported for USER_MANAGED
+     * instance configs.
+     * </pre>
+     *
+     * <code>
+     * repeated string kms_key_names = 3 [(.google.api.field_behavior) = OPTIONAL, (.google.api.resource_reference) = { ... }
+     * </code>
+     *
+     * @param value The bytes of the kmsKeyNames to add.
+     * @return This builder for chaining.
+     */
+    public Builder addKmsKeyNamesBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+      ensureKmsKeyNamesIsMutable();
+      kmsKeyNames_.add(value);
+      bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
