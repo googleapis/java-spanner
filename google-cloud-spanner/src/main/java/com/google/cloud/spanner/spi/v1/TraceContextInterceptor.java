@@ -56,7 +56,7 @@ public class TraceContextInterceptor implements ClientInterceptor  {
                 Context parentContext = Context.current();
 
                 propagators.getTextMapPropagator().inject(parentContext, headers, MetadataSetter.INSTANCE);
-                
+
                 super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
                     @Override
                     public void onHeaders(Metadata headers) {

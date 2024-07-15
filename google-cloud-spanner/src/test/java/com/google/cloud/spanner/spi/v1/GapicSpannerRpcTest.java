@@ -76,6 +76,13 @@ import io.grpc.Status;
 import io.grpc.auth.MoreCallCredentials;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -148,6 +155,7 @@ public class GapicSpannerRpcTest {
   private static String defaultUserAgent;
   private static Spanner spanner;
   private static boolean isRouteToLeader;
+  private static boolean isTraceContextPresent;
 
   @Parameter public Dialect dialect;
 
@@ -158,6 +166,9 @@ public class GapicSpannerRpcTest {
 
   @Before
   public void startServer() throws IOException {
+    // Enable OpenTelemetry tracing.
+    SpannerOptions.enableOpenTelemetryTraces();
+
     assumeTrue(
         "Skip tests when emulator is enabled as this test interferes with the check whether the emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
@@ -194,6 +205,9 @@ public class GapicSpannerRpcTest {
                     if (call.getMethodDescriptor()
                             .equals(SpannerGrpc.getExecuteStreamingSqlMethod())
                         || call.getMethodDescriptor().equals(SpannerGrpc.getExecuteSqlMethod())) {
+                      String traceParentHeader =
+                          headers.get(Key.of("traceparent", Metadata.ASCII_STRING_MARSHALLER));
+                      isTraceContextPresent = (traceParentHeader != null);
                       String routeToLeaderHeader =
                           headers.get(
                               Key.of(
@@ -224,6 +238,7 @@ public class GapicSpannerRpcTest {
       server.awaitTermination();
     }
     isRouteToLeader = false;
+    isTraceContextPresent = false;
   }
 
   @Test
@@ -532,6 +547,41 @@ public class GapicSpannerRpcTest {
         assertThat(lastSeenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
             .contains("test-agent " + defaultUserAgent);
       }
+    }
+  }
+
+  @Test
+  public void testTraceContextHeaderWithOpenTelemetry() {
+    OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+      .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+      .setTracerProvider(SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build())
+      .build();
+
+    final SpannerOptions options = createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+        try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+          rs.next();
+        }
+
+        assertTrue(isTraceContextPresent);
+    } 
+  }
+
+  @Test
+  public void testTraceContextHeaderWithoutOpenTelemetry() {
+    final SpannerOptions options = createSpannerOptions();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+        try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+          rs.next();
+        }
+
+        assertFalse(isTraceContextPresent);
     }
   }
 
