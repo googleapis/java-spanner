@@ -104,7 +104,7 @@ class JavaClientRunner extends AbstractRunner {
             .setProjectId(databaseId.getInstanceId().getProject())
             .setSessionPoolOption(sessionPoolOptions)
             .setHost(SERVER_URL);
-    if(enableGrpcGcpExtension) {
+    if (enableGrpcGcpExtension) {
       System.out.println("Using gRPC-GCP extension for channel management");
       optionsBuilder.enableGrpcGcpExtension();
     }

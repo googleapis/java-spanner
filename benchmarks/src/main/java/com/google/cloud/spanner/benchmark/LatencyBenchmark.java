@@ -79,7 +79,8 @@ public class LatencyBenchmark {
     options.addOption("m", "multiplexed", true, "Use multiplexed sessions. Defaults to false.");
     options.addOption("w", "wait", true, "Wait time in millis. Defaults to zero.");
     options.addOption("name", true, "Name of this test run");
-    options.addOption("g", "grpcgcpextension", true, "enable gRPC-GCP extension. Defaults to false.");
+    options.addOption(
+        "g", "grpcgcpextension", true, "enable gRPC-GCP extension. Defaults to false.");
     CommandLineParser parser = new DefaultParser();
     return parser.parse(options, args);
   }
@@ -122,7 +123,12 @@ public class LatencyBenchmark {
     JavaClientRunner javaClientRunner = new JavaClientRunner(databaseId);
     javaClientResults =
         javaClientRunner.execute(
-            transactionType, clients, operations, waitMillis, useMultiplexedSession, enableGrpcGcpExtension);
+            transactionType,
+            clients,
+            operations,
+            waitMillis,
+            useMultiplexedSession,
+            enableGrpcGcpExtension);
 
     printResults("Java Client Library", javaClientResults);
   }
