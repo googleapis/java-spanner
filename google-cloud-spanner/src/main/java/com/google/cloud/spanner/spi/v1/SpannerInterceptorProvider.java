@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import io.grpc.ClientInterceptor;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;

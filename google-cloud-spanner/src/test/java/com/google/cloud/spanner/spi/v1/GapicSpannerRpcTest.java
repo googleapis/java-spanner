@@ -82,7 +82,6 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -167,6 +166,7 @@ public class GapicSpannerRpcTest {
   @Before
   public void startServer() throws IOException {
     // Enable OpenTelemetry tracing.
+    SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
 
     assumeTrue(
@@ -552,22 +552,24 @@ public class GapicSpannerRpcTest {
 
   @Test
   public void testTraceContextHeaderWithOpenTelemetry() {
-    OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-      .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-      .setTracerProvider(SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build())
-      .build();
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build())
+            .build();
 
-    final SpannerOptions options = createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).build();
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
 
-        try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
-          rs.next();
-        }
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
 
-        assertTrue(isTraceContextPresent);
-    } 
+      assertTrue(isTraceContextPresent);
+    }
   }
 
   @Test
@@ -575,13 +577,13 @@ public class GapicSpannerRpcTest {
     final SpannerOptions options = createSpannerOptions();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
-        spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
 
-        try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
-          rs.next();
-        }
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
 
-        assertFalse(isTraceContextPresent);
+      assertFalse(isTraceContextPresent);
     }
   }
 
