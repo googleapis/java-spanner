@@ -56,8 +56,10 @@ import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
+import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
@@ -529,6 +531,10 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
         MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
+    GcpChannelPoolOptions gcpChanelPoolOptions =
+        GcpChannelPoolOptions.newBuilder()
+            .setAffinityKeyLifetime(java.time.Duration.ofMinutes(60L))
+            .build();
     GcpMetricsOptions metricsOptions =
         MoreObjects.firstNonNull(
             grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
@@ -542,6 +548,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
     return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
         .withMetricsOptions(metricsOptionsBuilder.build())
+        .withChannelPoolOptions(gcpChanelPoolOptions)
         .build();
   }
 
@@ -1950,7 +1957,17 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
+      // Set channel affinity in GAX. This is a no-op for gRPC-GCP.
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+
+      // Set channel affinity in gRPC-GCP. This is a no-op for GAX.
+      context =
+          context.withCallOptions(
+              context
+                  .getCallOptions()
+                  .withOption(
+                      GcpManagedChannel.AFFINITY_KEY,
+                      Option.CHANNEL_HINT.getLong(options).toString()));
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.
