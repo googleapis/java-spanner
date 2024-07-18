@@ -96,7 +96,6 @@ class ConnectionImpl implements Connection {
   private static final String SINGLE_USE_TRANSACTION = "SingleUseTransaction";
   private static final String READ_ONLY_TRANSACTION = "ReadOnlyTransaction";
   private static final String READ_WRITE_TRANSACTION = "ReadWriteTransaction";
-  private static final String DML_BATCH = "DmlBatch";
   private static final String DDL_BATCH = "DdlBatch";
   private static final String DDL_STATEMENT = "DdlStatement";
 
@@ -220,6 +219,7 @@ class ConnectionImpl implements Connection {
   private boolean readOnly;
   private boolean returnCommitStats;
   private boolean delayTransactionStartUntilFirstWrite;
+  private boolean keepTransactionAlive;
 
   private UnitOfWork currentUnitOfWork = null;
   /**
@@ -306,21 +306,10 @@ class ConnectionImpl implements Connection {
     }
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
-    this.retryAbortsInternally = options.isRetryAbortsInternally();
-    this.readOnly = options.isReadOnly();
-    this.autocommit = options.isAutocommit();
-    this.queryOptions = this.queryOptions.toBuilder().mergeFrom(options.getQueryOptions()).build();
-    this.rpcPriority = options.getRPCPriority();
-    this.ddlInTransactionMode = options.getDdlInTransactionMode();
-    this.returnCommitStats = options.isReturnCommitStats();
-    this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
-    this.dataBoostEnabled = options.isDataBoostEnabled();
-    this.autoPartitionMode = options.isAutoPartitionMode();
-    this.maxPartitions = options.getMaxPartitions();
-    this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
-    this.maxCommitDelay = options.getMaxCommitDelay();
     this.ddlClient = createDdlClient();
-    setDefaultTransactionOptions();
+
+    // (Re)set the state of the connection to the default.
+    reset();
   }
 
   /** Constructor only for test purposes. */
@@ -432,6 +421,43 @@ class ConnectionImpl implements Connection {
       }
     }
     return ApiFutures.immediateFuture(null);
+  }
+
+  /**
+   * Resets the state of this connection to the default state in the {@link ConnectionOptions} of
+   * this connection.
+   */
+  public void reset() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+
+    this.retryAbortsInternally = options.isRetryAbortsInternally();
+    this.readOnly = options.isReadOnly();
+    this.autocommit = options.isAutocommit();
+    this.queryOptions =
+        QueryOptions.getDefaultInstance().toBuilder().mergeFrom(options.getQueryOptions()).build();
+    this.rpcPriority = options.getRPCPriority();
+    this.ddlInTransactionMode = options.getDdlInTransactionMode();
+    this.returnCommitStats = options.isReturnCommitStats();
+    this.delayTransactionStartUntilFirstWrite = options.isDelayTransactionStartUntilFirstWrite();
+    this.keepTransactionAlive = options.isKeepTransactionAlive();
+    this.dataBoostEnabled = options.isDataBoostEnabled();
+    this.autoPartitionMode = options.isAutoPartitionMode();
+    this.maxPartitions = options.getMaxPartitions();
+    this.maxPartitionedParallelism = options.getMaxPartitionedParallelism();
+    this.maxCommitDelay = options.getMaxCommitDelay();
+
+    this.autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
+    this.readOnlyStaleness = TimestampBound.strong();
+    this.statementTag = null;
+    this.statementTimeout = new StatementExecutor.StatementTimeout();
+    this.directedReadOptions = null;
+    this.savepointSupport = SavepointSupport.FAIL_AFTER_ROLLBACK;
+    this.protoDescriptors = null;
+    this.protoDescriptorsFilePath = null;
+
+    if (!isTransactionStarted()) {
+      setDefaultTransactionOptions();
+    }
   }
 
   /** Get the current unit-of-work type of this connection. */
@@ -961,6 +987,20 @@ class ConnectionImpl implements Connection {
   public boolean isDelayTransactionStartUntilFirstWrite() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
     return this.delayTransactionStartUntilFirstWrite;
+  }
+
+  @Override
+  public void setKeepTransactionAlive(boolean keepTransactionAlive) {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    ConnectionPreconditions.checkState(
+        !isTransactionStarted(), "Cannot set KeepTransactionAlive while a transaction is active");
+    this.keepTransactionAlive = keepTransactionAlive;
+  }
+
+  @Override
+  public boolean isKeepTransactionAlive() {
+    ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
+    return this.keepTransactionAlive;
   }
 
   /** Resets this connection to its default transaction options. */
@@ -1884,6 +1924,7 @@ class ConnectionImpl implements Connection {
               .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
               .setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite)
+              .setKeepTransactionAlive(keepTransactionAlive)
               .setRetryAbortsInternally(retryAbortsInternally)
               .setSavepointSupport(savepointSupport)
               .setReturnCommitStats(returnCommitStats)
@@ -1907,7 +1948,8 @@ class ConnectionImpl implements Connection {
               .setStatementTag(statementTag)
               .setExcludeTxnFromChangeStreams(excludeTxnFromChangeStreams)
               .setRpcPriority(rpcPriority)
-              .setSpan(createSpanForUnitOfWork(DML_BATCH))
+              // Use the transaction Span for the DML batch.
+              .setSpan(transactionStack.peek().getSpan())
               .build();
         case DDL_BATCH:
           return DdlBatch.newBuilder()

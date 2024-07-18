@@ -44,6 +44,11 @@ class DelayedReadContext<T extends ReadContext> implements ReadContext {
     try {
       return this.readContextFuture.get();
     } catch (ExecutionException executionException) {
+      // Propagate the underlying exception as a RuntimeException (SpannerException is also a
+      // RuntimeException).
+      if (executionException.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) executionException.getCause();
+      }
       throw SpannerExceptionFactory.asSpannerException(executionException.getCause());
     } catch (InterruptedException interruptedException) {
       throw SpannerExceptionFactory.propagateInterrupt(interruptedException);

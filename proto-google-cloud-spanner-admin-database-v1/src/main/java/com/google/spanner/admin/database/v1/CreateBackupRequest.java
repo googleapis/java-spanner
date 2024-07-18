@@ -23,7 +23,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup].
+ * The request for
+ * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.CreateBackupRequest}
@@ -247,11 +248,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the database by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-   * `USE_DATABASE_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+   * = `USE_DATABASE_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -268,11 +269,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the database by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-   * `USE_DATABASE_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+   * = `USE_DATABASE_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -291,11 +292,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the database by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-   * `USE_DATABASE_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the database by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+   * = `USE_DATABASE_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -511,7 +512,8 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * The request for [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup].
+   * The request for
+   * [CreateBackup][google.spanner.admin.database.v1.DatabaseAdmin.CreateBackup].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.CreateBackupRequest}
@@ -1225,11 +1227,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1245,11 +1247,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1271,11 +1273,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1300,11 +1302,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1326,11 +1328,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1362,11 +1364,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1387,11 +1389,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1408,11 +1410,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1433,11 +1435,11 @@ public final class CreateBackupRequest extends com.google.protobuf.GeneratedMess
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the database by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type] =
-     * `USE_DATABASE_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the database by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type]
+     * = `USE_DATABASE_ENCRYPTION`.
      * </pre>
      *
      * <code>

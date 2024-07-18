@@ -20,6 +20,7 @@ import static com.google.cloud.spanner.connection.DialectNamespaceMapper.getName
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ABORT_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.BEGIN;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.COMMIT;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RESET_ALL;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.ROLLBACK;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.RUN_BATCH;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_AUTOCOMMIT;
@@ -30,6 +31,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_DIRECTED_READ;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SET_MAX_PARTITIONS;
@@ -56,6 +58,7 @@ import static com.google.cloud.spanner.connection.StatementResult.ClientSideStat
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_DIRECTED_READ;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS;
+import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_KEEP_TRANSACTION_ALIVE;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_COMMIT_DELAY;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONED_PARALLELISM;
 import static com.google.cloud.spanner.connection.StatementResult.ClientSideStatementType.SHOW_MAX_PARTITIONS;
@@ -388,6 +391,20 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   }
 
   @Override
+  public StatementResult statementSetKeepTransactionAlive(Boolean keepTransactionAlive) {
+    getConnection().setKeepTransactionAlive(keepTransactionAlive);
+    return noResult(SET_KEEP_TRANSACTION_ALIVE);
+  }
+
+  @Override
+  public StatementResult statementShowKeepTransactionAlive() {
+    return resultSet(
+        String.format("%sKEEP_TRANSACTION_ALIVE", getNamespace(connection.getDialect())),
+        getConnection().isKeepTransactionAlive(),
+        SHOW_KEEP_TRANSACTION_ALIVE);
+  }
+
+  @Override
   public StatementResult statementSetStatementTag(String tag) {
     getConnection().setStatementTag("".equals(tag) ? null : tag);
     return noResult(SET_STATEMENT_TAG);
@@ -526,6 +543,12 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
   public StatementResult statementAbortBatch() {
     getConnection().abortBatch();
     return noResult(ABORT_BATCH);
+  }
+
+  @Override
+  public StatementResult statementResetAll() {
+    getConnection().reset();
+    return noResult(RESET_ALL);
   }
 
   @Override

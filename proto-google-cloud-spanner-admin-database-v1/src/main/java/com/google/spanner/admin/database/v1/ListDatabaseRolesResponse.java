@@ -23,7 +23,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The response for [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
+ * The response for
+ * [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.ListDatabaseRolesResponse}
@@ -366,7 +367,8 @@ public final class ListDatabaseRolesResponse extends com.google.protobuf.Generat
    *
    *
    * <pre>
-   * The response for [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
+   * The response for
+   * [ListDatabaseRoles][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRoles].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.ListDatabaseRolesResponse}

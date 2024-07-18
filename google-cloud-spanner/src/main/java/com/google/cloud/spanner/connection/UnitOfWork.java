@@ -31,6 +31,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.spanner.v1.ResultSetStats;
+import io.opentelemetry.api.trace.Span;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 
@@ -76,6 +77,9 @@ interface UnitOfWork {
 
   /** @return <code>true</code> if this unit of work is still active. */
   boolean isActive();
+
+  /** @return the {@link Span} that is used by this {@link UnitOfWork}. */
+  Span getSpan();
 
   /** Returns true if this transaction can only be used for a single statement. */
   boolean isSingleUse();

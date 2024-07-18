@@ -4387,6 +4387,205 @@ NEW_CONNECTION;
 @EXPECT EXCEPTION UNIMPLEMENTED
 show variable/-delay_transaction_start_until_first_write;
 NEW_CONNECTION;
+show variable keep_transaction_alive;
+NEW_CONNECTION;
+SHOW VARIABLE KEEP_TRANSACTION_ALIVE;
+NEW_CONNECTION;
+show variable keep_transaction_alive;
+NEW_CONNECTION;
+   show variable keep_transaction_alive;
+NEW_CONNECTION;
+			show variable keep_transaction_alive;
+NEW_CONNECTION;
+
+
+
+show variable keep_transaction_alive;
+NEW_CONNECTION;
+show variable keep_transaction_alive  ;
+NEW_CONNECTION;
+show variable keep_transaction_alive		;
+NEW_CONNECTION;
+show variable keep_transaction_alive
+
+;
+NEW_CONNECTION;
+show   variable   keep_transaction_alive;
+NEW_CONNECTION;
+show	variable	keep_transaction_alive;
+NEW_CONNECTION;
+show
+variable
+keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable%keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable_keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable&keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable$keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable@keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable!keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable*keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable(keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive);
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable)keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable+keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-#keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable\keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable?keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable-/keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/#keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-show variable keep_transaction_alive;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable keep_transaction_alive/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION UNIMPLEMENTED
+show variable/-keep_transaction_alive;
+NEW_CONNECTION;
 partition select col1, col2 from my_table;
 NEW_CONNECTION;
 PARTITION SELECT COL1, COL2 FROM MY_TABLE;
@@ -7428,6 +7627,204 @@ NEW_CONNECTION;
 start batch ddl;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 abort/-batch;
+NEW_CONNECTION;
+reset all;
+NEW_CONNECTION;
+RESET ALL;
+NEW_CONNECTION;
+reset all;
+NEW_CONNECTION;
+   reset all;
+NEW_CONNECTION;
+			reset all;
+NEW_CONNECTION;
+
+
+
+reset all;
+NEW_CONNECTION;
+reset all  ;
+NEW_CONNECTION;
+reset all		;
+NEW_CONNECTION;
+reset all
+
+;
+NEW_CONNECTION;
+reset   all;
+NEW_CONNECTION;
+reset	all;
+NEW_CONNECTION;
+reset
+all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset%all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset_all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset&all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset$all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset@all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset!all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset*all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset(all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset)all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset-all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset+all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset-#all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset/all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset\all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset?all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset-/all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset/#all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-reset all;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset all/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+reset/-all;
 NEW_CONNECTION;
 set autocommit = true;
 NEW_CONNECTION;
@@ -20800,6 +21197,406 @@ set delay_transaction_start_until_first_write = false/-;
 NEW_CONNECTION;
 @EXPECT EXCEPTION INVALID_ARGUMENT
 set delay_transaction_start_until_first_write =/-false;
+NEW_CONNECTION;
+set keep_transaction_alive = true;
+NEW_CONNECTION;
+SET KEEP_TRANSACTION_ALIVE = TRUE;
+NEW_CONNECTION;
+set keep_transaction_alive = true;
+NEW_CONNECTION;
+   set keep_transaction_alive = true;
+NEW_CONNECTION;
+			set keep_transaction_alive = true;
+NEW_CONNECTION;
+
+
+
+set keep_transaction_alive = true;
+NEW_CONNECTION;
+set keep_transaction_alive = true  ;
+NEW_CONNECTION;
+set keep_transaction_alive = true		;
+NEW_CONNECTION;
+set keep_transaction_alive = true
+
+;
+NEW_CONNECTION;
+set   keep_transaction_alive   =   true;
+NEW_CONNECTION;
+set	keep_transaction_alive	=	true;
+NEW_CONNECTION;
+set
+keep_transaction_alive
+=
+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =%true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =_true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =&true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =$true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =@true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =!true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =*true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =(true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =)true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =-true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =+true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =-#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =\true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =?true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =-/true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =/#true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set keep_transaction_alive = true;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = true/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =/-true;
+NEW_CONNECTION;
+set keep_transaction_alive = false;
+NEW_CONNECTION;
+SET KEEP_TRANSACTION_ALIVE = FALSE;
+NEW_CONNECTION;
+set keep_transaction_alive = false;
+NEW_CONNECTION;
+   set keep_transaction_alive = false;
+NEW_CONNECTION;
+			set keep_transaction_alive = false;
+NEW_CONNECTION;
+
+
+
+set keep_transaction_alive = false;
+NEW_CONNECTION;
+set keep_transaction_alive = false  ;
+NEW_CONNECTION;
+set keep_transaction_alive = false		;
+NEW_CONNECTION;
+set keep_transaction_alive = false
+
+;
+NEW_CONNECTION;
+set   keep_transaction_alive   =   false;
+NEW_CONNECTION;
+set	keep_transaction_alive	=	false;
+NEW_CONNECTION;
+set
+keep_transaction_alive
+=
+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+foo set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false bar;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+%set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false%;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =%false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+_set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false_;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =_false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+&set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false&;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =&false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+$set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false$;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =$false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+@set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false@;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =@false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+!set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false!;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =!false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+*set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false*;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =*false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+(set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false(;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =(false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+)set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false);
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =)false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =-false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
++set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false+;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =+false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-#set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false-#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =-#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+\set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false\;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =\false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+?set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false?;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =?false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+-/set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false-/;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =-/false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/#set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false/#;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =/#false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+/-set keep_transaction_alive = false;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive = false/-;
+NEW_CONNECTION;
+@EXPECT EXCEPTION INVALID_ARGUMENT
+set keep_transaction_alive =/-false;
 NEW_CONNECTION;
 show variable data_boost_enabled;
 NEW_CONNECTION;
