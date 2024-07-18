@@ -268,6 +268,7 @@ public class GapicSpannerRpc implements SpannerRpc {
       new ConcurrentHashMap<>();
   private final boolean leaderAwareRoutingEnabled;
   private final int numChannels;
+  private final boolean isGrpcGcpExtensionEnabled;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -320,6 +321,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
     this.numChannels = options.getNumChannels();
+    this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -1953,17 +1955,20 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
-      // Set channel affinity in GAX. This is a no-op for gRPC-GCP.
-      context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
-
-      // Set channel affinity in gRPC-GCP. This is a no-op for GAX.
-      // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
-      int boundedChannelHint = Option.CHANNEL_HINT.getLong(options).intValue() % this.numChannels;
-      context =
-          context.withCallOptions(
-              context
-                  .getCallOptions()
-                  .withOption(GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
+      if (this.isGrpcGcpExtensionEnabled) {
+        // Set channel affinity in gRPC-GCP.
+        // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
+        int boundedChannelHint = Option.CHANNEL_HINT.getLong(options).intValue() % this.numChannels;
+        context =
+            context.withCallOptions(
+                context
+                    .getCallOptions()
+                    .withOption(
+                        GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
+      } else {
+        // Set channel affinity in GAX.
+        context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+      }
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.
