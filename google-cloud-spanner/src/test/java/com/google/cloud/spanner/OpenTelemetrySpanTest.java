@@ -17,7 +17,9 @@
 package com.google.cloud.spanner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.api.gax.grpc.testing.LocalChannelProvider;
 import com.google.cloud.NoCredentials;
@@ -25,6 +27,8 @@ import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ListValue;
+import com.google.spanner.v1.BeginTransactionRequest;
+import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
@@ -45,6 +49,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -67,7 +72,7 @@ public class OpenTelemetrySpanTest {
   private static LocalChannelProvider channelProvider;
   private static MockSpannerServiceImpl mockSpanner;
   private Spanner spanner;
-  private DatabaseClient client;
+  private Spanner spannerWithApiTracing;
   private static Server server;
   private static InMemorySpanExporter spanExporter;
 
@@ -236,13 +241,22 @@ public class OpenTelemetrySpanTest {
                     .build());
 
     spanner = builder.build().getService();
+    spannerWithApiTracing = builder.setEnableApiTracing(true).build().getService();
+  }
 
-    client = spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+  DatabaseClient getClient() {
+    return spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+  }
+
+  DatabaseClient getClientWithApiTracing() {
+    return spannerWithApiTracing.getDatabaseClient(
+        DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
   }
 
   @After
   public void tearDown() {
     spanner.close();
+    spannerWithApiTracing.close();
     mockSpanner.reset();
     mockSpanner.removeAllExecutionTimes();
     spanExporter.reset();
@@ -268,6 +282,7 @@ public class OpenTelemetrySpanTest {
     int expectedReadOnlyTransactionSingleUseEventsCount =
         expectedReadOnlyTransactionSingleUseEvents.size();
 
+    DatabaseClient client = getClient();
     try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
       while (rs.next()) {
         // Just consume the result set.
@@ -364,6 +379,7 @@ public class OpenTelemetrySpanTest {
     int expectedReadOnlyTransactionMultiUseEventsCount =
         expectedReadOnlyTransactionMultiUseEvents.size();
 
+    DatabaseClient client = getClient();
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (ResultSet rs = tx.executeQuery(SELECT1)) {
         while (rs.next()) {
@@ -434,8 +450,17 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction");
+    DatabaseClient client = getClient();
     TransactionRunner runner = client.readWriteTransaction();
     runner.run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
+    // Wait until the list of spans contains "CloudSpannerOperation.BatchCreateSessions", as this is
+    // an async operation.
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    while (spanExporter.getFinishedSpanItems().stream()
+            .noneMatch(span -> span.getName().equals("CloudSpannerOperation.BatchCreateSessions"))
+        && stopwatch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+      Thread.yield();
+    }
     List<String> actualSpanItems = new ArrayList<>();
     spanExporter
         .getFinishedSpanItems()
@@ -494,6 +519,7 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpannerOperation.ExecuteUpdate",
                 "CloudSpanner.ReadWriteTransaction");
+    DatabaseClient client = getClient();
     TransactionRunner runner = client.readWriteTransaction();
     SpannerException e =
         assertThrows(
@@ -562,6 +588,7 @@ public class OpenTelemetrySpanTest {
                 "CloudSpannerOperation.Commit",
                 "CloudSpannerOperation.BatchCreateSessions",
                 "CloudSpanner.ReadWriteTransaction");
+    DatabaseClient client = getClient();
     assertEquals(
         Long.valueOf(1L),
         client
@@ -631,6 +658,167 @@ public class OpenTelemetrySpanTest {
             });
 
     verifySpans(actualSpanItems, expectedReadWriteTransactionWithCommitAndBeginTransactionSpans);
+  }
+
+  @Test
+  public void testTransactionRunnerWithRetryOnBeginTransaction() {
+    // First get the client to ensure that the BatchCreateSessions request has been executed.
+    DatabaseClient clientWithApiTracing = getClientWithApiTracing();
+
+    // Register an UNAVAILABLE error on the server. This error will be returned the first time the
+    // BeginTransaction RPC is called. This RPC is then retried, and the transaction succeeds.
+    // The retry should be added as an event to the span.
+    mockSpanner.addException(Status.UNAVAILABLE.asRuntimeException());
+
+    clientWithApiTracing
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              transaction.buffer(Mutation.newInsertBuilder("foo").set("id").to(1L).build());
+              return null;
+            });
+
+    assertEquals(2, mockSpanner.countRequestsOfType(BeginTransactionRequest.class));
+    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 10 : 8;
+    waitForFinishedSpans(numExpectedSpans);
+    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
+    List<String> finishedSpanNames =
+        finishedSpans.stream().map(SpanData::getName).collect(Collectors.toList());
+    String actualSpanNames =
+        finishedSpans.stream().map(SpanData::getName).collect(Collectors.joining("\n", "\n", "\n"));
+    assertEquals(actualSpanNames, numExpectedSpans, finishedSpans.size());
+
+    assertTrue(actualSpanNames, finishedSpanNames.contains("CloudSpanner.ReadWriteTransaction"));
+    assertTrue(
+        actualSpanNames, finishedSpanNames.contains("CloudSpannerOperation.BeginTransaction"));
+    assertTrue(actualSpanNames, finishedSpanNames.contains("CloudSpannerOperation.Commit"));
+    assertTrue(
+        actualSpanNames, finishedSpanNames.contains("CloudSpannerOperation.BatchCreateSessions"));
+    assertTrue(
+        actualSpanNames,
+        finishedSpanNames.contains("CloudSpannerOperation.BatchCreateSessionsRequest"));
+
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.BatchCreateSessions"));
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.BeginTransaction"));
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.Commit"));
+
+    SpanData beginTransactionSpan =
+        finishedSpans.stream()
+            .filter(span -> span.getName().equals("Spanner.BeginTransaction"))
+            .findAny()
+            .orElseThrow(IllegalStateException::new);
+    assertTrue(
+        beginTransactionSpan.toString(),
+        beginTransactionSpan.getEvents().stream()
+            .anyMatch(event -> event.getName().equals("Starting RPC retry 1")));
+  }
+
+  @Test
+  public void testSingleUseRetryOnExecuteStreamingSql() {
+    // First get the client to ensure that the BatchCreateSessions request has been executed.
+    DatabaseClient clientWithApiTracing = getClientWithApiTracing();
+
+    // Register an UNAVAILABLE error on the server. This error will be returned the first time the
+    // BeginTransaction RPC is called. This RPC is then retried, and the transaction succeeds.
+    // The retry should be added as an event to the span.
+    mockSpanner.addException(Status.UNAVAILABLE.asRuntimeException());
+
+    try (ResultSet resultSet = clientWithApiTracing.singleUse().executeQuery(SELECT1)) {
+      assertTrue(resultSet.next());
+      assertFalse(resultSet.next());
+    }
+
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 9 : 7;
+    waitForFinishedSpans(numExpectedSpans);
+    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
+    List<String> finishedSpanNames =
+        finishedSpans.stream().map(SpanData::getName).collect(Collectors.toList());
+    String actualSpanNames =
+        finishedSpans.stream().map(SpanData::getName).collect(Collectors.joining("\n", "\n", "\n"));
+    assertEquals(actualSpanNames, numExpectedSpans, finishedSpans.size());
+
+    assertTrue(actualSpanNames, finishedSpanNames.contains("CloudSpanner.ReadOnlyTransaction"));
+    assertTrue(
+        actualSpanNames, finishedSpanNames.contains("CloudSpannerOperation.ExecuteStreamingQuery"));
+    assertTrue(
+        actualSpanNames, finishedSpanNames.contains("CloudSpannerOperation.BatchCreateSessions"));
+    assertTrue(
+        actualSpanNames,
+        finishedSpanNames.contains("CloudSpannerOperation.BatchCreateSessionsRequest"));
+
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.BatchCreateSessions"));
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.ExecuteStreamingSql"));
+
+    // UNAVAILABLE errors on ExecuteStreamingSql are handled manually in the client library, which
+    // means that the retry event is on this span.
+    SpanData executeStreamingQuery =
+        finishedSpans.stream()
+            .filter(span -> span.getName().equals("CloudSpannerOperation.ExecuteStreamingQuery"))
+            .findAny()
+            .orElseThrow(IllegalStateException::new);
+    assertTrue(
+        executeStreamingQuery.toString(),
+        executeStreamingQuery.getEvents().stream()
+            .anyMatch(event -> event.getName().contains("Stream broken. Safe to retry")));
+  }
+
+  @Test
+  public void testRetryOnExecuteSql() {
+    // First get the client to ensure that the BatchCreateSessions request has been executed.
+    DatabaseClient clientWithApiTracing = getClientWithApiTracing();
+
+    // Register an UNAVAILABLE error on the server. This error will be returned the first time the
+    // ExecuteSql RPC is called. This RPC is then retried, and the statement succeeds.
+    // The retry should be added as an event to the span.
+    mockSpanner.addException(Status.UNAVAILABLE.asRuntimeException());
+
+    clientWithApiTracing
+        .readWriteTransaction()
+        .run(transaction -> transaction.executeUpdate(UPDATE_STATEMENT));
+
+    assertEquals(2, mockSpanner.countRequestsOfType(ExecuteSqlRequest.class));
+    int numExpectedSpans = isMultiplexedSessionsEnabled() ? 10 : 8;
+    waitForFinishedSpans(numExpectedSpans);
+    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
+    List<String> finishedSpanNames =
+        finishedSpans.stream().map(SpanData::getName).collect(Collectors.toList());
+    String actualSpanNames =
+        finishedSpans.stream().map(SpanData::getName).collect(Collectors.joining("\n", "\n", "\n"));
+    assertEquals(actualSpanNames, numExpectedSpans, finishedSpans.size());
+
+    assertTrue(actualSpanNames, finishedSpanNames.contains("CloudSpanner.ReadWriteTransaction"));
+    assertTrue(actualSpanNames, finishedSpanNames.contains("CloudSpannerOperation.Commit"));
+    assertTrue(
+        actualSpanNames, finishedSpanNames.contains("CloudSpannerOperation.BatchCreateSessions"));
+    assertTrue(
+        actualSpanNames,
+        finishedSpanNames.contains("CloudSpannerOperation.BatchCreateSessionsRequest"));
+
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.BatchCreateSessions"));
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.ExecuteSql"));
+    assertTrue(actualSpanNames, finishedSpanNames.contains("Spanner.Commit"));
+
+    SpanData executeSqlSpan =
+        finishedSpans.stream()
+            .filter(span -> span.getName().equals("Spanner.ExecuteSql"))
+            .findAny()
+            .orElseThrow(IllegalStateException::new);
+    assertTrue(
+        executeSqlSpan.toString(),
+        executeSqlSpan.getEvents().stream()
+            .anyMatch(event -> event.getName().equals("Starting RPC retry 1")));
+  }
+
+  private void waitForFinishedSpans(int numExpectedSpans) {
+    // Wait for all spans to finish. Failing to do so can cause the test to miss the
+    // BatchCreateSessions span, as that span is executed asynchronously in the SessionClient, and
+    // the SessionClient returns the session to the pool before the span has finished fully.
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    while (spanExporter.getFinishedSpanItems().size() < numExpectedSpans
+        && stopwatch.elapsed().compareTo(java.time.Duration.ofMillis(1000)) < 0) {
+      Thread.yield();
+    }
   }
 
   private void verifyRequestEvents(SpanData spanItem, List<String> expectedEvents, int eventCount) {

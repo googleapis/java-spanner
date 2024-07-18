@@ -91,6 +91,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowDelayTransactionStartUntilFirstWrite();
 
+  StatementResult statementSetKeepTransactionAlive(Boolean keepTransactionAlive);
+
+  StatementResult statementShowKeepTransactionAlive();
+
   StatementResult statementSetStatementTag(String tag);
 
   StatementResult statementShowStatementTag();
@@ -127,6 +131,8 @@ interface ConnectionStatementExecutor {
   StatementResult statementRunBatch();
 
   StatementResult statementAbortBatch();
+
+  StatementResult statementResetAll();
 
   StatementResult statementSetRPCPriority(Priority priority);
 

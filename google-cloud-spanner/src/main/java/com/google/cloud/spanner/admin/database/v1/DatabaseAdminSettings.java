@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.admin.database.v1;
 
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupSchedulesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
@@ -44,21 +45,27 @@ import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
+import com.google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
+import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesResponse;
 import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
@@ -70,6 +77,7 @@ import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
@@ -264,6 +272,35 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
           ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
       listDatabaseRolesSettings() {
     return ((DatabaseAdminStubSettings) getStubSettings()).listDatabaseRolesSettings();
+  }
+
+  /** Returns the object with the settings used for calls to createBackupSchedule. */
+  public UnaryCallSettings<CreateBackupScheduleRequest, BackupSchedule>
+      createBackupScheduleSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).createBackupScheduleSettings();
+  }
+
+  /** Returns the object with the settings used for calls to getBackupSchedule. */
+  public UnaryCallSettings<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).getBackupScheduleSettings();
+  }
+
+  /** Returns the object with the settings used for calls to updateBackupSchedule. */
+  public UnaryCallSettings<UpdateBackupScheduleRequest, BackupSchedule>
+      updateBackupScheduleSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).updateBackupScheduleSettings();
+  }
+
+  /** Returns the object with the settings used for calls to deleteBackupSchedule. */
+  public UnaryCallSettings<DeleteBackupScheduleRequest, Empty> deleteBackupScheduleSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).deleteBackupScheduleSettings();
+  }
+
+  /** Returns the object with the settings used for calls to listBackupSchedules. */
+  public PagedCallSettings<
+          ListBackupSchedulesRequest, ListBackupSchedulesResponse, ListBackupSchedulesPagedResponse>
+      listBackupSchedulesSettings() {
+    return ((DatabaseAdminStubSettings) getStubSettings()).listBackupSchedulesSettings();
   }
 
   public static final DatabaseAdminSettings create(DatabaseAdminStubSettings stub)
@@ -529,6 +566,39 @@ public class DatabaseAdminSettings extends ClientSettings<DatabaseAdminSettings>
             ListDatabaseRolesRequest, ListDatabaseRolesResponse, ListDatabaseRolesPagedResponse>
         listDatabaseRolesSettings() {
       return getStubSettingsBuilder().listDatabaseRolesSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to createBackupSchedule. */
+    public UnaryCallSettings.Builder<CreateBackupScheduleRequest, BackupSchedule>
+        createBackupScheduleSettings() {
+      return getStubSettingsBuilder().createBackupScheduleSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to getBackupSchedule. */
+    public UnaryCallSettings.Builder<GetBackupScheduleRequest, BackupSchedule>
+        getBackupScheduleSettings() {
+      return getStubSettingsBuilder().getBackupScheduleSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to updateBackupSchedule. */
+    public UnaryCallSettings.Builder<UpdateBackupScheduleRequest, BackupSchedule>
+        updateBackupScheduleSettings() {
+      return getStubSettingsBuilder().updateBackupScheduleSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to deleteBackupSchedule. */
+    public UnaryCallSettings.Builder<DeleteBackupScheduleRequest, Empty>
+        deleteBackupScheduleSettings() {
+      return getStubSettingsBuilder().deleteBackupScheduleSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to listBackupSchedules. */
+    public PagedCallSettings.Builder<
+            ListBackupSchedulesRequest,
+            ListBackupSchedulesResponse,
+            ListBackupSchedulesPagedResponse>
+        listBackupSchedulesSettings() {
+      return getStubSettingsBuilder().listBackupSchedulesSettings();
     }
 
     @Override

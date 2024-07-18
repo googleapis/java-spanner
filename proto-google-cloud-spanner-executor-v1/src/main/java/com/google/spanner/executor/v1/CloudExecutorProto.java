@@ -253,6 +253,10 @@ public final class CloudExecutorProto {
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_executor_v1_GetOperationAction_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+      internal_static_google_spanner_executor_v1_QueryCancellationAction_descriptor;
+  static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_google_spanner_executor_v1_QueryCancellationAction_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
       internal_static_google_spanner_executor_v1_CancelOperationAction_descriptor;
   static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_google_spanner_executor_v1_CancelOperationAction_fieldAccessorTable;
@@ -383,7 +387,7 @@ public final class CloudExecutorProto {
           + "tor.v1.SpannerAction\"r\n\032SpannerAsyncActi"
           + "onResponse\022\021\n\taction_id\030\001 \001(\005\022A\n\007outcome"
           + "\030\002 \001(\01320.google.spanner.executor.v1.Span"
-          + "nerActionOutcome\"\236\n\n\rSpannerAction\022\025\n\rda"
+          + "nerActionOutcome\"\361\n\n\rSpannerAction\022\025\n\rda"
           + "tabase_path\030\001 \001(\t\022C\n\017spanner_options\030\002 \001"
           + "(\0132*.google.spanner.executor.v1.SpannerO"
           + "ptions\022C\n\005start\030\n \001(\01322.google.spanner.e"
@@ -415,407 +419,411 @@ public final class CloudExecutorProto {
           + "tition\030, \001(\01322.google.spanner.executor.v"
           + "1.ExecutePartitionActionH\000\022[\n\033execute_ch"
           + "ange_stream_query\0302 \001(\01324.google.spanner"
-          + ".executor.v1.ExecuteChangeStreamQueryH\000B"
-          + "\010\n\006action\"\212\001\n\nReadAction\022\r\n\005table\030\001 \001(\t\022"
-          + "\022\n\005index\030\002 \001(\tH\000\210\001\001\022\016\n\006column\030\003 \003(\t\0220\n\004k"
-          + "eys\030\004 \001(\0132\".google.spanner.executor.v1.K"
-          + "eySet\022\r\n\005limit\030\005 \001(\005B\010\n\006_index\"\321\001\n\013Query"
-          + "Action\022\013\n\003sql\030\001 \001(\t\022A\n\006params\030\002 \003(\01321.go"
-          + "ogle.spanner.executor.v1.QueryAction.Par"
-          + "ameter\032r\n\tParameter\022\014\n\004name\030\001 \001(\t\022%\n\004typ"
-          + "e\030\002 \001(\0132\027.google.spanner.v1.Type\0220\n\005valu"
-          + "e\030\003 \001(\0132!.google.spanner.executor.v1.Val"
-          + "ue\"\206\001\n\tDmlAction\0227\n\006update\030\001 \001(\0132\'.googl"
-          + "e.spanner.executor.v1.QueryAction\022$\n\027aut"
-          + "ocommit_if_supported\030\002 \001(\010H\000\210\001\001B\032\n\030_auto"
-          + "commit_if_supported\"J\n\016BatchDmlAction\0228\n"
-          + "\007updates\030\001 \003(\0132\'.google.spanner.executor"
-          + ".v1.QueryAction\"\311\003\n\005Value\022\021\n\007is_null\030\001 \001"
-          + "(\010H\000\022\023\n\tint_value\030\002 \001(\003H\000\022\024\n\nbool_value\030"
-          + "\003 \001(\010H\000\022\026\n\014double_value\030\004 \001(\001H\000\022\025\n\013bytes"
-          + "_value\030\005 \001(\014H\000\022\026\n\014string_value\030\006 \001(\tH\000\022="
-          + "\n\014struct_value\030\007 \001(\0132%.google.spanner.ex"
-          + "ecutor.v1.ValueListH\000\0225\n\017timestamp_value"
-          + "\030\010 \001(\0132\032.google.protobuf.TimestampH\000\022\031\n\017"
-          + "date_days_value\030\t \001(\005H\000\022\035\n\023is_commit_tim"
-          + "estamp\030\n \001(\010H\000\022<\n\013array_value\030\013 \001(\0132%.go"
-          + "ogle.spanner.executor.v1.ValueListH\000\0220\n\n"
-          + "array_type\030\014 \001(\0132\027.google.spanner.v1.Typ"
-          + "eH\001\210\001\001B\014\n\nvalue_typeB\r\n\013_array_type\"\237\002\n\010"
-          + "KeyRange\0224\n\005start\030\001 \001(\0132%.google.spanner"
-          + ".executor.v1.ValueList\0224\n\005limit\030\002 \001(\0132%."
-          + "google.spanner.executor.v1.ValueList\022<\n\004"
-          + "type\030\003 \001(\0162).google.spanner.executor.v1."
-          + "KeyRange.TypeH\000\210\001\001\"`\n\004Type\022\024\n\020TYPE_UNSPE"
-          + "CIFIED\020\000\022\021\n\rCLOSED_CLOSED\020\001\022\017\n\013CLOSED_OP"
-          + "EN\020\002\022\017\n\013OPEN_CLOSED\020\003\022\r\n\tOPEN_OPEN\020\004B\007\n\005"
-          + "_type\"\200\001\n\006KeySet\0224\n\005point\030\001 \003(\0132%.google"
-          + ".spanner.executor.v1.ValueList\0223\n\005range\030"
-          + "\002 \003(\0132$.google.spanner.executor.v1.KeyRa"
-          + "nge\022\013\n\003all\030\003 \001(\010\"=\n\tValueList\0220\n\005value\030\001"
-          + " \003(\0132!.google.spanner.executor.v1.Value\""
-          + "\274\005\n\016MutationAction\022;\n\003mod\030\001 \003(\0132..google"
-          + ".spanner.executor.v1.MutationAction.Mod\032"
-          + "z\n\nInsertArgs\022\016\n\006column\030\001 \003(\t\022%\n\004type\030\002 "
-          + "\003(\0132\027.google.spanner.v1.Type\0225\n\006values\030\003"
-          + " \003(\0132%.google.spanner.executor.v1.ValueL"
-          + "ist\032z\n\nUpdateArgs\022\016\n\006column\030\001 \003(\t\022%\n\004typ"
-          + "e\030\002 \003(\0132\027.google.spanner.v1.Type\0225\n\006valu"
-          + "es\030\003 \003(\0132%.google.spanner.executor.v1.Va"
-          + "lueList\032\364\002\n\003Mod\022\r\n\005table\030\001 \001(\t\022E\n\006insert"
-          + "\030\002 \001(\01325.google.spanner.executor.v1.Muta"
-          + "tionAction.InsertArgs\022E\n\006update\030\003 \001(\01325."
-          + "google.spanner.executor.v1.MutationActio"
-          + "n.UpdateArgs\022O\n\020insert_or_update\030\004 \001(\01325"
-          + ".google.spanner.executor.v1.MutationActi"
-          + "on.InsertArgs\022F\n\007replace\030\005 \001(\01325.google."
-          + "spanner.executor.v1.MutationAction.Inser"
-          + "tArgs\0227\n\013delete_keys\030\006 \001(\0132\".google.span"
-          + "ner.executor.v1.KeySet\"T\n\024WriteMutations"
-          + "Action\022<\n\010mutation\030\001 \001(\0132*.google.spanne"
-          + "r.executor.v1.MutationAction\"\337\002\n\027Partiti"
-          + "onedUpdateAction\022i\n\007options\030\001 \001(\0132S.goog"
-          + "le.spanner.executor.v1.PartitionedUpdate"
-          + "Action.ExecutePartitionedUpdateOptionsH\000"
-          + "\210\001\001\0227\n\006update\030\002 \001(\0132\'.google.spanner.exe"
-          + "cutor.v1.QueryAction\032\223\001\n\037ExecutePartitio"
-          + "nedUpdateOptions\022E\n\014rpc_priority\030\001 \001(\0162*"
-          + ".google.spanner.v1.RequestOptions.Priori"
-          + "tyH\000\210\001\001\022\020\n\003tag\030\002 \001(\tH\001\210\001\001B\017\n\r_rpc_priori"
-          + "tyB\006\n\004_tagB\n\n\010_options\"\256\002\n\026StartTransact"
-          + "ionAction\022A\n\013concurrency\030\001 \001(\0132\'.google."
-          + "spanner.executor.v1.ConcurrencyH\000\210\001\001\0228\n\005"
-          + "table\030\002 \003(\0132).google.spanner.executor.v1"
-          + ".TableMetadata\022\030\n\020transaction_seed\030\003 \001(\t"
-          + "\022W\n\021execution_options\030\004 \001(\01327.google.spa"
-          + "nner.executor.v1.TransactionExecutionOpt"
-          + "ionsH\001\210\001\001B\016\n\014_concurrencyB\024\n\022_execution_"
-          + "options\"\256\002\n\013Concurrency\022\033\n\021staleness_sec"
-          + "onds\030\001 \001(\001H\000\022#\n\031min_read_timestamp_micro"
-          + "s\030\002 \001(\003H\000\022\037\n\025max_staleness_seconds\030\003 \001(\001"
-          + "H\000\022 \n\026exact_timestamp_micros\030\004 \001(\003H\000\022\020\n\006"
-          + "strong\030\005 \001(\010H\000\022\017\n\005batch\030\006 \001(\010H\000\022\033\n\023snaps"
-          + "hot_epoch_read\030\007 \001(\010\022!\n\031snapshot_epoch_r"
-          + "oot_table\030\010 \001(\t\022#\n\033batch_read_timestamp_"
-          + "micros\030\t \001(\003B\022\n\020concurrency_mode\"\231\001\n\rTab"
-          + "leMetadata\022\014\n\004name\030\001 \001(\t\022:\n\006column\030\002 \003(\013"
-          + "2*.google.spanner.executor.v1.ColumnMeta"
-          + "data\022>\n\nkey_column\030\003 \003(\0132*.google.spanne"
-          + "r.executor.v1.ColumnMetadata\"E\n\016ColumnMe"
-          + "tadata\022\014\n\004name\030\001 \001(\t\022%\n\004type\030\002 \001(\0132\027.goo"
-          + "gle.spanner.v1.Type\"1\n\033TransactionExecut"
-          + "ionOptions\022\022\n\noptimistic\030\001 \001(\010\"\230\001\n\027Finis"
-          + "hTransactionAction\022F\n\004mode\030\001 \001(\01628.googl"
-          + "e.spanner.executor.v1.FinishTransactionA"
-          + "ction.Mode\"5\n\004Mode\022\024\n\020MODE_UNSPECIFIED\020\000"
-          + "\022\n\n\006COMMIT\020\001\022\013\n\007ABANDON\020\002\"\310\023\n\013AdminActio"
-          + "n\022a\n\033create_user_instance_config\030\001 \001(\0132:"
-          + ".google.spanner.executor.v1.CreateUserIn"
-          + "stanceConfigActionH\000\022a\n\033update_user_inst"
-          + "ance_config\030\002 \001(\0132:.google.spanner.execu"
-          + "tor.v1.UpdateUserInstanceConfigActionH\000\022"
-          + "a\n\033delete_user_instance_config\030\003 \001(\0132:.g"
-          + "oogle.spanner.executor.v1.DeleteUserInst"
-          + "anceConfigActionH\000\022]\n\031get_cloud_instance"
-          + "_config\030\004 \001(\01328.google.spanner.executor."
-          + "v1.GetCloudInstanceConfigActionH\000\022[\n\025lis"
-          + "t_instance_configs\030\005 \001(\0132:.google.spanne"
-          + "r.executor.v1.ListCloudInstanceConfigsAc"
-          + "tionH\000\022V\n\025create_cloud_instance\030\006 \001(\01325."
-          + "google.spanner.executor.v1.CreateCloudIn"
-          + "stanceActionH\000\022V\n\025update_cloud_instance\030"
-          + "\007 \001(\01325.google.spanner.executor.v1.Updat"
-          + "eCloudInstanceActionH\000\022V\n\025delete_cloud_i"
-          + "nstance\030\010 \001(\01325.google.spanner.executor."
-          + "v1.DeleteCloudInstanceActionH\000\022T\n\024list_c"
-          + "loud_instances\030\t \001(\01324.google.spanner.ex"
-          + "ecutor.v1.ListCloudInstancesActionH\000\022P\n\022"
-          + "get_cloud_instance\030\n \001(\01322.google.spanne"
-          + "r.executor.v1.GetCloudInstanceActionH\000\022V"
-          + "\n\025create_cloud_database\030\013 \001(\01325.google.s"
-          + "panner.executor.v1.CreateCloudDatabaseAc"
-          + "tionH\000\022]\n\031update_cloud_database_ddl\030\014 \001("
-          + "\01328.google.spanner.executor.v1.UpdateClo"
-          + "udDatabaseDdlActionH\000\022V\n\025update_cloud_da"
-          + "tabase\030\033 \001(\01325.google.spanner.executor.v"
-          + "1.UpdateCloudDatabaseActionH\000\022R\n\023drop_cl"
-          + "oud_database\030\r \001(\01323.google.spanner.exec"
-          + "utor.v1.DropCloudDatabaseActionH\000\022T\n\024lis"
-          + "t_cloud_databases\030\016 \001(\01324.google.spanner"
-          + ".executor.v1.ListCloudDatabasesActionH\000\022"
-          + "g\n\036list_cloud_database_operations\030\017 \001(\0132"
-          + "=.google.spanner.executor.v1.ListCloudDa"
-          + "tabaseOperationsActionH\000\022X\n\026restore_clou"
-          + "d_database\030\020 \001(\01326.google.spanner.execut"
-          + "or.v1.RestoreCloudDatabaseActionH\000\022P\n\022ge"
-          + "t_cloud_database\030\021 \001(\01322.google.spanner."
-          + "executor.v1.GetCloudDatabaseActionH\000\022R\n\023"
-          + "create_cloud_backup\030\022 \001(\01323.google.spann"
-          + "er.executor.v1.CreateCloudBackupActionH\000"
-          + "\022N\n\021copy_cloud_backup\030\023 \001(\01321.google.spa"
-          + "nner.executor.v1.CopyCloudBackupActionH\000"
-          + "\022L\n\020get_cloud_backup\030\024 \001(\01320.google.span"
-          + "ner.executor.v1.GetCloudBackupActionH\000\022R"
-          + "\n\023update_cloud_backup\030\025 \001(\01323.google.spa"
-          + "nner.executor.v1.UpdateCloudBackupAction"
-          + "H\000\022R\n\023delete_cloud_backup\030\026 \001(\01323.google"
-          + ".spanner.executor.v1.DeleteCloudBackupAc"
-          + "tionH\000\022P\n\022list_cloud_backups\030\027 \001(\01322.goo"
-          + "gle.spanner.executor.v1.ListCloudBackups"
-          + "ActionH\000\022c\n\034list_cloud_backup_operations"
-          + "\030\030 \001(\0132;.google.spanner.executor.v1.List"
-          + "CloudBackupOperationsActionH\000\022G\n\rget_ope"
-          + "ration\030\031 \001(\0132..google.spanner.executor.v"
-          + "1.GetOperationActionH\000\022M\n\020cancel_operati"
-          + "on\030\032 \001(\01321.google.spanner.executor.v1.Ca"
-          + "ncelOperationActionH\000\022c\n\034change_quorum_c"
-          + "loud_database\030\034 \001(\0132;.google.spanner.exe"
-          + "cutor.v1.ChangeQuorumCloudDatabaseAction"
-          + "H\000B\010\n\006action\"\245\001\n\036CreateUserInstanceConfi"
-          + "gAction\022\026\n\016user_config_id\030\001 \001(\t\022\022\n\nproje"
-          + "ct_id\030\002 \001(\t\022\026\n\016base_config_id\030\003 \001(\t\022?\n\010r"
-          + "eplicas\030\004 \003(\0132-.google.spanner.admin.ins"
-          + "tance.v1.ReplicaInfo\"\377\001\n\036UpdateUserInsta"
-          + "nceConfigAction\022\026\n\016user_config_id\030\001 \001(\t\022"
-          + "\022\n\nproject_id\030\002 \001(\t\022\031\n\014display_name\030\003 \001("
-          + "\tH\000\210\001\001\022V\n\006labels\030\004 \003(\0132F.google.spanner."
-          + "executor.v1.UpdateUserInstanceConfigActi"
-          + "on.LabelsEntry\032-\n\013LabelsEntry\022\013\n\003key\030\001 \001"
-          + "(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\017\n\r_display_name\"N"
-          + "\n\034GetCloudInstanceConfigAction\022\032\n\022instan"
-          + "ce_config_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\"L"
-          + "\n\036DeleteUserInstanceConfigAction\022\026\n\016user"
-          + "_config_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\"\202\001\n"
-          + "\036ListCloudInstanceConfigsAction\022\022\n\nproje"
-          + "ct_id\030\001 \001(\t\022\026\n\tpage_size\030\002 \001(\005H\000\210\001\001\022\027\n\np"
-          + "age_token\030\003 \001(\tH\001\210\001\001B\014\n\n_page_sizeB\r\n\013_p"
-          + "age_token\"\253\003\n\031CreateCloudInstanceAction\022"
-          + "\023\n\013instance_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t"
-          + "\022\032\n\022instance_config_id\030\003 \001(\t\022\027\n\nnode_cou"
-          + "nt\030\004 \001(\005H\000\210\001\001\022\035\n\020processing_units\030\006 \001(\005H"
-          + "\001\210\001\001\022T\n\022autoscaling_config\030\007 \001(\01323.googl"
-          + "e.spanner.admin.instance.v1.AutoscalingC"
-          + "onfigH\002\210\001\001\022Q\n\006labels\030\005 \003(\0132A.google.span"
-          + "ner.executor.v1.CreateCloudInstanceActio"
-          + "n.LabelsEntry\032-\n\013LabelsEntry\022\013\n\003key\030\001 \001("
-          + "\t\022\r\n\005value\030\002 \001(\t:\0028\001B\r\n\013_node_countB\023\n\021_"
-          + "processing_unitsB\025\n\023_autoscaling_config\""
-          + "\273\003\n\031UpdateCloudInstanceAction\022\023\n\013instanc"
-          + "e_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\031\n\014displa"
-          + "y_name\030\003 \001(\tH\000\210\001\001\022\027\n\nnode_count\030\004 \001(\005H\001\210"
-          + "\001\001\022\035\n\020processing_units\030\005 \001(\005H\002\210\001\001\022T\n\022aut"
-          + "oscaling_config\030\007 \001(\01323.google.spanner.a"
-          + "dmin.instance.v1.AutoscalingConfigH\003\210\001\001\022"
-          + "Q\n\006labels\030\006 \003(\0132A.google.spanner.executo"
-          + "r.v1.UpdateCloudInstanceAction.LabelsEnt"
-          + "ry\032-\n\013LabelsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030"
-          + "\002 \001(\t:\0028\001B\017\n\r_display_nameB\r\n\013_node_coun"
-          + "tB\023\n\021_processing_unitsB\025\n\023_autoscaling_c"
-          + "onfig\"D\n\031DeleteCloudInstanceAction\022\023\n\013in"
-          + "stance_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\"\227\002\n\031"
-          + "CreateCloudDatabaseAction\022\023\n\013instance_id"
-          + "\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\023\n\013database_i"
-          + "d\030\003 \001(\t\022\025\n\rsdl_statement\030\004 \003(\t\022M\n\021encryp"
-          + "tion_config\030\005 \001(\01322.google.spanner.admin"
-          + ".database.v1.EncryptionConfig\022\024\n\007dialect"
-          + "\030\006 \001(\tH\000\210\001\001\022\036\n\021proto_descriptors\030\007 \001(\014H\001"
-          + "\210\001\001B\n\n\010_dialectB\024\n\022_proto_descriptors\"\277\001"
-          + "\n\034UpdateCloudDatabaseDdlAction\022\023\n\013instan"
-          + "ce_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\023\n\013datab"
-          + "ase_id\030\003 \001(\t\022\025\n\rsdl_statement\030\004 \003(\t\022\024\n\014o"
-          + "peration_id\030\005 \001(\t\022\036\n\021proto_descriptors\030\006"
-          + " \001(\014H\000\210\001\001B\024\n\022_proto_descriptors\"{\n\031Updat"
-          + "eCloudDatabaseAction\022\023\n\013instance_id\030\001 \001("
-          + "\t\022\022\n\nproject_id\030\002 \001(\t\022\025\n\rdatabase_name\030\003"
-          + " \001(\t\022\036\n\026enable_drop_protection\030\004 \001(\010\"W\n\027"
-          + "DropCloudDatabaseAction\022\023\n\013instance_id\030\001"
-          + " \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\023\n\013database_id\030"
-          + "\003 \001(\t\"h\n\037ChangeQuorumCloudDatabaseAction"
-          + "\022\031\n\014database_uri\030\001 \001(\tH\000\210\001\001\022\031\n\021serving_l"
-          + "ocations\030\002 \003(\tB\017\n\r_database_uri\"j\n\030ListC"
-          + "loudDatabasesAction\022\022\n\nproject_id\030\001 \001(\t\022"
-          + "\023\n\013instance_id\030\002 \001(\t\022\021\n\tpage_size\030\003 \001(\005\022"
-          + "\022\n\npage_token\030\004 \001(\t\"\234\001\n\030ListCloudInstanc"
-          + "esAction\022\022\n\nproject_id\030\001 \001(\t\022\023\n\006filter\030\002"
-          + " \001(\tH\000\210\001\001\022\026\n\tpage_size\030\003 \001(\005H\001\210\001\001\022\027\n\npag"
-          + "e_token\030\004 \001(\tH\002\210\001\001B\t\n\007_filterB\014\n\n_page_s"
-          + "izeB\r\n\013_page_token\"A\n\026GetCloudInstanceAc"
-          + "tion\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_id\030"
-          + "\002 \001(\t\"\203\001\n!ListCloudDatabaseOperationsAct"
-          + "ion\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_id\030\002"
-          + " \001(\t\022\016\n\006filter\030\003 \001(\t\022\021\n\tpage_size\030\004 \001(\005\022"
-          + "\022\n\npage_token\030\005 \001(\t\"\341\001\n\032RestoreCloudData"
-          + "baseAction\022\022\n\nproject_id\030\001 \001(\t\022\032\n\022backup"
-          + "_instance_id\030\002 \001(\t\022\021\n\tbackup_id\030\003 \001(\t\022\034\n"
-          + "\024database_instance_id\030\004 \001(\t\022\023\n\013database_"
-          + "id\030\005 \001(\t\022M\n\021encryption_config\030\007 \001(\01322.go"
-          + "ogle.spanner.admin.database.v1.Encryptio"
-          + "nConfig\"V\n\026GetCloudDatabaseAction\022\022\n\npro"
-          + "ject_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\023\n\013da"
-          + "tabase_id\030\003 \001(\t\"\267\002\n\027CreateCloudBackupAct"
-          + "ion\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_id\030\002"
-          + " \001(\t\022\021\n\tbackup_id\030\003 \001(\t\022\023\n\013database_id\030\004"
-          + " \001(\t\0224\n\013expire_time\030\005 \001(\0132\032.google.proto"
-          + "buf.TimestampB\003\340A\003\0225\n\014version_time\030\006 \001(\013"
-          + "2\032.google.protobuf.TimestampH\000\210\001\001\022M\n\021enc"
-          + "ryption_config\030\007 \001(\01322.google.spanner.ad"
-          + "min.database.v1.EncryptionConfigB\017\n\r_ver"
-          + "sion_time\"\240\001\n\025CopyCloudBackupAction\022\022\n\np"
-          + "roject_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\021\n\t"
-          + "backup_id\030\003 \001(\t\022\025\n\rsource_backup\030\004 \001(\t\0224"
-          + "\n\013expire_time\030\005 \001(\0132\032.google.protobuf.Ti"
-          + "mestampB\003\340A\003\"R\n\024GetCloudBackupAction\022\022\n\n"
-          + "project_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\021\n"
-          + "\tbackup_id\030\003 \001(\t\"\213\001\n\027UpdateCloudBackupAc"
-          + "tion\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_id\030"
-          + "\002 \001(\t\022\021\n\tbackup_id\030\003 \001(\t\0224\n\013expire_time\030"
-          + "\004 \001(\0132\032.google.protobuf.TimestampB\003\340A\003\"U"
-          + "\n\027DeleteCloudBackupAction\022\022\n\nproject_id\030"
-          + "\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\021\n\tbackup_id\030"
-          + "\003 \001(\t\"x\n\026ListCloudBackupsAction\022\022\n\nproje"
-          + "ct_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\016\n\006filt"
-          + "er\030\003 \001(\t\022\021\n\tpage_size\030\004 \001(\005\022\022\n\npage_toke"
-          + "n\030\005 \001(\t\"\201\001\n\037ListCloudBackupOperationsAct"
-          + "ion\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_id\030\002"
-          + " \001(\t\022\016\n\006filter\030\003 \001(\t\022\021\n\tpage_size\030\004 \001(\005\022"
-          + "\022\n\npage_token\030\005 \001(\t\"\'\n\022GetOperationActio"
-          + "n\022\021\n\toperation\030\001 \001(\t\"*\n\025CancelOperationA"
-          + "ction\022\021\n\toperation\030\001 \001(\t\"\210\001\n\033StartBatchT"
-          + "ransactionAction\0224\n\016batch_txn_time\030\001 \001(\013"
-          + "2\032.google.protobuf.TimestampH\000\022\r\n\003tid\030\002 "
-          + "\001(\014H\000\022\033\n\023cloud_database_role\030\003 \001(\tB\007\n\005pa"
-          + "ram\".\n\033CloseBatchTransactionAction\022\017\n\007cl"
-          + "eanup\030\001 \001(\010\"\227\002\n!GenerateDbPartitionsForR"
-          + "eadAction\0224\n\004read\030\001 \001(\0132&.google.spanner"
-          + ".executor.v1.ReadAction\0228\n\005table\030\002 \003(\0132)"
-          + ".google.spanner.executor.v1.TableMetadat"
-          + "a\022(\n\033desired_bytes_per_partition\030\003 \001(\003H\000"
-          + "\210\001\001\022 \n\023max_partition_count\030\004 \001(\003H\001\210\001\001B\036\n"
-          + "\034_desired_bytes_per_partitionB\026\n\024_max_pa"
-          + "rtition_count\"\246\001\n\"GenerateDbPartitionsFo"
-          + "rQueryAction\0226\n\005query\030\001 \001(\0132\'.google.spa"
-          + "nner.executor.v1.QueryAction\022(\n\033desired_"
-          + "bytes_per_partition\030\002 \001(\003H\000\210\001\001B\036\n\034_desir"
-          + "ed_bytes_per_partition\"x\n\016BatchPartition"
-          + "\022\021\n\tpartition\030\001 \001(\014\022\027\n\017partition_token\030\002"
-          + " \001(\014\022\022\n\005table\030\003 \001(\tH\000\210\001\001\022\022\n\005index\030\004 \001(\tH"
-          + "\001\210\001\001B\010\n\006_tableB\010\n\006_index\"W\n\026ExecuteParti"
-          + "tionAction\022=\n\tpartition\030\001 \001(\0132*.google.s"
-          + "panner.executor.v1.BatchPartition\"\216\003\n\030Ex"
-          + "ecuteChangeStreamQuery\022\014\n\004name\030\001 \001(\t\022.\n\n"
-          + "start_time\030\002 \001(\0132\032.google.protobuf.Times"
-          + "tamp\0221\n\010end_time\030\003 \001(\0132\032.google.protobuf"
-          + ".TimestampH\000\210\001\001\022\034\n\017partition_token\030\004 \001(\t"
-          + "H\001\210\001\001\022\024\n\014read_options\030\005 \003(\t\022#\n\026heartbeat"
-          + "_milliseconds\030\006 \001(\005H\002\210\001\001\022\035\n\020deadline_sec"
-          + "onds\030\007 \001(\003H\003\210\001\001\022 \n\023cloud_database_role\030\010"
-          + " \001(\tH\004\210\001\001B\013\n\t_end_timeB\022\n\020_partition_tok"
-          + "enB\031\n\027_heartbeat_millisecondsB\023\n\021_deadli"
-          + "ne_secondsB\026\n\024_cloud_database_role\"\242\005\n\024S"
-          + "pannerActionOutcome\022\'\n\006status\030\001 \001(\0132\022.go"
-          + "ogle.rpc.StatusH\000\210\001\001\0224\n\013commit_time\030\002 \001("
-          + "\0132\032.google.protobuf.TimestampH\001\210\001\001\022@\n\013re"
-          + "ad_result\030\003 \001(\0132&.google.spanner.executo"
-          + "r.v1.ReadResultH\002\210\001\001\022B\n\014query_result\030\004 \001"
-          + "(\0132\'.google.spanner.executor.v1.QueryRes"
-          + "ultH\003\210\001\001\022\"\n\025transaction_restarted\030\005 \001(\010H"
-          + "\004\210\001\001\022\031\n\014batch_txn_id\030\006 \001(\014H\005\210\001\001\022@\n\014db_pa"
-          + "rtition\030\007 \003(\0132*.google.spanner.executor."
-          + "v1.BatchPartition\022B\n\014admin_result\030\010 \001(\0132"
-          + "\'.google.spanner.executor.v1.AdminResult"
-          + "H\006\210\001\001\022\031\n\021dml_rows_modified\030\t \003(\003\022M\n\025chan"
-          + "ge_stream_records\030\n \003(\0132..google.spanner"
-          + ".executor.v1.ChangeStreamRecordB\t\n\007_stat"
-          + "usB\016\n\014_commit_timeB\016\n\014_read_resultB\017\n\r_q"
-          + "uery_resultB\030\n\026_transaction_restartedB\017\n"
-          + "\r_batch_txn_idB\017\n\r_admin_result\"\231\003\n\013Admi"
-          + "nResult\022H\n\017backup_response\030\001 \001(\0132/.googl"
-          + "e.spanner.executor.v1.CloudBackupRespons"
-          + "e\022I\n\022operation_response\030\002 \001(\0132-.google.s"
-          + "panner.executor.v1.OperationResponse\022L\n\021"
-          + "database_response\030\003 \001(\01321.google.spanner"
-          + ".executor.v1.CloudDatabaseResponse\022L\n\021in"
-          + "stance_response\030\004 \001(\01321.google.spanner.e"
-          + "xecutor.v1.CloudInstanceResponse\022Y\n\030inst"
-          + "ance_config_response\030\005 \001(\01327.google.span"
-          + "ner.executor.v1.CloudInstanceConfigRespo"
-          + "nse\"\353\001\n\023CloudBackupResponse\022@\n\016listed_ba"
-          + "ckups\030\001 \003(\0132(.google.spanner.admin.datab"
-          + "ase.v1.Backup\022?\n\030listed_backup_operation"
-          + "s\030\002 \003(\0132\035.google.longrunning.Operation\022\027"
-          + "\n\017next_page_token\030\003 \001(\t\0228\n\006backup\030\004 \001(\0132"
-          + "(.google.spanner.admin.database.v1.Backu"
-          + "p\"\230\001\n\021OperationResponse\0228\n\021listed_operat"
-          + "ions\030\001 \003(\0132\035.google.longrunning.Operatio"
-          + "n\022\027\n\017next_page_token\030\002 \001(\t\0220\n\toperation\030"
-          + "\003 \001(\0132\035.google.longrunning.Operation\"\264\001\n"
-          + "\025CloudInstanceResponse\022D\n\020listed_instanc"
-          + "es\030\001 \003(\0132*.google.spanner.admin.instance"
-          + ".v1.Instance\022\027\n\017next_page_token\030\002 \001(\t\022<\n"
-          + "\010instance\030\003 \001(\0132*.google.spanner.admin.i"
-          + "nstance.v1.Instance\"\324\001\n\033CloudInstanceCon"
-          + "figResponse\022Q\n\027listed_instance_configs\030\001"
-          + " \003(\01320.google.spanner.admin.instance.v1."
-          + "InstanceConfig\022\027\n\017next_page_token\030\002 \001(\t\022"
-          + "I\n\017instance_config\030\003 \001(\01320.google.spanne"
-          + "r.admin.instance.v1.InstanceConfig\"\367\001\n\025C"
-          + "loudDatabaseResponse\022D\n\020listed_databases"
-          + "\030\001 \003(\0132*.google.spanner.admin.database.v"
-          + "1.Database\022A\n\032listed_database_operations"
-          + "\030\002 \003(\0132\035.google.longrunning.Operation\022\027\n"
-          + "\017next_page_token\030\003 \001(\t\022<\n\010database\030\004 \001(\013"
-          + "2*.google.spanner.admin.database.v1.Data",
-      "base\"\336\001\n\nReadResult\022\r\n\005table\030\001 \001(\t\022\022\n\005in"
-          + "dex\030\002 \001(\tH\000\210\001\001\022\032\n\rrequest_index\030\003 \001(\005H\001\210"
-          + "\001\001\0222\n\003row\030\004 \003(\0132%.google.spanner.executo"
-          + "r.v1.ValueList\0224\n\010row_type\030\005 \001(\0132\035.googl"
-          + "e.spanner.v1.StructTypeH\002\210\001\001B\010\n\006_indexB\020"
-          + "\n\016_request_indexB\013\n\t_row_type\"\204\001\n\013QueryR"
-          + "esult\0222\n\003row\030\001 \003(\0132%.google.spanner.exec"
-          + "utor.v1.ValueList\0224\n\010row_type\030\002 \001(\0132\035.go"
-          + "ogle.spanner.v1.StructTypeH\000\210\001\001B\013\n\t_row_"
-          + "type\"\363\001\n\022ChangeStreamRecord\022C\n\013data_chan"
-          + "ge\030\001 \001(\0132,.google.spanner.executor.v1.Da"
-          + "taChangeRecordH\000\022L\n\017child_partition\030\002 \001("
-          + "\01321.google.spanner.executor.v1.ChildPart"
-          + "itionsRecordH\000\022@\n\theartbeat\030\003 \001(\0132+.goog"
-          + "le.spanner.executor.v1.HeartbeatRecordH\000"
-          + "B\010\n\006record\"\330\004\n\020DataChangeRecord\022/\n\013commi"
-          + "t_time\030\001 \001(\0132\032.google.protobuf.Timestamp"
-          + "\022\027\n\017record_sequence\030\002 \001(\t\022\026\n\016transaction"
-          + "_id\030\003 \001(\t\022\026\n\016is_last_record\030\004 \001(\010\022\r\n\005tab"
-          + "le\030\005 \001(\t\022M\n\014column_types\030\006 \003(\01327.google."
-          + "spanner.executor.v1.DataChangeRecord.Col"
-          + "umnType\022>\n\004mods\030\007 \003(\01320.google.spanner.e"
-          + "xecutor.v1.DataChangeRecord.Mod\022\020\n\010mod_t"
-          + "ype\030\010 \001(\t\022\032\n\022value_capture_type\030\t \001(\t\022\024\n"
-          + "\014record_count\030\n \001(\003\022\027\n\017partition_count\030\013"
-          + " \001(\003\022\027\n\017transaction_tag\030\014 \001(\t\022\035\n\025is_syst"
-          + "em_transaction\030\r \001(\010\032Z\n\nColumnType\022\014\n\004na"
-          + "me\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\022\026\n\016is_primary_key"
-          + "\030\003 \001(\010\022\030\n\020ordinal_position\030\004 \001(\003\032;\n\003Mod\022"
-          + "\014\n\004keys\030\001 \001(\t\022\022\n\nnew_values\030\002 \001(\t\022\022\n\nold"
-          + "_values\030\003 \001(\t\"\376\001\n\025ChildPartitionsRecord\022"
-          + ".\n\nstart_time\030\001 \001(\0132\032.google.protobuf.Ti"
-          + "mestamp\022\027\n\017record_sequence\030\002 \001(\t\022Z\n\020chil"
-          + "d_partitions\030\003 \003(\0132@.google.spanner.exec"
-          + "utor.v1.ChildPartitionsRecord.ChildParti"
-          + "tion\032@\n\016ChildPartition\022\r\n\005token\030\001 \001(\t\022\037\n"
-          + "\027parent_partition_tokens\030\002 \003(\t\"E\n\017Heartb"
-          + "eatRecord\0222\n\016heartbeat_time\030\001 \001(\0132\032.goog"
-          + "le.protobuf.Timestamp\"^\n\016SpannerOptions\022"
-          + "L\n\024session_pool_options\030\001 \001(\0132..google.s"
-          + "panner.executor.v1.SessionPoolOptions\"-\n"
-          + "\022SessionPoolOptions\022\027\n\017use_multiplexed\030\001"
-          + " \001(\0102\314\001\n\024SpannerExecutorProxy\022\211\001\n\022Execut"
-          + "eActionAsync\0225.google.spanner.executor.v"
-          + "1.SpannerAsyncActionRequest\0326.google.spa"
-          + "nner.executor.v1.SpannerAsyncActionRespo"
-          + "nse\"\000(\0010\001\032(\312A%spanner-cloud-executor.goo"
-          + "gleapis.comBx\n\036com.google.spanner.execut"
-          + "or.v1B\022CloudExecutorProtoP\001Z@cloud.googl"
-          + "e.com/go/spanner/executor/apiv1/executor"
-          + "pb;executorpbb\006proto3"
+          + ".executor.v1.ExecuteChangeStreamQueryH\000\022"
+          + "Q\n\022query_cancellation\0303 \001(\01323.google.spa"
+          + "nner.executor.v1.QueryCancellationAction"
+          + "H\000B\010\n\006action\"\212\001\n\nReadAction\022\r\n\005table\030\001 \001"
+          + "(\t\022\022\n\005index\030\002 \001(\tH\000\210\001\001\022\016\n\006column\030\003 \003(\t\0220"
+          + "\n\004keys\030\004 \001(\0132\".google.spanner.executor.v"
+          + "1.KeySet\022\r\n\005limit\030\005 \001(\005B\010\n\006_index\"\321\001\n\013Qu"
+          + "eryAction\022\013\n\003sql\030\001 \001(\t\022A\n\006params\030\002 \003(\01321"
+          + ".google.spanner.executor.v1.QueryAction."
+          + "Parameter\032r\n\tParameter\022\014\n\004name\030\001 \001(\t\022%\n\004"
+          + "type\030\002 \001(\0132\027.google.spanner.v1.Type\0220\n\005v"
+          + "alue\030\003 \001(\0132!.google.spanner.executor.v1."
+          + "Value\"\206\001\n\tDmlAction\0227\n\006update\030\001 \001(\0132\'.go"
+          + "ogle.spanner.executor.v1.QueryAction\022$\n\027"
+          + "autocommit_if_supported\030\002 \001(\010H\000\210\001\001B\032\n\030_a"
+          + "utocommit_if_supported\"J\n\016BatchDmlAction"
+          + "\0228\n\007updates\030\001 \003(\0132\'.google.spanner.execu"
+          + "tor.v1.QueryAction\"\311\003\n\005Value\022\021\n\007is_null\030"
+          + "\001 \001(\010H\000\022\023\n\tint_value\030\002 \001(\003H\000\022\024\n\nbool_val"
+          + "ue\030\003 \001(\010H\000\022\026\n\014double_value\030\004 \001(\001H\000\022\025\n\013by"
+          + "tes_value\030\005 \001(\014H\000\022\026\n\014string_value\030\006 \001(\tH"
+          + "\000\022=\n\014struct_value\030\007 \001(\0132%.google.spanner"
+          + ".executor.v1.ValueListH\000\0225\n\017timestamp_va"
+          + "lue\030\010 \001(\0132\032.google.protobuf.TimestampH\000\022"
+          + "\031\n\017date_days_value\030\t \001(\005H\000\022\035\n\023is_commit_"
+          + "timestamp\030\n \001(\010H\000\022<\n\013array_value\030\013 \001(\0132%"
+          + ".google.spanner.executor.v1.ValueListH\000\022"
+          + "0\n\narray_type\030\014 \001(\0132\027.google.spanner.v1."
+          + "TypeH\001\210\001\001B\014\n\nvalue_typeB\r\n\013_array_type\"\237"
+          + "\002\n\010KeyRange\0224\n\005start\030\001 \001(\0132%.google.span"
+          + "ner.executor.v1.ValueList\0224\n\005limit\030\002 \001(\013"
+          + "2%.google.spanner.executor.v1.ValueList\022"
+          + "<\n\004type\030\003 \001(\0162).google.spanner.executor."
+          + "v1.KeyRange.TypeH\000\210\001\001\"`\n\004Type\022\024\n\020TYPE_UN"
+          + "SPECIFIED\020\000\022\021\n\rCLOSED_CLOSED\020\001\022\017\n\013CLOSED"
+          + "_OPEN\020\002\022\017\n\013OPEN_CLOSED\020\003\022\r\n\tOPEN_OPEN\020\004B"
+          + "\007\n\005_type\"\200\001\n\006KeySet\0224\n\005point\030\001 \003(\0132%.goo"
+          + "gle.spanner.executor.v1.ValueList\0223\n\005ran"
+          + "ge\030\002 \003(\0132$.google.spanner.executor.v1.Ke"
+          + "yRange\022\013\n\003all\030\003 \001(\010\"=\n\tValueList\0220\n\005valu"
+          + "e\030\001 \003(\0132!.google.spanner.executor.v1.Val"
+          + "ue\"\274\005\n\016MutationAction\022;\n\003mod\030\001 \003(\0132..goo"
+          + "gle.spanner.executor.v1.MutationAction.M"
+          + "od\032z\n\nInsertArgs\022\016\n\006column\030\001 \003(\t\022%\n\004type"
+          + "\030\002 \003(\0132\027.google.spanner.v1.Type\0225\n\006value"
+          + "s\030\003 \003(\0132%.google.spanner.executor.v1.Val"
+          + "ueList\032z\n\nUpdateArgs\022\016\n\006column\030\001 \003(\t\022%\n\004"
+          + "type\030\002 \003(\0132\027.google.spanner.v1.Type\0225\n\006v"
+          + "alues\030\003 \003(\0132%.google.spanner.executor.v1"
+          + ".ValueList\032\364\002\n\003Mod\022\r\n\005table\030\001 \001(\t\022E\n\006ins"
+          + "ert\030\002 \001(\01325.google.spanner.executor.v1.M"
+          + "utationAction.InsertArgs\022E\n\006update\030\003 \001(\013"
+          + "25.google.spanner.executor.v1.MutationAc"
+          + "tion.UpdateArgs\022O\n\020insert_or_update\030\004 \001("
+          + "\01325.google.spanner.executor.v1.MutationA"
+          + "ction.InsertArgs\022F\n\007replace\030\005 \001(\01325.goog"
+          + "le.spanner.executor.v1.MutationAction.In"
+          + "sertArgs\0227\n\013delete_keys\030\006 \001(\0132\".google.s"
+          + "panner.executor.v1.KeySet\"T\n\024WriteMutati"
+          + "onsAction\022<\n\010mutation\030\001 \001(\0132*.google.spa"
+          + "nner.executor.v1.MutationAction\"\337\002\n\027Part"
+          + "itionedUpdateAction\022i\n\007options\030\001 \001(\0132S.g"
+          + "oogle.spanner.executor.v1.PartitionedUpd"
+          + "ateAction.ExecutePartitionedUpdateOption"
+          + "sH\000\210\001\001\0227\n\006update\030\002 \001(\0132\'.google.spanner."
+          + "executor.v1.QueryAction\032\223\001\n\037ExecuteParti"
+          + "tionedUpdateOptions\022E\n\014rpc_priority\030\001 \001("
+          + "\0162*.google.spanner.v1.RequestOptions.Pri"
+          + "orityH\000\210\001\001\022\020\n\003tag\030\002 \001(\tH\001\210\001\001B\017\n\r_rpc_pri"
+          + "orityB\006\n\004_tagB\n\n\010_options\"\256\002\n\026StartTrans"
+          + "actionAction\022A\n\013concurrency\030\001 \001(\0132\'.goog"
+          + "le.spanner.executor.v1.ConcurrencyH\000\210\001\001\022"
+          + "8\n\005table\030\002 \003(\0132).google.spanner.executor"
+          + ".v1.TableMetadata\022\030\n\020transaction_seed\030\003 "
+          + "\001(\t\022W\n\021execution_options\030\004 \001(\01327.google."
+          + "spanner.executor.v1.TransactionExecution"
+          + "OptionsH\001\210\001\001B\016\n\014_concurrencyB\024\n\022_executi"
+          + "on_options\"\256\002\n\013Concurrency\022\033\n\021staleness_"
+          + "seconds\030\001 \001(\001H\000\022#\n\031min_read_timestamp_mi"
+          + "cros\030\002 \001(\003H\000\022\037\n\025max_staleness_seconds\030\003 "
+          + "\001(\001H\000\022 \n\026exact_timestamp_micros\030\004 \001(\003H\000\022"
+          + "\020\n\006strong\030\005 \001(\010H\000\022\017\n\005batch\030\006 \001(\010H\000\022\033\n\023sn"
+          + "apshot_epoch_read\030\007 \001(\010\022!\n\031snapshot_epoc"
+          + "h_root_table\030\010 \001(\t\022#\n\033batch_read_timesta"
+          + "mp_micros\030\t \001(\003B\022\n\020concurrency_mode\"\231\001\n\r"
+          + "TableMetadata\022\014\n\004name\030\001 \001(\t\022:\n\006column\030\002 "
+          + "\003(\0132*.google.spanner.executor.v1.ColumnM"
+          + "etadata\022>\n\nkey_column\030\003 \003(\0132*.google.spa"
+          + "nner.executor.v1.ColumnMetadata\"E\n\016Colum"
+          + "nMetadata\022\014\n\004name\030\001 \001(\t\022%\n\004type\030\002 \001(\0132\027."
+          + "google.spanner.v1.Type\"1\n\033TransactionExe"
+          + "cutionOptions\022\022\n\noptimistic\030\001 \001(\010\"\230\001\n\027Fi"
+          + "nishTransactionAction\022F\n\004mode\030\001 \001(\01628.go"
+          + "ogle.spanner.executor.v1.FinishTransacti"
+          + "onAction.Mode\"5\n\004Mode\022\024\n\020MODE_UNSPECIFIE"
+          + "D\020\000\022\n\n\006COMMIT\020\001\022\013\n\007ABANDON\020\002\"\310\023\n\013AdminAc"
+          + "tion\022a\n\033create_user_instance_config\030\001 \001("
+          + "\0132:.google.spanner.executor.v1.CreateUse"
+          + "rInstanceConfigActionH\000\022a\n\033update_user_i"
+          + "nstance_config\030\002 \001(\0132:.google.spanner.ex"
+          + "ecutor.v1.UpdateUserInstanceConfigAction"
+          + "H\000\022a\n\033delete_user_instance_config\030\003 \001(\0132"
+          + ":.google.spanner.executor.v1.DeleteUserI"
+          + "nstanceConfigActionH\000\022]\n\031get_cloud_insta"
+          + "nce_config\030\004 \001(\01328.google.spanner.execut"
+          + "or.v1.GetCloudInstanceConfigActionH\000\022[\n\025"
+          + "list_instance_configs\030\005 \001(\0132:.google.spa"
+          + "nner.executor.v1.ListCloudInstanceConfig"
+          + "sActionH\000\022V\n\025create_cloud_instance\030\006 \001(\013"
+          + "25.google.spanner.executor.v1.CreateClou"
+          + "dInstanceActionH\000\022V\n\025update_cloud_instan"
+          + "ce\030\007 \001(\01325.google.spanner.executor.v1.Up"
+          + "dateCloudInstanceActionH\000\022V\n\025delete_clou"
+          + "d_instance\030\010 \001(\01325.google.spanner.execut"
+          + "or.v1.DeleteCloudInstanceActionH\000\022T\n\024lis"
+          + "t_cloud_instances\030\t \001(\01324.google.spanner"
+          + ".executor.v1.ListCloudInstancesActionH\000\022"
+          + "P\n\022get_cloud_instance\030\n \001(\01322.google.spa"
+          + "nner.executor.v1.GetCloudInstanceActionH"
+          + "\000\022V\n\025create_cloud_database\030\013 \001(\01325.googl"
+          + "e.spanner.executor.v1.CreateCloudDatabas"
+          + "eActionH\000\022]\n\031update_cloud_database_ddl\030\014"
+          + " \001(\01328.google.spanner.executor.v1.Update"
+          + "CloudDatabaseDdlActionH\000\022V\n\025update_cloud"
+          + "_database\030\033 \001(\01325.google.spanner.executo"
+          + "r.v1.UpdateCloudDatabaseActionH\000\022R\n\023drop"
+          + "_cloud_database\030\r \001(\01323.google.spanner.e"
+          + "xecutor.v1.DropCloudDatabaseActionH\000\022T\n\024"
+          + "list_cloud_databases\030\016 \001(\01324.google.span"
+          + "ner.executor.v1.ListCloudDatabasesAction"
+          + "H\000\022g\n\036list_cloud_database_operations\030\017 \001"
+          + "(\0132=.google.spanner.executor.v1.ListClou"
+          + "dDatabaseOperationsActionH\000\022X\n\026restore_c"
+          + "loud_database\030\020 \001(\01326.google.spanner.exe"
+          + "cutor.v1.RestoreCloudDatabaseActionH\000\022P\n"
+          + "\022get_cloud_database\030\021 \001(\01322.google.spann"
+          + "er.executor.v1.GetCloudDatabaseActionH\000\022"
+          + "R\n\023create_cloud_backup\030\022 \001(\01323.google.sp"
+          + "anner.executor.v1.CreateCloudBackupActio"
+          + "nH\000\022N\n\021copy_cloud_backup\030\023 \001(\01321.google."
+          + "spanner.executor.v1.CopyCloudBackupActio"
+          + "nH\000\022L\n\020get_cloud_backup\030\024 \001(\01320.google.s"
+          + "panner.executor.v1.GetCloudBackupActionH"
+          + "\000\022R\n\023update_cloud_backup\030\025 \001(\01323.google."
+          + "spanner.executor.v1.UpdateCloudBackupAct"
+          + "ionH\000\022R\n\023delete_cloud_backup\030\026 \001(\01323.goo"
+          + "gle.spanner.executor.v1.DeleteCloudBacku"
+          + "pActionH\000\022P\n\022list_cloud_backups\030\027 \001(\01322."
+          + "google.spanner.executor.v1.ListCloudBack"
+          + "upsActionH\000\022c\n\034list_cloud_backup_operati"
+          + "ons\030\030 \001(\0132;.google.spanner.executor.v1.L"
+          + "istCloudBackupOperationsActionH\000\022G\n\rget_"
+          + "operation\030\031 \001(\0132..google.spanner.executo"
+          + "r.v1.GetOperationActionH\000\022M\n\020cancel_oper"
+          + "ation\030\032 \001(\01321.google.spanner.executor.v1"
+          + ".CancelOperationActionH\000\022c\n\034change_quoru"
+          + "m_cloud_database\030\034 \001(\0132;.google.spanner."
+          + "executor.v1.ChangeQuorumCloudDatabaseAct"
+          + "ionH\000B\010\n\006action\"\245\001\n\036CreateUserInstanceCo"
+          + "nfigAction\022\026\n\016user_config_id\030\001 \001(\t\022\022\n\npr"
+          + "oject_id\030\002 \001(\t\022\026\n\016base_config_id\030\003 \001(\t\022?"
+          + "\n\010replicas\030\004 \003(\0132-.google.spanner.admin."
+          + "instance.v1.ReplicaInfo\"\377\001\n\036UpdateUserIn"
+          + "stanceConfigAction\022\026\n\016user_config_id\030\001 \001"
+          + "(\t\022\022\n\nproject_id\030\002 \001(\t\022\031\n\014display_name\030\003"
+          + " \001(\tH\000\210\001\001\022V\n\006labels\030\004 \003(\0132F.google.spann"
+          + "er.executor.v1.UpdateUserInstanceConfigA"
+          + "ction.LabelsEntry\032-\n\013LabelsEntry\022\013\n\003key\030"
+          + "\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\017\n\r_display_nam"
+          + "e\"N\n\034GetCloudInstanceConfigAction\022\032\n\022ins"
+          + "tance_config_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001("
+          + "\t\"L\n\036DeleteUserInstanceConfigAction\022\026\n\016u"
+          + "ser_config_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\""
+          + "\202\001\n\036ListCloudInstanceConfigsAction\022\022\n\npr"
+          + "oject_id\030\001 \001(\t\022\026\n\tpage_size\030\002 \001(\005H\000\210\001\001\022\027"
+          + "\n\npage_token\030\003 \001(\tH\001\210\001\001B\014\n\n_page_sizeB\r\n"
+          + "\013_page_token\"\253\003\n\031CreateCloudInstanceActi"
+          + "on\022\023\n\013instance_id\030\001 \001(\t\022\022\n\nproject_id\030\002 "
+          + "\001(\t\022\032\n\022instance_config_id\030\003 \001(\t\022\027\n\nnode_"
+          + "count\030\004 \001(\005H\000\210\001\001\022\035\n\020processing_units\030\006 \001"
+          + "(\005H\001\210\001\001\022T\n\022autoscaling_config\030\007 \001(\01323.go"
+          + "ogle.spanner.admin.instance.v1.Autoscali"
+          + "ngConfigH\002\210\001\001\022Q\n\006labels\030\005 \003(\0132A.google.s"
+          + "panner.executor.v1.CreateCloudInstanceAc"
+          + "tion.LabelsEntry\032-\n\013LabelsEntry\022\013\n\003key\030\001"
+          + " \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\r\n\013_node_countB\023"
+          + "\n\021_processing_unitsB\025\n\023_autoscaling_conf"
+          + "ig\"\273\003\n\031UpdateCloudInstanceAction\022\023\n\013inst"
+          + "ance_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\031\n\014dis"
+          + "play_name\030\003 \001(\tH\000\210\001\001\022\027\n\nnode_count\030\004 \001(\005"
+          + "H\001\210\001\001\022\035\n\020processing_units\030\005 \001(\005H\002\210\001\001\022T\n\022"
+          + "autoscaling_config\030\007 \001(\01323.google.spanne"
+          + "r.admin.instance.v1.AutoscalingConfigH\003\210"
+          + "\001\001\022Q\n\006labels\030\006 \003(\0132A.google.spanner.exec"
+          + "utor.v1.UpdateCloudInstanceAction.Labels"
+          + "Entry\032-\n\013LabelsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005val"
+          + "ue\030\002 \001(\t:\0028\001B\017\n\r_display_nameB\r\n\013_node_c"
+          + "ountB\023\n\021_processing_unitsB\025\n\023_autoscalin"
+          + "g_config\"D\n\031DeleteCloudInstanceAction\022\023\n"
+          + "\013instance_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\"\227"
+          + "\002\n\031CreateCloudDatabaseAction\022\023\n\013instance"
+          + "_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\023\n\013databas"
+          + "e_id\030\003 \001(\t\022\025\n\rsdl_statement\030\004 \003(\t\022M\n\021enc"
+          + "ryption_config\030\005 \001(\01322.google.spanner.ad"
+          + "min.database.v1.EncryptionConfig\022\024\n\007dial"
+          + "ect\030\006 \001(\tH\000\210\001\001\022\036\n\021proto_descriptors\030\007 \001("
+          + "\014H\001\210\001\001B\n\n\010_dialectB\024\n\022_proto_descriptors"
+          + "\"\277\001\n\034UpdateCloudDatabaseDdlAction\022\023\n\013ins"
+          + "tance_id\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\023\n\013da"
+          + "tabase_id\030\003 \001(\t\022\025\n\rsdl_statement\030\004 \003(\t\022\024"
+          + "\n\014operation_id\030\005 \001(\t\022\036\n\021proto_descriptor"
+          + "s\030\006 \001(\014H\000\210\001\001B\024\n\022_proto_descriptors\"{\n\031Up"
+          + "dateCloudDatabaseAction\022\023\n\013instance_id\030\001"
+          + " \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\025\n\rdatabase_nam"
+          + "e\030\003 \001(\t\022\036\n\026enable_drop_protection\030\004 \001(\010\""
+          + "W\n\027DropCloudDatabaseAction\022\023\n\013instance_i"
+          + "d\030\001 \001(\t\022\022\n\nproject_id\030\002 \001(\t\022\023\n\013database_"
+          + "id\030\003 \001(\t\"h\n\037ChangeQuorumCloudDatabaseAct"
+          + "ion\022\031\n\014database_uri\030\001 \001(\tH\000\210\001\001\022\031\n\021servin"
+          + "g_locations\030\002 \003(\tB\017\n\r_database_uri\"j\n\030Li"
+          + "stCloudDatabasesAction\022\022\n\nproject_id\030\001 \001"
+          + "(\t\022\023\n\013instance_id\030\002 \001(\t\022\021\n\tpage_size\030\003 \001"
+          + "(\005\022\022\n\npage_token\030\004 \001(\t\"\234\001\n\030ListCloudInst"
+          + "ancesAction\022\022\n\nproject_id\030\001 \001(\t\022\023\n\006filte"
+          + "r\030\002 \001(\tH\000\210\001\001\022\026\n\tpage_size\030\003 \001(\005H\001\210\001\001\022\027\n\n"
+          + "page_token\030\004 \001(\tH\002\210\001\001B\t\n\007_filterB\014\n\n_pag"
+          + "e_sizeB\r\n\013_page_token\"A\n\026GetCloudInstanc"
+          + "eAction\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_"
+          + "id\030\002 \001(\t\"\203\001\n!ListCloudDatabaseOperations"
+          + "Action\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_i"
+          + "d\030\002 \001(\t\022\016\n\006filter\030\003 \001(\t\022\021\n\tpage_size\030\004 \001"
+          + "(\005\022\022\n\npage_token\030\005 \001(\t\"\341\001\n\032RestoreCloudD"
+          + "atabaseAction\022\022\n\nproject_id\030\001 \001(\t\022\032\n\022bac"
+          + "kup_instance_id\030\002 \001(\t\022\021\n\tbackup_id\030\003 \001(\t"
+          + "\022\034\n\024database_instance_id\030\004 \001(\t\022\023\n\013databa"
+          + "se_id\030\005 \001(\t\022M\n\021encryption_config\030\007 \001(\01322"
+          + ".google.spanner.admin.database.v1.Encryp"
+          + "tionConfig\"V\n\026GetCloudDatabaseAction\022\022\n\n"
+          + "project_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\023\n"
+          + "\013database_id\030\003 \001(\t\"\267\002\n\027CreateCloudBackup"
+          + "Action\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_i"
+          + "d\030\002 \001(\t\022\021\n\tbackup_id\030\003 \001(\t\022\023\n\013database_i"
+          + "d\030\004 \001(\t\0224\n\013expire_time\030\005 \001(\0132\032.google.pr"
+          + "otobuf.TimestampB\003\340A\003\0225\n\014version_time\030\006 "
+          + "\001(\0132\032.google.protobuf.TimestampH\000\210\001\001\022M\n\021"
+          + "encryption_config\030\007 \001(\01322.google.spanner"
+          + ".admin.database.v1.EncryptionConfigB\017\n\r_"
+          + "version_time\"\240\001\n\025CopyCloudBackupAction\022\022"
+          + "\n\nproject_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022"
+          + "\021\n\tbackup_id\030\003 \001(\t\022\025\n\rsource_backup\030\004 \001("
+          + "\t\0224\n\013expire_time\030\005 \001(\0132\032.google.protobuf"
+          + ".TimestampB\003\340A\003\"R\n\024GetCloudBackupAction\022"
+          + "\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t"
+          + "\022\021\n\tbackup_id\030\003 \001(\t\"\213\001\n\027UpdateCloudBacku"
+          + "pAction\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_"
+          + "id\030\002 \001(\t\022\021\n\tbackup_id\030\003 \001(\t\0224\n\013expire_ti"
+          + "me\030\004 \001(\0132\032.google.protobuf.TimestampB\003\340A"
+          + "\003\"U\n\027DeleteCloudBackupAction\022\022\n\nproject_"
+          + "id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\021\n\tbackup_"
+          + "id\030\003 \001(\t\"x\n\026ListCloudBackupsAction\022\022\n\npr"
+          + "oject_id\030\001 \001(\t\022\023\n\013instance_id\030\002 \001(\t\022\016\n\006f"
+          + "ilter\030\003 \001(\t\022\021\n\tpage_size\030\004 \001(\005\022\022\n\npage_t"
+          + "oken\030\005 \001(\t\"\201\001\n\037ListCloudBackupOperations"
+          + "Action\022\022\n\nproject_id\030\001 \001(\t\022\023\n\013instance_i"
+          + "d\030\002 \001(\t\022\016\n\006filter\030\003 \001(\t\022\021\n\tpage_size\030\004 \001"
+          + "(\005\022\022\n\npage_token\030\005 \001(\t\"\'\n\022GetOperationAc"
+          + "tion\022\021\n\toperation\030\001 \001(\t\"I\n\027QueryCancella"
+          + "tionAction\022\030\n\020long_running_sql\030\001 \001(\t\022\024\n\014"
+          + "cancel_query\030\002 \001(\t\"*\n\025CancelOperationAct"
+          + "ion\022\021\n\toperation\030\001 \001(\t\"\210\001\n\033StartBatchTra"
+          + "nsactionAction\0224\n\016batch_txn_time\030\001 \001(\0132\032"
+          + ".google.protobuf.TimestampH\000\022\r\n\003tid\030\002 \001("
+          + "\014H\000\022\033\n\023cloud_database_role\030\003 \001(\tB\007\n\005para"
+          + "m\".\n\033CloseBatchTransactionAction\022\017\n\007clea"
+          + "nup\030\001 \001(\010\"\227\002\n!GenerateDbPartitionsForRea"
+          + "dAction\0224\n\004read\030\001 \001(\0132&.google.spanner.e"
+          + "xecutor.v1.ReadAction\0228\n\005table\030\002 \003(\0132).g"
+          + "oogle.spanner.executor.v1.TableMetadata\022"
+          + "(\n\033desired_bytes_per_partition\030\003 \001(\003H\000\210\001"
+          + "\001\022 \n\023max_partition_count\030\004 \001(\003H\001\210\001\001B\036\n\034_"
+          + "desired_bytes_per_partitionB\026\n\024_max_part"
+          + "ition_count\"\246\001\n\"GenerateDbPartitionsForQ"
+          + "ueryAction\0226\n\005query\030\001 \001(\0132\'.google.spann"
+          + "er.executor.v1.QueryAction\022(\n\033desired_by"
+          + "tes_per_partition\030\002 \001(\003H\000\210\001\001B\036\n\034_desired"
+          + "_bytes_per_partition\"x\n\016BatchPartition\022\021"
+          + "\n\tpartition\030\001 \001(\014\022\027\n\017partition_token\030\002 \001"
+          + "(\014\022\022\n\005table\030\003 \001(\tH\000\210\001\001\022\022\n\005index\030\004 \001(\tH\001\210"
+          + "\001\001B\010\n\006_tableB\010\n\006_index\"W\n\026ExecutePartiti"
+          + "onAction\022=\n\tpartition\030\001 \001(\0132*.google.spa"
+          + "nner.executor.v1.BatchPartition\"\216\003\n\030Exec"
+          + "uteChangeStreamQuery\022\014\n\004name\030\001 \001(\t\022.\n\nst"
+          + "art_time\030\002 \001(\0132\032.google.protobuf.Timesta"
+          + "mp\0221\n\010end_time\030\003 \001(\0132\032.google.protobuf.T"
+          + "imestampH\000\210\001\001\022\034\n\017partition_token\030\004 \001(\tH\001"
+          + "\210\001\001\022\024\n\014read_options\030\005 \003(\t\022#\n\026heartbeat_m"
+          + "illiseconds\030\006 \001(\005H\002\210\001\001\022\035\n\020deadline_secon"
+          + "ds\030\007 \001(\003H\003\210\001\001\022 \n\023cloud_database_role\030\010 \001"
+          + "(\tH\004\210\001\001B\013\n\t_end_timeB\022\n\020_partition_token"
+          + "B\031\n\027_heartbeat_millisecondsB\023\n\021_deadline"
+          + "_secondsB\026\n\024_cloud_database_role\"\242\005\n\024Spa"
+          + "nnerActionOutcome\022\'\n\006status\030\001 \001(\0132\022.goog"
+          + "le.rpc.StatusH\000\210\001\001\0224\n\013commit_time\030\002 \001(\0132"
+          + "\032.google.protobuf.TimestampH\001\210\001\001\022@\n\013read"
+          + "_result\030\003 \001(\0132&.google.spanner.executor."
+          + "v1.ReadResultH\002\210\001\001\022B\n\014query_result\030\004 \001(\013"
+          + "2\'.google.spanner.executor.v1.QueryResul"
+          + "tH\003\210\001\001\022\"\n\025transaction_restarted\030\005 \001(\010H\004\210"
+          + "\001\001\022\031\n\014batch_txn_id\030\006 \001(\014H\005\210\001\001\022@\n\014db_part"
+          + "ition\030\007 \003(\0132*.google.spanner.executor.v1"
+          + ".BatchPartition\022B\n\014admin_result\030\010 \001(\0132\'."
+          + "google.spanner.executor.v1.AdminResultH\006"
+          + "\210\001\001\022\031\n\021dml_rows_modified\030\t \003(\003\022M\n\025change"
+          + "_stream_records\030\n \003(\0132..google.spanner.e"
+          + "xecutor.v1.ChangeStreamRecordB\t\n\007_status"
+          + "B\016\n\014_commit_timeB\016\n\014_read_resultB\017\n\r_que"
+          + "ry_resultB\030\n\026_transaction_restartedB\017\n\r_"
+          + "batch_txn_idB\017\n\r_admin_result\"\231\003\n\013AdminR"
+          + "esult\022H\n\017backup_response\030\001 \001(\0132/.google."
+          + "spanner.executor.v1.CloudBackupResponse\022"
+          + "I\n\022operation_response\030\002 \001(\0132-.google.spa"
+          + "nner.executor.v1.OperationResponse\022L\n\021da"
+          + "tabase_response\030\003 \001(\01321.google.spanner.e"
+          + "xecutor.v1.CloudDatabaseResponse\022L\n\021inst"
+          + "ance_response\030\004 \001(\01321.google.spanner.exe"
+          + "cutor.v1.CloudInstanceResponse\022Y\n\030instan"
+          + "ce_config_response\030\005 \001(\01327.google.spanne"
+          + "r.executor.v1.CloudInstanceConfigRespons"
+          + "e\"\353\001\n\023CloudBackupResponse\022@\n\016listed_back"
+          + "ups\030\001 \003(\0132(.google.spanner.admin.databas"
+          + "e.v1.Backup\022?\n\030listed_backup_operations\030"
+          + "\002 \003(\0132\035.google.longrunning.Operation\022\027\n\017"
+          + "next_page_token\030\003 \001(\t\0228\n\006backup\030\004 \001(\0132(."
+          + "google.spanner.admin.database.v1.Backup\""
+          + "\230\001\n\021OperationResponse\0228\n\021listed_operatio"
+          + "ns\030\001 \003(\0132\035.google.longrunning.Operation\022"
+          + "\027\n\017next_page_token\030\002 \001(\t\0220\n\toperation\030\003 "
+          + "\001(\0132\035.google.longrunning.Operation\"\264\001\n\025C"
+          + "loudInstanceResponse\022D\n\020listed_instances"
+          + "\030\001 \003(\0132*.google.spanner.admin.instance.v"
+          + "1.Instance\022\027\n\017next_page_token\030\002 \001(\t\022<\n\010i"
+          + "nstance\030\003 \001(\0132*.google.spanner.admin.ins"
+          + "tance.v1.Instance\"\324\001\n\033CloudInstanceConfi"
+          + "gResponse\022Q\n\027listed_instance_configs\030\001 \003"
+          + "(\01320.google.spanner.admin.instance.v1.In"
+          + "stanceConfig\022\027\n\017next_page_token\030\002 \001(\t\022I\n"
+          + "\017instance_config\030\003 \001(\01320.google.spanner."
+          + "admin.instance.v1.InstanceConfig\"\367\001\n\025Clo"
+          + "udDatabaseResponse\022D\n\020listed_databases\030\001"
+          + " \003(\0132*.google.spanner.admin.database.v1.",
+      "Database\022A\n\032listed_database_operations\030\002"
+          + " \003(\0132\035.google.longrunning.Operation\022\027\n\017n"
+          + "ext_page_token\030\003 \001(\t\022<\n\010database\030\004 \001(\0132*"
+          + ".google.spanner.admin.database.v1.Databa"
+          + "se\"\336\001\n\nReadResult\022\r\n\005table\030\001 \001(\t\022\022\n\005inde"
+          + "x\030\002 \001(\tH\000\210\001\001\022\032\n\rrequest_index\030\003 \001(\005H\001\210\001\001"
+          + "\0222\n\003row\030\004 \003(\0132%.google.spanner.executor."
+          + "v1.ValueList\0224\n\010row_type\030\005 \001(\0132\035.google."
+          + "spanner.v1.StructTypeH\002\210\001\001B\010\n\006_indexB\020\n\016"
+          + "_request_indexB\013\n\t_row_type\"\204\001\n\013QueryRes"
+          + "ult\0222\n\003row\030\001 \003(\0132%.google.spanner.execut"
+          + "or.v1.ValueList\0224\n\010row_type\030\002 \001(\0132\035.goog"
+          + "le.spanner.v1.StructTypeH\000\210\001\001B\013\n\t_row_ty"
+          + "pe\"\363\001\n\022ChangeStreamRecord\022C\n\013data_change"
+          + "\030\001 \001(\0132,.google.spanner.executor.v1.Data"
+          + "ChangeRecordH\000\022L\n\017child_partition\030\002 \001(\0132"
+          + "1.google.spanner.executor.v1.ChildPartit"
+          + "ionsRecordH\000\022@\n\theartbeat\030\003 \001(\0132+.google"
+          + ".spanner.executor.v1.HeartbeatRecordH\000B\010"
+          + "\n\006record\"\330\004\n\020DataChangeRecord\022/\n\013commit_"
+          + "time\030\001 \001(\0132\032.google.protobuf.Timestamp\022\027"
+          + "\n\017record_sequence\030\002 \001(\t\022\026\n\016transaction_i"
+          + "d\030\003 \001(\t\022\026\n\016is_last_record\030\004 \001(\010\022\r\n\005table"
+          + "\030\005 \001(\t\022M\n\014column_types\030\006 \003(\01327.google.sp"
+          + "anner.executor.v1.DataChangeRecord.Colum"
+          + "nType\022>\n\004mods\030\007 \003(\01320.google.spanner.exe"
+          + "cutor.v1.DataChangeRecord.Mod\022\020\n\010mod_typ"
+          + "e\030\010 \001(\t\022\032\n\022value_capture_type\030\t \001(\t\022\024\n\014r"
+          + "ecord_count\030\n \001(\003\022\027\n\017partition_count\030\013 \001"
+          + "(\003\022\027\n\017transaction_tag\030\014 \001(\t\022\035\n\025is_system"
+          + "_transaction\030\r \001(\010\032Z\n\nColumnType\022\014\n\004name"
+          + "\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\022\026\n\016is_primary_key\030\003"
+          + " \001(\010\022\030\n\020ordinal_position\030\004 \001(\003\032;\n\003Mod\022\014\n"
+          + "\004keys\030\001 \001(\t\022\022\n\nnew_values\030\002 \001(\t\022\022\n\nold_v"
+          + "alues\030\003 \001(\t\"\376\001\n\025ChildPartitionsRecord\022.\n"
+          + "\nstart_time\030\001 \001(\0132\032.google.protobuf.Time"
+          + "stamp\022\027\n\017record_sequence\030\002 \001(\t\022Z\n\020child_"
+          + "partitions\030\003 \003(\0132@.google.spanner.execut"
+          + "or.v1.ChildPartitionsRecord.ChildPartiti"
+          + "on\032@\n\016ChildPartition\022\r\n\005token\030\001 \001(\t\022\037\n\027p"
+          + "arent_partition_tokens\030\002 \003(\t\"E\n\017Heartbea"
+          + "tRecord\0222\n\016heartbeat_time\030\001 \001(\0132\032.google"
+          + ".protobuf.Timestamp\"^\n\016SpannerOptions\022L\n"
+          + "\024session_pool_options\030\001 \001(\0132..google.spa"
+          + "nner.executor.v1.SessionPoolOptions\"-\n\022S"
+          + "essionPoolOptions\022\027\n\017use_multiplexed\030\001 \001"
+          + "(\0102\314\001\n\024SpannerExecutorProxy\022\211\001\n\022ExecuteA"
+          + "ctionAsync\0225.google.spanner.executor.v1."
+          + "SpannerAsyncActionRequest\0326.google.spann"
+          + "er.executor.v1.SpannerAsyncActionRespons"
+          + "e\"\000(\0010\001\032(\312A%spanner-cloud-executor.googl"
+          + "eapis.comBx\n\036com.google.spanner.executor"
+          + ".v1B\022CloudExecutorProtoP\001Z@cloud.google."
+          + "com/go/spanner/executor/apiv1/executorpb"
+          + ";executorpbb\006proto3"
     };
     descriptor =
         com.google.protobuf.Descriptors.FileDescriptor.internalBuildGeneratedFileFrom(
@@ -873,6 +881,7 @@ public final class CloudExecutorProto {
               "GenerateDbPartitionsQuery",
               "ExecutePartition",
               "ExecuteChangeStreamQuery",
+              "QueryCancellation",
               "Action",
             });
     internal_static_google_spanner_executor_v1_ReadAction_descriptor =
@@ -1396,8 +1405,16 @@ public final class CloudExecutorProto {
             new java.lang.String[] {
               "Operation",
             });
-    internal_static_google_spanner_executor_v1_CancelOperationAction_descriptor =
+    internal_static_google_spanner_executor_v1_QueryCancellationAction_descriptor =
         getDescriptor().getMessageTypes().get(48);
+    internal_static_google_spanner_executor_v1_QueryCancellationAction_fieldAccessorTable =
+        new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+            internal_static_google_spanner_executor_v1_QueryCancellationAction_descriptor,
+            new java.lang.String[] {
+              "LongRunningSql", "CancelQuery",
+            });
+    internal_static_google_spanner_executor_v1_CancelOperationAction_descriptor =
+        getDescriptor().getMessageTypes().get(49);
     internal_static_google_spanner_executor_v1_CancelOperationAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CancelOperationAction_descriptor,
@@ -1405,7 +1422,7 @@ public final class CloudExecutorProto {
               "Operation",
             });
     internal_static_google_spanner_executor_v1_StartBatchTransactionAction_descriptor =
-        getDescriptor().getMessageTypes().get(49);
+        getDescriptor().getMessageTypes().get(50);
     internal_static_google_spanner_executor_v1_StartBatchTransactionAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_StartBatchTransactionAction_descriptor,
@@ -1413,7 +1430,7 @@ public final class CloudExecutorProto {
               "BatchTxnTime", "Tid", "CloudDatabaseRole", "Param",
             });
     internal_static_google_spanner_executor_v1_CloseBatchTransactionAction_descriptor =
-        getDescriptor().getMessageTypes().get(50);
+        getDescriptor().getMessageTypes().get(51);
     internal_static_google_spanner_executor_v1_CloseBatchTransactionAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloseBatchTransactionAction_descriptor,
@@ -1421,7 +1438,7 @@ public final class CloudExecutorProto {
               "Cleanup",
             });
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForReadAction_descriptor =
-        getDescriptor().getMessageTypes().get(51);
+        getDescriptor().getMessageTypes().get(52);
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForReadAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GenerateDbPartitionsForReadAction_descriptor,
@@ -1429,7 +1446,7 @@ public final class CloudExecutorProto {
               "Read", "Table", "DesiredBytesPerPartition", "MaxPartitionCount",
             });
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForQueryAction_descriptor =
-        getDescriptor().getMessageTypes().get(52);
+        getDescriptor().getMessageTypes().get(53);
     internal_static_google_spanner_executor_v1_GenerateDbPartitionsForQueryAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_GenerateDbPartitionsForQueryAction_descriptor,
@@ -1437,7 +1454,7 @@ public final class CloudExecutorProto {
               "Query", "DesiredBytesPerPartition",
             });
     internal_static_google_spanner_executor_v1_BatchPartition_descriptor =
-        getDescriptor().getMessageTypes().get(53);
+        getDescriptor().getMessageTypes().get(54);
     internal_static_google_spanner_executor_v1_BatchPartition_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_BatchPartition_descriptor,
@@ -1445,7 +1462,7 @@ public final class CloudExecutorProto {
               "Partition", "PartitionToken", "Table", "Index",
             });
     internal_static_google_spanner_executor_v1_ExecutePartitionAction_descriptor =
-        getDescriptor().getMessageTypes().get(54);
+        getDescriptor().getMessageTypes().get(55);
     internal_static_google_spanner_executor_v1_ExecutePartitionAction_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ExecutePartitionAction_descriptor,
@@ -1453,7 +1470,7 @@ public final class CloudExecutorProto {
               "Partition",
             });
     internal_static_google_spanner_executor_v1_ExecuteChangeStreamQuery_descriptor =
-        getDescriptor().getMessageTypes().get(55);
+        getDescriptor().getMessageTypes().get(56);
     internal_static_google_spanner_executor_v1_ExecuteChangeStreamQuery_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ExecuteChangeStreamQuery_descriptor,
@@ -1468,7 +1485,7 @@ public final class CloudExecutorProto {
               "CloudDatabaseRole",
             });
     internal_static_google_spanner_executor_v1_SpannerActionOutcome_descriptor =
-        getDescriptor().getMessageTypes().get(56);
+        getDescriptor().getMessageTypes().get(57);
     internal_static_google_spanner_executor_v1_SpannerActionOutcome_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_SpannerActionOutcome_descriptor,
@@ -1485,7 +1502,7 @@ public final class CloudExecutorProto {
               "ChangeStreamRecords",
             });
     internal_static_google_spanner_executor_v1_AdminResult_descriptor =
-        getDescriptor().getMessageTypes().get(57);
+        getDescriptor().getMessageTypes().get(58);
     internal_static_google_spanner_executor_v1_AdminResult_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_AdminResult_descriptor,
@@ -1497,7 +1514,7 @@ public final class CloudExecutorProto {
               "InstanceConfigResponse",
             });
     internal_static_google_spanner_executor_v1_CloudBackupResponse_descriptor =
-        getDescriptor().getMessageTypes().get(58);
+        getDescriptor().getMessageTypes().get(59);
     internal_static_google_spanner_executor_v1_CloudBackupResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudBackupResponse_descriptor,
@@ -1505,7 +1522,7 @@ public final class CloudExecutorProto {
               "ListedBackups", "ListedBackupOperations", "NextPageToken", "Backup",
             });
     internal_static_google_spanner_executor_v1_OperationResponse_descriptor =
-        getDescriptor().getMessageTypes().get(59);
+        getDescriptor().getMessageTypes().get(60);
     internal_static_google_spanner_executor_v1_OperationResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_OperationResponse_descriptor,
@@ -1513,7 +1530,7 @@ public final class CloudExecutorProto {
               "ListedOperations", "NextPageToken", "Operation",
             });
     internal_static_google_spanner_executor_v1_CloudInstanceResponse_descriptor =
-        getDescriptor().getMessageTypes().get(60);
+        getDescriptor().getMessageTypes().get(61);
     internal_static_google_spanner_executor_v1_CloudInstanceResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudInstanceResponse_descriptor,
@@ -1521,7 +1538,7 @@ public final class CloudExecutorProto {
               "ListedInstances", "NextPageToken", "Instance",
             });
     internal_static_google_spanner_executor_v1_CloudInstanceConfigResponse_descriptor =
-        getDescriptor().getMessageTypes().get(61);
+        getDescriptor().getMessageTypes().get(62);
     internal_static_google_spanner_executor_v1_CloudInstanceConfigResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudInstanceConfigResponse_descriptor,
@@ -1529,7 +1546,7 @@ public final class CloudExecutorProto {
               "ListedInstanceConfigs", "NextPageToken", "InstanceConfig",
             });
     internal_static_google_spanner_executor_v1_CloudDatabaseResponse_descriptor =
-        getDescriptor().getMessageTypes().get(62);
+        getDescriptor().getMessageTypes().get(63);
     internal_static_google_spanner_executor_v1_CloudDatabaseResponse_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_CloudDatabaseResponse_descriptor,
@@ -1537,7 +1554,7 @@ public final class CloudExecutorProto {
               "ListedDatabases", "ListedDatabaseOperations", "NextPageToken", "Database",
             });
     internal_static_google_spanner_executor_v1_ReadResult_descriptor =
-        getDescriptor().getMessageTypes().get(63);
+        getDescriptor().getMessageTypes().get(64);
     internal_static_google_spanner_executor_v1_ReadResult_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ReadResult_descriptor,
@@ -1545,7 +1562,7 @@ public final class CloudExecutorProto {
               "Table", "Index", "RequestIndex", "Row", "RowType",
             });
     internal_static_google_spanner_executor_v1_QueryResult_descriptor =
-        getDescriptor().getMessageTypes().get(64);
+        getDescriptor().getMessageTypes().get(65);
     internal_static_google_spanner_executor_v1_QueryResult_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_QueryResult_descriptor,
@@ -1553,7 +1570,7 @@ public final class CloudExecutorProto {
               "Row", "RowType",
             });
     internal_static_google_spanner_executor_v1_ChangeStreamRecord_descriptor =
-        getDescriptor().getMessageTypes().get(65);
+        getDescriptor().getMessageTypes().get(66);
     internal_static_google_spanner_executor_v1_ChangeStreamRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ChangeStreamRecord_descriptor,
@@ -1561,7 +1578,7 @@ public final class CloudExecutorProto {
               "DataChange", "ChildPartition", "Heartbeat", "Record",
             });
     internal_static_google_spanner_executor_v1_DataChangeRecord_descriptor =
-        getDescriptor().getMessageTypes().get(66);
+        getDescriptor().getMessageTypes().get(67);
     internal_static_google_spanner_executor_v1_DataChangeRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_DataChangeRecord_descriptor,
@@ -1601,7 +1618,7 @@ public final class CloudExecutorProto {
               "Keys", "NewValues", "OldValues",
             });
     internal_static_google_spanner_executor_v1_ChildPartitionsRecord_descriptor =
-        getDescriptor().getMessageTypes().get(67);
+        getDescriptor().getMessageTypes().get(68);
     internal_static_google_spanner_executor_v1_ChildPartitionsRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_ChildPartitionsRecord_descriptor,
@@ -1619,7 +1636,7 @@ public final class CloudExecutorProto {
               "Token", "ParentPartitionTokens",
             });
     internal_static_google_spanner_executor_v1_HeartbeatRecord_descriptor =
-        getDescriptor().getMessageTypes().get(68);
+        getDescriptor().getMessageTypes().get(69);
     internal_static_google_spanner_executor_v1_HeartbeatRecord_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_HeartbeatRecord_descriptor,
@@ -1627,7 +1644,7 @@ public final class CloudExecutorProto {
               "HeartbeatTime",
             });
     internal_static_google_spanner_executor_v1_SpannerOptions_descriptor =
-        getDescriptor().getMessageTypes().get(69);
+        getDescriptor().getMessageTypes().get(70);
     internal_static_google_spanner_executor_v1_SpannerOptions_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_SpannerOptions_descriptor,
@@ -1635,7 +1652,7 @@ public final class CloudExecutorProto {
               "SessionPoolOptions",
             });
     internal_static_google_spanner_executor_v1_SessionPoolOptions_descriptor =
-        getDescriptor().getMessageTypes().get(70);
+        getDescriptor().getMessageTypes().get(71);
     internal_static_google_spanner_executor_v1_SessionPoolOptions_fieldAccessorTable =
         new com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
             internal_static_google_spanner_executor_v1_SessionPoolOptions_descriptor,

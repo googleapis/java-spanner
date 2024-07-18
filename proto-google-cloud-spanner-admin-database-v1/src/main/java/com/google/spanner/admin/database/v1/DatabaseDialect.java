@@ -44,7 +44,7 @@ public enum DatabaseDialect implements com.google.protobuf.ProtocolMessageEnum {
    *
    *
    * <pre>
-   * Google standard SQL.
+   * GoogleSQL supported SQL.
    * </pre>
    *
    * <code>GOOGLE_STANDARD_SQL = 1;</code>
@@ -78,7 +78,7 @@ public enum DatabaseDialect implements com.google.protobuf.ProtocolMessageEnum {
    *
    *
    * <pre>
-   * Google standard SQL.
+   * GoogleSQL supported SQL.
    * </pre>
    *
    * <code>GOOGLE_STANDARD_SQL = 1;</code>

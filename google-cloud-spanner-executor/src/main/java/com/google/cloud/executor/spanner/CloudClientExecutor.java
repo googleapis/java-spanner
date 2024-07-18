@@ -2665,6 +2665,7 @@ public class CloudClientExecutor extends CloudExecutor {
       executionContext.finishRead(Status.OK);
       return sender.finishWithOK();
     } catch (SpannerException e) {
+      LOGGER.log(Level.WARNING, "Encountered exception: ", e);
       Status status = toStatus(e);
       LOGGER.log(
           Level.WARNING,

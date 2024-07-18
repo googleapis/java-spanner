@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.admin.database.v1.stub;
 
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupSchedulesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
@@ -48,21 +49,27 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.Empty;
 import com.google.protobuf.TypeRegistry;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
+import com.google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
+import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesResponse;
 import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
@@ -74,6 +81,7 @@ import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
@@ -385,7 +393,8 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                             return fields;
                           })
                       .setAdditionalPaths(
-                          "/v1/{resource=projects/*/instances/*/backups/*}:setIamPolicy")
+                          "/v1/{resource=projects/*/instances/*/backups/*}:setIamPolicy",
+                          "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:setIamPolicy")
                       .setQueryParamsExtractor(
                           request -> {
                             Map<String, List<String>> fields = new HashMap<>();
@@ -424,7 +433,8 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                             return fields;
                           })
                       .setAdditionalPaths(
-                          "/v1/{resource=projects/*/instances/*/backups/*}:getIamPolicy")
+                          "/v1/{resource=projects/*/instances/*/backups/*}:getIamPolicy",
+                          "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:getIamPolicy")
                       .setQueryParamsExtractor(
                           request -> {
                             Map<String, List<String>> fields = new HashMap<>();
@@ -465,6 +475,7 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                           })
                       .setAdditionalPaths(
                           "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
+                          "/v1/{resource=projects/*/instances/*/databases/*/backupSchedules/*}:testIamPermissions",
                           "/v1/{resource=projects/*/instances/*/databases/*/databaseRoles/*}:testIamPermissions")
                       .setQueryParamsExtractor(
                           request -> {
@@ -868,6 +879,194 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       .build())
               .build();
 
+  private static final ApiMethodDescriptor<CreateBackupScheduleRequest, BackupSchedule>
+      createBackupScheduleMethodDescriptor =
+          ApiMethodDescriptor.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/CreateBackupSchedule")
+              .setHttpMethod("POST")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<CreateBackupScheduleRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*/instances/*/databases/*}/backupSchedules",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<CreateBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<CreateBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(
+                                fields, "backupScheduleId", request.getBackupScheduleId());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("backupSchedule", request.getBackupSchedule(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<BackupSchedule>newBuilder()
+                      .setDefaultInstance(BackupSchedule.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<GetBackupScheduleRequest, BackupSchedule>
+      getBackupScheduleMethodDescriptor =
+          ApiMethodDescriptor.<GetBackupScheduleRequest, BackupSchedule>newBuilder()
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/GetBackupSchedule")
+              .setHttpMethod("GET")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<GetBackupScheduleRequest>newBuilder()
+                      .setPath(
+                          "/v1/{name=projects/*/instances/*/databases/*/backupSchedules/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<GetBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "name", request.getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<GetBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<BackupSchedule>newBuilder()
+                      .setDefaultInstance(BackupSchedule.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<UpdateBackupScheduleRequest, BackupSchedule>
+      updateBackupScheduleMethodDescriptor =
+          ApiMethodDescriptor.<UpdateBackupScheduleRequest, BackupSchedule>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/UpdateBackupSchedule")
+              .setHttpMethod("PATCH")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<UpdateBackupScheduleRequest>newBuilder()
+                      .setPath(
+                          "/v1/{backupSchedule.name=projects/*/instances/*/databases/*/backupSchedules/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(
+                                fields,
+                                "backupSchedule.name",
+                                request.getBackupSchedule().getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<UpdateBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "updateMask", request.getUpdateMask());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("backupSchedule", request.getBackupSchedule(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<BackupSchedule>newBuilder()
+                      .setDefaultInstance(BackupSchedule.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<DeleteBackupScheduleRequest, Empty>
+      deleteBackupScheduleMethodDescriptor =
+          ApiMethodDescriptor.<DeleteBackupScheduleRequest, Empty>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/DeleteBackupSchedule")
+              .setHttpMethod("DELETE")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<DeleteBackupScheduleRequest>newBuilder()
+                      .setPath(
+                          "/v1/{name=projects/*/instances/*/databases/*/backupSchedules/*}",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<DeleteBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "name", request.getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<DeleteBackupScheduleRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Empty>newBuilder()
+                      .setDefaultInstance(Empty.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
+  private static final ApiMethodDescriptor<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+      listBackupSchedulesMethodDescriptor =
+          ApiMethodDescriptor.<ListBackupSchedulesRequest, ListBackupSchedulesResponse>newBuilder()
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/ListBackupSchedules")
+              .setHttpMethod("GET")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<ListBackupSchedulesRequest>newBuilder()
+                      .setPath(
+                          "/v1/{parent=projects/*/instances/*/databases/*}/backupSchedules",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<ListBackupSchedulesRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "parent", request.getParent());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<ListBackupSchedulesRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "pageSize", request.getPageSize());
+                            serializer.putQueryParam(fields, "pageToken", request.getPageToken());
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(request -> null)
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<ListBackupSchedulesResponse>newBuilder()
+                      .setDefaultInstance(ListBackupSchedulesResponse.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .build();
+
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable;
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
       listDatabasesPagedCallable;
@@ -914,6 +1113,16 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
       listDatabaseRolesCallable;
   private final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable;
+  private final UnaryCallable<CreateBackupScheduleRequest, BackupSchedule>
+      createBackupScheduleCallable;
+  private final UnaryCallable<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleCallable;
+  private final UnaryCallable<UpdateBackupScheduleRequest, BackupSchedule>
+      updateBackupScheduleCallable;
+  private final UnaryCallable<DeleteBackupScheduleRequest, Empty> deleteBackupScheduleCallable;
+  private final UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+      listBackupSchedulesCallable;
+  private final UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesPagedResponse>
+      listBackupSchedulesPagedCallable;
 
   private final BackgroundResource backgroundResources;
   private final HttpJsonOperationsStub httpJsonOperationsStub;
@@ -1265,6 +1474,68 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
                       return builder.build();
                     })
                 .build();
+    HttpJsonCallSettings<CreateBackupScheduleRequest, BackupSchedule>
+        createBackupScheduleTransportSettings =
+            HttpJsonCallSettings.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
+                .setMethodDescriptor(createBackupScheduleMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<GetBackupScheduleRequest, BackupSchedule>
+        getBackupScheduleTransportSettings =
+            HttpJsonCallSettings.<GetBackupScheduleRequest, BackupSchedule>newBuilder()
+                .setMethodDescriptor(getBackupScheduleMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("name", String.valueOf(request.getName()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<UpdateBackupScheduleRequest, BackupSchedule>
+        updateBackupScheduleTransportSettings =
+            HttpJsonCallSettings.<UpdateBackupScheduleRequest, BackupSchedule>newBuilder()
+                .setMethodDescriptor(updateBackupScheduleMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add(
+                          "backup_schedule.name",
+                          String.valueOf(request.getBackupSchedule().getName()));
+                      return builder.build();
+                    })
+                .build();
+    HttpJsonCallSettings<DeleteBackupScheduleRequest, Empty> deleteBackupScheduleTransportSettings =
+        HttpJsonCallSettings.<DeleteBackupScheduleRequest, Empty>newBuilder()
+            .setMethodDescriptor(deleteBackupScheduleMethodDescriptor)
+            .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
+            .build();
+    HttpJsonCallSettings<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+        listBackupSchedulesTransportSettings =
+            HttpJsonCallSettings
+                .<ListBackupSchedulesRequest, ListBackupSchedulesResponse>newBuilder()
+                .setMethodDescriptor(listBackupSchedulesMethodDescriptor)
+                .setTypeRegistry(typeRegistry)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
 
     this.listDatabasesCallable =
         callableFactory.createUnaryCallable(
@@ -1393,6 +1664,36 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
             listDatabaseRolesTransportSettings,
             settings.listDatabaseRolesSettings(),
             clientContext);
+    this.createBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            createBackupScheduleTransportSettings,
+            settings.createBackupScheduleSettings(),
+            clientContext);
+    this.getBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            getBackupScheduleTransportSettings,
+            settings.getBackupScheduleSettings(),
+            clientContext);
+    this.updateBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            updateBackupScheduleTransportSettings,
+            settings.updateBackupScheduleSettings(),
+            clientContext);
+    this.deleteBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            deleteBackupScheduleTransportSettings,
+            settings.deleteBackupScheduleSettings(),
+            clientContext);
+    this.listBackupSchedulesCallable =
+        callableFactory.createUnaryCallable(
+            listBackupSchedulesTransportSettings,
+            settings.listBackupSchedulesSettings(),
+            clientContext);
+    this.listBackupSchedulesPagedCallable =
+        callableFactory.createPagedCallable(
+            listBackupSchedulesTransportSettings,
+            settings.listBackupSchedulesSettings(),
+            clientContext);
 
     this.backgroundResources =
         new BackgroundResourceAggregation(clientContext.getBackgroundResources());
@@ -1421,6 +1722,11 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
     methodDescriptors.add(listDatabaseOperationsMethodDescriptor);
     methodDescriptors.add(listBackupOperationsMethodDescriptor);
     methodDescriptors.add(listDatabaseRolesMethodDescriptor);
+    methodDescriptors.add(createBackupScheduleMethodDescriptor);
+    methodDescriptors.add(getBackupScheduleMethodDescriptor);
+    methodDescriptors.add(updateBackupScheduleMethodDescriptor);
+    methodDescriptors.add(deleteBackupScheduleMethodDescriptor);
+    methodDescriptors.add(listBackupSchedulesMethodDescriptor);
     return methodDescriptors;
   }
 
@@ -1595,6 +1901,38 @@ public class HttpJsonDatabaseAdminStub extends DatabaseAdminStub {
   public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable() {
     return listDatabaseRolesPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<CreateBackupScheduleRequest, BackupSchedule> createBackupScheduleCallable() {
+    return createBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleCallable() {
+    return getBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<UpdateBackupScheduleRequest, BackupSchedule> updateBackupScheduleCallable() {
+    return updateBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<DeleteBackupScheduleRequest, Empty> deleteBackupScheduleCallable() {
+    return deleteBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+      listBackupSchedulesCallable() {
+    return listBackupSchedulesCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesPagedResponse>
+      listBackupSchedulesPagedCallable() {
+    return listBackupSchedulesPagedCallable;
   }
 
   @Override

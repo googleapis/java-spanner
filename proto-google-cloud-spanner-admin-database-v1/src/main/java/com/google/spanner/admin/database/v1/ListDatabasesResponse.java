@@ -23,7 +23,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The response for [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
+ * The response for
+ * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.ListDatabasesResponse}
@@ -144,8 +145,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-   * of the matching databases.
+   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+   * call to fetch more of the matching databases.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -169,8 +170,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-   * of the matching databases.
+   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+   * call to fetch more of the matching databases.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -365,7 +366,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
    *
    *
    * <pre>
-   * The response for [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
+   * The response for
+   * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.ListDatabasesResponse}
@@ -962,8 +964,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-     * of the matching databases.
+     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+     * call to fetch more of the matching databases.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -986,8 +988,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-     * of the matching databases.
+     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+     * call to fetch more of the matching databases.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1010,8 +1012,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-     * of the matching databases.
+     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+     * call to fetch more of the matching databases.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1033,8 +1035,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-     * of the matching databases.
+     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+     * call to fetch more of the matching databases.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1052,8 +1054,8 @@ public final class ListDatabasesResponse extends com.google.protobuf.GeneratedMe
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases] call to fetch more
-     * of the matching databases.
+     * [ListDatabases][google.spanner.admin.database.v1.DatabaseAdmin.ListDatabases]
+     * call to fetch more of the matching databases.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
