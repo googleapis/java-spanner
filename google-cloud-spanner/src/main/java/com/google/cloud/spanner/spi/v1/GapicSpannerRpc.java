@@ -59,7 +59,6 @@ import com.google.cloud.RetryHelper.RetryHelperException;
 import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
-import com.google.cloud.grpc.GcpManagedChannelOptions.GcpChannelPoolOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.AdminRequestsPerMinuteExceededException;
@@ -268,6 +267,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
   private final boolean leaderAwareRoutingEnabled;
+  private final int numChannels;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -319,6 +319,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
+    this.numChannels = options.getNumChannels();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -531,10 +532,6 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static GcpManagedChannelOptions grpcGcpOptionsWithMetrics(SpannerOptions options) {
     GcpManagedChannelOptions grpcGcpOptions =
         MoreObjects.firstNonNull(options.getGrpcGcpOptions(), new GcpManagedChannelOptions());
-    GcpChannelPoolOptions gcpChanelPoolOptions =
-        GcpChannelPoolOptions.newBuilder()
-            .setAffinityKeyLifetime(java.time.Duration.ofMinutes(60L))
-            .build();
     GcpMetricsOptions metricsOptions =
         MoreObjects.firstNonNull(
             grpcGcpOptions.getMetricsOptions(), GcpMetricsOptions.newBuilder().build());
@@ -548,7 +545,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
     return GcpManagedChannelOptions.newBuilder(grpcGcpOptions)
         .withMetricsOptions(metricsOptionsBuilder.build())
-        .withChannelPoolOptions(gcpChanelPoolOptions)
         .build();
   }
 
@@ -1961,13 +1957,13 @@ public class GapicSpannerRpc implements SpannerRpc {
       context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
 
       // Set channel affinity in gRPC-GCP. This is a no-op for GAX.
+      // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
+      int boundedChannelHint = Option.CHANNEL_HINT.getLong(options).intValue() % this.numChannels;
       context =
           context.withCallOptions(
               context
                   .getCallOptions()
-                  .withOption(
-                      GcpManagedChannel.AFFINITY_KEY,
-                      Option.CHANNEL_HINT.getLong(options).toString()));
+                  .withOption(GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.
