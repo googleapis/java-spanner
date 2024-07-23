@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY;
+import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 
@@ -26,14 +27,13 @@ import com.google.api.gax.core.GaxProperties;
 import com.google.auth.Credentials;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -43,16 +43,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-class BuiltInOpenTelemetryMetricsProvider {
+final class BuiltInOpenTelemetryMetricsProvider {
+
+  public static BuiltInOpenTelemetryMetricsProvider INSTANCE =
+      new BuiltInOpenTelemetryMetricsProvider();
 
   private static final Logger logger =
       Logger.getLogger(BuiltInOpenTelemetryMetricsProvider.class.getName());
 
+  private static String taskId;
+
   private OpenTelemetry openTelemetry;
 
-  OpenTelemetry getOpenTelemetry(String projectId, @Nullable Credentials credentials) {
+  private BuiltInOpenTelemetryMetricsProvider() {}
+
+  OpenTelemetry getOrCreateOpenTelemetry(String projectId, @Nullable Credentials credentials) {
     try {
-      return getOpenTelemetry(SpannerCloudMonitoringExporter.create(projectId, credentials));
+      if (this.openTelemetry == null) {
+        SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
+        BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
+            SpannerCloudMonitoringExporter.create(projectId, credentials), sdkMeterProviderBuilder);
+        this.openTelemetry =
+            OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderBuilder.build()).build();
+      }
+      return this.openTelemetry;
     } catch (IOException ex) {
       logger.log(
           Level.WARNING,
@@ -62,23 +76,14 @@ class BuiltInOpenTelemetryMetricsProvider {
     }
   }
 
-  @VisibleForTesting
-  OpenTelemetry getOpenTelemetry(MetricExporter metricExporter) {
-    if (this.openTelemetry == null) {
-      SdkMeterProviderBuilder sdkMeterProviderBuilder = SdkMeterProvider.builder();
-      BuiltInOpenTelemetryMetricsView.registerBuiltinMetrics(
-          metricExporter, sdkMeterProviderBuilder);
-      this.openTelemetry =
-          OpenTelemetrySdk.builder().setMeterProvider(sdkMeterProviderBuilder.build()).build();
-    }
-    return this.openTelemetry;
-  }
-
-  Map<String, String> getClientAttributes(String projectId, boolean canUseDirectPath) {
+  Map<String, String> getClientAttributes(String projectId, boolean isDirectPathChannelCreated) {
     Map<String, String> clientAttributes = new HashMap<>();
     clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
     clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
-    clientAttributes.put(DIRECT_PATH_ENABLED_KEY.getKey(), String.valueOf(canUseDirectPath));
+    // TODO: Replace this with real value.
+    clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
+    clientAttributes.put(
+        DIRECT_PATH_ENABLED_KEY.getKey(), String.valueOf(isDirectPathChannelCreated));
     clientAttributes.put(
         CLIENT_NAME_KEY.getKey(),
         "spanner-java/"
@@ -95,23 +100,47 @@ class BuiltInOpenTelemetryMetricsProvider {
   }
 
   /**
-   * In most cases this should look like ${UUID}@${hostname}. The hostname will be retrieved from
-   * the jvm name and fallback to the local hostname.
+   * Generates a unique identifier for the Client_uid metric field. The identifier is composed of a
+   * UUID, the process ID (PID), and the hostname.
+   *
+   * <p>For Java 9 and later, the PID is obtained using the ProcessHandle API. For Java 8, the PID
+   * is extracted from ManagementFactory.getRuntimeMXBean().getName().
+   *
+   * @return A unique identifier string in the format UUID@PID@hostname
    */
-  private String getDefaultTaskValue() {
-    // Something like '<pid>@<hostname>'
-    final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-    // If jvm doesn't have the expected format, fallback to the local hostname
-    if (jvmName.indexOf('@') < 1) {
-      String hostname = "localhost";
+  private static String getDefaultTaskValue() {
+    if (taskId == null) {
+      String identifier = UUID.randomUUID().toString();
+      String pid = getProcessId();
+
       try {
-        hostname = InetAddress.getLocalHost().getHostName();
+        String hostname = InetAddress.getLocalHost().getHostName();
+        taskId = identifier + "@" + pid + "@" + hostname;
       } catch (UnknownHostException e) {
         logger.log(Level.INFO, "Unable to get the hostname.", e);
+        taskId = identifier + "@" + pid + "@localhost";
       }
-      // Generate a random number and use the same format "random_number@hostname".
-      return UUID.randomUUID() + "@" + hostname;
     }
-    return UUID.randomUUID() + jvmName;
+    return taskId;
+  }
+
+  private static String getProcessId() {
+    try {
+      // Check if Java 9+ and ProcessHandle class is available
+      Class<?> processHandleClass = Class.forName("java.lang.ProcessHandle");
+      Method currentMethod = processHandleClass.getMethod("current");
+      Object processHandleInstance = currentMethod.invoke(null);
+      Method pidMethod = processHandleClass.getMethod("pid");
+      long pid = (long) pidMethod.invoke(processHandleInstance);
+      return Long.toString(pid);
+    } catch (Exception e) {
+      // Fallback to Java 8 method
+      final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+      if (jvmName != null && jvmName.contains("@")) {
+        return jvmName.split("@")[0];
+      } else {
+        return "unknown";
+      }
+    }
   }
 }

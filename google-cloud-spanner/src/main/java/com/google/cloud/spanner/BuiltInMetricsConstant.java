@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import com.google.api.core.InternalApi;
 import com.google.api.gax.tracing.OpenTelemetryMetricsRecorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,11 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@InternalApi
 public class BuiltInMetricsConstant {
 
-  static final String METER_NAME = "spanner.googleapis.com/internal/client";
+  public static final String METER_NAME = "spanner.googleapis.com/internal/client";
 
-  static final String GAX_METER_NAME = OpenTelemetryMetricsRecorder.GAX_METER_NAME;
+  public static final String GAX_METER_NAME = OpenTelemetryMetricsRecorder.GAX_METER_NAME;
 
   static final String OPERATION_LATENCIES_NAME = "operation_latencies";
   static final String ATTEMPT_LATENCIES_NAME = "attempt_latencies";
@@ -42,7 +44,7 @@ public class BuiltInMetricsConstant {
   static final String OPERATION_COUNT_NAME = "operation_count";
   static final String ATTEMPT_COUNT_NAME = "attempt_count";
 
-  static final Set<String> SPANNER_METRICS =
+  public static final Set<String> SPANNER_METRICS =
       ImmutableSet.of(
               OPERATION_LATENCIES_NAME,
               ATTEMPT_LATENCIES_NAME,
@@ -52,29 +54,29 @@ public class BuiltInMetricsConstant {
           .map(m -> METER_NAME + '/' + m)
           .collect(Collectors.toSet());
 
-  static final String SPANNER_RESOURCE_TYPE = "spanner_instance_client";
+  public static final String SPANNER_RESOURCE_TYPE = "spanner_instance_client";
 
-  static final AttributeKey<String> PROJECT_ID_KEY = AttributeKey.stringKey("project_id");
+  public static final AttributeKey<String> PROJECT_ID_KEY = AttributeKey.stringKey("project_id");
   public static final AttributeKey<String> INSTANCE_ID_KEY = AttributeKey.stringKey("instance_id");
-  static final AttributeKey<String> LOCATION_ID_KEY = AttributeKey.stringKey("location");
-  static final AttributeKey<String> INSTANCE_CONFIG_ID_KEY =
+  public static final AttributeKey<String> LOCATION_ID_KEY = AttributeKey.stringKey("location");
+  public static final AttributeKey<String> INSTANCE_CONFIG_ID_KEY =
       AttributeKey.stringKey("instance_config");
 
   // These metric labels will be promoted to the spanner monitored resource fields
-  static final Set<AttributeKey<String>> SPANNER_PROMOTED_RESOURCE_LABELS =
+  public static final Set<AttributeKey<String>> SPANNER_PROMOTED_RESOURCE_LABELS =
       ImmutableSet.of(PROJECT_ID_KEY, INSTANCE_ID_KEY, INSTANCE_CONFIG_ID_KEY, LOCATION_ID_KEY);
 
   public static final AttributeKey<String> DATABASE_KEY = AttributeKey.stringKey("database");
-  static final AttributeKey<String> CLIENT_UID_KEY = AttributeKey.stringKey("client_uid");
-  static final AttributeKey<String> CLIENT_NAME_KEY = AttributeKey.stringKey("client_name");
-  static final AttributeKey<String> METHOD_KEY = AttributeKey.stringKey("method");
-  static final AttributeKey<String> STATUS_KEY = AttributeKey.stringKey("status");
-  static final AttributeKey<String> DIRECT_PATH_ENABLED_KEY =
+  public static final AttributeKey<String> CLIENT_UID_KEY = AttributeKey.stringKey("client_uid");
+  public static final AttributeKey<String> CLIENT_NAME_KEY = AttributeKey.stringKey("client_name");
+  public static final AttributeKey<String> METHOD_KEY = AttributeKey.stringKey("method");
+  public static final AttributeKey<String> STATUS_KEY = AttributeKey.stringKey("status");
+  public static final AttributeKey<String> DIRECT_PATH_ENABLED_KEY =
       AttributeKey.stringKey("directpath_enabled");
-  static final AttributeKey<String> DIRECT_PATH_USED_KEY =
+  public static final AttributeKey<String> DIRECT_PATH_USED_KEY =
       AttributeKey.stringKey("directpath_used");
 
-  static final Set<AttributeKey> COMMON_ATTRIBUTES =
+  public static final Set<AttributeKey> COMMON_ATTRIBUTES =
       ImmutableSet.of(
           PROJECT_ID_KEY,
           INSTANCE_ID_KEY,
