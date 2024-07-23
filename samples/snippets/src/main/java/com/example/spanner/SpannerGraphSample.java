@@ -376,10 +376,10 @@ public class SpannerGraphSample {
         .run(transaction -> {
           String sql =
               "UPDATE Account SET is_blocked = true "
-              +  "WHERE id IN ("
+              +  "WHERE id IN {"
               +  "  GRAPH FinGraph"
               +  "  MATCH (a:Account WHERE a.id = 1)-[:TRANSFERS]->{1,2}(b:Account)"
-              +  "  RETURN b.id)";
+              +  "  RETURN b.id}";
           long rowCount = transaction.executeUpdate(Statement.of(sql));
           System.out.printf("%d record updated.\n", rowCount);
           return null;
