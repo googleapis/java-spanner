@@ -469,6 +469,10 @@ public interface SpannerRpc extends ServiceRpc {
   ApiFuture<CommitResponse> commitAsync(
       CommitRequest commitRequest, @Nullable Map<Option, ?> options);
 
+  default RetrySettings getCommitRetrySettings() {
+    return SpannerStubSettings.newBuilder().commitSettings().getRetrySettings();
+  }
+
   void rollback(RollbackRequest request, @Nullable Map<Option, ?> options) throws SpannerException;
 
   ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options);
