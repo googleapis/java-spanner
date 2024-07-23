@@ -372,7 +372,9 @@ public class GapicSpannerRpc implements SpannerRpc {
       TransportChannelProvider channelProvider =
           MoreObjects.firstNonNull(options.getChannelProvider(), defaultChannelProvider);
 
-      options.toBuilder().canUseDirectPath(defaultChannelProvider.canUseDirectPath()).build();
+      boolean isDirectPathChannelCreated =
+          defaultChannelProvider.canUseDirectPath()
+              && defaultChannelProvider.isDirectPathXdsEnabled();
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);
@@ -398,7 +400,8 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setTransportChannelProvider(channelProvider)
                     .setCredentialsProvider(credentialsProvider)
                     .setStreamWatchdogProvider(watchdogProvider)
-                    .setTracerFactory(options.getApiTracerFactory())
+                    .setTracerFactory(
+                        options.getApiTracerFactory(isDirectPathChannelCreated, false))
                     .build());
         this.readRetrySettings =
             options.getSpannerStubSettings().streamingReadSettings().getRetrySettings();
@@ -426,7 +429,7 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setTransportChannelProvider(channelProvider)
             .setCredentialsProvider(credentialsProvider)
             .setStreamWatchdogProvider(watchdogProvider)
-            .setTracerFactory(options.getApiTracerFactory())
+            .setTracerFactory(options.getApiTracerFactory(isDirectPathChannelCreated, false))
             .executeSqlSettings()
             .setRetrySettings(partitionedDmlRetrySettings);
         pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
@@ -453,7 +456,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
-                .setTracerFactory(options.getApiTracerFactory())
+                .setTracerFactory(options.getApiTracerFactory(isDirectPathChannelCreated, true))
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
@@ -464,7 +467,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setTransportChannelProvider(channelProvider)
                 .setCredentialsProvider(credentialsProvider)
                 .setStreamWatchdogProvider(watchdogProvider)
-                .setTracerFactory(options.getApiTracerFactory())
+                .setTracerFactory(options.getApiTracerFactory(isDirectPathChannelCreated, true))
                 .build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of

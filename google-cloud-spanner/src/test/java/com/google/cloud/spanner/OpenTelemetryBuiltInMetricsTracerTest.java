@@ -79,7 +79,8 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
   @BeforeClass
   public static void setup() {
     metricReader = InMemoryMetricReader.create();
-    BuiltInOpenTelemetryMetricsProvider provider = new BuiltInOpenTelemetryMetricsProvider();
+
+    BuiltInOpenTelemetryMetricsProvider provider = BuiltInOpenTelemetryMetricsProvider.INSTANCE;
 
     SdkMeterProviderBuilder meterProvider =
         SdkMeterProvider.builder().registerMetricReader(metricReader);
@@ -87,12 +88,12 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
     BuiltInMetricsConstant.getAllViews().forEach(meterProvider::registerView);
 
     openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
-    boolean canUseDirectPath = true;
-    attributes = provider.getClientAttributes("test-project", canUseDirectPath);
+    attributes = provider.getClientAttributes("test-project", true);
 
     expectedBaseAttributes =
         Attributes.builder()
             .put(BuiltInMetricsConstant.PROJECT_ID_KEY, "test-project")
+            .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
             .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "true")
             .put(BuiltInMetricsConstant.LOCATION_ID_KEY, "global")
             .put(

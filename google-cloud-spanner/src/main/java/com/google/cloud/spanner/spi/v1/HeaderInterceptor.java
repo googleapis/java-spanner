@@ -99,10 +99,12 @@ class HeaderInterceptor implements ClientInterceptor {
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = databaseName + method.getFullMethodName();
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
-          CompositeTracer compositeTracer = (CompositeTracer) callOptions.getOption(TRACER_KEY);
+          if (callOptions.getOption(TRACER_KEY) instanceof CompositeTracer) {
+            CompositeTracer compositeTracer = (CompositeTracer) callOptions.getOption(TRACER_KEY);
+            addBuiltInMetricAttributes(compositeTracer, databaseName);
+          }
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
-          addBuiltInMetricAttributes(compositeTracer, databaseName);
           super.start(
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override

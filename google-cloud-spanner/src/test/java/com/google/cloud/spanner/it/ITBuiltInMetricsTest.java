@@ -23,6 +23,7 @@ import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTestEnv;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.Statement;
 import com.google.common.base.Stopwatch;
 import com.google.monitoring.v3.ListTimeSeriesRequest;
@@ -36,13 +37,17 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.threeten.bp.Duration;
 import org.threeten.bp.Instant;
 
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
+@Ignore("Built-in Metrics are not GA'ed yet. Enable this test once the metrics are released")
 public class ITBuiltInMetricsTest {
 
   private static Database db;
@@ -64,7 +69,7 @@ public class ITBuiltInMetricsTest {
   public void testBuiltinMetricsWithDefaultOTEL() throws Exception {
     // This stopwatch is used for to limit fetching of metric data in verifyMetrics
     Stopwatch metricsPollingStopwatch = Stopwatch.createStarted();
-    Instant start = Instant.now().minus(Duration.ofMinutes(10));
+    Instant start = Instant.now().minus(Duration.ofMinutes(2));
     Instant end = Instant.now().plus(Duration.ofMinutes(3));
     ProjectName name = ProjectName.of(env.getTestHelper().getOptions().getProjectId());
 
@@ -104,7 +109,7 @@ public class ITBuiltInMetricsTest {
 
     ListTimeSeriesResponse response = metricClient.listTimeSeriesCallable().call(request);
     while (response.getTimeSeriesCount() == 0
-        && metricsPollingStopwatch.elapsed(TimeUnit.MINUTES) < 10) {
+        && metricsPollingStopwatch.elapsed(TimeUnit.MINUTES) < 3) {
       // Call listTimeSeries every minute
       Thread.sleep(Duration.ofMinutes(1).toMillis());
       response = metricClient.listTimeSeriesCallable().call(request);

@@ -20,12 +20,12 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 
-public class BuiltInOpenTelemetryMetricsView {
+class BuiltInOpenTelemetryMetricsView {
 
   private BuiltInOpenTelemetryMetricsView() {}
 
   /** Register built-in metrics on the {@link SdkMeterProviderBuilder} with credentials. */
-  public static void registerBuiltinMetrics(
+  static void registerBuiltinMetrics(
       MetricExporter metricExporter, SdkMeterProviderBuilder builder) {
     BuiltInMetricsConstant.getAllViews().forEach(builder::registerView);
     builder.registerMetricReader(PeriodicMetricReader.create(metricExporter));
