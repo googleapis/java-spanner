@@ -94,6 +94,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -2112,6 +2113,13 @@ class SessionPool {
 
     @Override
     public SpannerException setLastException(SpannerException exception) {
+      if (exception.getErrorCode() == ErrorCode.DEADLINE_EXCEEDED) {
+        int channel = this.getChannel() % SessionPool.this.deadlineExceededRate.length;
+        int currentRate = SessionPool.this.deadlineExceededRate[channel].addEvent();
+        if (currentRate >= 1) {
+          SessionPool.this.channelBannedUntil[channel] = System.currentTimeMillis() + 30_000L;
+        }
+      }
       this.lastException = exception;
       return exception;
     }
@@ -2787,6 +2795,11 @@ class SessionPool {
   @GuardedBy("lock")
   private long transactionsPerSecond = 0L;
 
+  private final EventRate[] deadlineExceededRate;
+
+  @GuardedBy("lock")
+  private final long[] channelBannedUntil;
+
   @GuardedBy("lock")
   private long numLeakedSessionsRemoved = 0;
 
@@ -2952,6 +2965,12 @@ class SessionPool {
     this.executor = executor;
     this.sessionClient = sessionClient;
     this.numChannels = sessionClient.getSpanner().getOptions().getNumChannels();
+    this.deadlineExceededRate = new EventRate[this.numChannels];
+    for (int channel = 0; channel < this.numChannels; channel++) {
+      this.deadlineExceededRate[channel] =
+          new EventRate(/* windowSizeMillis = */ 10_000, /* maxSize = */ 100);
+    }
+    this.channelBannedUntil = new long[this.numChannels];
     this.clock = clock;
     this.initialReleasePosition = initialReleasePosition;
     this.poolMaintainer = new PoolMaintainer();
@@ -3239,7 +3258,11 @@ class SessionPool {
                 resourceNotFoundException.getMessage()),
             resourceNotFoundException);
       }
-      sess = sessions.poll();
+      if (hasBannedChannels()) {
+        sess = pollNonBannedSession();
+      } else {
+        sess = sessions.poll();
+      }
       if (sess == null) {
         span.addAnnotation("No session available");
         maybeCreateSession();
@@ -3250,6 +3273,34 @@ class SessionPool {
       }
       return checkoutSession(span, sess, waiter);
     }
+  }
+
+  private PooledSession pollNonBannedSession() {
+    if (this.sessions.isEmpty()) {
+      return null;
+    }
+    Optional<PooledSession> session =
+        this.sessions.stream()
+            .filter(s -> this.channelBannedUntil[s.getChannel() % this.numChannels] == 0)
+            .findFirst();
+    if (session.isPresent()) {
+      this.sessions.removeFirstOccurrence(session.get());
+      return session.get();
+    }
+    return null;
+  }
+
+  private boolean hasBannedChannels() {
+    int numBannedChannels = 0;
+    for (int index = 0; index < this.channelBannedUntil.length; index++) {
+      if (this.channelBannedUntil[index] > System.currentTimeMillis()) {
+        numBannedChannels++;
+      } else if (this.channelBannedUntil[index] > 0) {
+        this.channelBannedUntil[index] = 0;
+      }
+    }
+    // Also return false if all channels are banned.
+    return numBannedChannels > 0 && numBannedChannels < this.numChannels;
   }
 
   private PooledSessionFuture checkoutSession(
