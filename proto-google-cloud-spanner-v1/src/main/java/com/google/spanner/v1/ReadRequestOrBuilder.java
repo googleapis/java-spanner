@@ -421,4 +421,76 @@ public interface ReadRequestOrBuilder
    * @return The dataBoostEnabled.
    */
   boolean getDataBoostEnabled();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Order for the returned rows.
+   *
+   * By default, Spanner will return result rows in primary key order except for
+   * PartitionRead requests. For applications that do not require rows to be
+   * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+   * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for orderBy.
+   */
+  int getOrderByValue();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Order for the returned rows.
+   *
+   * By default, Spanner will return result rows in primary key order except for
+   * PartitionRead requests. For applications that do not require rows to be
+   * returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+   * `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+   * resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.OrderBy order_by = 16 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The orderBy.
+   */
+  com.google.spanner.v1.ReadRequest.OrderBy getOrderBy();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Lock Hint for the request, it can only be used with read-write
+   * transactions.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for lockHint.
+   */
+  int getLockHintValue();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. Lock Hint for the request, it can only be used with read-write
+   * transactions.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.v1.ReadRequest.LockHint lock_hint = 17 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The lockHint.
+   */
+  com.google.spanner.v1.ReadRequest.LockHint getLockHint();
 }

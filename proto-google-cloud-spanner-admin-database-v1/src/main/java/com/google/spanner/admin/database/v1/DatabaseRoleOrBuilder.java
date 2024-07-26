@@ -29,10 +29,8 @@ public interface DatabaseRoleOrBuilder
    *
    * <pre>
    * Required. The name of the database role. Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles/
-   * {role}`, where `&lt;role&gt;` is as specified in the `CREATE ROLE`
-   * DDL statement. This name can be passed to Get/Set IAMPolicy methods to
-   * identify the database role.
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles/&lt;role&gt;`
+   * where `&lt;role&gt;` is as specified in the `CREATE ROLE` DDL statement.
    * </pre>
    *
    * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -45,10 +43,8 @@ public interface DatabaseRoleOrBuilder
    *
    * <pre>
    * Required. The name of the database role. Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles/
-   * {role}`, where `&lt;role&gt;` is as specified in the `CREATE ROLE`
-   * DDL statement. This name can be passed to Get/Set IAMPolicy methods to
-   * identify the database role.
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles/&lt;role&gt;`
+   * where `&lt;role&gt;` is as specified in the `CREATE ROLE` DDL statement.
    * </pre>
    *
    * <code>string name = 1 [(.google.api.field_behavior) = REQUIRED];</code>

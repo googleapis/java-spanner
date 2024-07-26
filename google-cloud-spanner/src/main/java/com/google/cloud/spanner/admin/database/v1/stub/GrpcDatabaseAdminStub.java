@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.admin.database.v1.stub;
 
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupOperationsPagedResponse;
+import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupSchedulesPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListBackupsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseOperationsPagedResponse;
 import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.ListDatabaseRolesPagedResponse;
@@ -39,21 +40,27 @@ import com.google.longrunning.Operation;
 import com.google.longrunning.stub.GrpcOperationsStub;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupMetadata;
 import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupMetadata;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
+import com.google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
+import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesResponse;
 import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
@@ -65,6 +72,7 @@ import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseMetadata;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseMetadata;
@@ -277,6 +285,61 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                   ProtoUtils.marshaller(ListDatabaseRolesResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<CreateBackupScheduleRequest, BackupSchedule>
+      createBackupScheduleMethodDescriptor =
+          MethodDescriptor.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/CreateBackupSchedule")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(CreateBackupScheduleRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(BackupSchedule.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<GetBackupScheduleRequest, BackupSchedule>
+      getBackupScheduleMethodDescriptor =
+          MethodDescriptor.<GetBackupScheduleRequest, BackupSchedule>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.database.v1.DatabaseAdmin/GetBackupSchedule")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(GetBackupScheduleRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(BackupSchedule.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<UpdateBackupScheduleRequest, BackupSchedule>
+      updateBackupScheduleMethodDescriptor =
+          MethodDescriptor.<UpdateBackupScheduleRequest, BackupSchedule>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/UpdateBackupSchedule")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(UpdateBackupScheduleRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(BackupSchedule.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<DeleteBackupScheduleRequest, Empty>
+      deleteBackupScheduleMethodDescriptor =
+          MethodDescriptor.<DeleteBackupScheduleRequest, Empty>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/DeleteBackupSchedule")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(DeleteBackupScheduleRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Empty.getDefaultInstance()))
+              .build();
+
+  private static final MethodDescriptor<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+      listBackupSchedulesMethodDescriptor =
+          MethodDescriptor.<ListBackupSchedulesRequest, ListBackupSchedulesResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(
+                  "google.spanner.admin.database.v1.DatabaseAdmin/ListBackupSchedules")
+              .setRequestMarshaller(
+                  ProtoUtils.marshaller(ListBackupSchedulesRequest.getDefaultInstance()))
+              .setResponseMarshaller(
+                  ProtoUtils.marshaller(ListBackupSchedulesResponse.getDefaultInstance()))
+              .build();
+
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesResponse> listDatabasesCallable;
   private final UnaryCallable<ListDatabasesRequest, ListDatabasesPagedResponse>
       listDatabasesPagedCallable;
@@ -323,6 +386,16 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
       listDatabaseRolesCallable;
   private final UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable;
+  private final UnaryCallable<CreateBackupScheduleRequest, BackupSchedule>
+      createBackupScheduleCallable;
+  private final UnaryCallable<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleCallable;
+  private final UnaryCallable<UpdateBackupScheduleRequest, BackupSchedule>
+      updateBackupScheduleCallable;
+  private final UnaryCallable<DeleteBackupScheduleRequest, Empty> deleteBackupScheduleCallable;
+  private final UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+      listBackupSchedulesCallable;
+  private final UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesPagedResponse>
+      listBackupSchedulesPagedCallable;
 
   private final BackgroundResource backgroundResources;
   private final GrpcOperationsStub operationsStub;
@@ -572,6 +645,61 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
                       return builder.build();
                     })
                 .build();
+    GrpcCallSettings<CreateBackupScheduleRequest, BackupSchedule>
+        createBackupScheduleTransportSettings =
+            GrpcCallSettings.<CreateBackupScheduleRequest, BackupSchedule>newBuilder()
+                .setMethodDescriptor(createBackupScheduleMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
+    GrpcCallSettings<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleTransportSettings =
+        GrpcCallSettings.<GetBackupScheduleRequest, BackupSchedule>newBuilder()
+            .setMethodDescriptor(getBackupScheduleMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
+            .build();
+    GrpcCallSettings<UpdateBackupScheduleRequest, BackupSchedule>
+        updateBackupScheduleTransportSettings =
+            GrpcCallSettings.<UpdateBackupScheduleRequest, BackupSchedule>newBuilder()
+                .setMethodDescriptor(updateBackupScheduleMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add(
+                          "backup_schedule.name",
+                          String.valueOf(request.getBackupSchedule().getName()));
+                      return builder.build();
+                    })
+                .build();
+    GrpcCallSettings<DeleteBackupScheduleRequest, Empty> deleteBackupScheduleTransportSettings =
+        GrpcCallSettings.<DeleteBackupScheduleRequest, Empty>newBuilder()
+            .setMethodDescriptor(deleteBackupScheduleMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
+            .build();
+    GrpcCallSettings<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+        listBackupSchedulesTransportSettings =
+            GrpcCallSettings.<ListBackupSchedulesRequest, ListBackupSchedulesResponse>newBuilder()
+                .setMethodDescriptor(listBackupSchedulesMethodDescriptor)
+                .setParamsExtractor(
+                    request -> {
+                      RequestParamsBuilder builder = RequestParamsBuilder.create();
+                      builder.add("parent", String.valueOf(request.getParent()));
+                      return builder.build();
+                    })
+                .build();
 
     this.listDatabasesCallable =
         callableFactory.createUnaryCallable(
@@ -699,6 +827,36 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
         callableFactory.createPagedCallable(
             listDatabaseRolesTransportSettings,
             settings.listDatabaseRolesSettings(),
+            clientContext);
+    this.createBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            createBackupScheduleTransportSettings,
+            settings.createBackupScheduleSettings(),
+            clientContext);
+    this.getBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            getBackupScheduleTransportSettings,
+            settings.getBackupScheduleSettings(),
+            clientContext);
+    this.updateBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            updateBackupScheduleTransportSettings,
+            settings.updateBackupScheduleSettings(),
+            clientContext);
+    this.deleteBackupScheduleCallable =
+        callableFactory.createUnaryCallable(
+            deleteBackupScheduleTransportSettings,
+            settings.deleteBackupScheduleSettings(),
+            clientContext);
+    this.listBackupSchedulesCallable =
+        callableFactory.createUnaryCallable(
+            listBackupSchedulesTransportSettings,
+            settings.listBackupSchedulesSettings(),
+            clientContext);
+    this.listBackupSchedulesPagedCallable =
+        callableFactory.createPagedCallable(
+            listBackupSchedulesTransportSettings,
+            settings.listBackupSchedulesSettings(),
             clientContext);
 
     this.backgroundResources =
@@ -876,6 +1034,38 @@ public class GrpcDatabaseAdminStub extends DatabaseAdminStub {
   public UnaryCallable<ListDatabaseRolesRequest, ListDatabaseRolesPagedResponse>
       listDatabaseRolesPagedCallable() {
     return listDatabaseRolesPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<CreateBackupScheduleRequest, BackupSchedule> createBackupScheduleCallable() {
+    return createBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<GetBackupScheduleRequest, BackupSchedule> getBackupScheduleCallable() {
+    return getBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<UpdateBackupScheduleRequest, BackupSchedule> updateBackupScheduleCallable() {
+    return updateBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<DeleteBackupScheduleRequest, Empty> deleteBackupScheduleCallable() {
+    return deleteBackupScheduleCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesResponse>
+      listBackupSchedulesCallable() {
+    return listBackupSchedulesCallable;
+  }
+
+  @Override
+  public UnaryCallable<ListBackupSchedulesRequest, ListBackupSchedulesPagedResponse>
+      listBackupSchedulesPagedCallable() {
+    return listBackupSchedulesPagedCallable;
   }
 
   @Override

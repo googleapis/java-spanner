@@ -240,6 +240,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final Set<Code> executeQueryRetryableCodes;
   private final RetrySettings readRetrySettings;
   private final Set<Code> readRetryableCodes;
+  private final RetrySettings commitRetrySettings;
   private final SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
@@ -398,6 +399,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
         this.executeQueryRetryableCodes =
             options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
+        this.commitRetrySettings =
+            options.getSpannerStubSettings().commitSettings().getRetrySettings();
         partitionedDmlRetrySettings =
             options
                 .getSpannerStubSettings()
@@ -508,6 +511,8 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.readRetryableCodes = null;
       this.executeQueryRetrySettings = null;
       this.executeQueryRetryableCodes = null;
+      this.commitRetrySettings =
+          SpannerStubSettings.newBuilder().commitSettings().getRetrySettings();
       this.partitionedDmlStub = null;
       this.databaseAdminStubSettings = null;
       this.instanceAdminStubSettings = null;
@@ -1799,6 +1804,11 @@ public class GapicSpannerRpc implements SpannerRpc {
   public CommitResponse commit(CommitRequest commitRequest, @Nullable Map<Option, ?> options)
       throws SpannerException {
     return get(commitAsync(commitRequest, options));
+  }
+
+  @Override
+  public RetrySettings getCommitRetrySettings() {
+    return commitRetrySettings;
   }
 
   @Override
