@@ -37,7 +37,8 @@ class CreateInstancePartitionSample {
     createInstancePartition(projectId, instanceId, instancePartitionId);
   }
 
-  static void createInstancePartition(String projectId, String instanceId, String instancePartitionId) {
+  static void createInstancePartition(
+      String projectId, String instanceId, String instancePartitionId) {
     // Set instance partition configuration.
     int nodeCount = 1;
     String displayName = "Descriptive name";
@@ -51,26 +52,28 @@ class CreateInstancePartitionSample {
             .build();
 
     try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService();
+            SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
         InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
 
       // Wait for the createInstancePartition operation to finish.
-      InstancePartition createdInstancePartition = instanceAdminClient.createInstancePartitionAsync(
-          CreateInstancePartitionRequest.newBuilder()
-              .setParent(InstanceName.of(projectId, instanceId).toString())
-              .setInstancePartitionId(instancePartitionId)
-              .setInstancePartition(instancePartition)
-              .build()).get();
-      System.out.printf("Instance partition %s was successfully created%n", createdInstancePartition.getName());
+      InstancePartition createdInstancePartition =
+          instanceAdminClient
+              .createInstancePartitionAsync(
+                  CreateInstancePartitionRequest.newBuilder()
+                      .setParent(InstanceName.of(projectId, instanceId).toString())
+                      .setInstancePartitionId(instancePartitionId)
+                      .setInstancePartition(instancePartition)
+                      .build())
+              .get();
+      System.out.printf(
+          "Instance partition %s was successfully created%n", createdInstancePartition.getName());
     } catch (ExecutionException e) {
       System.out.printf(
           "Error: Creating instance partition %s failed with error message %s%n",
           instancePartition.getName(), e.getMessage());
     } catch (InterruptedException e) {
-      System.out.println("Error: Waiting for createInstancePartition operation to finish was interrupted");
+      System.out.println(
+          "Error: Waiting for createInstancePartition operation to finish was interrupted");
     }
   }
 }
