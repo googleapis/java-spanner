@@ -83,16 +83,14 @@ public class SpannerGraphSample {
 
     final long id;
     final String name;
-    final String gender;
     final Timestamp birthday;
     final String country;
     final String city; 
 
-    Person(long id, String name, String gender,
+    Person(long id, String name,
            Timestamp birthday, String country, String city) {
       this.id = id;
       this.name = name;
-      this.gender = gender;
       this.birthday = birthday;
       this.country = country;
       this.city = city;
@@ -165,7 +163,6 @@ public class SpannerGraphSample {
                 "CREATE TABLE Person ("
                     + "  id               INT64 NOT NULL,"
                     + "  name             STRING(MAX),"
-                    + "  gender           STRING(40),"
                     + "  birthday         TIMESTAMP,"
                     + "  country          STRING(MAX),"
                     + "  city             STRING(MAX),"
@@ -231,9 +228,9 @@ public class SpannerGraphSample {
 
   static final List<Person> PERSONS =
       Arrays.asList(
-          new Person(1, "Alex", "male", Timestamp.parseTimestamp("1991-12-21T00:00:00.12Z"), "Australia"," Adelaide"),
-          new Person(2, "Dana", "female", Timestamp.parseTimestamp("1980-10-31T00:00:00.12Z"),"Czech_Republic", "Moravia"),
-          new Person(3, "Lee", "male", Timestamp.parseTimestamp("1986-12-07T00:00:00.12Z"), "India", "Kollam"));
+          new Person(1, "Alex", Timestamp.parseTimestamp("1991-12-21T00:00:00.12Z"), "Australia"," Adelaide"),
+          new Person(2, "Dana", Timestamp.parseTimestamp("1980-10-31T00:00:00.12Z"),"Czech_Republic", "Moravia"),
+          new Person(3, "Lee", Timestamp.parseTimestamp("1986-12-07T00:00:00.12Z"), "India", "Kollam"));
 
   static final List<Transfer> TRANSFERS =
       Arrays.asList(
@@ -274,8 +271,6 @@ public class SpannerGraphSample {
               .to(person.id)
               .set("name")
               .to(person.name)
-              .set("gender")
-              .to(person.gender)
               .set("birthday")
               .to(person.birthday)
               .set("country")
