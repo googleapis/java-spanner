@@ -2185,15 +2185,13 @@ class SessionPool {
 
     @Override
     public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+      return this.delegate.writeAtLeastOnce(mutations);
     }
 
     @Override
     public CommitResponse writeAtLeastOnceWithOptions(
         Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-      throw SpannerExceptionFactory.newSpannerException(
-          ErrorCode.UNIMPLEMENTED, "Unimplemented with Multiplexed Session");
+      return this.delegate.writeAtLeastOnceWithOptions(mutations, options);
     }
 
     @Override

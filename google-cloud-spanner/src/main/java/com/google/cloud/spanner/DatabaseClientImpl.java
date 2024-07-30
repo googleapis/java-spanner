@@ -37,24 +37,28 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
 
+  final boolean useMultiplexedSessionForBlindWrite;
+
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this("", pool, /* multiplexedSessionDatabaseClient = */ null, false, tracer);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, false, tracer);
   }
 
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
+      boolean useMultiplexedSessionForBlindWrite,
       TraceWrapper tracer) {
     this.clientId = clientId;
     this.pool = pool;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
+    this.useMultiplexedSessionForBlindWrite = useMultiplexedSessionForBlindWrite;
     this.tracer = tracer;
   }
 
@@ -110,6 +114,16 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public CommitResponse writeAtLeastOnceWithOptions(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
+    if (useMultiplexedSessionForBlindWrite) {
+      return getMultiplexedSession().writeAtLeastOnceWithOptions(mutations, options);
+    } else {
+      return writeAtLeastOnceWithSession(mutations, options);
+    }
+  }
+
+  public CommitResponse writeAtLeastOnceWithSession(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
