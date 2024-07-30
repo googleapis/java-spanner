@@ -41,12 +41,22 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, /* multiplexedSessionDatabaseClient = */ null, false, tracer);
+    this(
+        "",
+        pool,
+        /* multiplexedSessionDatabaseClient = */ null,
+        /*useMultiplexedSessionForBlindWrite = */ false,
+        tracer);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, false, tracer);
+    this(
+        clientId,
+        pool,
+        /* multiplexedSessionDatabaseClient = */ null,
+        /*useMultiplexedSessionForBlindWrite = */ false,
+        tracer);
   }
 
   DatabaseClientImpl(

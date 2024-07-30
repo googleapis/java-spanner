@@ -319,8 +319,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testWriteAtLeastOnceAborted() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
     // after the first call, so the retry should succeed.
     mockSpanner.setCommitExecutionTime(
@@ -338,8 +337,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testWriteAtLeastOnce() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     Timestamp timestamp =
         client.writeAtLeastOnce(
             Collections.singletonList(
@@ -358,8 +356,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testWriteAtLeastOnceWithCommitStats() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     CommitResponse response =
         client.writeAtLeastOnceWithOptions(
             Collections.singletonList(
@@ -381,8 +378,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testWriteAtLeastOnceWithOptions() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     client.writeAtLeastOnceWithOptions(
         Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
@@ -400,8 +396,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testWriteAtLeastOnceWithTagOptions() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     client.writeAtLeastOnceWithOptions(
         Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
@@ -420,8 +415,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
-    DatabaseClient client =
-        spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     client.writeAtLeastOnceWithOptions(
         Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),

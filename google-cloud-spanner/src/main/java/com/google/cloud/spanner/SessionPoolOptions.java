@@ -110,8 +110,10 @@ public class SessionPoolOptions {
         (useMultiplexedSessionFromEnvVariable != null)
             ? useMultiplexedSessionFromEnvVariable
             : builder.useMultiplexedSession;
-    // useMultiplexedSessionForBlindWrite priority => Environment var > private setter > client default
-    Boolean useMultiplexedSessionBlindWriteFromEnvVariable = getUseMultiplexedSessionBlindWriteFromEnvVariable();
+    // useMultiplexedSessionForBlindWrite priority => Environment var > private setter > client
+    // default
+    Boolean useMultiplexedSessionBlindWriteFromEnvVariable =
+        getUseMultiplexedSessionBlindWriteFromEnvVariable();
     this.useMultiplexedSessionForBlindWrite =
         (useMultiplexedSessionBlindWriteFromEnvVariable != null)
             ? useMultiplexedSessionBlindWriteFromEnvVariable

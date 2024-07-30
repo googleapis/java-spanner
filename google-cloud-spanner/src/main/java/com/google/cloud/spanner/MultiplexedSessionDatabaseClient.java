@@ -26,7 +26,6 @@ import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.MoreExecutors;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -366,6 +365,7 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     return createMultiplexedSessionTransaction(true)
         .writeAtLeastOnceWithOptions(mutations, options);
   }
+
   @Override
   public ReadContext singleUse() {
     return createMultiplexedSessionTransaction(true).singleUse();

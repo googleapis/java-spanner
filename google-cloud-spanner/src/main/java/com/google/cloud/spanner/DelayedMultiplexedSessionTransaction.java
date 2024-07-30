@@ -127,12 +127,13 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
     try {
       return ApiFutures.transform(
-          this.sessionFuture,
-          sessionReference ->
-              new MultiplexedSessionTransaction(
-                    client, span, sessionReference, NO_CHANNEL_HINT, false)
-                  .writeAtLeastOnceWithOptions(mutations, options),
-          MoreExecutors.directExecutor()).get();
+              this.sessionFuture,
+              sessionReference ->
+                  new MultiplexedSessionTransaction(
+                          client, span, sessionReference, NO_CHANNEL_HINT, false)
+                      .writeAtLeastOnceWithOptions(mutations, options),
+              MoreExecutors.directExecutor())
+          .get();
     } catch (ExecutionException executionException) {
       // Propagate the underlying exception as a RuntimeException (SpannerException is also a
       // RuntimeException).

@@ -302,7 +302,10 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 numMultiplexedSessionsReleased);
         pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient =
-            createDatabaseClient(clientId, pool, multiplexedSessionDatabaseClient,
+            createDatabaseClient(
+                clientId,
+                pool,
+                multiplexedSessionDatabaseClient,
                 useMultiplexedSessionForBlindWrite);
         dbClients.put(db, dbClient);
         return dbClient;
@@ -316,8 +319,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
       SessionPool pool,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
       boolean multiplexedSessionForBlindWrite) {
-    return new DatabaseClientImpl(clientId, pool, multiplexedSessionClient,
-        multiplexedSessionForBlindWrite, tracer);
+    return new DatabaseClientImpl(
+        clientId, pool, multiplexedSessionClient, multiplexedSessionForBlindWrite, tracer);
   }
 
   @Override
