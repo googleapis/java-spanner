@@ -76,6 +76,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
           com.google.protobuf.Internal.EnumLite,
           com.google.protobuf.AbstractMessage.InternalOneOfEnum {
     FULL_BACKUP_SPEC(7),
+    INCREMENTAL_BACKUP_SPEC(8),
     BACKUPTYPESPEC_NOT_SET(0);
     private final int value;
 
@@ -96,6 +97,8 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       switch (value) {
         case 7:
           return FULL_BACKUP_SPEC;
+        case 8:
+          return INCREMENTAL_BACKUP_SPEC;
         case 0:
           return BACKUPTYPESPEC_NOT_SET;
         default:
@@ -414,6 +417,61 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     return com.google.spanner.admin.database.v1.FullBackupSpec.getDefaultInstance();
   }
 
+  public static final int INCREMENTAL_BACKUP_SPEC_FIELD_NUMBER = 8;
+  /**
+   *
+   *
+   * <pre>
+   * The schedule creates incremental backup chains.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+   * </code>
+   *
+   * @return Whether the incrementalBackupSpec field is set.
+   */
+  @java.lang.Override
+  public boolean hasIncrementalBackupSpec() {
+    return backupTypeSpecCase_ == 8;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The schedule creates incremental backup chains.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+   * </code>
+   *
+   * @return The incrementalBackupSpec.
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.IncrementalBackupSpec getIncrementalBackupSpec() {
+    if (backupTypeSpecCase_ == 8) {
+      return (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_;
+    }
+    return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
+  }
+  /**
+   *
+   *
+   * <pre>
+   * The schedule creates incremental backup chains.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.spanner.admin.database.v1.IncrementalBackupSpecOrBuilder
+      getIncrementalBackupSpecOrBuilder() {
+    if (backupTypeSpecCase_ == 8) {
+      return (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_;
+    }
+    return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
+  }
+
   public static final int UPDATE_TIME_FIELD_NUMBER = 9;
   private com.google.protobuf.Timestamp updateTime_;
   /**
@@ -498,6 +556,10 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
     if (backupTypeSpecCase_ == 7) {
       output.writeMessage(7, (com.google.spanner.admin.database.v1.FullBackupSpec) backupTypeSpec_);
     }
+    if (backupTypeSpecCase_ == 8) {
+      output.writeMessage(
+          8, (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_);
+    }
     if (((bitField0_ & 0x00000008) != 0)) {
       output.writeMessage(9, getUpdateTime());
     }
@@ -526,6 +588,11 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       size +=
           com.google.protobuf.CodedOutputStream.computeMessageSize(
               7, (com.google.spanner.admin.database.v1.FullBackupSpec) backupTypeSpec_);
+    }
+    if (backupTypeSpecCase_ == 8) {
+      size +=
+          com.google.protobuf.CodedOutputStream.computeMessageSize(
+              8, (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_);
     }
     if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(9, getUpdateTime());
@@ -568,6 +635,9 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       case 7:
         if (!getFullBackupSpec().equals(other.getFullBackupSpec())) return false;
         break;
+      case 8:
+        if (!getIncrementalBackupSpec().equals(other.getIncrementalBackupSpec())) return false;
+        break;
       case 0:
       default:
     }
@@ -604,6 +674,10 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       case 7:
         hash = (37 * hash) + FULL_BACKUP_SPEC_FIELD_NUMBER;
         hash = (53 * hash) + getFullBackupSpec().hashCode();
+        break;
+      case 8:
+        hash = (37 * hash) + INCREMENTAL_BACKUP_SPEC_FIELD_NUMBER;
+        hash = (53 * hash) + getIncrementalBackupSpec().hashCode();
         break;
       case 0:
       default:
@@ -780,6 +854,9 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       if (fullBackupSpecBuilder_ != null) {
         fullBackupSpecBuilder_.clear();
       }
+      if (incrementalBackupSpecBuilder_ != null) {
+        incrementalBackupSpecBuilder_.clear();
+      }
       updateTime_ = null;
       if (updateTimeBuilder_ != null) {
         updateTimeBuilder_.dispose();
@@ -844,7 +921,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             encryptionConfigBuilder_ == null ? encryptionConfig_ : encryptionConfigBuilder_.build();
         to_bitField0_ |= 0x00000004;
       }
-      if (((from_bitField0_ & 0x00000020) != 0)) {
+      if (((from_bitField0_ & 0x00000040) != 0)) {
         result.updateTime_ = updateTimeBuilder_ == null ? updateTime_ : updateTimeBuilder_.build();
         to_bitField0_ |= 0x00000008;
       }
@@ -856,6 +933,9 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       result.backupTypeSpec_ = this.backupTypeSpec_;
       if (backupTypeSpecCase_ == 7 && fullBackupSpecBuilder_ != null) {
         result.backupTypeSpec_ = fullBackupSpecBuilder_.build();
+      }
+      if (backupTypeSpecCase_ == 8 && incrementalBackupSpecBuilder_ != null) {
+        result.backupTypeSpec_ = incrementalBackupSpecBuilder_.build();
       }
     }
 
@@ -928,6 +1008,11 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
             mergeFullBackupSpec(other.getFullBackupSpec());
             break;
           }
+        case INCREMENTAL_BACKUP_SPEC:
+          {
+            mergeIncrementalBackupSpec(other.getIncrementalBackupSpec());
+            break;
+          }
         case BACKUPTYPESPEC_NOT_SET:
           {
             break;
@@ -991,10 +1076,17 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
                 backupTypeSpecCase_ = 7;
                 break;
               } // case 58
+            case 66:
+              {
+                input.readMessage(
+                    getIncrementalBackupSpecFieldBuilder().getBuilder(), extensionRegistry);
+                backupTypeSpecCase_ = 8;
+                break;
+              } // case 66
             case 74:
               {
                 input.readMessage(getUpdateTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000020;
+                bitField0_ |= 0x00000040;
                 break;
               } // case 74
             default:
@@ -2051,6 +2143,231 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       return fullBackupSpecBuilder_;
     }
 
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.IncrementalBackupSpec,
+            com.google.spanner.admin.database.v1.IncrementalBackupSpec.Builder,
+            com.google.spanner.admin.database.v1.IncrementalBackupSpecOrBuilder>
+        incrementalBackupSpecBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     *
+     * @return Whether the incrementalBackupSpec field is set.
+     */
+    @java.lang.Override
+    public boolean hasIncrementalBackupSpec() {
+      return backupTypeSpecCase_ == 8;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     *
+     * @return The incrementalBackupSpec.
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.database.v1.IncrementalBackupSpec getIncrementalBackupSpec() {
+      if (incrementalBackupSpecBuilder_ == null) {
+        if (backupTypeSpecCase_ == 8) {
+          return (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_;
+        }
+        return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
+      } else {
+        if (backupTypeSpecCase_ == 8) {
+          return incrementalBackupSpecBuilder_.getMessage();
+        }
+        return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     */
+    public Builder setIncrementalBackupSpec(
+        com.google.spanner.admin.database.v1.IncrementalBackupSpec value) {
+      if (incrementalBackupSpecBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        backupTypeSpec_ = value;
+        onChanged();
+      } else {
+        incrementalBackupSpecBuilder_.setMessage(value);
+      }
+      backupTypeSpecCase_ = 8;
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     */
+    public Builder setIncrementalBackupSpec(
+        com.google.spanner.admin.database.v1.IncrementalBackupSpec.Builder builderForValue) {
+      if (incrementalBackupSpecBuilder_ == null) {
+        backupTypeSpec_ = builderForValue.build();
+        onChanged();
+      } else {
+        incrementalBackupSpecBuilder_.setMessage(builderForValue.build());
+      }
+      backupTypeSpecCase_ = 8;
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     */
+    public Builder mergeIncrementalBackupSpec(
+        com.google.spanner.admin.database.v1.IncrementalBackupSpec value) {
+      if (incrementalBackupSpecBuilder_ == null) {
+        if (backupTypeSpecCase_ == 8
+            && backupTypeSpec_
+                != com.google.spanner.admin.database.v1.IncrementalBackupSpec
+                    .getDefaultInstance()) {
+          backupTypeSpec_ =
+              com.google.spanner.admin.database.v1.IncrementalBackupSpec.newBuilder(
+                      (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_)
+                  .mergeFrom(value)
+                  .buildPartial();
+        } else {
+          backupTypeSpec_ = value;
+        }
+        onChanged();
+      } else {
+        if (backupTypeSpecCase_ == 8) {
+          incrementalBackupSpecBuilder_.mergeFrom(value);
+        } else {
+          incrementalBackupSpecBuilder_.setMessage(value);
+        }
+      }
+      backupTypeSpecCase_ = 8;
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     */
+    public Builder clearIncrementalBackupSpec() {
+      if (incrementalBackupSpecBuilder_ == null) {
+        if (backupTypeSpecCase_ == 8) {
+          backupTypeSpecCase_ = 0;
+          backupTypeSpec_ = null;
+          onChanged();
+        }
+      } else {
+        if (backupTypeSpecCase_ == 8) {
+          backupTypeSpecCase_ = 0;
+          backupTypeSpec_ = null;
+        }
+        incrementalBackupSpecBuilder_.clear();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     */
+    public com.google.spanner.admin.database.v1.IncrementalBackupSpec.Builder
+        getIncrementalBackupSpecBuilder() {
+      return getIncrementalBackupSpecFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     */
+    @java.lang.Override
+    public com.google.spanner.admin.database.v1.IncrementalBackupSpecOrBuilder
+        getIncrementalBackupSpecOrBuilder() {
+      if ((backupTypeSpecCase_ == 8) && (incrementalBackupSpecBuilder_ != null)) {
+        return incrementalBackupSpecBuilder_.getMessageOrBuilder();
+      } else {
+        if (backupTypeSpecCase_ == 8) {
+          return (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_;
+        }
+        return com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The schedule creates incremental backup chains.
+     * </pre>
+     *
+     * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.spanner.admin.database.v1.IncrementalBackupSpec,
+            com.google.spanner.admin.database.v1.IncrementalBackupSpec.Builder,
+            com.google.spanner.admin.database.v1.IncrementalBackupSpecOrBuilder>
+        getIncrementalBackupSpecFieldBuilder() {
+      if (incrementalBackupSpecBuilder_ == null) {
+        if (!(backupTypeSpecCase_ == 8)) {
+          backupTypeSpec_ =
+              com.google.spanner.admin.database.v1.IncrementalBackupSpec.getDefaultInstance();
+        }
+        incrementalBackupSpecBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.spanner.admin.database.v1.IncrementalBackupSpec,
+                com.google.spanner.admin.database.v1.IncrementalBackupSpec.Builder,
+                com.google.spanner.admin.database.v1.IncrementalBackupSpecOrBuilder>(
+                (com.google.spanner.admin.database.v1.IncrementalBackupSpec) backupTypeSpec_,
+                getParentForChildren(),
+                isClean());
+        backupTypeSpec_ = null;
+      }
+      backupTypeSpecCase_ = 8;
+      onChanged();
+      return incrementalBackupSpecBuilder_;
+    }
+
     private com.google.protobuf.Timestamp updateTime_;
     private com.google.protobuf.SingleFieldBuilderV3<
             com.google.protobuf.Timestamp,
@@ -2073,7 +2390,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the updateTime field is set.
      */
     public boolean hasUpdateTime() {
-      return ((bitField0_ & 0x00000020) != 0);
+      return ((bitField0_ & 0x00000040) != 0);
     }
     /**
      *
@@ -2121,7 +2438,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       } else {
         updateTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2144,7 +2461,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
       } else {
         updateTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -2163,7 +2480,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeUpdateTime(com.google.protobuf.Timestamp value) {
       if (updateTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00000020) != 0)
+        if (((bitField0_ & 0x00000040) != 0)
             && updateTime_ != null
             && updateTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getUpdateTimeBuilder().mergeFrom(value);
@@ -2174,7 +2491,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
         updateTimeBuilder_.mergeFrom(value);
       }
       if (updateTime_ != null) {
-        bitField0_ |= 0x00000020;
+        bitField0_ |= 0x00000040;
         onChanged();
       }
       return this;
@@ -2193,7 +2510,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearUpdateTime() {
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000040);
       updateTime_ = null;
       if (updateTimeBuilder_ != null) {
         updateTimeBuilder_.dispose();
@@ -2216,7 +2533,7 @@ public final class BackupSchedule extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getUpdateTimeBuilder() {
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000040;
       onChanged();
       return getUpdateTimeFieldBuilder().getBuilder();
     }

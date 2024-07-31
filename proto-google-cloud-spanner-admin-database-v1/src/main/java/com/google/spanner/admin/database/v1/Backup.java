@@ -47,6 +47,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     databaseDialect_ = 0;
     referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
     backupSchedules_ = com.google.protobuf.LazyStringArrayList.emptyList();
+    incrementalBackupChainId_ = "";
   }
 
   @java.lang.Override
@@ -563,6 +564,54 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
   @java.lang.Override
   public long getSizeBytes() {
     return sizeBytes_;
+  }
+
+  public static final int FREEABLE_SIZE_BYTES_FIELD_NUMBER = 15;
+  private long freeableSizeBytes_ = 0L;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. The number of bytes that will be freed by deleting this
+   * backup. This value will be zero if, for example, this backup is part of an
+   * incremental backup chain and younger backups in the chain require that we
+   * keep its data. For backups not in an incremental backup chain, this is
+   * always the size of the backup. This value may change if backups on the same
+   * chain get created, deleted or expired.
+   * </pre>
+   *
+   * <code>int64 freeable_size_bytes = 15 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The freeableSizeBytes.
+   */
+  @java.lang.Override
+  public long getFreeableSizeBytes() {
+    return freeableSizeBytes_;
+  }
+
+  public static final int EXCLUSIVE_SIZE_BYTES_FIELD_NUMBER = 16;
+  private long exclusiveSizeBytes_ = 0L;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For a backup in an incremental backup chain, this is the
+   * storage space needed to keep the data that has changed since the previous
+   * backup. For all other backups, this is always the size of the backup. This
+   * value may change if backups on the same chain get deleted or expired.
+   *
+   * This field can be used to calculate the total storage space used by a set
+   * of backups. For example, the total space used by all backups of a database
+   * can be computed by summing up this field.
+   * </pre>
+   *
+   * <code>int64 exclusive_size_bytes = 16 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The exclusiveSizeBytes.
+   */
+  @java.lang.Override
+  public long getExclusiveSizeBytes() {
+    return exclusiveSizeBytes_;
   }
 
   public static final int STATE_FIELD_NUMBER = 6;
@@ -1170,6 +1219,138 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     return backupSchedules_.getByteString(index);
   }
 
+  public static final int INCREMENTAL_BACKUP_CHAIN_ID_FIELD_NUMBER = 17;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object incrementalBackupChainId_ = "";
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Populated only for backups in an incremental backup chain.
+   * Backups share the same chain id if and only if they belong to the same
+   * incremental backup chain. Use this field to determine which backups are
+   * part of the same incremental backup chain. The ordering of backups in the
+   * chain can be determined by ordering the backup `version_time`.
+   * </pre>
+   *
+   * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The incrementalBackupChainId.
+   */
+  @java.lang.Override
+  public java.lang.String getIncrementalBackupChainId() {
+    java.lang.Object ref = incrementalBackupChainId_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      incrementalBackupChainId_ = s;
+      return s;
+    }
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Populated only for backups in an incremental backup chain.
+   * Backups share the same chain id if and only if they belong to the same
+   * incremental backup chain. Use this field to determine which backups are
+   * part of the same incremental backup chain. The ordering of backups in the
+   * chain can be determined by ordering the backup `version_time`.
+   * </pre>
+   *
+   * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The bytes for incrementalBackupChainId.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getIncrementalBackupChainIdBytes() {
+    java.lang.Object ref = incrementalBackupChainId_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      incrementalBackupChainId_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int OLDEST_VERSION_TIME_FIELD_NUMBER = 18;
+  private com.google.protobuf.Timestamp oldestVersionTime_;
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Data deleted at a time older than this is guaranteed not to be
+   * retained in order to support this backup. For a backup in an incremental
+   * backup chain, this is the version time of the oldest backup that exists or
+   * ever existed in the chain. For all other backups, this is the version time
+   * of the backup. This field can be used to understand what data is being
+   * retained by the backup system.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the oldestVersionTime field is set.
+   */
+  @java.lang.Override
+  public boolean hasOldestVersionTime() {
+    return ((bitField0_ & 0x00000020) != 0);
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Data deleted at a time older than this is guaranteed not to be
+   * retained in order to support this backup. For a backup in an incremental
+   * backup chain, this is the version time of the oldest backup that exists or
+   * ever existed in the chain. For all other backups, this is the version time
+   * of the backup. This field can be used to understand what data is being
+   * retained by the backup system.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The oldestVersionTime.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getOldestVersionTime() {
+    return oldestVersionTime_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : oldestVersionTime_;
+  }
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Data deleted at a time older than this is guaranteed not to be
+   * retained in order to support this backup. For a backup in an incremental
+   * backup chain, this is the version time of the oldest backup that exists or
+   * ever existed in the chain. For all other backups, this is the version time
+   * of the backup. This field can be used to understand what data is being
+   * retained by the backup system.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getOldestVersionTimeOrBuilder() {
+    return oldestVersionTime_ == null
+        ? com.google.protobuf.Timestamp.getDefaultInstance()
+        : oldestVersionTime_;
+  }
+
   private byte memoizedIsInitialized = -1;
 
   @java.lang.Override
@@ -1228,6 +1409,18 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     }
     for (int i = 0; i < backupSchedules_.size(); i++) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 14, backupSchedules_.getRaw(i));
+    }
+    if (freeableSizeBytes_ != 0L) {
+      output.writeInt64(15, freeableSizeBytes_);
+    }
+    if (exclusiveSizeBytes_ != 0L) {
+      output.writeInt64(16, exclusiveSizeBytes_);
+    }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(incrementalBackupChainId_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 17, incrementalBackupChainId_);
+    }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      output.writeMessage(18, getOldestVersionTime());
     }
     getUnknownFields().writeTo(output);
   }
@@ -1299,6 +1492,19 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       size += dataSize;
       size += 1 * getBackupSchedulesList().size();
     }
+    if (freeableSizeBytes_ != 0L) {
+      size += com.google.protobuf.CodedOutputStream.computeInt64Size(15, freeableSizeBytes_);
+    }
+    if (exclusiveSizeBytes_ != 0L) {
+      size += com.google.protobuf.CodedOutputStream.computeInt64Size(16, exclusiveSizeBytes_);
+    }
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(incrementalBackupChainId_)) {
+      size +=
+          com.google.protobuf.GeneratedMessageV3.computeStringSize(17, incrementalBackupChainId_);
+    }
+    if (((bitField0_ & 0x00000020) != 0)) {
+      size += com.google.protobuf.CodedOutputStream.computeMessageSize(18, getOldestVersionTime());
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1330,6 +1536,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!getCreateTime().equals(other.getCreateTime())) return false;
     }
     if (getSizeBytes() != other.getSizeBytes()) return false;
+    if (getFreeableSizeBytes() != other.getFreeableSizeBytes()) return false;
+    if (getExclusiveSizeBytes() != other.getExclusiveSizeBytes()) return false;
     if (state_ != other.state_) return false;
     if (!getReferencingDatabasesList().equals(other.getReferencingDatabasesList())) return false;
     if (hasEncryptionInfo() != other.hasEncryptionInfo()) return false;
@@ -1344,6 +1552,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!getMaxExpireTime().equals(other.getMaxExpireTime())) return false;
     }
     if (!getBackupSchedulesList().equals(other.getBackupSchedulesList())) return false;
+    if (!getIncrementalBackupChainId().equals(other.getIncrementalBackupChainId())) return false;
+    if (hasOldestVersionTime() != other.hasOldestVersionTime()) return false;
+    if (hasOldestVersionTime()) {
+      if (!getOldestVersionTime().equals(other.getOldestVersionTime())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -1373,6 +1586,10 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     }
     hash = (37 * hash) + SIZE_BYTES_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getSizeBytes());
+    hash = (37 * hash) + FREEABLE_SIZE_BYTES_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getFreeableSizeBytes());
+    hash = (37 * hash) + EXCLUSIVE_SIZE_BYTES_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(getExclusiveSizeBytes());
     hash = (37 * hash) + STATE_FIELD_NUMBER;
     hash = (53 * hash) + state_;
     if (getReferencingDatabasesCount() > 0) {
@@ -1400,6 +1617,12 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     if (getBackupSchedulesCount() > 0) {
       hash = (37 * hash) + BACKUP_SCHEDULES_FIELD_NUMBER;
       hash = (53 * hash) + getBackupSchedulesList().hashCode();
+    }
+    hash = (37 * hash) + INCREMENTAL_BACKUP_CHAIN_ID_FIELD_NUMBER;
+    hash = (53 * hash) + getIncrementalBackupChainId().hashCode();
+    if (hasOldestVersionTime()) {
+      hash = (37 * hash) + OLDEST_VERSION_TIME_FIELD_NUMBER;
+      hash = (53 * hash) + getOldestVersionTime().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -1547,6 +1770,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         getEncryptionInfoFieldBuilder();
         getEncryptionInformationFieldBuilder();
         getMaxExpireTimeFieldBuilder();
+        getOldestVersionTimeFieldBuilder();
       }
     }
 
@@ -1572,6 +1796,8 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         createTimeBuilder_ = null;
       }
       sizeBytes_ = 0L;
+      freeableSizeBytes_ = 0L;
+      exclusiveSizeBytes_ = 0L;
       state_ = 0;
       referencingDatabases_ = com.google.protobuf.LazyStringArrayList.emptyList();
       encryptionInfo_ = null;
@@ -1585,7 +1811,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         encryptionInformation_ = null;
         encryptionInformationBuilder_.clear();
       }
-      bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ = (bitField0_ & ~0x00000800);
       databaseDialect_ = 0;
       referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
       maxExpireTime_ = null;
@@ -1594,6 +1820,12 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         maxExpireTimeBuilder_ = null;
       }
       backupSchedules_ = com.google.protobuf.LazyStringArrayList.emptyList();
+      incrementalBackupChainId_ = "";
+      oldestVersionTime_ = null;
+      if (oldestVersionTimeBuilder_ != null) {
+        oldestVersionTimeBuilder_.dispose();
+        oldestVersionTimeBuilder_ = null;
+      }
       return this;
     }
 
@@ -1631,9 +1863,9 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
 
     private void buildPartialRepeatedFields(com.google.spanner.admin.database.v1.Backup result) {
       if (encryptionInformationBuilder_ == null) {
-        if (((bitField0_ & 0x00000200) != 0)) {
+        if (((bitField0_ & 0x00000800) != 0)) {
           encryptionInformation_ = java.util.Collections.unmodifiableList(encryptionInformation_);
-          bitField0_ = (bitField0_ & ~0x00000200);
+          bitField0_ = (bitField0_ & ~0x00000800);
         }
         result.encryptionInformation_ = encryptionInformation_;
       } else {
@@ -1667,32 +1899,48 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         result.sizeBytes_ = sizeBytes_;
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
-        result.state_ = state_;
+        result.freeableSizeBytes_ = freeableSizeBytes_;
       }
       if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.exclusiveSizeBytes_ = exclusiveSizeBytes_;
+      }
+      if (((from_bitField0_ & 0x00000100) != 0)) {
+        result.state_ = state_;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
         referencingDatabases_.makeImmutable();
         result.referencingDatabases_ = referencingDatabases_;
       }
-      if (((from_bitField0_ & 0x00000100) != 0)) {
+      if (((from_bitField0_ & 0x00000400) != 0)) {
         result.encryptionInfo_ =
             encryptionInfoBuilder_ == null ? encryptionInfo_ : encryptionInfoBuilder_.build();
         to_bitField0_ |= 0x00000008;
       }
-      if (((from_bitField0_ & 0x00000400) != 0)) {
+      if (((from_bitField0_ & 0x00001000) != 0)) {
         result.databaseDialect_ = databaseDialect_;
       }
-      if (((from_bitField0_ & 0x00000800) != 0)) {
+      if (((from_bitField0_ & 0x00002000) != 0)) {
         referencingBackups_.makeImmutable();
         result.referencingBackups_ = referencingBackups_;
       }
-      if (((from_bitField0_ & 0x00001000) != 0)) {
+      if (((from_bitField0_ & 0x00004000) != 0)) {
         result.maxExpireTime_ =
             maxExpireTimeBuilder_ == null ? maxExpireTime_ : maxExpireTimeBuilder_.build();
         to_bitField0_ |= 0x00000010;
       }
-      if (((from_bitField0_ & 0x00002000) != 0)) {
+      if (((from_bitField0_ & 0x00008000) != 0)) {
         backupSchedules_.makeImmutable();
         result.backupSchedules_ = backupSchedules_;
+      }
+      if (((from_bitField0_ & 0x00010000) != 0)) {
+        result.incrementalBackupChainId_ = incrementalBackupChainId_;
+      }
+      if (((from_bitField0_ & 0x00020000) != 0)) {
+        result.oldestVersionTime_ =
+            oldestVersionTimeBuilder_ == null
+                ? oldestVersionTime_
+                : oldestVersionTimeBuilder_.build();
+        to_bitField0_ |= 0x00000020;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1764,13 +2012,19 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (other.getSizeBytes() != 0L) {
         setSizeBytes(other.getSizeBytes());
       }
+      if (other.getFreeableSizeBytes() != 0L) {
+        setFreeableSizeBytes(other.getFreeableSizeBytes());
+      }
+      if (other.getExclusiveSizeBytes() != 0L) {
+        setExclusiveSizeBytes(other.getExclusiveSizeBytes());
+      }
       if (other.state_ != 0) {
         setStateValue(other.getStateValue());
       }
       if (!other.referencingDatabases_.isEmpty()) {
         if (referencingDatabases_.isEmpty()) {
           referencingDatabases_ = other.referencingDatabases_;
-          bitField0_ |= 0x00000080;
+          bitField0_ |= 0x00000200;
         } else {
           ensureReferencingDatabasesIsMutable();
           referencingDatabases_.addAll(other.referencingDatabases_);
@@ -1784,7 +2038,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         if (!other.encryptionInformation_.isEmpty()) {
           if (encryptionInformation_.isEmpty()) {
             encryptionInformation_ = other.encryptionInformation_;
-            bitField0_ = (bitField0_ & ~0x00000200);
+            bitField0_ = (bitField0_ & ~0x00000800);
           } else {
             ensureEncryptionInformationIsMutable();
             encryptionInformation_.addAll(other.encryptionInformation_);
@@ -1797,7 +2051,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
             encryptionInformationBuilder_.dispose();
             encryptionInformationBuilder_ = null;
             encryptionInformation_ = other.encryptionInformation_;
-            bitField0_ = (bitField0_ & ~0x00000200);
+            bitField0_ = (bitField0_ & ~0x00000800);
             encryptionInformationBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders
                     ? getEncryptionInformationFieldBuilder()
@@ -1813,7 +2067,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!other.referencingBackups_.isEmpty()) {
         if (referencingBackups_.isEmpty()) {
           referencingBackups_ = other.referencingBackups_;
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00002000;
         } else {
           ensureReferencingBackupsIsMutable();
           referencingBackups_.addAll(other.referencingBackups_);
@@ -1826,12 +2080,20 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!other.backupSchedules_.isEmpty()) {
         if (backupSchedules_.isEmpty()) {
           backupSchedules_ = other.backupSchedules_;
-          bitField0_ |= 0x00002000;
+          bitField0_ |= 0x00008000;
         } else {
           ensureBackupSchedulesIsMutable();
           backupSchedules_.addAll(other.backupSchedules_);
         }
         onChanged();
+      }
+      if (!other.getIncrementalBackupChainId().isEmpty()) {
+        incrementalBackupChainId_ = other.incrementalBackupChainId_;
+        bitField0_ |= 0x00010000;
+        onChanged();
+      }
+      if (other.hasOldestVersionTime()) {
+        mergeOldestVersionTime(other.getOldestVersionTime());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1892,7 +2154,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
             case 48:
               {
                 state_ = input.readEnum();
-                bitField0_ |= 0x00000040;
+                bitField0_ |= 0x00000100;
                 break;
               } // case 48
             case 58:
@@ -1905,7 +2167,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
             case 66:
               {
                 input.readMessage(getEncryptionInfoFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00000100;
+                bitField0_ |= 0x00000400;
                 break;
               } // case 66
             case 74:
@@ -1917,7 +2179,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
             case 80:
               {
                 databaseDialect_ = input.readEnum();
-                bitField0_ |= 0x00000400;
+                bitField0_ |= 0x00001000;
                 break;
               } // case 80
             case 90:
@@ -1930,7 +2192,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
             case 98:
               {
                 input.readMessage(getMaxExpireTimeFieldBuilder().getBuilder(), extensionRegistry);
-                bitField0_ |= 0x00001000;
+                bitField0_ |= 0x00004000;
                 break;
               } // case 98
             case 106:
@@ -1954,6 +2216,31 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
                 backupSchedules_.add(s);
                 break;
               } // case 114
+            case 120:
+              {
+                freeableSizeBytes_ = input.readInt64();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 120
+            case 128:
+              {
+                exclusiveSizeBytes_ = input.readInt64();
+                bitField0_ |= 0x00000080;
+                break;
+              } // case 128
+            case 138:
+              {
+                incrementalBackupChainId_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00010000;
+                break;
+              } // case 138
+            case 146:
+              {
+                input.readMessage(
+                    getOldestVersionTimeFieldBuilder().getBuilder(), extensionRegistry);
+                bitField0_ |= 0x00020000;
+                break;
+              } // case 146
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -3014,6 +3301,148 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       return this;
     }
 
+    private long freeableSizeBytes_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The number of bytes that will be freed by deleting this
+     * backup. This value will be zero if, for example, this backup is part of an
+     * incremental backup chain and younger backups in the chain require that we
+     * keep its data. For backups not in an incremental backup chain, this is
+     * always the size of the backup. This value may change if backups on the same
+     * chain get created, deleted or expired.
+     * </pre>
+     *
+     * <code>int64 freeable_size_bytes = 15 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return The freeableSizeBytes.
+     */
+    @java.lang.Override
+    public long getFreeableSizeBytes() {
+      return freeableSizeBytes_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The number of bytes that will be freed by deleting this
+     * backup. This value will be zero if, for example, this backup is part of an
+     * incremental backup chain and younger backups in the chain require that we
+     * keep its data. For backups not in an incremental backup chain, this is
+     * always the size of the backup. This value may change if backups on the same
+     * chain get created, deleted or expired.
+     * </pre>
+     *
+     * <code>int64 freeable_size_bytes = 15 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @param value The freeableSizeBytes to set.
+     * @return This builder for chaining.
+     */
+    public Builder setFreeableSizeBytes(long value) {
+
+      freeableSizeBytes_ = value;
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. The number of bytes that will be freed by deleting this
+     * backup. This value will be zero if, for example, this backup is part of an
+     * incremental backup chain and younger backups in the chain require that we
+     * keep its data. For backups not in an incremental backup chain, this is
+     * always the size of the backup. This value may change if backups on the same
+     * chain get created, deleted or expired.
+     * </pre>
+     *
+     * <code>int64 freeable_size_bytes = 15 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearFreeableSizeBytes() {
+      bitField0_ = (bitField0_ & ~0x00000040);
+      freeableSizeBytes_ = 0L;
+      onChanged();
+      return this;
+    }
+
+    private long exclusiveSizeBytes_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For a backup in an incremental backup chain, this is the
+     * storage space needed to keep the data that has changed since the previous
+     * backup. For all other backups, this is always the size of the backup. This
+     * value may change if backups on the same chain get deleted or expired.
+     *
+     * This field can be used to calculate the total storage space used by a set
+     * of backups. For example, the total space used by all backups of a database
+     * can be computed by summing up this field.
+     * </pre>
+     *
+     * <code>int64 exclusive_size_bytes = 16 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return The exclusiveSizeBytes.
+     */
+    @java.lang.Override
+    public long getExclusiveSizeBytes() {
+      return exclusiveSizeBytes_;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For a backup in an incremental backup chain, this is the
+     * storage space needed to keep the data that has changed since the previous
+     * backup. For all other backups, this is always the size of the backup. This
+     * value may change if backups on the same chain get deleted or expired.
+     *
+     * This field can be used to calculate the total storage space used by a set
+     * of backups. For example, the total space used by all backups of a database
+     * can be computed by summing up this field.
+     * </pre>
+     *
+     * <code>int64 exclusive_size_bytes = 16 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @param value The exclusiveSizeBytes to set.
+     * @return This builder for chaining.
+     */
+    public Builder setExclusiveSizeBytes(long value) {
+
+      exclusiveSizeBytes_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. For a backup in an incremental backup chain, this is the
+     * storage space needed to keep the data that has changed since the previous
+     * backup. For all other backups, this is always the size of the backup. This
+     * value may change if backups on the same chain get deleted or expired.
+     *
+     * This field can be used to calculate the total storage space used by a set
+     * of backups. For example, the total space used by all backups of a database
+     * can be computed by summing up this field.
+     * </pre>
+     *
+     * <code>int64 exclusive_size_bytes = 16 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearExclusiveSizeBytes() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      exclusiveSizeBytes_ = 0L;
+      onChanged();
+      return this;
+    }
+
     private int state_ = 0;
     /**
      *
@@ -3048,7 +3477,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder setStateValue(int value) {
       state_ = value;
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -3091,7 +3520,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000100;
       state_ = value.getNumber();
       onChanged();
       return this;
@@ -3110,7 +3539,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearState() {
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000100);
       state_ = 0;
       onChanged();
       return this;
@@ -3123,7 +3552,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!referencingDatabases_.isModifiable()) {
         referencingDatabases_ = new com.google.protobuf.LazyStringArrayList(referencingDatabases_);
       }
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000200;
     }
     /**
      *
@@ -3243,7 +3672,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.set(index, value);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3273,7 +3702,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.add(value);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3300,7 +3729,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllReferencingDatabases(java.lang.Iterable<java.lang.String> values) {
       ensureReferencingDatabasesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, referencingDatabases_);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3325,7 +3754,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearReferencingDatabases() {
       referencingDatabases_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000080);
+      bitField0_ = (bitField0_ & ~0x00000200);
       ;
       onChanged();
       return this;
@@ -3357,7 +3786,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureReferencingDatabasesIsMutable();
       referencingDatabases_.add(value);
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }
@@ -3382,7 +3811,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the encryptionInfo field is set.
      */
     public boolean hasEncryptionInfo() {
-      return ((bitField0_ & 0x00000100) != 0);
+      return ((bitField0_ & 0x00000400) != 0);
     }
     /**
      *
@@ -3426,7 +3855,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       } else {
         encryptionInfoBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3448,7 +3877,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       } else {
         encryptionInfoBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000400;
       onChanged();
       return this;
     }
@@ -3465,7 +3894,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeEncryptionInfo(com.google.spanner.admin.database.v1.EncryptionInfo value) {
       if (encryptionInfoBuilder_ == null) {
-        if (((bitField0_ & 0x00000100) != 0)
+        if (((bitField0_ & 0x00000400) != 0)
             && encryptionInfo_ != null
             && encryptionInfo_
                 != com.google.spanner.admin.database.v1.EncryptionInfo.getDefaultInstance()) {
@@ -3477,7 +3906,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         encryptionInfoBuilder_.mergeFrom(value);
       }
       if (encryptionInfo_ != null) {
-        bitField0_ |= 0x00000100;
+        bitField0_ |= 0x00000400;
         onChanged();
       }
       return this;
@@ -3494,7 +3923,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearEncryptionInfo() {
-      bitField0_ = (bitField0_ & ~0x00000100);
+      bitField0_ = (bitField0_ & ~0x00000400);
       encryptionInfo_ = null;
       if (encryptionInfoBuilder_ != null) {
         encryptionInfoBuilder_.dispose();
@@ -3515,7 +3944,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.spanner.admin.database.v1.EncryptionInfo.Builder getEncryptionInfoBuilder() {
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000400;
       onChanged();
       return getEncryptionInfoFieldBuilder().getBuilder();
     }
@@ -3572,11 +4001,11 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         encryptionInformation_ = java.util.Collections.emptyList();
 
     private void ensureEncryptionInformationIsMutable() {
-      if (!((bitField0_ & 0x00000200) != 0)) {
+      if (!((bitField0_ & 0x00000800) != 0)) {
         encryptionInformation_ =
             new java.util.ArrayList<com.google.spanner.admin.database.v1.EncryptionInfo>(
                 encryptionInformation_);
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000800;
       }
     }
 
@@ -3873,7 +4302,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     public Builder clearEncryptionInformation() {
       if (encryptionInformationBuilder_ == null) {
         encryptionInformation_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000800);
         onChanged();
       } else {
         encryptionInformationBuilder_.clear();
@@ -4050,7 +4479,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
                 com.google.spanner.admin.database.v1.EncryptionInfo.Builder,
                 com.google.spanner.admin.database.v1.EncryptionInfoOrBuilder>(
                 encryptionInformation_,
-                ((bitField0_ & 0x00000200) != 0),
+                ((bitField0_ & 0x00000800) != 0),
                 getParentForChildren(),
                 isClean());
         encryptionInformation_ = null;
@@ -4092,7 +4521,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder setDatabaseDialectValue(int value) {
       databaseDialect_ = value;
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00001000;
       onChanged();
       return this;
     }
@@ -4135,7 +4564,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (value == null) {
         throw new NullPointerException();
       }
-      bitField0_ |= 0x00000400;
+      bitField0_ |= 0x00001000;
       databaseDialect_ = value.getNumber();
       onChanged();
       return this;
@@ -4154,7 +4583,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return This builder for chaining.
      */
     public Builder clearDatabaseDialect() {
-      bitField0_ = (bitField0_ & ~0x00000400);
+      bitField0_ = (bitField0_ & ~0x00001000);
       databaseDialect_ = 0;
       onChanged();
       return this;
@@ -4167,7 +4596,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!referencingBackups_.isModifiable()) {
         referencingBackups_ = new com.google.protobuf.LazyStringArrayList(referencingBackups_);
       }
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00002000;
     }
     /**
      *
@@ -4287,7 +4716,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingBackupsIsMutable();
       referencingBackups_.set(index, value);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00002000;
       onChanged();
       return this;
     }
@@ -4317,7 +4746,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureReferencingBackupsIsMutable();
       referencingBackups_.add(value);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00002000;
       onChanged();
       return this;
     }
@@ -4344,7 +4773,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllReferencingBackups(java.lang.Iterable<java.lang.String> values) {
       ensureReferencingBackupsIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, referencingBackups_);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00002000;
       onChanged();
       return this;
     }
@@ -4369,7 +4798,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearReferencingBackups() {
       referencingBackups_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00000800);
+      bitField0_ = (bitField0_ & ~0x00002000);
       ;
       onChanged();
       return this;
@@ -4401,7 +4830,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureReferencingBackupsIsMutable();
       referencingBackups_.add(value);
-      bitField0_ |= 0x00000800;
+      bitField0_ |= 0x00002000;
       onChanged();
       return this;
     }
@@ -4430,7 +4859,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * @return Whether the maxExpireTime field is set.
      */
     public boolean hasMaxExpireTime() {
-      return ((bitField0_ & 0x00001000) != 0);
+      return ((bitField0_ & 0x00004000) != 0);
     }
     /**
      *
@@ -4482,7 +4911,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       } else {
         maxExpireTimeBuilder_.setMessage(value);
       }
-      bitField0_ |= 0x00001000;
+      bitField0_ |= 0x00004000;
       onChanged();
       return this;
     }
@@ -4507,7 +4936,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       } else {
         maxExpireTimeBuilder_.setMessage(builderForValue.build());
       }
-      bitField0_ |= 0x00001000;
+      bitField0_ |= 0x00004000;
       onChanged();
       return this;
     }
@@ -4528,7 +4957,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder mergeMaxExpireTime(com.google.protobuf.Timestamp value) {
       if (maxExpireTimeBuilder_ == null) {
-        if (((bitField0_ & 0x00001000) != 0)
+        if (((bitField0_ & 0x00004000) != 0)
             && maxExpireTime_ != null
             && maxExpireTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
           getMaxExpireTimeBuilder().mergeFrom(value);
@@ -4539,7 +4968,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
         maxExpireTimeBuilder_.mergeFrom(value);
       }
       if (maxExpireTime_ != null) {
-        bitField0_ |= 0x00001000;
+        bitField0_ |= 0x00004000;
         onChanged();
       }
       return this;
@@ -4560,7 +4989,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public Builder clearMaxExpireTime() {
-      bitField0_ = (bitField0_ & ~0x00001000);
+      bitField0_ = (bitField0_ & ~0x00004000);
       maxExpireTime_ = null;
       if (maxExpireTimeBuilder_ != null) {
         maxExpireTimeBuilder_.dispose();
@@ -4585,7 +5014,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      * </code>
      */
     public com.google.protobuf.Timestamp.Builder getMaxExpireTimeBuilder() {
-      bitField0_ |= 0x00001000;
+      bitField0_ |= 0x00004000;
       onChanged();
       return getMaxExpireTimeFieldBuilder().getBuilder();
     }
@@ -4652,7 +5081,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       if (!backupSchedules_.isModifiable()) {
         backupSchedules_ = new com.google.protobuf.LazyStringArrayList(backupSchedules_);
       }
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00008000;
     }
     /**
      *
@@ -4777,7 +5206,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureBackupSchedulesIsMutable();
       backupSchedules_.set(index, value);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00008000;
       onChanged();
       return this;
     }
@@ -4808,7 +5237,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       }
       ensureBackupSchedulesIsMutable();
       backupSchedules_.add(value);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00008000;
       onChanged();
       return this;
     }
@@ -4836,7 +5265,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
     public Builder addAllBackupSchedules(java.lang.Iterable<java.lang.String> values) {
       ensureBackupSchedulesIsMutable();
       com.google.protobuf.AbstractMessageLite.Builder.addAll(values, backupSchedules_);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00008000;
       onChanged();
       return this;
     }
@@ -4862,7 +5291,7 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
      */
     public Builder clearBackupSchedules() {
       backupSchedules_ = com.google.protobuf.LazyStringArrayList.emptyList();
-      bitField0_ = (bitField0_ & ~0x00002000);
+      bitField0_ = (bitField0_ & ~0x00008000);
       ;
       onChanged();
       return this;
@@ -4895,9 +5324,388 @@ public final class Backup extends com.google.protobuf.GeneratedMessageV3
       checkByteStringIsUtf8(value);
       ensureBackupSchedulesIsMutable();
       backupSchedules_.add(value);
-      bitField0_ |= 0x00002000;
+      bitField0_ |= 0x00008000;
       onChanged();
       return this;
+    }
+
+    private java.lang.Object incrementalBackupChainId_ = "";
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Populated only for backups in an incremental backup chain.
+     * Backups share the same chain id if and only if they belong to the same
+     * incremental backup chain. Use this field to determine which backups are
+     * part of the same incremental backup chain. The ordering of backups in the
+     * chain can be determined by ordering the backup `version_time`.
+     * </pre>
+     *
+     * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The incrementalBackupChainId.
+     */
+    public java.lang.String getIncrementalBackupChainId() {
+      java.lang.Object ref = incrementalBackupChainId_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        incrementalBackupChainId_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Populated only for backups in an incremental backup chain.
+     * Backups share the same chain id if and only if they belong to the same
+     * incremental backup chain. Use this field to determine which backups are
+     * part of the same incremental backup chain. The ordering of backups in the
+     * chain can be determined by ordering the backup `version_time`.
+     * </pre>
+     *
+     * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The bytes for incrementalBackupChainId.
+     */
+    public com.google.protobuf.ByteString getIncrementalBackupChainIdBytes() {
+      java.lang.Object ref = incrementalBackupChainId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        incrementalBackupChainId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Populated only for backups in an incremental backup chain.
+     * Backups share the same chain id if and only if they belong to the same
+     * incremental backup chain. Use this field to determine which backups are
+     * part of the same incremental backup chain. The ordering of backups in the
+     * chain can be determined by ordering the backup `version_time`.
+     * </pre>
+     *
+     * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The incrementalBackupChainId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIncrementalBackupChainId(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      incrementalBackupChainId_ = value;
+      bitField0_ |= 0x00010000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Populated only for backups in an incremental backup chain.
+     * Backups share the same chain id if and only if they belong to the same
+     * incremental backup chain. Use this field to determine which backups are
+     * part of the same incremental backup chain. The ordering of backups in the
+     * chain can be determined by ordering the backup `version_time`.
+     * </pre>
+     *
+     * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return This builder for chaining.
+     */
+    public Builder clearIncrementalBackupChainId() {
+      incrementalBackupChainId_ = getDefaultInstance().getIncrementalBackupChainId();
+      bitField0_ = (bitField0_ & ~0x00010000);
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Populated only for backups in an incremental backup chain.
+     * Backups share the same chain id if and only if they belong to the same
+     * incremental backup chain. Use this field to determine which backups are
+     * part of the same incremental backup chain. The ordering of backups in the
+     * chain can be determined by ordering the backup `version_time`.
+     * </pre>
+     *
+     * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @param value The bytes for incrementalBackupChainId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIncrementalBackupChainIdBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+      incrementalBackupChainId_ = value;
+      bitField0_ |= 0x00010000;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.Timestamp oldestVersionTime_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        oldestVersionTimeBuilder_;
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return Whether the oldestVersionTime field is set.
+     */
+    public boolean hasOldestVersionTime() {
+      return ((bitField0_ & 0x00020000) != 0);
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     *
+     * @return The oldestVersionTime.
+     */
+    public com.google.protobuf.Timestamp getOldestVersionTime() {
+      if (oldestVersionTimeBuilder_ == null) {
+        return oldestVersionTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : oldestVersionTime_;
+      } else {
+        return oldestVersionTimeBuilder_.getMessage();
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setOldestVersionTime(com.google.protobuf.Timestamp value) {
+      if (oldestVersionTimeBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        oldestVersionTime_ = value;
+      } else {
+        oldestVersionTimeBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00020000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder setOldestVersionTime(com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (oldestVersionTimeBuilder_ == null) {
+        oldestVersionTime_ = builderForValue.build();
+      } else {
+        oldestVersionTimeBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00020000;
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder mergeOldestVersionTime(com.google.protobuf.Timestamp value) {
+      if (oldestVersionTimeBuilder_ == null) {
+        if (((bitField0_ & 0x00020000) != 0)
+            && oldestVersionTime_ != null
+            && oldestVersionTime_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getOldestVersionTimeBuilder().mergeFrom(value);
+        } else {
+          oldestVersionTime_ = value;
+        }
+      } else {
+        oldestVersionTimeBuilder_.mergeFrom(value);
+      }
+      if (oldestVersionTime_ != null) {
+        bitField0_ |= 0x00020000;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public Builder clearOldestVersionTime() {
+      bitField0_ = (bitField0_ & ~0x00020000);
+      oldestVersionTime_ = null;
+      if (oldestVersionTimeBuilder_ != null) {
+        oldestVersionTimeBuilder_.dispose();
+        oldestVersionTimeBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.Timestamp.Builder getOldestVersionTimeBuilder() {
+      bitField0_ |= 0x00020000;
+      onChanged();
+      return getOldestVersionTimeFieldBuilder().getBuilder();
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getOldestVersionTimeOrBuilder() {
+      if (oldestVersionTimeBuilder_ != null) {
+        return oldestVersionTimeBuilder_.getMessageOrBuilder();
+      } else {
+        return oldestVersionTime_ == null
+            ? com.google.protobuf.Timestamp.getDefaultInstance()
+            : oldestVersionTime_;
+      }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * Output only. Data deleted at a time older than this is guaranteed not to be
+     * retained in order to support this backup. For a backup in an incremental
+     * backup chain, this is the version time of the oldest backup that exists or
+     * ever existed in the chain. For all other backups, this is the version time
+     * of the backup. This field can be used to understand what data is being
+     * retained by the backup system.
+     * </pre>
+     *
+     * <code>
+     * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+     * </code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.Timestamp,
+            com.google.protobuf.Timestamp.Builder,
+            com.google.protobuf.TimestampOrBuilder>
+        getOldestVersionTimeFieldBuilder() {
+      if (oldestVersionTimeBuilder_ == null) {
+        oldestVersionTimeBuilder_ =
+            new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.Timestamp,
+                com.google.protobuf.Timestamp.Builder,
+                com.google.protobuf.TimestampOrBuilder>(
+                getOldestVersionTime(), getParentForChildren(), isClean());
+        oldestVersionTime_ = null;
+      }
+      return oldestVersionTimeBuilder_;
     }
 
     @java.lang.Override
