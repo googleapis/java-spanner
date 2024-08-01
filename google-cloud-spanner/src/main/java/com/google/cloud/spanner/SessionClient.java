@@ -423,6 +423,7 @@ class SessionClient implements AutoCloseable {
     synchronized (this) {
       options = optionMap(SessionOption.channelHint(sessionChannelCounter++));
     }
-    return new SessionImpl(spanner, new SessionReference(name, /*createTime= */ null, isMultiplexedSession, options));
+    return new SessionImpl(
+        spanner, new SessionReference(name, /*createTime= */ null, isMultiplexedSession, options));
   }
 }

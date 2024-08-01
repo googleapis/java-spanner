@@ -110,8 +110,10 @@ public class SessionPoolOptions {
         (useMultiplexedSessionFromEnvVariable != null)
             ? useMultiplexedSessionFromEnvVariable
             : builder.useMultiplexedSession;
-    // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client default
-    Boolean useMultiplexedSessionFromEnvVariablePartitionedOps = getUseMultiplexedSessionFromEnvVariablePartitionedOps();
+    // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client
+    // default
+    Boolean useMultiplexedSessionFromEnvVariablePartitionedOps =
+        getUseMultiplexedSessionFromEnvVariablePartitionedOps();
     this.useMultiplexedSessionForPartitionedOps =
         (useMultiplexedSessionFromEnvVariablePartitionedOps != null)
             ? useMultiplexedSessionFromEnvVariablePartitionedOps

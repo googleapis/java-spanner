@@ -35,7 +35,10 @@ public class BatchTransactionId implements Serializable {
   private final boolean isMultiplexedSession;
   private static final long serialVersionUID = 8067099123096783939L;
 
-  BatchTransactionId(String sessionId, ByteString transactionId, Timestamp timestamp,
+  BatchTransactionId(
+      String sessionId,
+      ByteString transactionId,
+      Timestamp timestamp,
       boolean isMultiplexedSession) {
     this.transactionId = Preconditions.checkNotNull(transactionId);
     this.sessionId = Preconditions.checkNotNull(sessionId);

@@ -78,7 +78,9 @@ public class BatchClientImpl implements BatchClient {
   @Override
   public BatchReadOnlyTransaction batchReadOnlyTransaction(BatchTransactionId batchTransactionId) {
     SessionImpl session =
-        sessionClient.sessionWithId(checkNotNull(batchTransactionId).getSessionId(), batchTransactionId.isMultiplexedSession());
+        sessionClient.sessionWithId(
+            checkNotNull(batchTransactionId).getSessionId(),
+            batchTransactionId.isMultiplexedSession());
     return new BatchReadOnlyTransactionImpl(
         MultiUseReadOnlyTransaction.newBuilder()
             .setSession(session)
@@ -122,8 +124,8 @@ public class BatchClientImpl implements BatchClient {
 
     @Override
     public BatchTransactionId getBatchTransactionId() {
-      return new BatchTransactionId(sessionName, getTransactionId(), getReadTimestamp(),
-          session.getIsMultiplexed());
+      return new BatchTransactionId(
+          sessionName, getTransactionId(), getReadTimestamp(), session.getIsMultiplexed());
     }
 
     @Override
