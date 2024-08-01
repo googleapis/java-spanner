@@ -317,7 +317,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
   @Override
   public BatchClient getBatchClient(DatabaseId db) {
-    return new BatchClientImpl(getSessionClient(db));
+    return new BatchClientImpl(getSessionClient(db), getOptions().getSessionPoolOptions().getUseMultiplexedSessionPartitionedOps());
   }
 
   @Override

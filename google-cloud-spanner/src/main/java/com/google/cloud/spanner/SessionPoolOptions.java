@@ -73,6 +73,8 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSession;
 
+  private final boolean useMultiplexedSessionForPartitionedOps;
+
   // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
@@ -108,6 +110,12 @@ public class SessionPoolOptions {
         (useMultiplexedSessionFromEnvVariable != null)
             ? useMultiplexedSessionFromEnvVariable
             : builder.useMultiplexedSession;
+    // useMultiplexedSessionPartitionedOps priority => Environment var > private setter > client default
+    Boolean useMultiplexedSessionFromEnvVariablePartitionedOps = getUseMultiplexedSessionFromEnvVariablePartitionedOps();
+    this.useMultiplexedSessionForPartitionedOps =
+        (useMultiplexedSessionFromEnvVariablePartitionedOps != null)
+            ? useMultiplexedSessionFromEnvVariablePartitionedOps
+            : builder.useMultiplexedSessionPartitionedOps;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -307,6 +315,12 @@ public class SessionPoolOptions {
     return useMultiplexedSession;
   }
 
+  @VisibleForTesting
+  @InternalApi
+  public boolean getUseMultiplexedSessionPartitionedOps() {
+    return useMultiplexedSessionForPartitionedOps;
+  }
+
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
     String useMultiplexedSessionFromEnvVariable =
         System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
@@ -318,6 +332,22 @@ public class SessionPoolOptions {
       } else {
         throw new IllegalArgumentException(
             "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false.");
+      }
+    }
+    return null;
+  }
+
+  private static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
+    String useMultiplexedSessionFromEnvVariablePartitionedOps =
+        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS");
+    if (useMultiplexedSessionFromEnvVariablePartitionedOps != null
+        && useMultiplexedSessionFromEnvVariablePartitionedOps.length() > 0) {
+      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariablePartitionedOps)
+          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariablePartitionedOps)) {
+        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariablePartitionedOps);
+      } else {
+        throw new IllegalArgumentException(
+            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS should be either true or false.");
       }
     }
     return null;
@@ -529,6 +559,10 @@ public class SessionPoolOptions {
     // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
 
+    // This field controls the default behavior of session management in Java client.
+    // Set useMultiplexedSessionPartitionedOps to true to make multiplexed session the default.
+    private boolean useMultiplexedSessionPartitionedOps = false;
+
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
 
@@ -570,6 +604,7 @@ public class SessionPoolOptions {
       this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.useMultiplexedSession = options.useMultiplexedSession;
+      this.useMultiplexedSessionPartitionedOps = options.useMultiplexedSessionForPartitionedOps;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -754,6 +789,22 @@ public class SessionPoolOptions {
      */
     Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
       this.useMultiplexedSession = useMultiplexedSession;
+      return this;
+    }
+
+    /**
+     * Sets whether the client should use multiplexed session or not. If set to true, the client
+     * optimises and runs multiple applicable requests concurrently on a single session. A single
+     * multiplexed session is sufficient to handle all concurrent traffic.
+     *
+     * <p>When set to false, the client uses the regular session cached in the session pool for
+     * running 1 concurrent transaction per session. We require to provision sufficient sessions by
+     * making use of {@link SessionPoolOptions#minSessions} and {@link
+     * SessionPoolOptions#maxSessions} based on the traffic load. Failing to do so will result in
+     * higher latencies.
+     */
+    Builder setUseMultiplexedSessionPartitionedOps(boolean useMultiplexedSessionPartitionedOps) {
+      this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
       return this;
     }
 
