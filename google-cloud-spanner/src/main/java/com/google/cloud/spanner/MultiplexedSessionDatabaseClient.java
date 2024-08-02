@@ -21,6 +21,7 @@ import static com.google.cloud.spanner.SessionImpl.NO_CHANNEL_HINT;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.api.core.SettableApiFuture;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionConsumer;
 import com.google.cloud.spanner.SpannerException.ResourceNotFoundException;
 import com.google.common.annotations.VisibleForTesting;
@@ -386,6 +387,11 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
   @Override
   public ReadOnlyTransaction readOnlyTransaction(TimestampBound bound) {
     return createMultiplexedSessionTransaction(false).readOnlyTransaction(bound);
+  }
+
+  @Override
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+    return createMultiplexedSessionTransaction(true).executePartitionedUpdate(stmt, options);
   }
 
   /**

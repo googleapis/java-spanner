@@ -324,32 +324,20 @@ public class SessionPoolOptions {
   }
 
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
-    String useMultiplexedSessionFromEnvVariable =
-        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
-    if (useMultiplexedSessionFromEnvVariable != null
-        && useMultiplexedSessionFromEnvVariable.length() > 0) {
-      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)
-          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)) {
-        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
-      } else {
-        throw new IllegalArgumentException(
-            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false.");
-      }
-    }
-    return null;
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
   }
 
   private static Boolean getUseMultiplexedSessionFromEnvVariablePartitionedOps() {
-    String useMultiplexedSessionFromEnvVariablePartitionedOps =
-        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS");
-    if (useMultiplexedSessionFromEnvVariablePartitionedOps != null
-        && useMultiplexedSessionFromEnvVariablePartitionedOps.length() > 0) {
-      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariablePartitionedOps)
-          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariablePartitionedOps)) {
-        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariablePartitionedOps);
+    return parseBooleanEnvVariable("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS");
+  }
+
+  private static Boolean parseBooleanEnvVariable(String variableName) {
+    String envVariable = System.getenv(variableName);
+    if (envVariable != null && envVariable.length() > 0) {
+      if ("true".equalsIgnoreCase(envVariable) || "false".equalsIgnoreCase(envVariable)) {
+        return Boolean.parseBoolean(envVariable);
       } else {
-        throw new IllegalArgumentException(
-            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_PARTITIONED_OPS should be either true or false.");
+        throw new IllegalArgumentException(variableName + " should be either true or false.");
       }
     }
     return null;
