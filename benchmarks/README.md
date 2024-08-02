@@ -51,3 +51,6 @@ make sure that tests uses regular sessions.
 ```shell
 mvn clean compile exec:java -Dexec.args="--clients=10 --operations=5000"
 ```
+```shell
+mvn clean compile exec:java -Dcheckstyle.skip -Dexec.args="--clients=1 --operations=10000  --transaction=READ_ONLY_MULTI_USE --multiplexed=false --grpcgcpextension=false"
+```

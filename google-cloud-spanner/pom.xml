@@ -162,6 +162,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>grpc-gcp</artifactId>
+      <version>1.6.1</version>
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
@@ -266,7 +267,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
-      <version>3.38.0</version>
+      <version>3.31.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>

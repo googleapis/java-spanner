@@ -44,7 +44,13 @@
   <dependencies>
     <dependency>
       <groupId>com.google.cloud</groupId>
+      <artifactId>grpc-gcp</artifactId>
+      <version>1.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
+      <version>6.69.1-SNAPSHOT</version>
     </dependency>
     <!-- [END spanner_install_with_bom] -->
 
