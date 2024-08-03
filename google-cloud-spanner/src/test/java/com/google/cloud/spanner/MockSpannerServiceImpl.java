@@ -808,7 +808,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       batchCreateSessionsExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
       if (sessions.size() >= maxTotalSessions) {
-        throw Status.RESOURCE_EXHAUSTED
+        throw Status.FAILED_PRECONDITION
             .withDescription("Maximum number of sessions reached")
             .asRuntimeException();
       }
