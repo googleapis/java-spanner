@@ -32,18 +32,24 @@ public class CreateInstancePartitionSampleIT extends SampleTestBaseV2 {
     String instanceId = idGenerator.generateInstanceId();
     InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
     instanceAdminClient
-        .createInstance(InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-            .setDisplayName("Geo-partitioning test instance")
-            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
-            .setNodeCount(1).build())
+        .createInstance(
+            InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
+                .setDisplayName("Geo-partitioning test instance")
+                .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
+                .setNodeCount(1)
+                .build())
         .get();
 
     String instancePartitionId = "my-instance-partition";
     String out =
         SampleRunner.runSample(
-            () -> CreateInstancePartitionSample.createInstancePartition(projectId, instanceId, instancePartitionId));
+            () ->
+                CreateInstancePartitionSample.createInstancePartition(
+                    projectId, instanceId, instancePartitionId));
     assertThat(out)
-        .contains(String.format("Instance partition %s",
-            InstancePartitionName.of(projectId, instanceId, instancePartitionId).toString()));
+        .contains(
+            String.format(
+                "Instance partition %s",
+                InstancePartitionName.of(projectId, instanceId, instancePartitionId).toString()));
   }
 }
