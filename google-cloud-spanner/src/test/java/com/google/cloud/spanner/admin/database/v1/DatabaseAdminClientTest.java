@@ -999,6 +999,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1006,6 +1008,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1063,6 +1067,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1070,6 +1076,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1127,6 +1135,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1134,6 +1144,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1195,6 +1207,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1202,6 +1216,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1263,6 +1279,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1270,6 +1288,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1331,6 +1351,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1338,6 +1360,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     Operation resultOperation =
         Operation.newBuilder()
@@ -1399,6 +1423,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1406,6 +1432,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1449,6 +1477,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1456,6 +1486,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 
@@ -1499,6 +1531,8 @@ public class DatabaseAdminClientTest {
             .setName(BackupName.of("[PROJECT]", "[INSTANCE]", "[BACKUP]").toString())
             .setCreateTime(Timestamp.newBuilder().build())
             .setSizeBytes(-1796325715)
+            .setFreeableSizeBytes(1302251206)
+            .setExclusiveSizeBytes(-1085921554)
             .addAllReferencingDatabases(new ArrayList<String>())
             .setEncryptionInfo(EncryptionInfo.newBuilder().build())
             .addAllEncryptionInformation(new ArrayList<EncryptionInfo>())
@@ -1506,6 +1540,8 @@ public class DatabaseAdminClientTest {
             .addAllReferencingBackups(new ArrayList<String>())
             .setMaxExpireTime(Timestamp.newBuilder().build())
             .addAllBackupSchedules(new ArrayList<String>())
+            .setIncrementalBackupChainId("incrementalBackupChainId1926005216")
+            .setOldestVersionTime(Timestamp.newBuilder().build())
             .build();
     mockDatabaseAdmin.addResponse(expectedResponse);
 

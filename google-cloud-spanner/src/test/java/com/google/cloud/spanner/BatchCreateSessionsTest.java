@@ -207,13 +207,13 @@ public class BatchCreateSessionsTest {
   }
 
   @Test
-  public void testSpannerReturnsResourceExhausted() throws InterruptedException {
+  public void testSpannerReturnsFailedPrecondition() throws InterruptedException {
     int minSessions = 100;
     int maxSessions = 1000;
     int expectedSessions;
     DatabaseClientImpl client;
     // Make the first BatchCreateSessions return an error.
-    mockSpanner.addException(Status.RESOURCE_EXHAUSTED.asRuntimeException());
+    mockSpanner.addException(Status.FAILED_PRECONDITION.asRuntimeException());
     try (Spanner spanner = createSpanner(minSessions, maxSessions)) {
       // Create a database client which will create a session pool.
       client =

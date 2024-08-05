@@ -621,7 +621,7 @@ To get help, follow the instructions in the [shared Troubleshooting document][tr
 
 ## Transport
 
-Cloud Spanner uses both gRPC and HTTP/JSON for the transport layer.
+Cloud Spanner uses gRPC for the transport layer.
 
 ## Supported Java Versions
 

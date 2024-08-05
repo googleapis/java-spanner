@@ -243,6 +243,45 @@ public interface BackupScheduleOrBuilder
    *
    *
    * <pre>
+   * The schedule creates incremental backup chains.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+   * </code>
+   *
+   * @return Whether the incrementalBackupSpec field is set.
+   */
+  boolean hasIncrementalBackupSpec();
+  /**
+   *
+   *
+   * <pre>
+   * The schedule creates incremental backup chains.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+   * </code>
+   *
+   * @return The incrementalBackupSpec.
+   */
+  com.google.spanner.admin.database.v1.IncrementalBackupSpec getIncrementalBackupSpec();
+  /**
+   *
+   *
+   * <pre>
+   * The schedule creates incremental backup chains.
+   * </pre>
+   *
+   * <code>.google.spanner.admin.database.v1.IncrementalBackupSpec incremental_backup_spec = 8;
+   * </code>
+   */
+  com.google.spanner.admin.database.v1.IncrementalBackupSpecOrBuilder
+      getIncrementalBackupSpecOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
    * Output only. The timestamp at which the schedule was last updated.
    * If the schedule has never been updated, this field contains the timestamp
    * when the schedule was first created.

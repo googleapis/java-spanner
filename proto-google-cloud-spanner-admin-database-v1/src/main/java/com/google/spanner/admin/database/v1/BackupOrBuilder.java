@@ -273,6 +273,44 @@ public interface BackupOrBuilder
    *
    *
    * <pre>
+   * Output only. The number of bytes that will be freed by deleting this
+   * backup. This value will be zero if, for example, this backup is part of an
+   * incremental backup chain and younger backups in the chain require that we
+   * keep its data. For backups not in an incremental backup chain, this is
+   * always the size of the backup. This value may change if backups on the same
+   * chain get created, deleted or expired.
+   * </pre>
+   *
+   * <code>int64 freeable_size_bytes = 15 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The freeableSizeBytes.
+   */
+  long getFreeableSizeBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. For a backup in an incremental backup chain, this is the
+   * storage space needed to keep the data that has changed since the previous
+   * backup. For all other backups, this is always the size of the backup. This
+   * value may change if backups on the same chain get deleted or expired.
+   *
+   * This field can be used to calculate the total storage space used by a set
+   * of backups. For example, the total space used by all backups of a database
+   * can be computed by summing up this field.
+   * </pre>
+   *
+   * <code>int64 exclusive_size_bytes = 16 [(.google.api.field_behavior) = OUTPUT_ONLY];</code>
+   *
+   * @return The exclusiveSizeBytes.
+   */
+  long getExclusiveSizeBytes();
+
+  /**
+   *
+   *
+   * <pre>
    * Output only. The current state of the backup.
    * </pre>
    *
@@ -762,4 +800,95 @@ public interface BackupOrBuilder
    * @return The bytes of the backupSchedules at the given index.
    */
   com.google.protobuf.ByteString getBackupSchedulesBytes(int index);
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Populated only for backups in an incremental backup chain.
+   * Backups share the same chain id if and only if they belong to the same
+   * incremental backup chain. Use this field to determine which backups are
+   * part of the same incremental backup chain. The ordering of backups in the
+   * chain can be determined by ordering the backup `version_time`.
+   * </pre>
+   *
+   * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The incrementalBackupChainId.
+   */
+  java.lang.String getIncrementalBackupChainId();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Populated only for backups in an incremental backup chain.
+   * Backups share the same chain id if and only if they belong to the same
+   * incremental backup chain. Use this field to determine which backups are
+   * part of the same incremental backup chain. The ordering of backups in the
+   * chain can be determined by ordering the backup `version_time`.
+   * </pre>
+   *
+   * <code>string incremental_backup_chain_id = 17 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The bytes for incrementalBackupChainId.
+   */
+  com.google.protobuf.ByteString getIncrementalBackupChainIdBytes();
+
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Data deleted at a time older than this is guaranteed not to be
+   * retained in order to support this backup. For a backup in an incremental
+   * backup chain, this is the version time of the oldest backup that exists or
+   * ever existed in the chain. For all other backups, this is the version time
+   * of the backup. This field can be used to understand what data is being
+   * retained by the backup system.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return Whether the oldestVersionTime field is set.
+   */
+  boolean hasOldestVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Data deleted at a time older than this is guaranteed not to be
+   * retained in order to support this backup. For a backup in an incremental
+   * backup chain, this is the version time of the oldest backup that exists or
+   * ever existed in the chain. For all other backups, this is the version time
+   * of the backup. This field can be used to understand what data is being
+   * retained by the backup system.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   *
+   * @return The oldestVersionTime.
+   */
+  com.google.protobuf.Timestamp getOldestVersionTime();
+  /**
+   *
+   *
+   * <pre>
+   * Output only. Data deleted at a time older than this is guaranteed not to be
+   * retained in order to support this backup. For a backup in an incremental
+   * backup chain, this is the version time of the oldest backup that exists or
+   * ever existed in the chain. For all other backups, this is the version time
+   * of the backup. This field can be used to understand what data is being
+   * retained by the backup system.
+   * </pre>
+   *
+   * <code>
+   * .google.protobuf.Timestamp oldest_version_time = 18 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * </code>
+   */
+  com.google.protobuf.TimestampOrBuilder getOldestVersionTimeOrBuilder();
 }

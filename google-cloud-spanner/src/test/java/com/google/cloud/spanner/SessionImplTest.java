@@ -138,6 +138,8 @@ public class SessionImplTest {
     when(rpc.getExecuteQueryRetryableCodes())
         .thenReturn(
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes());
+    when(rpc.getCommitRetrySettings())
+        .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
     session = spanner.getSessionClient(db).createSession();
     Span oTspan = mock(Span.class);
     ISpan span = new OpenTelemetrySpan(oTspan);
