@@ -38,16 +38,15 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Example code for using the Cloud Spanner API. This example demonstrates all the common operations
- * that can be done on Cloud Spanner. These are:
+ * Example code for using the Cloud Spanner API. This example demonstrates all the common property
+ * graph operations that can be done on Cloud Spanner. These are:
  *
  * <p>
  *
  * <ul>
  *   <li>Creating a Cloud Spanner database with a property graph.
- *   <li>Writing, reading and executing graph queries.
- *   <li>Using Google API Extensions for Java to make thread-safe requests via long-running
- *       operations. http://googleapis.github.io/gax-java/
+ *   <li>Inserting data, updating and deleting data.
+ *   <li>Executing graph queries.
  * </ul>
  */
 public class SpannerGraphSample {
@@ -245,9 +244,6 @@ public class SpannerGraphSample {
           new Own(2, 20, Timestamp.parseTimestamp("2020-01-27T17:55:09.12Z")),
           new Own(3, 16, Timestamp.parseTimestamp("2020-02-18T05:44:20.12Z")));
 
-  // [END spanner_insert_graph_data]
-
-  // [START spanner_insert_graph_data]
   static void insertData(DatabaseClient dbClient) {
     List<Mutation> mutations = new ArrayList<>();
     for (Account account : ACCOUNTS) {
@@ -559,14 +555,12 @@ public class SpannerGraphSample {
     if (args.length != 3 && args.length != 4) {
       printUsageAndExit();
     }
-    // [START init_client]
     SpannerOptions options = SpannerOptions.newBuilder().build();
     Spanner spanner = options.getService();
     DatabaseAdminClient dbAdminClient = null;
     try {
       final String command = args[0];
       DatabaseId db = DatabaseId.of(options.getProjectId(), args[1], args[2]);
-      // [END init_client]
       // This will return the default project id based on the environment.
       String clientProject = spanner.getOptions().getProjectId();
       if (!db.getInstanceId().getProject().equals(clientProject)) {
@@ -577,15 +571,10 @@ public class SpannerGraphSample {
         printUsageAndExit();
       }
 
-      // [START init_client]
       DatabaseClient dbClient = spanner.getDatabaseClient(db);
       dbAdminClient = spanner.createDatabaseAdminClient();
 
-      // Use client here...
-      // [END init_client]
-
       run(dbClient, dbAdminClient, command, db);
-      // [START init_client]
     } finally {
       if (dbAdminClient != null) {
         if (!dbAdminClient.isShutdown() || !dbAdminClient.isTerminated()) {
@@ -594,7 +583,6 @@ public class SpannerGraphSample {
       }
       spanner.close();
     }
-    // [END init_client]
     System.out.println("Closed client");
   }
 }
