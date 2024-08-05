@@ -322,7 +322,7 @@ public class SpannerGraphSample {
                       + "    (1, CAST('2000-08-10 08:18:48.463959-07:52' AS TIMESTAMP), false),"
                       + "    (2, CAST('2000-08-12 08:18:48.463959-07:52' AS TIMESTAMP), true)";
               long rowCount = transaction.executeUpdate(Statement.of(sql));
-              System.out.printf("%d record inserted into Account.\n", rowCount);
+              System.out.printf("%d record(s) inserted into Account.\n", rowCount);
               return null;
             });
 
@@ -336,7 +336,7 @@ public class SpannerGraphSample {
                       + "    (1, 2, PENDING_COMMIT_TIMESTAMP(), 100),"
                       + "    (1, 1, PENDING_COMMIT_TIMESTAMP(), 200) ";
               long rowCount = transaction.executeUpdate(Statement.of(sql));
-              System.out.printf("%d record inserted into AccountTransferAccount.\n", rowCount);
+              System.out.printf("%d record(s) inserted into AccountTransferAccount.\n", rowCount);
               return null;
             });
   }
@@ -382,7 +382,7 @@ public class SpannerGraphSample {
                       + "  MATCH (a:Account WHERE a.id = 1)-[:TRANSFERS]->{1,2}(b:Account)"
                       + "  RETURN b.id}";
               long rowCount = transaction.executeUpdate(Statement.of(sql));
-              System.out.printf("%d record updated.\n", rowCount);
+              System.out.printf("%d Account record(s) updated.\n", rowCount);
               return null;
             });
   }
