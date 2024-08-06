@@ -25,6 +25,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,6 +33,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
@@ -77,9 +79,11 @@ import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
 import com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.ByteStreams;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ResultSetStats;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -220,8 +224,8 @@ public class ConnectionImplTest {
       UpdateDatabaseDdlMetadata metadata = UpdateDatabaseDdlMetadata.getDefaultInstance();
       ApiFuture<UpdateDatabaseDdlMetadata> futureMetadata = ApiFutures.immediateFuture(metadata);
       when(operation.getMetadata()).thenReturn(futureMetadata);
-      when(ddlClient.executeDdl(anyString())).thenCallRealMethod();
-      when(ddlClient.executeDdl(anyList())).thenReturn(operation);
+      when(ddlClient.executeDdl(anyString(), isNull())).thenCallRealMethod();
+      when(ddlClient.executeDdl(anyList(), isNull())).thenReturn(operation);
       return ddlClient;
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -1924,5 +1928,102 @@ public class ConnectionImplTest {
             .getMessage()
             .contains(
                 "Only statements that return a result of one of the following types are allowed"));
+  }
+
+  @Test
+  public void testProtoDescriptorsAlwaysAllowed() {
+    ConnectionOptions connectionOptions = mock(ConnectionOptions.class);
+    when(connectionOptions.isAutocommit()).thenReturn(true);
+    SpannerPool spannerPool = mock(SpannerPool.class);
+    DdlClient ddlClient = mock(DdlClient.class);
+    DatabaseClient dbClient = mock(DatabaseClient.class);
+    when(dbClient.getDialect()).thenReturn(Dialect.GOOGLE_STANDARD_SQL);
+    final UnitOfWork unitOfWork = mock(UnitOfWork.class);
+    final String protoDescriptorsFilePath =
+        "src/test/resources/com/google/cloud/spanner/descriptors.pb";
+    when(unitOfWork.executeDdlAsync(any(), any(ParsedStatement.class)))
+        .thenReturn(ApiFutures.immediateFuture(null));
+    when(unitOfWork.executeQueryAsync(
+            any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
+        .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
+    try (ConnectionImpl connection =
+        new ConnectionImpl(
+            connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {
+          @Override
+          UnitOfWork getCurrentUnitOfWorkOrStartNewUnitOfWork(
+              StatementType statementType, boolean isInternalMetadataQuery) {
+            return unitOfWork;
+          }
+        }) {
+      byte[] protoDescriptors;
+      try {
+        InputStream in =
+            ConnectionImplTest.class
+                .getClassLoader()
+                .getResourceAsStream("com/google/cloud/spanner/descriptors.pb");
+        assertNotNull(in);
+        protoDescriptors = ByteStreams.toByteArray(in);
+      } catch (Exception e) {
+        throw SpannerExceptionFactory.newSpannerException(e);
+      }
+
+      assertTrue(connection.isAutocommit());
+
+      assertNull(connection.getProtoDescriptors());
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+
+      connection.setAutocommit(false);
+
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+
+      // proto descriptor should reset after executing a DDL statement
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
+      assertNull(connection.getProtoDescriptors());
+
+      // proto descriptor should not reset if the statement is not a DDL statement
+      connection.setProtoDescriptors(protoDescriptors);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+
+      // proto descriptor file path should reset after executing a DDL statement
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
+      assertNull(connection.getProtoDescriptors());
+      assertNull(connection.getProtoDescriptorsFilePath());
+
+      // proto descriptor file path should not reset if the statement is not a DDL statement
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("SELECT FOO FROM BAR"));
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      assertEquals(protoDescriptorsFilePath, connection.getProtoDescriptorsFilePath());
+
+      // test proto descriptor file path as input
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
+      assertNull(connection.getProtoDescriptors());
+
+      // proto descriptor set through file path should overwrite the proto descriptor set from
+      // byte[]
+      connection.setProtoDescriptors("protoDescriptors".getBytes());
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
+      assertArrayEquals(protoDescriptors, connection.getProtoDescriptors());
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
+      assertNull(connection.getProtoDescriptors());
+
+      // proto descriptor set through byte[] should overwrite the proto descriptor from file path
+      connection.setProtoDescriptorsFilePath(protoDescriptorsFilePath);
+      connection.setProtoDescriptors("protoDescriptors".getBytes());
+      assertArrayEquals("protoDescriptors".getBytes(), connection.getProtoDescriptors());
+      connection.execute(Statement.of("CREATE PROTO BUNDLE (examples.spanner.music.SingerInfo)"));
+      assertNull(connection.getProtoDescriptors());
+    }
   }
 }

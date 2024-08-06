@@ -24,8 +24,8 @@
  * <p>Service Description: Cloud Spanner Database Admin API
  *
  * <p>The Cloud Spanner Database Admin API can be used to: &#42; create, drop, and list databases
- * &#42; update the schema of pre-existing databases &#42; create, delete and list backups for a
- * database &#42; restore a database from an existing backup
+ * &#42; update the schema of pre-existing databases &#42; create, delete, copy and list backups for
+ * a database &#42; restore a database from an existing backup
  *
  * <p>Sample for DatabaseAdminClient:
  *

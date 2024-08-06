@@ -55,6 +55,7 @@ import com.google.spanner.admin.database.v1.DatabaseAdminGrpc;
 import com.google.spanner.v1.SpannerGrpc;
 import io.opentelemetry.context.Scope;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 /**
@@ -83,6 +84,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   private final boolean returnCommitStats;
   private final Duration maxCommitDelay;
   private final boolean internalMetdataQuery;
+  private final byte[] protoDescriptors;
   private volatile SettableApiFuture<Timestamp> readTimestamp = null;
   private volatile TransactionRunner writeTransaction;
   private boolean used = false;
@@ -98,6 +100,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     private boolean returnCommitStats;
     private Duration maxCommitDelay;
     private boolean internalMetadataQuery;
+    private byte[] protoDescriptors;
 
     private Builder() {}
 
@@ -150,6 +153,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
       return this;
     }
 
+    Builder setProtoDescriptors(byte[] protoDescriptors) {
+      this.protoDescriptors = protoDescriptors;
+      return this;
+    }
+
     @Override
     SingleUseTransaction build() {
       Preconditions.checkState(ddlClient != null, "No DDL client specified");
@@ -176,10 +184,11 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     this.returnCommitStats = builder.returnCommitStats;
     this.maxCommitDelay = builder.maxCommitDelay;
     this.internalMetdataQuery = builder.internalMetadataQuery;
+    this.protoDescriptors = builder.protoDescriptors;
   }
 
   @Override
-  boolean isSingleUse() {
+  public boolean isSingleUse() {
     return true;
   }
 
@@ -396,7 +405,7 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
                     ddlClient.executeCreateDatabase(
                         ddl.getSqlWithoutComments(), dbClient.getDialect());
               } else {
-                operation = ddlClient.executeDdl(ddl.getSqlWithoutComments());
+                operation = ddlClient.executeDdl(ddl.getSqlWithoutComments(), protoDescriptors);
               }
               getWithStatementTimeout(operation, ddl);
               state = UnitOfWorkState.COMMITTED;
@@ -497,6 +506,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     if (returnCommitStats) {
       numOptions++;
     }
+    if (excludeTxnFromChangeStreams) {
+      numOptions++;
+    }
     if (maxCommitDelay != null) {
       numOptions++;
     }
@@ -510,6 +522,9 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
     }
     if (returnCommitStats) {
       options[index++] = Options.commitStats();
+    }
+    if (excludeTxnFromChangeStreams) {
+      options[index++] = Options.excludeTxnFromChangeStreams();
     }
     if (maxCommitDelay != null) {
       options[index++] = Options.maxCommitDelay(maxCommitDelay);
@@ -580,10 +595,21 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
 
   private ApiFuture<Long> executePartitionedUpdateAsync(
       CallType callType, final ParsedStatement update, final UpdateOption... options) {
+    final UpdateOption[] effectiveOptions;
+    if (excludeTxnFromChangeStreams) {
+      if (options.length == 0) {
+        effectiveOptions = new UpdateOption[] {Options.excludeTxnFromChangeStreams()};
+      } else {
+        effectiveOptions = Arrays.copyOf(options, options.length + 1);
+        effectiveOptions[effectiveOptions.length - 1] = Options.excludeTxnFromChangeStreams();
+      }
+    } else {
+      effectiveOptions = options;
+    }
     Callable<Long> callable =
         () -> {
           try {
-            Long res = dbClient.executePartitionedUpdate(update.getStatement(), options);
+            Long res = dbClient.executePartitionedUpdate(update.getStatement(), effectiveOptions);
             state = UnitOfWorkState.COMMITTED;
             return res;
           } catch (Throwable t) {

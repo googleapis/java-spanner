@@ -23,7 +23,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The request for [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup].
+ * The request for
+ * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.CopyBackupRequest}
@@ -74,8 +75,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * Required. The name of the destination instance that will contain the backup copy.
-   * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * Required. The name of the destination instance that will contain the backup
+   * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * </pre>
    *
    * <code>
@@ -100,8 +101,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * Required. The name of the destination instance that will contain the backup copy.
-   * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * Required. The name of the destination instance that will contain the backup
+   * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * </pre>
    *
    * <code>
@@ -310,11 +311,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the source backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the source backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -331,11 +332,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the source backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the source backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -354,11 +355,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the source backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the source backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -583,7 +584,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * The request for [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup].
+   * The request for
+   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.CopyBackupRequest}
@@ -847,8 +849,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Required. The name of the destination instance that will contain the backup copy.
-     * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the destination instance that will contain the backup
+     * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -872,8 +874,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Required. The name of the destination instance that will contain the backup copy.
-     * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the destination instance that will contain the backup
+     * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -897,8 +899,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Required. The name of the destination instance that will contain the backup copy.
-     * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the destination instance that will contain the backup
+     * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -921,8 +923,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Required. The name of the destination instance that will contain the backup copy.
-     * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the destination instance that will contain the backup
+     * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -941,8 +943,8 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Required. The name of the destination instance that will contain the backup copy.
-     * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+     * Required. The name of the destination instance that will contain the backup
+     * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -1460,11 +1462,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1480,11 +1482,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1506,11 +1508,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1535,11 +1537,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1561,11 +1563,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1597,11 +1599,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1622,11 +1624,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1643,11 +1645,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>
@@ -1668,11 +1670,11 @@ public final class CopyBackupRequest extends com.google.protobuf.GeneratedMessag
      *
      *
      * <pre>
-     * Optional. The encryption configuration used to encrypt the backup. If this field is
-     * not specified, the backup will use the same
-     * encryption configuration as the source backup by default, namely
-     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-     * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+     * Optional. The encryption configuration used to encrypt the backup. If this
+     * field is not specified, the backup will use the same encryption
+     * configuration as the source backup by default, namely
+     * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+     * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
      * </pre>
      *
      * <code>

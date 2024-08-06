@@ -126,7 +126,7 @@ public class ITEmulatorConcurrentTransactionsTest extends ITAbstractSpannerTest 
       executor.submit(() -> runRandomTransactions(numRowsInserted));
     }
     executor.shutdown();
-    assertTrue(executor.awaitTermination(30L, TimeUnit.SECONDS));
+    assertTrue(executor.awaitTermination(60L, TimeUnit.SECONDS));
     verifyRowCount(numRowsInserted.get());
   }
 

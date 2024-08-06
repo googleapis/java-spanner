@@ -91,6 +91,10 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementShowDelayTransactionStartUntilFirstWrite();
 
+  StatementResult statementSetKeepTransactionAlive(Boolean keepTransactionAlive);
+
+  StatementResult statementShowKeepTransactionAlive();
+
   StatementResult statementSetStatementTag(String tag);
 
   StatementResult statementShowStatementTag();
@@ -98,6 +102,10 @@ interface ConnectionStatementExecutor {
   StatementResult statementSetTransactionTag(String tag);
 
   StatementResult statementShowTransactionTag();
+
+  StatementResult statementSetExcludeTxnFromChangeStreams(Boolean excludeTxnFromChangeStreams);
+
+  StatementResult statementShowExcludeTxnFromChangeStreams();
 
   StatementResult statementBeginTransaction();
 
@@ -124,6 +132,8 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementAbortBatch();
 
+  StatementResult statementResetAll();
+
   StatementResult statementSetRPCPriority(Priority priority);
 
   StatementResult statementShowRPCPriority();
@@ -133,6 +143,14 @@ interface ConnectionStatementExecutor {
   StatementResult statementShowSavepointSupport();
 
   StatementResult statementShowTransactionIsolationLevel();
+
+  StatementResult statementSetProtoDescriptors(byte[] protoDescriptors);
+
+  StatementResult statementSetProtoDescriptorsFilePath(String filePath);
+
+  StatementResult statementShowProtoDescriptors();
+
+  StatementResult statementShowProtoDescriptorsFilePath();
 
   StatementResult statementExplain(String sql);
 

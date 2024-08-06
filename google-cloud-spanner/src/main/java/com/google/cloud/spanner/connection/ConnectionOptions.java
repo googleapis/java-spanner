@@ -192,6 +192,7 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_LENIENT = false;
   private static final boolean DEFAULT_ROUTE_TO_LEADER = true;
   private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
+  private static final boolean DEFAULT_KEEP_TRANSACTION_ALIVE = false;
   private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
   private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
   private static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
@@ -199,6 +200,7 @@ public class ConnectionOptions {
   private static final int DEFAULT_MAX_PARTITIONS = 0;
   private static final int DEFAULT_MAX_PARTITIONED_PARALLELISM = 1;
   private static final Boolean DEFAULT_ENABLE_EXTENDED_TRACING = null;
+  private static final Boolean DEFAULT_ENABLE_API_TRACING = null;
 
   private static final String PLAIN_TEXT_PROTOCOL = "http:";
   private static final String HOST_PROTOCOL = "https:";
@@ -268,6 +270,8 @@ public class ConnectionOptions {
   /** Name of the 'delay transaction start until first write' property. */
   public static final String DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME =
       "delayTransactionStartUntilFirstWrite";
+  /** Name of the 'keep transaction alive' property. */
+  public static final String KEEP_TRANSACTION_ALIVE_PROPERTY_NAME = "keepTransactionAlive";
   /** Name of the 'trackStackTraceOfSessionCheckout' connection property. */
   public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
   /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
@@ -280,6 +284,7 @@ public class ConnectionOptions {
       "maxPartitionedParallelism";
 
   public static final String ENABLE_EXTENDED_TRACING_PROPERTY_NAME = "enableExtendedTracing";
+  public static final String ENABLE_API_TRACING_PROPERTY_NAME = "enableApiTracing";
 
   private static final String GUARDED_CONNECTION_PROPERTY_ERROR_MESSAGE =
       "%s can only be used if the system property %s has been set to true. "
@@ -404,6 +409,12 @@ public class ConnectionOptions {
                           + "and improve performance for applications that can handle the lower transaction isolation semantics.",
                       DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE),
                   ConnectionProperty.createBooleanProperty(
+                      KEEP_TRANSACTION_ALIVE_PROPERTY_NAME,
+                      "Enabling this option will trigger the connection to keep read/write transactions alive by executing a SELECT 1 query once every 10 seconds "
+                          + "if no other statements are being executed. This option should be used with caution, as it can keep transactions alive and hold on to locks "
+                          + "longer than intended. This option should typically be used for CLI-type application that might wait for user input for a longer period of time.",
+                      DEFAULT_KEEP_TRANSACTION_ALIVE),
+                  ConnectionProperty.createBooleanProperty(
                       TRACK_SESSION_LEAKS_PROPERTY_NAME,
                       "Capture the call stack of the thread that checked out a session of the session pool. This will "
                           + "pre-create a LeakedSessionException already when a session is checked out. This can be disabled, "
@@ -448,7 +459,14 @@ public class ConnectionOptions {
                       "Include the SQL string in the OpenTelemetry traces that are generated "
                           + "by this connection. The SQL string is added as the standard OpenTelemetry "
                           + "attribute 'db.statement'.",
-                      DEFAULT_ENABLE_EXTENDED_TRACING))));
+                      DEFAULT_ENABLE_EXTENDED_TRACING),
+                  ConnectionProperty.createBooleanProperty(
+                      ENABLE_API_TRACING_PROPERTY_NAME,
+                      "Add OpenTelemetry traces for each individual RPC call. Enable this "
+                          + "to get a detailed view of each RPC that is being executed by your application, "
+                          + "or if you want to debug potential latency problems caused by RPCs that are "
+                          + "being retried.",
+                      DEFAULT_ENABLE_API_TRACING))));
 
   private static final Set<ConnectionProperty> INTERNAL_PROPERTIES =
       Collections.unmodifiableSet(
@@ -726,6 +744,7 @@ public class ConnectionOptions {
   private final RpcPriority rpcPriority;
   private final DdlInTransactionMode ddlInTransactionMode;
   private final boolean delayTransactionStartUntilFirstWrite;
+  private final boolean keepTransactionAlive;
   private final boolean trackSessionLeaks;
   private final boolean trackConnectionLeaks;
 
@@ -743,6 +762,7 @@ public class ConnectionOptions {
   private final OpenTelemetry openTelemetry;
   private final String tracingPrefix;
   private final Boolean enableExtendedTracing;
+  private final Boolean enableApiTracing;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
 
@@ -789,6 +809,7 @@ public class ConnectionOptions {
     this.rpcPriority = parseRPCPriority(this.uri);
     this.ddlInTransactionMode = parseDdlInTransactionMode(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
+    this.keepTransactionAlive = parseKeepTransactionAlive(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
     this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
 
@@ -851,6 +872,7 @@ public class ConnectionOptions {
     this.openTelemetry = builder.openTelemetry;
     this.tracingPrefix = builder.tracingPrefix;
     this.enableExtendedTracing = parseEnableExtendedTracing(this.uri);
+    this.enableApiTracing = parseEnableApiTracing(this.uri);
     this.statementExecutionInterceptors =
         Collections.unmodifiableList(builder.statementExecutionInterceptors);
     this.configurator = builder.configurator;
@@ -1169,6 +1191,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static boolean parseKeepTransactionAlive(String uri) {
+    String value = parseUriProperty(uri, KEEP_TRANSACTION_ALIVE_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_KEEP_TRANSACTION_ALIVE;
+  }
+
+  @VisibleForTesting
   static boolean parseTrackSessionLeaks(String uri) {
     String value = parseUriProperty(uri, TRACK_SESSION_LEAKS_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_SESSION_LEAKS;
@@ -1252,6 +1280,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static Boolean parseEnableApiTracing(String uri) {
+    String value = parseUriProperty(uri, ENABLE_API_TRACING_PROPERTY_NAME);
+    return value != null ? Boolean.valueOf(value) : DEFAULT_ENABLE_API_TRACING;
+  }
+
+  @VisibleForTesting
   static String parseUriProperty(String uri, String property) {
     Pattern pattern = Pattern.compile(String.format("(?is)(?:;|\\?)%s=(.*?)(?:;|$)", property));
     Matcher matcher = pattern.matcher(uri);
@@ -1296,6 +1330,14 @@ public class ConnectionOptions {
       res.add(matcher.group("PROPERTY"));
     }
     return res;
+  }
+
+  static long tryParseLong(String value, long defaultValue) {
+    try {
+      return Long.parseLong(value);
+    } catch (NumberFormatException ignore) {
+      return defaultValue;
+    }
   }
 
   /**
@@ -1534,6 +1576,18 @@ public class ConnectionOptions {
     return delayTransactionStartUntilFirstWrite;
   }
 
+  /**
+   * Whether connections created by this {@link ConnectionOptions} should keep read/write
+   * transactions alive by executing a SELECT 1 once every 10 seconds if no other statements are
+   * executed. This option should be used with caution, as enabling it can keep transactions alive
+   * for a very long time, which will hold on to any locks that have been taken by the transaction.
+   * This option should typically only be enabled for CLI-type applications or other user-input
+   * applications that might wait for a longer period of time on user input.
+   */
+  boolean isKeepTransactionAlive() {
+    return keepTransactionAlive;
+  }
+
   boolean isTrackConnectionLeaks() {
     return this.trackConnectionLeaks;
   }
@@ -1556,6 +1610,10 @@ public class ConnectionOptions {
 
   Boolean isEnableExtendedTracing() {
     return this.enableExtendedTracing;
+  }
+
+  Boolean isEnableApiTracing() {
+    return this.enableApiTracing;
   }
 
   /** Interceptors that should be executed after each statement */

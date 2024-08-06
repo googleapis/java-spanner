@@ -150,6 +150,15 @@
       "exampleStatements": ["show spanner.transaction_tag","show variable spanner.transaction_tag"]
     },
     {
+      "name": "SHOW [VARIABLE] SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.exclude_txn_from_change_streams\\s*\\z",
+      "method": "statementShowExcludeTxnFromChangeStreams",
+      "exampleStatements": ["show spanner.exclude_txn_from_change_streams","show variable spanner.exclude_txn_from_change_streams"]
+    },
+    {
       "name": "SHOW [VARIABLE] SPANNER.RPC_PRIORITY",
       "executorName": "ClientSideStatementNoParamExecutor",
       "resultType": "RESULT_SET",
@@ -175,6 +184,15 @@
       "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.delay_transaction_start_until_first_write\\s*\\z",
       "method": "statementShowDelayTransactionStartUntilFirstWrite",
       "exampleStatements": ["show spanner.delay_transaction_start_until_first_write","show variable spanner.delay_transaction_start_until_first_write"]
+    },
+    {
+      "name": "SHOW [VARIABLE] SPANNER.KEEP_TRANSACTION_ALIVE",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "RESULT_SET",
+      "statementType": "SHOW_KEEP_TRANSACTION_ALIVE",
+      "regex": "(?is)\\A\\s*show\\s+(?:variable\\s+)?spanner\\.keep_transaction_alive\\s*\\z",
+      "method": "statementShowKeepTransactionAlive",
+      "exampleStatements": ["show spanner.keep_transaction_alive","show variable spanner.keep_transaction_alive"]
     },
     {
       "name": "SHOW [VARIABLE] TRANSACTION ISOLATION LEVEL",
@@ -318,6 +336,15 @@
       "method": "statementAbortBatch",
       "exampleStatements": ["abort batch"],
       "examplePrerequisiteStatements": ["start batch ddl"]
+    },
+    {
+      "name": "RESET ALL",
+      "executorName": "ClientSideStatementNoParamExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "RESET_ALL",
+      "regex": "(?is)\\A\\s*(?:reset)(?:\\s+all)\\s*\\z",
+      "method": "statementResetAll",
+      "exampleStatements": ["reset all"]
     },
     {
       "name": "SET AUTOCOMMIT =|TO TRUE|FALSE",
@@ -680,6 +707,21 @@
       }
     },
     {
+      "name": "SET SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS =|TO TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.exclude_txn_from_change_streams(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetReturnCommitStats",
+      "exampleStatements": ["set spanner.exclude_txn_from_change_streams = true", "set spanner.exclude_txn_from_change_streams = false", "set spanner.exclude_txn_from_change_streams to true", "set spanner.exclude_txn_from_change_streams to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.EXCLUDE_TXN_FROM_CHANGE_STREAMS",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
       "name": "SET SPANNER.RPC_PRIORITY =|TO 'HIGH'|'MEDIUM'|'LOW'|'NULL'",
       "executorName": "ClientSideStatementSetExecutor",
       "resultType": "NO_RESULT",
@@ -735,6 +777,21 @@
       "exampleStatements": ["set spanner.delay_transaction_start_until_first_write = true", "set spanner.delay_transaction_start_until_first_write = false", "set spanner.delay_transaction_start_until_first_write to true", "set spanner.delay_transaction_start_until_first_write to false"],
       "setStatement": {
         "propertyName": "SPANNER.DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE",
+        "separator": "(?:=|\\s+TO\\s+)",
+        "allowedValues": "(TRUE|FALSE)",
+        "converterName": "ClientSideStatementValueConverters$BooleanConverter"
+      }
+    },
+    {
+      "name": "SET SPANNER.KEEP_TRANSACTION_ALIVE = TRUE|FALSE",
+      "executorName": "ClientSideStatementSetExecutor",
+      "resultType": "NO_RESULT",
+      "statementType": "SET_KEEP_TRANSACTION_ALIVE",
+      "regex": "(?is)\\A\\s*set\\s+spanner\\.keep_transaction_alive(?:\\s*=\\s*|\\s+to\\s+)(.*)\\z",
+      "method": "statementSetKeepTransactionAlive",
+      "exampleStatements": ["set spanner.keep_transaction_alive = true", "set spanner.keep_transaction_alive = false", "set spanner.keep_transaction_alive to true", "set spanner.keep_transaction_alive to false"],
+      "setStatement": {
+        "propertyName": "SPANNER.KEEP_TRANSACTION_ALIVE",
         "separator": "(?:=|\\s+TO\\s+)",
         "allowedValues": "(TRUE|FALSE)",
         "converterName": "ClientSideStatementValueConverters$BooleanConverter"

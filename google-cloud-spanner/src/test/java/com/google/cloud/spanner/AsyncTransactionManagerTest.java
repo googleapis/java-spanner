@@ -531,7 +531,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   public void asyncTransactionManagerCommitFails() throws Exception {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
-            Status.RESOURCE_EXHAUSTED
+            Status.INVALID_ARGUMENT
                 .withDescription("mutation limit exceeded")
                 .asRuntimeException()));
     try (AsyncTransactionManager mgr = client().transactionManagerAsync()) {
@@ -545,7 +545,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                               AsyncTransactionManagerHelper.executeUpdateAsync(UPDATE_STATEMENT),
                               executor)
                           .commitAsync()));
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
   }
@@ -928,7 +928,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
   public void asyncTransactionManagerWithBatchUpdateCommitFails() throws Exception {
     mockSpanner.setCommitExecutionTime(
         SimulatedExecutionTime.ofException(
-            Status.RESOURCE_EXHAUSTED
+            Status.INVALID_ARGUMENT
                 .withDescription("mutation limit exceeded")
                 .asRuntimeException()));
     try (AsyncTransactionManager manager = clientWithEmptySessionPool().transactionManagerAsync()) {
@@ -945,7 +945,7 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
                                       ImmutableList.of(UPDATE_STATEMENT, UPDATE_STATEMENT)),
                               executor)
                           .commitAsync()));
-      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+      assertThat(e.getErrorCode()).isEqualTo(ErrorCode.INVALID_ARGUMENT);
       assertThat(e.getMessage()).contains("mutation limit exceeded");
     }
     if (isMultiplexedSessionsEnabled()) {

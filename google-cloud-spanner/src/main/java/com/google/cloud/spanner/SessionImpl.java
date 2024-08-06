@@ -420,11 +420,13 @@ class SessionImpl implements Session {
             .setSession(getName())
             .setOptions(createReadWriteTransactionOptions(transactionOptions))
             .build();
-    final ApiFuture<Transaction> requestFuture =
-        spanner.getRpc().beginTransactionAsync(request, getOptions(), routeToLeader);
+    final ApiFuture<Transaction> requestFuture;
+    try (IScope ignore = tracer.withSpan(span)) {
+      requestFuture = spanner.getRpc().beginTransactionAsync(request, getOptions(), routeToLeader);
+    }
     requestFuture.addListener(
         () -> {
-          try (IScope s = tracer.withSpan(span)) {
+          try (IScope ignore = tracer.withSpan(span)) {
             Transaction txn = requestFuture.get();
             if (txn.getId().isEmpty()) {
               throw newSpannerException(

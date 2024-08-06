@@ -78,12 +78,12 @@ class DmlBatch extends AbstractBaseUnitOfWork {
 
   private DmlBatch(Builder builder) {
     super(builder);
-    this.transaction = builder.transaction;
+    this.transaction = Preconditions.checkNotNull(builder.transaction);
     this.statementTag = builder.statementTag;
   }
 
   @Override
-  boolean isSingleUse() {
+  public boolean isSingleUse() {
     return false;
   }
 
@@ -174,8 +174,11 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   @Override
   public ApiFuture<ResultSet> analyzeUpdateAsync(
       CallType callType, ParsedStatement update, AnalyzeMode analyzeMode, UpdateOption... options) {
-    throw SpannerExceptionFactory.newSpannerException(
-        ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DML batches.");
+    if (transaction.isSingleUse()) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.FAILED_PRECONDITION, "Analyzing updates is not allowed for DML batches.");
+    }
+    return transaction.analyzeUpdateAsync(callType, update, analyzeMode, options);
   }
 
   @Override

@@ -26,19 +26,25 @@ import com.google.longrunning.Operation;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Empty;
 import com.google.spanner.admin.database.v1.Backup;
+import com.google.spanner.admin.database.v1.BackupSchedule;
 import com.google.spanner.admin.database.v1.CopyBackupRequest;
 import com.google.spanner.admin.database.v1.CreateBackupRequest;
+import com.google.spanner.admin.database.v1.CreateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.CreateDatabaseRequest;
 import com.google.spanner.admin.database.v1.Database;
 import com.google.spanner.admin.database.v1.DatabaseAdminGrpc.DatabaseAdminImplBase;
 import com.google.spanner.admin.database.v1.DeleteBackupRequest;
+import com.google.spanner.admin.database.v1.DeleteBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.DropDatabaseRequest;
 import com.google.spanner.admin.database.v1.GetBackupRequest;
+import com.google.spanner.admin.database.v1.GetBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.GetDatabaseDdlResponse;
 import com.google.spanner.admin.database.v1.GetDatabaseRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsRequest;
 import com.google.spanner.admin.database.v1.ListBackupOperationsResponse;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesRequest;
+import com.google.spanner.admin.database.v1.ListBackupSchedulesResponse;
 import com.google.spanner.admin.database.v1.ListBackupsRequest;
 import com.google.spanner.admin.database.v1.ListBackupsResponse;
 import com.google.spanner.admin.database.v1.ListDatabaseOperationsRequest;
@@ -49,6 +55,7 @@ import com.google.spanner.admin.database.v1.ListDatabasesRequest;
 import com.google.spanner.admin.database.v1.ListDatabasesResponse;
 import com.google.spanner.admin.database.v1.RestoreDatabaseRequest;
 import com.google.spanner.admin.database.v1.UpdateBackupRequest;
+import com.google.spanner.admin.database.v1.UpdateBackupScheduleRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest;
 import com.google.spanner.admin.database.v1.UpdateDatabaseRequest;
 import io.grpc.stub.StreamObserver;
@@ -502,6 +509,112 @@ public class MockDatabaseAdminImpl extends DatabaseAdminImplBase {
                   "Unrecognized response type %s for method ListDatabaseRoles, expected %s or %s",
                   response == null ? "null" : response.getClass().getName(),
                   ListDatabaseRolesResponse.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void createBackupSchedule(
+      CreateBackupScheduleRequest request, StreamObserver<BackupSchedule> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof BackupSchedule) {
+      requests.add(request);
+      responseObserver.onNext(((BackupSchedule) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method CreateBackupSchedule, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  BackupSchedule.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void getBackupSchedule(
+      GetBackupScheduleRequest request, StreamObserver<BackupSchedule> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof BackupSchedule) {
+      requests.add(request);
+      responseObserver.onNext(((BackupSchedule) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method GetBackupSchedule, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  BackupSchedule.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void updateBackupSchedule(
+      UpdateBackupScheduleRequest request, StreamObserver<BackupSchedule> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof BackupSchedule) {
+      requests.add(request);
+      responseObserver.onNext(((BackupSchedule) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method UpdateBackupSchedule, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  BackupSchedule.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void deleteBackupSchedule(
+      DeleteBackupScheduleRequest request, StreamObserver<Empty> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof Empty) {
+      requests.add(request);
+      responseObserver.onNext(((Empty) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method DeleteBackupSchedule, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  Empty.class.getName(),
+                  Exception.class.getName())));
+    }
+  }
+
+  @Override
+  public void listBackupSchedules(
+      ListBackupSchedulesRequest request,
+      StreamObserver<ListBackupSchedulesResponse> responseObserver) {
+    Object response = responses.poll();
+    if (response instanceof ListBackupSchedulesResponse) {
+      requests.add(request);
+      responseObserver.onNext(((ListBackupSchedulesResponse) response));
+      responseObserver.onCompleted();
+    } else if (response instanceof Exception) {
+      responseObserver.onError(((Exception) response));
+    } else {
+      responseObserver.onError(
+          new IllegalArgumentException(
+              String.format(
+                  "Unrecognized response type %s for method ListBackupSchedules, expected %s or %s",
+                  response == null ? "null" : response.getClass().getName(),
+                  ListBackupSchedulesResponse.class.getName(),
                   Exception.class.getName())));
     }
   }

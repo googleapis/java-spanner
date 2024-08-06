@@ -669,5 +669,40 @@ public interface SpannerActionOrBuilder
   com.google.spanner.executor.v1.ExecuteChangeStreamQueryOrBuilder
       getExecuteChangeStreamQueryOrBuilder();
 
+  /**
+   *
+   *
+   * <pre>
+   * Query cancellation action for testing the cancellation of a query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+   *
+   * @return Whether the queryCancellation field is set.
+   */
+  boolean hasQueryCancellation();
+  /**
+   *
+   *
+   * <pre>
+   * Query cancellation action for testing the cancellation of a query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+   *
+   * @return The queryCancellation.
+   */
+  com.google.spanner.executor.v1.QueryCancellationAction getQueryCancellation();
+  /**
+   *
+   *
+   * <pre>
+   * Query cancellation action for testing the cancellation of a query.
+   * </pre>
+   *
+   * <code>.google.spanner.executor.v1.QueryCancellationAction query_cancellation = 51;</code>
+   */
+  com.google.spanner.executor.v1.QueryCancellationActionOrBuilder getQueryCancellationOrBuilder();
+
   com.google.spanner.executor.v1.SpannerAction.ActionCase getActionCase();
 }

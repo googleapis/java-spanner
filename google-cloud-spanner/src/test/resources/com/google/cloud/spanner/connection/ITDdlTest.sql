@@ -127,7 +127,7 @@ WHERE TABLE_NAME='VALID_MULTIPLE_DDL_IN_DDL_BATCH_1' OR TABLE_NAME='VALID_MULTIP
 
 
 NEW_CONNECTION;
-/* 
+/*
  * Do a test that shows that a DDL batch might only execute some of the statements,
  * for example if data in a table prevents a unique index from being created.
  */
@@ -187,3 +187,44 @@ RUN BATCH;
 
 START BATCH DDL;
 ABORT BATCH;
+
+NEW_CONNECTION;
+-- Set proto descriptors using relative path to the descriptors.pb file. This gets applied for next DDL statement
+SET PROTO_DESCRIPTORS_FILE_PATH = 'src/test/resources/com/google/cloud/spanner/descriptors.pb';
+-- Check if Proto descriptors is set
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS_FILE_PATH'
+SHOW VARIABLE PROTO_DESCRIPTORS_FILE_PATH;
+
+CREATE PROTO BUNDLE (examples.spanner.music.Genre);
+-- Check if Proto descriptors is reset to null
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS',null
+SHOW VARIABLE PROTO_DESCRIPTORS;
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS_FILE_PATH',null
+SHOW VARIABLE PROTO_DESCRIPTORS_FILE_PATH;
+
+-- Set Proto Descriptor as base64 string. This gets applied to all statements in next DDL batch
+SET PROTO_DESCRIPTORS = 'CvYCCgxzaW5nZXIucHJvdG8SFmV4YW1wbGVzLnNwYW5uZXIubXVzaWMi6gEKClNpbmdlckluZm8SIAoJc2luZ2VyX2lkGAEgASgDSABSCHNpbmdlcklkiAEBEiIKCmJpcnRoX2RhdGUYAiABKAlIAVIJYmlydGhEYXRliAEBEiUKC25hdGlvbmFsaXR5GAMgASgJSAJSC25hdGlvbmFsaXR5iAEBEjgKBWdlbnJlGAQgASgOMh0uZXhhbXBsZXMuc3Bhbm5lci5tdXNpYy5HZW5yZUgDUgVnZW5yZYgBAUIMCgpfc2luZ2VyX2lkQg0KC19iaXJ0aF9kYXRlQg4KDF9uYXRpb25hbGl0eUIICgZfZ2VucmUqLgoFR2VucmUSBwoDUE9QEAASCAoESkFaWhABEggKBEZPTEsQAhIICgRST0NLEANCKQoYY29tLmdvb2dsZS5jbG91ZC5zcGFubmVyQgtTaW5nZXJQcm90b1AAYgZwcm90bzM=';
+
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS'
+SHOW VARIABLE PROTO_DESCRIPTORS;
+
+START BATCH DDL;
+ALTER PROTO BUNDLE INSERT (examples.spanner.music.SingerInfo);
+CREATE TABLE Singers (
+                         SingerId   INT64 NOT NULL,
+                         FirstName  STRING(1024),
+                         LastName   STRING(1024),
+                         SingerInfo examples.spanner.music.SingerInfo,
+                         SingerGenre examples.spanner.music.Genre
+) PRIMARY KEY (SingerId);
+-- Run the batch
+RUN BATCH;
+
+-- Check if Proto descriptors is reset to null
+@EXPECT RESULT_SET 'PROTO_DESCRIPTORS',null
+SHOW VARIABLE PROTO_DESCRIPTORS;
+-- Check that the table is created
+@EXPECT RESULT_SET
+SELECT COUNT(*) AS ACTUAL, 1 AS EXPECTED
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME='Singers';
