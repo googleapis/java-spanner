@@ -16,17 +16,26 @@
             "CreateBackup": {
               "methods": ["createBackupAsync", "createBackupAsync", "createBackupAsync", "createBackupOperationCallable", "createBackupCallable"]
             },
+            "CreateBackupSchedule": {
+              "methods": ["createBackupSchedule", "createBackupSchedule", "createBackupSchedule", "createBackupScheduleCallable"]
+            },
             "CreateDatabase": {
               "methods": ["createDatabaseAsync", "createDatabaseAsync", "createDatabaseAsync", "createDatabaseOperationCallable", "createDatabaseCallable"]
             },
             "DeleteBackup": {
               "methods": ["deleteBackup", "deleteBackup", "deleteBackup", "deleteBackupCallable"]
             },
+            "DeleteBackupSchedule": {
+              "methods": ["deleteBackupSchedule", "deleteBackupSchedule", "deleteBackupSchedule", "deleteBackupScheduleCallable"]
+            },
             "DropDatabase": {
               "methods": ["dropDatabase", "dropDatabase", "dropDatabase", "dropDatabaseCallable"]
             },
             "GetBackup": {
               "methods": ["getBackup", "getBackup", "getBackup", "getBackupCallable"]
+            },
+            "GetBackupSchedule": {
+              "methods": ["getBackupSchedule", "getBackupSchedule", "getBackupSchedule", "getBackupScheduleCallable"]
             },
             "GetDatabase": {
               "methods": ["getDatabase", "getDatabase", "getDatabase", "getDatabaseCallable"]
@@ -39,6 +48,9 @@
             },
             "ListBackupOperations": {
               "methods": ["listBackupOperations", "listBackupOperations", "listBackupOperations", "listBackupOperationsPagedCallable", "listBackupOperationsCallable"]
+            },
+            "ListBackupSchedules": {
+              "methods": ["listBackupSchedules", "listBackupSchedules", "listBackupSchedules", "listBackupSchedulesPagedCallable", "listBackupSchedulesCallable"]
             },
             "ListBackups": {
               "methods": ["listBackups", "listBackups", "listBackups", "listBackupsPagedCallable", "listBackupsCallable"]
@@ -63,6 +75,9 @@
             },
             "UpdateBackup": {
               "methods": ["updateBackup", "updateBackup", "updateBackupCallable"]
+            },
+            "UpdateBackupSchedule": {
+              "methods": ["updateBackupSchedule", "updateBackupSchedule", "updateBackupScheduleCallable"]
             },
             "UpdateDatabase": {
               "methods": ["updateDatabaseAsync", "updateDatabaseAsync", "updateDatabaseOperationCallable", "updateDatabaseCallable"]
