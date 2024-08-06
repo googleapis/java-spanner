@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.api.gax.util.TimeConversionUtils.toJavaTimeDuration;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -149,12 +150,17 @@ public class CompositeTracerTest {
   @Test
   public void testAttemptFailed() {
     RuntimeException error = new RuntimeException();
-    Duration delay = Duration.ofMillis(10);
+    Duration delay = org.threeten.bp.Duration.ofMillis(10);
     compositeTracer.attemptFailed(error, delay);
-    verify(child1, times(1)).attemptFailed(error, delay);
-    verify(child2, times(1)).attemptFailed(error, delay);
-    verify(child3, times(1)).attemptFailed(error, delay);
-    verify(child4, times(1)).attemptFailed(error, delay);
+
+    // CompositeTracer's attemptFailed calls the attemptFailedDuration method. This was part of
+    // the java.time migration effort to move away from threetenbp. Verify that each child tracer
+    // calls attemptFailedDuration once.
+    java.time.Duration delayDuration = toJavaTimeDuration(delay);
+    verify(child1, times(1)).attemptFailedDuration(error, delayDuration);
+    verify(child2, times(1)).attemptFailedDuration(error, delayDuration);
+    verify(child3, times(1)).attemptFailedDuration(error, delayDuration);
+    verify(child4, times(1)).attemptFailedDuration(error, delayDuration);
   }
 
   @Test
