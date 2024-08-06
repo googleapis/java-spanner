@@ -87,7 +87,8 @@ public interface CopyBackupMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+   * operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -100,7 +101,8 @@ public interface CopyBackupMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+   * operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>
@@ -113,7 +115,8 @@ public interface CopyBackupMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup] operation.
+   * [CopyBackup][google.spanner.admin.database.v1.DatabaseAdmin.CopyBackup]
+   * operation.
    * </pre>
    *
    * <code>.google.spanner.admin.database.v1.OperationProgress progress = 3;</code>

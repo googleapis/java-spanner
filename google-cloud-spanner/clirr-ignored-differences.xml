@@ -732,4 +732,16 @@
     <className>com/google/cloud/spanner/connection/Connection</className>
     <method>void reset()</method>
   </difference>
+
+  <!-- Added keepTransactionAlive property -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>void setKeepTransactionAlive(boolean)</method>
+  </difference>
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/connection/Connection</className>
+    <method>boolean isKeepTransactionAlive()</method>
+  </difference>
 </differences>

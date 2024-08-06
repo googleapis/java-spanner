@@ -28,8 +28,8 @@ public interface CopyBackupRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The name of the destination instance that will contain the backup copy.
-   * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * Required. The name of the destination instance that will contain the backup
+   * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * </pre>
    *
    * <code>
@@ -43,8 +43,8 @@ public interface CopyBackupRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The name of the destination instance that will contain the backup copy.
-   * Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
+   * Required. The name of the destination instance that will contain the backup
+   * copy. Values are of the form: `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * </pre>
    *
    * <code>
@@ -177,11 +177,11 @@ public interface CopyBackupRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the source backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the source backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -195,11 +195,11 @@ public interface CopyBackupRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the source backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the source backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>
@@ -213,11 +213,11 @@ public interface CopyBackupRequestOrBuilder
    *
    *
    * <pre>
-   * Optional. The encryption configuration used to encrypt the backup. If this field is
-   * not specified, the backup will use the same
-   * encryption configuration as the source backup by default, namely
-   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type] =
-   * `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * Optional. The encryption configuration used to encrypt the backup. If this
+   * field is not specified, the backup will use the same encryption
+   * configuration as the source backup by default, namely
+   * [encryption_type][google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type]
+   * = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * </pre>
    *
    * <code>

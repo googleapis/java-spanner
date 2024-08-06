@@ -30,7 +30,7 @@ public interface ListDatabaseRolesRequestOrBuilder
    * <pre>
    * Required. The database whose roles should be listed.
    * Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
    * <code>
@@ -46,7 +46,7 @@ public interface ListDatabaseRolesRequestOrBuilder
    * <pre>
    * Required. The database whose roles should be listed.
    * Values are of the form
-   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;/databaseRoles`.
+   * `projects/&lt;project&gt;/instances/&lt;instance&gt;/databases/&lt;database&gt;`.
    * </pre>
    *
    * <code>
@@ -76,8 +76,9 @@ public interface ListDatabaseRolesRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-   * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+   * from a previous
+   * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>
@@ -90,8 +91,9 @@ public interface ListDatabaseRolesRequestOrBuilder
    *
    * <pre>
    * If non-empty, `page_token` should contain a
-   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token] from a
-   * previous [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
+   * [next_page_token][google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token]
+   * from a previous
+   * [ListDatabaseRolesResponse][google.spanner.admin.database.v1.ListDatabaseRolesResponse].
    * </pre>
    *
    * <code>string page_token = 3;</code>
