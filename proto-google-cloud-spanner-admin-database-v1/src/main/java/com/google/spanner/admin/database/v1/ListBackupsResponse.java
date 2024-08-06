@@ -23,7 +23,8 @@ package com.google.spanner.admin.database.v1;
  *
  *
  * <pre>
- * The response for [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups].
+ * The response for
+ * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups].
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.database.v1.ListBackupsResponse}
@@ -149,8 +150,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups] call to fetch more
-   * of the matching backups.
+   * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups]
+   * call to fetch more of the matching backups.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -174,8 +175,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
    *
    * <pre>
    * `next_page_token` can be sent in a subsequent
-   * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups] call to fetch more
-   * of the matching backups.
+   * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups]
+   * call to fetch more of the matching backups.
    * </pre>
    *
    * <code>string next_page_token = 2;</code>
@@ -370,7 +371,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
    *
    *
    * <pre>
-   * The response for [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups].
+   * The response for
+   * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups].
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.database.v1.ListBackupsResponse}
@@ -983,8 +985,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups] call to fetch more
-     * of the matching backups.
+     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups]
+     * call to fetch more of the matching backups.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1007,8 +1009,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups] call to fetch more
-     * of the matching backups.
+     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups]
+     * call to fetch more of the matching backups.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1031,8 +1033,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups] call to fetch more
-     * of the matching backups.
+     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups]
+     * call to fetch more of the matching backups.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1054,8 +1056,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups] call to fetch more
-     * of the matching backups.
+     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups]
+     * call to fetch more of the matching backups.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>
@@ -1073,8 +1075,8 @@ public final class ListBackupsResponse extends com.google.protobuf.GeneratedMess
      *
      * <pre>
      * `next_page_token` can be sent in a subsequent
-     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups] call to fetch more
-     * of the matching backups.
+     * [ListBackups][google.spanner.admin.database.v1.DatabaseAdmin.ListBackups]
+     * call to fetch more of the matching backups.
      * </pre>
      *
      * <code>string next_page_token = 2;</code>

@@ -186,6 +186,15 @@
 		"exampleStatements": ["show variable delay_transaction_start_until_first_write"]
 	},
 	{
+		"name": "SHOW VARIABLE KEEP_TRANSACTION_ALIVE",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_KEEP_TRANSACTION_ALIVE",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+keep_transaction_alive\\s*\\z",
+		"method": "statementShowKeepTransactionAlive",
+		"exampleStatements": ["show variable keep_transaction_alive"]
+	},
+	{
 		"name": "PARTITION <sql>",
 		"executorName": "ClientSideStatementPartitionExecutor",
 		"resultType": "RESULT_SET",
@@ -278,6 +287,15 @@
 	  "method": "statementAbortBatch",
 	  "exampleStatements": ["abort batch"],
 	  "examplePrerequisiteStatements": ["start batch ddl"]
+	},
+	{
+		"name": "RESET ALL",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "RESET_ALL",
+		"regex": "(?is)\\A\\s*(?:reset)(?:\\s+all)\\s*\\z",
+		"method": "statementResetAll",
+		"exampleStatements": ["reset all"]
 	},
 	{
 	  "name": "SET AUTOCOMMIT = TRUE|FALSE",
@@ -575,6 +593,21 @@
 		}
 	},
 	{
+		"name": "SET KEEP_TRANSACTION_ALIVE = TRUE|FALSE",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_KEEP_TRANSACTION_ALIVE",
+		"regex": "(?is)\\A\\s*set\\s+keep_transaction_alive\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetKeepTransactionAlive",
+		"exampleStatements": ["set keep_transaction_alive = true", "set keep_transaction_alive = false"],
+		"setStatement": {
+			"propertyName": "KEEP_TRANSACTION_ALIVE",
+			"separator": "=",
+			"allowedValues": "(TRUE|FALSE)",
+			"converterName": "ClientSideStatementValueConverters$BooleanConverter"
+		}
+	},
+	{
 		"name": "SHOW VARIABLE DATA_BOOST_ENABLED",
 		"executorName": "ClientSideStatementNoParamExecutor",
 		"resultType": "RESULT_SET",
@@ -669,6 +702,56 @@
 			"allowedValues": "(\\d{1,9})",
 			"converterName": "ClientSideStatementValueConverters$NonNegativeIntegerConverter"
 		}
+	},
+	{
+		"name": "SET PROTO_DESCRIPTORS = '<proto_descriptor>'",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_PROTO_DESCRIPTORS",
+		"regex": "(?is)\\A\\s*set\\s+proto_descriptors\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetProtoDescriptors",
+		"exampleStatements": ["set proto_descriptors='protodescriptorsbase64'"],
+		"setStatement": {
+		"propertyName": "PROTO_DESCRIPTORS",
+		"separator": "=",
+		"allowedValues": "'((\\S+)|())'",
+		"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsConverter"
+		}
+	},
+	{
+		"name": "SET PROTO_DESCRIPTORS_FILE_PATH = '<path>'",
+		"executorName": "ClientSideStatementSetExecutor",
+		"resultType": "NO_RESULT",
+		"statementType": "SET_PROTO_DESCRIPTORS_FILE_PATH",
+		"regex": "(?is)\\A\\s*set\\s+proto_descriptors_file_path\\s*(?:=)\\s*(.*)\\z",
+		"method": "statementSetProtoDescriptorsFilePath",
+		"exampleStatements": ["set proto_descriptors_file_path='src/test/resources/com/google/cloud/spanner/descriptors.pb'"],
+		"setStatement": {
+			"propertyName": "PROTO_DESCRIPTORS_FILE_PATH",
+			"separator": "=",
+			"allowedValues": "'((\\S+)|())'",
+			"converterName": "ClientSideStatementValueConverters$ProtoDescriptorsFileConverter"
+		}
+	},
+	{
+		"name": "SHOW VARIABLE PROTO_DESCRIPTORS",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_PROTO_DESCRIPTORS",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+proto_descriptors\\s*\\z",
+		"method": "statementShowProtoDescriptors",
+		"exampleStatements": ["show variable proto_descriptors"]
+	},
+	{
+		"name": "SHOW VARIABLE PROTO_DESCRIPTORS_FILE_PATH",
+		"executorName": "ClientSideStatementNoParamExecutor",
+		"resultType": "RESULT_SET",
+		"statementType": "SHOW_PROTO_DESCRIPTORS_FILE_PATH",
+		"regex": "(?is)\\A\\s*show\\s+variable\\s+proto_descriptors_file_path\\s*\\z",
+		"method": "statementShowProtoDescriptorsFilePath",
+		"exampleStatements": [
+			"show variable proto_descriptors_file_path"
+		]
 	}
 	]
 }

@@ -32,7 +32,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.67.1-SNAPSHOT</version>
+      <version>6.71.1-SNAPSHOT</version>
     </dependency>
     <!-- {x-version-update-end} -->
     
@@ -115,7 +115,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.0</version>
         <executions>
           <execution>
             <id>add-snippets-source</id>
@@ -144,7 +144,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.2.5</version>
+        <version>3.3.1</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>java-client-integration-tests</spanner.test.instance>

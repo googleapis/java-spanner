@@ -1,5 +1,71 @@
 # Changelog
 
+## [6.71.0](https://github.com/googleapis/java-spanner/compare/v6.70.0...v6.71.0) (2024-07-03)
+
+
+### Features
+
+* Include thread name in traces ([#3173](https://github.com/googleapis/java-spanner/issues/3173)) ([92b1e07](https://github.com/googleapis/java-spanner/commit/92b1e079e6093bc4a2e7b458c1bbe0f62a0fada9))
+* Support multiplexed sessions for RO transactions ([#3141](https://github.com/googleapis/java-spanner/issues/3141)) ([2b8e9ed](https://github.com/googleapis/java-spanner/commit/2b8e9ededc1ea1a5e8d4f90083f2cf862fcc198a))
+
+## [6.70.0](https://github.com/googleapis/java-spanner/compare/v6.69.0...v6.70.0) (2024-06-27)
+
+
+### Features
+
+* Add field order_by in spanner.proto ([#3064](https://github.com/googleapis/java-spanner/issues/3064)) ([52ee196](https://github.com/googleapis/java-spanner/commit/52ee1967ee3a37fb0482ad8b51c6e77e28b79844))
+
+
+### Bug Fixes
+
+* Do not end transaction span when rolling back to savepoint ([#3167](https://github.com/googleapis/java-spanner/issues/3167)) ([8ec0cf2](https://github.com/googleapis/java-spanner/commit/8ec0cf2032dece545c9e4d8a794b80d06550b710))
+* Remove unused DmlBatch span ([#3147](https://github.com/googleapis/java-spanner/issues/3147)) ([f7891c1](https://github.com/googleapis/java-spanner/commit/f7891c1ca42727c775cdbe91bff8d55191a3d799))
+
+
+### Dependencies
+
+* Update dependencies ([#3181](https://github.com/googleapis/java-spanner/issues/3181)) ([0c787e6](https://github.com/googleapis/java-spanner/commit/0c787e6fa67d2a259a76bbd2d7f1cfa20a1dbee8))
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.32.0 ([#3184](https://github.com/googleapis/java-spanner/issues/3184)) ([9c85a6f](https://github.com/googleapis/java-spanner/commit/9c85a6fabea527253ea40a8970cc9071804d94c4))
+* Update dependency commons-cli:commons-cli to v1.8.0 ([#3073](https://github.com/googleapis/java-spanner/issues/3073)) ([36b5340](https://github.com/googleapis/java-spanner/commit/36b5340ef8bf197fbc8ed882f76caff9a6fe84b6))
+
+## [6.69.0](https://github.com/googleapis/java-spanner/compare/v6.68.1...v6.69.0) (2024-06-12)
+
+
+### Features
+
+* Add option to enable ApiTracer ([#3095](https://github.com/googleapis/java-spanner/issues/3095)) ([a0a4bc5](https://github.com/googleapis/java-spanner/commit/a0a4bc58d4269a8c1e5e76d9a0469f649bb69148))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.31.0 ([#3159](https://github.com/googleapis/java-spanner/issues/3159)) ([1ee19d1](https://github.com/googleapis/java-spanner/commit/1ee19d19c2db30d79c8741cc5739de1c69fb95f9))
+
+## [6.68.1](https://github.com/googleapis/java-spanner/compare/v6.68.0...v6.68.1) (2024-05-29)
+
+
+### Bug Fixes
+
+* Make SessionPoolOptions#setUseMultiplexedSession(boolean) package private ([#3130](https://github.com/googleapis/java-spanner/issues/3130)) ([575c3e0](https://github.com/googleapis/java-spanner/commit/575c3e01541e12294dd37a622f0b1dca52d200ba))
+
+## [6.68.0](https://github.com/googleapis/java-spanner/compare/v6.67.0...v6.68.0) (2024-05-27)
+
+
+### Features
+
+* [java] allow passing libraries_bom_version from env ([#1967](https://github.com/googleapis/java-spanner/issues/1967)) ([#3112](https://github.com/googleapis/java-spanner/issues/3112)) ([7d5a52c](https://github.com/googleapis/java-spanner/commit/7d5a52c19a4b8028b78fc64a10f1ba6127fa6ffe))
+* Allow DML batches in transactions to execute analyzeUpdate ([#3114](https://github.com/googleapis/java-spanner/issues/3114)) ([dee7cda](https://github.com/googleapis/java-spanner/commit/dee7cdabe74058434e4d630846f066dc82fdf512))
+* **spanner:** Add support for Proto Columns in Connection API ([#3123](https://github.com/googleapis/java-spanner/issues/3123)) ([7e7c814](https://github.com/googleapis/java-spanner/commit/7e7c814045dc84aaa57e7c716b0221e6cb19bcd1))
+
+
+### Bug Fixes
+
+* Allow getMetadata() calls before calling next() ([#3111](https://github.com/googleapis/java-spanner/issues/3111)) ([39902c3](https://github.com/googleapis/java-spanner/commit/39902c384f3f7f9438252cbee287f2428faf1440))
+
+
+### Dependencies
+
+* Update dependency org.graalvm.buildtools:native-maven-plugin to v0.10.2 ([#3117](https://github.com/googleapis/java-spanner/issues/3117)) ([ddebbbb](https://github.com/googleapis/java-spanner/commit/ddebbbbeef976f61f23cdd66c5f7c1f412e2f9bd))
+
 ## [6.67.0](https://github.com/googleapis/java-spanner/compare/v6.66.0...v6.67.0) (2024-05-22)
 
 

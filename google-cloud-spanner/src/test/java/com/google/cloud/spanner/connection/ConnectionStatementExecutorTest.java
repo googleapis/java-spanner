@@ -252,4 +252,29 @@ public class ConnectionStatementExecutorTest {
     verify(connection, never()).setTransactionMode(TransactionMode.READ_ONLY_TRANSACTION);
     verify(connection, never()).setTransactionMode(TransactionMode.READ_WRITE_TRANSACTION);
   }
+
+  @Test
+  public void testStatementSetProtoDescriptors() {
+    subject.statementSetProtoDescriptors("protoDescriptor".getBytes());
+    verify(connection).setProtoDescriptors("protoDescriptor".getBytes());
+  }
+
+  @Test
+  public void testStatementSetProtoDescriptorsFilePath() {
+    String filePath = "com/google/cloud/spanner/descriptors.pb";
+    subject.statementSetProtoDescriptorsFilePath(filePath);
+    verify(connection).setProtoDescriptorsFilePath(filePath);
+  }
+
+  @Test
+  public void testStatementGetProtoDescriptors() {
+    subject.statementShowProtoDescriptors();
+    verify(connection).getProtoDescriptors();
+  }
+
+  @Test
+  public void testStatementGetProtoDescriptorsFilePath() {
+    subject.statementShowProtoDescriptorsFilePath();
+    verify(connection).getProtoDescriptorsFilePath();
+  }
 }

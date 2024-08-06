@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.Lis
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.BetaApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
@@ -738,6 +739,7 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   }
 
   /** Returns the default service endpoint. */
+  @ObsoleteApi("Use getEndpoint() instead")
   public static String getDefaultEndpoint() {
     return "spanner.googleapis.com:443";
   }

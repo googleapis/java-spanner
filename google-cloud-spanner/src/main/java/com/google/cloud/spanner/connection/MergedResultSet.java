@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.ForwardingStructReader;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -30,6 +31,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -47,15 +49,18 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     private final Connection connection;
     private final String partitionId;
     private final LinkedBlockingDeque<PartitionExecutorResult> queue;
+    private final CountDownLatch metadataAvailableLatch;
     private final AtomicBoolean shouldStop = new AtomicBoolean();
 
     PartitionExecutor(
         Connection connection,
         String partitionId,
-        LinkedBlockingDeque<PartitionExecutorResult> queue) {
+        LinkedBlockingDeque<PartitionExecutorResult> queue,
+        CountDownLatch metadataAvailableLatch) {
       this.connection = Preconditions.checkNotNull(connection);
       this.partitionId = Preconditions.checkNotNull(partitionId);
       this.queue = queue;
+      this.metadataAvailableLatch = Preconditions.checkNotNull(metadataAvailableLatch);
     }
 
     @Override
@@ -68,6 +73,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
             queue.put(
                 PartitionExecutorResult.dataAndMetadata(
                     row, resultSet.getType(), resultSet.getMetadata()));
+            metadataAvailableLatch.countDown();
             first = false;
           } else {
             queue.put(PartitionExecutorResult.data(row));
@@ -82,9 +88,11 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
           queue.put(
               PartitionExecutorResult.typeAndMetadata(
                   resultSet.getType(), resultSet.getMetadata()));
+          metadataAvailableLatch.countDown();
         }
       } catch (Throwable exception) {
         putWithoutInterruptPropagation(PartitionExecutorResult.exception(exception));
+        metadataAvailableLatch.countDown();
       } finally {
         // Emit a special 'finished' result to ensure that the row producer is not blocked on a
         // queue that never receives any more results. This ensures that we can safely block on
@@ -215,6 +223,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     private final AtomicInteger finishedCounter;
     private final LinkedBlockingDeque<PartitionExecutorResult> queue;
     private ResultSetMetadata metadata;
+    private final CountDownLatch metadataAvailableLatch = new CountDownLatch(1);
     private Type type;
     private Struct currentRow;
     private Throwable exception;
@@ -243,7 +252,7 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
       this.finishedCounter = new AtomicInteger(partitions.size());
       for (String partition : partitions) {
         PartitionExecutor partitionExecutor =
-            new PartitionExecutor(connection, partition, this.queue);
+            new PartitionExecutor(connection, partition, this.queue, this.metadataAvailableLatch);
         this.partitionExecutors.add(partitionExecutor);
         this.executor.submit(partitionExecutor);
       }
@@ -310,8 +319,27 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
       return currentRow;
     }
 
+    private PartitionExecutorResult getFirstResult() {
+      try {
+        metadataAvailableLatch.await();
+      } catch (InterruptedException interruptedException) {
+        throw SpannerExceptionFactory.propagateInterrupt(interruptedException);
+      }
+      PartitionExecutorResult result = queue.peek();
+      if (result == null) {
+        throw SpannerExceptionFactory.newSpannerException(
+            ErrorCode.FAILED_PRECONDITION, "Thread-unsafe access to ResultSet");
+      }
+      if (result.exception != null) {
+        throw SpannerExceptionFactory.asSpannerException(result.exception);
+      }
+      return result;
+    }
+
     public ResultSetMetadata getMetadata() {
-      checkState(metadata != null, "next() call required");
+      if (metadata == null) {
+        return getFirstResult().metadata;
+      }
       return metadata;
     }
 
@@ -326,7 +354,9 @@ class MergedResultSet extends ForwardingStructReader implements PartitionedQuery
     }
 
     public Type getType() {
-      checkState(type != null, "next() call required");
+      if (type == null) {
+        return getFirstResult().type;
+      }
       return type;
     }
   }

@@ -57,9 +57,9 @@ public interface EncryptionInfoOrBuilder
    *
    *
    * <pre>
-   * Output only. If present, the status of a recent encrypt/decrypt call on underlying data
-   * for this database or backup. Regardless of status, data is always encrypted
-   * at rest.
+   * Output only. If present, the status of a recent encrypt/decrypt call on
+   * underlying data for this database or backup. Regardless of status, data is
+   * always encrypted at rest.
    * </pre>
    *
    * <code>.google.rpc.Status encryption_status = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -72,9 +72,9 @@ public interface EncryptionInfoOrBuilder
    *
    *
    * <pre>
-   * Output only. If present, the status of a recent encrypt/decrypt call on underlying data
-   * for this database or backup. Regardless of status, data is always encrypted
-   * at rest.
+   * Output only. If present, the status of a recent encrypt/decrypt call on
+   * underlying data for this database or backup. Regardless of status, data is
+   * always encrypted at rest.
    * </pre>
    *
    * <code>.google.rpc.Status encryption_status = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -87,9 +87,9 @@ public interface EncryptionInfoOrBuilder
    *
    *
    * <pre>
-   * Output only. If present, the status of a recent encrypt/decrypt call on underlying data
-   * for this database or backup. Regardless of status, data is always encrypted
-   * at rest.
+   * Output only. If present, the status of a recent encrypt/decrypt call on
+   * underlying data for this database or backup. Regardless of status, data is
+   * always encrypted at rest.
    * </pre>
    *
    * <code>.google.rpc.Status encryption_status = 4 [(.google.api.field_behavior) = OUTPUT_ONLY];
@@ -101,8 +101,8 @@ public interface EncryptionInfoOrBuilder
    *
    *
    * <pre>
-   * Output only. A Cloud KMS key version that is being used to protect the database or
-   * backup.
+   * Output only. A Cloud KMS key version that is being used to protect the
+   * database or backup.
    * </pre>
    *
    * <code>
@@ -116,8 +116,8 @@ public interface EncryptionInfoOrBuilder
    *
    *
    * <pre>
-   * Output only. A Cloud KMS key version that is being used to protect the database or
-   * backup.
+   * Output only. A Cloud KMS key version that is being used to protect the
+   * database or backup.
    * </pre>
    *
    * <code>

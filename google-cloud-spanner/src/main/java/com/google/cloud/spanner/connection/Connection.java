@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
 /**
  * Internal connection API for Google Cloud Spanner. This interface may introduce breaking changes
@@ -170,6 +171,19 @@ public interface Connection extends AutoCloseable {
 
   /** @return <code>true</code> if this connection has been closed. */
   boolean isClosed();
+
+  /**
+   * Resets the state of this connection to the default state that it had when it was first created.
+   * Calling this method after a transaction has started (that is; after a statement has been
+   * executed in the transaction), does not change the active transaction. If for example a
+   * transaction has been started with a transaction tag, the transaction tag for the active
+   * transaction is not reset.
+   *
+   * <p>You can use this method to reset the state of the connection before returning a connection
+   * to a connection pool, and/or before using a connection that was retrieved from a connection
+   * pool.
+   */
+  void reset();
 
   /**
    * Sets autocommit on/off for this {@link Connection}. Connections in autocommit mode will apply
@@ -404,6 +418,25 @@ public interface Connection extends AutoCloseable {
   }
 
   /**
+   * Sets the proto descriptors to use for the next DDL statement (single or batch) that will be
+   * executed. The proto descriptor is automatically cleared after the statement is executed.
+   *
+   * @param protoDescriptors The proto descriptors to use with the next DDL statement (single or
+   *     batch) that will be executed on this connection.
+   */
+  default void setProtoDescriptors(@Nonnull byte[] protoDescriptors) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return The proto descriptor that will be used with the next DDL statement (single or batch)
+   *     that is executed on this connection.
+   */
+  default byte[] getProtoDescriptors() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * @return <code>true</code> if this connection will automatically retry read/write transactions
    *     that abort. This method may only be called when the connection is in read/write
    *     transactional mode and no transaction has been started yet.
@@ -630,6 +663,25 @@ public interface Connection extends AutoCloseable {
    *     first write operation on that transaction.
    */
   default boolean isDelayTransactionStartUntilFirstWrite() {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * Sets whether this connection should keep read/write transactions alive by executing a SELECT 1
+   * once every 10 seconds during inactive read/write transactions.
+   *
+   * <p>NOTE: This will keep read/write transactions alive and hold on to locks until it is
+   * explicitly committed or rolled back.
+   */
+  default void setKeepTransactionAlive(boolean keepTransactionAlive) {
+    throw new UnsupportedOperationException("Unimplemented");
+  }
+
+  /**
+   * @return true if this connection keeps read/write transactions alive by executing a SELECT 1
+   *     once every 10 seconds during inactive read/write transactions.
+   */
+  default boolean isKeepTransactionAlive() {
     throw new UnsupportedOperationException("Unimplemented");
   }
 
