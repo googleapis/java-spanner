@@ -302,11 +302,13 @@ public class ReadAsyncTest {
         StatementResult.query(statement2, generateKeyValueResultSet(ContiguousSet.closed(1, 3))));
 
     ApiFuture<List<String>> values1;
+    ApiFuture<List<String>> values1Again;
     ApiFuture<List<String>> values2;
     try (ReadOnlyTransaction tx = client.readOnlyTransaction()) {
       try (AsyncResultSet rs = tx.executeQueryAsync(statement1)) {
         values1 = rs.toListAsync(input -> input.getString("Value"), executor);
-      }
+        values1Again = rs.toListAsync(input -> input.getString("Value"), executor);
+      } 
       try (AsyncResultSet rs = tx.executeQueryAsync(statement2)) {
         values2 = rs.toListAsync(input -> input.getString("Value"), executor);
       }
@@ -323,7 +325,7 @@ public class ReadAsyncTest {
                     // Return in numerical order (i.e. without the preceding 'v').
                     Comparator.comparing(o -> Integer.valueOf(o.substring(1)))),
             executor);
-    assertThat(allValues.get()).containsExactly("v1", "v2", "v3", "v10", "v11", "v12");
+    assertThat(allValues.get()).containsExactly("v1", "v1", "v2", "v2", "v3", "v3", "v10", "v11", "v12").inOrder();
   }
 
   @Test

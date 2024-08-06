@@ -53,6 +53,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_NUMERIC = new Type(Code.NUMERIC, null, null);
   private static final Type TYPE_PG_NUMERIC = new Type(Code.PG_NUMERIC, null, null);
   private static final Type TYPE_STRING = new Type(Code.STRING, null, null);
+  private static final Type TYPE_UUID = new Type(Code.UUID, null, null);
   private static final Type TYPE_JSON = new Type(Code.JSON, null, null);
   private static final Type TYPE_PG_JSONB = new Type(Code.PG_JSONB, null, null);
   private static final Type TYPE_PG_OID = new Type(Code.PG_OID, null, null);
@@ -66,6 +67,7 @@ public final class Type implements Serializable {
   private static final Type TYPE_ARRAY_NUMERIC = new Type(Code.ARRAY, TYPE_NUMERIC, null);
   private static final Type TYPE_ARRAY_PG_NUMERIC = new Type(Code.ARRAY, TYPE_PG_NUMERIC, null);
   private static final Type TYPE_ARRAY_STRING = new Type(Code.ARRAY, TYPE_STRING, null);
+  private static final Type TYPE_ARRAY_UUID = new Type(Code.ARRAY, TYPE_UUID, null);
   private static final Type TYPE_ARRAY_JSON = new Type(Code.ARRAY, TYPE_JSON, null);
   private static final Type TYPE_ARRAY_PG_JSONB = new Type(Code.ARRAY, TYPE_PG_JSONB, null);
   private static final Type TYPE_ARRAY_PG_OID = new Type(Code.ARRAY, TYPE_PG_OID, null);
@@ -127,6 +129,11 @@ public final class Type implements Serializable {
    */
   public static Type string() {
     return TYPE_STRING;
+  }
+
+  /** Returns the descriptor for the {@code UUID} type: a universally unique identifier. */
+  public static Type uuid() {
+    return TYPE_UUID;
   }
 
   /** Returns the descriptor for the {@code JSON} type. */
@@ -199,6 +206,8 @@ public final class Type implements Serializable {
         return TYPE_ARRAY_NUMERIC;
       case PG_NUMERIC:
         return TYPE_ARRAY_PG_NUMERIC;
+      case UUID:
+        return TYPE_ARRAY_UUID;
       case STRING:
         return TYPE_ARRAY_STRING;
       case JSON:
@@ -287,6 +296,7 @@ public final class Type implements Serializable {
     FLOAT64(TypeCode.FLOAT64, "double precision"),
     FLOAT32(TypeCode.FLOAT32, "real"),
     STRING(TypeCode.STRING, "character varying"),
+    UUID(TypeCode.STRING, "uuid"),
     JSON(TypeCode.JSON, "unknown"),
     PG_JSONB(TypeCode.JSON, "jsonb", TypeAnnotationCode.PG_JSONB),
     PG_OID(TypeCode.INT64, "oid", TypeAnnotationCode.PG_OID),
@@ -598,6 +608,8 @@ public final class Type implements Serializable {
         return pgNumeric();
       case STRING:
         return string();
+      case UUID:
+        return uuid();
       case JSON:
         return json();
       case PG_JSONB:

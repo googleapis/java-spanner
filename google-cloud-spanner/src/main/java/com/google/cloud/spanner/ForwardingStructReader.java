@@ -25,6 +25,7 @@ import com.google.common.base.Suppliers;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
+import java.util.UUID;
 import java.util.List;
 import java.util.function.Function;
 
@@ -232,6 +233,20 @@ public class ForwardingStructReader implements StructReader {
   }
 
   @Override
+  public UUID getUUID(int columnIndex) {
+    checkValidState();
+    return delegate.get().getUUID(columnIndex);
+  }
+
+  @Override
+  public UUID getUUID(String columnName) {
+    checkValidState();
+    return delegate.get().getUUID(columnName);
+  }
+
+
+
+  @Override
   public boolean[] getBooleanArray(int columnIndex) {
     checkValidState();
     return delegate.get().getBooleanArray(columnIndex);
@@ -408,6 +423,20 @@ public class ForwardingStructReader implements StructReader {
     checkValidState();
     return delegate.get().getDateList(columnName);
   }
+
+  @Override
+  public List<UUID> getUUIDList(int columnIndex) {
+    checkValidState();
+    return delegate.get().getUUIDList(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUUIDList(String columnName) {
+    checkValidState();
+    return delegate.get().getUUIDList(columnName);
+  }
+
+
 
   @Override
   public <T extends AbstractMessage> List<T> getProtoMessageList(int columnIndex, T message) {

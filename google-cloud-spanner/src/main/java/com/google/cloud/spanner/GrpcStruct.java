@@ -94,6 +94,9 @@ class GrpcStruct extends Struct implements Serializable {
         case PG_NUMERIC:
           builder.set(fieldName).to((String) value);
           break;
+        case UUID:
+          builder.set(fieldName).to((String) value);
+          break;
         case STRING:
           builder.set(fieldName).to((String) value);
           break;
@@ -151,6 +154,9 @@ class GrpcStruct extends Struct implements Serializable {
               break;
             case PG_NUMERIC:
               builder.set(fieldName).toPgNumericArray((Iterable<String>) value);
+              break;
+            case UUID:
+              builder.set(fieldName).toUuidArray((Iterable<String>) value);
               break;
             case STRING:
               builder.set(fieldName).toStringArray((Iterable<String>) value);
@@ -281,6 +287,7 @@ class GrpcStruct extends Struct implements Serializable {
         return new BigDecimal(proto.getStringValue());
       case PG_NUMERIC:
       case STRING:
+      case UUID:
       case JSON:
       case PG_JSONB:
         checkType(fieldType, proto, KindCase.STRING_VALUE);
@@ -339,6 +346,7 @@ class GrpcStruct extends Struct implements Serializable {
       case NUMERIC:
       case PG_NUMERIC:
       case STRING:
+      case UUID:
       case JSON:
       case PG_JSONB:
       case BYTES:
@@ -457,6 +465,12 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   @Override
+  protected String getUuidInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
+    return (String) rowData.get(columnIndex);
+  }
+
+  @Override
   protected String getJsonInternal(int columnIndex) {
     ensureDecoded(columnIndex);
     return (String) rowData.get(columnIndex);
@@ -567,6 +581,8 @@ class GrpcStruct extends Struct implements Serializable {
         return Value.float32(isNull ? null : getFloatInternal(columnIndex));
       case STRING:
         return Value.string(isNull ? null : getStringInternal(columnIndex));
+      case UUID:
+        return Value.uuid(isNull ? null : getUuidInternal(columnIndex));
       case JSON:
         return Value.json(isNull ? null : getJsonInternal(columnIndex));
       case PG_JSONB:
@@ -604,6 +620,8 @@ class GrpcStruct extends Struct implements Serializable {
             return Value.float32Array(isNull ? null : getFloatListInternal(columnIndex));
           case STRING:
             return Value.stringArray(isNull ? null : getStringListInternal(columnIndex));
+          case UUID:
+            return Value.uuidArray(isNull ? null : getStringListInternal(columnIndex));
           case JSON:
             return Value.jsonArray(isNull ? null : getJsonListInternal(columnIndex));
           case PG_JSONB:
@@ -708,6 +726,13 @@ class GrpcStruct extends Struct implements Serializable {
   @Override
   @SuppressWarnings("unchecked") // We know ARRAY<STRING> produces a List<String>.
   protected List<String> getStringListInternal(int columnIndex) {
+    ensureDecoded(columnIndex);
+    return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
+  }
+
+  @Override
+  @SuppressWarnings("unchecked") // We know ARRAY<UUID> produces a List<String>.
+  protected List<String> getUuidListInternal(int columnIndex) {
     ensureDecoded(columnIndex);
     return Collections.unmodifiableList((List<String>) rowData.get(columnIndex));
   }

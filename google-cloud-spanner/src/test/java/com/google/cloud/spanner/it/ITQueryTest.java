@@ -49,6 +49,7 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.connection.ConnectionOptions;
 import com.google.cloud.spanner.testing.EmulatorSpannerHelper;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
@@ -57,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -295,6 +297,24 @@ public class ITQueryTest {
       assertThat(row.isNull(0)).isFalse();
       assertThat(row.getLong(0)).isEqualTo(1234);
     }
+  }
+
+  @Test
+  public void bindUuid() {
+    Assume.assumeFalse("Emulator does not support UUID", EmulatorSpannerHelper.isUsingEmulator());
+    String uuidString = "6cbd4970-c7c1-491c-b15b-8998a6d8e59c";
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to(uuidString), Type.uuid());
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getString(0)).isEqualTo(uuidString);
+  }
+
+  @Test
+  public void bindUuidNull() {
+    Assume.assumeFalse("Emulator does not support UUID", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(Statement.newBuilder(selectValueQuery).bind("p1").to((String) null), Type.uuid());
+    assertThat(row.isNull(0)).isTrue();
   }
 
   @Test
@@ -814,6 +834,33 @@ public class ITQueryTest {
         execute(
             Statement.newBuilder(selectValueQuery).bind("p1").toDateArray(null),
             Type.array(Type.date()));
+    assertThat(row.isNull(0)).isTrue();
+  }
+
+  @Test
+  public void bindUuidArray() {
+    Assume.assumeFalse("Emulator does not support UUID", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery)
+                .bind("p1")
+                .toUuidArray(asList("6cbd4970-c7c1-491c-b15b-8998a6d8e59c",
+                    "2e92740c-268d-4a62-90d7-2806177808ab", null)),
+            Type.array(Type.uuid()));
+    assertThat(row.isNull(0)).isFalse();
+    assertThat(row.getStringList(0))
+        .containsExactly("6cbd4970-c7c1-491c-b15b-8998a6d8e59c",
+            "2e92740c-268d-4a62-90d7-2806177808ab", null)
+        .inOrder();
+  }
+
+  @Test
+  public void bindUuidArrayNull() {
+    Assume.assumeFalse("Emulator does not support UUID", EmulatorSpannerHelper.isUsingEmulator());
+    Struct row =
+        execute(
+            Statement.newBuilder(selectValueQuery).bind("p1").toUuidArray(null),
+            Type.array(Type.uuid()));
     assertThat(row.isNull(0)).isTrue();
   }
 

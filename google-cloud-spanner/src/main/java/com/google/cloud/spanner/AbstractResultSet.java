@@ -36,6 +36,7 @@ import java.util.Base64;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.Objects;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
@@ -416,6 +417,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   }
 
   @Override
+  protected UUID getUuidInternal(int columnIndex) {
+    return currRow().getUuidInternal(columnIndex);
+  }
+
+  @Override
   protected Value getValueInternal(int columnIndex) {
     return currRow().getValueInternal(columnIndex);
   }
@@ -505,6 +511,11 @@ abstract class AbstractResultSet<R> extends AbstractStructReader implements Resu
   @Override
   protected List<Date> getDateListInternal(int columnIndex) {
     return currRow().getDateListInternal(columnIndex);
+  }
+
+  @Override
+  protected List<UUID> getUuidListInternal(int columnIndex) {
+    return currRow().getUuidListInternal(columnIndex);
   }
 
   @Override

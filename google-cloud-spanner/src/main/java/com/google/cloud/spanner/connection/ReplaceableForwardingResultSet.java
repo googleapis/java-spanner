@@ -33,6 +33,7 @@ import com.google.protobuf.ProtocolMessageEnum;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
+import java.util.UUID;
 import java.util.List;
 import java.util.function.Function;
 
@@ -487,6 +488,30 @@ class ReplaceableForwardingResultSet implements ProtobufResultSet {
   public List<Date> getDateList(String columnName) {
     checkClosed();
     return delegate.getDateList(columnName);
+  }
+
+  @Override
+  public UUID getUUID(int columnIndex) {
+    checkClosed();
+    return delegate.getUUID(columnIndex);
+  }
+
+  @Override
+  public UUID getUUID(String columnName) {
+    checkClosed();
+    return delegate.getUUID(columnName);
+  }
+
+  @Override
+  public List<UUID> getUUIDList(int columnIndex) {
+    checkClosed();
+    return delegate.getUUIDList(columnIndex);
+  }
+
+  @Override
+  public List<UUID> getUUIDList(String columnName) {
+    checkClosed();
+    return delegate.getUUIDList(columnName);
   }
 
   @Override

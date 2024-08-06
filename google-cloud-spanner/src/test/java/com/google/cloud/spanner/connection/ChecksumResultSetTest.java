@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +82,8 @@ public class ChecksumResultSetTest {
           .to(Timestamp.parseTimestamp("2022-08-04T11:20:00.123456789Z"))
           .set("date")
           .to(Date.fromYearMonthDay(2022, 8, 3))
+          .set("uuidVal")
+          .to(Value.uuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")))
           .set("boolArray")
           .to(Value.boolArray(Arrays.asList(Boolean.FALSE, null, Boolean.TRUE)))
           .set("longArray")
@@ -116,6 +119,11 @@ public class ChecksumResultSetTest {
           .to(
               Value.pgJsonbArray(
                   Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "[]")))
+          .set("pgOidArray")
+          .to(Value.pgOidArray(Arrays.asList(2L, null, 1L, 0L)))
+          .set("uuidArray")
+          .to(
+              Value.uuidArray(Arrays.asList(UUID.fromString("123e4567-e89b-12d3-a456-426614174001"), null, UUID.fromString("123e4567-e89b-12d3-a456-426614174002"))))
           .set("pgOidArray")
           .to(Value.pgOidArray(Arrays.asList(2L, null, 1L, 0L)))
           .set("protoMessageArray")
@@ -167,6 +175,8 @@ public class ChecksumResultSetTest {
                 "protoMessageArray",
                 Type.array(Type.proto(SingerInfo.getDescriptor().getFullName()))),
             Type.StructField.of(
+                "uuidArray", Type.array(Type.uuid())),
+            Type.StructField.of(
                 "protoEnumArray", Type.array(Type.protoEnum(Genre.getDescriptor().getFullName()))));
     Struct rowNonNullValues =
         Struct.newBuilder()
@@ -200,6 +210,8 @@ public class ChecksumResultSetTest {
             .to(Timestamp.parseTimestamp("2022-08-04T10:19:00.123456789Z"))
             .set("date")
             .to(Date.fromYearMonthDay(2022, 8, 4))
+            .set("uuidVal")
+            .to(Value.uuid(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")))
             .set("boolArray")
             .to(Value.boolArray(Arrays.asList(Boolean.TRUE, null, Boolean.FALSE)))
             .set("longArray")
@@ -238,6 +250,10 @@ public class ChecksumResultSetTest {
             .to(
                 Value.pgJsonbArray(
                     Arrays.asList("{\"color\":\"red\",\"value\":\"#f00\"}", null, "{}")))
+            .set("uuidArray")
+            .to(
+                Value.uuidArray(Arrays.asList(UUID.fromString("123e4567-e89b-12d3-a456-426614174001"), null, UUID.fromString("123e4567-e89b-12d3-a456-426614174002"))))
+            .set("pgOidArray")
             .set("pgOidArray")
             .to(Value.pgOidArray(Arrays.asList(1L, null, 2L)))
             .set("protoMessageArray")
@@ -282,6 +298,8 @@ public class ChecksumResultSetTest {
             .to((Timestamp) null)
             .set("date")
             .to((Date) null)
+            .set("uuidVal")
+            .to((UUID) null)
             .set("boolArray")
             .toBoolArray((Iterable<Boolean>) null)
             .set("longArray")
@@ -308,6 +326,8 @@ public class ChecksumResultSetTest {
             .toPgJsonbArray(null)
             .set("pgOidArray")
             .toPgOidArray((Iterable<Long>) null)
+            .set("uuidArray")
+            .toUuidArray(null)
             .set("protoMessageArray")
             .to(Value.protoMessageArray(null, SingerInfo.getDescriptor()))
             .set("protoEnumArray")

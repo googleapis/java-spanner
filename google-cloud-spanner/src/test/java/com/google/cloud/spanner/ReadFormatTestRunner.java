@@ -167,6 +167,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
           case JSON:
             assertThat(actualRow.getJson(i)).isEqualTo(expectedRow.getString(i));
             break;
+          case UUID:
+            assertThat(actualRow.getString(i)).isEqualTo(expectedRow.getString(i));
+            break;
           case INT64:
             assertThat(actualRow.getLong(i)).isEqualTo(expectedRow.getLong(i));
             break;
@@ -204,6 +207,9 @@ public class ReadFormatTestRunner extends ParentRunner<JSONObject> {
           break;
         case JSON:
           rawList = actualRow.getJsonList(index);
+          break;
+        case UUID:
+          rawList = actualRow.getStringList(index);
           break;
         case BYTES:
           rawList = actualRow.getBytesList(index);
