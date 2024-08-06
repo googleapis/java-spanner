@@ -461,7 +461,10 @@ class ReadWriteTransaction extends AbstractMultiUseTransaction {
                 CallType.SYNC,
                 SELECT1_STATEMENT,
                 AnalyzeMode.NONE,
-                Options.tag("connection.transaction-keep-alive"));
+                Options.tag(
+                    System.getProperty(
+                        "spanner.connection.keep_alive_query_tag",
+                        "connection.transaction-keep-alive")));
         future.addListener(
             ReadWriteTransaction.this::maybeScheduleKeepAlivePing, MoreExecutors.directExecutor());
       }
