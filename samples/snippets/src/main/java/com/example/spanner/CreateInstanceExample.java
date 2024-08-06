@@ -47,9 +47,9 @@ class CreateInstanceExample {
             .setDisplayName(displayName)
             .setNodeCount(nodeCount)
             .setConfig(
-                InstanceConfigName.of(projectId, "regional-us-central1").toString())
+                InstanceConfigName.of(projectId, "regional-us-east4").toString())
             .build();
-    
+
     try (Spanner spanner =
         SpannerOptions.newBuilder()
             .setProjectId(projectId)

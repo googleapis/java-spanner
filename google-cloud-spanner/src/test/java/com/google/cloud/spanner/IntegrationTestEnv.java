@@ -147,7 +147,7 @@ public class IntegrationTestEnv extends ExternalResource {
   private void initializeInstance(InstanceId instanceId) throws Exception {
     InstanceConfig instanceConfig;
     try {
-      instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-central1");
+      instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-east4");
     } catch (Throwable ignore) {
       instanceConfig =
           Iterators.get(instanceAdminClient.listInstanceConfigs().iterateAll().iterator(), 0, null);
