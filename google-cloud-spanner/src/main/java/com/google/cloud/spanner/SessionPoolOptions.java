@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner;
 
-import com.google.api.core.BetaApi;
 import com.google.api.core.InternalApi;
 import com.google.cloud.spanner.SessionPool.Position;
 import com.google.common.annotations.VisibleForTesting;
@@ -103,11 +102,12 @@ public class SessionPoolOptions {
     this.randomizePositionQPSThreshold = builder.randomizePositionQPSThreshold;
     this.inactiveTransactionRemovalOptions = builder.inactiveTransactionRemovalOptions;
     this.poolMaintainerClock = builder.poolMaintainerClock;
-    // TODO: Remove when multiplexed sessions are guaranteed to be supported.
+    // useMultiplexedSession priority => Environment var > private setter > client default
+    Boolean useMultiplexedSessionFromEnvVariable = getUseMultiplexedSessionFromEnvVariable();
     this.useMultiplexedSession =
-        builder.useMultiplexedSession
-            && !Boolean.parseBoolean(
-                System.getenv("GOOGLE_CLOUD_SPANNER_FORCE_DISABLE_MULTIPLEXED_SESSIONS"));
+        (useMultiplexedSessionFromEnvVariable != null)
+            ? useMultiplexedSessionFromEnvVariable
+            : builder.useMultiplexedSession;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -305,6 +305,22 @@ public class SessionPoolOptions {
   @InternalApi
   public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
+  }
+
+  private static Boolean getUseMultiplexedSessionFromEnvVariable() {
+    String useMultiplexedSessionFromEnvVariable =
+        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS");
+    if (useMultiplexedSessionFromEnvVariable != null
+        && useMultiplexedSessionFromEnvVariable.length() > 0) {
+      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)
+          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)) {
+        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
+      } else {
+        throw new IllegalArgumentException(
+            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS should be either true or false.");
+      }
+    }
+    return null;
   }
 
   Duration getMultiplexedSessionMaintenanceDuration() {
@@ -509,7 +525,9 @@ public class SessionPoolOptions {
      */
     private long randomizePositionQPSThreshold = 0L;
 
-    private boolean useMultiplexedSession = getUseMultiplexedSessionFromEnvVariable();
+    // This field controls the default behavior of session management in Java client.
+    // Set useMultiplexedSession to true to make multiplexed session the default.
+    private boolean useMultiplexedSession = false;
 
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
@@ -525,18 +543,6 @@ public class SessionPoolOptions {
         }
       }
       return Position.FIRST;
-    }
-
-    /**
-     * This environment is only added to support internal spanner testing. Support for it can be
-     * removed in the future. Use {@link SessionPoolOptions#useMultiplexedSession} instead to use
-     * multiplexed sessions.
-     */
-    @InternalApi
-    @BetaApi
-    private static boolean getUseMultiplexedSessionFromEnvVariable() {
-      return Boolean.parseBoolean(
-          System.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_MULTIPLEXED_SESSIONS"));
     }
 
     public Builder() {}
@@ -563,6 +569,8 @@ public class SessionPoolOptions {
       this.acquireSessionTimeout = options.acquireSessionTimeout;
       this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
+      this.useMultiplexedSession = options.useMultiplexedSession;
+      this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
 

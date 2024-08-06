@@ -35,6 +35,7 @@ import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.google.spanner.v1.BeginTransactionRequest;
@@ -248,6 +249,8 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
+    when(rpc.getCommitRetrySettings())
+        .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);
@@ -332,6 +335,8 @@ public class TransactionManagerImplTest {
                             com.google.protobuf.Timestamp.newBuilder()
                                 .setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
+    when(rpc.getCommitRetrySettings())
+        .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

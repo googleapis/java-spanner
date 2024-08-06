@@ -192,6 +192,7 @@ public class ConnectionOptions {
   private static final boolean DEFAULT_LENIENT = false;
   private static final boolean DEFAULT_ROUTE_TO_LEADER = true;
   private static final boolean DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE = false;
+  private static final boolean DEFAULT_KEEP_TRANSACTION_ALIVE = false;
   private static final boolean DEFAULT_TRACK_SESSION_LEAKS = true;
   private static final boolean DEFAULT_TRACK_CONNECTION_LEAKS = true;
   private static final boolean DEFAULT_DATA_BOOST_ENABLED = false;
@@ -269,6 +270,8 @@ public class ConnectionOptions {
   /** Name of the 'delay transaction start until first write' property. */
   public static final String DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE_NAME =
       "delayTransactionStartUntilFirstWrite";
+  /** Name of the 'keep transaction alive' property. */
+  public static final String KEEP_TRANSACTION_ALIVE_PROPERTY_NAME = "keepTransactionAlive";
   /** Name of the 'trackStackTraceOfSessionCheckout' connection property. */
   public static final String TRACK_SESSION_LEAKS_PROPERTY_NAME = "trackSessionLeaks";
   /** Name of the 'trackStackTraceOfConnectionCreation' connection property. */
@@ -405,6 +408,12 @@ public class ConnectionOptions {
                           + "the first write operation in a read/write transaction will be executed using the read/write transaction. Enabling this mode can reduce locking "
                           + "and improve performance for applications that can handle the lower transaction isolation semantics.",
                       DEFAULT_DELAY_TRANSACTION_START_UNTIL_FIRST_WRITE),
+                  ConnectionProperty.createBooleanProperty(
+                      KEEP_TRANSACTION_ALIVE_PROPERTY_NAME,
+                      "Enabling this option will trigger the connection to keep read/write transactions alive by executing a SELECT 1 query once every 10 seconds "
+                          + "if no other statements are being executed. This option should be used with caution, as it can keep transactions alive and hold on to locks "
+                          + "longer than intended. This option should typically be used for CLI-type application that might wait for user input for a longer period of time.",
+                      DEFAULT_KEEP_TRANSACTION_ALIVE),
                   ConnectionProperty.createBooleanProperty(
                       TRACK_SESSION_LEAKS_PROPERTY_NAME,
                       "Capture the call stack of the thread that checked out a session of the session pool. This will "
@@ -735,6 +744,7 @@ public class ConnectionOptions {
   private final RpcPriority rpcPriority;
   private final DdlInTransactionMode ddlInTransactionMode;
   private final boolean delayTransactionStartUntilFirstWrite;
+  private final boolean keepTransactionAlive;
   private final boolean trackSessionLeaks;
   private final boolean trackConnectionLeaks;
 
@@ -799,6 +809,7 @@ public class ConnectionOptions {
     this.rpcPriority = parseRPCPriority(this.uri);
     this.ddlInTransactionMode = parseDdlInTransactionMode(this.uri);
     this.delayTransactionStartUntilFirstWrite = parseDelayTransactionStartUntilFirstWrite(this.uri);
+    this.keepTransactionAlive = parseKeepTransactionAlive(this.uri);
     this.trackSessionLeaks = parseTrackSessionLeaks(this.uri);
     this.trackConnectionLeaks = parseTrackConnectionLeaks(this.uri);
 
@@ -1180,6 +1191,12 @@ public class ConnectionOptions {
   }
 
   @VisibleForTesting
+  static boolean parseKeepTransactionAlive(String uri) {
+    String value = parseUriProperty(uri, KEEP_TRANSACTION_ALIVE_PROPERTY_NAME);
+    return value != null ? Boolean.parseBoolean(value) : DEFAULT_KEEP_TRANSACTION_ALIVE;
+  }
+
+  @VisibleForTesting
   static boolean parseTrackSessionLeaks(String uri) {
     String value = parseUriProperty(uri, TRACK_SESSION_LEAKS_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_TRACK_SESSION_LEAKS;
@@ -1313,6 +1330,14 @@ public class ConnectionOptions {
       res.add(matcher.group("PROPERTY"));
     }
     return res;
+  }
+
+  static long tryParseLong(String value, long defaultValue) {
+    try {
+      return Long.parseLong(value);
+    } catch (NumberFormatException ignore) {
+      return defaultValue;
+    }
   }
 
   /**
@@ -1549,6 +1574,18 @@ public class ConnectionOptions {
    */
   boolean isDelayTransactionStartUntilFirstWrite() {
     return delayTransactionStartUntilFirstWrite;
+  }
+
+  /**
+   * Whether connections created by this {@link ConnectionOptions} should keep read/write
+   * transactions alive by executing a SELECT 1 once every 10 seconds if no other statements are
+   * executed. This option should be used with caution, as enabling it can keep transactions alive
+   * for a very long time, which will hold on to any locks that have been taken by the transaction.
+   * This option should typically only be enabled for CLI-type applications or other user-input
+   * applications that might wait for a longer period of time on user input.
+   */
+  boolean isKeepTransactionAlive() {
+    return keepTransactionAlive;
   }
 
   boolean isTrackConnectionLeaks() {

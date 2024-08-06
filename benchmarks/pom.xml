@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.70.0</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.71.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
 
   <properties>
@@ -92,7 +92,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.69.0</version>
+      <version>6.71.0</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -102,7 +102,7 @@
     <dependency>
       <groupId>com.google.auto.value</groupId>
       <artifactId>auto-value-annotations</artifactId>
-      <version>1.10.4</version>
+      <version>1.11.0</version>
     </dependency>
     <dependency>
       <groupId>com.kohlschutter.junixsocket</groupId>
