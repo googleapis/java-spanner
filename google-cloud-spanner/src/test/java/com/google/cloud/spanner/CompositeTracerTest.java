@@ -150,7 +150,7 @@ public class CompositeTracerTest {
   @Test
   public void testAttemptFailed() {
     RuntimeException error = new RuntimeException();
-    Duration delay = org.threeten.bp.Duration.ofMillis(10);
+    Duration delay = Duration.ofMillis(10);
     compositeTracer.attemptFailed(error, delay);
 
     // CompositeTracer's attemptFailed calls the attemptFailedDuration method. This was part of
