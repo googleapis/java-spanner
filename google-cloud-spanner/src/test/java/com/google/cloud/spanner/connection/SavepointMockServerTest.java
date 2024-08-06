@@ -697,8 +697,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
       connection.execute(INSERT_STATEMENT);
       connection.rollbackToSavepoint("s1");
       mockSpanner.waitForRequestsToContain(RollbackRequest.class, 1000L);
-      // Wait for up to 2 milliseconds to make sure that any keep-alive requests that were in flight
-      // have finished.
+      // Wait until all keep-alive requests that were in flight have finished.
       try {
         mockSpanner.waitForRequestsToContain(
             r -> {
@@ -712,7 +711,7 @@ public class SavepointMockServerTest extends AbstractMockServerTest {
                       .getRequestTag()
                       .equals("connection.transaction-keep-alive");
             },
-            2L);
+            200L);
       } catch (TimeoutException ignore) {
       }
 
