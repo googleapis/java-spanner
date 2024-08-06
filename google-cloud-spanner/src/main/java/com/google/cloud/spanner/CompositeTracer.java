@@ -115,6 +115,13 @@ public class CompositeTracer extends BaseApiTracer {
   }
 
   @Override
+  public void attemptFailedDuration(Throwable error, java.time.Duration delay) {
+    for (ApiTracer child : children) {
+      child.attemptFailedDuration(error, delay);
+    }
+  }
+
+  @Override
   public void attemptFailedRetriesExhausted(Throwable error) {
     for (ApiTracer child : children) {
       child.attemptFailedRetriesExhausted(error);
