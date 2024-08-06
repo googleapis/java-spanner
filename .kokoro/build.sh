@@ -48,7 +48,9 @@ if [[ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" && "${GOOGLE_APPLICATION_CREDENTI
     export GOOGLE_APPLICATION_CREDENTIALS=$(realpath ${KOKORO_GFILE_DIR}/${GOOGLE_APPLICATION_CREDENTIALS})
 fi
 
-# Start the Spanner emulator if the job type is graalvm or graalvm17
+# Start the Spanner emulator if the environment variable for it has been set.
+# TODO: Change if statement once the env var can be set in the config.
+#if [[ ! -z "${SPANNER_EMULATOR_HOST}" ]]; then
 if [[ "$JOB_TYPE" == "graalvm" ]] || [[ "$JOB_TYPE" == "graalvm17" ]]; then
   echo "Starting emulator"
   export SPANNER_EMULATOR_HOST=localhost:9010
