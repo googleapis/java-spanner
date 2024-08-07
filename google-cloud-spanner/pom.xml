@@ -107,7 +107,7 @@
             </goals>
             <configuration>
               <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
-              <forkCount>8</forkCount>
+              <forkCount>12</forkCount>
               <reuseForks>true</reuseForks>
               <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
             </configuration>
