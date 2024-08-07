@@ -1294,7 +1294,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(minSessions)
             .setMaxSessions(1)
             .setInitialWaitForSessionTimeoutMillis(20L)
-            .setAcquireSessionTimeout(Duration.ofMillis(20L))
+            .setAcquireSessionTimeout(null)
             .build();
     setupMockSessionCreation();
     pool = createPool();
@@ -1307,18 +1307,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     Future<Void> fut =
         executor.submit(
             () -> {
-              latch.countDown();
               PooledSessionFuture session = pool.getSession();
+              latch.countDown();
+              session.get();
               session.close();
               return null;
             });
     // Wait until the background thread is actually waiting for a session.
     latch.await();
     // Wait until the request has timed out.
-    int waitCount = 0;
-    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 5000) {
-      Thread.sleep(1L);
-      waitCount++;
+    Stopwatch watch = Stopwatch.createStarted();
+    while (pool.getNumWaiterTimeouts() == 0L && watch.elapsed(TimeUnit.MILLISECONDS) < 1000) {
+      Thread.yield();
     }
     // Return the checked out session to the pool so the async request will get a session and
     // finish.
@@ -1326,10 +1326,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Verify that the async request also succeeds.
     fut.get(10L, TimeUnit.SECONDS);
     executor.shutdown();
+    assertTrue(executor.awaitTermination(10L, TimeUnit.SECONDS));
 
     // Verify that the session was returned to the pool and that we can get it again.
-    Session session = pool.getSession();
-    assertThat(session).isNotNull();
+    PooledSessionFuture session = pool.getSession();
+    assertThat(session.get()).isNotNull();
     session.close();
     assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
   }
