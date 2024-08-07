@@ -1,5 +1,36 @@
 # Changelog
 
+## [6.72.0](https://github.com/googleapis/java-spanner/compare/v6.71.0...v6.72.0) (2024-08-07)
+
+
+### Features
+
+* Add `RESOURCE_EXHAUSTED` to the list of retryable error codes ([e859b29](https://github.com/googleapis/java-spanner/commit/e859b29ccf4e68b1ab62cffdd4cf197011ba9878))
+* Add field order_by in spanner.proto ([e859b29](https://github.com/googleapis/java-spanner/commit/e859b29ccf4e68b1ab62cffdd4cf197011ba9878))
+* Add QueryCancellationAction message in executor protos ([e859b29](https://github.com/googleapis/java-spanner/commit/e859b29ccf4e68b1ab62cffdd4cf197011ba9878))
+* Add SessionPoolOptions, SpannerOptions protos in executor protos ([e859b29](https://github.com/googleapis/java-spanner/commit/e859b29ccf4e68b1ab62cffdd4cf197011ba9878))
+* Add support for multi region encryption config ([e859b29](https://github.com/googleapis/java-spanner/commit/e859b29ccf4e68b1ab62cffdd4cf197011ba9878))
+* Enable hermetic library generation ([#3129](https://github.com/googleapis/java-spanner/issues/3129)) ([94b2a86](https://github.com/googleapis/java-spanner/commit/94b2a8610ac02d2b4212c421f03b4e9561ec9949))
+* **spanner:** Add samples for instance partitions ([#3221](https://github.com/googleapis/java-spanner/issues/3221)) ([bc48bf2](https://github.com/googleapis/java-spanner/commit/bc48bf212e37441221b3b6c8742b07ff601f6c41))
+* **spanner:** Add support for Cloud Spanner Scheduled Backups ([e859b29](https://github.com/googleapis/java-spanner/commit/e859b29ccf4e68b1ab62cffdd4cf197011ba9878))
+* **spanner:** Adding `EXPECTED_FULFILLMENT_PERIOD` to the indicate instance creation times (with `FULFILLMENT_PERIOD_NORMAL` or `FULFILLMENT_PERIOD_EXTENDED` ENUM) with the extended instance creation time triggered by On-Demand Capacity Feature ([e859b29](https://github.com/googleapis/java-spanner/commit/e859b29ccf4e68b1ab62cffdd4cf197011ba9878))
+* **spanner:** Set manual affinity incase of gRPC-GCP extenstion ([#3215](https://github.com/googleapis/java-spanner/issues/3215)) ([86b306a](https://github.com/googleapis/java-spanner/commit/86b306a4189483a5fd2746052bed817443630567))
+* Support Read RPC OrderBy ([#3180](https://github.com/googleapis/java-spanner/issues/3180)) ([735bca5](https://github.com/googleapis/java-spanner/commit/735bca523e4ea53a24929fb2c27d282c41350e91))
+
+
+### Bug Fixes
+
+* Make sure commitAsync always finishes ([#3216](https://github.com/googleapis/java-spanner/issues/3216)) ([440c88b](https://github.com/googleapis/java-spanner/commit/440c88bd67e1c9d08445fe26b01bf243f7fd1ca4))
+* SessionPoolOptions.Builder#toBuilder() skipped useMultiplexedSessions ([#3197](https://github.com/googleapis/java-spanner/issues/3197)) ([027f92c](https://github.com/googleapis/java-spanner/commit/027f92cf32fee8217d2075db61fe0be58d43a40d))
+
+
+### Dependencies
+
+* Bump sdk-platform-java-config to 3.33.0 ([#3243](https://github.com/googleapis/java-spanner/issues/3243)) ([35907c6](https://github.com/googleapis/java-spanner/commit/35907c63ae981612ba24dd9605db493b5b864217))
+* Update dependencies to latest ([#3250](https://github.com/googleapis/java-spanner/issues/3250)) ([d1d566b](https://github.com/googleapis/java-spanner/commit/d1d566b096915a537e0978715c81bfca00e34ceb))
+* Update dependency com.google.auto.value:auto-value-annotations to v1.11.0 ([#3191](https://github.com/googleapis/java-spanner/issues/3191)) ([065cd48](https://github.com/googleapis/java-spanner/commit/065cd489964aaee42fffe1e71327906bde907205))
+* Update dependency com.google.cloud:google-cloud-trace to v2.47.0 ([#3067](https://github.com/googleapis/java-spanner/issues/3067)) ([e336ab8](https://github.com/googleapis/java-spanner/commit/e336ab81a1d392d56386f9302bf51bf14e385dad))
+
 ## [6.71.0](https://github.com/googleapis/java-spanner/compare/v6.70.0...v6.71.0) (2024-07-03)
 
 
