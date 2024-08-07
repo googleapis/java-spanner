@@ -30,7 +30,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -244,14 +243,12 @@ public class GfeLatencyTest {
     try (ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
       rs.next();
     }
-    Stopwatch watch = Stopwatch.createStarted();
     long count =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
             false);
     assertEquals(0, count);
-    System.out.println("Duration: " + watch.elapsed());
 
     try (ResultSet rs = databaseClientNoHeader.singleUse().executeQuery(SELECT1AND2)) {
       rs.next();
