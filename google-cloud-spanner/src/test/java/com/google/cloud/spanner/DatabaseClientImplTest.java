@@ -3859,7 +3859,8 @@ public class DatabaseClientImplTest {
     try {
       // Simulate session creation failures on the backend.
       mockSpanner.setBatchCreateSessionsExecutionTime(
-          SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
+          SimulatedExecutionTime.ofStickyException(
+              Status.FAILED_PRECONDITION.asRuntimeException()));
       DatabaseClient client =
           spannerWithEmptySessionPool.getDatabaseClient(
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -3867,7 +3868,7 @@ public class DatabaseClientImplTest {
       // non-blocking, and any exceptions will be delayed until actual query execution.
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         SpannerException e = assertThrows(SpannerException.class, rs::next);
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
       }
     } finally {
       mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());

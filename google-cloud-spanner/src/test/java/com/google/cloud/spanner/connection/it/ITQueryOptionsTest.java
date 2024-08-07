@@ -16,12 +16,18 @@
 
 package com.google.cloud.spanner.connection.it;
 
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.connection.ITAbstractSpannerTest;
 import com.google.cloud.spanner.connection.SqlScriptVerifier;
 import com.google.cloud.spanner.connection.SqlScriptVerifier.SpannerGenericConnection;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+@Category(ParallelIntegrationTest.class)
+@RunWith(JUnit4.class)
 public class ITQueryOptionsTest extends ITAbstractSpannerTest {
 
   private static final String TEST_QUERY_OPTIONS = "ITSqlScriptTest_TestQueryOptions.sql";
