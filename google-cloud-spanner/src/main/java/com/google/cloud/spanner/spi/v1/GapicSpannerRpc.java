@@ -56,6 +56,7 @@ import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
@@ -240,6 +241,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final Set<Code> executeQueryRetryableCodes;
   private final RetrySettings readRetrySettings;
   private final Set<Code> readRetryableCodes;
+  private final RetrySettings commitRetrySettings;
   private final SpannerStub partitionedDmlStub;
   private final RetrySettings partitionedDmlRetrySettings;
   private final InstanceAdminStubSettings instanceAdminStubSettings;
@@ -267,6 +269,8 @@ public class GapicSpannerRpc implements SpannerRpc {
       new ConcurrentHashMap<>();
   private final boolean leaderAwareRoutingEnabled;
   private final boolean serverSideTracingEnabled;
+  private final int numChannels;
+  private final boolean isGrpcGcpExtensionEnabled;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -319,6 +323,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
     this.serverSideTracingEnabled = options.isServerSideTracingEnabled();
+    this.numChannels = options.getNumChannels();
+    this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -400,6 +406,8 @@ public class GapicSpannerRpc implements SpannerRpc {
             options.getSpannerStubSettings().executeStreamingSqlSettings().getRetrySettings();
         this.executeQueryRetryableCodes =
             options.getSpannerStubSettings().executeStreamingSqlSettings().getRetryableCodes();
+        this.commitRetrySettings =
+            options.getSpannerStubSettings().commitSettings().getRetrySettings();
         partitionedDmlRetrySettings =
             options
                 .getSpannerStubSettings()
@@ -510,6 +518,8 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.readRetryableCodes = null;
       this.executeQueryRetrySettings = null;
       this.executeQueryRetryableCodes = null;
+      this.commitRetrySettings =
+          SpannerStubSettings.newBuilder().commitSettings().getRetrySettings();
       this.partitionedDmlStub = null;
       this.databaseAdminStubSettings = null;
       this.instanceAdminStubSettings = null;
@@ -1804,6 +1814,11 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   @Override
+  public RetrySettings getCommitRetrySettings() {
+    return commitRetrySettings;
+  }
+
+  @Override
   public ApiFuture<Empty> rollbackAsync(RollbackRequest request, @Nullable Map<Option, ?> options) {
     GrpcCallContext context =
         newCallContext(
@@ -1952,7 +1967,20 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
-      context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+      if (this.isGrpcGcpExtensionEnabled) {
+        // Set channel affinity in gRPC-GCP.
+        // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
+        int boundedChannelHint = Option.CHANNEL_HINT.getLong(options).intValue() % this.numChannels;
+        context =
+            context.withCallOptions(
+                context
+                    .getCallOptions()
+                    .withOption(
+                        GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
+      } else {
+        // Set channel affinity in GAX.
+        context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+      }
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.

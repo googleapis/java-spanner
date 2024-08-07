@@ -35,7 +35,7 @@ public class InstanceOperations {
 
     InstanceInfo instanceInfo =
         InstanceInfo.newBuilder(InstanceId.of(projectId, instanceId))
-            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-central1"))
+            .setInstanceConfigId(InstanceConfigId.of(projectId, "regional-us-east4"))
             .setNodeCount(1)
             .setDisplayName(instanceId)
             .build();

@@ -92,7 +92,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.67.0</version>
+      <version>6.71.0</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -102,7 +102,7 @@
     <dependency>
       <groupId>com.google.auto.value</groupId>
       <artifactId>auto-value-annotations</artifactId>
-      <version>1.10.4</version>
+      <version>1.11.0</version>
     </dependency>
     <dependency>
       <groupId>com.kohlschutter.junixsocket</groupId>

@@ -19,7 +19,7 @@ If you are using Maven with [BOM][libraries-bom], add this to your pom.xml file:
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>libraries-bom</artifactId>
-      <version>26.39.0</version>
+      <version>26.43.0</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>
@@ -42,7 +42,7 @@ If you are using Maven without the BOM, add this to your dependencies:
 <dependency>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.67.0</version>
+  <version>6.71.0</version>
 </dependency>
 
 ```
@@ -50,7 +50,7 @@ If you are using Maven without the BOM, add this to your dependencies:
 If you are using Gradle 5.x or later, add this to your dependencies:
 
 ```Groovy
-implementation platform('com.google.cloud:libraries-bom:26.42.0')
+implementation platform('com.google.cloud:libraries-bom:26.43.0')
 
 implementation 'com.google.cloud:google-cloud-spanner'
 ```
@@ -93,13 +93,7 @@ to add `google-cloud-spanner` as a dependency in your code.
 ## About Cloud Spanner
 
 
-[Cloud Spanner][product-docs] is a fully managed, mission-critical, 
-relational database service that offers transactional consistency at global scale, 
-schemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication 
-for high availability.
-
-Be sure to activate the Cloud Spanner API on the Developer's Console to
-use Cloud Spanner from your project.
+[Cloud Spanner][product-docs] is a fully managed, mission-critical,  relational database service that offers transactional consistency at global scale, \nschemas, SQL (ANSI 2011 with extensions), and automatic, synchronous replication \nfor high availability.\n\nBe sure to activate the Cloud Spanner API on the Developer's Console to\nuse Cloud Spanner from your project.
 
 See the [Cloud Spanner client library docs][javadocs] to learn how to
 use this Cloud Spanner Client Library.
