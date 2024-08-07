@@ -266,12 +266,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
-      <version>3.38.0</version>
+      <version>3.48.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-monitoring-v3</artifactId>
-      <version>3.38.0</version>
+      <version>3.48.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>
