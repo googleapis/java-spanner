@@ -161,6 +161,16 @@ public class TypeTest {
   }
 
   @Test
+  public void uuid() {
+    new ScalarTypeTester(Type.Code.STRING, TypeCode.STRING) {
+      @Override
+      Type newType() {
+        return Type.uuid();
+      }
+    }.test();
+  }
+
+  @Test
   public void json() {
     new ScalarTypeTester(Code.JSON, TypeCode.JSON) {
       @Override
@@ -374,6 +384,16 @@ public class TypeTest {
       @Override
       Type newElementType() {
         return Type.string();
+      }
+    }.test();
+  }
+
+  @Test
+  public void uuidArray() {
+    new ArrayTypeTester(Type.Code.STRING, TypeCode.STRING, true) {
+      @Override
+      Type newElementType() {
+        return Type.uuid();
       }
     }.test();
   }

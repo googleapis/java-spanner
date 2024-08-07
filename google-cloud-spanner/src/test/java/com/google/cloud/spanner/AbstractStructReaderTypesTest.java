@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,6 +101,11 @@ public class AbstractStructReaderTypesTest {
 
     @Override
     protected Date getDateInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
+    protected UUID getUUIDInternal(int columnIndex) {
       return null;
     }
 
@@ -207,6 +213,11 @@ public class AbstractStructReaderTypesTest {
     }
 
     @Override
+    protected List<UUID> getUUIDListInternal(int columnIndex) {
+      return null;
+    }
+
+    @Override
     protected List<Struct> getStructListInternal(int columnIndex) {
       return null;
     }
@@ -299,6 +310,13 @@ public class AbstractStructReaderTypesTest {
             "getDateInternal",
             Date.parseDate("2015-09-15"),
             "getDate",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.uuid(),
+            "getUUIDInternal",
+            UUID.fromString("123e4567-e89b-12d3-a456-426614174000"),
+            "getUUID",
             Collections.singletonList("getValue")
           },
           {
@@ -421,6 +439,15 @@ public class AbstractStructReaderTypesTest {
             "getDateListInternal",
             Arrays.asList(Date.parseDate("2015-09-15"), Date.parseDate("2015-09-14")),
             "getDateList",
+            Collections.singletonList("getValue")
+          },
+          {
+            Type.array(Type.uuid()),
+            "getUUIDListInternal",
+            Arrays.asList(
+                UUID.fromString("123e4567-e89b-12d3-a456-426614174000"),
+                UUID.fromString("123e4567-e89b-12d3-a456-426614174001")),
+            "getUUIDList",
             Collections.singletonList("getValue")
           },
           {

@@ -24,6 +24,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.math.BigDecimal;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 /**
@@ -109,6 +110,11 @@ public abstract class ValueBinder<R> {
   /** Binds to {@code Value.string(value)} */
   public R to(@Nullable String value) {
     return handle(Value.string(value));
+  }
+
+  /** Binds to {@code Value.string(value)} */
+  public R to(@Nullable UUID value) {
+    return handle(Value.string(value == null ? null : value.toString()));
   }
 
   /** Binds to {@code Value.protoMessage(value)} */
@@ -250,6 +256,11 @@ public abstract class ValueBinder<R> {
 
   /** Binds to {@code Value.stringArray(values)} */
   public R toStringArray(@Nullable Iterable<String> values) {
+    return handle(Value.stringArray(values));
+  }
+
+  /** Binds to {@code Value.stringArray(values)} */
+  public R toUUIDArray(@Nullable Iterable<UUID> values) {
     return handle(Value.stringArray(values));
   }
 

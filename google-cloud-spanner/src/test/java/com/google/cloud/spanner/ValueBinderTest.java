@@ -24,6 +24,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.CoreTesting.TestWrappers.TestUuid;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.SingerProto.Genre;
@@ -55,6 +56,7 @@ public class ValueBinderTest {
   private static final String PROTO_ENUM_METHOD_NAME = "protoEnum";
   private static final String BYTES_BASE64_METHOD_NAME = "bytesFromBase64";
   public static final String DEFAULT_PG_NUMERIC = "1.23";
+  private static final TestUuid DEFAULT_TEST_UUID = TestUuid.of("00000000-0000-0000-0000-000000000001");
 
   private Value lastValue;
   private int lastReturnValue;
@@ -201,6 +203,11 @@ public class ValueBinderTest {
 
         assertThat(binder.to(expected)).isEqualTo(lastReturnValue);
         assertThat(lastValue).isEqualTo(expected);
+      } else if (binderMethod.getParameterTypes().length == 1
+          && method.getName().equalsIgnoreCase("uuid")) {
+        assertThat(binderMethod.invoke(binder, DEFAULT_TEST_UUID)).isEqualTo(lastReturnValue);
+        Value expected = (Value) method.invoke(Value.class, DEFAULT_TEST_UUID);
+        assertThat(lastValue).isEqualTo(expected);
       } else if (binderMethod.getParameterTypes().length == 2
           && (method.getName().contains(PROTO_MESSAGE_METHOD_NAME)
               || method.getName().contains(PROTO_ENUM_METHOD_NAME))) {
@@ -333,6 +340,10 @@ public class ValueBinderTest {
 
     public static boolean[] defaultBooleanArray() {
       return new boolean[] {false, true};
+    }
+
+    public static Iterable<TestUuid> defaultUuidIterable() {
+      return Arrays.asList(DEFAULT_TEST_UUID, DEFAULT_TEST_UUID);
     }
 
     public static Iterable<Boolean> defaultBooleanIterable() {

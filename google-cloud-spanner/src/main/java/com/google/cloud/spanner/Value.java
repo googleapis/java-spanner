@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.util.UUID;
 
 /**
  * Represents a value to be consumed by the Cloud Spanner API. A value can be {@code NULL} or
@@ -261,6 +262,15 @@ public abstract class Value implements Serializable {
    */
   public static Value pgOid(@Nullable Long v) {
     return new PgOidImpl(v == null, v == null ? 0 : v);
+  }
+
+  /**
+   * Returns a {@code UUID} value.
+   *
+   * @param v the value, which may be null
+   */
+  public static Value uuid(@Nullable UUID v) {
+    return new UuidImpl(v == null, v);
   }
 
   /** Returns an {@code PG_OID} value. */
@@ -916,6 +926,14 @@ public abstract class Value implements Serializable {
   public abstract Date getDate();
 
   /**
+   * Returns the value of a {@code UUID}-typed instance.
+   *
+   * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
+   */
+  public abstract UUID getUuid();
+
+
+  /**
    * Returns the value of a {@code STRUCT}-typed instance.
    *
    * @throws IllegalStateException if {@code isNull()} or the value is not of the expected type
@@ -1312,6 +1330,11 @@ public abstract class Value implements Serializable {
     @Override
     public Date getDate() {
       throw defaultGetter(Type.date());
+    }
+
+    @Override
+    public UUID getUuid() {
+      throw defaultGetter(Type.uuid());
     }
 
     @Override
@@ -2186,6 +2209,32 @@ public abstract class Value implements Serializable {
     void valueToString(StringBuilder b) {
       b.append(value);
     }
+  }
+
+  private static class UuidImpl extends AbstractObjectValue<UUID> {
+
+    private UuidImpl(boolean isNull, UUID value) {
+      super(isNull, Type.uuid(), value);
+    }
+
+    @Override
+    public UUID getUuid() {
+      checkNotNull();
+      return value;
+    }
+
+    @Override
+    void valueToString(StringBuilder b) {
+      b.append(value);
+    }
+
+    @Override
+    com.google.protobuf.Value valueToProto() {
+      return com.google.protobuf.Value.newBuilder()
+          .setStringValue(value.toString())
+          .build();
+    }
+
   }
 
   private abstract static class PrimitiveArrayImpl<T> extends AbstractValue {

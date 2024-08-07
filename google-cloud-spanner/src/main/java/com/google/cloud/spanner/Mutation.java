@@ -387,19 +387,13 @@ public final class Mutation implements Serializable {
   }
 
   private boolean isNaN(Value value) {
-    return !value.isNull() && (isFloat64NaN(value) || isFloat32NaN(value));
+    return !value.isNull() && (isFloat64NaN(value));
   }
 
   // Checks if the Float64 value is either a "Double" or a "Float" NaN.
   // Refer the comment above `areValuesEqual` for more details.
   private boolean isFloat64NaN(Value value) {
     return value.getType().equals(Type.float64()) && Double.isNaN(value.getFloat64());
-  }
-
-  // Checks if the Float32 value is either a "Double" or a "Float" NaN.
-  // Refer the comment above `areValuesEqual` for more details.
-  private boolean isFloat32NaN(Value value) {
-    return value.getType().equals(Type.float32()) && Float.isNaN(value.getFloat32());
   }
 
   static void toProto(Iterable<Mutation> mutations, List<com.google.spanner.v1.Mutation> out) {

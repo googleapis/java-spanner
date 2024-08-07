@@ -23,6 +23,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Type.Code;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.common.base.Preconditions;
@@ -35,6 +36,7 @@ import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 /** Utility methods for working with {@link com.google.cloud.spanner.ResultSet}. */
@@ -486,6 +488,26 @@ public final class ResultSets {
     @Override
     public List<ByteArray> getBytesList(String columnName) {
       return getCurrentRowAsStruct().getBytesList(columnName);
+    }
+
+    @Override
+    public UUID getUUID(int columnIndex) {
+      return getCurrentRowAsStruct().getUUID(columnIndex);
+    }
+
+    @Override
+    public UUID getUUID(String columnName) {
+      return getCurrentRowAsStruct().getUUID(columnName);
+    }
+
+    @Override
+    public List<UUID> getUUIDList(int columnIndex) {
+      return getCurrentRowAsStruct().getUUIDList(columnIndex);
+    }
+
+    @Override
+    public List<UUID> getUUIDList(String columnName) {
+      return getCurrentRowAsStruct().getUUIDList(columnName);
     }
 
     @Override

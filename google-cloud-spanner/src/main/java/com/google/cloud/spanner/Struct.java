@@ -33,6 +33,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolMessageEnum;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -227,6 +228,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected UUID getUUIDInternal(int columnIndex) {
+      return values.get(columnIndex).getUuid();
+    }
+
+    @Override
     protected <T extends AbstractMessage> T getProtoMessageInternal(int columnIndex, T message) {
       return values.get(columnIndex).getProtoMessage(message);
     }
@@ -335,6 +341,11 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
     }
 
     @Override
+    protected List<UUID> getUUIDListInternal(int columnIndex) {
+      return values.get(columnIndex).getUuidArray();
+    }
+
+    @Override
     protected List<Struct> getStructListInternal(int columnIndex) {
       return values.get(columnIndex).getStructArray();
     }
@@ -420,6 +431,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
         return getTimestampInternal(columnIndex);
       case DATE:
         return getDateInternal(columnIndex);
+      case UUID:
+        return getUUIDInternal(columnIndex);
       case STRUCT:
         return getStructInternal(columnIndex);
       case ARRAY:
@@ -451,6 +464,8 @@ public abstract class Struct extends AbstractStructReader implements Serializabl
             return getTimestampListInternal(columnIndex);
           case DATE:
             return getDateListInternal(columnIndex);
+          case UUID:
+            return getUUIDListInternal(columnIndex);
           case STRUCT:
             return getStructListInternal(columnIndex);
           default:
