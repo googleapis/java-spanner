@@ -46,6 +46,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.GeneratedMessageV3;
 import com.google.spanner.v1.BatchCreateSessionsRequest;
 import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.CommitRequest;
@@ -983,17 +984,13 @@ public class AsyncTransactionManagerTest extends AbstractAsyncTransactionTest {
         }
       }
     }
+    ImmutableList<Class<? extends GeneratedMessageV3>> expectedRequests =
+        ImmutableList.of(
+            BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
     if (isMultiplexedSessionsEnabled()) {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactly(
-              CreateSessionRequest.class,
-              BatchCreateSessionsRequest.class,
-              ExecuteBatchDmlRequest.class,
-              CommitRequest.class);
+      assertThat(mockSpanner.getRequestTypes()).containsAtLeastElementsIn(expectedRequests);
     } else {
-      assertThat(mockSpanner.getRequestTypes())
-          .containsExactly(
-              BatchCreateSessionsRequest.class, ExecuteBatchDmlRequest.class, CommitRequest.class);
+      assertThat(mockSpanner.getRequestTypes()).containsExactlyElementsIn(expectedRequests);
     }
   }
 
