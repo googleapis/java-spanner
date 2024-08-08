@@ -15,6 +15,7 @@
  */
 package com.google.cloud.spanner.spi.v1;
 
+import static com.google.api.gax.grpc.GrpcCallContext.TRACER_KEY;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.DATABASE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.INSTANCE_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.METHOD;
@@ -22,6 +23,8 @@ import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.PROJECT_ID;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT;
 import static com.google.cloud.spanner.spi.v1.SpannerRpcViews.SPANNER_GFE_LATENCY;
 
+import com.google.cloud.spanner.BuiltInMetricsConstant;
+import com.google.cloud.spanner.CompositeTracer;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerRpcMetrics;
 import com.google.common.cache.Cache;
@@ -96,6 +99,10 @@ class HeaderInterceptor implements ClientInterceptor {
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = databaseName + method.getFullMethodName();
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
+          if (callOptions.getOption(TRACER_KEY) instanceof CompositeTracer) {
+            CompositeTracer compositeTracer = (CompositeTracer) callOptions.getOption(TRACER_KEY);
+            addBuiltInMetricAttributes(compositeTracer, databaseName);
+          }
           Attributes attributes =
               getMetricAttributes(key, method.getFullMethodName(), databaseName);
           super.start(
@@ -196,5 +203,14 @@ class HeaderInterceptor implements ClientInterceptor {
 
           return attributesBuilder.build();
         });
+  }
+
+  private void addBuiltInMetricAttributes(
+      CompositeTracer compositeTracer, DatabaseName databaseName) {
+    // Built in metrics Attributes.
+    compositeTracer.addAttributes(
+        BuiltInMetricsConstant.DATABASE_KEY.getKey(), databaseName.getDatabase());
+    compositeTracer.addAttributes(
+        BuiltInMetricsConstant.INSTANCE_ID_KEY.getKey(), databaseName.getInstance());
   }
 }
