@@ -64,9 +64,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 
 /**
-* Worker proxy for Java API. This is the main entry of the Java client proxy on cloud Spanner Java
-* client.
-*/
+ * Worker proxy for Java API. This is the main entry of the Java client proxy on cloud Spanner Java
+ * client.
+ */
 public class WorkerProxy {
 
   private static final Logger LOGGER = Logger.getLogger(WorkerProxy.class.getName());
