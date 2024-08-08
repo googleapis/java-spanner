@@ -17,6 +17,9 @@ name: Hermetic library generation upon generation config change through pull req
 on:
   pull_request:
 
+env:
+  HEAD_REF: ${{ github.head_ref }}
+
 jobs:
   library_generation:
     # skip pull requests coming from a forked repository
@@ -35,6 +38,6 @@ jobs:
         [ -z "$(git config user.name)" ] && git config --global user.name "cloud-java-bot"
         bash .github/scripts/hermetic_library_generation.sh \
           --target_branch ${{ github.base_ref }} \
-          --current_branch ${{ github.head_ref }}
+          --current_branch $HEAD_REF
       env:
         GH_TOKEN: ${{ secrets.CLOUD_JAVA_BOT_TOKEN }}
