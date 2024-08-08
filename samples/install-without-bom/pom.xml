@@ -23,8 +23,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
-    <trace.version>2.41.0</trace.version>
-    <cloudmonitoring.version>3.44.0</cloudmonitoring.version>
+    <trace.version>2.47.0</trace.version>
+    <cloudmonitoring.version>3.48.0</cloudmonitoring.version>
   </properties>
 
 
@@ -33,7 +33,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-spanner</artifactId>
-      <version>6.67.0</version>
+      <version>6.71.0</version>
     </dependency>
     <!-- [END spanner_install_without_bom] -->
     
@@ -100,7 +100,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.4.2</version>
+      <version>1.4.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -116,7 +116,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.0</version>
         <executions>
           <execution>
             <id>add-snippets-source</id>
@@ -145,7 +145,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.3.1</version>
         <configuration>
           <systemPropertyVariables>
             <spanner.test.instance>java-client-integration-tests</spanner.test.instance>
