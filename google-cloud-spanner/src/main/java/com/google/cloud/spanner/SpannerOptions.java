@@ -1502,7 +1502,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
-  static void resetActiveTracingFramework() {
+  public static void resetActiveTracingFramework() {
     activeTracingFramework = null;
   }
 
