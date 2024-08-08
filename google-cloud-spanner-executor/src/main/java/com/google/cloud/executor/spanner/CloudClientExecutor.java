@@ -307,9 +307,9 @@ public class CloudClientExecutor extends CloudExecutor {
     }
 
     /**
-    * Create a new transaction runner and corresponding transaction callable to start a read-write
-    * transaction.
-    */
+     * Create a new transaction runner and corresponding transaction callable to start a read-write
+     * transaction.
+     */
     public void startRWTransaction() throws Exception {
       final TransactionCallable<Void> callable =
           transaction -> {
@@ -2384,9 +2384,9 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /**
-  * Execute action that start a read-write or read-only transaction. For read-write transaction,
-  * see {@link ReadWriteTransaction}.
-  */
+   * Execute action that start a read-write or read-only transaction. For read-write transaction,
+   * see {@link ReadWriteTransaction}.
+   */
   private Status executeStartTxn(
       StartTransactionAction action,
       DatabaseClient dbClient,
@@ -2423,9 +2423,9 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /**
-  * Execute action that finish a transaction. For read-write transaction, either commit or abandon
-  * the transaction is allowed. Batch transaction is not supported.
-  */
+   * Execute action that finish a transaction. For read-write transaction, either commit or abandon
+   * the transaction is allowed. Batch transaction is not supported.
+   */
   private Status executeFinishTxn(
       FinishTransactionAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
     LOGGER.log(
