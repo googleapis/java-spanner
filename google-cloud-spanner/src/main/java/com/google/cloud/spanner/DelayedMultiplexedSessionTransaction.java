@@ -122,18 +122,15 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
             MoreExecutors.directExecutor()));
   }
 
+  /** This is a blocking call as the expected by the parent interface. */
   @Override
   public CommitResponse writeAtLeastOnceWithOptions(
       Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
     try {
-      return ApiFutures.transform(
-              this.sessionFuture,
-              sessionReference ->
-                  new MultiplexedSessionTransaction(
-                          client, span, sessionReference, NO_CHANNEL_HINT, false)
-                      .writeAtLeastOnceWithOptions(mutations, options),
-              MoreExecutors.directExecutor())
-          .get();
+      SessionReference sessionReference = this.sessionFuture.get();
+      return new MultiplexedSessionTransaction(
+              client, span, sessionReference, NO_CHANNEL_HINT, false)
+          .writeAtLeastOnceWithOptions(mutations, options);
     } catch (ExecutionException executionException) {
       // Propagate the underlying exception as a RuntimeException (SpannerException is also a
       // RuntimeException).

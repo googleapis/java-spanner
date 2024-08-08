@@ -109,6 +109,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
     }
 
     @Override
+    public CommitResponse writeAtLeastOnceWithOptions(
+        Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
+      CommitResponse response = super.writeAtLeastOnceWithOptions(mutations, options);
+      onTransactionDone();
+      return response;
+    }
+
+    @Override
     void onTransactionDone() {
       boolean markedDone = false;
       synchronized (this) {

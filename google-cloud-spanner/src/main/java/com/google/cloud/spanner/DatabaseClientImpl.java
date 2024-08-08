@@ -37,38 +37,24 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
 
-  final boolean useMultiplexedSessionForBlindWrite;
-
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this(
-        "",
-        pool,
-        /* multiplexedSessionDatabaseClient = */ null,
-        /*useMultiplexedSessionForBlindWrite = */ false,
-        tracer);
+    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(
-        clientId,
-        pool,
-        /* multiplexedSessionDatabaseClient = */ null,
-        /*useMultiplexedSessionForBlindWrite = */ false,
-        tracer);
+    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
   }
 
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
-      boolean useMultiplexedSessionForBlindWrite,
       TraceWrapper tracer) {
     this.clientId = clientId;
     this.pool = pool;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
-    this.useMultiplexedSessionForBlindWrite = useMultiplexedSessionForBlindWrite;
     this.tracer = tracer;
   }
 
@@ -126,14 +112,15 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    if (useMultiplexedSessionForBlindWrite) {
-      return getMultiplexedSession().writeAtLeastOnceWithOptions(mutations, options);
+    if (this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()) {
+      return this.multiplexedSessionDatabaseClient.writeAtLeastOnceWithOptions(mutations, options);
     } else {
       return writeAtLeastOnceWithSession(mutations, options);
     }
   }
 
-  public CommitResponse writeAtLeastOnceWithSession(
+  private CommitResponse writeAtLeastOnceWithSession(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);

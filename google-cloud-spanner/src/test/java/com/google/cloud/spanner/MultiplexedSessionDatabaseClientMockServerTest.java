@@ -70,7 +70,6 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setUseMultiplexedSession(true)
-                    .setUseMultiplexedSessionForBlindWrite(true)
                     // Set the maintainer to loop once every 1ms
                     .setMultiplexedSessionMaintenanceLoopFrequency(Duration.ofMillis(1L))
                     // Set multiplexed sessions to be replaced once every 1ms
@@ -319,7 +318,8 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
   @Test
   public void testWriteAtLeastOnceAborted() {
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     // Force the Commit RPC to return Aborted the first time it is called. The exception is cleared
     // after the first call, so the retry should succeed.
     mockSpanner.setCommitExecutionTime(
@@ -333,11 +333,16 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
   public void testWriteAtLeastOnce() {
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     Timestamp timestamp =
         client.writeAtLeastOnce(
             Collections.singletonList(
@@ -352,11 +357,16 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
   public void testWriteAtLeastOnceWithCommitStats() {
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     CommitResponse response =
         client.writeAtLeastOnceWithOptions(
             Collections.singletonList(
@@ -374,11 +384,16 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
   public void testWriteAtLeastOnceWithOptions() {
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     client.writeAtLeastOnceWithOptions(
         Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
@@ -392,11 +407,16 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_LOW, commit.getRequestOptions().getPriority());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
   public void testWriteAtLeastOnceWithTagOptions() {
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     client.writeAtLeastOnceWithOptions(
         Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
@@ -411,11 +431,16 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(commit.getRequestOptions());
     assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
     assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   @Test
   public void testWriteAtLeastOnceWithExcludeTxnFromChangeStreams() {
-    DatabaseClient client = spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
+    DatabaseClientImpl client =
+        (DatabaseClientImpl) spanner.getDatabaseClient(DatabaseId.of("p", "i", "d"));
     client.writeAtLeastOnceWithOptions(
         Collections.singletonList(
             Mutation.newInsertBuilder("FOO").set("ID").to(1L).set("NAME").to("Bar").build()),
@@ -427,6 +452,10 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
     assertTrue(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
+
+    assertNotNull(client.multiplexedSessionDatabaseClient);
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
+    assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsReleased().get());
   }
 
   private void waitForSessionToBeReplaced(DatabaseClientImpl client) {

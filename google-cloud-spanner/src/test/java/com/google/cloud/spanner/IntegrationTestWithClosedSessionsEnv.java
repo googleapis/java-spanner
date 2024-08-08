@@ -47,10 +47,7 @@ public class IntegrationTestWithClosedSessionsEnv extends IntegrationTestEnv {
 
     @Override
     DatabaseClientImpl createDatabaseClient(
-        String clientId,
-        SessionPool pool,
-        MultiplexedSessionDatabaseClient ignore,
-        boolean multiplexedSessionForBlindWrite) {
+        String clientId, SessionPool pool, MultiplexedSessionDatabaseClient ignore) {
       return new DatabaseClientWithClosedSessionImpl(clientId, pool, tracer);
     }
   }

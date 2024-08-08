@@ -277,8 +277,6 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
         boolean useMultiplexedSession =
             getOptions().getSessionPoolOptions().getUseMultiplexedSession();
-        boolean useMultiplexedSessionForBlindWrite =
-            getOptions().getSessionPoolOptions().getUseMultiplexedSessionForBlindWrite();
         MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
             useMultiplexedSession
                 ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
@@ -302,11 +300,7 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
                 numMultiplexedSessionsReleased);
         pool.maybeWaitOnMinSessions();
         DatabaseClientImpl dbClient =
-            createDatabaseClient(
-                clientId,
-                pool,
-                multiplexedSessionDatabaseClient,
-                useMultiplexedSessionForBlindWrite);
+            createDatabaseClient(clientId, pool, multiplexedSessionDatabaseClient);
         dbClients.put(db, dbClient);
         return dbClient;
       }
@@ -317,10 +311,8 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
   DatabaseClientImpl createDatabaseClient(
       String clientId,
       SessionPool pool,
-      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient,
-      boolean multiplexedSessionForBlindWrite) {
-    return new DatabaseClientImpl(
-        clientId, pool, multiplexedSessionClient, multiplexedSessionForBlindWrite, tracer);
+      @Nullable MultiplexedSessionDatabaseClient multiplexedSessionClient) {
+    return new DatabaseClientImpl(clientId, pool, multiplexedSessionClient, tracer);
   }
 
   @Override

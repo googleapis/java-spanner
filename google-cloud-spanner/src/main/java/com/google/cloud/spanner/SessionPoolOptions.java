@@ -73,8 +73,6 @@ public class SessionPoolOptions {
 
   private final boolean useMultiplexedSession;
 
-  private final boolean useMultiplexedSessionForBlindWrite;
-
   // TODO: Change to use java.time.Duration.
   private final Duration multiplexedSessionMaintenanceDuration;
 
@@ -110,14 +108,6 @@ public class SessionPoolOptions {
         (useMultiplexedSessionFromEnvVariable != null)
             ? useMultiplexedSessionFromEnvVariable
             : builder.useMultiplexedSession;
-    // useMultiplexedSessionForBlindWrite priority => Environment var > private setter > client
-    // default
-    Boolean useMultiplexedSessionBlindWriteFromEnvVariable =
-        getUseMultiplexedSessionBlindWriteFromEnvVariable();
-    this.useMultiplexedSessionForBlindWrite =
-        (useMultiplexedSessionBlindWriteFromEnvVariable != null)
-            ? useMultiplexedSessionBlindWriteFromEnvVariable
-            : builder.useMultiplexedSessionForBlindWrite;
     this.multiplexedSessionMaintenanceDuration = builder.multiplexedSessionMaintenanceDuration;
   }
 
@@ -315,28 +305,6 @@ public class SessionPoolOptions {
   @InternalApi
   public boolean getUseMultiplexedSession() {
     return useMultiplexedSession;
-  }
-
-  @VisibleForTesting
-  @InternalApi
-  public boolean getUseMultiplexedSessionForBlindWrite() {
-    return useMultiplexedSessionForBlindWrite;
-  }
-
-  private static Boolean getUseMultiplexedSessionBlindWriteFromEnvVariable() {
-    String useMultiplexedSessionFromEnvVariable =
-        System.getenv("GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_BLIND_WRITES");
-    if (useMultiplexedSessionFromEnvVariable != null
-        && useMultiplexedSessionFromEnvVariable.length() > 0) {
-      if ("true".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)
-          || "false".equalsIgnoreCase(useMultiplexedSessionFromEnvVariable)) {
-        return Boolean.parseBoolean(useMultiplexedSessionFromEnvVariable);
-      } else {
-        throw new IllegalArgumentException(
-            "GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS_BLIND_WRITES should be either true or false.");
-      }
-    }
-    return null;
   }
 
   private static Boolean getUseMultiplexedSessionFromEnvVariable() {
@@ -561,11 +529,6 @@ public class SessionPoolOptions {
     // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
 
-    // This field controls the default behavior of session management in Java client.
-    // Set useMultiplexedSessionForBlindWrite to true to make multiplexed session the default for
-    // blind writes.
-    private boolean useMultiplexedSessionForBlindWrite = false;
-
     private Duration multiplexedSessionMaintenanceDuration = Duration.ofDays(7);
     private Clock poolMaintainerClock = Clock.INSTANCE;
 
@@ -607,7 +570,6 @@ public class SessionPoolOptions {
       this.randomizePositionQPSThreshold = options.randomizePositionQPSThreshold;
       this.inactiveTransactionRemovalOptions = options.inactiveTransactionRemovalOptions;
       this.useMultiplexedSession = options.useMultiplexedSession;
-      this.useMultiplexedSessionForBlindWrite = options.useMultiplexedSessionForBlindWrite;
       this.multiplexedSessionMaintenanceDuration = options.multiplexedSessionMaintenanceDuration;
       this.poolMaintainerClock = options.poolMaintainerClock;
     }
@@ -792,22 +754,6 @@ public class SessionPoolOptions {
      */
     Builder setUseMultiplexedSession(boolean useMultiplexedSession) {
       this.useMultiplexedSession = useMultiplexedSession;
-      return this;
-    }
-
-    /**
-     * Sets whether the client should use multiplexed session or not for writeAtLeastOnce. If set to
-     * true, the client optimises and runs multiple applicable requests concurrently on a single
-     * session. A single multiplexed session is sufficient to handle all concurrent traffic.
-     *
-     * <p>When set to false, the client uses the regular session cached in the session pool for
-     * running 1 concurrent transaction per session. We require to provision sufficient sessions by
-     * making use of {@link SessionPoolOptions#minSessions} and {@link
-     * SessionPoolOptions#maxSessions} based on the traffic load. Failing to do so will result in
-     * higher latencies.
-     */
-    Builder setUseMultiplexedSessionForBlindWrite(boolean useMultiplexedSessionForBlindWrite) {
-      this.useMultiplexedSessionForBlindWrite = useMultiplexedSessionForBlindWrite;
       return this;
     }
 
