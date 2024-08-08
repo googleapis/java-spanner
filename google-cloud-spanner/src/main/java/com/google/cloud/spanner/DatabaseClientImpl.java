@@ -112,6 +112,17 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
+    if (this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()) {
+      return this.multiplexedSessionDatabaseClient.writeAtLeastOnceWithOptions(mutations, options);
+    } else {
+      return writeAtLeastOnceWithSession(mutations, options);
+    }
+  }
+
+  private CommitResponse writeAtLeastOnceWithSession(
+      final Iterable<Mutation> mutations, final TransactionOption... options)
+      throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(

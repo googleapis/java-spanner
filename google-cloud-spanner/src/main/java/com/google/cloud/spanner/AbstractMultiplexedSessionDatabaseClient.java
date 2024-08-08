@@ -53,13 +53,7 @@ abstract class AbstractMultiplexedSessionDatabaseClient implements DatabaseClien
 
   @Override
   public Timestamp writeAtLeastOnce(Iterable<Mutation> mutations) throws SpannerException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public CommitResponse writeAtLeastOnceWithOptions(
-      Iterable<Mutation> mutations, TransactionOption... options) throws SpannerException {
-    throw new UnsupportedOperationException();
+    return writeAtLeastOnceWithOptions(mutations).getCommitTimestamp();
   }
 
   @Override
