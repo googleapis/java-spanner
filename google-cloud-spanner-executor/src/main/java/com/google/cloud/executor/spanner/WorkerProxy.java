@@ -1,27 +1,58 @@
 /*
- * Copyright 2022 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2022 Google LLC
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package com.google.cloud.executor.spanner;
 
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.rpc.TransportChannel;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
+import com.google.auth.http.HttpTransportFactory;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.executor.spanner.CloudUtil.CertUtil;
+import com.google.cloud.opentelemetry.trace.TraceConfiguration;
+import com.google.cloud.opentelemetry.trace.TraceExporter;
 import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerExceptionFactory;
+import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.trace.v2.stub.TraceServiceStub;
+import com.google.cloud.trace.v2.stub.TraceServiceStubSettings;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.InternalNettyChannelBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.NegotiationType;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.protobuf.services.HealthStatusManager;
 import io.grpc.protobuf.services.ProtoReflectionService;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,11 +61,12 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 
 /**
- * Worker proxy for Java API. This is the main entry of the Java client proxy on cloud Spanner Java
- * client.
- */
+* Worker proxy for Java API. This is the main entry of the Java client proxy on cloud Spanner Java
+* client.
+*/
 public class WorkerProxy {
 
   private static final Logger LOGGER = Logger.getLogger(WorkerProxy.class.getName());
@@ -42,6 +74,7 @@ public class WorkerProxy {
   private static final String OPTION_SPANNER_PORT = "spanner_port";
   private static final String OPTION_PROXY_PORT = "proxy_port";
   private static final String OPTION_CERTIFICATE = "cert";
+  private static final String OPTION_ROOT_CERTIFICATE = "root_cert";
   private static final String OPTION_SERVICE_KEY_FILE = "service_key_file";
   private static final String OPTION_USE_PLAIN_TEXT_CHANNEL = "use_plain_text_channel";
   private static final String OPTION_ENABLE_GRPC_FAULT_INJECTOR = "enable_grpc_fault_injector";
@@ -51,17 +84,96 @@ public class WorkerProxy {
   public static int spannerPort = 0;
   public static int proxyPort = 0;
   public static String cert = "";
+  public static String rootCert = "";
   public static String serviceKeyFile = "";
   public static double multiplexedSessionOperationsRatio = 0.0;
   public static boolean usePlainTextChannel = false;
   public static boolean enableGrpcFaultInjector = false;
+  public static OpenTelemetrySdk openTelemetrySdk;
 
   public static CommandLine commandLine;
 
   private static final int MIN_PORT = 0, MAX_PORT = 65535;
   private static final double MIN_RATIO = 0.0, MAX_RATIO = 1.0;
 
+  public static ManagedChannelBuilder<?> getChannelBuilder(
+      String host, int sslPort, String certPath) {
+    SslContext sslContext;
+    try {
+      sslContext =
+          GrpcSslContexts.forClient()
+              .trustManager(CertUtil.copyCert(certPath))
+              .ciphers(null)
+              .build();
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+    try {
+      NettyChannelBuilder channelBuilder = NettyChannelBuilder.forAddress(host, sslPort);
+      InternalNettyChannelBuilder.disableCheckAuthority(channelBuilder);
+      return channelBuilder
+          .sslContext(sslContext)
+          .negotiationType(NegotiationType.TLS);
+    } catch (Throwable t) {
+      throw new RuntimeException(t);
+    }
+  }
+
+  public static OpenTelemetrySdk setupOpenTelemetrySdk() throws Exception {
+    // Read credentials from the serviceKeyFile.
+    HttpTransportFactory HTTP_TRANSPORT_FACTORY = NetHttpTransport::new;
+    Credentials credentials =
+        GoogleCredentials.fromStream(
+            new ByteArrayInputStream(
+                FileUtils.readFileToByteArray(new File(serviceKeyFile))),
+            HTTP_TRANSPORT_FACTORY);
+
+    // Create transport channel provider with root certificates for Cloud Trace API calls.
+    int GRPC_MAX_HEADER_LIST_SIZE_BYTES = 10 * 1024 * 1024;
+    NettyChannelBuilder builder =
+        (NettyChannelBuilder)
+            getChannelBuilder("staging-cloudtrace.sandbox.googleapis.com", 443, rootCert)
+                .maxInboundMessageSize(100 * 1024 * 1024 /* 100 MB */);
+    TransportChannel channel =
+        GrpcTransportChannel.newBuilder()
+            .setManagedChannel(
+                builder.maxInboundMetadataSize(GRPC_MAX_HEADER_LIST_SIZE_BYTES).build())
+            .build();
+    TransportChannelProvider transportChannelProvider =
+        FixedTransportChannelProvider.create(channel);
+    // Create Cloud Trace Service Stub.
+    TraceServiceStub traceServiceStub =
+        TraceServiceStubSettings.newBuilder()
+            .setEndpoint("staging-cloudtrace.sandbox.googleapis.com:443")
+            .setTransportChannelProvider(transportChannelProvider)
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .build()
+            .createStub();
+
+    // OpenTelemetry configuration.
+    SpanExporter spanExporter =
+        TraceExporter.createWithConfiguration(
+            TraceConfiguration.builder()
+                .setProjectId("spanner-cloud-systest")
+                .setCredentials(credentials)
+                .setTraceServiceStub(traceServiceStub)
+                .build());
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+                .setResource(Resource.getDefault())
+                .setSampler(Sampler.parentBased(Sampler.traceIdRatioBased(0.01)))
+                .build())
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
+  }
+
   public static void main(String[] args) throws Exception {
+    // Enable OpenTelemetry metrics and traces before injecting Opentelemetry.
+    SpannerOptions.enableOpenTelemetryMetrics();
+    SpannerOptions.enableOpenTelemetryTraces();
+
     commandLine = buildOptions(args);
 
     if (!commandLine.hasOption(OPTION_SPANNER_PORT)) {
@@ -92,6 +204,14 @@ public class WorkerProxy {
           "Certificate need to be assigned in order to start worker proxy.");
     }
     cert = commandLine.getOptionValue(OPTION_CERTIFICATE);
+
+    if (!commandLine.hasOption(OPTION_ROOT_CERTIFICATE)) {
+      throw SpannerExceptionFactory.newSpannerException(
+          ErrorCode.INVALID_ARGUMENT,
+          "Root certificate need to be assigned in order to start worker proxy.");
+    }
+    rootCert = commandLine.getOptionValue(OPTION_ROOT_CERTIFICATE);
+
     if (commandLine.hasOption(OPTION_SERVICE_KEY_FILE)) {
       serviceKeyFile = commandLine.getOptionValue(OPTION_SERVICE_KEY_FILE);
     }
@@ -117,6 +237,7 @@ public class WorkerProxy {
                 + MAX_RATIO);
       }
     }
+    openTelemetrySdk = setupOpenTelemetrySdk();
 
     Server server;
     while (true) {
@@ -151,6 +272,8 @@ public class WorkerProxy {
     options.addOption(null, OPTION_PROXY_PORT, true, "Proxy port to start worker proxy on.");
     options.addOption(
         null, OPTION_CERTIFICATE, true, "Certificate used to connect to Spanner GFE.");
+    options.addOption(
+        null, OPTION_ROOT_CERTIFICATE, true, "Root certificate used for calls to Cloud Trace API");
     options.addOption(
         null, OPTION_SERVICE_KEY_FILE, true, "Service key file used to set authentication.");
     options.addOption(

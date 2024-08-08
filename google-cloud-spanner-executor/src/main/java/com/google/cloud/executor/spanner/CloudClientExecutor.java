@@ -70,6 +70,7 @@ import com.google.cloud.spanner.StructReader;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
@@ -151,6 +152,10 @@ import com.google.spanner.v1.TypeAnnotationCode;
 import com.google.spanner.v1.TypeCode;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -302,9 +307,9 @@ public class CloudClientExecutor extends CloudExecutor {
     }
 
     /**
-     * Create a new transaction runner and corresponding transaction callable to start a read-write
-     * transaction.
-     */
+    * Create a new transaction runner and corresponding transaction callable to start a read-write
+    * transaction.
+    */
     public void startRWTransaction() throws Exception {
       final TransactionCallable<Void> callable =
           transaction -> {
@@ -321,8 +326,9 @@ public class CloudClientExecutor extends CloudExecutor {
             // Try to commit
             return null;
           };
+      io.opentelemetry.context.Context context = io.opentelemetry.context.Context.current();
       Runnable runnable =
-          () -> {
+          context.wrap(() -> {
             try {
               runner =
                   optimistic
@@ -338,7 +344,7 @@ public class CloudClientExecutor extends CloudExecutor {
                   e);
               transactionFailed(e);
             }
-          };
+          });
       LOGGER.log(
           Level.INFO,
           String.format("Callable and Runnable created, ready to execute %s\n", transactionSeed));
@@ -804,6 +810,8 @@ public class CloudClientExecutor extends CloudExecutor {
             .setHost(HOST_PREFIX + WorkerProxy.spannerPort)
             .setCredentials(credentials)
             .setChannelProvider(channelProvider)
+            .enableServerSideTracing()
+            .setOpenTelemetry(WorkerProxy.openTelemetrySdk)
             .setSessionPoolOption(sessionPoolOptions);
 
     SpannerStubSettings.Builder stubSettingsBuilder =
@@ -851,8 +859,9 @@ public class CloudClientExecutor extends CloudExecutor {
       useMultiplexedSession = false;
     }
 
+    io.opentelemetry.context.Context context = io.opentelemetry.context.Context.current();
     actionThreadPool.execute(
-        () -> {
+        context.wrap(() -> {
           Status status =
               executeAction(outcomeSender, action, dbPath, useMultiplexedSession, executionContext);
           if (!status.isOk()) {
@@ -861,8 +870,47 @@ public class CloudClientExecutor extends CloudExecutor {
                 String.format("Failed to execute action with error: %s\n%s", status, action));
             executionContext.onError(status.getCause());
           }
-        });
+        }));
     return Status.OK;
+  }
+
+  /* Get the action type for a spanner action. */
+  private String actionType(SpannerAction action) {
+    if (action.hasAdmin()) {
+      return "Admin";
+    } else if (action.hasStart()) {
+      return "Start";
+    } else if (action.hasFinish()) {
+      return "Finish";
+    } else if (action.hasMutation()) {
+      return "Mutation";
+    } else if (action.hasRead()) {
+      return "Read";
+    } else if (action.hasQuery()) {
+      return "Query";
+    } else if (action.hasDml()) {
+      return "Dml";
+    } else if (action.hasBatchDml()) {
+      return "BatchDml";
+    } else if (action.hasWrite()) {
+      return "Write";
+    } else if (action.hasStartBatchTxn()) {
+      return "StartBatchTxn";
+    } else if (action.hasGenerateDbPartitionsRead()) {
+      return "GenerateDbPartitionsRead";
+    } else if (action.hasGenerateDbPartitionsQuery()) {
+      return "GenerateDbPartitionsQuery";
+    } else if (action.hasExecutePartition()) {
+      return "ExecutePartition";
+    } else if (action.hasPartitionedUpdate()) {
+      return "PartitionedUpdate";
+    } else if (action.hasCloseBatchTxn()) {
+      return "CloseBatchTxn";
+    } else if (action.hasExecuteChangeStreamQuery()) {
+      return "ExecuteChangeStreamQuery";
+    } else {
+      return "NotValid";
+    }
   }
 
   /** Execute actions by action case, using OutcomeSender to send status and results back. */
@@ -872,10 +920,22 @@ public class CloudClientExecutor extends CloudExecutor {
       String dbPath,
       boolean useMultiplexedSession,
       ExecutionFlowContext executionContext) {
-
+    io.opentelemetry.context.Context context = io.opentelemetry.context.Context.current();
+    LOGGER.log(Level.INFO, String.format("L930: executeAction with context: %s", context.toString()));
+    Tracer tracer = WorkerProxy.openTelemetrySdk.getTracer(CloudClientExecutor.class.getName(), "0.1.0");
+    String spanName = "systestaction_" + actionType(action);
+    LOGGER.log(Level.INFO, String.format("starting action: %s", spanName));
+    Span span = tracer.spanBuilder(spanName).startSpan();
+    // LOGGER.log(
+    //     Level.INFO,
+    //     String.format(
+    //         "starting action: %s with trace_id: %s, span_id: %s\n",
+    //         spanName, span.getSpanContext().getTraceId(), span.getSpanContext().getSpanId()));
+    Scope scope = span.makeCurrent();
     try {
+      Status status;
       if (action.hasAdmin()) {
-        return executeAdminAction(useMultiplexedSession, action.getAdmin(), outcomeSender);
+        status = executeAdminAction(useMultiplexedSession, action.getAdmin(), outcomeSender);
       } else if (action.hasStart()) {
         if (dbPath == null) {
           throw SpannerExceptionFactory.newSpannerException(
@@ -883,25 +943,25 @@ public class CloudClientExecutor extends CloudExecutor {
         }
         DatabaseClient dbClient =
             getClient(useMultiplexedSession).getDatabaseClient(DatabaseId.of(dbPath));
-        return executeStartTxn(action.getStart(), dbClient, outcomeSender, executionContext);
+        status = executeStartTxn(action.getStart(), dbClient, outcomeSender, executionContext);
       } else if (action.hasFinish()) {
-        return executeFinishTxn(action.getFinish(), outcomeSender, executionContext);
+        status = executeFinishTxn(action.getFinish(), outcomeSender, executionContext);
       } else if (action.hasMutation()) {
-        return executeMutation(
+        status = executeMutation(
             action.getMutation(), outcomeSender, executionContext, /*isWrite=*/ false);
       } else if (action.hasRead()) {
-        return executeRead(
+        status = executeRead(
             useMultiplexedSession, action.getRead(), outcomeSender, executionContext);
       } else if (action.hasQuery()) {
-        return executeQuery(
+        status = executeQuery(
             useMultiplexedSession, action.getQuery(), outcomeSender, executionContext);
       } else if (action.hasDml()) {
-        return executeCloudDmlUpdate(
+        status = executeCloudDmlUpdate(
             useMultiplexedSession, action.getDml(), outcomeSender, executionContext);
       } else if (action.hasBatchDml()) {
-        return executeCloudBatchDmlUpdates(action.getBatchDml(), outcomeSender, executionContext);
+        status = executeCloudBatchDmlUpdates(action.getBatchDml(), outcomeSender, executionContext);
       } else if (action.hasWrite()) {
-        return executeMutation(
+        status = executeMutation(
             action.getWrite().getMutation(), outcomeSender, executionContext, /*isWrite=*/ true);
       } else if (action.hasStartBatchTxn()) {
         if (dbPath == null) {
@@ -910,16 +970,16 @@ public class CloudClientExecutor extends CloudExecutor {
         }
         BatchClient batchClient =
             getClient(useMultiplexedSession).getBatchClient(DatabaseId.of(dbPath));
-        return executeStartBatchTxn(
+        status = executeStartBatchTxn(
             action.getStartBatchTxn(), batchClient, outcomeSender, executionContext);
       } else if (action.hasGenerateDbPartitionsRead()) {
-        return executeGenerateDbPartitionsRead(
+        status = executeGenerateDbPartitionsRead(
             action.getGenerateDbPartitionsRead(), outcomeSender, executionContext);
       } else if (action.hasGenerateDbPartitionsQuery()) {
-        return executeGenerateDbPartitionsQuery(
+        status = executeGenerateDbPartitionsQuery(
             action.getGenerateDbPartitionsQuery(), outcomeSender, executionContext);
       } else if (action.hasExecutePartition()) {
-        return executeExecutePartition(
+        status = executeExecutePartition(
             useMultiplexedSession, action.getExecutePartition(), outcomeSender, executionContext);
       } else if (action.hasPartitionedUpdate()) {
         if (dbPath == null) {
@@ -928,28 +988,34 @@ public class CloudClientExecutor extends CloudExecutor {
         }
         DatabaseClient dbClient =
             getClient(useMultiplexedSession).getDatabaseClient(DatabaseId.of(dbPath));
-        return executePartitionedUpdate(action.getPartitionedUpdate(), dbClient, outcomeSender);
+        status = executePartitionedUpdate(action.getPartitionedUpdate(), dbClient, outcomeSender);
       } else if (action.hasCloseBatchTxn()) {
-        return executeCloseBatchTxn(action.getCloseBatchTxn(), outcomeSender, executionContext);
+        status = executeCloseBatchTxn(action.getCloseBatchTxn(), outcomeSender, executionContext);
       } else if (action.hasExecuteChangeStreamQuery()) {
         if (dbPath == null) {
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.INVALID_ARGUMENT, "Database path must be set for this action");
         }
-        return executeExecuteChangeStreamQuery(
+        status = executeExecuteChangeStreamQuery(
             dbPath, useMultiplexedSession, action.getExecuteChangeStreamQuery(), outcomeSender);
       } else {
-        return outcomeSender.finishWithError(
+        status = outcomeSender.finishWithError(
             toStatus(
                 SpannerExceptionFactory.newSpannerException(
                     ErrorCode.UNIMPLEMENTED, "Not implemented yet: \n" + action)));
       }
+      // scope.close();
+      return status;
     } catch (Exception e) {
+      // span.recordException(e);
       LOGGER.log(Level.WARNING, "Unexpected error: " + e.getMessage());
       return outcomeSender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
                   ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+    } finally {
+      scope.close();
+      span.end();
     }
   }
 
@@ -2318,9 +2384,9 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /**
-   * Execute action that start a read-write or read-only transaction. For read-write transaction,
-   * see {@link ReadWriteTransaction}.
-   */
+  * Execute action that start a read-write or read-only transaction. For read-write transaction,
+  * see {@link ReadWriteTransaction}.
+  */
   private Status executeStartTxn(
       StartTransactionAction action,
       DatabaseClient dbClient,
@@ -2357,9 +2423,9 @@ public class CloudClientExecutor extends CloudExecutor {
   }
 
   /**
-   * Execute action that finish a transaction. For read-write transaction, either commit or abandon
-   * the transaction is allowed. Batch transaction is not supported.
-   */
+  * Execute action that finish a transaction. For read-write transaction, either commit or abandon
+  * the transaction is allowed. Batch transaction is not supported.
+  */
   private Status executeFinishTxn(
       FinishTransactionAction action, OutcomeSender sender, ExecutionFlowContext executionContext) {
     LOGGER.log(

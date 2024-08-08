@@ -23,6 +23,7 @@ import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannel;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.common.net.HostAndPort;
+import com.google.cloud.spanner.spi.v1.TraceContextInterceptor;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.InternalNettyChannelBuilder;
@@ -91,6 +92,7 @@ public class CloudUtil {
       return channelBuilder
           .overrideAuthority(hostInCert)
           .sslContext(sslContext)
+          .intercept(new TraceContextInterceptor(WorkerProxy.openTelemetrySdk))
           .negotiationType(NegotiationType.TLS);
     } catch (Throwable t) {
       throw new RuntimeException(t);
