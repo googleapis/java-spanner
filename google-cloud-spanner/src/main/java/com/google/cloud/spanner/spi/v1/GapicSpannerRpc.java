@@ -268,6 +268,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
   private final boolean leaderAwareRoutingEnabled;
+  private final boolean serverSideTracingEnabled;
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
 
@@ -321,6 +322,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
+    this.serverSideTracingEnabled = options.isServerSideTracingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
 
@@ -1987,6 +1989,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
+    }
+    if (serverSideTracingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newServerSideTracingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();

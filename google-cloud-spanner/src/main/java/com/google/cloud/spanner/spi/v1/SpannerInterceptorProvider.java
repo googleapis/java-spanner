@@ -51,6 +51,7 @@ public class SpannerInterceptorProvider implements GrpcInterceptorProvider {
     defaultInterceptorList.add(
         new LoggingInterceptor(Logger.getLogger(GapicSpannerRpc.class.getName()), Level.FINER));
     defaultInterceptorList.add(new HeaderInterceptor(new SpannerRpcMetrics(openTelemetry)));
+    defaultInterceptorList.add(new TraceContextInterceptor(openTelemetry));
     return new SpannerInterceptorProvider(ImmutableList.copyOf(defaultInterceptorList));
   }
 

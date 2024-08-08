@@ -26,6 +26,10 @@ import com.google.spanner.executor.v1.SpannerExecutorProxyGrpc;
 import com.google.spanner.executor.v1.SpannerOptions;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,12 +54,28 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
   @Override
   public StreamObserver<SpannerAsyncActionRequest> executeActionAsync(
       StreamObserver<SpannerAsyncActionResponse> responseObserver) {
+        // stream of actions
+    LOGGER.log(Level.INFO, String.format("starting handling of input stream of actions"));
+    Tracer tracer = WorkerProxy.openTelemetrySdk.getTracer(CloudClientExecutor.class.getName(), "0.1.0");
+    Span span = tracer.spanBuilder("stream_executeActionAsync").setNoParent().startSpan();
+
+    LOGGER.log(Level.INFO, String.format("Top-level span: %s", span.toString()));
+    
+    Scope scope = span.makeCurrent();
+
+    io.opentelemetry.context.Context context = io.opentelemetry.context.Context.current();
+    LOGGER.log(Level.INFO, String.format("L68: Context after creating the top-level span: %s", context.toString()));
+
     CloudClientExecutor.ExecutionFlowContext executionContext =
         clientExecutor.new ExecutionFlowContext(responseObserver);
+
     return new StreamObserver<SpannerAsyncActionRequest>() {
+
       @Override
       public void onNext(SpannerAsyncActionRequest request) {
-        LOGGER.log(Level.INFO, String.format("Receiving request: \n%s", request));
+        io.opentelemetry.context.Context context = io.opentelemetry.context.Context.current();
+
+        LOGGER.log(Level.INFO, String.format("L76: Receiving request: \n%s with context: %s", request, context.toString()));
 
         // Use Multiplexed sessions for all supported operations if the
         // multiplexedSessionOperationsRatio from command line is > 0.0
@@ -94,6 +114,7 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
               SpannerExceptionFactory.newSpannerException(
                   ErrorCode.INVALID_ARGUMENT, status.getDescription()));
         }
+        LOGGER.log(Level.INFO, String.format("L116: Receiving request with context: %s", context.toString()));
       }
 
       @Override
@@ -107,6 +128,8 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
         LOGGER.log(Level.INFO, "Client called Done, half closed");
         executionContext.cleanup();
         responseObserver.onCompleted();
+        scope.close();
+        span.end();
       }
     };
   }
