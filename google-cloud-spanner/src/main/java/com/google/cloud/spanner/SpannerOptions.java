@@ -698,6 +698,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default boolean isEnableApiTracing() {
       return false;
     }
+
+    default boolean isEnableServerSideTracing() {
+      return false;
+    }
   }
 
   /**
@@ -711,6 +715,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
+    private static final String SPANNER_ENABLE_SERVER_SIDE_TRACING = "SPANNER_ENABLE_SERVER_SIDE_TRACING";
 
     private SpannerEnvironmentImpl() {}
 
@@ -735,6 +740,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableApiTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_API_TRACING));
+    }
+
+    @Override
+    public boolean isEnableServerSideTracing() {
+      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_SERVER_SIDE_TRACING));
     }
   }
 
@@ -801,7 +811,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
-    private boolean enableServerSideTracing = false;
+    private boolean enableServerSideTracing = SpannerOptions.environment.isEnableServerSideTracing();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1502,6 +1512,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  @VisibleForTesting
   public static void resetActiveTracingFramework() {
     activeTracingFramework = null;
   }
