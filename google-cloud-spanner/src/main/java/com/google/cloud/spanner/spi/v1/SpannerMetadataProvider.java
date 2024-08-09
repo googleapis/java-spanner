@@ -37,6 +37,7 @@ class SpannerMetadataProvider {
   private final Map<Metadata.Key<String>, String> headers;
   private final String resourceHeaderKey;
   private static final String ROUTE_TO_LEADER_HEADER_KEY = "x-goog-spanner-route-to-leader";
+  private static final String SERVER_SIDE_TRACING_HEADER_KEY = "x-goog-spanner-end-to-end-tracing";
   private static final Pattern[] RESOURCE_TOKEN_PATTERNS = {
     Pattern.compile("^(?<headerValue>projects/[^/]*/instances/[^/]*/databases/[^/]*)(.*)?"),
     Pattern.compile("^(?<headerValue>projects/[^/]*/instances/[^/]*)(.*)?")
@@ -44,6 +45,8 @@ class SpannerMetadataProvider {
 
   private static final Map<String, List<String>> ROUTE_TO_LEADER_HEADER_MAP =
       ImmutableMap.of(ROUTE_TO_LEADER_HEADER_KEY, Collections.singletonList("true"));
+  private static final Map<String, List<String>> SERVER_SIDE_TRACING_HEADER_MAP =
+      ImmutableMap.of(SERVER_SIDE_TRACING_HEADER_KEY, Collections.singletonList("true"));
 
   private SpannerMetadataProvider(Map<String, String> headers, String resourceHeaderKey) {
     this.resourceHeaderKey = resourceHeaderKey;
@@ -87,6 +90,10 @@ class SpannerMetadataProvider {
 
   Map<String, List<String>> newRouteToLeaderHeader() {
     return ROUTE_TO_LEADER_HEADER_MAP;
+  }
+
+  Map<String, List<String>> newServerSideTracingHeader() {
+    return SERVER_SIDE_TRACING_HEADER_MAP;
   }
 
   private Map<Metadata.Key<String>, String> constructHeadersAsMetadata(

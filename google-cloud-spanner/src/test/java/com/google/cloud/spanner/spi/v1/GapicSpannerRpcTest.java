@@ -154,6 +154,7 @@ public class GapicSpannerRpcTest {
   private static String defaultUserAgent;
   private static Spanner spanner;
   private static boolean isRouteToLeader;
+  private static boolean isServerSideTracing;
   private static boolean isTraceContextPresent;
 
   @Parameter public Dialect dialect;
@@ -213,8 +214,15 @@ public class GapicSpannerRpcTest {
                               Key.of(
                                   "x-goog-spanner-route-to-leader",
                                   Metadata.ASCII_STRING_MARSHALLER));
+                      String serverSideTracingHeader =
+                          headers.get(
+                              Key.of(
+                                  "x-goog-spanner-end-to-end-tracing",
+                                  Metadata.ASCII_STRING_MARSHALLER));
                       isRouteToLeader =
                           (routeToLeaderHeader != null && routeToLeaderHeader.equals("true"));
+                      isServerSideTracing =
+                          (serverSideTracingHeader != null && serverSideTracingHeader.equals("true"));
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
@@ -238,6 +246,7 @@ public class GapicSpannerRpcTest {
       server.awaitTermination();
     }
     isRouteToLeader = false;
+    isServerSideTracing = false;
     isTraceContextPresent = false;
   }
 
@@ -477,6 +486,77 @@ public class GapicSpannerRpcTest {
     assertNotNull(callContext);
     assertNull(callContext.getExtraHeaders().get("x-goog-spanner-route-to-leader"));
     rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithServerSideTracingHeader() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("some-project").enableServerSideTracing().build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod());
+    assertNotNull(callContext);
+    assertEquals(
+        ImmutableList.of("true"),
+        callContext.getExtraHeaders().get("x-goog-spanner-end-to-end-tracing"));
+    assertEquals(
+        ImmutableList.of("projects/some-project"),
+        callContext.getExtraHeaders().get(ApiClientHeaderProvider.getDefaultResourceHeaderKey()));
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithoutServerSideTracingHeader() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder().setProjectId("some-project").disableServerSideTracing().build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod());
+    assertNotNull(callContext);
+    assertNull(callContext.getExtraHeaders().get("x-goog-spanner-end-to-end-tracing"));
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testServerSideTracingHeaderWithEnabledTracing() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().enableServerSideTracing().build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertTrue(isServerSideTracing);
+  }
+
+  @Test
+  public void testServerSideTracingHeaderWithDisabledTracing() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().disableServerSideTracing().build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertFalse(isServerSideTracing);
   }
 
   @Test
