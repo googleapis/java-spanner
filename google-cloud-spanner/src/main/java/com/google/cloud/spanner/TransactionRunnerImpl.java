@@ -306,12 +306,23 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     void commit() {
       try {
-        commitResponse = commitAsync().get();
-      } catch (InterruptedException e) {
+        // Normally, Gax will take care of any timeouts, but we add a timeout for getting the value
+        // from the future here as well to make sure the call always finishes, even if the future
+        // never resolves.
+        commitResponse =
+            commitAsync()
+                .get(
+                    rpc.getCommitRetrySettings().getTotalTimeout().getSeconds() + 5,
+                    TimeUnit.SECONDS);
+      } catch (InterruptedException | TimeoutException e) {
         if (commitFuture != null) {
           commitFuture.cancel(true);
         }
-        throw SpannerExceptionFactory.propagateInterrupt(e);
+        if (e instanceof InterruptedException) {
+          throw SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
+        } else {
+          throw SpannerExceptionFactory.propagateTimeout((TimeoutException) e);
+        }
       } catch (ExecutionException e) {
         throw SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause());
       }
@@ -422,6 +433,14 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           commitFuture.addListener(
               () -> {
                 try (IScope ignore = tracer.withSpan(opSpan)) {
+                  if (!commitFuture.isDone()) {
+                    // This should not be possible, considering that we are in a listener for the
+                    // future, but we add a result here as well as a safety precaution.
+                    res.setException(
+                        SpannerExceptionFactory.newSpannerException(
+                            ErrorCode.INTERNAL, "commitFuture is not done"));
+                    return;
+                  }
                   com.google.spanner.v1.CommitResponse proto = commitFuture.get();
                   if (!proto.hasCommitTimestamp()) {
                     throw newSpannerException(
@@ -430,20 +449,28 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                   span.addAnnotation("Commit Done");
                   opSpan.end();
                   res.set(new CommitResponse(proto));
-                } catch (Throwable e) {
-                  if (e instanceof ExecutionException) {
-                    e =
-                        SpannerExceptionFactory.newSpannerException(
-                            e.getCause() == null ? e : e.getCause());
-                  } else if (e instanceof InterruptedException) {
-                    e = SpannerExceptionFactory.propagateInterrupt((InterruptedException) e);
-                  } else {
-                    e = SpannerExceptionFactory.newSpannerException(e);
+                } catch (Throwable throwable) {
+                  SpannerException resultException;
+                  try {
+                    if (throwable instanceof ExecutionException) {
+                      resultException =
+                          SpannerExceptionFactory.asSpannerException(
+                              throwable.getCause() == null ? throwable : throwable.getCause());
+                    } else if (throwable instanceof InterruptedException) {
+                      resultException =
+                          SpannerExceptionFactory.propagateInterrupt(
+                              (InterruptedException) throwable);
+                    } else {
+                      resultException = SpannerExceptionFactory.asSpannerException(throwable);
+                    }
+                    span.addAnnotation("Commit Failed", resultException);
+                    opSpan.setStatus(resultException);
+                    opSpan.end();
+                    res.setException(onError(resultException, false));
+                  } catch (Throwable unexpectedError) {
+                    // This is a safety precaution to make sure that a result is always returned.
+                    res.setException(unexpectedError);
                   }
-                  span.addAnnotation("Commit Failed", e);
-                  opSpan.setStatus(e);
-                  opSpan.end();
-                  res.setException(onError((SpannerException) e, false));
                 }
               },
               MoreExecutors.directExecutor());
@@ -451,9 +478,6 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           res.setException(SpannerExceptionFactory.propagateInterrupt(e));
         } catch (TimeoutException e) {
           res.setException(SpannerExceptionFactory.propagateTimeout(e));
-        } catch (ExecutionException e) {
-          res.setException(
-              SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));
         } catch (Throwable e) {
           res.setException(
               SpannerExceptionFactory.newSpannerException(e.getCause() == null ? e : e.getCause()));

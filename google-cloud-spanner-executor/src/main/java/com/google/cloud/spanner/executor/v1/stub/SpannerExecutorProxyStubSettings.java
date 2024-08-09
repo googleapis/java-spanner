@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.executor.v1.stub;
 
 import com.google.api.core.ApiFunction;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
@@ -119,6 +120,7 @@ public class SpannerExecutorProxyStubSettings
   }
 
   /** Returns the default service endpoint. */
+  @ObsoleteApi("Use getEndpoint() instead")
   public static String getDefaultEndpoint() {
     return "spanner-cloud-executor.googleapis.com:443";
   }

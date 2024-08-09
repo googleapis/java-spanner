@@ -1,13 +1,13 @@
 # Format:
 # module:released-version:current-version
 
-proto-google-cloud-spanner-admin-instance-v1:6.71.0:6.71.1-SNAPSHOT
-proto-google-cloud-spanner-v1:6.71.0:6.71.1-SNAPSHOT
-proto-google-cloud-spanner-admin-database-v1:6.71.0:6.71.1-SNAPSHOT
-grpc-google-cloud-spanner-v1:6.71.0:6.71.1-SNAPSHOT
-grpc-google-cloud-spanner-admin-instance-v1:6.71.0:6.71.1-SNAPSHOT
-grpc-google-cloud-spanner-admin-database-v1:6.71.0:6.71.1-SNAPSHOT
-google-cloud-spanner:6.71.0:6.71.1-SNAPSHOT
-google-cloud-spanner-executor:6.71.0:6.71.1-SNAPSHOT
-proto-google-cloud-spanner-executor-v1:6.71.0:6.71.1-SNAPSHOT
-grpc-google-cloud-spanner-executor-v1:6.71.0:6.71.1-SNAPSHOT
+proto-google-cloud-spanner-admin-instance-v1:6.72.0:6.72.1-SNAPSHOT
+proto-google-cloud-spanner-v1:6.72.0:6.72.1-SNAPSHOT
+proto-google-cloud-spanner-admin-database-v1:6.72.0:6.72.1-SNAPSHOT
+grpc-google-cloud-spanner-v1:6.72.0:6.72.1-SNAPSHOT
+grpc-google-cloud-spanner-admin-instance-v1:6.72.0:6.72.1-SNAPSHOT
+grpc-google-cloud-spanner-admin-database-v1:6.72.0:6.72.1-SNAPSHOT
+google-cloud-spanner:6.72.0:6.72.1-SNAPSHOT
+google-cloud-spanner-executor:6.72.0:6.72.1-SNAPSHOT
+proto-google-cloud-spanner-executor-v1:6.72.0:6.72.1-SNAPSHOT
+grpc-google-cloud-spanner-executor-v1:6.72.0:6.72.1-SNAPSHOT
