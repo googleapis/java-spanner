@@ -35,26 +35,39 @@ class DatabaseClientImpl implements DatabaseClient {
   private final TraceWrapper tracer;
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
+  final boolean useMultiplexedSessionPartitionedOps;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
 
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this(
+        "",
+        pool,
+        /* multiplexedSessionDatabaseClient= */ null,
+        /* useMultiplexedSessionPartitionedOps= */ false,
+        tracer);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this(
+        clientId,
+        pool,
+        /* multiplexedSessionDatabaseClient= */ null,
+        /* useMultiplexedSessionPartitionedOps= */ false,
+        tracer);
   }
 
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
+      boolean useMultiplexedSessionPartitionedOps,
       TraceWrapper tracer) {
     this.clientId = clientId;
     this.pool = pool;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
+    this.useMultiplexedSessionPartitionedOps = useMultiplexedSessionPartitionedOps;
     this.tracer = tracer;
   }
 
@@ -261,6 +274,14 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @Override
   public long executePartitionedUpdate(final Statement stmt, final UpdateOption... options) {
+    if (useMultiplexedSessionPartitionedOps) {
+      return getMultiplexedSession().executePartitionedUpdate(stmt, options);
+    }
+    return executePartitionedUpdateSession(stmt, options);
+  }
+
+  private long executePartitionedUpdateSession(
+      final Statement stmt, final UpdateOption... options) {
     ISpan span = tracer.spanBuilder(PARTITION_DML_TRANSACTION);
     try (IScope s = tracer.withSpan(span)) {
       return runWithSessionRetry(session -> session.executePartitionedUpdate(stmt, options));
