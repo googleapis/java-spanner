@@ -631,7 +631,7 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
-  public void testTraceContextHeaderWithOpenTelemetry() {
+  public void testTraceContextHeaderWithOpenTelemetryAndServerSideTracingEnabled() {
     OpenTelemetry openTelemetry =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -639,7 +639,7 @@ public class GapicSpannerRpcTest {
             .build();
 
     final SpannerOptions options =
-        createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).build();
+        createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).enableServerSideTracing().build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -649,6 +649,28 @@ public class GapicSpannerRpcTest {
       }
 
       assertTrue(isTraceContextPresent);
+    }
+  }
+
+  @Test
+  public void testTraceContextHeaderWithOpenTelemetryAndServerSideTracingDisabled() {
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build())
+            .build();
+
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).disableServerSideTracing().build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertFalse(isTraceContextPresent);
     }
   }
 
