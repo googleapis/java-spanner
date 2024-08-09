@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.google.cloud</groupId>
   <artifactId>google-cloud-spanner</artifactId>
-  <version>6.71.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+  <version>6.72.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   <packaging>jar</packaging>
   <name>Google Cloud Spanner</name>
   <url>https://github.com/googleapis/java-spanner</url>
@@ -11,7 +11,7 @@
   <parent>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-spanner-parent</artifactId>
-    <version>6.71.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
+    <version>6.72.1-SNAPSHOT</version><!-- {x-version-update:google-cloud-spanner:current} -->
   </parent>
   <properties>
     <site.installationModule>google-cloud-spanner</site.installationModule>
@@ -107,7 +107,7 @@
             </goals>
             <configuration>
               <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
-              <forkCount>8</forkCount>
+              <forkCount>12</forkCount>
               <reuseForks>true</reuseForks>
               <groups>com.google.cloud.spanner.ParallelIntegrationTest</groups>
             </configuration>
@@ -266,12 +266,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-monitoring</artifactId>
-      <version>3.38.0</version>
+      <version>3.48.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api.grpc</groupId>
       <artifactId>proto-google-cloud-monitoring-v3</artifactId>
-      <version>3.38.0</version>
+      <version>3.48.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.auth</groupId>

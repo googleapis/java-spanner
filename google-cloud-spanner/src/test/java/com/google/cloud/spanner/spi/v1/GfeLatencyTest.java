@@ -17,6 +17,7 @@
 package com.google.cloud.spanner.spi.v1;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.OAuth2Credentials;
@@ -27,6 +28,8 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.Statement;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.protobuf.ListValue;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.StructType;
@@ -47,7 +50,6 @@ import io.opencensus.tags.TagKey;
 import io.opencensus.tags.TagValue;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -80,26 +82,22 @@ public class GfeLatencyTest {
 
   private static MockSpannerServiceImpl mockSpanner;
   private static Server server;
-  private static InetSocketAddress address;
   private static Spanner spanner;
   private static DatabaseClient databaseClient;
 
-  private static final Map<SpannerRpc.Option, Object> optionsMap = new HashMap<>();
-
   private static MockSpannerServiceImpl mockSpannerNoHeader;
   private static Server serverNoHeader;
-  private static InetSocketAddress addressNoHeader;
   private static Spanner spannerNoHeader;
   private static DatabaseClient databaseClientNoHeader;
 
-  private static String instanceId = "fake-instance";
-  private static String databaseId = "fake-database";
-  private static String projectId = "fake-project";
+  private static final String INSTANCE_ID = "fake-instance";
+  private static final String DATABASE_ID = "fake-database";
+  private static final String PROJECT_ID = "fake-project";
 
-  private static final long WAIT_FOR_METRICS_TIME_MS = 1_000;
-  private static final int MAXIMUM_RETRIES = 5;
+  private static final int MAXIMUM_RETRIES = 50000;
 
-  private static AtomicInteger fakeServerTiming = new AtomicInteger(new Random().nextInt(1000) + 1);
+  private static final AtomicInteger FAKE_SERVER_TIMING =
+      new AtomicInteger(new Random().nextInt(1000) + 1);
 
   private static final Statement SELECT1AND2 =
       Statement.of("SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1");
@@ -135,6 +133,7 @@ public class GfeLatencyTest {
 
   @BeforeClass
   public static void startServer() throws IOException {
+    //noinspection deprecation
     SpannerRpcViews.registerGfeLatencyAndHeaderMissingCountViews();
 
     mockSpanner = new MockSpannerServiceImpl();
@@ -143,7 +142,7 @@ public class GfeLatencyTest {
         MockSpannerServiceImpl.StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
     mockSpanner.putStatementResult(
         MockSpannerServiceImpl.StatementResult.update(UPDATE_FOO_STATEMENT, 1L));
-    address = new InetSocketAddress("localhost", 0);
+    InetSocketAddress address = new InetSocketAddress("localhost", 0);
     server =
         NettyServerBuilder.forAddress(address)
             .addService(mockSpanner)
@@ -161,7 +160,7 @@ public class GfeLatencyTest {
                           public void sendHeaders(Metadata headers) {
                             headers.put(
                                 Metadata.Key.of("server-timing", Metadata.ASCII_STRING_MARSHALLER),
-                                String.format("gfet4t7; dur=%d", fakeServerTiming.get()));
+                                String.format("gfet4t7; dur=%d", FAKE_SERVER_TIMING.get()));
                             super.sendHeaders(headers);
                           }
                         },
@@ -170,9 +169,8 @@ public class GfeLatencyTest {
                 })
             .build()
             .start();
-    optionsMap.put(SpannerRpc.Option.CHANNEL_HINT, 1L);
     spanner = createSpannerOptions(address, server).getService();
-    databaseClient = spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+    databaseClient = spanner.getDatabaseClient(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DATABASE_ID));
 
     mockSpannerNoHeader = new MockSpannerServiceImpl();
     mockSpannerNoHeader.setAbortProbability(0.0D);
@@ -180,7 +178,7 @@ public class GfeLatencyTest {
         MockSpannerServiceImpl.StatementResult.query(SELECT1AND2, SELECT1_RESULTSET));
     mockSpannerNoHeader.putStatementResult(
         MockSpannerServiceImpl.StatementResult.update(UPDATE_FOO_STATEMENT, 1L));
-    addressNoHeader = new InetSocketAddress("localhost", 0);
+    InetSocketAddress addressNoHeader = new InetSocketAddress("localhost", 0);
     serverNoHeader =
         NettyServerBuilder.forAddress(addressNoHeader)
             .addService(mockSpannerNoHeader)
@@ -188,7 +186,7 @@ public class GfeLatencyTest {
             .start();
     spannerNoHeader = createSpannerOptions(addressNoHeader, serverNoHeader).getService();
     databaseClientNoHeader =
-        spannerNoHeader.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+        spannerNoHeader.getDatabaseClient(DatabaseId.of(PROJECT_ID, INSTANCE_ID, DATABASE_ID));
   }
 
   @AfterClass
@@ -221,12 +219,9 @@ public class GfeLatencyTest {
     long latency =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_LATENCY_VIEW,
-            projectId,
-            instanceId,
-            databaseId,
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
             false);
-    assertEquals(fakeServerTiming.get(), latency);
+    assertEquals(FAKE_SERVER_TIMING.get(), latency);
   }
 
   @Test
@@ -238,12 +233,9 @@ public class GfeLatencyTest {
     long latency =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_LATENCY_VIEW,
-            projectId,
-            instanceId,
-            databaseId,
             "google.spanner.v1.Spanner/ExecuteSql",
             false);
-    assertEquals(fakeServerTiming.get(), latency);
+    assertEquals(FAKE_SERVER_TIMING.get(), latency);
   }
 
   @Test
@@ -254,9 +246,6 @@ public class GfeLatencyTest {
     long count =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
-            projectId,
-            instanceId,
-            databaseId,
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
             false);
     assertEquals(0, count);
@@ -267,9 +256,6 @@ public class GfeLatencyTest {
     long count1 =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
-            projectId,
-            instanceId,
-            databaseId,
             "google.spanner.v1.Spanner/ExecuteStreamingSql",
             true);
     assertEquals(1, count1);
@@ -283,9 +269,6 @@ public class GfeLatencyTest {
     long count =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
-            projectId,
-            instanceId,
-            databaseId,
             "google.spanner.v1.Spanner/ExecuteSql",
             false);
     assertEquals(0, count);
@@ -296,9 +279,6 @@ public class GfeLatencyTest {
     long count1 =
         getMetric(
             SpannerRpcViews.SPANNER_GFE_HEADER_MISSING_COUNT_VIEW,
-            projectId,
-            instanceId,
-            databaseId,
             "google.spanner.v1.Spanner/ExecuteSql",
             true);
     assertEquals(1, count1);
@@ -321,78 +301,75 @@ public class GfeLatencyTest {
   }
 
   private long getAggregationValueAsLong(AggregationData aggregationData) {
-    return aggregationData.match(
-        new io.opencensus.common.Function<AggregationData.SumDataDouble, Long>() {
-          @Override
-          public Long apply(AggregationData.SumDataDouble arg) {
-            return (long) arg.getSum();
-          }
-        },
-        new io.opencensus.common.Function<AggregationData.SumDataLong, Long>() {
-          @Override
-          public Long apply(AggregationData.SumDataLong arg) {
-            return arg.getSum();
-          }
-        },
-        new io.opencensus.common.Function<AggregationData.CountData, Long>() {
-          @Override
-          public Long apply(AggregationData.CountData arg) {
-            return arg.getCount();
-          }
-        },
-        new io.opencensus.common.Function<AggregationData.DistributionData, Long>() {
-          @Override
-          public Long apply(AggregationData.DistributionData arg) {
-            return (long) arg.getMean();
-          }
-        },
-        new io.opencensus.common.Function<AggregationData.LastValueDataDouble, Long>() {
-          @Override
-          public Long apply(AggregationData.LastValueDataDouble arg) {
-            return (long) arg.getLastValue();
-          }
-        },
-        new io.opencensus.common.Function<AggregationData.LastValueDataLong, Long>() {
-          @Override
-          public Long apply(AggregationData.LastValueDataLong arg) {
-            return arg.getLastValue();
-          }
-        },
-        new io.opencensus.common.Function<AggregationData, Long>() {
-          @Override
-          public Long apply(AggregationData arg) {
-            throw new UnsupportedOperationException();
-          }
-        });
+    return MoreObjects.firstNonNull(
+        aggregationData.match(
+            new io.opencensus.common.Function<AggregationData.SumDataDouble, Long>() {
+              @Override
+              public Long apply(AggregationData.SumDataDouble arg) {
+                return (long) Preconditions.checkNotNull(arg).getSum();
+              }
+            },
+            new io.opencensus.common.Function<AggregationData.SumDataLong, Long>() {
+              @Override
+              public Long apply(AggregationData.SumDataLong arg) {
+                return Preconditions.checkNotNull(arg).getSum();
+              }
+            },
+            new io.opencensus.common.Function<AggregationData.CountData, Long>() {
+              @Override
+              public Long apply(AggregationData.CountData arg) {
+                return Preconditions.checkNotNull(arg).getCount();
+              }
+            },
+            new io.opencensus.common.Function<AggregationData.DistributionData, Long>() {
+              @Override
+              public Long apply(AggregationData.DistributionData arg) {
+                return (long) Preconditions.checkNotNull(arg).getMean();
+              }
+            },
+            new io.opencensus.common.Function<AggregationData.LastValueDataDouble, Long>() {
+              @Override
+              public Long apply(AggregationData.LastValueDataDouble arg) {
+                return (long) Preconditions.checkNotNull(arg).getLastValue();
+              }
+            },
+            new io.opencensus.common.Function<AggregationData.LastValueDataLong, Long>() {
+              @Override
+              public Long apply(AggregationData.LastValueDataLong arg) {
+                return Preconditions.checkNotNull(arg).getLastValue();
+              }
+            },
+            new io.opencensus.common.Function<AggregationData, Long>() {
+              @Override
+              public Long apply(AggregationData arg) {
+                throw new UnsupportedOperationException();
+              }
+            }),
+        -1L);
   }
 
-  private long getMetric(
-      View view,
-      String projectId,
-      String instanceId,
-      String databaseId,
-      String method,
-      boolean withOverride)
-      throws InterruptedException {
+  private long getMetric(View view, String method, boolean withOverride) {
     List<TagValue> tagValues = new java.util.ArrayList<>();
     for (TagKey column : view.getColumns()) {
       if (column == SpannerRpcViews.INSTANCE_ID) {
-        tagValues.add(TagValue.create(instanceId));
+        tagValues.add(TagValue.create(INSTANCE_ID));
       } else if (column == SpannerRpcViews.DATABASE_ID) {
-        tagValues.add(TagValue.create(databaseId));
+        tagValues.add(TagValue.create(DATABASE_ID));
       } else if (column == SpannerRpcViews.METHOD) {
         tagValues.add(TagValue.create(method));
       } else if (column == SpannerRpcViews.PROJECT_ID) {
-        tagValues.add(TagValue.create(projectId));
+        tagValues.add(TagValue.create(PROJECT_ID));
       }
     }
     for (int i = 0; i < MAXIMUM_RETRIES; i++) {
-      Thread.sleep(WAIT_FOR_METRICS_TIME_MS);
+      Thread.yield();
       ViewData viewData = SpannerRpcViews.viewManager.getView(view.getName());
+      assertNotNull(viewData);
       if (viewData.getAggregationMap() != null) {
         Map<List<TagValue>, AggregationData> aggregationMap = viewData.getAggregationMap();
         AggregationData aggregationData = aggregationMap.get(tagValues);
-        if (withOverride && getAggregationValueAsLong(aggregationData) == 0) {
+        if (aggregationData == null
+            || withOverride && getAggregationValueAsLong(aggregationData) == 0) {
           continue;
         }
         return getAggregationValueAsLong(aggregationData);

@@ -24,7 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <opencensus.version>0.31.1</opencensus.version>
     <trace.version>2.47.0</trace.version>
-    <cloudmonitoring.version>3.44.0</cloudmonitoring.version>
+    <cloudmonitoring.version>3.48.0</cloudmonitoring.version>
   </properties>
 
 
@@ -100,7 +100,7 @@
     <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
-      <version>1.4.2</version>
+      <version>1.4.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
