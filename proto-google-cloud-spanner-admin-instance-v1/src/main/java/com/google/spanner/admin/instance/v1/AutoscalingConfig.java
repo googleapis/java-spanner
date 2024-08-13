@@ -23,7 +23,7 @@ package com.google.spanner.admin.instance.v1;
  *
  *
  * <pre>
- * Autoscaling config for an instance.
+ * Autoscaling configuration for an instance.
  * </pre>
  *
  * Protobuf type {@code google.spanner.admin.instance.v1.AutoscalingConfig}
@@ -2387,7 +2387,7 @@ public final class AutoscalingConfig extends com.google.protobuf.GeneratedMessag
    *
    *
    * <pre>
-   * Autoscaling config for an instance.
+   * Autoscaling configuration for an instance.
    * </pre>
    *
    * Protobuf type {@code google.spanner.admin.instance.v1.AutoscalingConfig}

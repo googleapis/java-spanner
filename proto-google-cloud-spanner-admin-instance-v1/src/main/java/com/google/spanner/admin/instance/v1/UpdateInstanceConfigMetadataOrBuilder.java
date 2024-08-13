@@ -28,7 +28,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    *
    *
    * <pre>
-   * The desired instance config after updating.
+   * The desired instance configuration after updating.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
@@ -40,7 +40,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    *
    *
    * <pre>
-   * The desired instance config after updating.
+   * The desired instance configuration after updating.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
@@ -52,7 +52,7 @@ public interface UpdateInstanceConfigMetadataOrBuilder
    *
    *
    * <pre>
-   * The desired instance config after updating.
+   * The desired instance configuration after updating.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>

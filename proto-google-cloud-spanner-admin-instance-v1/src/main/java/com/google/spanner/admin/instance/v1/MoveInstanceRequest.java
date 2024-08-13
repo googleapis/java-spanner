@@ -24,45 +24,45 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * The request for
- * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
+ * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance].
  * </pre>
  *
- * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}
+ * Protobuf type {@code google.spanner.admin.instance.v1.MoveInstanceRequest}
  */
-public final class DeleteInstanceConfigRequest extends com.google.protobuf.GeneratedMessageV3
+public final class MoveInstanceRequest extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
-    DeleteInstanceConfigRequestOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.MoveInstanceRequest)
+    MoveInstanceRequestOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use DeleteInstanceConfigRequest.newBuilder() to construct.
-  private DeleteInstanceConfigRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use MoveInstanceRequest.newBuilder() to construct.
+  private MoveInstanceRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private DeleteInstanceConfigRequest() {
+  private MoveInstanceRequest() {
     name_ = "";
-    etag_ = "";
+    targetConfig_ = "";
   }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new DeleteInstanceConfigRequest();
+    return new MoveInstanceRequest();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_descriptor;
+        .internal_static_google_spanner_admin_instance_v1_MoveInstanceRequest_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_fieldAccessorTable
+        .internal_static_google_spanner_admin_instance_v1_MoveInstanceRequest_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.class,
-            com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.Builder.class);
+            com.google.spanner.admin.instance.v1.MoveInstanceRequest.class,
+            com.google.spanner.admin.instance.v1.MoveInstanceRequest.Builder.class);
   }
 
   public static final int NAME_FIELD_NUMBER = 1;
@@ -73,9 +73,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * Required. The name of the instance configuration to be deleted.
-   * Values are of the form
-   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+   * Required. The instance to move.
+   * Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * </pre>
    *
    * <code>
@@ -100,9 +99,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * Required. The name of the instance configuration to be deleted.
-   * Values are of the form
-   * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+   * Required. The instance to move.
+   * Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
    * </pre>
    *
    * <code>
@@ -124,36 +122,33 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
     }
   }
 
-  public static final int ETAG_FIELD_NUMBER = 2;
+  public static final int TARGET_CONFIG_FIELD_NUMBER = 2;
 
   @SuppressWarnings("serial")
-  private volatile java.lang.Object etag_ = "";
+  private volatile java.lang.Object targetConfig_ = "";
   /**
    *
    *
    * <pre>
-   * Used for optimistic concurrency control as a way to help prevent
-   * simultaneous deletes of an instance configuration from overwriting each
-   * other. If not empty, the API
-   * only deletes the instance configuration when the etag provided matches the
-   * current status of the requested instance configuration. Otherwise, deletes
-   * the instance configuration without checking the current status of the
-   * requested instance configuration.
+   * Required. The target instance configuration where to move the instance.
+   * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
    * </pre>
    *
-   * <code>string etag = 2;</code>
+   * <code>
+   * string target_config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
-   * @return The etag.
+   * @return The targetConfig.
    */
   @java.lang.Override
-  public java.lang.String getEtag() {
-    java.lang.Object ref = etag_;
+  public java.lang.String getTargetConfig() {
+    java.lang.Object ref = targetConfig_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      etag_ = s;
+      targetConfig_ = s;
       return s;
     }
   }
@@ -161,49 +156,27 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
    *
    *
    * <pre>
-   * Used for optimistic concurrency control as a way to help prevent
-   * simultaneous deletes of an instance configuration from overwriting each
-   * other. If not empty, the API
-   * only deletes the instance configuration when the etag provided matches the
-   * current status of the requested instance configuration. Otherwise, deletes
-   * the instance configuration without checking the current status of the
-   * requested instance configuration.
+   * Required. The target instance configuration where to move the instance.
+   * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
    * </pre>
    *
-   * <code>string etag = 2;</code>
+   * <code>
+   * string target_config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+   * </code>
    *
-   * @return The bytes for etag.
+   * @return The bytes for targetConfig.
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString getEtagBytes() {
-    java.lang.Object ref = etag_;
+  public com.google.protobuf.ByteString getTargetConfigBytes() {
+    java.lang.Object ref = targetConfig_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
-      etag_ = b;
+      targetConfig_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
     }
-  }
-
-  public static final int VALIDATE_ONLY_FIELD_NUMBER = 3;
-  private boolean validateOnly_ = false;
-  /**
-   *
-   *
-   * <pre>
-   * An option to validate, but not actually execute, a request,
-   * and provide the same response.
-   * </pre>
-   *
-   * <code>bool validate_only = 3;</code>
-   *
-   * @return The validateOnly.
-   */
-  @java.lang.Override
-  public boolean getValidateOnly() {
-    return validateOnly_;
   }
 
   private byte memoizedIsInitialized = -1;
@@ -223,11 +196,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(etag_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, etag_);
-    }
-    if (validateOnly_ != false) {
-      output.writeBool(3, validateOnly_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(targetConfig_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, targetConfig_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -241,11 +211,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(etag_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, etag_);
-    }
-    if (validateOnly_ != false) {
-      size += com.google.protobuf.CodedOutputStream.computeBoolSize(3, validateOnly_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(targetConfig_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, targetConfig_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -257,15 +224,14 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)) {
+    if (!(obj instanceof com.google.spanner.admin.instance.v1.MoveInstanceRequest)) {
       return super.equals(obj);
     }
-    com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest other =
-        (com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest) obj;
+    com.google.spanner.admin.instance.v1.MoveInstanceRequest other =
+        (com.google.spanner.admin.instance.v1.MoveInstanceRequest) obj;
 
     if (!getName().equals(other.getName())) return false;
-    if (!getEtag().equals(other.getEtag())) return false;
-    if (getValidateOnly() != other.getValidateOnly()) return false;
+    if (!getTargetConfig().equals(other.getTargetConfig())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -279,80 +245,78 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
     hash = (19 * hash) + getDescriptor().hashCode();
     hash = (37 * hash) + NAME_FIELD_NUMBER;
     hash = (53 * hash) + getName().hashCode();
-    hash = (37 * hash) + ETAG_FIELD_NUMBER;
-    hash = (53 * hash) + getEtag().hashCode();
-    hash = (37 * hash) + VALIDATE_ONLY_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(getValidateOnly());
+    hash = (37 * hash) + TARGET_CONFIG_FIELD_NUMBER;
+    hash = (53 * hash) + getTargetConfig().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
-      byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(byte[] data)
+      throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseDelimitedFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseDelimitedFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseDelimitedFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseDelimitedFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -370,7 +334,7 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
   }
 
   public static Builder newBuilder(
-      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest prototype) {
+      com.google.spanner.admin.instance.v1.MoveInstanceRequest prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -389,31 +353,31 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
    *
    * <pre>
    * The request for
-   * [DeleteInstanceConfigRequest][InstanceAdmin.DeleteInstanceConfigRequest].
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance].
    * </pre>
    *
-   * Protobuf type {@code google.spanner.admin.instance.v1.DeleteInstanceConfigRequest}
+   * Protobuf type {@code google.spanner.admin.instance.v1.MoveInstanceRequest}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
-      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequestOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.MoveInstanceRequest)
+      com.google.spanner.admin.instance.v1.MoveInstanceRequestOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_MoveInstanceRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_fieldAccessorTable
+          .internal_static_google_spanner_admin_instance_v1_MoveInstanceRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.class,
-              com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.Builder.class);
+              com.google.spanner.admin.instance.v1.MoveInstanceRequest.class,
+              com.google.spanner.admin.instance.v1.MoveInstanceRequest.Builder.class);
     }
 
-    // Construct using com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.newBuilder()
+    // Construct using com.google.spanner.admin.instance.v1.MoveInstanceRequest.newBuilder()
     private Builder() {}
 
     private Builder(com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
@@ -425,26 +389,24 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
       super.clear();
       bitField0_ = 0;
       name_ = "";
-      etag_ = "";
-      validateOnly_ = false;
+      targetConfig_ = "";
       return this;
     }
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_DeleteInstanceConfigRequest_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_MoveInstanceRequest_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
-        getDefaultInstanceForType() {
-      return com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.getDefaultInstance();
+    public com.google.spanner.admin.instance.v1.MoveInstanceRequest getDefaultInstanceForType() {
+      return com.google.spanner.admin.instance.v1.MoveInstanceRequest.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest build() {
-      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest result = buildPartial();
+    public com.google.spanner.admin.instance.v1.MoveInstanceRequest build() {
+      com.google.spanner.admin.instance.v1.MoveInstanceRequest result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -452,9 +414,9 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest buildPartial() {
-      com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest result =
-          new com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest(this);
+    public com.google.spanner.admin.instance.v1.MoveInstanceRequest buildPartial() {
+      com.google.spanner.admin.instance.v1.MoveInstanceRequest result =
+          new com.google.spanner.admin.instance.v1.MoveInstanceRequest(this);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
@@ -462,17 +424,13 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
       return result;
     }
 
-    private void buildPartial0(
-        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest result) {
+    private void buildPartial0(com.google.spanner.admin.instance.v1.MoveInstanceRequest result) {
       int from_bitField0_ = bitField0_;
       if (((from_bitField0_ & 0x00000001) != 0)) {
         result.name_ = name_;
       }
       if (((from_bitField0_ & 0x00000002) != 0)) {
-        result.etag_ = etag_;
-      }
-      if (((from_bitField0_ & 0x00000004) != 0)) {
-        result.validateOnly_ = validateOnly_;
+        result.targetConfig_ = targetConfig_;
       }
     }
 
@@ -511,31 +469,26 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest) {
-        return mergeFrom((com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest) other);
+      if (other instanceof com.google.spanner.admin.instance.v1.MoveInstanceRequest) {
+        return mergeFrom((com.google.spanner.admin.instance.v1.MoveInstanceRequest) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(
-        com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest other) {
-      if (other
-          == com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.getDefaultInstance())
+    public Builder mergeFrom(com.google.spanner.admin.instance.v1.MoveInstanceRequest other) {
+      if (other == com.google.spanner.admin.instance.v1.MoveInstanceRequest.getDefaultInstance())
         return this;
       if (!other.getName().isEmpty()) {
         name_ = other.name_;
         bitField0_ |= 0x00000001;
         onChanged();
       }
-      if (!other.getEtag().isEmpty()) {
-        etag_ = other.etag_;
+      if (!other.getTargetConfig().isEmpty()) {
+        targetConfig_ = other.targetConfig_;
         bitField0_ |= 0x00000002;
         onChanged();
-      }
-      if (other.getValidateOnly() != false) {
-        setValidateOnly(other.getValidateOnly());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -571,16 +524,10 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
               } // case 10
             case 18:
               {
-                etag_ = input.readStringRequireUtf8();
+                targetConfig_ = input.readStringRequireUtf8();
                 bitField0_ |= 0x00000002;
                 break;
               } // case 18
-            case 24:
-              {
-                validateOnly_ = input.readBool();
-                bitField0_ |= 0x00000004;
-                break;
-              } // case 24
             default:
               {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
@@ -605,9 +552,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The name of the instance configuration to be deleted.
-     * Values are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+     * Required. The instance to move.
+     * Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -631,9 +577,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The name of the instance configuration to be deleted.
-     * Values are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+     * Required. The instance to move.
+     * Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -657,9 +602,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The name of the instance configuration to be deleted.
-     * Values are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+     * Required. The instance to move.
+     * Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -682,9 +626,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The name of the instance configuration to be deleted.
-     * Values are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+     * Required. The instance to move.
+     * Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -703,9 +646,8 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Required. The name of the instance configuration to be deleted.
-     * Values are of the form
-     * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;`
+     * Required. The instance to move.
+     * Values are of the form `projects/&lt;project&gt;/instances/&lt;instance&gt;`.
      * </pre>
      *
      * <code>
@@ -726,30 +668,27 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
       return this;
     }
 
-    private java.lang.Object etag_ = "";
+    private java.lang.Object targetConfig_ = "";
     /**
      *
      *
      * <pre>
-     * Used for optimistic concurrency control as a way to help prevent
-     * simultaneous deletes of an instance configuration from overwriting each
-     * other. If not empty, the API
-     * only deletes the instance configuration when the etag provided matches the
-     * current status of the requested instance configuration. Otherwise, deletes
-     * the instance configuration without checking the current status of the
-     * requested instance configuration.
+     * Required. The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>string etag = 2;</code>
+     * <code>
+     * string target_config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
-     * @return The etag.
+     * @return The targetConfig.
      */
-    public java.lang.String getEtag() {
-      java.lang.Object ref = etag_;
+    public java.lang.String getTargetConfig() {
+      java.lang.Object ref = targetConfig_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        etag_ = s;
+        targetConfig_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
@@ -759,25 +698,22 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Used for optimistic concurrency control as a way to help prevent
-     * simultaneous deletes of an instance configuration from overwriting each
-     * other. If not empty, the API
-     * only deletes the instance configuration when the etag provided matches the
-     * current status of the requested instance configuration. Otherwise, deletes
-     * the instance configuration without checking the current status of the
-     * requested instance configuration.
+     * Required. The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>string etag = 2;</code>
+     * <code>
+     * string target_config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
-     * @return The bytes for etag.
+     * @return The bytes for targetConfig.
      */
-    public com.google.protobuf.ByteString getEtagBytes() {
-      java.lang.Object ref = etag_;
+    public com.google.protobuf.ByteString getTargetConfigBytes() {
+      java.lang.Object ref = targetConfig_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
-        etag_ = b;
+        targetConfig_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -787,25 +723,22 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Used for optimistic concurrency control as a way to help prevent
-     * simultaneous deletes of an instance configuration from overwriting each
-     * other. If not empty, the API
-     * only deletes the instance configuration when the etag provided matches the
-     * current status of the requested instance configuration. Otherwise, deletes
-     * the instance configuration without checking the current status of the
-     * requested instance configuration.
+     * Required. The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>string etag = 2;</code>
+     * <code>
+     * string target_config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
-     * @param value The etag to set.
+     * @param value The targetConfig to set.
      * @return This builder for chaining.
      */
-    public Builder setEtag(java.lang.String value) {
+    public Builder setTargetConfig(java.lang.String value) {
       if (value == null) {
         throw new NullPointerException();
       }
-      etag_ = value;
+      targetConfig_ = value;
       bitField0_ |= 0x00000002;
       onChanged();
       return this;
@@ -814,21 +747,18 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Used for optimistic concurrency control as a way to help prevent
-     * simultaneous deletes of an instance configuration from overwriting each
-     * other. If not empty, the API
-     * only deletes the instance configuration when the etag provided matches the
-     * current status of the requested instance configuration. Otherwise, deletes
-     * the instance configuration without checking the current status of the
-     * requested instance configuration.
+     * Required. The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>string etag = 2;</code>
+     * <code>
+     * string target_config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
      * @return This builder for chaining.
      */
-    public Builder clearEtag() {
-      etag_ = getDefaultInstance().getEtag();
+    public Builder clearTargetConfig() {
+      targetConfig_ = getDefaultInstance().getTargetConfig();
       bitField0_ = (bitField0_ & ~0x00000002);
       onChanged();
       return this;
@@ -837,83 +767,24 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
      *
      *
      * <pre>
-     * Used for optimistic concurrency control as a way to help prevent
-     * simultaneous deletes of an instance configuration from overwriting each
-     * other. If not empty, the API
-     * only deletes the instance configuration when the etag provided matches the
-     * current status of the requested instance configuration. Otherwise, deletes
-     * the instance configuration without checking the current status of the
-     * requested instance configuration.
+     * Required. The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>string etag = 2;</code>
+     * <code>
+     * string target_config = 2 [(.google.api.field_behavior) = REQUIRED, (.google.api.resource_reference) = { ... }
+     * </code>
      *
-     * @param value The bytes for etag to set.
+     * @param value The bytes for targetConfig to set.
      * @return This builder for chaining.
      */
-    public Builder setEtagBytes(com.google.protobuf.ByteString value) {
+    public Builder setTargetConfigBytes(com.google.protobuf.ByteString value) {
       if (value == null) {
         throw new NullPointerException();
       }
       checkByteStringIsUtf8(value);
-      etag_ = value;
+      targetConfig_ = value;
       bitField0_ |= 0x00000002;
-      onChanged();
-      return this;
-    }
-
-    private boolean validateOnly_;
-    /**
-     *
-     *
-     * <pre>
-     * An option to validate, but not actually execute, a request,
-     * and provide the same response.
-     * </pre>
-     *
-     * <code>bool validate_only = 3;</code>
-     *
-     * @return The validateOnly.
-     */
-    @java.lang.Override
-    public boolean getValidateOnly() {
-      return validateOnly_;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * An option to validate, but not actually execute, a request,
-     * and provide the same response.
-     * </pre>
-     *
-     * <code>bool validate_only = 3;</code>
-     *
-     * @param value The validateOnly to set.
-     * @return This builder for chaining.
-     */
-    public Builder setValidateOnly(boolean value) {
-
-      validateOnly_ = value;
-      bitField0_ |= 0x00000004;
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * An option to validate, but not actually execute, a request,
-     * and provide the same response.
-     * </pre>
-     *
-     * <code>bool validate_only = 3;</code>
-     *
-     * @return This builder for chaining.
-     */
-    public Builder clearValidateOnly() {
-      bitField0_ = (bitField0_ & ~0x00000004);
-      validateOnly_ = false;
       onChanged();
       return this;
     }
@@ -929,26 +800,24 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
+    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.MoveInstanceRequest)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
-  private static final com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
-      DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.MoveInstanceRequest)
+  private static final com.google.spanner.admin.instance.v1.MoveInstanceRequest DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest();
+    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.MoveInstanceRequest();
   }
 
-  public static com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
-      getDefaultInstance() {
+  public static com.google.spanner.admin.instance.v1.MoveInstanceRequest getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<DeleteInstanceConfigRequest> PARSER =
-      new com.google.protobuf.AbstractParser<DeleteInstanceConfigRequest>() {
+  private static final com.google.protobuf.Parser<MoveInstanceRequest> PARSER =
+      new com.google.protobuf.AbstractParser<MoveInstanceRequest>() {
         @java.lang.Override
-        public DeleteInstanceConfigRequest parsePartialFrom(
+        public MoveInstanceRequest parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
@@ -967,18 +836,17 @@ public final class DeleteInstanceConfigRequest extends com.google.protobuf.Gener
         }
       };
 
-  public static com.google.protobuf.Parser<DeleteInstanceConfigRequest> parser() {
+  public static com.google.protobuf.Parser<MoveInstanceRequest> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<DeleteInstanceConfigRequest> getParserForType() {
+  public com.google.protobuf.Parser<MoveInstanceRequest> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
-      getDefaultInstanceForType() {
+  public com.google.spanner.admin.instance.v1.MoveInstanceRequest getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

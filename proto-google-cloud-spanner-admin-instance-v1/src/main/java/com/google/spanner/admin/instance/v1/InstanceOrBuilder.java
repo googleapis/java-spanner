@@ -536,4 +536,33 @@ public interface InstanceOrBuilder
    * </code>
    */
   com.google.protobuf.TimestampOrBuilder getUpdateTimeOrBuilder();
+
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The `Edition` of the current instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.Edition edition = 20 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The enum numeric value on the wire for edition.
+   */
+  int getEditionValue();
+  /**
+   *
+   *
+   * <pre>
+   * Optional. The `Edition` of the current instance.
+   * </pre>
+   *
+   * <code>
+   * .google.spanner.admin.instance.v1.Instance.Edition edition = 20 [(.google.api.field_behavior) = OPTIONAL];
+   * </code>
+   *
+   * @return The edition.
+   */
+  com.google.spanner.admin.instance.v1.Instance.Edition getEdition();
 }

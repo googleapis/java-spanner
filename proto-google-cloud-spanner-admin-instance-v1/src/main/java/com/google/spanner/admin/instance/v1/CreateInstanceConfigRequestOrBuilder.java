@@ -28,8 +28,8 @@ public interface CreateInstanceConfigRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The name of the project in which to create the instance config.
-   * Values are of the form `projects/&lt;project&gt;`.
+   * Required. The name of the project in which to create the instance
+   * configuration. Values are of the form `projects/&lt;project&gt;`.
    * </pre>
    *
    * <code>
@@ -43,8 +43,8 @@ public interface CreateInstanceConfigRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The name of the project in which to create the instance config.
-   * Values are of the form `projects/&lt;project&gt;`.
+   * Required. The name of the project in which to create the instance
+   * configuration. Values are of the form `projects/&lt;project&gt;`.
    * </pre>
    *
    * <code>
@@ -59,10 +59,10 @@ public interface CreateInstanceConfigRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The ID of the instance config to create.  Valid identifiers are
-   * of the form `custom-[-a-z0-9]*[a-z0-9]` and must be between 2 and 64
+   * Required. The ID of the instance configuration to create. Valid identifiers
+   * are of the form `custom-[-a-z0-9]*[a-z0-9]` and must be between 2 and 64
    * characters in length. The `custom-` prefix is required to avoid name
-   * conflicts with Google managed configurations.
+   * conflicts with Google-managed configurations.
    * </pre>
    *
    * <code>string instance_config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>
@@ -74,10 +74,10 @@ public interface CreateInstanceConfigRequestOrBuilder
    *
    *
    * <pre>
-   * Required. The ID of the instance config to create.  Valid identifiers are
-   * of the form `custom-[-a-z0-9]*[a-z0-9]` and must be between 2 and 64
+   * Required. The ID of the instance configuration to create. Valid identifiers
+   * are of the form `custom-[-a-z0-9]*[a-z0-9]` and must be between 2 and 64
    * characters in length. The `custom-` prefix is required to avoid name
-   * conflicts with Google managed configurations.
+   * conflicts with Google-managed configurations.
    * </pre>
    *
    * <code>string instance_config_id = 2 [(.google.api.field_behavior) = REQUIRED];</code>

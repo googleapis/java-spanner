@@ -24,93 +24,98 @@ package com.google.spanner.admin.instance.v1;
  *
  * <pre>
  * Metadata type for the operation returned by
- * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig].
+ * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance].
  * </pre>
  *
- * Protobuf type {@code google.spanner.admin.instance.v1.CreateInstanceConfigMetadata}
+ * Protobuf type {@code google.spanner.admin.instance.v1.MoveInstanceMetadata}
  */
-public final class CreateInstanceConfigMetadata extends com.google.protobuf.GeneratedMessageV3
+public final class MoveInstanceMetadata extends com.google.protobuf.GeneratedMessageV3
     implements
-    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
-    CreateInstanceConfigMetadataOrBuilder {
+    // @@protoc_insertion_point(message_implements:google.spanner.admin.instance.v1.MoveInstanceMetadata)
+    MoveInstanceMetadataOrBuilder {
   private static final long serialVersionUID = 0L;
-  // Use CreateInstanceConfigMetadata.newBuilder() to construct.
-  private CreateInstanceConfigMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use MoveInstanceMetadata.newBuilder() to construct.
+  private MoveInstanceMetadata(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
 
-  private CreateInstanceConfigMetadata() {}
+  private MoveInstanceMetadata() {
+    targetConfig_ = "";
+  }
 
   @java.lang.Override
   @SuppressWarnings({"unused"})
   protected java.lang.Object newInstance(UnusedPrivateParameter unused) {
-    return new CreateInstanceConfigMetadata();
+    return new MoveInstanceMetadata();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_CreateInstanceConfigMetadata_descriptor;
+        .internal_static_google_spanner_admin_instance_v1_MoveInstanceMetadata_descriptor;
   }
 
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
     return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-        .internal_static_google_spanner_admin_instance_v1_CreateInstanceConfigMetadata_fieldAccessorTable
+        .internal_static_google_spanner_admin_instance_v1_MoveInstanceMetadata_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.class,
-            com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.Builder.class);
+            com.google.spanner.admin.instance.v1.MoveInstanceMetadata.class,
+            com.google.spanner.admin.instance.v1.MoveInstanceMetadata.Builder.class);
   }
 
   private int bitField0_;
-  public static final int INSTANCE_CONFIG_FIELD_NUMBER = 1;
-  private com.google.spanner.admin.instance.v1.InstanceConfig instanceConfig_;
+  public static final int TARGET_CONFIG_FIELD_NUMBER = 1;
+
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object targetConfig_ = "";
   /**
    *
    *
    * <pre>
-   * The target instance configuration end state.
+   * The target instance configuration where to move the instance.
+   * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+   * <code>string target_config = 1;</code>
    *
-   * @return Whether the instanceConfig field is set.
+   * @return The targetConfig.
    */
   @java.lang.Override
-  public boolean hasInstanceConfig() {
-    return ((bitField0_ & 0x00000001) != 0);
+  public java.lang.String getTargetConfig() {
+    java.lang.Object ref = targetConfig_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      targetConfig_ = s;
+      return s;
+    }
   }
   /**
    *
    *
    * <pre>
-   * The target instance configuration end state.
+   * The target instance configuration where to move the instance.
+   * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+   * <code>string target_config = 1;</code>
    *
-   * @return The instanceConfig.
+   * @return The bytes for targetConfig.
    */
   @java.lang.Override
-  public com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig() {
-    return instanceConfig_ == null
-        ? com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()
-        : instanceConfig_;
-  }
-  /**
-   *
-   *
-   * <pre>
-   * The target instance configuration end state.
-   * </pre>
-   *
-   * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
-   */
-  @java.lang.Override
-  public com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder getInstanceConfigOrBuilder() {
-    return instanceConfig_ == null
-        ? com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()
-        : instanceConfig_;
+  public com.google.protobuf.ByteString getTargetConfigBytes() {
+    java.lang.Object ref = targetConfig_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+      targetConfig_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
   }
 
   public static final int PROGRESS_FIELD_NUMBER = 2;
@@ -120,8 +125,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
    *
    * <pre>
    * The progress of the
-   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
    * operation.
+   * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+   * is reset when cancellation is requested.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -130,15 +137,17 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
    */
   @java.lang.Override
   public boolean hasProgress() {
-    return ((bitField0_ & 0x00000002) != 0);
+    return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    *
    *
    * <pre>
    * The progress of the
-   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
    * operation.
+   * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+   * is reset when cancellation is requested.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -156,8 +165,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
    *
    * <pre>
    * The progress of the
-   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
    * operation.
+   * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+   * is reset when cancellation is requested.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -184,7 +195,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
    */
   @java.lang.Override
   public boolean hasCancelTime() {
-    return ((bitField0_ & 0x00000004) != 0);
+    return ((bitField0_ & 0x00000002) != 0);
   }
   /**
    *
@@ -229,13 +240,13 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
 
   @java.lang.Override
   public void writeTo(com.google.protobuf.CodedOutputStream output) throws java.io.IOException {
-    if (((bitField0_ & 0x00000001) != 0)) {
-      output.writeMessage(1, getInstanceConfig());
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(targetConfig_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 1, targetConfig_);
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(2, getProgress());
     }
-    if (((bitField0_ & 0x00000004) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(3, getCancelTime());
     }
     getUnknownFields().writeTo(output);
@@ -247,13 +258,13 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     if (size != -1) return size;
 
     size = 0;
-    if (((bitField0_ & 0x00000001) != 0)) {
-      size += com.google.protobuf.CodedOutputStream.computeMessageSize(1, getInstanceConfig());
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(targetConfig_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, targetConfig_);
     }
-    if (((bitField0_ & 0x00000002) != 0)) {
+    if (((bitField0_ & 0x00000001) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(2, getProgress());
     }
-    if (((bitField0_ & 0x00000004) != 0)) {
+    if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream.computeMessageSize(3, getCancelTime());
     }
     size += getUnknownFields().getSerializedSize();
@@ -266,16 +277,13 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     if (obj == this) {
       return true;
     }
-    if (!(obj instanceof com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)) {
+    if (!(obj instanceof com.google.spanner.admin.instance.v1.MoveInstanceMetadata)) {
       return super.equals(obj);
     }
-    com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata other =
-        (com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata) obj;
+    com.google.spanner.admin.instance.v1.MoveInstanceMetadata other =
+        (com.google.spanner.admin.instance.v1.MoveInstanceMetadata) obj;
 
-    if (hasInstanceConfig() != other.hasInstanceConfig()) return false;
-    if (hasInstanceConfig()) {
-      if (!getInstanceConfig().equals(other.getInstanceConfig())) return false;
-    }
+    if (!getTargetConfig().equals(other.getTargetConfig())) return false;
     if (hasProgress() != other.hasProgress()) return false;
     if (hasProgress()) {
       if (!getProgress().equals(other.getProgress())) return false;
@@ -295,10 +303,8 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     }
     int hash = 41;
     hash = (19 * hash) + getDescriptor().hashCode();
-    if (hasInstanceConfig()) {
-      hash = (37 * hash) + INSTANCE_CONFIG_FIELD_NUMBER;
-      hash = (53 * hash) + getInstanceConfig().hashCode();
-    }
+    hash = (37 * hash) + TARGET_CONFIG_FIELD_NUMBER;
+    hash = (53 * hash) + getTargetConfig().hashCode();
     if (hasProgress()) {
       hash = (37 * hash) + PROGRESS_FIELD_NUMBER;
       hash = (53 * hash) + getProgress().hashCode();
@@ -312,72 +318,71 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     return hash;
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       java.nio.ByteBuffer data) throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       java.nio.ByteBuffer data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
-      byte[] data) throws com.google.protobuf.InvalidProtocolBufferException {
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(byte[] data)
+      throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       byte[] data, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-      parseDelimitedFrom(java.io.InputStream input) throws java.io.IOException {
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseDelimitedFrom(
+      java.io.InputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-      parseDelimitedFrom(
-          java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseDelimitedFrom(
+      java.io.InputStream input, com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+      throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseDelimitedWithIOException(
         PARSER, input, extensionRegistry);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       com.google.protobuf.CodedInputStream input) throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3.parseWithIOException(PARSER, input);
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata parseFrom(
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -395,7 +400,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
   }
 
   public static Builder newBuilder(
-      com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata prototype) {
+      com.google.spanner.admin.instance.v1.MoveInstanceMetadata prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
 
@@ -414,32 +419,31 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
    *
    * <pre>
    * Metadata type for the operation returned by
-   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig].
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance].
    * </pre>
    *
-   * Protobuf type {@code google.spanner.admin.instance.v1.CreateInstanceConfigMetadata}
+   * Protobuf type {@code google.spanner.admin.instance.v1.MoveInstanceMetadata}
    */
   public static final class Builder extends com.google.protobuf.GeneratedMessageV3.Builder<Builder>
       implements
-      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
-      com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadataOrBuilder {
+      // @@protoc_insertion_point(builder_implements:google.spanner.admin.instance.v1.MoveInstanceMetadata)
+      com.google.spanner.admin.instance.v1.MoveInstanceMetadataOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor getDescriptor() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_CreateInstanceConfigMetadata_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_MoveInstanceMetadata_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_CreateInstanceConfigMetadata_fieldAccessorTable
+          .internal_static_google_spanner_admin_instance_v1_MoveInstanceMetadata_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.class,
-              com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.Builder.class);
+              com.google.spanner.admin.instance.v1.MoveInstanceMetadata.class,
+              com.google.spanner.admin.instance.v1.MoveInstanceMetadata.Builder.class);
     }
 
-    // Construct using
-    // com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.newBuilder()
+    // Construct using com.google.spanner.admin.instance.v1.MoveInstanceMetadata.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -451,7 +455,6 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
 
     private void maybeForceBuilderInitialization() {
       if (com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders) {
-        getInstanceConfigFieldBuilder();
         getProgressFieldBuilder();
         getCancelTimeFieldBuilder();
       }
@@ -461,11 +464,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     public Builder clear() {
       super.clear();
       bitField0_ = 0;
-      instanceConfig_ = null;
-      if (instanceConfigBuilder_ != null) {
-        instanceConfigBuilder_.dispose();
-        instanceConfigBuilder_ = null;
-      }
+      targetConfig_ = "";
       progress_ = null;
       if (progressBuilder_ != null) {
         progressBuilder_.dispose();
@@ -482,18 +481,17 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     @java.lang.Override
     public com.google.protobuf.Descriptors.Descriptor getDescriptorForType() {
       return com.google.spanner.admin.instance.v1.SpannerInstanceAdminProto
-          .internal_static_google_spanner_admin_instance_v1_CreateInstanceConfigMetadata_descriptor;
+          .internal_static_google_spanner_admin_instance_v1_MoveInstanceMetadata_descriptor;
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-        getDefaultInstanceForType() {
-      return com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.getDefaultInstance();
+    public com.google.spanner.admin.instance.v1.MoveInstanceMetadata getDefaultInstanceForType() {
+      return com.google.spanner.admin.instance.v1.MoveInstanceMetadata.getDefaultInstance();
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata build() {
-      com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata result = buildPartial();
+    public com.google.spanner.admin.instance.v1.MoveInstanceMetadata build() {
+      com.google.spanner.admin.instance.v1.MoveInstanceMetadata result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
@@ -501,9 +499,9 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
     }
 
     @java.lang.Override
-    public com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata buildPartial() {
-      com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata result =
-          new com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata(this);
+    public com.google.spanner.admin.instance.v1.MoveInstanceMetadata buildPartial() {
+      com.google.spanner.admin.instance.v1.MoveInstanceMetadata result =
+          new com.google.spanner.admin.instance.v1.MoveInstanceMetadata(this);
       if (bitField0_ != 0) {
         buildPartial0(result);
       }
@@ -511,22 +509,19 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       return result;
     }
 
-    private void buildPartial0(
-        com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata result) {
+    private void buildPartial0(com.google.spanner.admin.instance.v1.MoveInstanceMetadata result) {
       int from_bitField0_ = bitField0_;
-      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000001) != 0)) {
-        result.instanceConfig_ =
-            instanceConfigBuilder_ == null ? instanceConfig_ : instanceConfigBuilder_.build();
-        to_bitField0_ |= 0x00000001;
+        result.targetConfig_ = targetConfig_;
       }
+      int to_bitField0_ = 0;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.progress_ = progressBuilder_ == null ? progress_ : progressBuilder_.build();
-        to_bitField0_ |= 0x00000002;
+        to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.cancelTime_ = cancelTimeBuilder_ == null ? cancelTime_ : cancelTimeBuilder_.build();
-        to_bitField0_ |= 0x00000004;
+        to_bitField0_ |= 0x00000002;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -566,21 +561,21 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
 
     @java.lang.Override
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata) {
-        return mergeFrom((com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata) other);
+      if (other instanceof com.google.spanner.admin.instance.v1.MoveInstanceMetadata) {
+        return mergeFrom((com.google.spanner.admin.instance.v1.MoveInstanceMetadata) other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(
-        com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata other) {
-      if (other
-          == com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.getDefaultInstance())
+    public Builder mergeFrom(com.google.spanner.admin.instance.v1.MoveInstanceMetadata other) {
+      if (other == com.google.spanner.admin.instance.v1.MoveInstanceMetadata.getDefaultInstance())
         return this;
-      if (other.hasInstanceConfig()) {
-        mergeInstanceConfig(other.getInstanceConfig());
+      if (!other.getTargetConfig().isEmpty()) {
+        targetConfig_ = other.targetConfig_;
+        bitField0_ |= 0x00000001;
+        onChanged();
       }
       if (other.hasProgress()) {
         mergeProgress(other.getProgress());
@@ -616,7 +611,7 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
               break;
             case 10:
               {
-                input.readMessage(getInstanceConfigFieldBuilder().getBuilder(), extensionRegistry);
+                targetConfig_ = input.readStringRequireUtf8();
                 bitField0_ |= 0x00000001;
                 break;
               } // case 10
@@ -651,64 +646,71 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
 
     private int bitField0_;
 
-    private com.google.spanner.admin.instance.v1.InstanceConfig instanceConfig_;
-    private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.admin.instance.v1.InstanceConfig,
-            com.google.spanner.admin.instance.v1.InstanceConfig.Builder,
-            com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder>
-        instanceConfigBuilder_;
+    private java.lang.Object targetConfig_ = "";
     /**
      *
      *
      * <pre>
-     * The target instance configuration end state.
+     * The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+     * <code>string target_config = 1;</code>
      *
-     * @return Whether the instanceConfig field is set.
+     * @return The targetConfig.
      */
-    public boolean hasInstanceConfig() {
-      return ((bitField0_ & 0x00000001) != 0);
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The target instance configuration end state.
-     * </pre>
-     *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
-     *
-     * @return The instanceConfig.
-     */
-    public com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig() {
-      if (instanceConfigBuilder_ == null) {
-        return instanceConfig_ == null
-            ? com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()
-            : instanceConfig_;
+    public java.lang.String getTargetConfig() {
+      java.lang.Object ref = targetConfig_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs = (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        targetConfig_ = s;
+        return s;
       } else {
-        return instanceConfigBuilder_.getMessage();
+        return (java.lang.String) ref;
       }
     }
     /**
      *
      *
      * <pre>
-     * The target instance configuration end state.
+     * The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+     * <code>string target_config = 1;</code>
+     *
+     * @return The bytes for targetConfig.
      */
-    public Builder setInstanceConfig(com.google.spanner.admin.instance.v1.InstanceConfig value) {
-      if (instanceConfigBuilder_ == null) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
-        instanceConfig_ = value;
+    public com.google.protobuf.ByteString getTargetConfigBytes() {
+      java.lang.Object ref = targetConfig_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8((java.lang.String) ref);
+        targetConfig_ = b;
+        return b;
       } else {
-        instanceConfigBuilder_.setMessage(value);
+        return (com.google.protobuf.ByteString) ref;
       }
+    }
+    /**
+     *
+     *
+     * <pre>
+     * The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
+     * </pre>
+     *
+     * <code>string target_config = 1;</code>
+     *
+     * @param value The targetConfig to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTargetConfig(java.lang.String value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      targetConfig_ = value;
       bitField0_ |= 0x00000001;
       onChanged();
       return this;
@@ -717,66 +719,17 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      *
      * <pre>
-     * The target instance configuration end state.
+     * The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+     * <code>string target_config = 1;</code>
+     *
+     * @return This builder for chaining.
      */
-    public Builder setInstanceConfig(
-        com.google.spanner.admin.instance.v1.InstanceConfig.Builder builderForValue) {
-      if (instanceConfigBuilder_ == null) {
-        instanceConfig_ = builderForValue.build();
-      } else {
-        instanceConfigBuilder_.setMessage(builderForValue.build());
-      }
-      bitField0_ |= 0x00000001;
-      onChanged();
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The target instance configuration end state.
-     * </pre>
-     *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
-     */
-    public Builder mergeInstanceConfig(com.google.spanner.admin.instance.v1.InstanceConfig value) {
-      if (instanceConfigBuilder_ == null) {
-        if (((bitField0_ & 0x00000001) != 0)
-            && instanceConfig_ != null
-            && instanceConfig_
-                != com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()) {
-          getInstanceConfigBuilder().mergeFrom(value);
-        } else {
-          instanceConfig_ = value;
-        }
-      } else {
-        instanceConfigBuilder_.mergeFrom(value);
-      }
-      if (instanceConfig_ != null) {
-        bitField0_ |= 0x00000001;
-        onChanged();
-      }
-      return this;
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The target instance configuration end state.
-     * </pre>
-     *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
-     */
-    public Builder clearInstanceConfig() {
+    public Builder clearTargetConfig() {
+      targetConfig_ = getDefaultInstance().getTargetConfig();
       bitField0_ = (bitField0_ & ~0x00000001);
-      instanceConfig_ = null;
-      if (instanceConfigBuilder_ != null) {
-        instanceConfigBuilder_.dispose();
-        instanceConfigBuilder_ = null;
-      }
       onChanged();
       return this;
     }
@@ -784,59 +737,24 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      *
      * <pre>
-     * The target instance configuration end state.
+     * The target instance configuration where to move the instance.
+     * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
      * </pre>
      *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+     * <code>string target_config = 1;</code>
+     *
+     * @param value The bytes for targetConfig to set.
+     * @return This builder for chaining.
      */
-    public com.google.spanner.admin.instance.v1.InstanceConfig.Builder getInstanceConfigBuilder() {
+    public Builder setTargetConfigBytes(com.google.protobuf.ByteString value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      checkByteStringIsUtf8(value);
+      targetConfig_ = value;
       bitField0_ |= 0x00000001;
       onChanged();
-      return getInstanceConfigFieldBuilder().getBuilder();
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The target instance configuration end state.
-     * </pre>
-     *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
-     */
-    public com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder
-        getInstanceConfigOrBuilder() {
-      if (instanceConfigBuilder_ != null) {
-        return instanceConfigBuilder_.getMessageOrBuilder();
-      } else {
-        return instanceConfig_ == null
-            ? com.google.spanner.admin.instance.v1.InstanceConfig.getDefaultInstance()
-            : instanceConfig_;
-      }
-    }
-    /**
-     *
-     *
-     * <pre>
-     * The target instance configuration end state.
-     * </pre>
-     *
-     * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
-     */
-    private com.google.protobuf.SingleFieldBuilderV3<
-            com.google.spanner.admin.instance.v1.InstanceConfig,
-            com.google.spanner.admin.instance.v1.InstanceConfig.Builder,
-            com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder>
-        getInstanceConfigFieldBuilder() {
-      if (instanceConfigBuilder_ == null) {
-        instanceConfigBuilder_ =
-            new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.spanner.admin.instance.v1.InstanceConfig,
-                com.google.spanner.admin.instance.v1.InstanceConfig.Builder,
-                com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder>(
-                getInstanceConfig(), getParentForChildren(), isClean());
-        instanceConfig_ = null;
-      }
-      return instanceConfigBuilder_;
+      return this;
     }
 
     private com.google.spanner.admin.instance.v1.OperationProgress progress_;
@@ -850,8 +768,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -866,8 +786,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -888,8 +810,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -912,8 +836,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -934,8 +860,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -964,8 +892,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -985,8 +915,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -1001,8 +933,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -1021,8 +955,10 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
      *
      * <pre>
      * The progress of the
-     * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+     * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
      * operation.
+     * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+     * is reset when cancellation is requested.
      * </pre>
      *
      * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -1240,26 +1176,24 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
+    // @@protoc_insertion_point(builder_scope:google.spanner.admin.instance.v1.MoveInstanceMetadata)
   }
 
-  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
-  private static final com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-      DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:google.spanner.admin.instance.v1.MoveInstanceMetadata)
+  private static final com.google.spanner.admin.instance.v1.MoveInstanceMetadata DEFAULT_INSTANCE;
 
   static {
-    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata();
+    DEFAULT_INSTANCE = new com.google.spanner.admin.instance.v1.MoveInstanceMetadata();
   }
 
-  public static com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-      getDefaultInstance() {
+  public static com.google.spanner.admin.instance.v1.MoveInstanceMetadata getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<CreateInstanceConfigMetadata> PARSER =
-      new com.google.protobuf.AbstractParser<CreateInstanceConfigMetadata>() {
+  private static final com.google.protobuf.Parser<MoveInstanceMetadata> PARSER =
+      new com.google.protobuf.AbstractParser<MoveInstanceMetadata>() {
         @java.lang.Override
-        public CreateInstanceConfigMetadata parsePartialFrom(
+        public MoveInstanceMetadata parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1278,18 +1212,17 @@ public final class CreateInstanceConfigMetadata extends com.google.protobuf.Gene
         }
       };
 
-  public static com.google.protobuf.Parser<CreateInstanceConfigMetadata> parser() {
+  public static com.google.protobuf.Parser<MoveInstanceMetadata> parser() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.protobuf.Parser<CreateInstanceConfigMetadata> getParserForType() {
+  public com.google.protobuf.Parser<MoveInstanceMetadata> getParserForType() {
     return PARSER;
   }
 
   @java.lang.Override
-  public com.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-      getDefaultInstanceForType() {
+  public com.google.spanner.admin.instance.v1.MoveInstanceMetadata getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 }

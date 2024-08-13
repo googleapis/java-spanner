@@ -19,53 +19,47 @@
 // Protobuf Java Version: 3.25.3
 package com.google.spanner.admin.instance.v1;
 
-public interface CreateInstanceConfigMetadataOrBuilder
+public interface MoveInstanceMetadataOrBuilder
     extends
-    // @@protoc_insertion_point(interface_extends:google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
+    // @@protoc_insertion_point(interface_extends:google.spanner.admin.instance.v1.MoveInstanceMetadata)
     com.google.protobuf.MessageOrBuilder {
 
   /**
    *
    *
    * <pre>
-   * The target instance configuration end state.
+   * The target instance configuration where to move the instance.
+   * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+   * <code>string target_config = 1;</code>
    *
-   * @return Whether the instanceConfig field is set.
+   * @return The targetConfig.
    */
-  boolean hasInstanceConfig();
+  java.lang.String getTargetConfig();
   /**
    *
    *
    * <pre>
-   * The target instance configuration end state.
+   * The target instance configuration where to move the instance.
+   * Values are of the form `projects/&lt;project&gt;/instanceConfigs/&lt;config&gt;`.
    * </pre>
    *
-   * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
+   * <code>string target_config = 1;</code>
    *
-   * @return The instanceConfig.
+   * @return The bytes for targetConfig.
    */
-  com.google.spanner.admin.instance.v1.InstanceConfig getInstanceConfig();
-  /**
-   *
-   *
-   * <pre>
-   * The target instance configuration end state.
-   * </pre>
-   *
-   * <code>.google.spanner.admin.instance.v1.InstanceConfig instance_config = 1;</code>
-   */
-  com.google.spanner.admin.instance.v1.InstanceConfigOrBuilder getInstanceConfigOrBuilder();
+  com.google.protobuf.ByteString getTargetConfigBytes();
 
   /**
    *
    *
    * <pre>
    * The progress of the
-   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
    * operation.
+   * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+   * is reset when cancellation is requested.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -78,8 +72,10 @@ public interface CreateInstanceConfigMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
    * operation.
+   * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+   * is reset when cancellation is requested.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
@@ -92,8 +88,10 @@ public interface CreateInstanceConfigMetadataOrBuilder
    *
    * <pre>
    * The progress of the
-   * [CreateInstanceConfig][google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig]
+   * [MoveInstance][google.spanner.admin.instance.v1.InstanceAdmin.MoveInstance]
    * operation.
+   * [progress_percent][google.spanner.admin.instance.v1.OperationProgress.progress_percent]
+   * is reset when cancellation is requested.
    * </pre>
    *
    * <code>.google.spanner.admin.instance.v1.OperationProgress progress = 2;</code>
