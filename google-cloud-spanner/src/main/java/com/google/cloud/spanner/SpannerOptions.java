@@ -715,7 +715,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
-    private static final String SPANNER_ENABLE_SERVER_SIDE_TRACING = "SPANNER_ENABLE_SERVER_SIDE_TRACING";
+    private static final String SPANNER_ENABLE_SERVER_SIDE_TRACING =
+        "SPANNER_ENABLE_SERVER_SIDE_TRACING";
 
     private SpannerEnvironmentImpl() {}
 
@@ -811,7 +812,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
-    private boolean enableServerSideTracing = SpannerOptions.environment.isEnableServerSideTracing();
+    private boolean enableServerSideTracing =
+        SpannerOptions.environment.isEnableServerSideTracing();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -1406,8 +1408,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Enable spanner server side tracing. Enabling this option will create the trace
-     * spans at the Spanner layer. By default, server side tracing is disabled.
+     * Enable spanner server side tracing. Enabling this option will create the trace spans at the
+     * Spanner layer. By default, server side tracing is disabled.
      */
     public Builder enableServerSideTracing() {
       this.enableServerSideTracing = true;
@@ -1415,14 +1417,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Disable spanner server side tracing. If server side is disabled, trace
-     * spans won't be created at the Spanner layer.
+     * Disable spanner server side tracing. If server side is disabled, trace spans won't be created
+     * at the Spanner layer.
      */
     public Builder disableServerSideTracing() {
       this.enableServerSideTracing = false;
       return this;
     }
- 
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1715,8 +1717,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   }
 
   /**
-   * Returns whether Spanner server side tracing is enabled. If this option is enabled then trace spans
-   * will be created at the Spanner layer.
+   * Returns whether Spanner server side tracing is enabled. If this option is enabled then trace
+   * spans will be created at the Spanner layer.
    */
   public boolean isServerSideTracingEnabled() {
     return enableServerSideTracing;

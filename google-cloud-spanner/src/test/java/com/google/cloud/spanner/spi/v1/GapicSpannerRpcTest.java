@@ -222,7 +222,8 @@ public class GapicSpannerRpcTest {
                       isRouteToLeader =
                           (routeToLeaderHeader != null && routeToLeaderHeader.equals("true"));
                       isServerSideTracing =
-                          (serverSideTracingHeader != null && serverSideTracingHeader.equals("true"));
+                          (serverSideTracingHeader != null
+                              && serverSideTracingHeader.equals("true"));
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
@@ -639,7 +640,11 @@ public class GapicSpannerRpcTest {
             .build();
 
     final SpannerOptions options =
-        createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).enableServerSideTracing().build();
+        createSpannerOptions()
+            .toBuilder()
+            .setOpenTelemetry(openTelemetry)
+            .enableServerSideTracing()
+            .build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -661,7 +666,11 @@ public class GapicSpannerRpcTest {
             .build();
 
     final SpannerOptions options =
-        createSpannerOptions().toBuilder().setOpenTelemetry(openTelemetry).disableServerSideTracing().build();
+        createSpannerOptions()
+            .toBuilder()
+            .setOpenTelemetry(openTelemetry)
+            .disableServerSideTracing()
+            .build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
