@@ -20,8 +20,8 @@ package com.google.cloud.spanner;
 public class SpannerOptionsHelper {
 
   /**
-   * Resets the activeTracingFramework. This variable is used for internal testing, and is
-   * not a valid production scenario.
+   * Resets the activeTracingFramework. This variable is used for internal testing, and is not a
+   * valid production scenario.
    */
   public static void resetActiveTracingFramework() {
     SpannerOptions.resetActiveTracingFramework();
