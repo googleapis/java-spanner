@@ -695,6 +695,13 @@
     <method>boolean isEnableApiTracing()</method>
   </difference>
 
+  <!-- Added server side tracing option -->
+  <difference>
+    <differenceType>7012</differenceType>
+    <className>com/google/cloud/spanner/SpannerOptions$SpannerEnvironment</className>
+    <method>boolean isEnableServerSideTracing()</method>
+  </difference>
+
   <!-- Added ExcludeTxnFromChangeStreams -->
   <difference>
     <differenceType>7012</differenceType>
