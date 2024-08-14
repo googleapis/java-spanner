@@ -124,6 +124,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
   @Test
   public void testReadWriteTransaction_retriesOnNewChannel() {
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
+    builder.setSessionPoolOption(
+        SessionPoolOptions.newBuilder().setWaitForMinSessions(Duration.ofSeconds(5L)).build());
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofStickyException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
     AtomicInteger attempts = new AtomicInteger();
@@ -156,6 +158,8 @@ public class RetryOnDifferentGrpcChannelMockServerTest extends AbstractMockServe
   @Test
   public void testReadWriteTransaction_stopsRetrying() {
     SpannerOptions.Builder builder = createSpannerOptionsBuilder();
+    builder.setSessionPoolOption(
+        SessionPoolOptions.newBuilder().setWaitForMinSessions(Duration.ofSeconds(5L)).build());
     mockSpanner.setBeginTransactionExecutionTime(
         SimulatedExecutionTime.ofStickyException(Status.DEADLINE_EXCEEDED.asRuntimeException()));
 
