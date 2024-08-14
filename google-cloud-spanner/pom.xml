@@ -352,10 +352,6 @@
       <artifactId>grpc-rls</artifactId>
       <scope>runtime</scope>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>io.grpc</groupId>-->
-<!--      <artifactId>grpc-protobuf-lite</artifactId>-->
-<!--    </dependency>-->
 
     <dependency>
       <groupId>org.graalvm.sdk</groupId>

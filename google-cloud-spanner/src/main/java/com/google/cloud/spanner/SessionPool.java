@@ -589,8 +589,16 @@ class SessionPool {
     @Override
     public PooledSessionFuture denyListSession(
         RetryOnDifferentGrpcChannelException retryException, PooledSessionFuture session) {
+      // The feature was not enabled when the session pool was created.
+      if (denyListedChannels == null) {
+        throw SpannerExceptionFactory.asSpannerException(retryException.getCause());
+      }
+
       int channel = session.get().getChannel();
       synchronized (lock) {
+        // Calculate the size manually by iterating over the possible keys. We do this because the
+        // size of a cache can be stale, and manually checking for each possible key will make sure
+        // we get the correct value, and it will update the cache.
         int currentSize = 0;
         for (int i = 0; i < numChannels; i++) {
           if (denyListedChannels.getIfPresent(i) != null) {
@@ -600,6 +608,7 @@ class SessionPool {
         if (currentSize < numChannels - 1) {
           denyListedChannels.put(channel, DENY_LISTED);
         } else {
+          // We have now deny-listed all channels. Give up and just throw the original error.
           throw SpannerExceptionFactory.asSpannerException(retryException.getCause());
         }
       }
@@ -1033,6 +1042,10 @@ class SessionPool {
             CachedSession cachedSession = session.get();
             runner = cachedSession.getDelegate().readWriteTransaction();
           } catch (RetryOnDifferentGrpcChannelException retryException) {
+            // This error is thrown by the RetryOnDifferentGrpcChannelErrorHandler in the specific
+            // case that a transaction failed with a DEADLINE_EXCEEDED error. This is an
+            // experimental feature that is disabled by default, and that can be removed in a
+            // future version.
             session = sessionReplacementHandler.denyListSession(retryException, session);
             CachedSession cachedSession = session.get();
             runner = cachedSession.getDelegate().readWriteTransaction();
@@ -2477,19 +2490,21 @@ class SessionPool {
     this.waitOnMinSessionsLatch =
         options.getMinSessions() > 0 ? new CountDownLatch(1) : new CountDownLatch(0);
     this.denyListedChannels =
-        CacheBuilder.newBuilder()
-            .expireAfterWrite(java.time.Duration.ofMinutes(1))
-            .maximumSize(this.numChannels)
-            .concurrencyLevel(1)
-            .ticker(
-                new Ticker() {
-                  @Override
-                  public long read() {
-                    return TimeUnit.NANOSECONDS.convert(
-                        clock.instant().toEpochMilli(), TimeUnit.MILLISECONDS);
-                  }
-                })
-            .build();
+        RetryOnDifferentGrpcChannelErrorHandler.isEnabled()
+            ? CacheBuilder.newBuilder()
+                .expireAfterWrite(java.time.Duration.ofMinutes(1))
+                .maximumSize(this.numChannels)
+                .concurrencyLevel(1)
+                .ticker(
+                    new Ticker() {
+                      @Override
+                      public long read() {
+                        return TimeUnit.NANOSECONDS.convert(
+                            clock.instant().toEpochMilli(), TimeUnit.MILLISECONDS);
+                      }
+                    })
+                .build()
+            : null;
   }
 
   /**
@@ -2719,7 +2734,11 @@ class SessionPool {
                 resourceNotFoundException.getMessage()),
             resourceNotFoundException);
       }
-      if (denyListedChannels.size() > 0 && denyListedChannels.size() < numChannels) {
+      if (denyListedChannels != null
+          && denyListedChannels.size() > 0
+          && denyListedChannels.size() < numChannels) {
+        // There are deny-listed channels. Get a session that is not affiliated with a deny-listed
+        // channel.
         for (PooledSession session : sessions) {
           if (denyListedChannels.getIfPresent(session.getChannel()) == null) {
             sessions.remove(session);
