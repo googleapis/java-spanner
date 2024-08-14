@@ -1409,7 +1409,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
     /**
      * Enable spanner server side tracing. Enabling this option will create the trace spans at the
-     * Spanner layer. By default, server side tracing is disabled.
+     * Spanner layer. By default, server side tracing is disabled. Enabling server side tracing
+     * requires OpenTelemetry to be set up properly. Simply enabling this option won't generate
+     * server side traces.
      */
     public Builder enableServerSideTracing() {
       this.enableServerSideTracing = true;
@@ -1515,7 +1517,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
   @VisibleForTesting
-  public static void resetActiveTracingFramework() {
+  static void resetActiveTracingFramework() {
     activeTracingFramework = null;
   }
 

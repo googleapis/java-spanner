@@ -46,6 +46,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerOptionsHelper;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionRunner;
@@ -167,7 +168,7 @@ public class GapicSpannerRpcTest {
   @Before
   public void startServer() throws IOException {
     // Enable OpenTelemetry tracing.
-    SpannerOptions.resetActiveTracingFramework();
+    SpannerOptionsHelper.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryTraces();
 
     assumeTrue(
