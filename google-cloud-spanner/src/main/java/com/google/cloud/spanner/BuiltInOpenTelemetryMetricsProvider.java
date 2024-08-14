@@ -16,6 +16,7 @@
 
 package com.google.cloud.spanner;
 
+import static com.google.cloud.opentelemetry.detection.GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY;
@@ -23,8 +24,8 @@ import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
 
-import com.google.api.gax.core.GaxProperties;
 import com.google.auth.Credentials;
+import com.google.cloud.opentelemetry.detection.AttributeKeys;
 import com.google.cloud.opentelemetry.detection.DetectedPlatform;
 import com.google.cloud.opentelemetry.detection.GCPPlatformDetector;
 import io.opentelemetry.api.OpenTelemetry;
@@ -76,7 +77,8 @@ final class BuiltInOpenTelemetryMetricsProvider {
     }
   }
 
-  Map<String, String> getClientAttributes(String projectId, boolean isDirectPathChannelCreated) {
+  Map<String, String> getClientAttributes(
+      String projectId, boolean isDirectPathChannelCreated, String client_name) {
     Map<String, String> clientAttributes = new HashMap<>();
     clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
     clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
@@ -84,18 +86,19 @@ final class BuiltInOpenTelemetryMetricsProvider {
     clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
     clientAttributes.put(
         DIRECT_PATH_ENABLED_KEY.getKey(), String.valueOf(isDirectPathChannelCreated));
-    clientAttributes.put(
-        CLIENT_NAME_KEY.getKey(),
-        "spanner-java/"
-            + GaxProperties.getLibraryVersion(SpannerCloudMonitoringExporterUtils.class));
+    clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
     clientAttributes.put(CLIENT_UID_KEY.getKey(), getDefaultTaskValue());
     return clientAttributes;
   }
 
-  private String detectClientLocation() {
+  static String detectClientLocation() {
     GCPPlatformDetector detector = GCPPlatformDetector.DEFAULT_INSTANCE;
     DetectedPlatform detectedPlatform = detector.detectPlatform();
-    String region = detectedPlatform.getAttributes().get("cloud.region");
+    // All platform except GKE uses "cloud_region" for region attribute.
+    String region = detectedPlatform.getAttributes().get("cloud_region");
+    if (detectedPlatform.getSupportedPlatform() == GOOGLE_KUBERNETES_ENGINE) {
+      region = detectedPlatform.getAttributes().get(AttributeKeys.GKE_LOCATION_TYPE_REGION);
+    }
     return region == null ? "global" : region;
   }
 

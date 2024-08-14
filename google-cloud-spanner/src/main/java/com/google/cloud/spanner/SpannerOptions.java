@@ -1653,23 +1653,24 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @Override
   public ApiTracerFactory getApiTracerFactory() {
-    return createApiTracerFactory(false, false);
+    return createApiTracerFactory(false, false, false);
   }
 
   public ApiTracerFactory getApiTracerFactory(
-      boolean isDirectPathChannelCreated, boolean isAdminClient) {
-    return createApiTracerFactory(isDirectPathChannelCreated, isAdminClient);
+      boolean isDirectPathChannelCreated, boolean isAdminClient, boolean isEmulatorEnabled) {
+    return createApiTracerFactory(isDirectPathChannelCreated, isAdminClient, isEmulatorEnabled);
   }
 
   private ApiTracerFactory createApiTracerFactory(
-      boolean isDirectPathChannelCreated, boolean isAdminClient) {
+      boolean isDirectPathChannelCreated, boolean isAdminClient, boolean isEmulatorEnabled) {
     List<ApiTracerFactory> apiTracerFactories = new ArrayList<>();
     // Prefer any direct ApiTracerFactory that might have been set on the builder.
     apiTracerFactories.add(
         MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory()));
 
-    // Add Metrics Tracer factory if enabled and if data client
-    if (isEnableBuiltInMetrics() && !isAdminClient) {
+    // Add Metrics Tracer factory if built in metrics are enabled and if the client is data client
+    // and if emulator is not enabled.
+    if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled) {
       ApiTracerFactory metricsTracerFactory =
           getMetricsApiTracerFactory(isDirectPathChannelCreated);
       if (metricsTracerFactory != null) {
@@ -1705,7 +1706,9 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         ? new MetricsTracerFactory(
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
             builtInOpenTelemetryMetricsProvider.getClientAttributes(
-                getDefaultProjectId(), isDirectPathChannelCreated))
+                getDefaultProjectId(),
+                isDirectPathChannelCreated,
+                "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
         : null;
   }
 

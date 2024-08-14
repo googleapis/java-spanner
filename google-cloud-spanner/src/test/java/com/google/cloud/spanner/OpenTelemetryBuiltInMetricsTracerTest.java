@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.longrunning.OperationTimedPollAlgorithm;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.tracing.ApiTracerFactory;
@@ -87,19 +86,19 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
 
     BuiltInMetricsConstant.getAllViews().forEach(meterProvider::registerView);
 
+    String client_name = "spanner-java/";
     openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
-    attributes = provider.getClientAttributes("test-project", true);
+    attributes = provider.getClientAttributes("test-project", true, client_name);
 
     expectedBaseAttributes =
         Attributes.builder()
             .put(BuiltInMetricsConstant.PROJECT_ID_KEY, "test-project")
             .put(BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY, "unknown")
             .put(BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY, "true")
-            .put(BuiltInMetricsConstant.LOCATION_ID_KEY, "global")
             .put(
-                BuiltInMetricsConstant.CLIENT_NAME_KEY,
-                "spanner-java/"
-                    + GaxProperties.getLibraryVersion(SpannerCloudMonitoringExporterUtils.class))
+                BuiltInMetricsConstant.LOCATION_ID_KEY,
+                BuiltInOpenTelemetryMetricsProvider.detectClientLocation())
+            .put(BuiltInMetricsConstant.CLIENT_NAME_KEY, client_name)
             .put(BuiltInMetricsConstant.CLIENT_UID_KEY, attributes.get("client_uid"))
             .build();
   }

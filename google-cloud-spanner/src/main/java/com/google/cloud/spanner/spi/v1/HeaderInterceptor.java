@@ -91,6 +91,7 @@ class HeaderInterceptor implements ClientInterceptor {
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+    Object tracer = callOptions.getOption(TRACER_KEY);
     return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
@@ -99,8 +100,8 @@ class HeaderInterceptor implements ClientInterceptor {
           DatabaseName databaseName = extractDatabaseName(headers);
           String key = databaseName + method.getFullMethodName();
           TagContext tagContext = getTagContext(key, method.getFullMethodName(), databaseName);
-          if (callOptions.getOption(TRACER_KEY) instanceof CompositeTracer) {
-            CompositeTracer compositeTracer = (CompositeTracer) callOptions.getOption(TRACER_KEY);
+          if (tracer instanceof CompositeTracer) {
+            CompositeTracer compositeTracer = (CompositeTracer) tracer;
             addBuiltInMetricAttributes(compositeTracer, databaseName);
           }
           Attributes attributes =
