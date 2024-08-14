@@ -181,6 +181,11 @@ public final class SpannerExceptionFactory {
     return newSpannerException(ErrorCode.fromGrpcStatus(status), cause.getMessage(), cause);
   }
 
+  static SpannerException newRetryOnDifferentGrpcChannelException(
+      String message, int channel, Throwable cause) {
+    return new RetryOnDifferentGrpcChannelException(message, channel, cause);
+  }
+
   static SpannerException newSpannerExceptionForCancellation(
       @Nullable Context context, @Nullable Throwable cause) {
     if (context != null && context.isCancelled()) {

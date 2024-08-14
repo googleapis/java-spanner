@@ -94,7 +94,7 @@ public interface SpannerRpc extends ServiceRpc {
       return (T) options.get(this);
     }
 
-    Long getLong(@Nullable Map<Option, ?> options) {
+    public Long getLong(@Nullable Map<Option, ?> options) {
       return get(options);
     }
 
