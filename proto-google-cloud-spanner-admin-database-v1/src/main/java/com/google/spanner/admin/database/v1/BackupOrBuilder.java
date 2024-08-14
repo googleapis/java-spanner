@@ -729,7 +729,8 @@ public interface BackupOrBuilder
    * single backup schedule URI associated with creating this backup.
    * </pre>
    *
-   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return A list containing the backupSchedules.
@@ -750,7 +751,8 @@ public interface BackupOrBuilder
    * single backup schedule URI associated with creating this backup.
    * </pre>
    *
-   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @return The count of backupSchedules.
@@ -771,7 +773,8 @@ public interface BackupOrBuilder
    * single backup schedule URI associated with creating this backup.
    * </pre>
    *
-   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the element to return.
@@ -793,7 +796,8 @@ public interface BackupOrBuilder
    * single backup schedule URI associated with creating this backup.
    * </pre>
    *
-   * <code>repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY];
+   * <code>
+   * repeated string backup_schedules = 14 [(.google.api.field_behavior) = OUTPUT_ONLY, (.google.api.resource_reference) = { ... }
    * </code>
    *
    * @param index The index of the value to return.
