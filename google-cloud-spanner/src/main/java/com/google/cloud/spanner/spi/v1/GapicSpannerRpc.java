@@ -201,6 +201,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -261,6 +262,10 @@ public class GapicSpannerRpc implements SpannerRpc {
       systemProperty(PROPERTY_PERIOD_SECONDS, DEFAULT_PERIOD_SECONDS);
 
   private final ScheduledExecutorService spannerWatchdog;
+
+  private final boolean cancelStreamsOnClose;
+  private final ConcurrentLinkedDeque<SpannerResponseObserver> responseObservers =
+      new ConcurrentLinkedDeque<>();
 
   private final boolean throttleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
@@ -323,6 +328,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
+    this.cancelStreamsOnClose = options.isCancelStreamsOnClose();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -2004,9 +2010,39 @@ public class GapicSpannerRpc implements SpannerRpc {
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
   }
 
+  void registerResponseObserver(SpannerResponseObserver responseObserver) {
+    if (cancelStreamsOnClose) {
+      responseObservers.add(responseObserver);
+    }
+  }
+
+  void unregisterResponseObserver(SpannerResponseObserver responseObserver) {
+    if (cancelStreamsOnClose) {
+      responseObservers.remove(responseObserver);
+    }
+  }
+
+  void closeResponseObservers() {
+    if (cancelStreamsOnClose) {
+      responseObservers.forEach(SpannerResponseObserver::close);
+      responseObservers.clear();
+    }
+  }
+
+  @InternalApi
+  @VisibleForTesting
+  public int getNumActiveResponseObservers() {
+    if (cancelStreamsOnClose) {
+      return responseObservers.size();
+    }
+    throw new UnsupportedOperationException(
+        "This method can only be called when cancelStreamsOnClose=true");
+  }
+
   @Override
   public void shutdown() {
     this.rpcIsClosed = true;
+    closeResponseObservers();
     if (this.spannerStub != null) {
       this.spannerStub.close();
       this.partitionedDmlStub.close();
@@ -2028,6 +2064,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   public void shutdownNow() {
     this.rpcIsClosed = true;
+    closeResponseObservers();
     this.spannerStub.close();
     this.partitionedDmlStub.close();
     this.instanceAdminStub.close();
@@ -2085,7 +2122,7 @@ public class GapicSpannerRpc implements SpannerRpc {
    * A {@code ResponseObserver} that exposes the {@code StreamController} and delegates callbacks to
    * the {@link ResultStreamConsumer}.
    */
-  private static class SpannerResponseObserver implements ResponseObserver<PartialResultSet> {
+  private class SpannerResponseObserver implements ResponseObserver<PartialResultSet> {
 
     private StreamController controller;
     private final ResultStreamConsumer consumer;
@@ -2094,9 +2131,13 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.consumer = consumer;
     }
 
+    void close() {
+      this.controller.cancel();
+    }
+
     @Override
     public void onStart(StreamController controller) {
-
+      registerResponseObserver(this);
       // Disable the auto flow control to allow client library
       // set the number of messages it prefers to request
       controller.disableAutoInboundFlowControl();
@@ -2110,11 +2151,13 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onError(Throwable t) {
+      unregisterResponseObserver(this);
       consumer.onError(newSpannerException(t));
     }
 
     @Override
     public void onComplete() {
+      unregisterResponseObserver(this);
       consumer.onCompleted();
     }
 

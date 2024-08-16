@@ -158,6 +158,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final OpenTelemetry openTelemetry;
   private final boolean enableApiTracing;
   private final boolean enableExtendedTracing;
+  private final boolean cancelStreamsOnClose;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -664,6 +665,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
+    cancelStreamsOnClose = builder.cancelStreamsOnClose;
   }
 
   /**
@@ -696,6 +698,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default boolean isEnableApiTracing() {
       return false;
     }
+
+    @BetaApi
+    default boolean isCancelStreamsOnClose() {
+      return false;
+    }
   }
 
   /**
@@ -709,6 +716,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
+    private static final String SPANNER_CANCEL_STREAMS_ON_CLOSE = "SPANNER_CANCEL_STREAMS_ON_CLOSE";
 
     private SpannerEnvironmentImpl() {}
 
@@ -733,6 +741,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableApiTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_API_TRACING));
+    }
+
+    @Override
+    public boolean isCancelStreamsOnClose() {
+      return Boolean.parseBoolean(System.getenv(SPANNER_CANCEL_STREAMS_ON_CLOSE));
     }
   }
 
@@ -799,6 +812,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
+    private boolean cancelStreamsOnClose = SpannerOptions.environment.isCancelStreamsOnClose();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -864,6 +878,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
       this.enableExtendedTracing = options.enableExtendedTracing;
+      this.cancelStreamsOnClose = options.cancelStreamsOnClose;
     }
 
     @Override
@@ -1391,6 +1406,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Sets whether the Spanner client should keep track of all open query streams and explicitly
+     * cancel these when the client is closed. This forces queries to fail quickly when the client
+     * is closed instead of continuing to run until all results have been consumed.
+     */
+    @BetaApi
+    public Builder setCancelStreamsOnClose(boolean cancelStreamsOnClose) {
+      this.cancelStreamsOnClose = cancelStreamsOnClose;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1679,6 +1705,16 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableExtendedTracing() {
     return enableExtendedTracing;
+  }
+
+  /**
+   * Returns whether the Spanner client should keep track of all open query streams and explicitly
+   * cancel these when the client is closed. This causes queries to fail quickly when the client is
+   * closed, instead of continue to run until all results have been returned.
+   */
+  @BetaApi
+  public boolean isCancelStreamsOnClose() {
+    return cancelStreamsOnClose;
   }
 
   /** Returns the default query options to use for the specific database. */
