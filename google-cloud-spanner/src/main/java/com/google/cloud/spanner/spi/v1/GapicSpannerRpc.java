@@ -370,15 +370,18 @@ public class GapicSpannerRpc implements SpannerRpc {
       // If it is enabled in options uses the channel pool provided by the gRPC-GCP extension.
       maybeEnableGrpcGcpExtension(defaultChannelProviderBuilder, options);
 
-      InstantiatingGrpcChannelProvider defaultChannelProvider =
-          defaultChannelProviderBuilder.build();
+      InstantiatingGrpcChannelProvider defaultChannelProvider = null;
+      boolean isDirectPathChannelCreated = false;
+
+      if (options.getChannelProvider() == null) {
+        defaultChannelProvider = defaultChannelProviderBuilder.build();
+        isDirectPathChannelCreated =
+            defaultChannelProvider.canUseDirectPath()
+                && defaultChannelProvider.isDirectPathXdsEnabled();
+      }
 
       TransportChannelProvider channelProvider =
           MoreObjects.firstNonNull(options.getChannelProvider(), defaultChannelProvider);
-
-      boolean isDirectPathChannelCreated =
-          defaultChannelProvider.canUseDirectPath()
-              && defaultChannelProvider.isDirectPathXdsEnabled();
 
       CredentialsProvider credentialsProvider =
           GrpcTransportOptions.setUpCredentialsProvider(options);
@@ -409,7 +412,7 @@ public class GapicSpannerRpc implements SpannerRpc {
                     .setTracerFactory(
                         options.getApiTracerFactory(
                             isDirectPathChannelCreated,
-                            false,
+                            /* isAdminClient = */ false,
                             isEmulatorEnabled(options, emulatorHost)))
                     .build());
         this.readRetrySettings =
@@ -440,7 +443,9 @@ public class GapicSpannerRpc implements SpannerRpc {
             .setStreamWatchdogProvider(watchdogProvider)
             .setTracerFactory(
                 options.getApiTracerFactory(
-                    isDirectPathChannelCreated, false, isEmulatorEnabled(options, emulatorHost)))
+                    isDirectPathChannelCreated,
+                    /* isAdminClient = */ false,
+                    isEmulatorEnabled(options, emulatorHost)))
             .executeSqlSettings()
             .setRetrySettings(partitionedDmlRetrySettings);
         pdmlSettings.executeStreamingSqlSettings().setRetrySettings(partitionedDmlRetrySettings);
@@ -469,7 +474,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        isDirectPathChannelCreated, true, isEmulatorEnabled(options, emulatorHost)))
+                        isDirectPathChannelCreated,
+                        /* isAdminClient = */ true,
+                        isEmulatorEnabled(options, emulatorHost)))
                 .build();
         this.instanceAdminStub = GrpcInstanceAdminStub.create(instanceAdminStubSettings);
 
@@ -482,7 +489,9 @@ public class GapicSpannerRpc implements SpannerRpc {
                 .setStreamWatchdogProvider(watchdogProvider)
                 .setTracerFactory(
                     options.getApiTracerFactory(
-                        isDirectPathChannelCreated, true, isEmulatorEnabled(options, emulatorHost)))
+                        isDirectPathChannelCreated,
+                        /* isAdminClient = */ true,
+                        isEmulatorEnabled(options, emulatorHost)))
                 .build();
 
         // Automatically retry RESOURCE_EXHAUSTED for GetOperation if auto-throttling of

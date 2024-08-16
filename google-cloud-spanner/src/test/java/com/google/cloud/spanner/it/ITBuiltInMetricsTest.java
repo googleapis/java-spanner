@@ -18,7 +18,6 @@ package com.google.cloud.spanner.it;
 
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.monitoring.v3.MetricServiceClient;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
@@ -31,9 +30,7 @@ import com.google.monitoring.v3.ListTimeSeriesResponse;
 import com.google.monitoring.v3.ProjectName;
 import com.google.monitoring.v3.TimeInterval;
 import com.google.protobuf.util.Timestamps;
-import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -60,7 +57,7 @@ public class ITBuiltInMetricsTest {
   @BeforeClass
   public static void setUp() throws IOException {
     metricClient = MetricServiceClient.create();
-    env.getTestHelper().getOptions().toBuilder().setEnableBuiltInMetrics(true);
+    // Enable BuiltinMetrics when the metrics are GA'ed
     db = env.getTestHelper().createTestDatabase();
     client = env.getTestHelper().getDatabaseClient(db);
   }
@@ -78,14 +75,6 @@ public class ITBuiltInMetricsTest {
             .setStartTime(Timestamps.fromMillis(start.toEpochMilli()))
             .setEndTime(Timestamps.fromMillis(end.toEpochMilli()))
             .build();
-    String ddl =
-        "CREATE TABLE FOO ("
-            + "  K    STRING(MAX) NOT NULL,"
-            + "  V    INT64,"
-            + ") PRIMARY KEY (K)";
-    OperationFuture<Void, UpdateDatabaseDdlMetadata> op =
-        db.updateDdl(Collections.singletonList(ddl), null);
-    op.get();
 
     client
         .readWriteTransaction()

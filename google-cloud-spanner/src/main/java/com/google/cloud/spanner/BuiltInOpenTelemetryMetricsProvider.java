@@ -46,8 +46,7 @@ import javax.annotation.Nullable;
 
 final class BuiltInOpenTelemetryMetricsProvider {
 
-  public static BuiltInOpenTelemetryMetricsProvider INSTANCE =
-      new BuiltInOpenTelemetryMetricsProvider();
+  static BuiltInOpenTelemetryMetricsProvider INSTANCE = new BuiltInOpenTelemetryMetricsProvider();
 
   private static final Logger logger =
       Logger.getLogger(BuiltInOpenTelemetryMetricsProvider.class.getName());
@@ -77,7 +76,7 @@ final class BuiltInOpenTelemetryMetricsProvider {
     }
   }
 
-  Map<String, String> getClientAttributes(
+  Map<String, String> createClientAttributes(
       String projectId, boolean isDirectPathChannelCreated, String client_name) {
     Map<String, String> clientAttributes = new HashMap<>();
     clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());

@@ -1394,8 +1394,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /** Enabling this will enable built in metrics for each individual RPC execution. */
-    @VisibleForTesting
-    public Builder setEnableBuiltInMetrics(boolean enableBuiltInMetrics) {
+    Builder setEnableBuiltInMetrics(boolean enableBuiltInMetrics) {
       this.enableBuiltInMetrics = enableBuiltInMetrics;
       return this;
     }
@@ -1672,7 +1671,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     // and if emulator is not enabled.
     if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled) {
       ApiTracerFactory metricsTracerFactory =
-          getMetricsApiTracerFactory(isDirectPathChannelCreated);
+          createMetricsApiTracerFactory(isDirectPathChannelCreated);
       if (metricsTracerFactory != null) {
         apiTracerFactories.add(metricsTracerFactory);
       }
@@ -1697,7 +1696,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return BaseApiTracerFactory.getInstance();
   }
 
-  private ApiTracerFactory getMetricsApiTracerFactory(boolean isDirectPathChannelCreated) {
+  private ApiTracerFactory createMetricsApiTracerFactory(boolean isDirectPathChannelCreated) {
     OpenTelemetry openTelemetry =
         this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
             getDefaultProjectId(), getCredentials());
@@ -1705,7 +1704,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return openTelemetry != null
         ? new MetricsTracerFactory(
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
-            builtInOpenTelemetryMetricsProvider.getClientAttributes(
+            builtInOpenTelemetryMetricsProvider.createClientAttributes(
                 getDefaultProjectId(),
                 isDirectPathChannelCreated,
                 "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))

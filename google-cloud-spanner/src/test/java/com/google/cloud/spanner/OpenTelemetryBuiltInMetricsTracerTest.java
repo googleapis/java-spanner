@@ -88,7 +88,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
 
     String client_name = "spanner-java/";
     openTelemetry = OpenTelemetrySdk.builder().setMeterProvider(meterProvider.build()).build();
-    attributes = provider.getClientAttributes("test-project", true, client_name);
+    attributes = provider.createClientAttributes("test-project", true, client_name);
 
     expectedBaseAttributes =
         Attributes.builder()
@@ -240,7 +240,7 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
     Collection<MetricData> allMetricData = Collections.emptyList();
 
     // Fetch the MetricData with retries
-    for (int attemptsLeft = 10; attemptsLeft > 0; attemptsLeft--) {
+    for (int attemptsLeft = 1000; attemptsLeft > 0; attemptsLeft--) {
       allMetricData = reader.collectAllMetrics();
       List<MetricData> matchingMetadata =
           allMetricData.stream()
@@ -257,14 +257,14 @@ public class OpenTelemetryBuiltInMetricsTracerTest extends AbstractMockServerTes
       }
 
       try {
-        Thread.sleep(100);
+        Thread.sleep(1);
       } catch (InterruptedException interruptedException) {
         Thread.currentThread().interrupt();
         throw new RuntimeException(interruptedException);
       }
     }
 
-    assertFalse(String.format("MetricData is missing for metric {0}", fullMetricName), false);
+    assertTrue(String.format("MetricData is missing for metric {0}", fullMetricName), false);
     return null;
   }
 
