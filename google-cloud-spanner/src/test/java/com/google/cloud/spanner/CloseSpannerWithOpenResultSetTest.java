@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -52,6 +53,11 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
         .getService();
   }
 
+  @After
+  public void unfreezeMockSpanner() {
+    mockSpanner.unfreeze();
+  }
+
   @Test
   public void testClosedSpannerWithOpenResultSet_streamsAreCancelled() {
     Spanner spanner = createSpanner(true);
@@ -62,7 +68,6 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
         ResultSet resultSet = transaction.executeQuery(SELECT_RANDOM_STATEMENT)) {
       assertTrue(resultSet.next());
       ((SpannerImpl) spanner).close(1, TimeUnit.MILLISECONDS);
-      mockSpanner.unfreeze();
       // This should return an error as the stream is cancelled.
       SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
       assertEquals(ErrorCode.CANCELLED, exception.getErrorCode());
@@ -79,7 +84,6 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
         ResultSet resultSet = transaction.executeQuery(SELECT_RANDOM_STATEMENT)) {
       assertTrue(resultSet.next());
       ((SpannerImpl) spanner).close(1, TimeUnit.MILLISECONDS);
-      mockSpanner.unfreeze();
       SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
       assertEquals(ErrorCode.UNAVAILABLE, exception.getErrorCode());
     }
