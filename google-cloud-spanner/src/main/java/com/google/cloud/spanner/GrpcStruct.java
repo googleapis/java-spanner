@@ -367,12 +367,19 @@ class GrpcStruct extends Struct implements Serializable {
   }
 
   Struct immutableCopy() {
-    return new GrpcStruct(
-        type,
-        new ArrayList<>(rowData),
-        this.decodeMode,
-        this.rowDecoded,
-        this.colDecoded == null ? null : (BitSet) this.colDecoded.clone());
+    GrpcStruct result =
+        new GrpcStruct(
+            type,
+            new ArrayList<>(rowData),
+            this.decodeMode,
+            this.rowDecoded,
+            this.colDecoded == null ? null : (BitSet) this.colDecoded.clone());
+    if (this.decodeMode != DecodeMode.DIRECT) {
+      for (int col = 0; col < getColumnCount(); col++) {
+        result.ensureDecoded(col);
+      }
+    }
+    return result;
   }
 
   @Override

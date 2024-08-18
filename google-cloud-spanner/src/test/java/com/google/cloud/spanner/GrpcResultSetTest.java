@@ -19,6 +19,7 @@ package com.google.cloud.spanner;
 import static com.google.common.testing.SerializableTester.reserialize;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -81,6 +82,11 @@ public class GrpcResultSetTest {
 
   @Before
   public void setUp() {
+    resetStream();
+    resultSet = new GrpcResultSet(stream, new NoOpListener());
+  }
+
+  private void resetStream() {
     stream = new GrpcStreamIterator(10);
     stream.setCall(
         new SpannerRpc.StreamingCall() {
@@ -97,7 +103,6 @@ public class GrpcResultSetTest {
         },
         false);
     consumer = stream.consumer();
-    resultSet = new GrpcResultSet(stream, new NoOpListener());
   }
 
   public GrpcResultSet resultSetWithMode(QueryMode queryMode) {
@@ -613,19 +618,28 @@ public class GrpcResultSetTest {
 
   private void verifySerialization(
       Function<Value, com.google.protobuf.Value> protoFn, Value... values) {
-    resultSet = new GrpcResultSet(stream, new NoOpListener());
-    PartialResultSet.Builder builder = PartialResultSet.newBuilder();
-    List<Type.StructField> types = new ArrayList<>();
-    for (Value value : values) {
-      types.add(Type.StructField.of("f", value.getType()));
-      builder.addValues(protoFn.apply(value));
+    for (DecodeMode decodeMode : DecodeMode.values()) {
+      resetStream();
+      resultSet = new GrpcResultSet(stream, new NoOpListener(), decodeMode);
+      PartialResultSet.Builder builder = PartialResultSet.newBuilder();
+      List<Type.StructField> types = new ArrayList<>();
+      for (Value value : values) {
+        types.add(Type.StructField.of("f", value.getType()));
+        builder.addValues(protoFn.apply(value));
+      }
+      consumer.onPartialResultSet(builder.setMetadata(makeMetadata(Type.struct(types))).build());
+      consumer.onCompleted();
+      assertThat(resultSet.next()).isTrue();
+      Struct row = resultSet.getCurrentRowAsStruct();
+      assertTrue(row instanceof GrpcStruct);
+      GrpcStruct grpcStruct = (GrpcStruct) row;
+      for (int col = 0; col < values.length; col++) {
+        // getCurrentRowAsStruct should return an immutable struct that is already decoded.
+        assertFalse(grpcStruct.canGetProtoValue(col));
+      }
+      Struct copy = reserialize(row);
+      assertThat(row).isEqualTo(copy);
     }
-    consumer.onPartialResultSet(builder.setMetadata(makeMetadata(Type.struct(types))).build());
-    consumer.onCompleted();
-    assertThat(resultSet.next()).isTrue();
-    Struct row = resultSet.getCurrentRowAsStruct();
-    Struct copy = reserialize(row);
-    assertThat(row).isEqualTo(copy);
   }
 
   @Test
