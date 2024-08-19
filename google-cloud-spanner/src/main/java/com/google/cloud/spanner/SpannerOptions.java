@@ -709,7 +709,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
-    private static final String SPANNER_CANCEL_STREAMS_ON_CLOSE = "SPANNER_CANCEL_STREAMS_ON_CLOSE";
 
     private SpannerEnvironmentImpl() {}
 

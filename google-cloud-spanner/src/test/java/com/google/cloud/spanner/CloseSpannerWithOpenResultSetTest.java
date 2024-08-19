@@ -156,6 +156,7 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
         fut.get();
       }
       assertTrue(service.awaitTermination(1L, TimeUnit.MINUTES));
+      // Verify that all response observers have been unregistered.
       assertEquals(
           0, ((GapicSpannerRpc) ((SpannerImpl) spanner).getRpc()).getNumActiveResponseObservers());
     }

@@ -21,6 +21,12 @@ import com.google.common.base.Predicate;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 
+/**
+ * Predicate that checks whether an exception is a ChannelShutdownException. This exception is
+ * thrown by gRPC if the underlying gRPC stub has been shut down and uses the UNAVAILABLE error
+ * code. This means that it would normally be retried by the Spanner client, but this specific
+ * UNAVAILABLE error should not be retried, as it would otherwise directly return the same error.
+ */
 class IsChannelShutdownException implements Predicate<Throwable> {
 
   @Override

@@ -2120,18 +2120,20 @@ public class GapicSpannerRpc implements SpannerRpc {
     }
 
     void close() {
-      this.controller.cancel();
+      if (this.controller != null) {
+        this.controller.cancel();
+      }
     }
 
     @Override
     public void onStart(StreamController controller) {
-      if (this.consumer.cancelQueryWhenClientIsClosed()) {
-        registerResponseObserver(this);
-      }
       // Disable the auto flow control to allow client library
       // set the number of messages it prefers to request
       controller.disableAutoInboundFlowControl();
       this.controller = controller;
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        registerResponseObserver(this);
+      }
     }
 
     @Override
@@ -2141,6 +2143,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onError(Throwable t) {
+      // Unregister the response observer when the query has completed with an error.
       if (this.consumer.cancelQueryWhenClientIsClosed()) {
         unregisterResponseObserver(this);
       }
@@ -2149,6 +2152,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onComplete() {
+      // Unregister the response observer when the query has completed normally.
       if (this.consumer.cancelQueryWhenClientIsClosed()) {
         unregisterResponseObserver(this);
       }
