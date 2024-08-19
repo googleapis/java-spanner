@@ -59,6 +59,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.MetricRegistryTestUtils.FakeMetricRegistry;
 import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
@@ -1478,6 +1479,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final SessionImpl closedSession = mock(SessionImpl.class);
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
+      when(closedSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
 
       Span oTspan = mock(Span.class);
       ISpan span = new OpenTelemetrySpan(oTspan);
@@ -1502,6 +1504,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
       final SessionImpl openSession = mock(SessionImpl.class);
+      when(openSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
       when(openSession.asyncClose())
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(openSession.getName())

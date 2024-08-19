@@ -23,6 +23,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.TimedAttemptSettings;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.v1.stub.SpannerStub;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.annotations.VisibleForTesting;
@@ -65,7 +66,12 @@ class SpannerRetryHelper {
 
   /** Executes the {@link Callable} and retries if it fails with an {@link AbortedException}. */
   static <T> T runTxWithRetriesOnAborted(Callable<T> callable) {
-    return runTxWithRetriesOnAborted(callable, txRetrySettings, NanoClock.getDefaultClock());
+    return runTxWithRetriesOnAborted(callable, DefaultErrorHandler.INSTANCE);
+  }
+
+  static <T> T runTxWithRetriesOnAborted(Callable<T> callable, ErrorHandler errorHandler) {
+    return runTxWithRetriesOnAborted(
+        callable, errorHandler, txRetrySettings, NanoClock.getDefaultClock());
   }
 
   /**
@@ -75,11 +81,20 @@ class SpannerRetryHelper {
   @VisibleForTesting
   static <T> T runTxWithRetriesOnAborted(
       Callable<T> callable, RetrySettings retrySettings, ApiClock clock) {
+    return runTxWithRetriesOnAborted(callable, DefaultErrorHandler.INSTANCE, retrySettings, clock);
+  }
+
+  @VisibleForTesting
+  static <T> T runTxWithRetriesOnAborted(
+      Callable<T> callable,
+      ErrorHandler errorHandler,
+      RetrySettings retrySettings,
+      ApiClock clock) {
     try {
       return RetryHelper.runWithRetries(callable, retrySettings, new TxRetryAlgorithm<>(), clock);
     } catch (RetryHelperException e) {
       if (e.getCause() != null) {
-        Throwables.throwIfUnchecked(e.getCause());
+        Throwables.throwIfUnchecked(errorHandler.translateException(e.getCause()));
       }
       throw e;
     }
@@ -107,9 +122,8 @@ class SpannerRetryHelper {
       if (Context.current().isCancelled()) {
         throw SpannerExceptionFactory.newSpannerExceptionForCancellation(Context.current(), null);
       }
-      return prevThrowable != null
-          && (prevThrowable instanceof AbortedException
-              || prevThrowable instanceof com.google.api.gax.rpc.AbortedException);
+      return prevThrowable instanceof AbortedException
+          || prevThrowable instanceof com.google.api.gax.rpc.AbortedException;
     }
   }
 }

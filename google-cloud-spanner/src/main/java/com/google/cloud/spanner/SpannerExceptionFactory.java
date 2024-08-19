@@ -181,6 +181,17 @@ public final class SpannerExceptionFactory {
     return newSpannerException(ErrorCode.fromGrpcStatus(status), cause.getMessage(), cause);
   }
 
+  /**
+   * Creates a new SpannerException that indicates that the RPC or transaction should be retried on
+   * a different gRPC channel. This is an experimental feature that can be removed in the future.
+   * The exception should not be surfaced to the client application, and should instead be caught
+   * and handled in the client library.
+   */
+  static SpannerException newRetryOnDifferentGrpcChannelException(
+      String message, int channel, Throwable cause) {
+    return new RetryOnDifferentGrpcChannelException(message, channel, cause);
+  }
+
   static SpannerException newSpannerExceptionForCancellation(
       @Nullable Context context, @Nullable Throwable cause) {
     if (context != null && context.isCancelled()) {

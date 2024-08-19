@@ -36,6 +36,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.SessionClient.SessionOption;
 import com.google.cloud.spanner.SessionImpl.SessionTransaction;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.spi.v1.SpannerRpc.Option;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -45,7 +46,6 @@ import com.google.spanner.v1.BeginTransactionRequest;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.ExecuteBatchDmlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest;
-import com.google.spanner.v1.ExecuteSqlRequest.Builder;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.PartialResultSet;
@@ -184,7 +184,7 @@ abstract class AbstractReadContext
     @GuardedBy("lock")
     private boolean used;
 
-    private final Map<SpannerRpc.Option, ?> channelHint;
+    private Map<SpannerRpc.Option, ?> channelHint;
 
     private SingleReadContext(Builder builder) {
       super(builder);
@@ -226,6 +226,16 @@ abstract class AbstractReadContext
     @Override
     Map<SpannerRpc.Option, ?> getTransactionChannelHint() {
       return channelHint;
+    }
+
+    @Override
+    boolean prepareRetryOnDifferentGrpcChannel() {
+      if (session.getIsMultiplexed() && channelHint.get(Option.CHANNEL_HINT) != null) {
+        long channelHintForTransaction = Option.CHANNEL_HINT.getLong(channelHint) + 1L;
+        channelHint = optionMap(SessionOption.channelHint(channelHintForTransaction));
+        return true;
+      }
+      return super.prepareRetryOnDifferentGrpcChannel();
     }
   }
 
@@ -745,6 +755,7 @@ abstract class AbstractReadContext
             span,
             tracer,
             tracer.createStatementAttributes(statement, options),
+            session.getErrorHandler(),
             rpc.getExecuteQueryRetrySettings(),
             rpc.getExecuteQueryRetryableCodes()) {
           @Override
@@ -773,6 +784,11 @@ abstract class AbstractReadContext
             call.request(prefetchChunks);
             stream.setCall(call, request.getTransaction().hasBegin());
             return stream;
+          }
+
+          @Override
+          boolean prepareIteratorForRetryOnDifferentGrpcChannel() {
+            return AbstractReadContext.this.prepareRetryOnDifferentGrpcChannel();
           }
         };
     return new GrpcResultSet(
@@ -839,6 +855,10 @@ abstract class AbstractReadContext
    * ensuring all RPCs within a transaction land up on the same channel.
    */
   abstract Map<SpannerRpc.Option, ?> getTransactionChannelHint();
+
+  boolean prepareRetryOnDifferentGrpcChannel() {
+    return false;
+  }
 
   /**
    * Returns the transaction tag for this {@link AbstractReadContext} or <code>null</code> if this
@@ -918,6 +938,7 @@ abstract class AbstractReadContext
             SpannerImpl.READ,
             span,
             tracer,
+            session.getErrorHandler(),
             rpc.getReadRetrySettings(),
             rpc.getReadRetryableCodes()) {
           @Override
@@ -944,6 +965,11 @@ abstract class AbstractReadContext
             call.request(prefetchChunks);
             stream.setCall(call, /* withBeginTransaction = */ builder.getTransaction().hasBegin());
             return stream;
+          }
+
+          @Override
+          boolean prepareIteratorForRetryOnDifferentGrpcChannel() {
+            return AbstractReadContext.this.prepareRetryOnDifferentGrpcChannel();
           }
         };
     return new GrpcResultSet(
