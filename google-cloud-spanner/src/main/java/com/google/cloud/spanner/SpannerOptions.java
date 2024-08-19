@@ -1408,22 +1408,13 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     }
 
     /**
-     * Enable spanner server side tracing. Enabling this option will create the trace spans at the
-     * Spanner layer. By default, server side tracing is disabled. Enabling server side tracing
-     * requires OpenTelemetry to be set up properly. Simply enabling this option won't generate
-     * server side traces.
+     * Sets whether to enable Spanner server side tracing. Enabling this option will create the
+     * trace spans at the Spanner layer. By default, server side tracing is disabled. Enabling
+     * server side tracing requires OpenTelemetry to be set up properly. Simply enabling this option
+     * won't generate server side traces.
      */
-    public Builder enableServerSideTracing() {
-      this.enableServerSideTracing = true;
-      return this;
-    }
-
-    /**
-     * Disable spanner server side tracing. If server side is disabled, trace spans won't be created
-     * at the Spanner layer.
-     */
-    public Builder disableServerSideTracing() {
-      this.enableServerSideTracing = false;
+    public Builder setEnableServerSideTracing(boolean enableServerSideTracing) {
+      this.enableServerSideTracing = enableServerSideTracing;
       return this;
     }
 

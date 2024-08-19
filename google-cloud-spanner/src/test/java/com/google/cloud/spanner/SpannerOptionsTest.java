@@ -738,13 +738,13 @@ public class SpannerOptionsTest {
     assertTrue(
         SpannerOptions.newBuilder()
             .setProjectId("p")
-            .enableServerSideTracing()
+            .setEnableServerSideTracing(true)
             .build()
             .isServerSideTracingEnabled());
     assertFalse(
         SpannerOptions.newBuilder()
             .setProjectId("p")
-            .disableServerSideTracing()
+            .setEnableServerSideTracing(false)
             .build()
             .isServerSideTracingEnabled());
   }

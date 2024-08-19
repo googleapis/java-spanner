@@ -493,7 +493,10 @@ public class GapicSpannerRpcTest {
   @Test
   public void testNewCallContextWithServerSideTracingHeader() {
     SpannerOptions options =
-        SpannerOptions.newBuilder().setProjectId("some-project").enableServerSideTracing().build();
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setEnableServerSideTracing(true)
+            .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     GrpcCallContext callContext =
         rpc.newCallContext(
@@ -514,7 +517,10 @@ public class GapicSpannerRpcTest {
   @Test
   public void testNewCallContextWithoutServerSideTracingHeader() {
     SpannerOptions options =
-        SpannerOptions.newBuilder().setProjectId("some-project").disableServerSideTracing().build();
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setEnableServerSideTracing(false)
+            .build();
     GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
     GrpcCallContext callContext =
         rpc.newCallContext(
@@ -530,7 +536,7 @@ public class GapicSpannerRpcTest {
   @Test
   public void testServerSideTracingHeaderWithEnabledTracing() {
     final SpannerOptions options =
-        createSpannerOptions().toBuilder().enableServerSideTracing().build();
+        createSpannerOptions().toBuilder().setEnableServerSideTracing(true).build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -547,7 +553,7 @@ public class GapicSpannerRpcTest {
   @Test
   public void testServerSideTracingHeaderWithDisabledTracing() {
     final SpannerOptions options =
-        createSpannerOptions().toBuilder().disableServerSideTracing().build();
+        createSpannerOptions().toBuilder().setEnableServerSideTracing(false).build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
           spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
@@ -644,7 +650,7 @@ public class GapicSpannerRpcTest {
         createSpannerOptions()
             .toBuilder()
             .setOpenTelemetry(openTelemetry)
-            .enableServerSideTracing()
+            .setEnableServerSideTracing(true)
             .build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
@@ -670,7 +676,7 @@ public class GapicSpannerRpcTest {
         createSpannerOptions()
             .toBuilder()
             .setOpenTelemetry(openTelemetry)
-            .disableServerSideTracing()
+            .setEnableServerSideTracing(false)
             .build();
     try (Spanner spanner = options.getService()) {
       final DatabaseClient databaseClient =
