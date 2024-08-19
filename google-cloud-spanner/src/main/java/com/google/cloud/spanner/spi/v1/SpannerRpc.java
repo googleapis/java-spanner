@@ -152,6 +152,8 @@ public interface SpannerRpc extends ServiceRpc {
     void onCompleted();
 
     void onError(SpannerException e);
+
+    boolean cancelQueryWhenClientIsClosed();
   }
 
   /** Handle for cancellation of a streaming read or query call. */

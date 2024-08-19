@@ -81,7 +81,7 @@ public class GrpcResultSetTest {
 
   @Before
   public void setUp() {
-    stream = new GrpcStreamIterator(10);
+    stream = new GrpcStreamIterator(10, /*cancelQueryWhenClientIsClosed=*/ false);
     stream.setCall(
         new SpannerRpc.StreamingCall() {
           @Override

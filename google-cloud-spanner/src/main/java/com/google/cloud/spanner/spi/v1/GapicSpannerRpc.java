@@ -263,7 +263,6 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private final ScheduledExecutorService spannerWatchdog;
 
-  private final boolean cancelStreamsOnClose;
   private final ConcurrentLinkedDeque<SpannerResponseObserver> responseObservers =
       new ConcurrentLinkedDeque<>();
 
@@ -328,7 +327,6 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
-    this.cancelStreamsOnClose = options.isCancelStreamsOnClose();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -2011,32 +2009,22 @@ public class GapicSpannerRpc implements SpannerRpc {
   }
 
   void registerResponseObserver(SpannerResponseObserver responseObserver) {
-    if (cancelStreamsOnClose) {
-      responseObservers.add(responseObserver);
-    }
+    responseObservers.add(responseObserver);
   }
 
   void unregisterResponseObserver(SpannerResponseObserver responseObserver) {
-    if (cancelStreamsOnClose) {
-      responseObservers.remove(responseObserver);
-    }
+    responseObservers.remove(responseObserver);
   }
 
   void closeResponseObservers() {
-    if (cancelStreamsOnClose) {
-      responseObservers.forEach(SpannerResponseObserver::close);
-      responseObservers.clear();
-    }
+    responseObservers.forEach(SpannerResponseObserver::close);
+    responseObservers.clear();
   }
 
   @InternalApi
   @VisibleForTesting
   public int getNumActiveResponseObservers() {
-    if (cancelStreamsOnClose) {
-      return responseObservers.size();
-    }
-    throw new UnsupportedOperationException(
-        "This method can only be called when cancelStreamsOnClose=true");
+    return responseObservers.size();
   }
 
   @Override
@@ -2137,7 +2125,9 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onStart(StreamController controller) {
-      registerResponseObserver(this);
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        registerResponseObserver(this);
+      }
       // Disable the auto flow control to allow client library
       // set the number of messages it prefers to request
       controller.disableAutoInboundFlowControl();
@@ -2151,13 +2141,17 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onError(Throwable t) {
-      unregisterResponseObserver(this);
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        unregisterResponseObserver(this);
+      }
       consumer.onError(newSpannerException(t));
     }
 
     @Override
     public void onComplete() {
-      unregisterResponseObserver(this);
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        unregisterResponseObserver(this);
+      }
       consumer.onCompleted();
     }
 
