@@ -741,9 +741,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
-    // TODO: Set the default to DecodeMode.DIRECT before merging to keep the current default.
-    //       It is currently set to LAZY_PER_COL so it is used in all tests.
-    static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.LAZY_PER_COL;
+    static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.DIRECT;
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofSeconds(5L))
