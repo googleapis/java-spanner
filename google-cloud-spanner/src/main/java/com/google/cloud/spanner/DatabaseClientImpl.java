@@ -65,11 +65,19 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @VisibleForTesting
   DatabaseClient getMultiplexedSession() {
-    if (this.multiplexedSessionDatabaseClient != null
-        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()) {
+    if (canUseMultiplexedSessions()) {
       return this.multiplexedSessionDatabaseClient;
     }
     return pool.getMultiplexedSessionWithFallback();
+  }
+
+  private MultiplexedSessionDatabaseClient getMultiplexedSessionDatabaseClient() {
+    return canUseMultiplexedSessions() ? this.multiplexedSessionDatabaseClient : null;
+  }
+
+  private boolean canUseMultiplexedSessions() {
+    return this.multiplexedSessionDatabaseClient != null
+        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported();
   }
 
   @Override
@@ -112,19 +120,12 @@ class DatabaseClientImpl implements DatabaseClient {
   public CommitResponse writeAtLeastOnceWithOptions(
       final Iterable<Mutation> mutations, final TransactionOption... options)
       throws SpannerException {
-    if (this.multiplexedSessionDatabaseClient != null
-        && this.multiplexedSessionDatabaseClient.isMultiplexedSessionsSupported()) {
-      return this.multiplexedSessionDatabaseClient.writeAtLeastOnceWithOptions(mutations, options);
-    } else {
-      return writeAtLeastOnceWithSession(mutations, options);
-    }
-  }
-
-  private CommitResponse writeAtLeastOnceWithSession(
-      final Iterable<Mutation> mutations, final TransactionOption... options)
-      throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
+      if (getMultiplexedSessionDatabaseClient() != null) {
+        return getMultiplexedSessionDatabaseClient()
+            .writeAtLeastOnceWithOptions(mutations, options);
+      }
       return runWithSessionRetry(
           session -> session.writeAtLeastOnceWithOptions(mutations, options));
     } catch (RuntimeException e) {
