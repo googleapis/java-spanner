@@ -459,7 +459,7 @@ public class SpannerGraphSample {
 
   // [END spanner_delete_graph_data_with_dml]
 
-  // [START spanner_delete_data]
+  // [START spanner_delete_graph_data]
   static void deleteData(DatabaseClient dbClient) {
     List<Mutation> mutations = new ArrayList<>();
 
@@ -490,7 +490,7 @@ public class SpannerGraphSample {
     System.out.printf("Records deleted.\n");
   }
 
-  // [END spanner_delete_data]
+  // [END spanner_delete_graph_data]
 
   static void run(
       DatabaseClient dbClient,
