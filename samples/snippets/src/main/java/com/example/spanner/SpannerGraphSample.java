@@ -74,15 +74,15 @@ public class SpannerGraphSample {
   static class Account {
 
     final long id;
-    final Timestamp create_time;
-    final boolean is_blocked;
-    final String nick_name;
+    final Timestamp createTime;
+    final boolean isBlocked;
+    final String nickName;
 
-    Account(long id, Timestamp create_time, boolean is_blocked, String nick_name) {
+    Account(long id, Timestamp createTime, boolean isBlocked, String nickName) {
       this.id = id;
-      this.create_time = create_time;
-      this.is_blocked = is_blocked;
-      this.nick_name = nick_name;
+      this.createTime = createTime;
+      this.isBlocked = isBlocked;
+      this.nickName = nickName;
     }
   }
 
@@ -90,17 +90,17 @@ public class SpannerGraphSample {
   static class Transfer {
 
     final long id;
-    final long to_id;
+    final long toId;
     final double amount;
-    final Timestamp create_time;
-    final String order_number;
+    final Timestamp createTime;
+    final String orderNumber;
 
-    Transfer(long id, long to_id, double amount, Timestamp create_time, String order_number) {
+    Transfer(long id, long toId, double amount, Timestamp createTime, String orderNumber) {
       this.id = id;
-      this.to_id = to_id;
+      this.toId = toId;
       this.amount = amount;
-      this.create_time = create_time;
-      this.order_number = order_number;
+      this.createTime = createTime;
+      this.orderNumber = orderNumber;
     }
   }
 
@@ -108,13 +108,13 @@ public class SpannerGraphSample {
   static class Own {
 
     final long id;
-    final long account_id;
-    final Timestamp create_time;
+    final long accountId;
+    final Timestamp createTime;
 
-    Own(long id, long account_id, Timestamp create_time) {
+    Own(long id, long accountId, Timestamp createTime) {
       this.id = id;
-      this.account_id = account_id;
-      this.create_time = create_time;
+      this.accountId = accountId;
+      this.createTime = createTime;
     }
   }
 
@@ -252,11 +252,11 @@ public class SpannerGraphSample {
               .set("id")
               .to(account.id)
               .set("create_time")
-              .to(account.create_time)
+              .to(account.createTime)
               .set("is_blocked")
-              .to(account.is_blocked)
+              .to(account.isBlocked)
               .set("nick_name")
-              .to(account.nick_name)
+              .to(account.nickName)
               .build());
     }
     for (Person person : PERSONS) {
@@ -280,13 +280,13 @@ public class SpannerGraphSample {
               .set("id")
               .to(transfer.id)
               .set("to_id")
-              .to(transfer.to_id)
+              .to(transfer.toId)
               .set("amount")
               .to(transfer.amount)
               .set("create_time")
-              .to(transfer.create_time)
+              .to(transfer.createTime)
               .set("order_number")
-              .to(transfer.order_number)
+              .to(transfer.orderNumber)
               .build());
     }
     for (Own own : OWNERSHIPS) {
@@ -295,9 +295,9 @@ public class SpannerGraphSample {
               .set("id")
               .to(own.id)
               .set("account_id")
-              .to(own.account_id)
+              .to(own.accountId)
               .set("create_time")
-              .to(own.create_time)
+              .to(own.createTime)
               .build());
     }
 
