@@ -53,12 +53,13 @@ public class SpannerGraphSampleIT extends SampleTestBaseV2 {
   @Test
   public void testSample() throws Exception {
     String databaseId = idGenerator.generateDatabaseId();
-    DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
     assertThat(instanceId).isNotNull();
     assertThat(databaseId).isNotNull();
 
     System.out.println("Create database with property graph ...");
     String out = runSample("createdatabase", databaseId);
+
+    DatabaseId dbId = DatabaseId.of(projectId, instanceId, databaseId);
     assertThat(out).contains("Created database");
     assertThat(out).contains(dbId.getName());
 
