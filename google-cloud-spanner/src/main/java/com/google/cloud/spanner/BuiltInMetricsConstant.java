@@ -76,6 +76,10 @@ public class BuiltInMetricsConstant {
   public static final AttributeKey<String> DIRECT_PATH_USED_KEY =
       AttributeKey.stringKey("directpath_used");
 
+  // IP address prefixes allocated for DirectPath backends.
+  public static final String DP_IPV6_PREFIX = "2001:4860:8040";
+  public static final String DP_IPV4_PREFIX = "34.126";
+
   public static final Set<AttributeKey> COMMON_ATTRIBUTES =
       ImmutableSet.of(
           PROJECT_ID_KEY,
