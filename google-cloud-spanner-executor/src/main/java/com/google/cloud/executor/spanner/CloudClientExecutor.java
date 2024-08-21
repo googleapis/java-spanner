@@ -194,7 +194,7 @@ public class CloudClientExecutor extends CloudExecutor {
 
   // Helper for unexpected results.
   public static String unexpectedExceptionResponse(Exception e) {
-    return "Unexpected error in Google3 Cloud Java Client Executor: "
+    return "Unexpected error in Github Cloud Java Client Executor: "
         + e
         + " Msg: "
         + e.getMessage()
