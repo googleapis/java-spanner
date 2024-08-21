@@ -333,7 +333,9 @@ public final class SpannerExceptionFactory {
       case UNAVAILABLE:
         // SSLHandshakeException is (probably) not retryable, as it is an indication that the server
         // certificate was not accepted by the client.
-        return !hasCauseMatching(cause, Matchers.isSSLHandshakeException);
+        // Channel shutdown is also not a retryable exception.
+        return !(hasCauseMatching(cause, Matchers.isSSLHandshakeException)
+            || hasCauseMatching(cause, Matchers.IS_CHANNEL_SHUTDOWN_EXCEPTION));
       case RESOURCE_EXHAUSTED:
         return SpannerException.extractRetryDelay(cause) > 0;
       default:
@@ -356,5 +358,8 @@ public final class SpannerExceptionFactory {
 
     static final Predicate<Throwable> isRetryableInternalError = new IsRetryableInternalError();
     static final Predicate<Throwable> isSSLHandshakeException = new IsSslHandshakeException();
+
+    static final Predicate<Throwable> IS_CHANNEL_SHUTDOWN_EXCEPTION =
+        new IsChannelShutdownException();
   }
 }

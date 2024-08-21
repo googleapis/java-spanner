@@ -201,6 +201,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -261,6 +262,9 @@ public class GapicSpannerRpc implements SpannerRpc {
       systemProperty(PROPERTY_PERIOD_SECONDS, DEFAULT_PERIOD_SECONDS);
 
   private final ScheduledExecutorService spannerWatchdog;
+
+  private final ConcurrentLinkedDeque<SpannerResponseObserver> responseObservers =
+      new ConcurrentLinkedDeque<>();
 
   private final boolean throttleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
@@ -2004,9 +2008,29 @@ public class GapicSpannerRpc implements SpannerRpc {
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
   }
 
+  void registerResponseObserver(SpannerResponseObserver responseObserver) {
+    responseObservers.add(responseObserver);
+  }
+
+  void unregisterResponseObserver(SpannerResponseObserver responseObserver) {
+    responseObservers.remove(responseObserver);
+  }
+
+  void closeResponseObservers() {
+    responseObservers.forEach(SpannerResponseObserver::close);
+    responseObservers.clear();
+  }
+
+  @InternalApi
+  @VisibleForTesting
+  public int getNumActiveResponseObservers() {
+    return responseObservers.size();
+  }
+
   @Override
   public void shutdown() {
     this.rpcIsClosed = true;
+    closeResponseObservers();
     if (this.spannerStub != null) {
       this.spannerStub.close();
       this.partitionedDmlStub.close();
@@ -2028,6 +2052,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   public void shutdownNow() {
     this.rpcIsClosed = true;
+    closeResponseObservers();
     this.spannerStub.close();
     this.partitionedDmlStub.close();
     this.instanceAdminStub.close();
@@ -2085,7 +2110,7 @@ public class GapicSpannerRpc implements SpannerRpc {
    * A {@code ResponseObserver} that exposes the {@code StreamController} and delegates callbacks to
    * the {@link ResultStreamConsumer}.
    */
-  private static class SpannerResponseObserver implements ResponseObserver<PartialResultSet> {
+  private class SpannerResponseObserver implements ResponseObserver<PartialResultSet> {
 
     private StreamController controller;
     private final ResultStreamConsumer consumer;
@@ -2094,13 +2119,21 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.consumer = consumer;
     }
 
+    void close() {
+      if (this.controller != null) {
+        this.controller.cancel();
+      }
+    }
+
     @Override
     public void onStart(StreamController controller) {
-
       // Disable the auto flow control to allow client library
       // set the number of messages it prefers to request
       controller.disableAutoInboundFlowControl();
       this.controller = controller;
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        registerResponseObserver(this);
+      }
     }
 
     @Override
@@ -2110,11 +2143,19 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onError(Throwable t) {
+      // Unregister the response observer when the query has completed with an error.
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        unregisterResponseObserver(this);
+      }
       consumer.onError(newSpannerException(t));
     }
 
     @Override
     public void onComplete() {
+      // Unregister the response observer when the query has completed normally.
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        unregisterResponseObserver(this);
+      }
       consumer.onCompleted();
     }
 
