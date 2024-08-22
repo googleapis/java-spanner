@@ -154,8 +154,7 @@ public class SpannerGraphSample {
                         + "  id               INT64 NOT NULL,"
                         + "  to_id            INT64 NOT NULL,"
                         + "  amount           FLOAT64,"
-                        + "  create_time      TIMESTAMP NOT NULL OPTIONS"
-                        + "    (allow_commit_timestamp=true),"
+                        + "  create_time      TIMESTAMP NOT NULL,"
                         + "  order_number     STRING(MAX),"
                         + "  FOREIGN KEY (to_id) REFERENCES Account (id)"
                         + ") PRIMARY KEY (id, to_id, create_time),"
@@ -316,7 +315,7 @@ public class SpannerGraphSample {
                   "INSERT INTO Account (id, create_time, is_blocked) "
                       + "  VALUES"
                       + "    (1, CAST('2000-08-10 08:18:48.463959-07:52' AS TIMESTAMP), false),"
-                      + "    (2, CAST('2000-08-12 08:18:48.463959-07:52' AS TIMESTAMP), true)";
+                      + "    (2, CAST('2000-08-12 07:13:16.463959-03:41' AS TIMESTAMP), true)";
               long rowCount = transaction.executeUpdate(Statement.of(sql));
               System.out.printf("%d record(s) inserted into Account.\n", rowCount);
               return null;
@@ -329,8 +328,8 @@ public class SpannerGraphSample {
               String sql =
                   "INSERT INTO AccountTransferAccount (id, to_id, create_time, amount) "
                       + "  VALUES"
-                      + "    (1, 2, PENDING_COMMIT_TIMESTAMP(), 100),"
-                      + "    (1, 1, PENDING_COMMIT_TIMESTAMP(), 200) ";
+                      + "    (1, 2, CAST('2000-09-11 03:11:18.463959-06:36' AS TIMESTAMP), 100),"
+                      + "    (1, 1, CAST('2000-09-12 04:09:34.463959-05:12' AS TIMESTAMP), 200) ";
               long rowCount = transaction.executeUpdate(Statement.of(sql));
               System.out.printf("%d record(s) inserted into AccountTransferAccount.\n", rowCount);
               return null;
