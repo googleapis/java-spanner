@@ -1,5 +1,34 @@
 # Changelog
 
+## [6.73.0](https://github.com/googleapis/java-spanner/compare/v6.72.0...v6.73.0) (2024-08-22)
+
+
+### Features
+
+* Add option for cancelling queries when closing client ([#3276](https://github.com/googleapis/java-spanner/issues/3276)) ([95da1ed](https://github.com/googleapis/java-spanner/commit/95da1eddbc979f4ce78c9d1ac15bc4c1faba6dca))
+
+
+### Bug Fixes
+
+* Github workflow vulnerable to script injection ([#3232](https://github.com/googleapis/java-spanner/issues/3232)) ([599255c](https://github.com/googleapis/java-spanner/commit/599255c36d1fbe8317705a7eeb2a9e400c3efd15))
+* Make DecodeMode.DIRECT the deafult ([#3280](https://github.com/googleapis/java-spanner/issues/3280)) ([f31a95a](https://github.com/googleapis/java-spanner/commit/f31a95ab105407305e988e86c8f7b0d8654995e0))
+* Synchronize lazy ResultSet decoding ([#3267](https://github.com/googleapis/java-spanner/issues/3267)) ([4219cf8](https://github.com/googleapis/java-spanner/commit/4219cf86dba5e44d55f13ab118113f119c92b9e9))
+
+
+### Dependencies
+
+* Update dependency com.google.cloud:sdk-platform-java-config to v3.34.0 ([#3277](https://github.com/googleapis/java-spanner/issues/3277)) ([c449a91](https://github.com/googleapis/java-spanner/commit/c449a91628b005481996bce5ab449d62496a4d2d))
+* Update dependency commons-cli:commons-cli to v1.9.0 ([#3275](https://github.com/googleapis/java-spanner/issues/3275)) ([84790f7](https://github.com/googleapis/java-spanner/commit/84790f7d437e88739487b148bf963f0ac9dc3f96))
+* Update dependency io.opentelemetry:opentelemetry-bom to v1.41.0 ([#3269](https://github.com/googleapis/java-spanner/issues/3269)) ([a7458e9](https://github.com/googleapis/java-spanner/commit/a7458e970e4ca55ff3e312b2129e890576145db1))
+* Update dependency org.hamcrest:hamcrest to v3 ([#3271](https://github.com/googleapis/java-spanner/issues/3271)) ([fc2e343](https://github.com/googleapis/java-spanner/commit/fc2e343dc06f80617a2cd6f2bea59b0631e70678))
+* Update dependency org.junit.vintage:junit-vintage-engine to v5.11.0 ([#3272](https://github.com/googleapis/java-spanner/issues/3272)) ([1bc0c46](https://github.com/googleapis/java-spanner/commit/1bc0c469b99ebf3778592b04dbf175b00bf5b06e))
+* Update opentelemetry.version to v1.41.0 ([#3270](https://github.com/googleapis/java-spanner/issues/3270)) ([88f6b56](https://github.com/googleapis/java-spanner/commit/88f6b56fb243bb17b814a7ae150c8f38dced119a))
+
+
+### Documentation
+
+* Create a few code snippets as examples for using Spanner Graph using Java ([#3234](https://github.com/googleapis/java-spanner/issues/3234)) ([61f0ab7](https://github.com/googleapis/java-spanner/commit/61f0ab7a48bc3e51b830534b1cfa70e40166ec91))
+
 ## [6.72.0](https://github.com/googleapis/java-spanner/compare/v6.71.0...v6.72.0) (2024-08-07)
 
 
