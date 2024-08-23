@@ -55,6 +55,9 @@
             "ListInstances": {
               "methods": ["listInstances", "listInstances", "listInstances", "listInstancesPagedCallable", "listInstancesCallable"]
             },
+            "MoveInstance": {
+              "methods": ["moveInstanceAsync", "moveInstanceOperationCallable", "moveInstanceCallable"]
+            },
             "SetIamPolicy": {
               "methods": ["setIamPolicy", "setIamPolicy", "setIamPolicy", "setIamPolicyCallable"]
             },

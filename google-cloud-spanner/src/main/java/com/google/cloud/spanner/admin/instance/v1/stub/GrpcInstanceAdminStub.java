@@ -63,6 +63,9 @@ import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
 import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.MoveInstanceMetadata;
+import com.google.spanner.admin.instance.v1.MoveInstanceRequest;
+import com.google.spanner.admin.instance.v1.MoveInstanceResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -305,6 +308,15 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                       ListInstancePartitionOperationsResponse.getDefaultInstance()))
               .build();
 
+  private static final MethodDescriptor<MoveInstanceRequest, Operation>
+      moveInstanceMethodDescriptor =
+          MethodDescriptor.<MoveInstanceRequest, Operation>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/MoveInstance")
+              .setRequestMarshaller(ProtoUtils.marshaller(MoveInstanceRequest.getDefaultInstance()))
+              .setResponseMarshaller(ProtoUtils.marshaller(Operation.getDefaultInstance()))
+              .build();
+
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable;
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
@@ -364,6 +376,9 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<
           ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
       listInstancePartitionOperationsPagedCallable;
+  private final UnaryCallable<MoveInstanceRequest, Operation> moveInstanceCallable;
+  private final OperationCallable<MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationCallable;
 
   private final BackgroundResource backgroundResources;
   private final GrpcOperationsStub operationsStub;
@@ -626,6 +641,16 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
                       return builder.build();
                     })
                 .build();
+    GrpcCallSettings<MoveInstanceRequest, Operation> moveInstanceTransportSettings =
+        GrpcCallSettings.<MoveInstanceRequest, Operation>newBuilder()
+            .setMethodDescriptor(moveInstanceMethodDescriptor)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
+            .build();
 
     this.listInstanceConfigsCallable =
         callableFactory.createUnaryCallable(
@@ -772,6 +797,15 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
             listInstancePartitionOperationsTransportSettings,
             settings.listInstancePartitionOperationsSettings(),
             clientContext);
+    this.moveInstanceCallable =
+        callableFactory.createUnaryCallable(
+            moveInstanceTransportSettings, settings.moveInstanceSettings(), clientContext);
+    this.moveInstanceOperationCallable =
+        callableFactory.createOperationCallable(
+            moveInstanceTransportSettings,
+            settings.moveInstanceOperationSettings(),
+            clientContext,
+            operationsStub);
 
     this.backgroundResources =
         new BackgroundResourceAggregation(clientContext.getBackgroundResources());
@@ -960,6 +994,17 @@ public class GrpcInstanceAdminStub extends InstanceAdminStub {
           ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
       listInstancePartitionOperationsPagedCallable() {
     return listInstancePartitionOperationsPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<MoveInstanceRequest, Operation> moveInstanceCallable() {
+    return moveInstanceCallable;
+  }
+
+  @Override
+  public OperationCallable<MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationCallable() {
+    return moveInstanceOperationCallable;
   }
 
   @Override
