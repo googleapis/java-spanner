@@ -1921,6 +1921,7 @@ class ConnectionImpl implements Connection {
               .build();
         case READ_WRITE_TRANSACTION:
           return ReadWriteTransaction.newBuilder()
+              .setUsesEmulator(options.usesEmulator())
               .setUseAutoSavepointsForEmulator(options.useAutoSavepointsForEmulator())
               .setDatabaseClient(dbClient)
               .setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite)
