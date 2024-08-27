@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.google.rpc.Code;
@@ -80,6 +81,8 @@ public class TransactionContextImplTest {
     when(tracer.spanBuilderWithExplicitParent(
             eq(SpannerImpl.BATCH_UPDATE), eq(span), any(Attributes.class)))
         .thenReturn(span);
+    when(rpc.getCommitRetrySettings())
+        .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
   }
 
   private TransactionContextImpl createContext() {

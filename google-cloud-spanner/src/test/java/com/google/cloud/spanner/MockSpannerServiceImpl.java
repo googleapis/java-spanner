@@ -578,6 +578,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
   private final Object lock = new Object();
   private Deque<AbstractMessage> requests = new ConcurrentLinkedDeque<>();
   private volatile CountDownLatch freezeLock = new CountDownLatch(0);
+  private final AtomicInteger freezeAfterReturningNumRows = new AtomicInteger();
   private Queue<Exception> exceptions = new ConcurrentLinkedQueue<>();
   private boolean stickyGlobalExceptions = false;
   private ConcurrentMap<Statement, StatementResult> statementResults = new ConcurrentHashMap<>();
@@ -784,6 +785,10 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
     freezeLock.countDown();
   }
 
+  public void freezeAfterReturningNumRows(int numRows) {
+    freezeAfterReturningNumRows.set(numRows);
+  }
+
   public void setMaxSessionsInOneBatch(int max) {
     this.maxNumSessionsInOneBatch = max;
   }
@@ -808,7 +813,7 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       batchCreateSessionsExecutionTime.simulateExecutionTime(
           exceptions, stickyGlobalExceptions, freezeLock);
       if (sessions.size() >= maxTotalSessions) {
-        throw Status.RESOURCE_EXHAUSTED
+        throw Status.FAILED_PRECONDITION
             .withDescription("Maximum number of sessions reached")
             .asRuntimeException();
       }
@@ -1678,7 +1683,8 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       ByteString transactionId,
       TransactionSelector transactionSelector,
       StreamObserver<PartialResultSet> responseObserver,
-      SimulatedExecutionTime executionTime) {
+      SimulatedExecutionTime executionTime)
+      throws Exception {
     ResultSetMetadata metadata = resultSet.getMetadata();
     if (transactionId == null) {
       Transaction transaction = getTemporaryTransactionOrNull(transactionSelector);
@@ -1700,6 +1706,12 @@ public class MockSpannerServiceImpl extends SpannerImplBase implements MockGrpcS
       SimulatedExecutionTime.checkStreamException(
           index, executionTime.exceptions, executionTime.streamIndices);
       responseObserver.onNext(iterator.next());
+      if (freezeAfterReturningNumRows.get() > 0) {
+        if (freezeAfterReturningNumRows.decrementAndGet() == 0) {
+          freeze();
+          freezeLock.await();
+        }
+      }
       index++;
     }
     responseObserver.onCompleted();

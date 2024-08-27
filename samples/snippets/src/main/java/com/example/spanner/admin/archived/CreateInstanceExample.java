@@ -42,7 +42,7 @@ class CreateInstanceExample {
     InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
     // Set Instance configuration.
-    String configId = "regional-us-central1";
+    String configId = "regional-us-east4";
     int nodeCount = 2;
     String displayName = "Descriptive name";
 

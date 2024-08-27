@@ -72,6 +72,9 @@ import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
 import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.MoveInstanceMetadata;
+import com.google.spanner.admin.instance.v1.MoveInstanceRequest;
+import com.google.spanner.admin.instance.v1.MoveInstanceResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -96,8 +99,10 @@ import javax.annotation.Generated;
 public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   private static final TypeRegistry typeRegistry =
       TypeRegistry.newBuilder()
+          .add(MoveInstanceResponse.getDescriptor())
           .add(InstanceConfig.getDescriptor())
           .add(CreateInstancePartitionMetadata.getDescriptor())
+          .add(MoveInstanceMetadata.getDescriptor())
           .add(UpdateInstancePartitionMetadata.getDescriptor())
           .add(Instance.getDescriptor())
           .add(InstancePartition.getDescriptor())
@@ -888,6 +893,46 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                       .build())
               .build();
 
+  private static final ApiMethodDescriptor<MoveInstanceRequest, Operation>
+      moveInstanceMethodDescriptor =
+          ApiMethodDescriptor.<MoveInstanceRequest, Operation>newBuilder()
+              .setFullMethodName("google.spanner.admin.instance.v1.InstanceAdmin/MoveInstance")
+              .setHttpMethod("POST")
+              .setType(ApiMethodDescriptor.MethodType.UNARY)
+              .setRequestFormatter(
+                  ProtoMessageRequestFormatter.<MoveInstanceRequest>newBuilder()
+                      .setPath(
+                          "/v1/{name=projects/*/instances/*}:move",
+                          request -> {
+                            Map<String, String> fields = new HashMap<>();
+                            ProtoRestSerializer<MoveInstanceRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putPathParam(fields, "name", request.getName());
+                            return fields;
+                          })
+                      .setQueryParamsExtractor(
+                          request -> {
+                            Map<String, List<String>> fields = new HashMap<>();
+                            ProtoRestSerializer<MoveInstanceRequest> serializer =
+                                ProtoRestSerializer.create();
+                            serializer.putQueryParam(fields, "$alt", "json;enum-encoding=int");
+                            return fields;
+                          })
+                      .setRequestBodyExtractor(
+                          request ->
+                              ProtoRestSerializer.create()
+                                  .toBody("*", request.toBuilder().clearName().build(), true))
+                      .build())
+              .setResponseParser(
+                  ProtoMessageResponseParser.<Operation>newBuilder()
+                      .setDefaultInstance(Operation.getDefaultInstance())
+                      .setDefaultTypeRegistry(typeRegistry)
+                      .build())
+              .setOperationSnapshotFactory(
+                  (MoveInstanceRequest request, Operation response) ->
+                      HttpJsonOperationSnapshot.create(response))
+              .build();
+
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsResponse>
       listInstanceConfigsCallable;
   private final UnaryCallable<ListInstanceConfigsRequest, ListInstanceConfigsPagedResponse>
@@ -947,6 +992,9 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
   private final UnaryCallable<
           ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
       listInstancePartitionOperationsPagedCallable;
+  private final UnaryCallable<MoveInstanceRequest, Operation> moveInstanceCallable;
+  private final OperationCallable<MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationCallable;
 
   private final BackgroundResource backgroundResources;
   private final HttpJsonOperationsStub httpJsonOperationsStub;
@@ -1279,6 +1327,17 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
                       return builder.build();
                     })
                 .build();
+    HttpJsonCallSettings<MoveInstanceRequest, Operation> moveInstanceTransportSettings =
+        HttpJsonCallSettings.<MoveInstanceRequest, Operation>newBuilder()
+            .setMethodDescriptor(moveInstanceMethodDescriptor)
+            .setTypeRegistry(typeRegistry)
+            .setParamsExtractor(
+                request -> {
+                  RequestParamsBuilder builder = RequestParamsBuilder.create();
+                  builder.add("name", String.valueOf(request.getName()));
+                  return builder.build();
+                })
+            .build();
 
     this.listInstanceConfigsCallable =
         callableFactory.createUnaryCallable(
@@ -1425,6 +1484,15 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
             listInstancePartitionOperationsTransportSettings,
             settings.listInstancePartitionOperationsSettings(),
             clientContext);
+    this.moveInstanceCallable =
+        callableFactory.createUnaryCallable(
+            moveInstanceTransportSettings, settings.moveInstanceSettings(), clientContext);
+    this.moveInstanceOperationCallable =
+        callableFactory.createOperationCallable(
+            moveInstanceTransportSettings,
+            settings.moveInstanceOperationSettings(),
+            clientContext,
+            httpJsonOperationsStub);
 
     this.backgroundResources =
         new BackgroundResourceAggregation(clientContext.getBackgroundResources());
@@ -1453,6 +1521,7 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
     methodDescriptors.add(deleteInstancePartitionMethodDescriptor);
     methodDescriptors.add(updateInstancePartitionMethodDescriptor);
     methodDescriptors.add(listInstancePartitionOperationsMethodDescriptor);
+    methodDescriptors.add(moveInstanceMethodDescriptor);
     return methodDescriptors;
   }
 
@@ -1639,6 +1708,17 @@ public class HttpJsonInstanceAdminStub extends InstanceAdminStub {
           ListInstancePartitionOperationsRequest, ListInstancePartitionOperationsPagedResponse>
       listInstancePartitionOperationsPagedCallable() {
     return listInstancePartitionOperationsPagedCallable;
+  }
+
+  @Override
+  public UnaryCallable<MoveInstanceRequest, Operation> moveInstanceCallable() {
+    return moveInstanceCallable;
+  }
+
+  @Override
+  public OperationCallable<MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationCallable() {
+    return moveInstanceOperationCallable;
   }
 
   @Override

@@ -32,9 +32,11 @@ import static org.mockito.Mockito.when;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.SessionClient.SessionId;
 import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
+import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Duration;
@@ -114,6 +116,7 @@ public class TransactionRunnerImplTest {
     MockitoAnnotations.initMocks(this);
     tracer = new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false);
     firstRun = true;
+    when(session.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
     when(session.newTransaction(Options.fromTransactionOptions())).thenReturn(txn);
     when(session.getTracer()).thenReturn(tracer);
     when(rpc.executeQuery(Mockito.any(ExecuteSqlRequest.class), Mockito.anyMap(), eq(true)))
@@ -141,6 +144,8 @@ public class TransactionRunnerImplTest {
                 CommitResponse.newBuilder()
                     .setCommitTimestamp(Timestamp.getDefaultInstance())
                     .build()));
+    when(rpc.getCommitRetrySettings())
+        .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
     when(rpc.rollbackAsync(Mockito.any(RollbackRequest.class), Mockito.anyMap()))
         .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
     Span oTspan = mock(Span.class);
@@ -196,6 +201,8 @@ public class TransactionRunnerImplTest {
                         .setCommitTimestamp(
                             Timestamp.newBuilder().setSeconds(System.currentTimeMillis() * 1000))
                         .build()));
+    when(rpc.getCommitRetrySettings())
+        .thenReturn(SpannerStubSettings.newBuilder().commitSettings().getRetrySettings());
     DatabaseId db = DatabaseId.of("test", "test", "test");
     try (SpannerImpl spanner = new SpannerImpl(rpc, options)) {
       DatabaseClient client = spanner.getDatabaseClient(db);

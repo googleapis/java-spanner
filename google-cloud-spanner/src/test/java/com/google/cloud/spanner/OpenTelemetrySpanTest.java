@@ -572,22 +572,13 @@ public class OpenTelemetrySpanTest {
   @Test
   public void transactionRunnerWithFailedAndBeginTransaction() {
     List<String> expectedReadWriteTransactionWithCommitAndBeginTransactionSpans =
-        isMultiplexedSessionsEnabled()
-            ? ImmutableList.of(
-                "CloudSpannerOperation.CreateMultiplexedSession",
-                "CloudSpannerOperation.BeginTransaction",
-                "CloudSpannerOperation.BatchCreateSessionsRequest",
-                "CloudSpannerOperation.ExecuteUpdate",
-                "CloudSpannerOperation.Commit",
-                "CloudSpannerOperation.BatchCreateSessions",
-                "CloudSpanner.ReadWriteTransaction")
-            : ImmutableList.of(
-                "CloudSpannerOperation.BeginTransaction",
-                "CloudSpannerOperation.BatchCreateSessionsRequest",
-                "CloudSpannerOperation.ExecuteUpdate",
-                "CloudSpannerOperation.Commit",
-                "CloudSpannerOperation.BatchCreateSessions",
-                "CloudSpanner.ReadWriteTransaction");
+        ImmutableList.of(
+            "CloudSpannerOperation.BeginTransaction",
+            "CloudSpannerOperation.BatchCreateSessionsRequest",
+            "CloudSpannerOperation.ExecuteUpdate",
+            "CloudSpannerOperation.Commit",
+            "CloudSpannerOperation.BatchCreateSessions",
+            "CloudSpanner.ReadWriteTransaction");
     DatabaseClient client = getClient();
     assertEquals(
         Long.valueOf(1L),
@@ -612,7 +603,7 @@ public class OpenTelemetrySpanTest {
     Stopwatch stopwatch = Stopwatch.createStarted();
     while (spanExporter.getFinishedSpanItems().size()
             < expectedReadWriteTransactionWithCommitAndBeginTransactionSpans.size()
-        && stopwatch.elapsed().compareTo(java.time.Duration.ofMillis(1000)) < 0) {
+        && stopwatch.elapsed(TimeUnit.MILLISECONDS) < 2000) {
       Thread.yield();
     }
 
@@ -621,7 +612,11 @@ public class OpenTelemetrySpanTest {
         .getFinishedSpanItems()
         .forEach(
             spanItem -> {
-              actualSpanItems.add(spanItem.getName());
+              // Ignore multiplexed sessions, as they are not used by this test and can therefore
+              // best be ignored, as it is not 100% certain that it has already been created.
+              if (!"CloudSpannerOperation.CreateMultiplexedSession".equals(spanItem.getName())) {
+                actualSpanItems.add(spanItem.getName());
+              }
               switch (spanItem.getName()) {
                 case "CloudSpannerOperation.CreateMultiplexedSession":
                   verifyRequestEvents(

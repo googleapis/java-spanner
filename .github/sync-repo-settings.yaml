@@ -140,6 +140,25 @@ branchProtectionRules:
       - checkstyle
       - compile (8)
       - compile (11)
+  - pattern: 6.66.x
+    isAdminEnforced: true
+    requiredApprovingReviewCount: 1
+    requiresCodeOwnerReviews: true
+    requiresStrictStatusChecks: false
+    requiredStatusCheckContexts:
+      - dependencies (17)
+      - lint
+      - javadoc
+      - units (8)
+      - units (11)
+      - 'Kokoro - Test: Integration'
+      - 'Kokoro - Test: Integration with Multiplexed Sessions'
+      - cla/google
+      - checkstyle
+      - compile (8)
+      - compile (11)
+      - units-with-multiplexed-session (8)
+      - units-with-multiplexed-session (11)
 permissionRules:
   - team: yoshi-admins
     permission: admin

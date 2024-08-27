@@ -332,11 +332,11 @@ public class SessionPoolOptionsTest {
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
-            .setMaxSessions(ThreadLocalRandom.current().nextInt(1000))
+            .setMaxSessions(ThreadLocalRandom.current().nextInt(1, 1000))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
-            .setIncStep(ThreadLocalRandom.current().nextInt(1000))
+            .setIncStep(ThreadLocalRandom.current().nextInt(1, 1000))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
@@ -393,7 +393,7 @@ public class SessionPoolOptionsTest {
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
             .setAcquireSessionTimeout(
-                Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
+                Duration.ofMillis(ThreadLocalRandom.current().nextLong(1, 10000)))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()

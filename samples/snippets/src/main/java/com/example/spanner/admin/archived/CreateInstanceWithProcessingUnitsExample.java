@@ -42,7 +42,7 @@ class CreateInstanceWithProcessingUnitsExample {
     InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
     // Set Instance configuration.
-    String configId = "regional-us-central1";
+    String configId = "regional-us-east4";
     // This will create an instance with the processing power of 0.2 nodes.
     int processingUnits = 500;
     String displayName = "Descriptive name";
