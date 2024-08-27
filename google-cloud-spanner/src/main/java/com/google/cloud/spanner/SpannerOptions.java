@@ -158,6 +158,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
   private final OpenTelemetry openTelemetry;
   private final boolean enableApiTracing;
   private final boolean enableExtendedTracing;
+  private final boolean enableServerSideTracing;
 
   enum TracingFramework {
     OPEN_CENSUS,
@@ -664,6 +665,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     openTelemetry = builder.openTelemetry;
     enableApiTracing = builder.enableApiTracing;
     enableExtendedTracing = builder.enableExtendedTracing;
+    enableServerSideTracing = builder.enableServerSideTracing;
   }
 
   /**
@@ -696,6 +698,10 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     default boolean isEnableApiTracing() {
       return false;
     }
+
+    default boolean isEnableServerSideTracing() {
+      return false;
+    }
   }
 
   /**
@@ -709,6 +715,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
         "SPANNER_OPTIMIZER_STATISTICS_PACKAGE";
     private static final String SPANNER_ENABLE_EXTENDED_TRACING = "SPANNER_ENABLE_EXTENDED_TRACING";
     private static final String SPANNER_ENABLE_API_TRACING = "SPANNER_ENABLE_API_TRACING";
+    private static final String SPANNER_ENABLE_SERVER_SIDE_TRACING =
+        "SPANNER_ENABLE_SERVER_SIDE_TRACING";
 
     private SpannerEnvironmentImpl() {}
 
@@ -733,6 +741,11 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     @Override
     public boolean isEnableApiTracing() {
       return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_API_TRACING));
+    }
+
+    @Override
+    public boolean isEnableServerSideTracing() {
+      return Boolean.parseBoolean(System.getenv(SPANNER_ENABLE_SERVER_SIDE_TRACING));
     }
   }
 
@@ -797,6 +810,8 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     private OpenTelemetry openTelemetry;
     private boolean enableApiTracing = SpannerOptions.environment.isEnableApiTracing();
     private boolean enableExtendedTracing = SpannerOptions.environment.isEnableExtendedTracing();
+    private boolean enableServerSideTracing =
+        SpannerOptions.environment.isEnableServerSideTracing();
 
     private static String createCustomClientLibToken(String token) {
       return token + " " + ServiceOptions.getGoogApiClientLibName();
@@ -862,6 +877,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       this.useVirtualThreads = options.useVirtualThreads;
       this.enableApiTracing = options.enableApiTracing;
       this.enableExtendedTracing = options.enableExtendedTracing;
+      this.enableServerSideTracing = options.enableServerSideTracing;
     }
 
     @Override
@@ -1389,6 +1405,17 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
+    /**
+     * Sets whether to enable Spanner server side tracing. Enabling this option will create the
+     * trace spans at the Spanner layer. By default, server side tracing is disabled. Enabling
+     * server side tracing requires OpenTelemetry to be set up properly. Simply enabling this option
+     * won't generate server side traces.
+     */
+    public Builder setEnableServerSideTracing(boolean enableServerSideTracing) {
+      this.enableServerSideTracing = enableServerSideTracing;
+      return this;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public SpannerOptions build() {
@@ -1478,6 +1505,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   @ObsoleteApi(
       "The OpenCensus project is deprecated. Use enableOpenTelemetryTraces to switch to OpenTelemetry traces")
+  @VisibleForTesting
   static void resetActiveTracingFramework() {
     activeTracingFramework = null;
   }
@@ -1677,6 +1705,14 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    */
   public boolean isEnableExtendedTracing() {
     return enableExtendedTracing;
+  }
+
+  /**
+   * Returns whether Spanner server side tracing is enabled. If this option is enabled then trace
+   * spans will be created at the Spanner layer.
+   */
+  public boolean isServerSideTracingEnabled() {
+    return enableServerSideTracing;
   }
 
   /** Returns the default query options to use for the specific database. */

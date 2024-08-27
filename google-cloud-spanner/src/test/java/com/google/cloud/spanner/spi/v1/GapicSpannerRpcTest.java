@@ -47,6 +47,7 @@ import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.SpannerOptions.CallContextConfigurator;
+import com.google.cloud.spanner.SpannerOptionsHelper;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.spi.v1.GapicSpannerRpc.AdminRequestsLimitExceededRetryAlgorithm;
@@ -76,6 +77,12 @@ import io.grpc.Status;
 import io.grpc.auth.MoreCallCredentials;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.lite.ProtoLiteUtils;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -148,6 +155,8 @@ public class GapicSpannerRpcTest {
   private static String defaultUserAgent;
   private static Spanner spanner;
   private static boolean isRouteToLeader;
+  private static boolean isServerSideTracing;
+  private static boolean isTraceContextPresent;
 
   @Parameter public Dialect dialect;
 
@@ -158,6 +167,10 @@ public class GapicSpannerRpcTest {
 
   @Before
   public void startServer() throws IOException {
+    // Enable OpenTelemetry tracing.
+    SpannerOptionsHelper.resetActiveTracingFramework();
+    SpannerOptions.enableOpenTelemetryTraces();
+
     assumeTrue(
         "Skip tests when emulator is enabled as this test interferes with the check whether the emulator is running",
         System.getenv("SPANNER_EMULATOR_HOST") == null);
@@ -194,13 +207,24 @@ public class GapicSpannerRpcTest {
                     if (call.getMethodDescriptor()
                             .equals(SpannerGrpc.getExecuteStreamingSqlMethod())
                         || call.getMethodDescriptor().equals(SpannerGrpc.getExecuteSqlMethod())) {
+                      String traceParentHeader =
+                          headers.get(Key.of("traceparent", Metadata.ASCII_STRING_MARSHALLER));
+                      isTraceContextPresent = (traceParentHeader != null);
                       String routeToLeaderHeader =
                           headers.get(
                               Key.of(
                                   "x-goog-spanner-route-to-leader",
                                   Metadata.ASCII_STRING_MARSHALLER));
+                      String serverSideTracingHeader =
+                          headers.get(
+                              Key.of(
+                                  "x-goog-spanner-end-to-end-tracing",
+                                  Metadata.ASCII_STRING_MARSHALLER));
                       isRouteToLeader =
                           (routeToLeaderHeader != null && routeToLeaderHeader.equals("true"));
+                      isServerSideTracing =
+                          (serverSideTracingHeader != null
+                              && serverSideTracingHeader.equals("true"));
                     }
                     return Contexts.interceptCall(Context.current(), call, headers, next);
                   }
@@ -224,6 +248,8 @@ public class GapicSpannerRpcTest {
       server.awaitTermination();
     }
     isRouteToLeader = false;
+    isServerSideTracing = false;
+    isTraceContextPresent = false;
   }
 
   @Test
@@ -465,6 +491,83 @@ public class GapicSpannerRpcTest {
   }
 
   @Test
+  public void testNewCallContextWithServerSideTracingHeader() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setEnableServerSideTracing(true)
+            .build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod());
+    assertNotNull(callContext);
+    assertEquals(
+        ImmutableList.of("true"),
+        callContext.getExtraHeaders().get("x-goog-spanner-end-to-end-tracing"));
+    assertEquals(
+        ImmutableList.of("projects/some-project"),
+        callContext.getExtraHeaders().get(ApiClientHeaderProvider.getDefaultResourceHeaderKey()));
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testNewCallContextWithoutServerSideTracingHeader() {
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("some-project")
+            .setEnableServerSideTracing(false)
+            .build();
+    GapicSpannerRpc rpc = new GapicSpannerRpc(options, false);
+    GrpcCallContext callContext =
+        rpc.newCallContext(
+            optionsMap,
+            "/some/resource",
+            ExecuteSqlRequest.getDefaultInstance(),
+            SpannerGrpc.getExecuteSqlMethod());
+    assertNotNull(callContext);
+    assertNull(callContext.getExtraHeaders().get("x-goog-spanner-end-to-end-tracing"));
+    rpc.shutdown();
+  }
+
+  @Test
+  public void testServerSideTracingHeaderWithEnabledTracing() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().setEnableServerSideTracing(true).build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertTrue(isServerSideTracing);
+  }
+
+  @Test
+  public void testServerSideTracingHeaderWithDisabledTracing() {
+    final SpannerOptions options =
+        createSpannerOptions().toBuilder().setEnableServerSideTracing(false).build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+      TransactionRunner runner = databaseClient.readWriteTransaction();
+      runner.run(
+          transaction -> {
+            transaction.executeUpdate(UPDATE_FOO_STATEMENT);
+            return null;
+          });
+    }
+    assertFalse(isServerSideTracing);
+  }
+
+  @Test
   public void testAdminRequestsLimitExceededRetryAlgorithm() {
     AdminRequestsLimitExceededRetryAlgorithm<Long> alg =
         new AdminRequestsLimitExceededRetryAlgorithm<>();
@@ -532,6 +635,73 @@ public class GapicSpannerRpcTest {
         assertThat(lastSeenHeaders.get(Key.of("user-agent", Metadata.ASCII_STRING_MARSHALLER)))
             .contains("test-agent " + defaultUserAgent);
       }
+    }
+  }
+
+  @Test
+  public void testTraceContextHeaderWithOpenTelemetryAndServerSideTracingEnabled() {
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build())
+            .build();
+
+    final SpannerOptions options =
+        createSpannerOptions()
+            .toBuilder()
+            .setOpenTelemetry(openTelemetry)
+            .setEnableServerSideTracing(true)
+            .build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertTrue(isTraceContextPresent);
+    }
+  }
+
+  @Test
+  public void testTraceContextHeaderWithOpenTelemetryAndServerSideTracingDisabled() {
+    OpenTelemetry openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build())
+            .build();
+
+    final SpannerOptions options =
+        createSpannerOptions()
+            .toBuilder()
+            .setOpenTelemetry(openTelemetry)
+            .setEnableServerSideTracing(false)
+            .build();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertFalse(isTraceContextPresent);
+    }
+  }
+
+  @Test
+  public void testTraceContextHeaderWithoutOpenTelemetry() {
+    final SpannerOptions options = createSpannerOptions();
+    try (Spanner spanner = options.getService()) {
+      final DatabaseClient databaseClient =
+          spanner.getDatabaseClient(DatabaseId.of("[PROJECT]", "[INSTANCE]", "[DATABASE]"));
+
+      try (final ResultSet rs = databaseClient.singleUse().executeQuery(SELECT1AND2)) {
+        rs.next();
+      }
+
+      assertFalse(isTraceContextPresent);
     }
   }
 

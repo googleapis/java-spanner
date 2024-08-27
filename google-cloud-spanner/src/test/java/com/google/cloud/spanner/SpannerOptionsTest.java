@@ -737,6 +737,24 @@ public class SpannerOptionsTest {
   }
 
   @Test
+  public void testServerSideTracingEnablement() {
+    // Test that end to end tracing is disabled by default.
+    assertFalse(SpannerOptions.newBuilder().setProjectId("p").build().isServerSideTracingEnabled());
+    assertTrue(
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .setEnableServerSideTracing(true)
+            .build()
+            .isServerSideTracingEnabled());
+    assertFalse(
+        SpannerOptions.newBuilder()
+            .setProjectId("p")
+            .setEnableServerSideTracing(false)
+            .build()
+            .isServerSideTracingEnabled());
+  }
+
+  @Test
   public void testSetDirectedReadOptions() {
     final DirectedReadOptions directedReadOptions =
         DirectedReadOptions.newBuilder()

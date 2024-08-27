@@ -274,6 +274,7 @@ public class GapicSpannerRpc implements SpannerRpc {
   private final boolean leaderAwareRoutingEnabled;
   private final int numChannels;
   private final boolean isGrpcGcpExtensionEnabled;
+  private final boolean serverSideTracingEnabled;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -327,6 +328,7 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
     this.numChannels = options.getNumChannels();
     this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
+    this.serverSideTracingEnabled = options.isServerSideTracingEnabled();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -350,6 +352,8 @@ public class GapicSpannerRpc implements SpannerRpc {
                           MoreObjects.firstNonNull(
                               options.getInterceptorProvider(),
                               SpannerInterceptorProvider.createDefault(options.getOpenTelemetry())))
+                      // This sets the trace context headers.
+                      .withTraceContext(serverSideTracingEnabled, options.getOpenTelemetry())
                       // This sets the response compressor (Server -> Client).
                       .withEncoding(compressorName))
               .setHeaderProvider(headerProviderWithUserAgent)
@@ -1991,6 +1995,9 @@ public class GapicSpannerRpc implements SpannerRpc {
     context = context.withExtraHeaders(metadataProvider.newExtraHeaders(resource, projectName));
     if (routeToLeader && leaderAwareRoutingEnabled) {
       context = context.withExtraHeaders(metadataProvider.newRouteToLeaderHeader());
+    }
+    if (serverSideTracingEnabled) {
+      context = context.withExtraHeaders(metadataProvider.newServerSideTracingHeader());
     }
     if (callCredentialsProvider != null) {
       CallCredentials callCredentials = callCredentialsProvider.getCallCredentials();
