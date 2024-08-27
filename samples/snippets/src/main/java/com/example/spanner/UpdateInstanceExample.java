@@ -78,4 +78,4 @@ public class UpdateInstanceExample {
   }
 }
 
-// [START spanner_update_instance]
+// [END spanner_update_instance]
