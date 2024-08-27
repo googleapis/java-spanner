@@ -27,7 +27,7 @@ public class UpdateInstanceExample {
     int nodeCount = 2;
     String displayName = "Updated name";
 
-    // Create an Instance object that will be used to create the instance.
+    // Update an Instance object that will be used to update the instance.
     Instance instance =
         Instance.newBuilder()
             .setName(InstanceName.of(projectId, instanceId).toString())
@@ -41,8 +41,8 @@ public class UpdateInstanceExample {
             SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
         InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
 
-      // Wait for the createInstance operation to finish.
-      Instance createdInstance =
+      // Wait for the updatedInstance operation to finish.
+      Instance updatedInstance =
           instanceAdminClient
               .updateInstanceAsync(
                   UpdateInstanceRequest.newBuilder()
@@ -51,7 +51,7 @@ public class UpdateInstanceExample {
                       .setInstance(instance)
                       .build())
               .get();
-      System.out.printf("Instance %s was successfully updated%n", createdInstance.getName());
+      System.out.printf("Instance %s was successfully updated%n", updatedInstance.getName());
     } catch (ExecutionException e) {
       System.out.printf(
           "Error: Updating instance %s failed with error message %s%n",
