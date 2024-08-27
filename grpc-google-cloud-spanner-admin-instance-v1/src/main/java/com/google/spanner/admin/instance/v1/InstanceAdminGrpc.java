@@ -996,6 +996,52 @@ public final class InstanceAdminGrpc {
     return getListInstancePartitionOperationsMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.MoveInstanceRequest,
+          com.google.longrunning.Operation>
+      getMoveInstanceMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "MoveInstance",
+      requestType = com.google.spanner.admin.instance.v1.MoveInstanceRequest.class,
+      responseType = com.google.longrunning.Operation.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<
+          com.google.spanner.admin.instance.v1.MoveInstanceRequest,
+          com.google.longrunning.Operation>
+      getMoveInstanceMethod() {
+    io.grpc.MethodDescriptor<
+            com.google.spanner.admin.instance.v1.MoveInstanceRequest,
+            com.google.longrunning.Operation>
+        getMoveInstanceMethod;
+    if ((getMoveInstanceMethod = InstanceAdminGrpc.getMoveInstanceMethod) == null) {
+      synchronized (InstanceAdminGrpc.class) {
+        if ((getMoveInstanceMethod = InstanceAdminGrpc.getMoveInstanceMethod) == null) {
+          InstanceAdminGrpc.getMoveInstanceMethod =
+              getMoveInstanceMethod =
+                  io.grpc.MethodDescriptor
+                      .<com.google.spanner.admin.instance.v1.MoveInstanceRequest,
+                          com.google.longrunning.Operation>
+                          newBuilder()
+                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "MoveInstance"))
+                      .setSampledToLocalTracing(true)
+                      .setRequestMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.spanner.admin.instance.v1.MoveInstanceRequest
+                                  .getDefaultInstance()))
+                      .setResponseMarshaller(
+                          io.grpc.protobuf.ProtoUtils.marshaller(
+                              com.google.longrunning.Operation.getDefaultInstance()))
+                      .setSchemaDescriptor(
+                          new InstanceAdminMethodDescriptorSupplier("MoveInstance"))
+                      .build();
+        }
+      }
+    }
+    return getMoveInstanceMethod;
+  }
+
   /** Creates a new async stub that supports all call types for the service */
   public static InstanceAdminStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<InstanceAdminStub> factory =
@@ -1098,31 +1144,31 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Creates an instance config and begins preparing it to be used. The
+     * Creates an instance configuration and begins preparing it to be used. The
      * returned [long-running operation][google.longrunning.Operation]
      * can be used to track the progress of preparing the new
-     * instance config. The instance config name is assigned by the caller. If the
-     * named instance config already exists, `CreateInstanceConfig` returns
-     * `ALREADY_EXISTS`.
+     * instance configuration. The instance configuration name is assigned by the
+     * caller. If the named instance configuration already exists,
+     * `CreateInstanceConfig` returns `ALREADY_EXISTS`.
      * Immediately after the request returns:
-     *   * The instance config is readable via the API, with all requested
-     *     attributes. The instance config's
+     *   * The instance configuration is readable via the API, with all requested
+     *     attributes. The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true. Its state is `CREATING`.
      * While the operation is pending:
-     *   * Cancelling the operation renders the instance config immediately
+     *   * Cancelling the operation renders the instance configuration immediately
      *     unreadable via the API.
      *   * Except for deleting the creating resource, all other attempts to modify
-     *     the instance config are rejected.
+     *     the instance configuration are rejected.
      * Upon completion of the returned operation:
      *   * Instances can be created using the instance configuration.
-     *   * The instance config's
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false. Its state becomes `READY`.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * creation of the instance config. The
+     * creation of the instance configuration. The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -1144,13 +1190,13 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Updates an instance config. The returned
+     * Updates an instance configuration. The returned
      * [long-running operation][google.longrunning.Operation] can be used to track
-     * the progress of updating the instance. If the named instance config does
-     * not exist, returns `NOT_FOUND`.
-     * Only user managed configurations can be updated.
+     * the progress of updating the instance. If the named instance configuration
+     * does not exist, returns `NOT_FOUND`.
+     * Only user-managed configurations can be updated.
      * Immediately after the request returns:
-     *   * The instance config's
+     *   * The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true.
      * While the operation is pending:
@@ -1158,20 +1204,20 @@ public final class InstanceAdminGrpc {
      *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
      *     The operation is guaranteed to succeed at undoing all changes, after
      *     which point it terminates with a `CANCELLED` status.
-     *   * All other attempts to modify the instance config are rejected.
-     *   * Reading the instance config via the API continues to give the
+     *   * All other attempts to modify the instance configuration are rejected.
+     *   * Reading the instance configuration via the API continues to give the
      *     pre-request values.
      * Upon completion of the returned operation:
      *   * Creating instances using the instance configuration uses the new
      *     values.
-     *   * The instance config's new values are readable via the API.
-     *   * The instance config's
+     *   * The new values of the instance configuration are readable via the API.
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * the instance config modification.  The
+     * the instance configuration modification.  The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -1192,10 +1238,10 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Deletes the instance config. Deletion is only allowed when no
+     * Deletes the instance configuration. Deletion is only allowed when no
      * instances are using the configuration. If any instances are using
-     * the config, returns `FAILED_PRECONDITION`.
-     * Only user managed configurations can be deleted.
+     * the configuration, returns `FAILED_PRECONDITION`.
+     * Only user-managed configurations can be deleted.
      * Authorization requires `spanner.instanceConfigs.delete` permission on
      * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
      * </pre>
@@ -1211,9 +1257,9 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Lists the user-managed instance config [long-running
+     * Lists the user-managed instance configuration [long-running
      * operations][google.longrunning.Operation] in the given project. An instance
-     * config operation has a name of the form
+     * configuration operation has a name of the form
      * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
      * The long-running operation
      * [metadata][google.longrunning.Operation.metadata] field type
@@ -1591,6 +1637,69 @@ public final class InstanceAdminGrpc {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
           getListInstancePartitionOperationsMethod(), responseObserver);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * Moves an instance to the target instance configuration. You can use the
+     * returned [long-running operation][google.longrunning.Operation] to track
+     * the progress of moving the instance.
+     * `MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of
+     * the following criteria:
+     *   * Is undergoing a move to a different instance configuration
+     *   * Has backups
+     *   * Has an ongoing update
+     *   * Contains any CMEK-enabled databases
+     *   * Is a free trial instance
+     * While the operation is pending:
+     *   * All other attempts to modify the instance, including changes to its
+     *     compute capacity, are rejected.
+     *   * The following database and backup admin operations are rejected:
+     *     * `DatabaseAdmin.CreateDatabase`
+     *     * `DatabaseAdmin.UpdateDatabaseDdl` (disabled if default_leader is
+     *        specified in the request.)
+     *     * `DatabaseAdmin.RestoreDatabase`
+     *     * `DatabaseAdmin.CreateBackup`
+     *     * `DatabaseAdmin.CopyBackup`
+     *   * Both the source and target instance configurations are subject to
+     *     hourly compute and storage charges.
+     *   * The instance might experience higher read-write latencies and a higher
+     *     transaction abort rate. However, moving an instance doesn't cause any
+     *     downtime.
+     * The returned [long-running operation][google.longrunning.Operation] has
+     * a name of the format
+     * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the move instance operation. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance],
+     * if successful.
+     * Cancelling the operation sets its metadata's
+     * [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time].
+     * Cancellation is not immediate because it involves moving any data
+     * previously moved to the target instance configuration back to the original
+     * instance configuration. You can use this operation to track the progress of
+     * the cancellation. Upon successful completion of the cancellation, the
+     * operation terminates with `CANCELLED` status.
+     * If not cancelled, upon completion of the returned operation:
+     *   * The instance successfully moves to the target instance
+     *     configuration.
+     *   * You are billed for compute and storage in target instance
+     *   configuration.
+     * Authorization requires the `spanner.instances.update` permission on
+     * the resource [instance][google.spanner.admin.instance.v1.Instance].
+     * For more details, see
+     * [Move an instance](https://cloud.google.com/spanner/docs/move-instance).
+     * </pre>
+     */
+    default void moveInstance(
+        com.google.spanner.admin.instance.v1.MoveInstanceRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(
+          getMoveInstanceMethod(), responseObserver);
+    }
   }
 
   /**
@@ -1700,31 +1809,31 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Creates an instance config and begins preparing it to be used. The
+     * Creates an instance configuration and begins preparing it to be used. The
      * returned [long-running operation][google.longrunning.Operation]
      * can be used to track the progress of preparing the new
-     * instance config. The instance config name is assigned by the caller. If the
-     * named instance config already exists, `CreateInstanceConfig` returns
-     * `ALREADY_EXISTS`.
+     * instance configuration. The instance configuration name is assigned by the
+     * caller. If the named instance configuration already exists,
+     * `CreateInstanceConfig` returns `ALREADY_EXISTS`.
      * Immediately after the request returns:
-     *   * The instance config is readable via the API, with all requested
-     *     attributes. The instance config's
+     *   * The instance configuration is readable via the API, with all requested
+     *     attributes. The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true. Its state is `CREATING`.
      * While the operation is pending:
-     *   * Cancelling the operation renders the instance config immediately
+     *   * Cancelling the operation renders the instance configuration immediately
      *     unreadable via the API.
      *   * Except for deleting the creating resource, all other attempts to modify
-     *     the instance config are rejected.
+     *     the instance configuration are rejected.
      * Upon completion of the returned operation:
      *   * Instances can be created using the instance configuration.
-     *   * The instance config's
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false. Its state becomes `READY`.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * creation of the instance config. The
+     * creation of the instance configuration. The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -1748,13 +1857,13 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Updates an instance config. The returned
+     * Updates an instance configuration. The returned
      * [long-running operation][google.longrunning.Operation] can be used to track
-     * the progress of updating the instance. If the named instance config does
-     * not exist, returns `NOT_FOUND`.
-     * Only user managed configurations can be updated.
+     * the progress of updating the instance. If the named instance configuration
+     * does not exist, returns `NOT_FOUND`.
+     * Only user-managed configurations can be updated.
      * Immediately after the request returns:
-     *   * The instance config's
+     *   * The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true.
      * While the operation is pending:
@@ -1762,20 +1871,20 @@ public final class InstanceAdminGrpc {
      *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
      *     The operation is guaranteed to succeed at undoing all changes, after
      *     which point it terminates with a `CANCELLED` status.
-     *   * All other attempts to modify the instance config are rejected.
-     *   * Reading the instance config via the API continues to give the
+     *   * All other attempts to modify the instance configuration are rejected.
+     *   * Reading the instance configuration via the API continues to give the
      *     pre-request values.
      * Upon completion of the returned operation:
      *   * Creating instances using the instance configuration uses the new
      *     values.
-     *   * The instance config's new values are readable via the API.
-     *   * The instance config's
+     *   * The new values of the instance configuration are readable via the API.
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * the instance config modification.  The
+     * the instance configuration modification.  The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -1798,10 +1907,10 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Deletes the instance config. Deletion is only allowed when no
+     * Deletes the instance configuration. Deletion is only allowed when no
      * instances are using the configuration. If any instances are using
-     * the config, returns `FAILED_PRECONDITION`.
-     * Only user managed configurations can be deleted.
+     * the configuration, returns `FAILED_PRECONDITION`.
+     * Only user-managed configurations can be deleted.
      * Authorization requires `spanner.instanceConfigs.delete` permission on
      * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
      * </pre>
@@ -1819,9 +1928,9 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Lists the user-managed instance config [long-running
+     * Lists the user-managed instance configuration [long-running
      * operations][google.longrunning.Operation] in the given project. An instance
-     * config operation has a name of the form
+     * configuration operation has a name of the form
      * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
      * The long-running operation
      * [metadata][google.longrunning.Operation.metadata] field type
@@ -2229,6 +2338,71 @@ public final class InstanceAdminGrpc {
           request,
           responseObserver);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * Moves an instance to the target instance configuration. You can use the
+     * returned [long-running operation][google.longrunning.Operation] to track
+     * the progress of moving the instance.
+     * `MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of
+     * the following criteria:
+     *   * Is undergoing a move to a different instance configuration
+     *   * Has backups
+     *   * Has an ongoing update
+     *   * Contains any CMEK-enabled databases
+     *   * Is a free trial instance
+     * While the operation is pending:
+     *   * All other attempts to modify the instance, including changes to its
+     *     compute capacity, are rejected.
+     *   * The following database and backup admin operations are rejected:
+     *     * `DatabaseAdmin.CreateDatabase`
+     *     * `DatabaseAdmin.UpdateDatabaseDdl` (disabled if default_leader is
+     *        specified in the request.)
+     *     * `DatabaseAdmin.RestoreDatabase`
+     *     * `DatabaseAdmin.CreateBackup`
+     *     * `DatabaseAdmin.CopyBackup`
+     *   * Both the source and target instance configurations are subject to
+     *     hourly compute and storage charges.
+     *   * The instance might experience higher read-write latencies and a higher
+     *     transaction abort rate. However, moving an instance doesn't cause any
+     *     downtime.
+     * The returned [long-running operation][google.longrunning.Operation] has
+     * a name of the format
+     * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the move instance operation. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance],
+     * if successful.
+     * Cancelling the operation sets its metadata's
+     * [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time].
+     * Cancellation is not immediate because it involves moving any data
+     * previously moved to the target instance configuration back to the original
+     * instance configuration. You can use this operation to track the progress of
+     * the cancellation. Upon successful completion of the cancellation, the
+     * operation terminates with `CANCELLED` status.
+     * If not cancelled, upon completion of the returned operation:
+     *   * The instance successfully moves to the target instance
+     *     configuration.
+     *   * You are billed for compute and storage in target instance
+     *   configuration.
+     * Authorization requires the `spanner.instances.update` permission on
+     * the resource [instance][google.spanner.admin.instance.v1.Instance].
+     * For more details, see
+     * [Move an instance](https://cloud.google.com/spanner/docs/move-instance).
+     * </pre>
+     */
+    public void moveInstance(
+        com.google.spanner.admin.instance.v1.MoveInstanceRequest request,
+        io.grpc.stub.StreamObserver<com.google.longrunning.Operation> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getMoveInstanceMethod(), getCallOptions()),
+          request,
+          responseObserver);
+    }
   }
 
   /**
@@ -2297,31 +2471,31 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Creates an instance config and begins preparing it to be used. The
+     * Creates an instance configuration and begins preparing it to be used. The
      * returned [long-running operation][google.longrunning.Operation]
      * can be used to track the progress of preparing the new
-     * instance config. The instance config name is assigned by the caller. If the
-     * named instance config already exists, `CreateInstanceConfig` returns
-     * `ALREADY_EXISTS`.
+     * instance configuration. The instance configuration name is assigned by the
+     * caller. If the named instance configuration already exists,
+     * `CreateInstanceConfig` returns `ALREADY_EXISTS`.
      * Immediately after the request returns:
-     *   * The instance config is readable via the API, with all requested
-     *     attributes. The instance config's
+     *   * The instance configuration is readable via the API, with all requested
+     *     attributes. The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true. Its state is `CREATING`.
      * While the operation is pending:
-     *   * Cancelling the operation renders the instance config immediately
+     *   * Cancelling the operation renders the instance configuration immediately
      *     unreadable via the API.
      *   * Except for deleting the creating resource, all other attempts to modify
-     *     the instance config are rejected.
+     *     the instance configuration are rejected.
      * Upon completion of the returned operation:
      *   * Instances can be created using the instance configuration.
-     *   * The instance config's
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false. Its state becomes `READY`.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * creation of the instance config. The
+     * creation of the instance configuration. The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -2342,13 +2516,13 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Updates an instance config. The returned
+     * Updates an instance configuration. The returned
      * [long-running operation][google.longrunning.Operation] can be used to track
-     * the progress of updating the instance. If the named instance config does
-     * not exist, returns `NOT_FOUND`.
-     * Only user managed configurations can be updated.
+     * the progress of updating the instance. If the named instance configuration
+     * does not exist, returns `NOT_FOUND`.
+     * Only user-managed configurations can be updated.
      * Immediately after the request returns:
-     *   * The instance config's
+     *   * The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true.
      * While the operation is pending:
@@ -2356,20 +2530,20 @@ public final class InstanceAdminGrpc {
      *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
      *     The operation is guaranteed to succeed at undoing all changes, after
      *     which point it terminates with a `CANCELLED` status.
-     *   * All other attempts to modify the instance config are rejected.
-     *   * Reading the instance config via the API continues to give the
+     *   * All other attempts to modify the instance configuration are rejected.
+     *   * Reading the instance configuration via the API continues to give the
      *     pre-request values.
      * Upon completion of the returned operation:
      *   * Creating instances using the instance configuration uses the new
      *     values.
-     *   * The instance config's new values are readable via the API.
-     *   * The instance config's
+     *   * The new values of the instance configuration are readable via the API.
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * the instance config modification.  The
+     * the instance configuration modification.  The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -2389,10 +2563,10 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Deletes the instance config. Deletion is only allowed when no
+     * Deletes the instance configuration. Deletion is only allowed when no
      * instances are using the configuration. If any instances are using
-     * the config, returns `FAILED_PRECONDITION`.
-     * Only user managed configurations can be deleted.
+     * the configuration, returns `FAILED_PRECONDITION`.
+     * Only user-managed configurations can be deleted.
      * Authorization requires `spanner.instanceConfigs.delete` permission on
      * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
      * </pre>
@@ -2407,9 +2581,9 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Lists the user-managed instance config [long-running
+     * Lists the user-managed instance configuration [long-running
      * operations][google.longrunning.Operation] in the given project. An instance
-     * config operation has a name of the form
+     * configuration operation has a name of the form
      * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
      * The long-running operation
      * [metadata][google.longrunning.Operation.metadata] field type
@@ -2763,6 +2937,68 @@ public final class InstanceAdminGrpc {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getListInstancePartitionOperationsMethod(), getCallOptions(), request);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * Moves an instance to the target instance configuration. You can use the
+     * returned [long-running operation][google.longrunning.Operation] to track
+     * the progress of moving the instance.
+     * `MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of
+     * the following criteria:
+     *   * Is undergoing a move to a different instance configuration
+     *   * Has backups
+     *   * Has an ongoing update
+     *   * Contains any CMEK-enabled databases
+     *   * Is a free trial instance
+     * While the operation is pending:
+     *   * All other attempts to modify the instance, including changes to its
+     *     compute capacity, are rejected.
+     *   * The following database and backup admin operations are rejected:
+     *     * `DatabaseAdmin.CreateDatabase`
+     *     * `DatabaseAdmin.UpdateDatabaseDdl` (disabled if default_leader is
+     *        specified in the request.)
+     *     * `DatabaseAdmin.RestoreDatabase`
+     *     * `DatabaseAdmin.CreateBackup`
+     *     * `DatabaseAdmin.CopyBackup`
+     *   * Both the source and target instance configurations are subject to
+     *     hourly compute and storage charges.
+     *   * The instance might experience higher read-write latencies and a higher
+     *     transaction abort rate. However, moving an instance doesn't cause any
+     *     downtime.
+     * The returned [long-running operation][google.longrunning.Operation] has
+     * a name of the format
+     * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the move instance operation. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance],
+     * if successful.
+     * Cancelling the operation sets its metadata's
+     * [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time].
+     * Cancellation is not immediate because it involves moving any data
+     * previously moved to the target instance configuration back to the original
+     * instance configuration. You can use this operation to track the progress of
+     * the cancellation. Upon successful completion of the cancellation, the
+     * operation terminates with `CANCELLED` status.
+     * If not cancelled, upon completion of the returned operation:
+     *   * The instance successfully moves to the target instance
+     *     configuration.
+     *   * You are billed for compute and storage in target instance
+     *   configuration.
+     * Authorization requires the `spanner.instances.update` permission on
+     * the resource [instance][google.spanner.admin.instance.v1.Instance].
+     * For more details, see
+     * [Move an instance](https://cloud.google.com/spanner/docs/move-instance).
+     * </pre>
+     */
+    public com.google.longrunning.Operation moveInstance(
+        com.google.spanner.admin.instance.v1.MoveInstanceRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getMoveInstanceMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -2834,31 +3070,31 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Creates an instance config and begins preparing it to be used. The
+     * Creates an instance configuration and begins preparing it to be used. The
      * returned [long-running operation][google.longrunning.Operation]
      * can be used to track the progress of preparing the new
-     * instance config. The instance config name is assigned by the caller. If the
-     * named instance config already exists, `CreateInstanceConfig` returns
-     * `ALREADY_EXISTS`.
+     * instance configuration. The instance configuration name is assigned by the
+     * caller. If the named instance configuration already exists,
+     * `CreateInstanceConfig` returns `ALREADY_EXISTS`.
      * Immediately after the request returns:
-     *   * The instance config is readable via the API, with all requested
-     *     attributes. The instance config's
+     *   * The instance configuration is readable via the API, with all requested
+     *     attributes. The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true. Its state is `CREATING`.
      * While the operation is pending:
-     *   * Cancelling the operation renders the instance config immediately
+     *   * Cancelling the operation renders the instance configuration immediately
      *     unreadable via the API.
      *   * Except for deleting the creating resource, all other attempts to modify
-     *     the instance config are rejected.
+     *     the instance configuration are rejected.
      * Upon completion of the returned operation:
      *   * Instances can be created using the instance configuration.
-     *   * The instance config's
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false. Its state becomes `READY`.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * creation of the instance config. The
+     * creation of the instance configuration. The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [CreateInstanceConfigMetadata][google.spanner.admin.instance.v1.CreateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -2880,13 +3116,13 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Updates an instance config. The returned
+     * Updates an instance configuration. The returned
      * [long-running operation][google.longrunning.Operation] can be used to track
-     * the progress of updating the instance. If the named instance config does
-     * not exist, returns `NOT_FOUND`.
-     * Only user managed configurations can be updated.
+     * the progress of updating the instance. If the named instance configuration
+     * does not exist, returns `NOT_FOUND`.
+     * Only user-managed configurations can be updated.
      * Immediately after the request returns:
-     *   * The instance config's
+     *   * The instance configuration's
      *     [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *     field is set to true.
      * While the operation is pending:
@@ -2894,20 +3130,20 @@ public final class InstanceAdminGrpc {
      *     [cancel_time][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time].
      *     The operation is guaranteed to succeed at undoing all changes, after
      *     which point it terminates with a `CANCELLED` status.
-     *   * All other attempts to modify the instance config are rejected.
-     *   * Reading the instance config via the API continues to give the
+     *   * All other attempts to modify the instance configuration are rejected.
+     *   * Reading the instance configuration via the API continues to give the
      *     pre-request values.
      * Upon completion of the returned operation:
      *   * Creating instances using the instance configuration uses the new
      *     values.
-     *   * The instance config's new values are readable via the API.
-     *   * The instance config's
+     *   * The new values of the instance configuration are readable via the API.
+     *   * The instance configuration's
      *   [reconciling][google.spanner.admin.instance.v1.InstanceConfig.reconciling]
      *   field becomes false.
      * The returned [long-running operation][google.longrunning.Operation] will
      * have a name of the format
      * `&lt;instance_config_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
-     * the instance config modification.  The
+     * the instance configuration modification.  The
      * [metadata][google.longrunning.Operation.metadata] field type is
      * [UpdateInstanceConfigMetadata][google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata].
      * The [response][google.longrunning.Operation.response] field type is
@@ -2928,10 +3164,10 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Deletes the instance config. Deletion is only allowed when no
+     * Deletes the instance configuration. Deletion is only allowed when no
      * instances are using the configuration. If any instances are using
-     * the config, returns `FAILED_PRECONDITION`.
-     * Only user managed configurations can be deleted.
+     * the configuration, returns `FAILED_PRECONDITION`.
+     * Only user-managed configurations can be deleted.
      * Authorization requires `spanner.instanceConfigs.delete` permission on
      * the resource [name][google.spanner.admin.instance.v1.InstanceConfig.name].
      * </pre>
@@ -2947,9 +3183,9 @@ public final class InstanceAdminGrpc {
      *
      *
      * <pre>
-     * Lists the user-managed instance config [long-running
+     * Lists the user-managed instance configuration [long-running
      * operations][google.longrunning.Operation] in the given project. An instance
-     * config operation has a name of the form
+     * configuration operation has a name of the form
      * `projects/&lt;project&gt;/instanceConfigs/&lt;instance_config&gt;/operations/&lt;operation&gt;`.
      * The long-running operation
      * [metadata][google.longrunning.Operation.metadata] field type
@@ -3317,6 +3553,68 @@ public final class InstanceAdminGrpc {
           getChannel().newCall(getListInstancePartitionOperationsMethod(), getCallOptions()),
           request);
     }
+
+    /**
+     *
+     *
+     * <pre>
+     * Moves an instance to the target instance configuration. You can use the
+     * returned [long-running operation][google.longrunning.Operation] to track
+     * the progress of moving the instance.
+     * `MoveInstance` returns `FAILED_PRECONDITION` if the instance meets any of
+     * the following criteria:
+     *   * Is undergoing a move to a different instance configuration
+     *   * Has backups
+     *   * Has an ongoing update
+     *   * Contains any CMEK-enabled databases
+     *   * Is a free trial instance
+     * While the operation is pending:
+     *   * All other attempts to modify the instance, including changes to its
+     *     compute capacity, are rejected.
+     *   * The following database and backup admin operations are rejected:
+     *     * `DatabaseAdmin.CreateDatabase`
+     *     * `DatabaseAdmin.UpdateDatabaseDdl` (disabled if default_leader is
+     *        specified in the request.)
+     *     * `DatabaseAdmin.RestoreDatabase`
+     *     * `DatabaseAdmin.CreateBackup`
+     *     * `DatabaseAdmin.CopyBackup`
+     *   * Both the source and target instance configurations are subject to
+     *     hourly compute and storage charges.
+     *   * The instance might experience higher read-write latencies and a higher
+     *     transaction abort rate. However, moving an instance doesn't cause any
+     *     downtime.
+     * The returned [long-running operation][google.longrunning.Operation] has
+     * a name of the format
+     * `&lt;instance_name&gt;/operations/&lt;operation_id&gt;` and can be used to track
+     * the move instance operation. The
+     * [metadata][google.longrunning.Operation.metadata] field type is
+     * [MoveInstanceMetadata][google.spanner.admin.instance.v1.MoveInstanceMetadata].
+     * The [response][google.longrunning.Operation.response] field type is
+     * [Instance][google.spanner.admin.instance.v1.Instance],
+     * if successful.
+     * Cancelling the operation sets its metadata's
+     * [cancel_time][google.spanner.admin.instance.v1.MoveInstanceMetadata.cancel_time].
+     * Cancellation is not immediate because it involves moving any data
+     * previously moved to the target instance configuration back to the original
+     * instance configuration. You can use this operation to track the progress of
+     * the cancellation. Upon successful completion of the cancellation, the
+     * operation terminates with `CANCELLED` status.
+     * If not cancelled, upon completion of the returned operation:
+     *   * The instance successfully moves to the target instance
+     *     configuration.
+     *   * You are billed for compute and storage in target instance
+     *   configuration.
+     * Authorization requires the `spanner.instances.update` permission on
+     * the resource [instance][google.spanner.admin.instance.v1.Instance].
+     * For more details, see
+     * [Move an instance](https://cloud.google.com/spanner/docs/move-instance).
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.google.longrunning.Operation>
+        moveInstance(com.google.spanner.admin.instance.v1.MoveInstanceRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getMoveInstanceMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_LIST_INSTANCE_CONFIGS = 0;
@@ -3339,6 +3637,7 @@ public final class InstanceAdminGrpc {
   private static final int METHODID_DELETE_INSTANCE_PARTITION = 17;
   private static final int METHODID_UPDATE_INSTANCE_PARTITION = 18;
   private static final int METHODID_LIST_INSTANCE_PARTITION_OPERATIONS = 19;
+  private static final int METHODID_MOVE_INSTANCE = 20;
 
   private static final class MethodHandlers<Req, Resp>
       implements io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -3470,6 +3769,11 @@ public final class InstanceAdminGrpc {
               (io.grpc.stub.StreamObserver<
                       com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>)
                   responseObserver);
+          break;
+        case METHODID_MOVE_INSTANCE:
+          serviceImpl.moveInstance(
+              (com.google.spanner.admin.instance.v1.MoveInstanceRequest) request,
+              (io.grpc.stub.StreamObserver<com.google.longrunning.Operation>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -3615,6 +3919,12 @@ public final class InstanceAdminGrpc {
                     com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest,
                     com.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>(
                     service, METHODID_LIST_INSTANCE_PARTITION_OPERATIONS)))
+        .addMethod(
+            getMoveInstanceMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+                new MethodHandlers<
+                    com.google.spanner.admin.instance.v1.MoveInstanceRequest,
+                    com.google.longrunning.Operation>(service, METHODID_MOVE_INSTANCE)))
         .build();
   }
 
@@ -3686,6 +3996,7 @@ public final class InstanceAdminGrpc {
                       .addMethod(getDeleteInstancePartitionMethod())
                       .addMethod(getUpdateInstancePartitionMethod())
                       .addMethod(getListInstancePartitionOperationsMethod())
+                      .addMethod(getMoveInstanceMethod())
                       .build();
         }
       }
