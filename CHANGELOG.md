@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.74.0](https://github.com/googleapis/java-spanner/compare/v6.73.0...v6.74.0) (2024-08-27)
+
+
+### Features
+
+* **spanner:** Add edition field to the instance proto ([6b7e6ca](https://github.com/googleapis/java-spanner/commit/6b7e6ca109ea9679b5e36598d3c343fa40bff724))
+
+
+### Documentation
+
+* Change the example timestamps in Spanner Graph java sample code ([#3295](https://github.com/googleapis/java-spanner/issues/3295)) ([b6490b6](https://github.com/googleapis/java-spanner/commit/b6490b6a6ee2b7399431881a5e87b5ef7b577c89))
+
 ## [6.73.0](https://github.com/googleapis/java-spanner/compare/v6.72.0...v6.73.0) (2024-08-22)
 
 
