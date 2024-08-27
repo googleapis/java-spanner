@@ -26,6 +26,10 @@ import com.google.spanner.executor.v1.SpannerExecutorProxyGrpc;
 import com.google.spanner.executor.v1.SpannerOptions;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,16 +44,39 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
   // Ratio of operations to use multiplexed sessions.
   private final double multiplexedSessionOperationsRatio;
 
+  // Count of checks performed to verify end to end traces using Cloud Trace APIs.
+  private int cloudTraceCheckCount = 0;
+
+  // Maximum checks allowed to verify end to end traces using Cloud Trace APIs.
+  private static final int MAX_CLOUD_TRACE_CHECK_LIMIT = 20;
+
   public CloudExecutorImpl(
       boolean enableGrpcFaultInjector, double multiplexedSessionOperationsRatio) {
     clientExecutor = new CloudClientExecutor(enableGrpcFaultInjector);
     this.multiplexedSessionOperationsRatio = multiplexedSessionOperationsRatio;
   }
 
+  private synchronized void incrementCloudTraceCheckCount() {
+    cloudTraceCheckCount++;
+  }
+
+  private synchronized int getCloudTraceCheckCount() {
+    return cloudTraceCheckCount;
+  }
+
   /** Execute SpannerAsync action requests. */
   @Override
   public StreamObserver<SpannerAsyncActionRequest> executeActionAsync(
       StreamObserver<SpannerAsyncActionResponse> responseObserver) {
+    // Create a top-level OpenTelemetry span for streaming request.
+    Tracer tracer = WorkerProxy.openTelemetrySdk.getTracer(CloudClientExecutor.class.getName());
+    Span span = tracer.spanBuilder("java_systest_execute_actions_stream").setNoParent().startSpan();
+    Scope scope = span.makeCurrent();
+
+    final String traceId = span.getSpanContext().getTraceId();
+    final boolean isSampled = span.getSpanContext().getTraceFlags().isSampled();
+    AtomicBoolean requestHasReadOrQueryAction = new AtomicBoolean(false);
+
     CloudClientExecutor.ExecutionFlowContext executionContext =
         clientExecutor.new ExecutionFlowContext(responseObserver);
     return new StreamObserver<SpannerAsyncActionRequest>() {
@@ -86,6 +113,11 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
               Level.INFO,
               String.format("Updated request to set multiplexed session flag: \n%s", request));
         }
+        String actionName = request.getAction().getActionCase().toString();
+        if (actionName == "READ" || actionName == "QUERY") {
+          requestHasReadOrQueryAction.set(true);
+        }
+
         Status status = clientExecutor.startHandlingRequest(request, executionContext);
         if (!status.isOk()) {
           LOGGER.log(
@@ -104,9 +136,19 @@ public class CloudExecutorImpl extends SpannerExecutorProxyGrpc.SpannerExecutorP
 
       @Override
       public void onCompleted() {
+        if (isSampled
+            && getCloudTraceCheckCount() < MAX_CLOUD_TRACE_CHECK_LIMIT
+            && requestHasReadOrQueryAction.get()) {
+          LOGGER.log(
+              Level.WARNING, String.format("traceId:%s will be verified for e2e tracing", traceId));
+          incrementCloudTraceCheckCount();
+          clientExecutor.startVerificationOfEndToEndTrace(traceId, executionContext);
+        }
         LOGGER.log(Level.INFO, "Client called Done, half closed");
         executionContext.cleanup();
         responseObserver.onCompleted();
+        scope.close();
+        span.end();
       }
     };
   }
