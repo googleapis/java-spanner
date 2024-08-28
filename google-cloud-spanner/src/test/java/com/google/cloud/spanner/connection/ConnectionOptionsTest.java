@@ -1165,4 +1165,29 @@ public class ConnectionOptionsTest {
             .build()
             .getMaxCommitDelay());
   }
+
+  @Test
+  public void testEnableApiTracing() {
+    assertNull(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isEnableApiTracing());
+    assertTrue(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?enableApiTracing=true")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isEnableApiTracing());
+    assertFalse(
+        ConnectionOptions.newBuilder()
+            .setUri(
+                "cloudspanner:/projects/test-project-123/instances/test-instance/databases/test-database?enableApiTracing=false")
+            .setCredentials(NoCredentials.getInstance())
+            .build()
+            .isEnableApiTracing());
+  }
 }

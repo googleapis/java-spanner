@@ -42,7 +42,7 @@ import com.google.cloud.spanner.KeyRange;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.SerialIntegrationTest;
+import com.google.cloud.spanner.ParallelIntegrationTest;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -68,7 +69,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Integration tests for asynchronous APIs. */
-@Category(SerialIntegrationTest.class)
+@Category(ParallelIntegrationTest.class)
 @RunWith(JUnit4.class)
 public class ITAsyncAPITest {
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
@@ -237,17 +238,24 @@ public class ITAsyncAPITest {
     RemoteSpannerHelper helper = env.getTestHelper();
     DatabaseClient invalidClient =
         helper.getClient().getDatabaseClient(DatabaseId.of(helper.getInstanceId(), "invalid"));
-    ApiFuture<Struct> row =
-        invalidClient
-            .singleUse(TimestampBound.strong())
-            .readRowAsync(TABLE_NAME, Key.of("k99"), ALL_COLUMNS);
+    Thread.sleep(ThreadLocalRandom.current().nextLong(100L));
     try {
+      // The NOT_FOUND error can come from both the call to invalidClient.singleUse() as well as
+      // from the call to row.get(), which is why both need to be inside the try block.
+      ApiFuture<Struct> row =
+          invalidClient
+              .singleUse(TimestampBound.strong())
+              .readRowAsync(TABLE_NAME, Key.of("k99"), ALL_COLUMNS);
       row.get();
       fail("missing expected exception");
-    } catch (ExecutionException e) {
-      assertThat(e.getCause()).isInstanceOf(SpannerException.class);
-      SpannerException se = (SpannerException) e.getCause();
-      assertThat(se.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND);
+    } catch (ExecutionException | SpannerException thrownException) {
+      SpannerException spannerException;
+      if (thrownException instanceof ExecutionException) {
+        spannerException = (SpannerException) thrownException.getCause();
+      } else {
+        spannerException = (SpannerException) thrownException;
+      }
+      assertEquals(ErrorCode.NOT_FOUND, spannerException.getErrorCode());
     }
   }
 

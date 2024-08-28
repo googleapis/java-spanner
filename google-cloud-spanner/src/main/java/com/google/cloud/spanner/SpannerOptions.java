@@ -72,7 +72,9 @@ import io.opentelemetry.api.common.Attributes;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -739,9 +741,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       extends ServiceOptions.Builder<Spanner, SpannerOptions, SpannerOptions.Builder> {
     static final int DEFAULT_PREFETCH_CHUNKS = 4;
     static final QueryOptions DEFAULT_QUERY_OPTIONS = QueryOptions.getDefaultInstance();
-    // TODO: Set the default to DecodeMode.DIRECT before merging to keep the current default.
-    //       It is currently set to LAZY_PER_COL so it is used in all tests.
-    static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.LAZY_PER_COL;
+    static final DecodeMode DEFAULT_DECODE_MODE = DecodeMode.DIRECT;
     static final RetrySettings DEFAULT_ADMIN_REQUESTS_LIMIT_EXCEEDED_RETRY_SETTINGS =
         RetrySettings.newBuilder()
             .setInitialRetryDelay(Duration.ofSeconds(5L))
@@ -1285,14 +1285,20 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
       return this;
     }
 
-    /** Enables gRPC-GCP extension with the default settings. */
+    /**
+     * Enables gRPC-GCP extension with the default settings. Do not set
+     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
+     * Multiplexed sessions are not supported for gRPC-GCP.
+     */
     public Builder enableGrpcGcpExtension() {
       return this.enableGrpcGcpExtension(null);
     }
 
     /**
      * Enables gRPC-GCP extension and uses provided options for configuration. The metric registry
-     * and default Spanner metric labels will be added automatically.
+     * and default Spanner metric labels will be added automatically. Do not set
+     * GOOGLE_CLOUD_SPANNER_MULTIPLEXED_SESSIONS to true in combination with this option, as
+     * Multiplexed sessions are not supported for gRPC-GCP.
      */
     public Builder enableGrpcGcpExtension(GcpManagedChannelOptions options) {
       this.grpcGcpExtensionEnabled = true;
@@ -1375,6 +1381,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
      *
      * <ul>
      *   <li>db.statement: Contains the SQL statement that is being executed.
+     *   <li>thread.name: The name of the thread that executes the statement.
      * </ul>
      */
     public Builder setEnableExtendedTracing(boolean enableExtendedTracing) {
@@ -1621,8 +1628,12 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @Override
   public ApiTracerFactory getApiTracerFactory() {
+    List<ApiTracerFactory> apiTracerFactories = new ArrayList();
     // Prefer any direct ApiTracerFactory that might have been set on the builder.
-    return MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory());
+    apiTracerFactories.add(
+        MoreObjects.firstNonNull(super.getApiTracerFactory(), getDefaultApiTracerFactory()));
+
+    return new CompositeTracerFactory(apiTracerFactories);
   }
 
   private ApiTracerFactory getDefaultApiTracerFactory() {
@@ -1661,6 +1672,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
    *
    * <ul>
    *   <li>db.statement: Contains the SQL statement that is being executed.
+   *   <li>thread.name: The name of the thread that executes the statement.
    * </ul>
    */
   public boolean isEnableExtendedTracing() {

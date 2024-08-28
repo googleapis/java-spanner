@@ -43,7 +43,12 @@ import com.google.spanner.v1.StructType;
 import com.google.spanner.v1.StructType.Field;
 import com.google.spanner.v1.Type;
 import com.google.spanner.v1.TypeCode;
+import io.grpc.Metadata;
 import io.grpc.Server;
+import io.grpc.ServerCall;
+import io.grpc.ServerCall.Listener;
+import io.grpc.ServerCallHandler;
+import io.grpc.ServerInterceptor;
 import io.grpc.internal.LogExceptionRunnable;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -151,6 +156,10 @@ public abstract class AbstractMockServerTest {
 
   @BeforeClass
   public static void startStaticServer() throws IOException {
+    startStaticServer(createServerInterceptor());
+  }
+
+  public static void startStaticServer(ServerInterceptor interceptor) throws IOException {
     mockSpanner = new MockSpannerServiceImpl();
     mockSpanner.setAbortProbability(0.0D); // We don't want any unpredictable aborted transactions.
     mockInstanceAdmin = new MockInstanceAdminImpl();
@@ -176,6 +185,7 @@ public abstract class AbstractMockServerTest {
             .addService(mockInstanceAdmin)
             .addService(mockDatabaseAdmin)
             .addService(mockOperations)
+            .intercept(interceptor)
             .build()
             .start();
     mockSpanner.putStatementResult(
@@ -203,6 +213,16 @@ public abstract class AbstractMockServerTest {
     Logger.getLogger("io.grpc.netty.shaded.io.grpc.netty.NettyServerHandler")
         .setUseParentHandlers(false);
     Logger.getLogger("io.grpc.internal.AbstractClientStream").setUseParentHandlers(false);
+  }
+
+  static ServerInterceptor createServerInterceptor() {
+    return new ServerInterceptor() {
+      @Override
+      public <ReqT, RespT> Listener<ReqT> interceptCall(
+          ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+        return next.startCall(call, headers);
+      }
+    };
   }
 
   @AfterClass

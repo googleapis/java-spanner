@@ -25,6 +25,7 @@ import static com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient.Lis
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.BetaApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
@@ -87,6 +88,9 @@ import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
 import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.MoveInstanceMetadata;
+import com.google.spanner.admin.instance.v1.MoveInstanceRequest;
+import com.google.spanner.admin.instance.v1.MoveInstanceResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -204,6 +208,10 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           ListInstancePartitionOperationsResponse,
           ListInstancePartitionOperationsPagedResponse>
       listInstancePartitionOperationsSettings;
+  private final UnaryCallSettings<MoveInstanceRequest, Operation> moveInstanceSettings;
+  private final OperationCallSettings<
+          MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationSettings;
 
   private static final PagedListDescriptor<
           ListInstanceConfigsRequest, ListInstanceConfigsResponse, InstanceConfig>
@@ -710,6 +718,17 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
     return listInstancePartitionOperationsSettings;
   }
 
+  /** Returns the object with the settings used for calls to moveInstance. */
+  public UnaryCallSettings<MoveInstanceRequest, Operation> moveInstanceSettings() {
+    return moveInstanceSettings;
+  }
+
+  /** Returns the object with the settings used for calls to moveInstance. */
+  public OperationCallSettings<MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationSettings() {
+    return moveInstanceOperationSettings;
+  }
+
   public InstanceAdminStub createStub() throws IOException {
     if (getTransportChannelProvider()
         .getTransportName()
@@ -738,6 +757,7 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
   }
 
   /** Returns the default service endpoint. */
+  @ObsoleteApi("Use getEndpoint() instead")
   public static String getDefaultEndpoint() {
     return "spanner.googleapis.com:443";
   }
@@ -852,6 +872,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
         settingsBuilder.updateInstancePartitionOperationSettings().build();
     listInstancePartitionOperationsSettings =
         settingsBuilder.listInstancePartitionOperationsSettings().build();
+    moveInstanceSettings = settingsBuilder.moveInstanceSettings().build();
+    moveInstanceOperationSettings = settingsBuilder.moveInstanceOperationSettings().build();
   }
 
   /** Builder for InstanceAdminStubSettings. */
@@ -924,6 +946,10 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
             ListInstancePartitionOperationsResponse,
             ListInstancePartitionOperationsPagedResponse>
         listInstancePartitionOperationsSettings;
+    private final UnaryCallSettings.Builder<MoveInstanceRequest, Operation> moveInstanceSettings;
+    private final OperationCallSettings.Builder<
+            MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+        moveInstanceOperationSettings;
     private static final ImmutableMap<String, ImmutableSet<StatusCode.Code>>
         RETRYABLE_CODE_DEFINITIONS;
 
@@ -1033,6 +1059,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
       updateInstancePartitionOperationSettings = OperationCallSettings.newBuilder();
       listInstancePartitionOperationsSettings =
           PagedCallSettings.newBuilder(LIST_INSTANCE_PARTITION_OPERATIONS_PAGE_STR_FACT);
+      moveInstanceSettings = UnaryCallSettings.newUnaryCallSettingsBuilder();
+      moveInstanceOperationSettings = OperationCallSettings.newBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -1055,7 +1083,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               createInstancePartitionSettings,
               deleteInstancePartitionSettings,
               updateInstancePartitionSettings,
-              listInstancePartitionOperationsSettings);
+              listInstancePartitionOperationsSettings,
+              moveInstanceSettings);
       initDefaults(this);
     }
 
@@ -1094,6 +1123,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           settings.updateInstancePartitionOperationSettings.toBuilder();
       listInstancePartitionOperationsSettings =
           settings.listInstancePartitionOperationsSettings.toBuilder();
+      moveInstanceSettings = settings.moveInstanceSettings.toBuilder();
+      moveInstanceOperationSettings = settings.moveInstanceOperationSettings.toBuilder();
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder<?, ?>>of(
@@ -1116,7 +1147,8 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
               createInstancePartitionSettings,
               deleteInstancePartitionSettings,
               updateInstancePartitionSettings,
-              listInstancePartitionOperationsSettings);
+              listInstancePartitionOperationsSettings,
+              moveInstanceSettings);
     }
 
     private static Builder createDefault() {
@@ -1241,6 +1273,11 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
 
       builder
           .listInstancePartitionOperationsSettings()
+          .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+          .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
+
+      builder
+          .moveInstanceSettings()
           .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
           .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"));
 
@@ -1380,6 +1417,30 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
           .setMetadataTransformer(
               ProtoOperationTransformers.MetadataTransformer.create(
                   UpdateInstancePartitionMetadata.class))
+          .setPollingAlgorithm(
+              OperationTimedPollAlgorithm.create(
+                  RetrySettings.newBuilder()
+                      .setInitialRetryDelay(Duration.ofMillis(5000L))
+                      .setRetryDelayMultiplier(1.5)
+                      .setMaxRetryDelay(Duration.ofMillis(45000L))
+                      .setInitialRpcTimeout(Duration.ZERO)
+                      .setRpcTimeoutMultiplier(1.0)
+                      .setMaxRpcTimeout(Duration.ZERO)
+                      .setTotalTimeout(Duration.ofMillis(300000L))
+                      .build()));
+
+      builder
+          .moveInstanceOperationSettings()
+          .setInitialCallSettings(
+              UnaryCallSettings
+                  .<MoveInstanceRequest, OperationSnapshot>newUnaryCallSettingsBuilder()
+                  .setRetryableCodes(RETRYABLE_CODE_DEFINITIONS.get("no_retry_codes"))
+                  .setRetrySettings(RETRY_PARAM_DEFINITIONS.get("no_retry_params"))
+                  .build())
+          .setResponseTransformer(
+              ProtoOperationTransformers.ResponseTransformer.create(MoveInstanceResponse.class))
+          .setMetadataTransformer(
+              ProtoOperationTransformers.MetadataTransformer.create(MoveInstanceMetadata.class))
           .setPollingAlgorithm(
               OperationTimedPollAlgorithm.create(
                   RetrySettings.newBuilder()
@@ -1575,6 +1636,18 @@ public class InstanceAdminStubSettings extends StubSettings<InstanceAdminStubSet
             ListInstancePartitionOperationsPagedResponse>
         listInstancePartitionOperationsSettings() {
       return listInstancePartitionOperationsSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to moveInstance. */
+    public UnaryCallSettings.Builder<MoveInstanceRequest, Operation> moveInstanceSettings() {
+      return moveInstanceSettings;
+    }
+
+    /** Returns the builder for the settings used for calls to moveInstance. */
+    public OperationCallSettings.Builder<
+            MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+        moveInstanceOperationSettings() {
+      return moveInstanceOperationSettings;
     }
 
     @Override

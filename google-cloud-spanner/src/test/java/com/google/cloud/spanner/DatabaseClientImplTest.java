@@ -52,6 +52,7 @@ import com.google.cloud.spanner.AsyncResultSet.CallbackResponse;
 import com.google.cloud.spanner.AsyncTransactionManager.TransactionContextFuture;
 import com.google.cloud.spanner.MockSpannerServiceImpl.SimulatedExecutionTime;
 import com.google.cloud.spanner.MockSpannerServiceImpl.StatementResult;
+import com.google.cloud.spanner.Options.RpcOrderBy;
 import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.ReadContext.QueryAnalyzeMode;
@@ -89,6 +90,7 @@ import com.google.spanner.v1.ExecuteSqlRequest;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryMode;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import com.google.spanner.v1.ReadRequest;
+import com.google.spanner.v1.ReadRequest.OrderBy;
 import com.google.spanner.v1.RequestOptions.Priority;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
@@ -1720,6 +1722,27 @@ public class DatabaseClientImplTest {
     assertThat(request.getRequestOptions().getRequestTag())
         .isEqualTo("app=spanner,env=test,action=read");
     assertThat(request.getRequestOptions().getTransactionTag()).isEmpty();
+  }
+
+  @Test
+  public void testExecuteReadWithOrderByOption() {
+    DatabaseClient client =
+        spanner.getDatabaseClient(DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
+    try (ResultSet resultSet =
+        client
+            .singleUse()
+            .read(
+                READ_TABLE_NAME,
+                KeySet.singleKey(Key.of(1L)),
+                READ_COLUMN_NAMES,
+                Options.orderBy(RpcOrderBy.NO_ORDER))) {
+      consumeResults(resultSet);
+    }
+
+    List<ReadRequest> requests = mockSpanner.getRequestsOfType(ReadRequest.class);
+    assertThat(requests).hasSize(1);
+    ReadRequest request = requests.get(0);
+    assertEquals(OrderBy.ORDER_BY_NO_ORDER, request.getOrderBy());
   }
 
   @Test
@@ -3836,7 +3859,8 @@ public class DatabaseClientImplTest {
     try {
       // Simulate session creation failures on the backend.
       mockSpanner.setBatchCreateSessionsExecutionTime(
-          SimulatedExecutionTime.ofStickyException(Status.RESOURCE_EXHAUSTED.asRuntimeException()));
+          SimulatedExecutionTime.ofStickyException(
+              Status.FAILED_PRECONDITION.asRuntimeException()));
       DatabaseClient client =
           spannerWithEmptySessionPool.getDatabaseClient(
               DatabaseId.of(TEST_PROJECT, TEST_INSTANCE, TEST_DATABASE));
@@ -3844,7 +3868,7 @@ public class DatabaseClientImplTest {
       // non-blocking, and any exceptions will be delayed until actual query execution.
       try (ResultSet rs = client.singleUse().executeQuery(SELECT1)) {
         SpannerException e = assertThrows(SpannerException.class, rs::next);
-        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.RESOURCE_EXHAUSTED);
+        assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
       }
     } finally {
       mockSpanner.setBatchCreateSessionsExecutionTime(SimulatedExecutionTime.none());
@@ -5082,8 +5106,7 @@ public class DatabaseClientImplTest {
       // Deliberately leak 4 sessions.
       for (int i = 0; i < 4; i++) {
         // Get a transaction manager without doing anything with it. This will reserve a session
-        // from
-        // the pool, but not increase the number of sessions marked as in use.
+        // from the pool, but not increase the number of sessions marked as in use.
         transactions.add(client.transactionManager());
       }
       // Trying to get yet another transaction will fail.
@@ -5110,6 +5133,19 @@ public class DatabaseClientImplTest {
       // Release the sessions back into the pool.
       for (TransactionManager transaction : transactions) {
         transaction.close();
+      }
+      // Wait up to 100 milliseconds for the sessions to actually all be in the pool, as there are
+      // two possible ways that the session pool handles the above:
+      // 1. The pool starts to create 4 sessions.
+      // 2. It then hands out whatever session has been created to one of the waiters.
+      // 3. The waiting process then executes its transaction, and when finished, the session is
+      //    given to any other process waiting at that moment.
+      // The above means that although there will always be 4 sessions created, it could in theory
+      // be that not all of them are used, as it could be that a transaction finishes before the
+      // creation of session 2, 3, or 4 finished, and then the existing session is re-used.
+      Stopwatch watch = Stopwatch.createStarted();
+      while (pool.getNumberOfSessionsInPool() < 4 && watch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+        Thread.yield();
       }
       // Closing the transactions should return the sessions to the pool.
       assertEquals(4, pool.getNumberOfSessionsInPool());
