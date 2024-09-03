@@ -282,7 +282,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options, isRouteToLeader(), getTransactionChannelHint());
+      final ApiFuture<ByteString> fut =
+          session.beginTransactionAsync(options, isRouteToLeader(), getTransactionChannelHint());
       fut.addListener(
           () -> {
             try {
@@ -838,7 +839,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           // commit.
           increaseAsyncOperations();
           resultSet =
-              rpc.executeQueryAsync(builder.build(), getTransactionChannelHint(), isRouteToLeader());
+              rpc.executeQueryAsync(
+                  builder.build(), getTransactionChannelHint(), isRouteToLeader());
           session.markUsed(clock.instant());
         } catch (Throwable t) {
           decreaseAsyncOperations();

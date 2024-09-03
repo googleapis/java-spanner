@@ -426,7 +426,8 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader, Map<SpannerRpc.Option, ?> channelHint) {
+  ApiFuture<ByteString> beginTransactionAsync(
+      Options transactionOptions, boolean routeToLeader, Map<SpannerRpc.Option, ?> channelHint) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
