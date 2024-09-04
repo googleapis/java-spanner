@@ -119,10 +119,10 @@ class HeaderInterceptor implements ClientInterceptor {
               new SimpleForwardingClientCallListener<RespT>(responseListener) {
                 @Override
                 public void onHeaders(Metadata metadata) {
+                  Boolean isDirectPathUsed =
+                      isDirectPathUsed(getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
                   addBuiltInMetricAttributes(
-                      compositeTracer,
-                      builtInMetricsAttributes,
-                      getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR));
+                      compositeTracer, builtInMetricsAttributes, isDirectPathUsed);
                   processHeader(metadata, tagContext, attributes, span);
                   super.onHeaders(metadata);
                 }
@@ -233,12 +233,11 @@ class HeaderInterceptor implements ClientInterceptor {
   }
 
   private void addBuiltInMetricAttributes(
-      CompositeTracer compositeTracer, Map<String, String> attributes, SocketAddress remoteAddr) {
+      CompositeTracer compositeTracer, Map<String, String> attributes, Boolean isDirectPathUsed) {
     if (compositeTracer != null) {
       // Direct Path used attribute
       attributes.put(
-          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(),
-          Boolean.toString(isDirectPathUsed(remoteAddr)));
+          BuiltInMetricsConstant.DIRECT_PATH_USED_KEY.getKey(), Boolean.toString(isDirectPathUsed));
 
       compositeTracer.addAttributes(attributes);
     }

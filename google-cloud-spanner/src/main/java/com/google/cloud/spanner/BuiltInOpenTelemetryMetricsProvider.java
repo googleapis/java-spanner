@@ -19,7 +19,6 @@ package com.google.cloud.spanner;
 import static com.google.cloud.opentelemetry.detection.GCPPlatformDetector.SupportedPlatform.GOOGLE_KUBERNETES_ENGINE;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_NAME_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.CLIENT_UID_KEY;
-import static com.google.cloud.spanner.BuiltInMetricsConstant.DIRECT_PATH_ENABLED_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.INSTANCE_CONFIG_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.LOCATION_ID_KEY;
 import static com.google.cloud.spanner.BuiltInMetricsConstant.PROJECT_ID_KEY;
@@ -76,15 +75,12 @@ final class BuiltInOpenTelemetryMetricsProvider {
     }
   }
 
-  Map<String, String> createClientAttributes(
-      String projectId, boolean isDirectPathChannelCreated, String client_name) {
+  Map<String, String> createClientAttributes(String projectId, String client_name) {
     Map<String, String> clientAttributes = new HashMap<>();
     clientAttributes.put(LOCATION_ID_KEY.getKey(), detectClientLocation());
     clientAttributes.put(PROJECT_ID_KEY.getKey(), projectId);
     // TODO: Replace this with real value.
     clientAttributes.put(INSTANCE_CONFIG_ID_KEY.getKey(), "unknown");
-    clientAttributes.put(
-        DIRECT_PATH_ENABLED_KEY.getKey(), String.valueOf(isDirectPathChannelCreated));
     clientAttributes.put(CLIENT_NAME_KEY.getKey(), client_name);
     clientAttributes.put(CLIENT_UID_KEY.getKey(), getDefaultTaskValue());
     return clientAttributes;

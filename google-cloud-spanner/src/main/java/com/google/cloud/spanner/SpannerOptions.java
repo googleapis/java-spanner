@@ -1652,16 +1652,15 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
 
   @Override
   public ApiTracerFactory getApiTracerFactory() {
-    return createApiTracerFactory(false, false, false);
+    return createApiTracerFactory(false, false);
   }
 
-  public ApiTracerFactory getApiTracerFactory(
-      boolean isDirectPathChannelCreated, boolean isAdminClient, boolean isEmulatorEnabled) {
-    return createApiTracerFactory(isDirectPathChannelCreated, isAdminClient, isEmulatorEnabled);
+  public ApiTracerFactory getApiTracerFactory(boolean isAdminClient, boolean isEmulatorEnabled) {
+    return createApiTracerFactory(isAdminClient, isEmulatorEnabled);
   }
 
   private ApiTracerFactory createApiTracerFactory(
-      boolean isDirectPathChannelCreated, boolean isAdminClient, boolean isEmulatorEnabled) {
+      boolean isAdminClient, boolean isEmulatorEnabled) {
     List<ApiTracerFactory> apiTracerFactories = new ArrayList<>();
     // Prefer any direct ApiTracerFactory that might have been set on the builder.
     apiTracerFactories.add(
@@ -1670,8 +1669,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     // Add Metrics Tracer factory if built in metrics are enabled and if the client is data client
     // and if emulator is not enabled.
     if (isEnableBuiltInMetrics() && !isAdminClient && !isEmulatorEnabled) {
-      ApiTracerFactory metricsTracerFactory =
-          createMetricsApiTracerFactory(isDirectPathChannelCreated);
+      ApiTracerFactory metricsTracerFactory = createMetricsApiTracerFactory();
       if (metricsTracerFactory != null) {
         apiTracerFactories.add(metricsTracerFactory);
       }
@@ -1696,7 +1694,7 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
     return BaseApiTracerFactory.getInstance();
   }
 
-  private ApiTracerFactory createMetricsApiTracerFactory(boolean isDirectPathChannelCreated) {
+  private ApiTracerFactory createMetricsApiTracerFactory() {
     OpenTelemetry openTelemetry =
         this.builtInOpenTelemetryMetricsProvider.getOrCreateOpenTelemetry(
             getDefaultProjectId(), getCredentials());
@@ -1706,7 +1704,6 @@ public class SpannerOptions extends ServiceOptions<Spanner, SpannerOptions> {
             new OpenTelemetryMetricsRecorder(openTelemetry, BuiltInMetricsConstant.METER_NAME),
             builtInOpenTelemetryMetricsProvider.createClientAttributes(
                 getDefaultProjectId(),
-                isDirectPathChannelCreated,
                 "spanner-java/" + GaxProperties.getLibraryVersion(getClass())))
         : null;
   }
