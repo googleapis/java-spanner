@@ -72,7 +72,11 @@ class ClientSideStatementValueConverters {
 
   /** Converter from string to {@link Boolean} */
   static class BooleanConverter implements ClientSideStatementValueConverter<Boolean> {
+    static final BooleanConverter INSTANCE = new BooleanConverter();
 
+    private BooleanConverter() {}
+
+    /** Constructor that is needed for reflection. */
     public BooleanConverter(String allowedValues) {}
 
     @Override
@@ -141,7 +145,11 @@ class ClientSideStatementValueConverters {
 
   /** Converter from string to a non-negative integer. */
   static class NonNegativeIntegerConverter implements ClientSideStatementValueConverter<Integer> {
+    static final NonNegativeIntegerConverter INSTANCE = new NonNegativeIntegerConverter();
 
+    private NonNegativeIntegerConverter() {}
+
+    /** Constructor needed for reflection. */
     public NonNegativeIntegerConverter(String allowedValues) {}
 
     @Override
@@ -356,9 +364,14 @@ class ClientSideStatementValueConverters {
   /** Converter for converting strings to {@link AutocommitDmlMode} values. */
   static class AutocommitDmlModeConverter
       implements ClientSideStatementValueConverter<AutocommitDmlMode> {
+    static final AutocommitDmlModeConverter INSTANCE = new AutocommitDmlModeConverter();
+
     private final CaseInsensitiveEnumMap<AutocommitDmlMode> values =
         new CaseInsensitiveEnumMap<>(AutocommitDmlMode.class);
 
+    private AutocommitDmlModeConverter() {}
+
+    /** Constructor needed for reflection. */
     public AutocommitDmlModeConverter(String allowedValues) {}
 
     @Override
@@ -372,7 +385,35 @@ class ClientSideStatementValueConverters {
     }
   }
 
+  static class ConnectionStateTypeConverter
+      implements ClientSideStatementValueConverter<ConnectionState.Type> {
+    static final ConnectionStateTypeConverter INSTANCE = new ConnectionStateTypeConverter();
+
+    private final CaseInsensitiveEnumMap<ConnectionState.Type> values =
+        new CaseInsensitiveEnumMap<>(ConnectionState.Type.class);
+
+    private ConnectionStateTypeConverter() {}
+
+    /** Constructor that is needed for reflection. */
+    public ConnectionStateTypeConverter(String allowedValues) {}
+
+    @Override
+    public Class<ConnectionState.Type> getParameterClass() {
+      return ConnectionState.Type.class;
+    }
+
+    @Override
+    public ConnectionState.Type convert(String value) {
+      return values.get(value);
+    }
+  }
+
   static class StringValueConverter implements ClientSideStatementValueConverter<String> {
+    static final StringValueConverter INSTANCE = new StringValueConverter();
+
+    private StringValueConverter() {}
+
+    /** Constructor needed for reflection. */
     public StringValueConverter(String allowedValues) {}
 
     @Override

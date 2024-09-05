@@ -16,6 +16,8 @@
 
 package com.google.cloud.spanner.connection;
 
+import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABORTS_INTERNALLY;
+
 import com.google.api.core.InternalApi;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -37,6 +39,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import io.opentelemetry.api.OpenTelemetry;
@@ -48,6 +51,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -529,6 +533,8 @@ public class ConnectionOptions {
 
   /** Builder for {@link ConnectionOptions} instances. */
   public static class Builder {
+    private final Map<String, ConnectionPropertyValue<?>> connectionPropertyValues =
+        new HashMap<>();
     private String uri;
     private String credentialsUrl;
     private String oauthToken;
@@ -626,6 +632,13 @@ public class ConnectionOptions {
       return this;
     }
 
+    <T> Builder setConnectionPropertyValue(
+        com.google.cloud.spanner.connection.ConnectionProperty<T> property, T value) {
+      this.connectionPropertyValues.put(
+          property.getKey(), new ConnectionPropertyValue<>(property, value, value));
+      return this;
+    }
+
     /** Sets the {@link SessionPoolOptions} to use for the connection. */
     public Builder setSessionPoolOptions(SessionPoolOptions sessionPoolOptions) {
       Preconditions.checkNotNull(sessionPoolOptions);
@@ -715,6 +728,7 @@ public class ConnectionOptions {
     return new Builder();
   }
 
+  private final ConnectionState initialConnectionState;
   private final String uri;
   private final String warnings;
   private final String credentialsUrl;
@@ -756,7 +770,6 @@ public class ConnectionOptions {
   private final boolean autocommit;
   private final boolean readOnly;
   private final boolean routeToLeader;
-  private final boolean retryAbortsInternally;
   private final boolean useVirtualThreads;
   private final boolean useVirtualGrpcTransportThreads;
   private final OpenTelemetry openTelemetry;
@@ -773,6 +786,11 @@ public class ConnectionOptions {
     this.warnings = checkValidProperties(builder.uri);
 
     this.uri = builder.uri;
+    ImmutableMap<String, ConnectionPropertyValue<?>> connectionPropertyValues =
+        ImmutableMap.<String, ConnectionPropertyValue<?>>builder()
+            .putAll(ConnectionProperties.parseValues(builder.uri))
+            .putAll(builder.connectionPropertyValues)
+            .buildKeepingLast();
     this.credentialsUrl =
         builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
     this.encodedCredentials = parseEncodedCredentials(builder.uri);
@@ -866,7 +884,6 @@ public class ConnectionOptions {
     this.autocommit = parseAutocommit(this.uri);
     this.readOnly = parseReadOnly(this.uri);
     this.routeToLeader = parseRouteToLeader(this.uri);
-    this.retryAbortsInternally = parseRetryAbortsInternally(this.uri);
     this.useVirtualThreads = parseUseVirtualThreads(this.uri);
     this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
     this.openTelemetry = builder.openTelemetry;
@@ -896,6 +913,7 @@ public class ConnectionOptions {
     } else {
       this.sessionPoolOptions = SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build();
     }
+    this.initialConnectionState = new ConnectionState(connectionPropertyValues);
   }
 
   @VisibleForTesting
@@ -991,12 +1009,6 @@ public class ConnectionOptions {
   static boolean parseRouteToLeader(String uri) {
     String value = parseUriProperty(uri, ROUTE_TO_LEADER_PROPERTY_NAME);
     return value != null ? Boolean.parseBoolean(value) : DEFAULT_ROUTE_TO_LEADER;
-  }
-
-  @VisibleForTesting
-  static boolean parseRetryAbortsInternally(String uri) {
-    String value = parseUriProperty(uri, RETRY_ABORTS_INTERNALLY_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_RETRY_ABORTS_INTERNALLY;
   }
 
   @VisibleForTesting
@@ -1357,6 +1369,11 @@ public class ConnectionOptions {
     return uri;
   }
 
+  /** The connection properties that have been pre-set for this {@link ConnectionOptions}. */
+  Map<String, ConnectionPropertyValue<?>> getInitialConnectionPropertyValues() {
+    return this.initialConnectionState.getAllValues();
+  }
+
   /** The credentials URL of this {@link ConnectionOptions} */
   public String getCredentialsUrl() {
     return credentialsUrl;
@@ -1488,7 +1505,7 @@ public class ConnectionOptions {
    * ConnectionOptions}
    */
   public boolean isRetryAbortsInternally() {
-    return retryAbortsInternally;
+    return this.initialConnectionState.getValue(RETRY_ABORTS_INTERNALLY).getValue();
   }
 
   /** Whether connections should use virtual threads for connection executors. */

@@ -18,6 +18,7 @@ package com.google.cloud.spanner.connection;
 
 import static com.google.cloud.spanner.SpannerApiFutures.get;
 import static com.google.cloud.spanner.connection.ConnectionPreconditions.checkValidIdentifier;
+import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABORTS_INTERNALLY;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -50,6 +51,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.cloud.spanner.connection.AbstractStatementParser.ParsedStatement;
 import com.google.cloud.spanner.connection.AbstractStatementParser.StatementType;
+import com.google.cloud.spanner.connection.ConnectionProperty.Context;
 import com.google.cloud.spanner.connection.StatementExecutor.StatementTimeout;
 import com.google.cloud.spanner.connection.StatementResult.ResultType;
 import com.google.cloud.spanner.connection.UnitOfWork.CallType;
@@ -215,6 +217,7 @@ class ConnectionImpl implements Connection {
   private final DdlClient ddlClient;
   private final DatabaseClient dbClient;
   private final BatchClient batchClient;
+  private final ConnectionState connectionState;
   private boolean autocommit;
   private boolean readOnly;
   private boolean returnCommitStats;
@@ -236,7 +239,6 @@ class ConnectionImpl implements Connection {
   private BatchMode batchMode;
   private UnitOfWorkType unitOfWorkType;
   private final Stack<UnitOfWork> transactionStack = new Stack<>();
-  private boolean retryAbortsInternally;
   private final List<TransactionRetryListener> transactionRetryListeners = new ArrayList<>();
   private AutocommitDmlMode autocommitDmlMode = AutocommitDmlMode.TRANSACTIONAL;
   private TimestampBound readOnlyStaleness = TimestampBound.strong();
@@ -307,9 +309,10 @@ class ConnectionImpl implements Connection {
     this.dbClient = spanner.getDatabaseClient(options.getDatabaseId());
     this.batchClient = spanner.getBatchClient(options.getDatabaseId());
     this.ddlClient = createDdlClient();
+    this.connectionState = new ConnectionState(options.getInitialConnectionPropertyValues());
 
     // (Re)set the state of the connection to the default.
-    reset();
+    reset(Context.STARTUP);
   }
 
   /** Constructor only for test purposes. */
@@ -334,6 +337,7 @@ class ConnectionImpl implements Connection {
     this.ddlClient = Preconditions.checkNotNull(ddlClient);
     this.dbClient = Preconditions.checkNotNull(dbClient);
     this.batchClient = Preconditions.checkNotNull(batchClient);
+    this.connectionState = new ConnectionState(options.getInitialConnectionPropertyValues());
     setReadOnly(options.isReadOnly());
     setAutocommit(options.isAutocommit());
     setReturnCommitStats(options.isReturnCommitStats());
@@ -423,14 +427,22 @@ class ConnectionImpl implements Connection {
     return ApiFutures.immediateFuture(null);
   }
 
+  private Context getCurrentContext() {
+    return Context.USER;
+  }
+
   /**
    * Resets the state of this connection to the default state in the {@link ConnectionOptions} of
    * this connection.
    */
   public void reset() {
+    reset(getCurrentContext());
+  }
+
+  private void reset(Context context) {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
 
-    this.retryAbortsInternally = options.isRetryAbortsInternally();
+    this.connectionState.resetValue(RETRY_ABORTS_INTERNALLY, context, /* inTransaction= */ false);
     this.readOnly = options.isReadOnly();
     this.autocommit = options.isAutocommit();
     this.queryOptions =
@@ -856,13 +868,17 @@ class ConnectionImpl implements Connection {
   @Override
   public boolean isRetryAbortsInternally() {
     ConnectionPreconditions.checkState(!isClosed(), CLOSED_ERROR_MSG);
-    return retryAbortsInternally;
+    return this.connectionState.getValue(RETRY_ABORTS_INTERNALLY).getValue();
   }
 
   @Override
   public void setRetryAbortsInternally(boolean retryAbortsInternally) {
     checkSetRetryAbortsInternallyAvailable();
-    this.retryAbortsInternally = retryAbortsInternally;
+    this.connectionState.setValue(
+        RETRY_ABORTS_INTERNALLY,
+        retryAbortsInternally,
+        getCurrentContext(),
+        /* inTransaction = */ false);
   }
 
   @Override
@@ -1925,7 +1941,8 @@ class ConnectionImpl implements Connection {
               .setDatabaseClient(dbClient)
               .setDelayTransactionStartUntilFirstWrite(delayTransactionStartUntilFirstWrite)
               .setKeepTransactionAlive(keepTransactionAlive)
-              .setRetryAbortsInternally(retryAbortsInternally)
+              .setRetryAbortsInternally(
+                  connectionState.getValue(RETRY_ABORTS_INTERNALLY).getValue())
               .setSavepointSupport(savepointSupport)
               .setReturnCommitStats(returnCommitStats)
               .setMaxCommitDelay(maxCommitDelay)

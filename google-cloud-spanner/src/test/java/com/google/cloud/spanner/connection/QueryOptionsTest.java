@@ -30,7 +30,7 @@ public class QueryOptionsTest extends AbstractMockServerTest {
 
   @Test
   public void testUseOptimizerVersionFromConnectionUrl() {
-    try (Connection connection = createConnection("?optimizerVersion=10")) {
+    try (Connection connection = createConnection(";optimizerVersion=10")) {
       Repeat.twice(
           () -> {
             executeSelect1AndConsumeResults(connection);
