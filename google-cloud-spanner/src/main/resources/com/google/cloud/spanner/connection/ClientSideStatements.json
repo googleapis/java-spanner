@@ -369,7 +369,7 @@
 	  "setStatement": {
 	    "propertyName": "STATEMENT_TIMEOUT",
 	    "separator": "=",
-	    "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+	    "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|(^\\d{1,19})|NULL)",
 	    "converterName": "ClientSideStatementValueConverters$DurationConverter"
 	  }
 	},
@@ -489,7 +489,7 @@
 		"setStatement": {
 			"propertyName": "MAX_COMMIT_DELAY",
 			"separator": "=",
-			"allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+			"allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|(^\\d{1,19})|NULL)",
 			"converterName": "ClientSideStatementValueConverters$DurationConverter"
 		}
 	},

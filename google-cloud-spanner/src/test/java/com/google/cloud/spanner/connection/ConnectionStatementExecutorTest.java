@@ -31,7 +31,7 @@ import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.PgTransactionMode.AccessMode;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
-import com.google.protobuf.Duration;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,11 +128,11 @@ public class ConnectionStatementExecutorTest {
 
   @Test
   public void testStatementGetStatementTimeout() {
-    subject.statementSetStatementTimeout(Duration.newBuilder().setSeconds(1L).build());
+    subject.statementSetStatementTimeout(Duration.ofSeconds(1L));
     when(connection.hasStatementTimeout()).thenReturn(true);
     subject.statementShowStatementTimeout();
     verify(connection, atLeastOnce()).getStatementTimeout(any(TimeUnit.class));
-    subject.statementSetStatementTimeout(Duration.getDefaultInstance());
+    subject.statementSetStatementTimeout(Duration.ZERO);
     when(connection.hasStatementTimeout()).thenReturn(false);
   }
 
@@ -212,7 +212,7 @@ public class ConnectionStatementExecutorTest {
 
   @Test
   public void testStatementSetStatementTimeout() {
-    subject.statementSetStatementTimeout(Duration.newBuilder().setNanos(100).build());
+    subject.statementSetStatementTimeout(Duration.ofNanos(100));
     verify(connection).setStatementTimeout(100L, TimeUnit.NANOSECONDS);
   }
 
