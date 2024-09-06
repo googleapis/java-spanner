@@ -22,7 +22,9 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.spanner.DelayedReadContext.DelayedReadOnlyTransaction;
 import com.google.cloud.spanner.MultiplexedSessionDatabaseClient.MultiplexedSessionTransaction;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Represents a delayed execution of a transaction on a multiplexed session. The execution is
@@ -118,5 +120,23 @@ class DelayedMultiplexedSessionTransaction extends AbstractMultiplexedSessionDat
                         client, span, sessionReference, NO_CHANNEL_HINT, false)
                     .readOnlyTransaction(bound),
             MoreExecutors.directExecutor()));
+  }
+
+  /**
+   * Execute `stmt` within PARTITIONED_DML transaction using multiplexed session. This method is a
+   * blocking call as the interface expects to return the output of the `stmt`.
+   */
+  @Override
+  public long executePartitionedUpdate(Statement stmt, UpdateOption... options) {
+    try {
+      SessionReference sessionReference = this.sessionFuture.get();
+      return new MultiplexedSessionTransaction(
+              client, span, sessionReference, NO_CHANNEL_HINT, true)
+          .executePartitionedUpdate(stmt, options);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

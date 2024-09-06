@@ -91,7 +91,7 @@ public final class BatchClientImplTest {
     when(spannerOptions.getSessionPoolOptions()).thenReturn(sessionPoolOptions);
     @SuppressWarnings("resource")
     SpannerImpl spanner = new SpannerImpl(gapicRpc, spannerOptions);
-    client = new BatchClientImpl(spanner.getSessionClient(db));
+    client = new BatchClientImpl(spanner.getSessionClient(db), false);
   }
 
   @SuppressWarnings("unchecked")
