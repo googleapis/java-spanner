@@ -16,7 +16,6 @@
 
 package com.google.cloud.spanner.connection;
 
-<<<<<<< HEAD
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTOCOMMIT;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_CONFIG_EMULATOR;
 import static com.google.cloud.spanner.connection.ConnectionProperties.AUTO_PARTITION_MODE;
@@ -50,9 +49,6 @@ import static com.google.cloud.spanner.connection.ConnectionProperties.USE_PLAIN
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_VIRTUAL_GRPC_TRANSPORT_THREADS;
 import static com.google.cloud.spanner.connection.ConnectionProperties.USE_VIRTUAL_THREADS;
 import static com.google.cloud.spanner.connection.ConnectionPropertyValue.cast;
-=======
-import static com.google.cloud.spanner.connection.ConnectionProperties.RETRY_ABORTS_INTERNALLY;
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
 
 import com.google.api.core.InternalApi;
 import com.google.api.gax.core.CredentialsProvider;
@@ -87,6 +83,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -782,19 +779,6 @@ public class ConnectionOptions {
   private final Credentials credentials;
   private final SessionPoolOptions sessionPoolOptions;
 
-<<<<<<< HEAD
-=======
-  private final boolean dataBoostEnabled;
-  private final boolean autoPartitionMode;
-  private final int maxPartitions;
-  private final int maxPartitionedParallelism;
-
-  private final boolean autocommit;
-  private final boolean readOnly;
-  private final boolean routeToLeader;
-  private final boolean useVirtualThreads;
-  private final boolean useVirtualGrpcTransportThreads;
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
   private final OpenTelemetry openTelemetry;
   private final List<StatementExecutionInterceptor> statementExecutionInterceptors;
   private final SpannerOptionsConfigurator configurator;
@@ -810,7 +794,6 @@ public class ConnectionOptions {
             .putAll(builder.connectionPropertyValues)
             .buildKeepingLast();
     this.uri = builder.uri;
-<<<<<<< HEAD
     ConnectionPropertyValue<Boolean> value = cast(connectionPropertyValues.get(LENIENT.getKey()));
     this.warnings = checkValidProperties(value != null && value.getValue(), uri);
     this.fixedCredentials = builder.credentials;
@@ -823,29 +806,16 @@ public class ConnectionOptions {
     // Create the initial connection state from the parsed properties in the connection URL.
     this.initialConnectionState = new ConnectionState(connectionPropertyValues);
 
-=======
-    ImmutableMap<String, ConnectionPropertyValue<?>> connectionPropertyValues =
-        ImmutableMap.<String, ConnectionPropertyValue<?>>builder()
-            .putAll(ConnectionProperties.parseValues(builder.uri))
-            .putAll(builder.connectionPropertyValues)
-            .buildKeepingLast();
-    this.credentialsUrl =
-        builder.credentialsUrl != null ? builder.credentialsUrl : parseCredentials(builder.uri);
-    this.encodedCredentials = parseEncodedCredentials(builder.uri);
-    this.credentialsProvider = parseCredentialsProvider(builder.uri);
-    this.oauthToken =
-        builder.oauthToken != null ? builder.oauthToken : parseOAuthToken(builder.uri);
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
     // Check that at most one of credentials location, encoded credentials, credentials provider and
     // OUAuth token has been specified in the connection URI.
     Preconditions.checkArgument(
         Stream.of(
-                    getInitialConnectionPropertyValue(CREDENTIALS_URL),
-                    getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
-                    getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER),
-                    getInitialConnectionPropertyValue(OAUTH_TOKEN))
-                .filter(Objects::nonNull)
-                .count()
+                getInitialConnectionPropertyValue(CREDENTIALS_URL),
+                getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
+                getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER),
+                getInitialConnectionPropertyValue(OAUTH_TOKEN))
+            .filter(Objects::nonNull)
+            .count()
             <= 1,
         "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token");
     checkGuardedProperty(
@@ -908,32 +878,9 @@ public class ConnectionOptions {
               .createCredentials(getInitialConnectionPropertyValue(CREDENTIALS_URL));
     }
 
-<<<<<<< HEAD
     if (getInitialConnectionPropertyValue(MIN_SESSIONS) != null
         || getInitialConnectionPropertyValue(MAX_SESSIONS) != null
         || !getInitialConnectionPropertyValue(TRACK_SESSION_LEAKS)) {
-=======
-    String projectId = matcher.group(Builder.PROJECT_GROUP);
-    if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
-      projectId = getDefaultProjectId(this.credentials);
-    }
-    this.projectId = projectId;
-
-    this.autocommit = parseAutocommit(this.uri);
-    this.readOnly = parseReadOnly(this.uri);
-    this.routeToLeader = parseRouteToLeader(this.uri);
-    this.useVirtualThreads = parseUseVirtualThreads(this.uri);
-    this.useVirtualGrpcTransportThreads = parseUseVirtualGrpcTransportThreads(this.uri);
-    this.openTelemetry = builder.openTelemetry;
-    this.tracingPrefix = builder.tracingPrefix;
-    this.enableExtendedTracing = parseEnableExtendedTracing(this.uri);
-    this.enableApiTracing = parseEnableApiTracing(this.uri);
-    this.statementExecutionInterceptors =
-        Collections.unmodifiableList(builder.statementExecutionInterceptors);
-    this.configurator = builder.configurator;
-
-    if (this.minSessions != null || this.maxSessions != null || !this.trackSessionLeaks) {
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
       SessionPoolOptions.Builder sessionPoolOptionsBuilder =
           builder.sessionPoolOptions == null
               ? SessionPoolOptions.newBuilder()
@@ -953,7 +900,6 @@ public class ConnectionOptions {
     } else {
       this.sessionPoolOptions = SessionPoolOptions.newBuilder().setAutoDetectDialect(true).build();
     }
-<<<<<<< HEAD
 
     String projectId = matcher.group(Builder.PROJECT_GROUP);
     if (Builder.DEFAULT_PROJECT_ID_PLACEHOLDER.equalsIgnoreCase(projectId)) {
@@ -962,9 +908,6 @@ public class ConnectionOptions {
     this.projectId = projectId;
     this.instanceId = matcher.group(Builder.INSTANCE_GROUP);
     this.databaseName = matcher.group(Builder.DATABASE_GROUP);
-=======
-    this.initialConnectionState = new ConnectionState(connectionPropertyValues);
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
   }
 
   @VisibleForTesting
@@ -1016,100 +959,6 @@ public class ConnectionOptions {
     return CredentialsService.INSTANCE;
   }
 
-<<<<<<< HEAD
-=======
-  @VisibleForTesting
-  static boolean parseUsePlainText(String uri) {
-    String value = parseUriProperty(uri, USE_PLAIN_TEXT_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_PLAIN_TEXT;
-  }
-
-  @VisibleForTesting
-  static boolean parseAutocommit(String uri) {
-    String value = parseUriProperty(uri, AUTOCOMMIT_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_AUTOCOMMIT;
-  }
-
-  @VisibleForTesting
-  static boolean parseReadOnly(String uri) {
-    String value = parseUriProperty(uri, READONLY_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_READONLY;
-  }
-
-  static boolean parseRouteToLeader(String uri) {
-    String value = parseUriProperty(uri, ROUTE_TO_LEADER_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_ROUTE_TO_LEADER;
-  }
-
-  @VisibleForTesting
-  static boolean parseUseVirtualThreads(String uri) {
-    String value = parseUriProperty(uri, USE_VIRTUAL_THREADS_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_THREADS;
-  }
-
-  @VisibleForTesting
-  static boolean parseUseVirtualGrpcTransportThreads(String uri) {
-    String value = parseUriProperty(uri, USE_VIRTUAL_GRPC_TRANSPORT_THREADS_PROPERTY_NAME);
-    return value != null ? Boolean.parseBoolean(value) : DEFAULT_USE_VIRTUAL_GRPC_TRANSPORT_THREADS;
-  }
-
-  @VisibleForTesting
-  static @Nullable String parseCredentials(String uri) {
-    String value = parseUriProperty(uri, CREDENTIALS_PROPERTY_NAME);
-    return value != null ? value : DEFAULT_CREDENTIALS;
-  }
-
-  @VisibleForTesting
-  static @Nullable String parseEncodedCredentials(String uri) {
-    String encodedCredentials = parseUriProperty(uri, ENCODED_CREDENTIALS_PROPERTY_NAME);
-    checkGuardedProperty(
-        encodedCredentials,
-        ENABLE_ENCODED_CREDENTIALS_SYSTEM_PROPERTY,
-        ENCODED_CREDENTIALS_PROPERTY_NAME);
-    return encodedCredentials;
-  }
-
-  @VisibleForTesting
-  static @Nullable CredentialsProvider parseCredentialsProvider(String uri) {
-    String credentialsProviderName = parseUriProperty(uri, CREDENTIALS_PROVIDER_PROPERTY_NAME);
-    checkGuardedProperty(
-        credentialsProviderName,
-        ENABLE_CREDENTIALS_PROVIDER_SYSTEM_PROPERTY,
-        CREDENTIALS_PROVIDER_PROPERTY_NAME);
-    if (!Strings.isNullOrEmpty(credentialsProviderName)) {
-      try {
-        Class<? extends CredentialsProvider> clazz =
-            (Class<? extends CredentialsProvider>) Class.forName(credentialsProviderName);
-        Constructor<? extends CredentialsProvider> constructor = clazz.getDeclaredConstructor();
-        return constructor.newInstance();
-      } catch (ClassNotFoundException classNotFoundException) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Unknown or invalid CredentialsProvider class name: " + credentialsProviderName,
-            classNotFoundException);
-      } catch (NoSuchMethodException noSuchMethodException) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Credentials provider "
-                + credentialsProviderName
-                + " does not have a public no-arg constructor.",
-            noSuchMethodException);
-      } catch (InvocationTargetException
-          | InstantiationException
-          | IllegalAccessException exception) {
-        throw SpannerExceptionFactory.newSpannerException(
-            ErrorCode.INVALID_ARGUMENT,
-            "Failed to create an instance of "
-                + credentialsProviderName
-                + ": "
-                + exception.getMessage(),
-            exception);
-      }
-    }
-    return null;
-  }
-
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
   private static void checkGuardedProperty(
       String value, String systemPropertyName, String connectionPropertyName) {
     if (!Strings.isNullOrEmpty(value)
@@ -1139,22 +988,22 @@ public class ConnectionOptions {
   /** Check that only valid properties have been specified. */
   @VisibleForTesting
   static String checkValidProperties(boolean lenient, String uri) {
-    String invalidProperties = "";
+    StringBuilder invalidProperties = new StringBuilder();
     List<String> properties = parseProperties(uri);
-    // boolean lenient = parseLenient(uri);
     for (String property : properties) {
-      if (!INTERNAL_VALID_PROPERTIES.contains(ConnectionProperty.createEmptyProperty(property))) {
+      if (!ConnectionProperties.CONNECTION_PROPERTIES.containsKey(
+          property.toLowerCase(Locale.ENGLISH))) {
         if (invalidProperties.length() > 0) {
-          invalidProperties = invalidProperties + ", ";
+          invalidProperties.append(", ");
         }
-        invalidProperties = invalidProperties + property;
+        invalidProperties.append(property);
       }
     }
     if (lenient) {
       return String.format("Invalid properties found in connection URI: %s", invalidProperties);
     } else {
       Preconditions.checkArgument(
-          invalidProperties.isEmpty(),
+          invalidProperties.length() == 0,
           String.format(
               "Invalid properties found in connection URI. Add lenient=true to the connection string to ignore unknown properties. Invalid properties: %s",
               invalidProperties));
@@ -1203,14 +1052,11 @@ public class ConnectionOptions {
     return this.initialConnectionState.getAllValues();
   }
 
-<<<<<<< HEAD
   <T> T getInitialConnectionPropertyValue(
       com.google.cloud.spanner.connection.ConnectionProperty<T> property) {
     return this.initialConnectionState.getValue(property).getValue();
   }
 
-=======
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
   /** The credentials URL of this {@link ConnectionOptions} */
   public String getCredentialsUrl() {
     return getInitialConnectionPropertyValue(CREDENTIALS_URL);
@@ -1343,11 +1189,7 @@ public class ConnectionOptions {
    * ConnectionOptions}
    */
   public boolean isRetryAbortsInternally() {
-<<<<<<< HEAD
     return getInitialConnectionPropertyValue(RETRY_ABORTS_INTERNALLY);
-=======
-    return this.initialConnectionState.getValue(RETRY_ABORTS_INTERNALLY).getValue();
->>>>>>> b2022c09d (refactor: add internal data structures for transactional connection state)
   }
 
   /** Whether connections should use virtual threads for connection executors. */
