@@ -36,6 +36,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
  * {@link UnitOfWork} that is used when a DML batch is started. These batches only accept DML
@@ -257,13 +258,15 @@ class DmlBatch extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Void> commitAsync(CallType callType) {
+  public ApiFuture<Void> commitAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not allowed for DML batches.");
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync(CallType callType) {
+  public ApiFuture<Void> rollbackAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not allowed for DML batches.");
   }

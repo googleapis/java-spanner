@@ -29,8 +29,6 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.connection.ConnectionProperty.Context;
 import com.google.cloud.spanner.connection.ConnectionState.Type;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -39,16 +37,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class ConnectionStateTest {
-
-  @BeforeClass
-  public static void enableTransactionalSessionState() {
-    ConnectionState.TRANSACTIONAL_CONNECTION_STATE_ENABLED.set(true);
-  }
-
-  @AfterClass
-  public static void disableTransactionalSessionState() {
-    ConnectionState.TRANSACTIONAL_CONNECTION_STATE_ENABLED.set(false);
-  }
 
   @Parameters(name = "connectionStateType = {0}")
   public static Object[] data() {
@@ -87,6 +75,8 @@ public class ConnectionStateTest {
   @Test
   public void testSetOutsideTransaction() {
     ConnectionState state = getConnectionState();
+    assertEquals(connectionStateType, state.getType());
+
     assertEquals(false, state.getValue(READONLY).getValue());
     state.setValue(READONLY, true, Context.USER, /* inTransaction = */ false);
     assertEquals(true, state.getValue(READONLY).getValue());

@@ -57,6 +57,7 @@ import io.opentelemetry.context.Scope;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import javax.annotation.Nonnull;
 
 /**
  * Transaction that is used when a {@link Connection} is in autocommit mode. Each method on this
@@ -682,13 +683,15 @@ class SingleUseTransaction extends AbstractBaseUnitOfWork {
   }
 
   @Override
-  public ApiFuture<Void> commitAsync(CallType callType) {
+  public ApiFuture<Void> commitAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Commit is not supported for single-use transactions");
   }
 
   @Override
-  public ApiFuture<Void> rollbackAsync(CallType callType) {
+  public ApiFuture<Void> rollbackAsync(
+      @Nonnull CallType callType, @Nonnull EndTransactionCallback callback) {
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.FAILED_PRECONDITION, "Rollback is not supported for single-use transactions");
   }

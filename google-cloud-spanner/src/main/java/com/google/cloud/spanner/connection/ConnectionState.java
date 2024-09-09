@@ -25,18 +25,16 @@ import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.SpannerExceptionFactory;
 import com.google.cloud.spanner.connection.ConnectionProperty.Context;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nonnull;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 class ConnectionState {
-  // TODO: Remove when transactional connection state is fully implemented.
-  static final AtomicBoolean TRANSACTIONAL_CONNECTION_STATE_ENABLED = new AtomicBoolean(false);
-
   /** The type of connection state that is used. */
   enum Type {
     /**
@@ -55,7 +53,7 @@ class ConnectionState {
 
   private final Object lock = new Object();
 
-  @Nonnull private final Type type;
+  private final Supplier<Type> type;
 
   /** properties contain the current connection properties of a connection. */
   private final Map<String, ConnectionPropertyValue<?>> properties;
@@ -68,8 +66,20 @@ class ConnectionState {
   /** localProperties are the modified local properties during a transaction. */
   private Map<String, ConnectionPropertyValue<?>> localProperties;
 
-  /** Constructs a {@link ConnectionState} with the given initial values. */
+  /** Constructs a non-transactional {@link ConnectionState} with the given initial values. */
   ConnectionState(Map<String, ConnectionPropertyValue<?>> initialValues) {
+    this(initialValues, Suppliers.ofInstance(Type.NON_TRANSACTIONAL));
+  }
+
+  /**
+   * Constructs a {@link ConnectionState} with the given initial values. The type will be
+   * transactional or non-transactional based on the value that is returned by the given supplier.
+   * The type is determined lazily to allow connections to determine the default based on the
+   * dialect, and the dialect is not known directly when a connection is created.
+   */
+  ConnectionState(
+      Map<String, ConnectionPropertyValue<?>> initialValues,
+      Supplier<Type> defaultConnectionStateTypeSupplier) {
     this.properties = new HashMap<>(CONNECTION_PROPERTIES.size());
     for (Entry<String, ConnectionProperty<?>> entry : CONNECTION_PROPERTIES.entrySet()) {
       this.properties.put(
@@ -87,13 +97,21 @@ class ConnectionState {
       }
     }
     Type configuredType = getValue(CONNECTION_STATE_TYPE).getValue();
-    if (configuredType == null || !TRANSACTIONAL_CONNECTION_STATE_ENABLED.get()) {
-      // TODO: Make this dialect-dependent.
-      //       GoogleSQL should by default be non-transactional.
-      //       PostgreSQL should by default be transactional.
-      this.type = Type.NON_TRANSACTIONAL;
+    if (configuredType == null) {
+      this.type = defaultConnectionStateTypeSupplier;
     } else {
-      this.type = configuredType;
+      this.type = Suppliers.ofInstance(configuredType);
+    }
+  }
+
+  @VisibleForTesting
+  Type getType() {
+    return this.type.get();
+  }
+
+  boolean hasTransactionalChanges() {
+    synchronized (lock) {
+      return this.transactionProperties != null || this.localProperties != null;
     }
   }
 
@@ -155,7 +173,7 @@ class ConnectionState {
             + context);
     synchronized (lock) {
       if (!inTransaction
-          || type == Type.NON_TRANSACTIONAL
+          || getType() == Type.NON_TRANSACTIONAL
           || context.ordinal() < Context.USER.ordinal()) {
         internalSetValue(property, value, properties, context);
         return;
@@ -182,7 +200,7 @@ class ConnectionState {
   <T> void setLocalValue(ConnectionProperty<T> property, T value) {
     ConnectionPreconditions.checkState(
         property.getContext().ordinal() >= Context.USER.ordinal(),
-        "setLocalValue is only supported for properties with context IN_TRANSACTION or higher.");
+        "setLocalValue is only supported for properties with context USER or higher.");
     synchronized (lock) {
       if (localProperties == null) {
         localProperties = new HashMap<>();

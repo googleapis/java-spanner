@@ -1758,7 +1758,7 @@ public class ConnectionImplTest {
     when(unitOfWork.executeQueryAsync(
             any(), any(ParsedStatement.class), any(AnalyzeMode.class), Mockito.<QueryOption>any()))
         .thenReturn(ApiFutures.immediateFuture(mock(ResultSet.class)));
-    when(unitOfWork.rollbackAsync(any())).thenReturn(ApiFutures.immediateFuture(null));
+    when(unitOfWork.rollbackAsync(any(), any())).thenReturn(ApiFutures.immediateFuture(null));
     try (ConnectionImpl connection =
         new ConnectionImpl(
             connectionOptions, spannerPool, ddlClient, dbClient, mock(BatchClient.class)) {

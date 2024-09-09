@@ -308,7 +308,7 @@ public class ReadWriteTransactionTest {
 
     ReadWriteTransaction transaction = createSubject();
     assertThat(get(transaction.executeUpdateAsync(CallType.SYNC, parsedStatement)), is(1L));
-    get(transaction.commitAsync(CallType.SYNC));
+    get(transaction.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
 
     assertThat(transaction.getCommitTimestamp(), is(notNullValue()));
   }
@@ -354,7 +354,7 @@ public class ReadWriteTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
 
-    get(transaction.commitAsync(CallType.SYNC));
+    get(transaction.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -366,7 +366,7 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    get(transaction.rollbackAsync(CallType.SYNC));
+    get(transaction.rollbackAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.ROLLED_BACK)));
@@ -379,7 +379,7 @@ public class ReadWriteTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     try {
-      get(transaction.commitAsync(CallType.SYNC));
+      get(transaction.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
     } catch (SpannerException e) {
       // ignore
     }
@@ -395,7 +395,7 @@ public class ReadWriteTransactionTest {
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
     try {
-      get(transaction.commitAsync(CallType.SYNC));
+      get(transaction.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
     } catch (AbortedException e) {
       // ignore
     }
@@ -411,7 +411,7 @@ public class ReadWriteTransactionTest {
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.STARTED)));
     assertThat(transaction.isActive(), is(true));
-    get(transaction.commitAsync(CallType.SYNC));
+    get(transaction.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
     assertThat(
         transaction.getState(),
         is(equalTo(com.google.cloud.spanner.connection.UnitOfWork.UnitOfWorkState.COMMITTED)));
@@ -483,7 +483,7 @@ public class ReadWriteTransactionTest {
       subject.executeUpdateAsync(CallType.SYNC, update2);
       boolean expectedException = false;
       try {
-        get(subject.commitAsync(CallType.SYNC));
+        get(subject.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
       } catch (SpannerException e) {
         if (results == RetryResults.DIFFERENT && e.getErrorCode() == ErrorCode.ABORTED) {
           // expected
@@ -826,7 +826,7 @@ public class ReadWriteTransactionTest {
 
     ReadWriteTransaction transaction = createSubject();
     get(transaction.executeUpdateAsync(CallType.SYNC, parsedStatement));
-    get(transaction.commitAsync(CallType.SYNC));
+    get(transaction.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE));
 
     assertNotNull(transaction.getCommitResponse());
     assertNotNull(transaction.getCommitResponseOrNull());

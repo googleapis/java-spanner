@@ -205,6 +205,13 @@ public class ConnectionOptions {
     }
   }
 
+  /**
+   * Set this system property to true to enable transactional connection state by default for
+   * PostgreSQL-dialect databases. The default is currently false.
+   */
+  public static String ENABLE_TRANSACTIONAL_CONNECTION_STATE_FOR_POSTGRESQL_PROPERTY =
+      "spanner.enable_transactional_connection_state_for_postgresql";
+
   private static final LocalConnectionChecker LOCAL_CONNECTION_CHECKER =
       new LocalConnectionChecker();
   static final boolean DEFAULT_USE_PLAIN_TEXT = false;
@@ -335,6 +342,11 @@ public class ConnectionOptions {
         connectionPropertyName,
         systemPropertyName,
         systemPropertyName);
+  }
+
+  static boolean isEnableTransactionalConnectionStateForPostgreSQL() {
+    return Boolean.parseBoolean(
+        System.getProperty(ENABLE_TRANSACTIONAL_CONNECTION_STATE_FOR_POSTGRESQL_PROPERTY, "false"));
   }
 
   /**
@@ -810,12 +822,12 @@ public class ConnectionOptions {
     // OUAuth token has been specified in the connection URI.
     Preconditions.checkArgument(
         Stream.of(
-                getInitialConnectionPropertyValue(CREDENTIALS_URL),
-                getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
-                getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER),
-                getInitialConnectionPropertyValue(OAUTH_TOKEN))
-            .filter(Objects::nonNull)
-            .count()
+                    getInitialConnectionPropertyValue(CREDENTIALS_URL),
+                    getInitialConnectionPropertyValue(ENCODED_CREDENTIALS),
+                    getInitialConnectionPropertyValue(CREDENTIALS_PROVIDER),
+                    getInitialConnectionPropertyValue(OAUTH_TOKEN))
+                .filter(Objects::nonNull)
+                .count()
             <= 1,
         "Specify only one of credentialsUrl, encodedCredentials, credentialsProvider and OAuth token");
     checkGuardedProperty(

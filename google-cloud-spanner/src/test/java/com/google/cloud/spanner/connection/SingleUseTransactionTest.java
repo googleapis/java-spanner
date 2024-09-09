@@ -516,7 +516,7 @@ public class SingleUseTransactionTest {
   public void testCommit() {
     SingleUseTransaction subject = createSubject();
     try {
-      subject.commitAsync(CallType.SYNC);
+      subject.commitAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE);
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
@@ -527,7 +527,7 @@ public class SingleUseTransactionTest {
   public void testRollback() {
     SingleUseTransaction subject = createSubject();
     try {
-      subject.rollbackAsync(CallType.SYNC);
+      subject.rollbackAsync(CallType.SYNC, NoopEndTransactionCallback.INSTANCE);
       fail("missing expected exception");
     } catch (SpannerException e) {
       assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FAILED_PRECONDITION);
