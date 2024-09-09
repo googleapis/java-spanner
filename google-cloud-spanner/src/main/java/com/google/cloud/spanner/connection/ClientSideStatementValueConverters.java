@@ -30,7 +30,6 @@ import com.google.common.base.Strings;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
 import com.google.spanner.v1.DirectedReadOptions;
-import com.google.spanner.v1.RequestOptions.Priority;
 import java.util.Base64;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -499,9 +498,9 @@ class ClientSideStatementValueConverters {
   }
 
   /** Converter for converting strings to {@link RpcPriority} values. */
-  static class RpcPriorityConverter implements ClientSideStatementValueConverter<Priority> {
-    private final CaseInsensitiveEnumMap<Priority> values =
-        new CaseInsensitiveEnumMap<>(Priority.class);
+  static class RpcPriorityConverter implements ClientSideStatementValueConverter<RpcPriority> {
+    private final CaseInsensitiveEnumMap<RpcPriority> values =
+        new CaseInsensitiveEnumMap<>(RpcPriority.class);
     private final Pattern allowedValues;
 
     public RpcPriorityConverter(String allowedValues) {
@@ -512,19 +511,19 @@ class ClientSideStatementValueConverters {
     }
 
     @Override
-    public Class<Priority> getParameterClass() {
-      return Priority.class;
+    public Class<RpcPriority> getParameterClass() {
+      return RpcPriority.class;
     }
 
     @Override
-    public Priority convert(String value) {
+    public RpcPriority convert(String value) {
       Matcher matcher = allowedValues.matcher(value);
       if (matcher.find()) {
         if (matcher.group(0).equalsIgnoreCase("null")) {
-          return Priority.PRIORITY_UNSPECIFIED;
+          return RpcPriority.UNSPECIFIED;
         }
       }
-      return values.get("PRIORITY_" + value);
+      return values.get(value);
     }
   }
 
