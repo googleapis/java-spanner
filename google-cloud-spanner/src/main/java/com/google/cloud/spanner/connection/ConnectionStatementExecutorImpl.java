@@ -103,12 +103,12 @@ import com.google.cloud.spanner.connection.StatementResult.ClientSideStatementTy
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.Duration;
 import com.google.spanner.v1.DirectedReadOptions;
 import com.google.spanner.v1.PlanNode;
 import com.google.spanner.v1.QueryPlan;
 import com.google.spanner.v1.RequestOptions;
 import com.google.spanner.v1.RequestOptions.Priority;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -218,14 +218,19 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetStatementTimeout(Duration duration) {
-    if (duration.getSeconds() == 0L && duration.getNanos() == 0) {
+    if (duration == null || duration.isZero()) {
       getConnection().clearStatementTimeout();
     } else {
+      com.google.protobuf.Duration protoDuration =
+          com.google.protobuf.Duration.newBuilder()
+              .setSeconds(duration.getSeconds())
+              .setNanos(duration.getNano())
+              .build();
       TimeUnit unit =
           ReadOnlyStalenessUtil.getAppropriateTimeUnit(
-              new ReadOnlyStalenessUtil.DurationGetter(duration));
+              new ReadOnlyStalenessUtil.DurationGetter(protoDuration));
       getConnection()
-          .setStatementTimeout(ReadOnlyStalenessUtil.durationToUnits(duration, unit), unit);
+          .setStatementTimeout(ReadOnlyStalenessUtil.durationToUnits(protoDuration, unit), unit);
     }
     return noResult(SET_STATEMENT_TIMEOUT);
   }
@@ -356,11 +361,7 @@ class ConnectionStatementExecutorImpl implements ConnectionStatementExecutor {
 
   @Override
   public StatementResult statementSetMaxCommitDelay(Duration duration) {
-    getConnection()
-        .setMaxCommitDelay(
-            duration == null || duration.equals(Duration.getDefaultInstance())
-                ? null
-                : java.time.Duration.ofSeconds(duration.getSeconds(), duration.getNanos()));
+    getConnection().setMaxCommitDelay(duration == null || duration.isZero() ? null : duration);
     return noResult(SET_MAX_COMMIT_DELAY);
   }
 

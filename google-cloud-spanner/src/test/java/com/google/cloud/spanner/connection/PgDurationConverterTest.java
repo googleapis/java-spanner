@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNull;
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.PgDurationConverter;
-import com.google.protobuf.Duration;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,41 +39,33 @@ public class PgDurationConverterTest {
     assertNotNull(allowedValues);
     PgDurationConverter converter = new PgDurationConverter(allowedValues);
 
-    assertEquals(Duration.newBuilder().setNanos(1000000).build(), converter.convert("1"));
-    assertEquals(Duration.newBuilder().setSeconds(1L).build(), converter.convert("1000"));
-    assertEquals(
-        Duration.newBuilder().setSeconds(1L).setNanos(1000000).build(), converter.convert("1001"));
+    assertEquals(Duration.ofNanos(1000000), converter.convert("1"));
+    assertEquals(Duration.ofSeconds(1L), converter.convert("1000"));
+    assertEquals(Duration.ofSeconds(1L, 1000000), converter.convert("1001"));
 
     assertEquals(
-        Duration.newBuilder().setNanos((int) TimeUnit.MILLISECONDS.toNanos(100L)).build(),
-        converter.convert("'100ms'"));
+        Duration.ofNanos((int) TimeUnit.MILLISECONDS.toNanos(100L)), converter.convert("'100ms'"));
     assertNull(converter.convert("'0ms'"));
     assertNull(converter.convert("'-100ms'"));
+    assertEquals(Duration.ofSeconds(315576000000L), converter.convert("'315576000000000ms'"));
+    assertEquals(Duration.ofSeconds(1L), converter.convert("'1s'"));
     assertEquals(
-        Duration.newBuilder().setSeconds(315576000000L).build(),
-        converter.convert("'315576000000000ms'"));
-    assertEquals(Duration.newBuilder().setSeconds(1L).build(), converter.convert("'1s'"));
-    assertEquals(
-        Duration.newBuilder()
-            .setSeconds(1L)
-            .setNanos((int) TimeUnit.MILLISECONDS.toNanos(1L))
-            .build(),
+        Duration.ofSeconds(1L, (int) TimeUnit.MILLISECONDS.toNanos(1L)),
         converter.convert("'1001ms'"));
 
-    assertEquals(Duration.newBuilder().setNanos(1).build(), converter.convert("'1ns'"));
-    assertEquals(Duration.newBuilder().setNanos(1000).build(), converter.convert("'1us'"));
-    assertEquals(Duration.newBuilder().setNanos(1000000).build(), converter.convert("'1ms'"));
-    assertEquals(
-        Duration.newBuilder().setNanos(999999999).build(), converter.convert("'999999999ns'"));
-    assertEquals(Duration.newBuilder().setSeconds(1L).build(), converter.convert("'1s'"));
+    assertEquals(Duration.ofNanos(1), converter.convert("'1ns'"));
+    assertEquals(Duration.ofNanos(1000), converter.convert("'1us'"));
+    assertEquals(Duration.ofNanos(1000000), converter.convert("'1ms'"));
+    assertEquals(Duration.ofNanos(999999999), converter.convert("'999999999ns'"));
+    assertEquals(Duration.ofSeconds(1L), converter.convert("'1s'"));
 
     assertNull(converter.convert("''"));
     assertNull(converter.convert("' '"));
     assertNull(converter.convert("'random string'"));
 
-    assertEquals(Duration.getDefaultInstance(), converter.convert("default"));
-    assertEquals(Duration.getDefaultInstance(), converter.convert("DEFAULT"));
-    assertEquals(Duration.getDefaultInstance(), converter.convert("Default"));
+    assertEquals(Duration.ZERO, converter.convert("default"));
+    assertEquals(Duration.ZERO, converter.convert("DEFAULT"));
+    assertEquals(Duration.ZERO, converter.convert("Default"));
     assertNull(converter.convert("'default'"));
     assertNull(converter.convert("'DEFAULT'"));
     assertNull(converter.convert("'Default'"));

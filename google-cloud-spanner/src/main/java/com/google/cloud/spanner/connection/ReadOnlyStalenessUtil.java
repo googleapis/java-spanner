@@ -27,6 +27,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TimestampBound.Mode;
 import com.google.protobuf.Duration;
 import com.google.protobuf.util.Durations;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -91,6 +92,31 @@ public class ReadOnlyStalenessUtil {
     }
     throw SpannerExceptionFactory.newSpannerException(
         ErrorCode.INVALID_ARGUMENT, "Invalid option for time unit: " + unit);
+  }
+
+  /**
+   * Convert from {@link TimeUnit} to {@link ChronoUnit}. This code is copied from {@link
+   * TimeUnit#toChronoUnit()}, which is available in Java 9 and higher.
+   */
+  static ChronoUnit toChronoUnit(TimeUnit timeUnit) {
+    switch (timeUnit) {
+      case NANOSECONDS:
+        return ChronoUnit.NANOS;
+      case MICROSECONDS:
+        return ChronoUnit.MICROS;
+      case MILLISECONDS:
+        return ChronoUnit.MILLIS;
+      case SECONDS:
+        return ChronoUnit.SECONDS;
+      case MINUTES:
+        return ChronoUnit.MINUTES;
+      case HOURS:
+        return ChronoUnit.HOURS;
+      case DAYS:
+        return ChronoUnit.DAYS;
+      default:
+        throw new IllegalArgumentException();
+    }
   }
 
   /**
