@@ -791,7 +791,7 @@ public class SessionPoolOptions {
 
     /**
      * Sets whether the client should use multiplexed session for R/W operations or not. This method
-     * is package-protected and used internally.
+     * is intentionally package-private and intended for internal use.
      */
     Builder setUseMultiplexedSessionForRW(boolean useMultiplexedSessionForRW) {
       this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
