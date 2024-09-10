@@ -277,6 +277,9 @@ class SpannerImpl extends BaseService<SpannerOptions> implements Spanner {
 
         boolean useMultiplexedSession =
             getOptions().getSessionPoolOptions().getUseMultiplexedSession();
+        boolean useMultiplexedSessionForRW =
+            getOptions().getSessionPoolOptions().getUseMultiplexedSessionForRW();
+
         MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient =
             useMultiplexedSession
                 ? new MultiplexedSessionDatabaseClient(SpannerImpl.this.getSessionClient(db))
