@@ -36,26 +36,29 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final String clientId;
   @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
+  @VisibleForTesting final boolean useMultiplexedSessionForRW;
 
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer, false);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer, false);
   }
 
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
-      TraceWrapper tracer) {
+      TraceWrapper tracer,
+      boolean useMultiplexedSessionForRW) {
     this.clientId = clientId;
     this.pool = pool;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.tracer = tracer;
+    this.useMultiplexedSessionForRW = useMultiplexedSessionForRW;
   }
 
   @VisibleForTesting
@@ -70,6 +73,14 @@ class DatabaseClientImpl implements DatabaseClient {
       return this.multiplexedSessionDatabaseClient;
     }
     return pool.getMultiplexedSessionWithFallback();
+  }
+
+  @VisibleForTesting
+  DatabaseClient getMultiplexedSessionForRW() {
+    if (this.useMultiplexedSessionForRW) {
+      return getMultiplexedSession();
+    }
+    return getSession();
   }
 
   @Override
@@ -215,7 +226,7 @@ class DatabaseClientImpl implements DatabaseClient {
   public TransactionRunner readWriteTransaction(TransactionOption... options) {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      return getSession().readWriteTransaction(options);
+      return getMultiplexedSessionForRW().readWriteTransaction(options);
     } catch (RuntimeException e) {
       span.setStatus(e);
       span.end();
