@@ -655,7 +655,7 @@
       "setStatement": {
         "propertyName": "SPANNER.MAX_COMMIT_DELAY",
         "separator": "(?:=|\\s+TO\\s+)",
-        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|NULL)",
+        "allowedValues": "('(\\d{1,19})(s|ms|us|ns)'|(^\\d{1,19})|NULL)",
         "converterName": "ClientSideStatementValueConverters$DurationConverter"
       }
     },
