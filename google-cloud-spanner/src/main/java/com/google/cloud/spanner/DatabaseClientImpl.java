@@ -37,23 +37,37 @@ class DatabaseClientImpl implements DatabaseClient {
   @VisibleForTesting final SessionPool pool;
   @VisibleForTesting final MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient;
 
+  final boolean useMultiplexedSessionBlindWrite;
+
   @VisibleForTesting
   DatabaseClientImpl(SessionPool pool, TraceWrapper tracer) {
-    this("", pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this(
+        "",
+        pool,
+        /* useMultiplexedSessionBlindWrite = */ false,
+        /* multiplexedSessionDatabaseClient = */ null,
+        tracer);
   }
 
   @VisibleForTesting
   DatabaseClientImpl(String clientId, SessionPool pool, TraceWrapper tracer) {
-    this(clientId, pool, /* multiplexedSessionDatabaseClient = */ null, tracer);
+    this(
+        clientId,
+        pool,
+        /* useMultiplexedSessionBlindWrite = */ false,
+        /* multiplexedSessionDatabaseClient = */ null,
+        tracer);
   }
 
   DatabaseClientImpl(
       String clientId,
       SessionPool pool,
+      boolean useMultiplexedSessionBlindWrite,
       @Nullable MultiplexedSessionDatabaseClient multiplexedSessionDatabaseClient,
       TraceWrapper tracer) {
     this.clientId = clientId;
     this.pool = pool;
+    this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
     this.multiplexedSessionDatabaseClient = multiplexedSessionDatabaseClient;
     this.tracer = tracer;
   }
@@ -122,7 +136,7 @@ class DatabaseClientImpl implements DatabaseClient {
       throws SpannerException {
     ISpan span = tracer.spanBuilder(READ_WRITE_TRANSACTION, options);
     try (IScope s = tracer.withSpan(span)) {
-      if (getMultiplexedSessionDatabaseClient() != null) {
+      if (useMultiplexedSessionBlindWrite && getMultiplexedSessionDatabaseClient() != null) {
         return getMultiplexedSessionDatabaseClient()
             .writeAtLeastOnceWithOptions(mutations, options);
       }

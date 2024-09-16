@@ -70,6 +70,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
             .setSessionPoolOption(
                 SessionPoolOptions.newBuilder()
                     .setUseMultiplexedSession(true)
+                    .setUseMultiplexedSessionBlindWrite(true)
                     // Set the maintainer to loop once every 1ms
                     .setMultiplexedSessionMaintenanceLoopFrequency(Duration.ofMillis(1L))
                     // Set multiplexed sessions to be replaced once every 1ms
