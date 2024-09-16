@@ -333,6 +333,9 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
 
     List<CommitRequest> commitRequests = mockSpanner.getRequestsOfType(CommitRequest.class);
     assertEquals(2, commitRequests.size());
+    for (CommitRequest request : commitRequests) {
+      assertTrue(mockSpanner.getSession(request.getSession()).getMultiplexed());
+    }
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
@@ -357,6 +360,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
+    assertTrue(mockSpanner.getSession(commit.getSession()).getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
@@ -384,6 +388,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_UNSPECIFIED, commit.getRequestOptions().getPriority());
+    assertTrue(mockSpanner.getSession(commit.getSession()).getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
@@ -407,6 +412,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertFalse(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
     assertNotNull(commit.getRequestOptions());
     assertEquals(Priority.PRIORITY_LOW, commit.getRequestOptions().getPriority());
+    assertTrue(mockSpanner.getSession(commit.getSession()).getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
@@ -431,6 +437,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(commit.getRequestOptions());
     assertThat(commit.getRequestOptions().getTransactionTag()).isEqualTo("app=spanner,env=test");
     assertThat(commit.getRequestOptions().getRequestTag()).isEmpty();
+    assertTrue(mockSpanner.getSession(commit.getSession()).getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
@@ -452,6 +459,7 @@ public class MultiplexedSessionDatabaseClientMockServerTest extends AbstractMock
     assertNotNull(commit.getSingleUseTransaction());
     assertTrue(commit.getSingleUseTransaction().hasReadWrite());
     assertTrue(commit.getSingleUseTransaction().getExcludeTxnFromChangeStreams());
+    assertTrue(mockSpanner.getSession(commit.getSession()).getMultiplexed());
 
     assertNotNull(client.multiplexedSessionDatabaseClient);
     assertEquals(1L, client.multiplexedSessionDatabaseClient.getNumSessionsAcquired().get());
