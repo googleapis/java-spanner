@@ -177,7 +177,7 @@ class ClientSideStatementValueConverters {
     }
   }
 
-  /** Converter from string to protobuf {@link Duration}. */
+  /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
     static final DurationConverter INSTANCE =
         new DurationConverter("('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)");
