@@ -33,7 +33,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.spanner.v1.DirectedReadOptions;
-import com.google.spanner.v1.RequestOptions.Priority;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
@@ -178,14 +177,21 @@ class ClientSideStatementValueConverters {
     }
   }
 
-  /** Converter from string to protobuf {@link Duration}. */
+  /** Converter from string to {@link Duration}. */
   static class DurationConverter implements ClientSideStatementValueConverter<Duration> {
     static final DurationConverter INSTANCE =
-        new DurationConverter("('(\\d{1,19})(s|ms|us|ns)'|(^\\d{1,19})|NULL)");
+        new DurationConverter("('(\\d{1,19})(s|ms|us|ns)'|\\d{1,19}|NULL)");
+
+    private final String resetValue;
 
     private final Pattern allowedValues;
 
     public DurationConverter(String allowedValues) {
+      this("NULL", allowedValues);
+    }
+
+    DurationConverter(String resetValue, String allowedValues) {
+      this.resetValue = Preconditions.checkNotNull(resetValue);
       // Remove the parentheses from the beginning and end.
       this.allowedValues =
           Pattern.compile(
@@ -201,20 +207,25 @@ class ClientSideStatementValueConverters {
     public Duration convert(String value) {
       Matcher matcher = allowedValues.matcher(value);
       if (matcher.find()) {
-        if (matcher.group(0).equalsIgnoreCase("null")) {
-          return Duration.ofMillis(0L);
+        if (value.trim().equalsIgnoreCase(resetValue)) {
+          return Duration.ZERO;
         } else {
-          Duration duration;
-          if (matcher.group(3) != null) {
-            duration = Duration.ofMillis(Long.parseLong(matcher.group(3)));
-          } else {
-            ChronoUnit unit = toChronoUnit(parseTimeUnit(matcher.group(2)));
-            duration = Duration.of(Long.parseLong(matcher.group(1)), unit);
-          }
-          if (duration.isZero()) {
+          try {
+            Duration duration;
+            if (matcher.group(1) != null && matcher.group(2) != null) {
+              ChronoUnit unit = toChronoUnit(parseTimeUnit(matcher.group(2)));
+              duration = Duration.of(Long.parseLong(matcher.group(1)), unit);
+            } else {
+              duration = Duration.ofMillis(Long.parseLong(value.trim()));
+            }
+            if (duration.isZero()) {
+              return null;
+            }
+            return duration;
+          } catch (NumberFormatException exception) {
+            // Converters should return null for invalid values.
             return null;
           }
-          return duration;
         }
       }
       return null;
@@ -222,40 +233,9 @@ class ClientSideStatementValueConverters {
   }
 
   /** Converter from string to {@link Duration}. */
-  static class PgDurationConverter implements ClientSideStatementValueConverter<Duration> {
-    private final Pattern allowedValues;
-
+  static class PgDurationConverter extends DurationConverter {
     public PgDurationConverter(String allowedValues) {
-      // Remove the parentheses from the beginning and end.
-      this.allowedValues =
-          Pattern.compile(
-              "(?is)\\A" + allowedValues.substring(1, allowedValues.length() - 1) + "\\z");
-    }
-
-    @Override
-    public Class<Duration> getParameterClass() {
-      return Duration.class;
-    }
-
-    @Override
-    public Duration convert(String value) {
-      Matcher matcher = allowedValues.matcher(value);
-      if (matcher.find()) {
-        Duration duration;
-        if (matcher.group(0).equalsIgnoreCase("default")) {
-          return Duration.ofMillis(0L);
-        } else if (matcher.group(2) == null) {
-          duration = Duration.ofMillis(Long.parseLong(matcher.group(0)));
-        } else {
-          ChronoUnit unit = toChronoUnit(parseTimeUnit(matcher.group(2)));
-          duration = Duration.of(Long.parseLong(matcher.group(1)), unit);
-        }
-        if (duration.isZero()) {
-          return null;
-        }
-        return duration;
-      }
-      return null;
+      super("DEFAULT", allowedValues);
     }
   }
 
@@ -551,15 +531,10 @@ class ClientSideStatementValueConverters {
     }
   }
 
-  /**
-   * Converter for converting strings to {@link Priority} values.
-   *
-   * @deprecated Use {@link RpcPriorityEnumConverter} instead.
-   */
-  @Deprecated
-  static class RpcPriorityConverter implements ClientSideStatementValueConverter<Priority> {
-    private final CaseInsensitiveEnumMap<Priority> values =
-        new CaseInsensitiveEnumMap<>(Priority.class);
+  /** Converter for converting strings to {@link RpcPriority} values. */
+  static class RpcPriorityConverter implements ClientSideStatementValueConverter<RpcPriority> {
+    private final CaseInsensitiveEnumMap<RpcPriority> values =
+        new CaseInsensitiveEnumMap<>(RpcPriority.class);
     private final Pattern allowedValues;
 
     public RpcPriorityConverter(String allowedValues) {
@@ -570,19 +545,19 @@ class ClientSideStatementValueConverters {
     }
 
     @Override
-    public Class<Priority> getParameterClass() {
-      return Priority.class;
+    public Class<RpcPriority> getParameterClass() {
+      return RpcPriority.class;
     }
 
     @Override
-    public Priority convert(String value) {
+    public RpcPriority convert(String value) {
       Matcher matcher = allowedValues.matcher(value);
       if (matcher.find()) {
         if (matcher.group(0).equalsIgnoreCase("null")) {
-          return Priority.PRIORITY_UNSPECIFIED;
+          return RpcPriority.UNSPECIFIED;
         }
       }
-      return values.get("PRIORITY_" + value);
+      return values.get(value);
     }
   }
 

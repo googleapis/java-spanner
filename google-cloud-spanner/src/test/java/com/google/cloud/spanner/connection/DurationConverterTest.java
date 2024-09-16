@@ -18,9 +18,9 @@ package com.google.cloud.spanner.connection;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
@@ -38,11 +38,10 @@ public class DurationConverterTest {
     String allowedValues =
         ReadOnlyStalenessConverterTest.getAllowedValues(
             DurationConverter.class, Dialect.GOOGLE_STANDARD_SQL);
-    assertThat(allowedValues, is(notNullValue()));
+    assertNotNull(allowedValues);
     DurationConverter converter = new DurationConverter(allowedValues);
-    assertThat(
-        converter.convert("'100ms'"),
-        is(equalTo(Duration.ofNanos((int) TimeUnit.MILLISECONDS.toNanos(100L)))));
+    assertThat(converter.convert("'100ms'"), is(equalTo(Duration.ofMillis(100L))));
+    assertThat(converter.convert("100"), is(equalTo(Duration.ofMillis(100))));
     assertThat(converter.convert("'0ms'"), is(nullValue()));
     assertThat(converter.convert("'-100ms'"), is(nullValue()));
     assertThat(
@@ -50,7 +49,7 @@ public class DurationConverterTest {
     assertThat(converter.convert("'1000ms'"), is(equalTo(Duration.ofSeconds(1L))));
     assertThat(
         converter.convert("'1001ms'"),
-        is(equalTo(Duration.ofSeconds(1L, (int) TimeUnit.MILLISECONDS.toNanos(1L)))));
+        is(equalTo(Duration.ofSeconds(1L, TimeUnit.MILLISECONDS.toNanos(1L)))));
 
     assertThat(converter.convert("'1ns'"), is(equalTo(Duration.ofNanos(1))));
     assertThat(converter.convert("'1us'"), is(equalTo(Duration.ofNanos(1000))));

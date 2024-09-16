@@ -16,11 +16,11 @@
 
 package com.google.cloud.spanner.connection;
 
+import com.google.cloud.spanner.Options.RpcPriority;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.connection.PgTransactionMode.IsolationLevel;
 import com.google.spanner.v1.DirectedReadOptions;
-import com.google.spanner.v1.RequestOptions.Priority;
 import java.time.Duration;
 
 /**
@@ -134,7 +134,7 @@ interface ConnectionStatementExecutor {
 
   StatementResult statementResetAll();
 
-  StatementResult statementSetRPCPriority(Priority priority);
+  StatementResult statementSetRPCPriority(RpcPriority priority);
 
   StatementResult statementShowRPCPriority();
 
