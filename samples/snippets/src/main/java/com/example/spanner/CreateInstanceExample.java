@@ -16,7 +16,7 @@
 
 package com.example.spanner;
 
-//[START spanner_create_instance]
+// [START spanner_create_instance]
 
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
@@ -45,25 +45,25 @@ class CreateInstanceExample {
     Instance instance =
         Instance.newBuilder()
             .setDisplayName(displayName)
+            .setEdition(Instance.Edition.STANDARD)
             .setNodeCount(nodeCount)
-            .setConfig(
-                InstanceConfigName.of(projectId, "regional-us-central1").toString())
+            .setConfig(InstanceConfigName.of(projectId, "regional-us-east4").toString())
             .build();
-    
+
     try (Spanner spanner =
-        SpannerOptions.newBuilder()
-            .setProjectId(projectId)
-            .build()
-            .getService();
+            SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
         InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
 
       // Wait for the createInstance operation to finish.
-      Instance createdInstance = instanceAdminClient.createInstanceAsync(
-          CreateInstanceRequest.newBuilder()
-              .setParent(ProjectName.of(projectId).toString())
-              .setInstanceId(instanceId)
-              .setInstance(instance)
-              .build()).get();
+      Instance createdInstance =
+          instanceAdminClient
+              .createInstanceAsync(
+                  CreateInstanceRequest.newBuilder()
+                      .setParent(ProjectName.of(projectId).toString())
+                      .setInstanceId(instanceId)
+                      .setInstance(instance)
+                      .build())
+              .get();
       System.out.printf("Instance %s was successfully created%n", createdInstance.getName());
     } catch (ExecutionException e) {
       System.out.printf(
@@ -74,4 +74,4 @@ class CreateInstanceExample {
     }
   }
 }
-//[END spanner_create_instance]
+// [END spanner_create_instance]

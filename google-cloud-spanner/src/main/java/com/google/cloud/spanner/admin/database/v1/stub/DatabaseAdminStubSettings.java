@@ -26,6 +26,7 @@ import static com.google.cloud.spanner.admin.database.v1.DatabaseAdminClient.Lis
 import com.google.api.core.ApiFunction;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.BetaApi;
+import com.google.api.core.ObsoleteApi;
 import com.google.api.gax.core.GaxProperties;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.InstantiatingExecutorProvider;
@@ -774,6 +775,7 @@ public class DatabaseAdminStubSettings extends StubSettings<DatabaseAdminStubSet
   }
 
   /** Returns the default service endpoint. */
+  @ObsoleteApi("Use getEndpoint() instead")
   public static String getDefaultEndpoint() {
     return "spanner.googleapis.com:443";
   }

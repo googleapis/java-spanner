@@ -94,7 +94,8 @@ public interface SpannerRpc extends ServiceRpc {
       return (T) options.get(this);
     }
 
-    Long getLong(@Nullable Map<Option, ?> options) {
+    @InternalApi
+    public Long getLong(@Nullable Map<Option, ?> options) {
       return get(options);
     }
 
@@ -152,6 +153,15 @@ public interface SpannerRpc extends ServiceRpc {
     void onCompleted();
 
     void onError(SpannerException e);
+
+    /**
+     * Returns true if the stream should be cancelled when the Spanner client is closed. This
+     * returns true for {@link com.google.cloud.spanner.BatchReadOnlyTransaction}, as these use a
+     * non-pooled session. Pooled sessions are deleted when the Spanner client is closed, and this
+     * automatically also cancels any query that uses the session, which means that we don't need to
+     * explicitly cancel those queries when the Spanner client is closed.
+     */
+    boolean cancelQueryWhenClientIsClosed();
   }
 
   /** Handle for cancellation of a streaming read or query call. */

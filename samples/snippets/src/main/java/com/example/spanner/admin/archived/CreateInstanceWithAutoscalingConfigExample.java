@@ -44,7 +44,7 @@ class CreateInstanceWithAutoscalingConfigExample {
     InstanceAdminClient instanceAdminClient = spanner.getInstanceAdminClient();
 
     // Set Instance configuration.
-    String configId = "regional-us-central1";
+    String configId = "regional-us-east4";
     // Create an autoscaling config.
     AutoscalingConfig autoscalingConfig =
         AutoscalingConfig.newBuilder()

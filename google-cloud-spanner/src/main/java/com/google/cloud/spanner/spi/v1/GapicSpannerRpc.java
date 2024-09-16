@@ -56,6 +56,7 @@ import com.google.api.gax.rpc.WatchdogProvider;
 import com.google.api.pathtemplate.PathTemplate;
 import com.google.cloud.RetryHelper;
 import com.google.cloud.RetryHelper.RetryHelperException;
+import com.google.cloud.grpc.GcpManagedChannel;
 import com.google.cloud.grpc.GcpManagedChannelBuilder;
 import com.google.cloud.grpc.GcpManagedChannelOptions;
 import com.google.cloud.grpc.GcpManagedChannelOptions.GcpMetricsOptions;
@@ -200,6 +201,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -261,12 +263,17 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   private final ScheduledExecutorService spannerWatchdog;
 
+  private final ConcurrentLinkedDeque<SpannerResponseObserver> responseObservers =
+      new ConcurrentLinkedDeque<>();
+
   private final boolean throttleAdministrativeRequests;
   private final RetrySettings retryAdministrativeRequestsSettings;
   private static final double ADMINISTRATIVE_REQUESTS_RATE_LIMIT = 1.0D;
   private static final ConcurrentMap<String, RateLimiter> ADMINISTRATIVE_REQUESTS_RATE_LIMITERS =
       new ConcurrentHashMap<>();
   private final boolean leaderAwareRoutingEnabled;
+  private final int numChannels;
+  private final boolean isGrpcGcpExtensionEnabled;
 
   public static GapicSpannerRpc create(SpannerOptions options) {
     return new GapicSpannerRpc(options);
@@ -318,6 +325,8 @@ public class GapicSpannerRpc implements SpannerRpc {
     this.callCredentialsProvider = options.getCallCredentialsProvider();
     this.compressorName = options.getCompressorName();
     this.leaderAwareRoutingEnabled = options.isLeaderAwareRoutingEnabled();
+    this.numChannels = options.getNumChannels();
+    this.isGrpcGcpExtensionEnabled = options.isGrpcGcpExtensionEnabled();
 
     if (initializeStubs) {
       // First check if SpannerOptions provides a TransportChannelProvider. Create one
@@ -1960,7 +1969,20 @@ public class GapicSpannerRpc implements SpannerRpc {
       boolean routeToLeader) {
     GrpcCallContext context = GrpcCallContext.createDefault();
     if (options != null) {
-      context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+      if (this.isGrpcGcpExtensionEnabled) {
+        // Set channel affinity in gRPC-GCP.
+        // Compute bounded channel hint to prevent gRPC-GCP affinity map from getting unbounded.
+        int boundedChannelHint = Option.CHANNEL_HINT.getLong(options).intValue() % this.numChannels;
+        context =
+            context.withCallOptions(
+                context
+                    .getCallOptions()
+                    .withOption(
+                        GcpManagedChannel.AFFINITY_KEY, String.valueOf(boundedChannelHint)));
+      } else {
+        // Set channel affinity in GAX.
+        context = context.withChannelAffinity(Option.CHANNEL_HINT.getLong(options).intValue());
+      }
     }
     if (compressorName != null) {
       // This sets the compressor for Client -> Server.
@@ -1986,9 +2008,29 @@ public class GapicSpannerRpc implements SpannerRpc {
     return (GrpcCallContext) context.merge(apiCallContextFromContext);
   }
 
+  void registerResponseObserver(SpannerResponseObserver responseObserver) {
+    responseObservers.add(responseObserver);
+  }
+
+  void unregisterResponseObserver(SpannerResponseObserver responseObserver) {
+    responseObservers.remove(responseObserver);
+  }
+
+  void closeResponseObservers() {
+    responseObservers.forEach(SpannerResponseObserver::close);
+    responseObservers.clear();
+  }
+
+  @InternalApi
+  @VisibleForTesting
+  public int getNumActiveResponseObservers() {
+    return responseObservers.size();
+  }
+
   @Override
   public void shutdown() {
     this.rpcIsClosed = true;
+    closeResponseObservers();
     if (this.spannerStub != null) {
       this.spannerStub.close();
       this.partitionedDmlStub.close();
@@ -2010,6 +2052,7 @@ public class GapicSpannerRpc implements SpannerRpc {
 
   public void shutdownNow() {
     this.rpcIsClosed = true;
+    closeResponseObservers();
     this.spannerStub.close();
     this.partitionedDmlStub.close();
     this.instanceAdminStub.close();
@@ -2067,7 +2110,7 @@ public class GapicSpannerRpc implements SpannerRpc {
    * A {@code ResponseObserver} that exposes the {@code StreamController} and delegates callbacks to
    * the {@link ResultStreamConsumer}.
    */
-  private static class SpannerResponseObserver implements ResponseObserver<PartialResultSet> {
+  private class SpannerResponseObserver implements ResponseObserver<PartialResultSet> {
 
     private StreamController controller;
     private final ResultStreamConsumer consumer;
@@ -2076,13 +2119,21 @@ public class GapicSpannerRpc implements SpannerRpc {
       this.consumer = consumer;
     }
 
+    void close() {
+      if (this.controller != null) {
+        this.controller.cancel();
+      }
+    }
+
     @Override
     public void onStart(StreamController controller) {
-
       // Disable the auto flow control to allow client library
       // set the number of messages it prefers to request
       controller.disableAutoInboundFlowControl();
       this.controller = controller;
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        registerResponseObserver(this);
+      }
     }
 
     @Override
@@ -2092,11 +2143,19 @@ public class GapicSpannerRpc implements SpannerRpc {
 
     @Override
     public void onError(Throwable t) {
+      // Unregister the response observer when the query has completed with an error.
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        unregisterResponseObserver(this);
+      }
       consumer.onError(newSpannerException(t));
     }
 
     @Override
     public void onComplete() {
+      // Unregister the response observer when the query has completed normally.
+      if (this.consumer.cancelQueryWhenClientIsClosed()) {
+        unregisterResponseObserver(this);
+      }
       consumer.onCompleted();
     }
 

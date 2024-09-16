@@ -58,6 +58,9 @@ import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
 import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.MoveInstanceMetadata;
+import com.google.spanner.admin.instance.v1.MoveInstanceRequest;
+import com.google.spanner.admin.instance.v1.MoveInstanceResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -240,6 +243,15 @@ public abstract class InstanceAdminStub implements BackgroundResource {
       listInstancePartitionOperationsCallable() {
     throw new UnsupportedOperationException(
         "Not implemented: listInstancePartitionOperationsCallable()");
+  }
+
+  public OperationCallable<MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationCallable() {
+    throw new UnsupportedOperationException("Not implemented: moveInstanceOperationCallable()");
+  }
+
+  public UnaryCallable<MoveInstanceRequest, Operation> moveInstanceCallable() {
+    throw new UnsupportedOperationException("Not implemented: moveInstanceCallable()");
   }
 
   @Override

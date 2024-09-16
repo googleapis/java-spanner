@@ -18,14 +18,14 @@ package com.google.cloud.spanner.connection;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 import com.google.cloud.spanner.Dialect;
 import com.google.cloud.spanner.connection.ClientSideStatementImpl.CompileException;
 import com.google.cloud.spanner.connection.ClientSideStatementValueConverters.DurationConverter;
-import com.google.protobuf.Duration;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,49 +38,32 @@ public class DurationConverterTest {
     String allowedValues =
         ReadOnlyStalenessConverterTest.getAllowedValues(
             DurationConverter.class, Dialect.GOOGLE_STANDARD_SQL);
-    assertThat(allowedValues, is(notNullValue()));
+    assertNotNull(allowedValues);
     DurationConverter converter = new DurationConverter(allowedValues);
-    assertThat(
-        converter.convert("'100ms'"),
-        is(
-            equalTo(
-                Duration.newBuilder()
-                    .setNanos((int) TimeUnit.MILLISECONDS.toNanos(100L))
-                    .build())));
+    assertThat(converter.convert("'100ms'"), is(equalTo(Duration.ofMillis(100L))));
+    assertThat(converter.convert("100"), is(equalTo(Duration.ofMillis(100))));
     assertThat(converter.convert("'0ms'"), is(nullValue()));
     assertThat(converter.convert("'-100ms'"), is(nullValue()));
     assertThat(
-        converter.convert("'315576000000000ms'"),
-        is(equalTo(Duration.newBuilder().setSeconds(315576000000L).build())));
-    assertThat(
-        converter.convert("'1000ms'"), is(equalTo(Duration.newBuilder().setSeconds(1L).build())));
+        converter.convert("'315576000000000ms'"), is(equalTo(Duration.ofSeconds(315576000000L))));
+    assertThat(converter.convert("'1000ms'"), is(equalTo(Duration.ofSeconds(1L))));
     assertThat(
         converter.convert("'1001ms'"),
-        is(
-            equalTo(
-                Duration.newBuilder()
-                    .setSeconds(1L)
-                    .setNanos((int) TimeUnit.MILLISECONDS.toNanos(1L))
-                    .build())));
+        is(equalTo(Duration.ofSeconds(1L, TimeUnit.MILLISECONDS.toNanos(1L)))));
 
-    assertThat(converter.convert("'1ns'"), is(equalTo(Duration.newBuilder().setNanos(1).build())));
-    assertThat(
-        converter.convert("'1us'"), is(equalTo(Duration.newBuilder().setNanos(1000).build())));
-    assertThat(
-        converter.convert("'1ms'"), is(equalTo(Duration.newBuilder().setNanos(1000000).build())));
-    assertThat(
-        converter.convert("'999999999ns'"),
-        is(equalTo(Duration.newBuilder().setNanos(999999999).build())));
-    assertThat(
-        converter.convert("'1s'"), is(equalTo(Duration.newBuilder().setSeconds(1L).build())));
+    assertThat(converter.convert("'1ns'"), is(equalTo(Duration.ofNanos(1))));
+    assertThat(converter.convert("'1us'"), is(equalTo(Duration.ofNanos(1000))));
+    assertThat(converter.convert("'1ms'"), is(equalTo(Duration.ofNanos(1000000))));
+    assertThat(converter.convert("'999999999ns'"), is(equalTo(Duration.ofNanos(999999999))));
+    assertThat(converter.convert("'1s'"), is(equalTo(Duration.ofSeconds(1L))));
 
     assertThat(converter.convert("''"), is(nullValue()));
     assertThat(converter.convert("' '"), is(nullValue()));
     assertThat(converter.convert("'random string'"), is(nullValue()));
 
-    assertThat(converter.convert("null"), is(equalTo(Duration.getDefaultInstance())));
-    assertThat(converter.convert("NULL"), is(equalTo(Duration.getDefaultInstance())));
-    assertThat(converter.convert("Null"), is(equalTo(Duration.getDefaultInstance())));
+    assertThat(converter.convert("null"), is(equalTo(Duration.ZERO)));
+    assertThat(converter.convert("NULL"), is(equalTo(Duration.ZERO)));
+    assertThat(converter.convert("Null"), is(equalTo(Duration.ZERO)));
     assertThat(converter.convert("'null'"), is(nullValue()));
     assertThat(converter.convert("'NULL'"), is(nullValue()));
     assertThat(converter.convert("'Null'"), is(nullValue()));

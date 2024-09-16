@@ -72,6 +72,8 @@ import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
 import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.MoveInstanceRequest;
+import com.google.spanner.admin.instance.v1.MoveInstanceResponse;
 import com.google.spanner.admin.instance.v1.ProjectName;
 import com.google.spanner.admin.instance.v1.ReplicaInfo;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
@@ -1869,6 +1871,58 @@ public class InstanceAdminClientTest {
       Assert.fail("No exception raised");
     } catch (InvalidArgumentException e) {
       // Expected exception.
+    }
+  }
+
+  @Test
+  public void moveInstanceTest() throws Exception {
+    MoveInstanceResponse expectedResponse = MoveInstanceResponse.newBuilder().build();
+    Operation resultOperation =
+        Operation.newBuilder()
+            .setName("moveInstanceTest")
+            .setDone(true)
+            .setResponse(Any.pack(expectedResponse))
+            .build();
+    mockInstanceAdmin.addResponse(resultOperation);
+
+    MoveInstanceRequest request =
+        MoveInstanceRequest.newBuilder()
+            .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+            .setTargetConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+            .build();
+
+    MoveInstanceResponse actualResponse = client.moveInstanceAsync(request).get();
+    Assert.assertEquals(expectedResponse, actualResponse);
+
+    List<AbstractMessage> actualRequests = mockInstanceAdmin.getRequests();
+    Assert.assertEquals(1, actualRequests.size());
+    MoveInstanceRequest actualRequest = ((MoveInstanceRequest) actualRequests.get(0));
+
+    Assert.assertEquals(request.getName(), actualRequest.getName());
+    Assert.assertEquals(request.getTargetConfig(), actualRequest.getTargetConfig());
+    Assert.assertTrue(
+        channelProvider.isHeaderSent(
+            ApiClientHeaderProvider.getDefaultApiClientHeaderKey(),
+            GaxGrpcProperties.getDefaultApiClientHeaderPattern()));
+  }
+
+  @Test
+  public void moveInstanceExceptionTest() throws Exception {
+    StatusRuntimeException exception = new StatusRuntimeException(io.grpc.Status.INVALID_ARGUMENT);
+    mockInstanceAdmin.addException(exception);
+
+    try {
+      MoveInstanceRequest request =
+          MoveInstanceRequest.newBuilder()
+              .setName(InstanceName.of("[PROJECT]", "[INSTANCE]").toString())
+              .setTargetConfig(InstanceConfigName.of("[PROJECT]", "[INSTANCE_CONFIG]").toString())
+              .build();
+      client.moveInstanceAsync(request).get();
+      Assert.fail("No exception raised");
+    } catch (ExecutionException e) {
+      Assert.assertEquals(InvalidArgumentException.class, e.getCause().getClass());
+      InvalidArgumentException apiException = ((InvalidArgumentException) e.getCause());
+      Assert.assertEquals(StatusCode.Code.INVALID_ARGUMENT, apiException.getStatusCode().getCode());
     }
   }
 }

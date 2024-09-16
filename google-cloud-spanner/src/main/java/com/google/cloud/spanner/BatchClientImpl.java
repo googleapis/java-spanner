@@ -54,6 +54,7 @@ public class BatchClientImpl implements BatchClient {
     return new BatchReadOnlyTransactionImpl(
         MultiUseReadOnlyTransaction.newBuilder()
             .setSession(session)
+            .setCancelQueryWhenClientIsClosed(true)
             .setRpc(sessionClient.getSpanner().getRpc())
             .setTimestampBound(bound)
             .setDefaultQueryOptions(
@@ -75,6 +76,7 @@ public class BatchClientImpl implements BatchClient {
     return new BatchReadOnlyTransactionImpl(
         MultiUseReadOnlyTransaction.newBuilder()
             .setSession(session)
+            .setCancelQueryWhenClientIsClosed(true)
             .setRpc(sessionClient.getSpanner().getRpc())
             .setTransactionId(batchTransactionId.getTransactionId())
             .setTimestamp(batchTransactionId.getTimestamp())

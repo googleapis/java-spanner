@@ -59,6 +59,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.api.core.ApiFutures;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.MetricRegistryTestUtils.FakeMetricRegistry;
 import com.google.cloud.spanner.MetricRegistryTestUtils.MetricsRecord;
 import com.google.cloud.spanner.MetricRegistryTestUtils.PointWithFunction;
@@ -74,6 +75,7 @@ import com.google.cloud.spanner.TransactionRunnerImpl.TransactionContextImpl;
 import com.google.cloud.spanner.spi.v1.SpannerRpc;
 import com.google.cloud.spanner.spi.v1.SpannerRpc.ResultStreamConsumer;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -1293,7 +1295,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
             .setMinSessions(minSessions)
             .setMaxSessions(1)
             .setInitialWaitForSessionTimeoutMillis(20L)
-            .setAcquireSessionTimeout(Duration.ofMillis(20L))
+            .setAcquireSessionTimeout(null)
             .build();
     setupMockSessionCreation();
     pool = createPool();
@@ -1306,18 +1308,18 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     Future<Void> fut =
         executor.submit(
             () -> {
-              latch.countDown();
               PooledSessionFuture session = pool.getSession();
+              latch.countDown();
+              session.get();
               session.close();
               return null;
             });
     // Wait until the background thread is actually waiting for a session.
     latch.await();
     // Wait until the request has timed out.
-    int waitCount = 0;
-    while (pool.getNumWaiterTimeouts() == 0L && waitCount < 5000) {
-      Thread.sleep(1L);
-      waitCount++;
+    Stopwatch watch = Stopwatch.createStarted();
+    while (pool.getNumWaiterTimeouts() == 0L && watch.elapsed(TimeUnit.MILLISECONDS) < 1000) {
+      Thread.yield();
     }
     // Return the checked out session to the pool so the async request will get a session and
     // finish.
@@ -1325,10 +1327,11 @@ public class SessionPoolTest extends BaseSessionPoolTest {
     // Verify that the async request also succeeds.
     fut.get(10L, TimeUnit.SECONDS);
     executor.shutdown();
+    assertTrue(executor.awaitTermination(10L, TimeUnit.SECONDS));
 
     // Verify that the session was returned to the pool and that we can get it again.
-    Session session = pool.getSession();
-    assertThat(session).isNotNull();
+    PooledSessionFuture session = pool.getSession();
+    assertThat(session.get()).isNotNull();
     session.close();
     assertThat(pool.getNumWaiterTimeouts()).isAtLeast(1L);
   }
@@ -1476,6 +1479,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final SessionImpl closedSession = mock(SessionImpl.class);
       when(closedSession.getName())
           .thenReturn("projects/dummy/instances/dummy/database/dummy/sessions/session-closed");
+      when(closedSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
 
       Span oTspan = mock(Span.class);
       ISpan span = new OpenTelemetrySpan(oTspan);
@@ -1493,13 +1497,14 @@ public class SessionPoolTest extends BaseSessionPoolTest {
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(closedSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(closedTransactionContext);
-      when(closedSession.beginTransactionAsync(any(), eq(true))).thenThrow(sessionNotFound);
+      when(closedSession.beginTransactionAsync(any(), eq(true), any())).thenThrow(sessionNotFound);
       when(closedSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl closedTransactionRunner = new TransactionRunnerImpl(closedSession);
       closedTransactionRunner.setSpan(span);
       when(closedSession.readWriteTransaction()).thenReturn(closedTransactionRunner);
 
       final SessionImpl openSession = mock(SessionImpl.class);
+      when(openSession.getErrorHandler()).thenReturn(DefaultErrorHandler.INSTANCE);
       when(openSession.asyncClose())
           .thenReturn(ApiFutures.immediateFuture(Empty.getDefaultInstance()));
       when(openSession.getName())
@@ -1507,7 +1512,7 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       final TransactionContextImpl openTransactionContext = mock(TransactionContextImpl.class);
       when(openSession.newTransaction(Options.fromTransactionOptions()))
           .thenReturn(openTransactionContext);
-      when(openSession.beginTransactionAsync(any(), eq(true)))
+      when(openSession.beginTransactionAsync(any(), eq(true), any()))
           .thenReturn(ApiFutures.immediateFuture(ByteString.copyFromUtf8("open-txn")));
       when(openSession.getTracer()).thenReturn(tracer);
       TransactionRunnerImpl openTransactionRunner = new TransactionRunnerImpl(openSession);
@@ -2022,14 +2027,16 @@ public class SessionPoolTest extends BaseSessionPoolTest {
   public void testOpenTelemetrySessionMetrics() throws Exception {
     SpannerOptions.resetActiveTracingFramework();
     SpannerOptions.enableOpenTelemetryMetrics();
-    // Create a session pool with max 2 session and a low timeout for waiting for a session.
+    // Create a session pool with max 3 session and a low timeout for waiting for a session.
     if (minSessions == 1) {
       options =
           SessionPoolOptions.newBuilder()
               .setMinSessions(1)
               .setMaxSessions(3)
-              .setMaxIdleSessions(0)
-              .setInitialWaitForSessionTimeoutMillis(50L)
+              // This must be set to null for the setInitialWaitForSessionTimeoutMillis call to have
+              // any effect.
+              .setAcquireSessionTimeout(null)
+              .setInitialWaitForSessionTimeoutMillis(1L)
               .build();
       FakeClock clock = new FakeClock();
       clock.currentTimeMillis.set(System.currentTimeMillis());
@@ -2080,26 +2087,29 @@ public class SessionPoolTest extends BaseSessionPoolTest {
       Future<Void> fut =
           executor.submit(
               () -> {
+                PooledSessionFuture session = pool.getSession();
                 latch.countDown();
-                Session session = pool.getSession();
+                session.get();
                 session.close();
                 return null;
               });
       // Wait until the background thread is actually waiting for a session.
       latch.await();
       // Wait until the request has timed out.
-      int waitCount = 0;
-      while (pool.getNumWaiterTimeouts() == 0L && waitCount < 1000) {
-        Thread.sleep(5L);
-        waitCount++;
+      Stopwatch watch = Stopwatch.createStarted();
+      while (pool.getNumWaiterTimeouts() == 0L && watch.elapsed(TimeUnit.MILLISECONDS) < 100) {
+        Thread.yield();
       }
+      assertTrue(pool.getNumWaiterTimeouts() > 0);
       // Return the checked out session to the pool so the async request will get a session and
       // finish.
       session2.close();
       // Verify that the async request also succeeds.
       fut.get(10L, TimeUnit.SECONDS);
       executor.shutdown();
+      assertTrue(executor.awaitTermination(10L, TimeUnit.SECONDS));
 
+      inMemoryMetricReader.forceFlush();
       metricDataCollection = inMemoryMetricReader.collectAllMetrics();
 
       // Max Allowed sessions should be 3

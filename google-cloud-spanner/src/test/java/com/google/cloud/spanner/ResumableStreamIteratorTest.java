@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.api.client.util.BackOff;
+import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
@@ -158,6 +159,7 @@ public class ResumableStreamIteratorTest {
             "",
             new OpenTelemetrySpan(mock(io.opentelemetry.api.trace.Span.class)),
             new TraceWrapper(Tracing.getTracer(), OpenTelemetry.noop().getTracer(""), false),
+            DefaultErrorHandler.INSTANCE,
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings(),
             SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetryableCodes()) {
           @Override

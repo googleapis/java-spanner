@@ -36,8 +36,8 @@ import org.junit.runners.JUnit4;
 
 /**
  * Test opening multiple generic (not JDBC) Spanner connections. This test should not be run in
- * parallel with other tests, as it tries to close all active connections, and should not try to
- * close connections of other integration tests.
+ * parallel with other tests in the same JVM, as it tries to close all active connections, and
+ * should not try to close connections of other integration tests.
  */
 @Category(SerialIntegrationTest.class)
 @RunWith(JUnit4.class)

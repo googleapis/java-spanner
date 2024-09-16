@@ -406,11 +406,14 @@ final class MultiplexedSessionDatabaseClient extends AbstractMultiplexedSessionD
 
   /**
    * It is enough with one executor to maintain the multiplexed sessions in all the clients, as they
-   * do not need to be updated often, and the maintenance task is light.
+   * do not need to be updated often, and the maintenance task is light. The core pool size is set
+   * to 1 to prevent continuous creating and tearing down threads, and to avoid high CPU usage when
+   * running on Java 8 due to <a href="https://bugs.openjdk.org/browse/JDK-8129861">
+   * https://bugs.openjdk.org/browse/JDK-8129861</a>.
    */
   private static final ScheduledExecutorService MAINTAINER_SERVICE =
       Executors.newScheduledThreadPool(
-          /* corePoolSize = */ 0,
+          /* corePoolSize = */ 1,
           ThreadFactoryUtil.createVirtualOrPlatformDaemonThreadFactory(
               "multiplexed-session-maintainer", /* tryVirtual = */ false));
 

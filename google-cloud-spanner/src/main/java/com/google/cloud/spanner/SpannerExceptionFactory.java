@@ -181,6 +181,17 @@ public final class SpannerExceptionFactory {
     return newSpannerException(ErrorCode.fromGrpcStatus(status), cause.getMessage(), cause);
   }
 
+  /**
+   * Creates a new SpannerException that indicates that the RPC or transaction should be retried on
+   * a different gRPC channel. This is an experimental feature that can be removed in the future.
+   * The exception should not be surfaced to the client application, and should instead be caught
+   * and handled in the client library.
+   */
+  static SpannerException newRetryOnDifferentGrpcChannelException(
+      String message, int channel, Throwable cause) {
+    return new RetryOnDifferentGrpcChannelException(message, channel, cause);
+  }
+
   static SpannerException newSpannerExceptionForCancellation(
       @Nullable Context context, @Nullable Throwable cause) {
     if (context != null && context.isCancelled()) {
@@ -322,7 +333,9 @@ public final class SpannerExceptionFactory {
       case UNAVAILABLE:
         // SSLHandshakeException is (probably) not retryable, as it is an indication that the server
         // certificate was not accepted by the client.
-        return !hasCauseMatching(cause, Matchers.isSSLHandshakeException);
+        // Channel shutdown is also not a retryable exception.
+        return !(hasCauseMatching(cause, Matchers.isSSLHandshakeException)
+            || hasCauseMatching(cause, Matchers.IS_CHANNEL_SHUTDOWN_EXCEPTION));
       case RESOURCE_EXHAUSTED:
         return SpannerException.extractRetryDelay(cause) > 0;
       default:
@@ -345,5 +358,8 @@ public final class SpannerExceptionFactory {
 
     static final Predicate<Throwable> isRetryableInternalError = new IsRetryableInternalError();
     static final Predicate<Throwable> isSSLHandshakeException = new IsSslHandshakeException();
+
+    static final Predicate<Throwable> IS_CHANNEL_SHUTDOWN_EXCEPTION =
+        new IsChannelShutdownException();
   }
 }

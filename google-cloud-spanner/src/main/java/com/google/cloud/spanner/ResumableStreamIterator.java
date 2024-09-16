@@ -57,6 +57,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
     implements CloseableIterator<PartialResultSet> {
   private static final RetrySettings DEFAULT_STREAMING_RETRY_SETTINGS =
       SpannerStubSettings.newBuilder().executeStreamingSqlSettings().getRetrySettings();
+  private final ErrorHandler errorHandler;
   private final RetrySettings streamingRetrySettings;
   private final Set<Code> retryableCodes;
   private static final Logger logger = Logger.getLogger(ResumableStreamIterator.class.getName());
@@ -80,6 +81,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       String streamName,
       ISpan parent,
       TraceWrapper tracer,
+      ErrorHandler errorHandler,
       RetrySettings streamingRetrySettings,
       Set<Code> retryableCodes) {
     this(
@@ -88,6 +90,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
         parent,
         tracer,
         Attributes.empty(),
+        errorHandler,
         streamingRetrySettings,
         retryableCodes);
   }
@@ -98,12 +101,14 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
       ISpan parent,
       TraceWrapper tracer,
       Attributes attributes,
+      ErrorHandler errorHandler,
       RetrySettings streamingRetrySettings,
       Set<Code> retryableCodes) {
     checkArgument(maxBufferSize >= 0);
     this.maxBufferSize = maxBufferSize;
     this.tracer = tracer;
     this.span = tracer.spanBuilderWithExplicitParent(streamName, parent, attributes);
+    this.errorHandler = errorHandler;
     this.streamingRetrySettings = Preconditions.checkNotNull(streamingRetrySettings);
     this.retryableCodes = Preconditions.checkNotNull(retryableCodes);
   }
@@ -193,6 +198,14 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
 
   abstract CloseableIterator<PartialResultSet> startStream(@Nullable ByteString resumeToken);
 
+  /**
+   * Prepares the iterator for a retry on a different gRPC channel. Returns true if that is
+   * possible, and false otherwise. A retry should only be attempted if the method returns true.
+   */
+  boolean prepareIteratorForRetryOnDifferentGrpcChannel() {
+    return false;
+  }
+
   @Override
   public void close(@Nullable String message) {
     if (stream != null) {
@@ -209,6 +222,7 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
 
   @Override
   protected PartialResultSet computeNext() {
+    int numAttemptsOnOtherChannel = 0;
     Context context = Context.current();
     while (true) {
       // Eagerly start stream before consuming any buffered items.
@@ -278,6 +292,17 @@ abstract class ResumableStreamIterator extends AbstractIterator<PartialResultSet
           }
 
           continue;
+        }
+        // Check if we should retry the request on a different gRPC channel.
+        if (resumeToken == null && buffer.isEmpty()) {
+          Throwable translated = errorHandler.translateException(spannerException);
+          if (translated instanceof RetryOnDifferentGrpcChannelException) {
+            if (++numAttemptsOnOtherChannel < errorHandler.getMaxAttempts()
+                && prepareIteratorForRetryOnDifferentGrpcChannel()) {
+              stream = null;
+              continue;
+            }
+          }
         }
         span.addAnnotation("Stream broken. Not safe to retry", spannerException);
         span.setStatus(spannerException);

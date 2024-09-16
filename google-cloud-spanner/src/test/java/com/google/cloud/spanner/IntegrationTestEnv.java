@@ -87,6 +87,10 @@ public class IntegrationTestEnv extends ExternalResource {
       throw new NullPointerException("Property " + TEST_ENV_CONFIG_CLASS_NAME + " needs to be set");
     }
     Class<? extends TestEnvConfig> configClass;
+    if (EmulatorSpannerHelper.isUsingEmulator()) {
+      // Make sure that we use an owned instance on the emulator.
+      System.setProperty(TEST_INSTANCE_PROPERTY, "");
+    }
     configClass = (Class<? extends TestEnvConfig>) Class.forName(CONFIG_CLASS);
     config = configClass.newInstance();
   }
@@ -143,7 +147,7 @@ public class IntegrationTestEnv extends ExternalResource {
   private void initializeInstance(InstanceId instanceId) throws Exception {
     InstanceConfig instanceConfig;
     try {
-      instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-central1");
+      instanceConfig = instanceAdminClient.getInstanceConfig("regional-us-east4");
     } catch (Throwable ignore) {
       instanceConfig =
           Iterators.get(instanceAdminClient.listInstanceConfigs().iterateAll().iterator(), 0, null);

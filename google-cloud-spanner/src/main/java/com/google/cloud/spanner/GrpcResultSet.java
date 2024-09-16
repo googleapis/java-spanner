@@ -25,6 +25,7 @@ import com.google.spanner.v1.PartialResultSet;
 import com.google.spanner.v1.ResultSetMetadata;
 import com.google.spanner.v1.ResultSetStats;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -35,6 +36,7 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
   private final DecodeMode decodeMode;
   private ResultSetMetadata metadata;
   private GrpcStruct currRow;
+  private List<Object> rowData;
   private SpannerException error;
   private ResultSetStats statistics;
   private boolean closed;
@@ -85,7 +87,15 @@ class GrpcResultSet extends AbstractResultSet<List<Object>> implements ProtobufR
           throw SpannerExceptionFactory.newSpannerException(
               ErrorCode.FAILED_PRECONDITION, AbstractReadContext.NO_TRANSACTION_RETURNED_MSG);
         }
-        currRow = new GrpcStruct(iterator.type(), new ArrayList<>(), decodeMode);
+        if (rowData == null) {
+          rowData = new ArrayList<>(metadata.getRowType().getFieldsCount());
+          if (decodeMode != DecodeMode.DIRECT) {
+            rowData = Collections.synchronizedList(rowData);
+          }
+        } else {
+          rowData.clear();
+        }
+        currRow = new GrpcStruct(iterator.type(), rowData, decodeMode);
       }
       boolean hasNext = currRow.consumeRow(iterator);
       if (!hasNext) {

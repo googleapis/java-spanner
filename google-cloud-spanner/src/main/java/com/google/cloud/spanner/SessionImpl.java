@@ -26,6 +26,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractReadContext.MultiUseReadOnlyTransaction;
 import com.google.cloud.spanner.AbstractReadContext.SingleReadContext;
 import com.google.cloud.spanner.AbstractReadContext.SingleUseReadOnlyTransaction;
+import com.google.cloud.spanner.ErrorHandler.DefaultErrorHandler;
 import com.google.cloud.spanner.Options.TransactionOption;
 import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.SessionClient.SessionOption;
@@ -116,6 +117,7 @@ class SessionImpl implements Session {
   private ISpan currentSpan;
   private final Clock clock;
   private final Map<SpannerRpc.Option, ?> options;
+  private final ErrorHandler errorHandler;
 
   SessionImpl(SpannerImpl spanner, SessionReference sessionReference) {
     this(spanner, sessionReference, NO_CHANNEL_HINT);
@@ -127,6 +129,7 @@ class SessionImpl implements Session {
     this.sessionReference = sessionReference;
     this.clock = spanner.getOptions().getSessionPoolOptions().getPoolMaintainerClock();
     this.options = createOptions(sessionReference, channelHint);
+    this.errorHandler = createErrorHandler(spanner.getOptions());
   }
 
   static Map<SpannerRpc.Option, ?> createOptions(
@@ -137,6 +140,13 @@ class SessionImpl implements Session {
     return CHANNEL_HINT_OPTIONS[channelHint % CHANNEL_HINT_OPTIONS.length];
   }
 
+  private ErrorHandler createErrorHandler(SpannerOptions options) {
+    if (RetryOnDifferentGrpcChannelErrorHandler.isEnabled()) {
+      return new RetryOnDifferentGrpcChannelErrorHandler(options.getNumChannels(), this);
+    }
+    return DefaultErrorHandler.INSTANCE;
+  }
+
   @Override
   public String getName() {
     return sessionReference.getName();
@@ -144,6 +154,10 @@ class SessionImpl implements Session {
 
   Map<SpannerRpc.Option, ?> getOptions() {
     return options;
+  }
+
+  ErrorHandler getErrorHandler() {
+    return this.errorHandler;
   }
 
   void setCurrentSpan(ISpan span) {
@@ -412,7 +426,8 @@ class SessionImpl implements Session {
     }
   }
 
-  ApiFuture<ByteString> beginTransactionAsync(Options transactionOptions, boolean routeToLeader) {
+  ApiFuture<ByteString> beginTransactionAsync(
+      Options transactionOptions, boolean routeToLeader, Map<SpannerRpc.Option, ?> channelHint) {
     final SettableApiFuture<ByteString> res = SettableApiFuture.create();
     final ISpan span = tracer.spanBuilder(SpannerImpl.BEGIN_TRANSACTION);
     final BeginTransactionRequest request =
@@ -422,7 +437,7 @@ class SessionImpl implements Session {
             .build();
     final ApiFuture<Transaction> requestFuture;
     try (IScope ignore = tracer.withSpan(span)) {
-      requestFuture = spanner.getRpc().beginTransactionAsync(request, getOptions(), routeToLeader);
+      requestFuture = spanner.getRpc().beginTransactionAsync(request, channelHint, routeToLeader);
     }
     requestFuture.addListener(
         () -> {

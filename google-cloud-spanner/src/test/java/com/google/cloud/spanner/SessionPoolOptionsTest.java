@@ -300,6 +300,52 @@ public class SessionPoolOptionsTest {
   }
 
   @Test
+  public void testUseMultiplexedSessionForRW() {
+    // skip these tests since this configuration can have dual behaviour in different test-runners
+    assumeFalse(SessionPoolOptions.newBuilder().build().getUseMultiplexedSession());
+    assumeFalse(SessionPoolOptions.newBuilder().build().getUseMultiplexedSessionForRW());
+
+    // Verify default client behavior for multiplexed sessions in R/W transactions
+    assertEquals(false, SessionPoolOptions.newBuilder().build().getUseMultiplexedSessionForRW());
+
+    // Client will use multiplexed sessions for R/W transactions if both the fields are set to true.
+    assertEquals(
+        true,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(true)
+            .setUseMultiplexedSessionForRW(true)
+            .build()
+            .getUseMultiplexedSessionForRW());
+    // Client will not use multiplexed sessions for R/W transactions, since one of the field is set
+    // to false.
+    assertEquals(
+        false,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(true)
+            .setUseMultiplexedSessionForRW(false)
+            .build()
+            .getUseMultiplexedSessionForRW());
+    // Client will not use multiplexed sessions for R/W transactions, since one of the field is set
+    // to false.
+    assertEquals(
+        false,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(false)
+            .setUseMultiplexedSessionForRW(true)
+            .build()
+            .getUseMultiplexedSessionForRW());
+    // Client will not use multiplexed sessions for R/W transactions, since both the fields are set
+    // to false.
+    assertEquals(
+        false,
+        SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSession(false)
+            .setUseMultiplexedSessionForRW(false)
+            .build()
+            .getUseMultiplexedSessionForRW());
+  }
+
+  @Test
   public void testMultiplexedSessionMaintenanceDuration() {
     assertEquals(
         Duration.ofDays(7),
@@ -328,15 +374,19 @@ public class SessionPoolOptionsTest {
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
+            .setUseMultiplexedSessionForRW(ThreadLocalRandom.current().nextBoolean())
+            .build());
+    assertToBuilderRoundtrip(
+        SessionPoolOptions.newBuilder()
             .setMinSessions(ThreadLocalRandom.current().nextInt(400))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
-            .setMaxSessions(ThreadLocalRandom.current().nextInt(1000))
+            .setMaxSessions(ThreadLocalRandom.current().nextInt(1, 1000))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
-            .setIncStep(ThreadLocalRandom.current().nextInt(1000))
+            .setIncStep(ThreadLocalRandom.current().nextInt(1, 1000))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
@@ -393,7 +443,7 @@ public class SessionPoolOptionsTest {
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()
             .setAcquireSessionTimeout(
-                Duration.ofMillis(ThreadLocalRandom.current().nextLong(10000)))
+                Duration.ofMillis(ThreadLocalRandom.current().nextLong(1, 10000)))
             .build());
     assertToBuilderRoundtrip(
         SessionPoolOptions.newBuilder()

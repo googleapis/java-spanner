@@ -38,7 +38,7 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private static final Logger logger = Logger.getLogger(GrpcStreamIterator.class.getName());
   private static final PartialResultSet END_OF_STREAM = PartialResultSet.newBuilder().build();
 
-  private final ConsumerImpl consumer = new ConsumerImpl();
+  private final ConsumerImpl consumer;
   private final BlockingQueue<PartialResultSet> stream;
   private final Statement statement;
 
@@ -49,13 +49,15 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   private SpannerException error;
 
   @VisibleForTesting
-  GrpcStreamIterator(int prefetchChunks) {
-    this(null, prefetchChunks);
+  GrpcStreamIterator(int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
+    this(null, prefetchChunks, cancelQueryWhenClientIsClosed);
   }
 
   @VisibleForTesting
-  GrpcStreamIterator(Statement statement, int prefetchChunks) {
+  GrpcStreamIterator(
+      Statement statement, int prefetchChunks, boolean cancelQueryWhenClientIsClosed) {
     this.statement = statement;
+    this.consumer = new ConsumerImpl(cancelQueryWhenClientIsClosed);
     // One extra to allow for END_OF_STREAM message.
     this.stream = new LinkedBlockingQueue<>(prefetchChunks + 1);
   }
@@ -136,6 +138,12 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
   }
 
   private class ConsumerImpl implements SpannerRpc.ResultStreamConsumer {
+    private final boolean cancelQueryWhenClientIsClosed;
+
+    ConsumerImpl(boolean cancelQueryWhenClientIsClosed) {
+      this.cancelQueryWhenClientIsClosed = cancelQueryWhenClientIsClosed;
+    }
+
     @Override
     public void onPartialResultSet(PartialResultSet results) {
       addToStream(results);
@@ -167,6 +175,11 @@ class GrpcStreamIterator extends AbstractIterator<PartialResultSet>
       }
       error = e;
       addToStream(END_OF_STREAM);
+    }
+
+    @Override
+    public boolean cancelQueryWhenClientIsClosed() {
+      return this.cancelQueryWhenClientIsClosed;
     }
   }
 }

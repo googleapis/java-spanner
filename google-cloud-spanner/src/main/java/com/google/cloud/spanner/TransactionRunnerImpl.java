@@ -282,7 +282,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
 
     private void createTxnAsync(final SettableApiFuture<Void> res) {
       span.addAnnotation("Creating Transaction");
-      final ApiFuture<ByteString> fut = session.beginTransactionAsync(options, isRouteToLeader());
+      final ApiFuture<ByteString> fut =
+          session.beginTransactionAsync(options, isRouteToLeader(), getTransactionChannelHint());
       fut.addListener(
           () -> {
             try {
@@ -427,7 +428,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           final ApiFuture<com.google.spanner.v1.CommitResponse> commitFuture;
           final ISpan opSpan = tracer.spanBuilderWithExplicitParent(SpannerImpl.COMMIT, span);
           try (IScope ignore = tracer.withSpan(opSpan)) {
-            commitFuture = rpc.commitAsync(commitRequest, session.getOptions());
+            commitFuture = rpc.commitAsync(commitRequest, getTransactionChannelHint());
           }
           session.markUsed(clock.instant());
           commitFuture.addListener(
@@ -525,7 +526,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
                     .setSession(session.getName())
                     .setTransactionId(transactionId)
                     .build(),
-                session.getOptions());
+                getTransactionChannelHint());
         session.markUsed(clock.instant());
         return apiFuture;
       } else {
@@ -800,7 +801,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
               statement, queryMode, options, /* withTransactionSelector = */ true);
       try {
         com.google.spanner.v1.ResultSet resultSet =
-            rpc.executeQuery(builder.build(), session.getOptions(), isRouteToLeader());
+            rpc.executeQuery(builder.build(), getTransactionChannelHint(), isRouteToLeader());
         session.markUsed(clock.instant());
         if (resultSet.getMetadata().hasTransaction()) {
           onTransactionMetadata(
@@ -838,7 +839,8 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           // commit.
           increaseAsyncOperations();
           resultSet =
-              rpc.executeQueryAsync(builder.build(), session.getOptions(), isRouteToLeader());
+              rpc.executeQueryAsync(
+                  builder.build(), getTransactionChannelHint(), isRouteToLeader());
           session.markUsed(clock.instant());
         } catch (Throwable t) {
           decreaseAsyncOperations();
@@ -926,7 +928,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             getExecuteBatchDmlRequestBuilder(statements, options);
         try {
           com.google.spanner.v1.ExecuteBatchDmlResponse response =
-              rpc.executeBatchDml(builder.build(), session.getOptions());
+              rpc.executeBatchDml(builder.build(), getTransactionChannelHint());
           session.markUsed(clock.instant());
           long[] results = new long[response.getResultSetsCount()];
           for (int i = 0; i < response.getResultSetsCount(); ++i) {
@@ -983,7 +985,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
           // Register the update as an async operation that must finish before the transaction may
           // commit.
           increaseAsyncOperations();
-          response = rpc.executeBatchDmlAsync(builder.build(), session.getOptions());
+          response = rpc.executeBatchDmlAsync(builder.build(), getTransactionChannelHint());
           session.markUsed(clock.instant());
         } catch (Throwable t) {
           decreaseAsyncOperations();
@@ -1180,7 +1182,7 @@ class TransactionRunnerImpl implements SessionTransaction, TransactionRunner {
             throw e;
           }
         };
-    return SpannerRetryHelper.runTxWithRetriesOnAborted(retryCallable);
+    return SpannerRetryHelper.runTxWithRetriesOnAborted(retryCallable, session.getErrorHandler());
   }
 
   @Override

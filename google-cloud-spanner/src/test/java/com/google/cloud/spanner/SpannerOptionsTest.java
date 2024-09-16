@@ -104,16 +104,21 @@ public class SpannerOptionsTest {
 
   @Test
   public void defaultBuilder() {
-    // We need to set the project id since in test environment we cannot obtain a default project
-    // id.
-    SpannerOptions options = SpannerOptions.newBuilder().setProjectId("test-project").build();
+    // We need to set the project id and credentials since in test environments we cannot guarantee
+    // that a default project id and credentials are available.
+    SpannerOptions options =
+        SpannerOptions.newBuilder()
+            .setProjectId("test-project")
+            .setCredentials(NoCredentials.getInstance())
+            .build();
     if (Strings.isNullOrEmpty(System.getenv("SPANNER_EMULATOR_HOST"))) {
-      assertThat(options.getHost()).isEqualTo("https://spanner.googleapis.com");
+      assertEquals("https://spanner.googleapis.com", options.getHost());
     } else {
-      assertThat(options.getHost()).isEqualTo("http://" + System.getenv("SPANNER_EMULATOR_HOST"));
+      assertEquals("http://" + System.getenv("SPANNER_EMULATOR_HOST"), options.getHost());
     }
-    assertThat(options.getPrefetchChunks()).isEqualTo(4);
+    assertEquals(4, options.getPrefetchChunks());
     assertNull(options.getSessionLabels());
+    assertEquals(DecodeMode.DIRECT, options.getDecodeMode());
   }
 
   @Test

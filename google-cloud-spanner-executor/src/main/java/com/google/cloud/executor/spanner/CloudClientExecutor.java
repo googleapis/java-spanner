@@ -75,6 +75,7 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.encryption.CustomerManagedEncryption;
 import com.google.cloud.spanner.v1.stub.SpannerStubSettings;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -189,6 +190,16 @@ public class CloudClientExecutor extends CloudExecutor {
 
   public CloudClientExecutor(boolean enableGrpcFaultInjector) {
     this.enableGrpcFaultInjector = enableGrpcFaultInjector;
+  }
+
+  // Helper for unexpected results.
+  public static String unexpectedExceptionResponse(Exception e) {
+    return "Unexpected error in Github Cloud Java Client Executor: "
+        + e
+        + " Msg: "
+        + e.getMessage()
+        + " Stack: "
+        + Joiner.on("\n").join(e.getStackTrace());
   }
 
   /**
@@ -1083,7 +1094,7 @@ public class CloudClientExecutor extends CloudExecutor {
       return sender.finishWithError(
           toStatus(
               SpannerExceptionFactory.newSpannerException(
-                  ErrorCode.INVALID_ARGUMENT, "Unexpected error: " + e.getMessage())));
+                  ErrorCode.INVALID_ARGUMENT, CloudClientExecutor.unexpectedExceptionResponse(e))));
     }
     return sender.finishWithOK();
   }

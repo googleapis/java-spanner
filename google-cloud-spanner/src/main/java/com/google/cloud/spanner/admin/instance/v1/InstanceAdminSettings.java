@@ -68,6 +68,9 @@ import com.google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
 import com.google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
 import com.google.spanner.admin.instance.v1.ListInstancesRequest;
 import com.google.spanner.admin.instance.v1.ListInstancesResponse;
+import com.google.spanner.admin.instance.v1.MoveInstanceMetadata;
+import com.google.spanner.admin.instance.v1.MoveInstanceRequest;
+import com.google.spanner.admin.instance.v1.MoveInstanceResponse;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
 import com.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
 import com.google.spanner.admin.instance.v1.UpdateInstanceMetadata;
@@ -278,6 +281,17 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
       listInstancePartitionOperationsSettings() {
     return ((InstanceAdminStubSettings) getStubSettings())
         .listInstancePartitionOperationsSettings();
+  }
+
+  /** Returns the object with the settings used for calls to moveInstance. */
+  public UnaryCallSettings<MoveInstanceRequest, Operation> moveInstanceSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).moveInstanceSettings();
+  }
+
+  /** Returns the object with the settings used for calls to moveInstance. */
+  public OperationCallSettings<MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+      moveInstanceOperationSettings() {
+    return ((InstanceAdminStubSettings) getStubSettings()).moveInstanceOperationSettings();
   }
 
   public static final InstanceAdminSettings create(InstanceAdminStubSettings stub)
@@ -557,6 +571,18 @@ public class InstanceAdminSettings extends ClientSettings<InstanceAdminSettings>
             ListInstancePartitionOperationsPagedResponse>
         listInstancePartitionOperationsSettings() {
       return getStubSettingsBuilder().listInstancePartitionOperationsSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to moveInstance. */
+    public UnaryCallSettings.Builder<MoveInstanceRequest, Operation> moveInstanceSettings() {
+      return getStubSettingsBuilder().moveInstanceSettings();
+    }
+
+    /** Returns the builder for the settings used for calls to moveInstance. */
+    public OperationCallSettings.Builder<
+            MoveInstanceRequest, MoveInstanceResponse, MoveInstanceMetadata>
+        moveInstanceOperationSettings() {
+      return getStubSettingsBuilder().moveInstanceOperationSettings();
     }
 
     @Override
