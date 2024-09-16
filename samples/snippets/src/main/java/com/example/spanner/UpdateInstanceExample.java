@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,40 @@
 
 package com.example.spanner;
 
-// [START spanner_create_instance]
+// [START spanner_update_instance]
 
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import com.google.cloud.spanner.admin.instance.v1.InstanceAdminClient;
-import com.google.spanner.admin.instance.v1.CreateInstanceRequest;
+import com.google.common.collect.Lists;
+import com.google.protobuf.FieldMask;
 import com.google.spanner.admin.instance.v1.Instance;
 import com.google.spanner.admin.instance.v1.InstanceConfigName;
-import com.google.spanner.admin.instance.v1.ProjectName;
+import com.google.spanner.admin.instance.v1.InstanceName;
+import com.google.spanner.admin.instance.v1.UpdateInstanceRequest;
 import java.util.concurrent.ExecutionException;
 
-class CreateInstanceExample {
+public class UpdateInstanceExample {
 
-  static void createInstance() {
+  static void updateInstance() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
     String instanceId = "my-instance";
-    createInstance(projectId, instanceId);
+    updateInstance(projectId, instanceId);
   }
 
-  static void createInstance(String projectId, String instanceId) {
+  static void updateInstance(String projectId, String instanceId) {
     // Set Instance configuration.
     int nodeCount = 2;
-    String displayName = "Descriptive name";
+    String displayName = "Updated name";
 
-    // Create an Instance object that will be used to create the instance.
+    // Update an Instance object that will be used to update the instance.
     Instance instance =
         Instance.newBuilder()
+            .setName(InstanceName.of(projectId, instanceId).toString())
             .setDisplayName(displayName)
-            .setEdition(Instance.Edition.STANDARD)
             .setNodeCount(nodeCount)
+            .setEdition(Instance.Edition.ENTERPRISE)
             .setConfig(InstanceConfigName.of(projectId, "regional-us-east4").toString())
             .build();
 
@@ -54,24 +57,25 @@ class CreateInstanceExample {
             SpannerOptions.newBuilder().setProjectId(projectId).build().getService();
         InstanceAdminClient instanceAdminClient = spanner.createInstanceAdminClient()) {
 
-      // Wait for the createInstance operation to finish.
-      Instance createdInstance =
+      // Wait for the updatedInstance operation to finish.
+      Instance updatedInstance =
           instanceAdminClient
-              .createInstanceAsync(
-                  CreateInstanceRequest.newBuilder()
-                      .setParent(ProjectName.of(projectId).toString())
-                      .setInstanceId(instanceId)
+              .updateInstanceAsync(
+                  UpdateInstanceRequest.newBuilder()
+                      .setFieldMask(
+                          FieldMask.newBuilder().addAllPaths(Lists.newArrayList("edition")))
                       .setInstance(instance)
                       .build())
               .get();
-      System.out.printf("Instance %s was successfully created%n", createdInstance.getName());
+      System.out.printf("Instance %s was successfully updated%n", updatedInstance.getName());
     } catch (ExecutionException e) {
       System.out.printf(
-          "Error: Creating instance %s failed with error message %s%n",
+          "Error: Updating instance %s failed with error message %s%n",
           instance.getName(), e.getMessage());
     } catch (InterruptedException e) {
-      System.out.println("Error: Waiting for createInstance operation to finish was interrupted");
+      System.out.println("Error: Waiting for updateInstance operation to finish was interrupted");
     }
   }
 }
-// [END spanner_create_instance]
+
+// [END spanner_update_instance]
