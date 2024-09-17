@@ -31,7 +31,7 @@ public class SessionPoolOptionsHelper {
     return sessionPoolOptionsBuilder.setUseMultiplexedSession(useMultiplexedSession);
   }
 
-  // TODO: Remove when Builder.setUseMultiplexedSession(..) has been made public.
+  // TODO: Remove when multiplexed session for blind write is released.
   public static SessionPoolOptions.Builder setUseMultiplexedSessionBlindWrite(
       SessionPoolOptions.Builder sessionPoolOptionsBuilder,
       boolean useMultiplexedSessionBlindWrite) {

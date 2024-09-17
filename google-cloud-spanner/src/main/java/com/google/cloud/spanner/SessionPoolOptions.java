@@ -75,7 +75,7 @@ public class SessionPoolOptions {
 
   /**
    * Controls whether multiplexed session is enabled for blind write or not. This is only used for
-   * systest soak. Should be removed once released.
+   * systest soak. TODO: Remove when multiplexed session for blind write is released.
    */
   private final boolean useMultiplexedSessionBlindWrite;
 
@@ -328,7 +328,7 @@ public class SessionPoolOptions {
 
   @VisibleForTesting
   @InternalApi
-  public boolean getUseMultiplexedSessionBlindWrite() {
+  protected boolean getUseMultiplexedSessionBlindWrite() {
     return getUseMultiplexedSession() && useMultiplexedSessionBlindWrite;
   }
 
@@ -568,9 +568,7 @@ public class SessionPoolOptions {
     // Set useMultiplexedSession to true to make multiplexed session the default.
     private boolean useMultiplexedSession = false;
 
-    // This field controls the default behavior of session management in Java client.
-    // Set useMultiplexedSessionBlindWrite to true to make multiplexed session the default for blind
-    // write.
+    // TODO: Remove when multiplexed session for blind write is released.
     private boolean useMultiplexedSessionBlindWrite = false;
 
     // This field controls the default behavior of session management for RW operations in Java
@@ -810,16 +808,11 @@ public class SessionPoolOptions {
     }
 
     /**
-     * Sets whether the client should use multiplexed session for blind write or not. If set to
-     * true, the client optimises and runs multiple applicable requests concurrently on a single
-     * session. A single multiplexed session is sufficient to handle all concurrent traffic.
-     *
-     * <p>When set to false, the client uses the regular session cached in the session pool for
-     * running 1 concurrent transaction per session. We require to provision sufficient sessions by
-     * making use of {@link SessionPoolOptions#minSessions} and {@link
-     * SessionPoolOptions#maxSessions} based on the traffic load. Failing to do so will result in
-     * higher latencies.
+     * This method enables multiplexed sessions for blind writes. This method will be removed in the
+     * future when multiplexed sessions has been made the default for all operations.
      */
+    @InternalApi
+    @VisibleForTesting
     Builder setUseMultiplexedSessionBlindWrite(boolean useMultiplexedSessionBlindWrite) {
       this.useMultiplexedSessionBlindWrite = useMultiplexedSessionBlindWrite;
       return this;
