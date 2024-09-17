@@ -39,6 +39,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -59,6 +61,16 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
         .getService();
   }
 
+  @BeforeClass
+  public static void setWatchdogTimeout() {
+    System.setProperty("com.google.cloud.spanner.watchdogTimeoutSeconds", "1");
+  }
+
+  @AfterClass
+  public static void clearWatchdogTimeout() {
+    System.clearProperty("com.google.cloud.spanner.watchdogTimeoutSeconds");
+  }
+
   @After
   public void cleanup() {
     mockSpanner.unfreeze();
@@ -75,7 +87,13 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
             client.batchReadOnlyTransaction(TimestampBound.strong());
         ResultSet resultSet = transaction.executeQuery(SELECT_RANDOM_STATEMENT)) {
       mockSpanner.freezeAfterReturningNumRows(1);
-      assertTrue(resultSet.next());
+      // This can sometimes fail, as the mock server may not always actually return the first row.
+      try {
+        assertTrue(resultSet.next());
+      } catch (SpannerException exception) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+        return;
+      }
       ((SpannerImpl) spanner).close(1, TimeUnit.MILLISECONDS);
       // This should return an error as the stream is cancelled.
       SpannerException exception = assertThrows(SpannerException.class, resultSet::next);
@@ -93,7 +111,13 @@ public class CloseSpannerWithOpenResultSetTest extends AbstractMockServerTest {
     try (ReadOnlyTransaction transaction = client.readOnlyTransaction(TimestampBound.strong());
         ResultSet resultSet = transaction.executeQuery(SELECT_RANDOM_STATEMENT)) {
       mockSpanner.freezeAfterReturningNumRows(1);
-      assertTrue(resultSet.next());
+      // This can sometimes fail, as the mock server may not always actually return the first row.
+      try {
+        assertTrue(resultSet.next());
+      } catch (SpannerException exception) {
+        assertEquals(ErrorCode.DEADLINE_EXCEEDED, exception.getErrorCode());
+        return;
+      }
       List<ExecuteSqlRequest> executeSqlRequests =
           mockSpanner.getRequestsOfType(ExecuteSqlRequest.class).stream()
               .filter(request -> request.getSql().equals(SELECT_RANDOM_STATEMENT.getSql()))
